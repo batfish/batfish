@@ -5,14 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
+import java.util.TreeSet;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
+
 
 public class BDDNetwork {
 
@@ -105,8 +109,15 @@ public class BDDNetwork {
         BDDAcl aclIn = _inAcls.get(ge);
         BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
+        SortedSet<Pair<Prefix,Integer>> staticPrefixes = new TreeSet<>();
         SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
-        InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticRoutes);
+        for (StaticRoute sr : staticRoutes) {
+          Prefix pfx = sr.getNetwork().getNetworkPrefix();
+          Integer adminCost = sr.getAdministrativeCost();
+          Pair<Prefix,Integer> tup = new Pair<>(pfx, adminCost);
+          staticPrefixes.add(tup);
+        }
+        InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticPrefixes);
         InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);
         _importPolicyMap.put(ge, ipol);
         _exportPolicyMap.put(ge, epol);

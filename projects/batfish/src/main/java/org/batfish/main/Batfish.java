@@ -4423,7 +4423,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement smtAbstraction() {
-    Abstraction a = Abstraction.create(this, null, null);
+    Abstraction a = Abstraction.create(this, null, 0);
     return a.asAnswer();
   }
 
@@ -4485,8 +4485,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement smtRoles(EquivalenceType t) {
-    Roles roles = Roles.create(this);
+  public AnswerElement smtRoles(EquivalenceType t, String nodeRegex) {
+    Pattern p = Pattern.compile(nodeRegex);
+
+    Roles roles = Roles.create(this, p);
     return roles.asAnswer(t);
   }
 

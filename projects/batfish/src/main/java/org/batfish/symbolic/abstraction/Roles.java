@@ -10,6 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
@@ -29,6 +31,8 @@ public class Roles {
 
   private BDDNetwork _network;
 
+  private Pattern _nodeRegex;
+
   private List<SortedSet<String>> _bgpInEcs = null;
 
   private List<SortedSet<String>> _bgpOutEcs = null;
@@ -41,15 +45,16 @@ public class Roles {
 
   private List<SortedSet<String>> _nodeEcs = null;
 
-  public static Roles create(IBatfish batfish) {
-    Roles rf = new Roles(batfish);
+  public static Roles create(IBatfish batfish, Pattern nodeRegex) {
+    Roles rf = new Roles(batfish, nodeRegex);
     rf.computeRoles();
     return rf;
   }
 
-  private Roles(IBatfish batfish) {
+  private Roles(IBatfish batfish, Pattern nodeRegex) {
     _graph = new Graph(batfish);
     _network = BDDNetwork.create(_graph);
+    _nodeRegex = nodeRegex;
     _bgpInEcs = null;
     _bgpOutEcs = null;
     _aclInEcs = null;
@@ -94,6 +99,12 @@ public class Roles {
 
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
+
+      Matcher m = _nodeRegex.matcher(router);
+      if (!m.matches()) {
+        continue;
+      }
+
       List<GraphEdge> ges = entry.getValue();
       Set<Tuple<InterfacePolicy, InterfacePolicy>> nodeEc = new HashSet<>();
 

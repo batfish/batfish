@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -223,22 +224,23 @@ public class PropertyChecker {
   }
 
   private Stream<Supplier<EquivalenceClass>> findAllEquivalenceClasses(
-      HeaderQuestion q, Graph graph) {
-
+      HeaderQuestion q, @Nullable Graph graph) {
     if (q.getUseAbstraction()) {
       long l = System.currentTimeMillis();
-      Abstraction abs = Abstraction.create(_batfish, new ArrayList<>(), q.getHeaderSpace());
+      Abstraction abs = Abstraction.create(_batfish, q.getHeaderSpace(), q.getFailures());
       if (q.getBenchmark()) {
         System.out.println("  Create abstraction: " + (System.currentTimeMillis() - l));
       }
       ArrayList<Supplier<EquivalenceClass>> ecs = abs.equivalenceClasses();
       return ecs.stream();
+    } else {
+      List<Supplier<EquivalenceClass>> singleEc = new ArrayList<>();
+      Graph g = graph == null ? new Graph(_batfish) : graph;
+      EquivalenceClass ec = new EquivalenceClass(q.getHeaderSpace(), g, null);
+      Supplier<EquivalenceClass> sup = () -> ec;
+      singleEc.add(sup);
+      return singleEc.stream();
     }
-    List<Supplier<EquivalenceClass>> singleEc = new ArrayList<>();
-    EquivalenceClass ec = new EquivalenceClass(q.getHeaderSpace(), graph, null);
-    Supplier<EquivalenceClass> sup = () -> ec;
-    singleEc.add(sup);
-    return singleEc.stream();
   }
 
   /*
@@ -250,8 +252,8 @@ public class PropertyChecker {
     }
     Set<String> abstractNodes = new HashSet<>();
     for (String c : concreteNodes) {
-      String a = ec.getAbstraction().get(c);
-      abstractNodes.add(a);
+      Set<String> abs = ec.getAbstraction().getRepresentatives(c);
+      abstractNodes.addAll(abs);
     }
     return abstractNodes;
   }
@@ -262,10 +264,22 @@ public class PropertyChecker {
    * Forwarding will be determined only for a particular network
    * environment, failure scenario, and data plane packet.
    */
-  public AnswerElement checkForwarding(HeaderQuestion q) {
-    Encoder encoder = new Encoder(_batfish, q);
+  public AnswerElement checkForwarding(HeaderQuestion question) {
+    HeaderQuestion q = new HeaderQuestion(question);
+    q.setFailures(0);
+    Stream<Supplier<EquivalenceClass>> sups = findAllEquivalenceClasses(q, null);
+    Optional<Supplier<EquivalenceClass>> opt = sups.findFirst();
+    if (!opt.isPresent()) {
+      throw new BatfishException("Unexpected Error: checkForwarding");
+    }
+    Supplier<EquivalenceClass> sup = opt.get();
+    EquivalenceClass ec = sup.get();
+    Graph g = ec.getGraph();
+    q = new HeaderQuestion(q);
+    question.setHeaderSpace(ec.getHeaderSpace());
+    Encoder encoder = new Encoder(g, question);
     encoder.computeEncoding();
-    addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
+    addEnvironmentConstraints(encoder, question.getBaseEnvironmentType());
     VerificationResult result = encoder.verify().getFirst();
     return new SmtOneAnswerElement(result);
   }

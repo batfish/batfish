@@ -19,13 +19,17 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       RoleQuestion q = (RoleQuestion) _question;
-      return _batfish.smtRoles(q.getType());
+      return _batfish.smtRoles(q.getType(), q.getNodeRegex());
     }
   }
 
   public static class RoleQuestion extends Question implements IQuestion {
 
+    private static final String PROP_NODE_REGEX = "nodeRegex";
+
     private static final String PROP_EQUIVALENCE_TYPE = "equivType";
+
+    private String _nodeRegex;
 
     private EquivalenceType _type;
 
@@ -33,9 +37,19 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
       _type = EquivalenceType.NODE;
     }
 
+    @JsonProperty(PROP_NODE_REGEX)
+    public String getNodeRegex() {
+      return _nodeRegex;
+    }
+
     @JsonProperty(PROP_EQUIVALENCE_TYPE)
     public EquivalenceType getType() {
       return _type;
+    }
+
+    @JsonProperty(PROP_NODE_REGEX)
+    public void setNodeRegex(String x) {
+      _nodeRegex = x;
     }
 
     @JsonProperty(PROP_EQUIVALENCE_TYPE)

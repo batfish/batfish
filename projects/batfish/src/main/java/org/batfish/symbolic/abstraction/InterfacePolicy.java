@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDRoute;
 
@@ -17,7 +17,7 @@ public class InterfacePolicy {
 
   private Integer _ospfCost;
 
-  private SortedSet<StaticRoute> _staticRoutes;
+  private SortedSet<Pair<Prefix,Integer>> _staticRoutes;
 
   private int _hcode = 0;
 
@@ -27,7 +27,7 @@ public class InterfacePolicy {
       @Nullable BDDAcl acl,
       @Nullable BDDRoute bgpPolicy,
       @Nullable Integer ospfCost,
-      @Nullable SortedSet<StaticRoute> staticRoutes) {
+      @Nullable SortedSet<Pair<Prefix,Integer>> staticRoutes) {
     this._acl = acl;
     this._bgpPolicy = bgpPolicy;
     this._ospfCost = ospfCost;
@@ -53,7 +53,7 @@ public class InterfacePolicy {
     return _ospfCost;
   }
 
-  public SortedSet<StaticRoute> getStaticRoutes() {
+  public SortedSet<Pair<Prefix,Integer>> getStaticRoutes() {
     return _staticRoutes;
   }
 

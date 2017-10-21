@@ -22,9 +22,11 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
-  private static final int dstIpIndex = 9;
+  private static final int dstIpIndex = 8;
 
   static BDDFactory factory;
+
+  private static BDDPairing pairing;
 
   static {
     CallbackHandler handler = new CallbackHandler();
@@ -36,6 +38,7 @@ public class BDDPacket {
       factory.registerGCCallback(handler, m);
       factory.registerResizeCallback(handler, m);
       factory.registerReorderCallback(handler, m);
+      pairing = factory.makePair();
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
@@ -389,13 +392,17 @@ public class BDDPacket {
   public BDD restrict(BDD bdd, Prefix pfx) {
     int len = pfx.getPrefixLength();
     BitSet bits = pfx.getAddress().getAddressBits();
-    BDDPairing p = factory.makePair();
+    int[] vars = new int[len];
+    BDD[] vals = new BDD[len];
+    pairing.reset();
     for (int i = 0; i < len; i++) {
       int var = dstIpIndex + i;
       BDD subst = bits.get(i) ? factory.one() : factory.zero();
-      p.set(var, subst);
+      vars[i] = var;
+      vals[i] = subst;
     }
-    return bdd.veccompose(p);
+    pairing.set(vars, vals);
+    return bdd.veccompose(pairing);
   }
 
   public BDD restrict(BDD bdd, List<Prefix> prefixes) {

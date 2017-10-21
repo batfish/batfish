@@ -66,6 +66,10 @@ public class UnionSplit<T> {
     return _reverseMap.keySet();
   }
 
+  public Map<T, Integer> getParitionMap() {
+    return _partitionMap;
+  }
+
   @Override public String toString() {
     return "UnionSplit{" + _reverseMap + '}';
   }

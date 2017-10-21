@@ -496,6 +496,7 @@ public class Graph {
         Interface iface = new Interface(name);
         iface.setActive(true);
         iface.setPrefix(sr.getNetwork());
+        iface.setBandwidth(0.);
         // Add static route to all static routes list
         Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
         List<StaticRoute> routes = map.computeIfAbsent(name, k -> new ArrayList<>());
@@ -563,6 +564,7 @@ public class Graph {
     Interface iface = new Interface("iBGP-" + peer);
     iface.setActive(true);
     iface.setPrefix(n.getPrefix());
+    iface.setBandwidth(0.);
     return iface;
   }
 

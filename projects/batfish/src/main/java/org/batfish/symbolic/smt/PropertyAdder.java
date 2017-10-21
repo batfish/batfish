@@ -29,6 +29,7 @@ class PropertyAdder {
     _encoderSlice = encoderSlice;
   }
 
+
   static BoolExpr allEqual(Context ctx, List<Expr> exprs) {
     BoolExpr acc = ctx.mkBool(true);
     if (exprs.size() > 1) {

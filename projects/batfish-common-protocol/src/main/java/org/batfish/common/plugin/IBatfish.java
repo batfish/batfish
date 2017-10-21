@@ -180,7 +180,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
-  AnswerElement smtRoles(EquivalenceType t);
+  AnswerElement smtRoles(EquivalenceType t, String nodeRegex);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
