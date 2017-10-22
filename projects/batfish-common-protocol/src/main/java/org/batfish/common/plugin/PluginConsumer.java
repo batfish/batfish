@@ -150,7 +150,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     return ret;
   }
 
-  private boolean loadPluginJar(Path path) {
+  private boolean loadPluginJar(Path path, String searchPkg) {
     /*
      * Adapted from
      * http://stackoverflow.com/questions/11016092/how-to-load-classes-at-
@@ -177,7 +177,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
           String className =
               name.substring(0, name.length() - CLASS_EXTENSION.length()).replace("/", ".");
           try {
-            loadPluginClass(cl, className);
+            loadPluginClass(cl, className, searchPkg);
           } catch (ClassNotFoundException e) {
             jar.close();
             throw new BatfishException("Unexpected error loading classes from jar", e);
@@ -193,7 +193,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     return false;
   }
 
-  private void loadPluginFolder(Path pluginPath) throws IOException {
+  private void loadPluginFolder(Path pluginPath, String searchPkg) throws IOException {
     URL[] urls = {pluginPath.toUri().toURL()};
     final URLClassLoader cl = URLClassLoader.newInstance(urls);
     _currentClassLoader = cl;
@@ -213,7 +213,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
                   name.substring(baseLen, name.length() - CLASS_EXTENSION.length())
                       .replace(File.separatorChar, '.');
               try {
-                loadPluginClass(cl, className);
+                loadPluginClass(cl, className, searchPkg);
               } catch (ClassNotFoundException e) {
                 throw new BatfishException("Unexpected error loading from folder " + path, e);
               }
@@ -223,7 +223,11 @@ public abstract class PluginConsumer implements IPluginConsumer {
         });
   }
 
-  private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
+  private void loadPluginClass(URLClassLoader cl, String className,
+                               String searchPkg) throws ClassNotFoundException {
+    if (!className.startsWith(searchPkg)) {
+      return;
+    }
     Class<?> pluginClass = null;
     try {
       cl.loadClass(className);
@@ -262,10 +266,15 @@ public abstract class PluginConsumer implements IPluginConsumer {
   private class JarVisitor extends SimpleFileVisitor<Path> {
     boolean _hasJars = false;
     boolean _hasClasses = false;
+    String _searchPkg = "";
+
+    JarVisitor(String searchPkg) {
+      _searchPkg = searchPkg;
+    }
 
     @Override
     public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-      if (loadPluginJar(path)) {
+      if (loadPluginJar(path, _searchPkg)) {
         _hasJars = true;
       } else if (path.toString().endsWith(CLASS_EXTENSION)) {
         _hasClasses = true;
@@ -278,8 +287,18 @@ public abstract class PluginConsumer implements IPluginConsumer {
     // this supports loading plugins either from a directory of jars, or
     // from a folder of classfiles (useful for eclipse development)
     for (Path pluginDir : _pluginDirs) {
+      // some jars have annoying dependencies and take a long time to scan,
+      // thus we allow restricting loading from only a particular package by appending
+      // !PACKAGE.NAME to the end of the search path
+      String searchPkg = "";
+      String dirStr = pluginDir.toString();
+      int bang = dirStr.lastIndexOf('!');
+      if (bang >= 0) {
+        searchPkg = dirStr.substring(bang + 1);
+        pluginDir = Paths.get(dirStr.substring(0, bang));
+      }
       if (Files.exists(pluginDir)) {
-        JarVisitor jarVisitor = new JarVisitor();
+        JarVisitor jarVisitor = new JarVisitor(searchPkg);
         try {
           // first load any jars
           Files.walkFileTree(pluginDir, jarVisitor);
@@ -290,7 +309,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
         // if there are class files and no jars, then try to load as a folder
         if (jarVisitor._hasClasses && !jarVisitor._hasJars) {
           try {
-            loadPluginFolder(pluginDir);
+            loadPluginFolder(pluginDir, searchPkg);
           } catch (IOException e) {
             throw new BatfishException(
                 "Error loading plugin folder: '" + pluginDir.toString() + "'", e);
