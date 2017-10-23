@@ -63,7 +63,8 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
 
     /*
      * AS path size is same. Now compare to best asPath (if available). Note we do not necessarily
-     * guarantee existing rhs route passes below test.
+     * guarantee existing rhs route is better than best path, since rhs may have been merged before
+     * best as paths map was supplied.
      */
     if (_bestAsPaths != null) {
       AsPath bestAsPath = _bestAsPaths.get(lhs.getNetwork());
@@ -108,7 +109,10 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
           break;
         default:
           throw new BatfishException(
-              "Unsupported " + MultipathEquivalentAsPathMatchMode.class.getName());
+              String.format(
+                  "Unsupported %s: %s",
+                  MultipathEquivalentAsPathMatchMode.class.getName(),
+                  _multipathEquivalentAsPathMatchMode));
       }
     }
 

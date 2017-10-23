@@ -115,8 +115,8 @@ public class BatfishTestUtils {
           settings.getBaseTestrigSettings().getSerializeVendorPath(),
           settings.getBaseTestrigSettings().getSerializeIndependentPath());
     } catch (CompositeBatfishException e) {
-      System.err.print(e.getAnswerElement().prettyPrint());
-      throw new BatfishException("Failed to initialize test batfish", e);
+      throw new BatfishException(
+          "Failed to initialize test batfish: " + e.getAnswerElement().prettyPrint(), e);
     }
     return batfish;
   }
