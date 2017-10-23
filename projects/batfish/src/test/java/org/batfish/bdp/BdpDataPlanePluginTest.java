@@ -167,7 +167,7 @@ public class BdpDataPlanePluginTest {
     BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
   }
 
-  private void testBgpAsPathMultipath_helper(
+  private void testBgpAsPathMultipathHelper(
       MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean primeBestPathInMultipathBgpRib,
       boolean expectRoute2,
@@ -275,7 +275,7 @@ public class BdpDataPlanePluginTest {
     /*
      * Only routes with first-as matching that of best as path should appear in RIB post-merge.
      */
-    testBgpAsPathMultipath_helper(
+    testBgpAsPathMultipathHelper(
         MultipathEquivalentAsPathMatchMode.EXACT_PATH, true, false, false, false, true, true);
   }
 
@@ -284,7 +284,7 @@ public class BdpDataPlanePluginTest {
     /*
      * Only routes with first-as matching that of best as path should appear in RIB post-merge.
      */
-    testBgpAsPathMultipath_helper(
+    testBgpAsPathMultipathHelper(
         MultipathEquivalentAsPathMatchMode.FIRST_AS, true, false, true, false, true, true);
   }
 
@@ -293,7 +293,7 @@ public class BdpDataPlanePluginTest {
     /*
      * All routes with same as-path-length as that of best as-path should appear in RIB post-merge.
      */
-    testBgpAsPathMultipath_helper(
+    testBgpAsPathMultipathHelper(
         MultipathEquivalentAsPathMatchMode.PATH_LENGTH, true, true, true, false, true, true);
   }
 
@@ -304,7 +304,7 @@ public class BdpDataPlanePluginTest {
      * equivalent. Results should be independent of chosen mode.
      */
     for (MultipathEquivalentAsPathMatchMode mode : MultipathEquivalentAsPathMatchMode.values()) {
-      testBgpAsPathMultipath_helper(mode, false, true, true, false, true, true);
+      testBgpAsPathMultipathHelper(mode, false, true, true, false, true, true);
     }
   }
 
