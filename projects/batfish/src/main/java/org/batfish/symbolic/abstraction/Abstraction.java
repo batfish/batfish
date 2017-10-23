@@ -209,15 +209,14 @@ public class Abstraction implements Iterable<EquivalenceClass> {
    * network for a given destination-based slice of the original network.
    */
   private EquivalenceClass computeAbstraction(Set<String> devices, List<Prefix> prefixes) {
-    Set<String> allDevices = _graph.getConfigurations().keySet();
     Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
     Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
 
     specializeBdds(prefixes, exportPol, importPol);
 
-    UnionSplit<String> workset = new UnionSplit<>(allDevices);
+    UnionSplit<String> workset = new UnionSplit<>(_graph.getRouters());
 
-    // Split by the singleton set for each origination point
+    // Each origination point will remain concrete
     for (String device : devices) {
       workset.split(device);
     }
@@ -240,11 +239,16 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         } else {
           abstractExistential(exportPol, importPol, workset, todo, ps, partition, false);
         }
+        // If something changed, then start over early
+        // Helps the next iteration to use the newly reflected information.
+        if (todo.size() > 0) {
+           break;
+        }
       }
 
       // Now refine the abstraction further
-      for (Set<String> partition : todo) {
-        workset.split(partition);
+      for (Set<String> newPartition : todo) {
+        workset.split(newPartition);
       }
 
     } while (!todo.isEmpty());
@@ -300,6 +304,8 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
     // Split by existential abstraction
     Table2<String, EquivalenceEdge, Integer> existentialMap = new Table2<>();
+    Table2<String, Integer, Set<EquivalenceEdge>> byId = new Table2<>();
+
     for (String router : partition) {
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge edge : edges) {
@@ -311,33 +317,61 @@ public class Abstraction implements Iterable<EquivalenceClass> {
           if (otherEnd != null) {
             epol = exportPol.get(otherEnd);
           }
+          // Update the existential map
           Integer peerGroup = (peer == null ? -1 : workset.getHandle(peer));
           EquivalenceEdge ee = new EquivalenceEdge(peerGroup, ipol, epol);
           Integer i = existentialMap.get(router, ee);
           i = (i == null ? 1 : i + 1);
           existentialMap.put(router, ee, i);
+          // Update the id map
+          Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
+          existing = (existing == null ? new HashSet<>() : existing);
+          existing.add(ee);
+          byId.put(router, peerGroup, existing);
         }
       }
     }
+
+    // If there is more than one policy to the same abstract neighbor, we make concrete
+    // Since by definition this can not be a valid abstraction
+    Set<String> makeConcrete = new HashSet<>();
+    byId.forEach((router, peerGroup, edges) -> {
+      if (edges.size() > 1) {
+        makeConcrete.add(router);
+      }
+    });
+
+    Collection<Set<String>> newPartitions = new HashSet<>();
+
+    // Add concrete devices
+    for (String router : makeConcrete) {
+      Set<String> singleDevice = new HashSet<>();
+      singleDevice.add(router);
+      newPartitions.add(singleDevice);
+    }
+
     // Collect router by policy type
-    Collection<Set<String>> newPartitions;
     if (countMatters) {
       Map<Map<EquivalenceEdge, Integer>, Set<String>> inversePolicyMap = new HashMap<>();
       existentialMap.forEach(
           (router, map) -> {
-            Set<String> routers = inversePolicyMap.computeIfAbsent(map, k -> new HashSet<>());
-            routers.add(router);
+            if (!makeConcrete.contains(router)) {
+              Set<String> routers = inversePolicyMap.computeIfAbsent(map, k -> new HashSet<>());
+              routers.add(router);
+            }
           });
-      newPartitions = inversePolicyMap.values();
+      newPartitions.addAll(inversePolicyMap.values());
     } else {
       Map<Set<EquivalenceEdge>, Set<String>> inversePolicyMap = new HashMap<>();
       existentialMap.forEach(
           (router, map) -> {
-            Set<EquivalenceEdge> edges = map.keySet();
-            Set<String> routers = inversePolicyMap.computeIfAbsent(edges, k -> new HashSet<>());
-            routers.add(router);
+            if (!makeConcrete.contains(router)) {
+              Set<EquivalenceEdge> edges = map.keySet();
+              Set<String> routers = inversePolicyMap.computeIfAbsent(edges, k -> new HashSet<>());
+              routers.add(router);
+            }
           });
-      newPartitions = inversePolicyMap.values();
+      newPartitions.addAll(inversePolicyMap.values());
     }
 
     // Only add changed to the list
@@ -360,8 +394,11 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       Set<Set<String>> todo,
       List<Set<String>> ps,
       Set<String> partition) {
+
     // Split by universal abstraction
     Map<String, Set<Tuple<String, EquivalenceEdge>>> universalMap = new HashMap<>();
+    Table2<String, Integer, Set<EquivalenceEdge>> byId = new Table2<>();
+
     for (String router : partition) {
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge edge : edges) {
@@ -379,18 +416,47 @@ public class Abstraction implements Iterable<EquivalenceClass> {
           Set<Tuple<String, EquivalenceEdge>> group =
               universalMap.computeIfAbsent(router, k -> new HashSet<>());
           group.add(tup);
+          // Update the id map
+          Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
+          existing = (existing == null ? new HashSet<>() : existing);
+          existing.add(ee);
+          byId.put(router, peerGroup, existing);
         }
       }
     }
+
+    // If there is more than one policy to the same abstract neighbor, we make concrete
+    // Since by definition this can not be a valid abstraction
+    Set<String> makeConcrete = new HashSet<>();
+    byId.forEach((router, peerGroup, edges) -> {
+      if (edges.size() > 1) {
+        makeConcrete.add(router);
+      }
+    });
+
+    Collection<Set<String>> newPartitions = new HashSet<>();
+
+    // Add concrete devices
+    for (String router : makeConcrete) {
+      Set<String> singleDevice = new HashSet<>();
+      singleDevice.add(router);
+      newPartitions.add(singleDevice);
+    }
+
     // Collect router by policy
     Map<Set<Tuple<String, EquivalenceEdge>>, Set<String>> inversePolicyMap = new HashMap<>();
     universalMap.forEach(
         (router, set) -> {
-          Set<String> routers = inversePolicyMap.computeIfAbsent(set, gs -> new HashSet<>());
-          routers.add(router);
+          if (!makeConcrete.contains(router)) {
+            Set<String> routers = inversePolicyMap.computeIfAbsent(set, gs -> new HashSet<>());
+            routers.add(router);
+          }
         });
+
+    newPartitions.addAll(inversePolicyMap.values());
+
     // Only add changed to the list
-    for (Set<String> collection : inversePolicyMap.values()) {
+    for (Set<String> collection : newPartitions) {
       if (!ps.contains(collection)) {
         todo.add(collection);
       }
@@ -433,20 +499,18 @@ public class Abstraction implements Iterable<EquivalenceClass> {
    * Given a collection of abstract roles, computes a set of canonical
    * representatives from each role that serve as the abstraction.
    */
-  private Map<Integer, Set<String>> pickCanonicalRouters(UnionSplit<String> us, Set<String> dests) {
-
+  private Map<Integer, Set<String>> pickCanonicalRouters(UnionSplit<String> us, Set<String> dsts) {
     Table2<String, Integer, Set<String>> neighborByAbstractId = collectNeighborByAbstractId(us);
-
-    Map<Integer, Set<String>> choosen = new HashMap<>();
+    Map<Integer, Set<String>> chosen = new HashMap<>();
     Stack<String> stack = new Stack<>();
+    List<String> options = new ArrayList<>();
 
     // Start with the concrete nodes
-    for (String d : dests) {
+    for (String d : dsts) {
       stack.push(d);
       Set<String> dest = new HashSet<>();
       dest.add(d);
-      Integer i = us.getHandle(d);
-      choosen.put(i, dest);
+      chosen.put(us.getHandle(d), dest);
     }
 
     // Need to choose representatives that are connected
@@ -457,13 +521,13 @@ public class Abstraction implements Iterable<EquivalenceClass> {
       for (Entry<Integer, Set<String>> entry : byId.entrySet()) {
         Integer j = entry.getKey();
         Set<String> peers = entry.getValue();
-        Set<String> choosenPeers = choosen.computeIfAbsent(j, k -> new HashSet<>());
+        Set<String> chosenPeers = chosen.computeIfAbsent(j, k -> new HashSet<>());
 
         // Find how many choices we need, and collect the options
         int numNeeded = _possibleFailures + 1;
-        List<String> options = new ArrayList<>();
+        options.clear();
         for (String x : peers) {
-          if (choosenPeers.contains(x)) {
+          if (chosenPeers.contains(x)) {
             numNeeded--;
           } else {
             options.add(x);
@@ -472,13 +536,13 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         // Add new neighbors until satisfied
         for (int k = 0; k < Math.min(numNeeded, options.size()); k++) {
           String y = options.get(k);
-          choosenPeers.add(y);
+          chosenPeers.add(y);
           stack.push(y);
         }
       }
     }
 
-    return choosen;
+    return chosen;
   }
 
   /*
