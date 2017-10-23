@@ -120,16 +120,16 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       boolean currentBit = bits.get(firstUnmatchedBitIndex);
 
       /*
-      If prefixes don't match exactly, look at the current bit. That determines whether we look
-      left of right. As long as the child is not null, recurse.
-
-      Note that:
-       1) routes are stored in the nodes where lengths of the node prefix and the route prefix
-          match exactly; and
-       2) prefix matches only get more specific (longer) the deeper we go in the tree
-
-      Therefore, we can fast-forward the firstUnmatchedBitIndex to the prefix length of the
-      child node
+       * If prefixes don't match exactly, look at the current bit. That determines whether we look
+       * left or right. As long as the child is not null, recurse.
+       *
+       * Note that:
+       * 1) routes are stored in the nodes where lengths of the node prefix and the route prefix
+       *    match exactly; and
+       * 2) prefix matches only get more specific (longer) the deeper we go in the tree
+       *
+       * Therefore, we can fast-forward the firstUnmatchedBitIndex to the prefix length of the
+       * child node
        */
       if (currentBit) {
         return _right != null

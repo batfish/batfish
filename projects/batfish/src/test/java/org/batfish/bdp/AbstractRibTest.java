@@ -2,8 +2,8 @@ package org.batfish.bdp;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterableOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -16,25 +16,24 @@ import org.batfish.datamodel.StaticRoute;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Test the AbstractRib tree logic. To avoid worrying about route preference comparisons, testing
- * with StaticRoutes and StaticRib. All static routes will be stored in the RIB, without eviction
- * based on preference.
- */
+/** Tests of {@link AbstractRib} */
 public class AbstractRibTest {
+  /*
+   * Test the AbstractRib tree logic. To avoid worrying about route preference comparisons, testing
+   * with StaticRoutes and StaticRib. All static routes will be stored in the RIB, without eviction
+   * based on preference.
+   */
   private AbstractRib<StaticRoute> _rib;
-  private StaticRoute _mostGeneralRoute;
+  private static final StaticRoute _mostGeneralRoute =
+      new StaticRoute(new Prefix("0.0.0.0/0"), Ip.ZERO, null, 0, 0);
 
   @Before
   public void setupEmptyRib() {
     _rib = new StaticRib(null);
-    _mostGeneralRoute = new StaticRoute(new Prefix("0.0.0.0/0"), Ip.ZERO, null, 0, 0);
   }
 
   @Test
   public void testRibConstructor() {
-    // Test: the setupEmptyRib() fixture
-
     // Assertions: Ensure that a new rib is empty upon construction
     assertThat(_rib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(_rib.containsRoute(_mostGeneralRoute), is(false));
@@ -47,7 +46,7 @@ public class AbstractRibTest {
 
     // Assertions
     // Check routes size
-    assertThat(_rib.getRoutes().size(), is(1));
+    assertThat(_rib.getRoutes(), hasSize(1));
     // Check that containsRoute works as expected for this simple case
     assertThat(_rib.containsRoute(_mostGeneralRoute), is(true));
     assertThat(
@@ -71,12 +70,13 @@ public class AbstractRibTest {
     return routes;
   }
 
+  /** Ensure that only one copy of a routes is stored, regardless of how many times we add it) */
   @Test
   public void testRepeatedAdd() {
     // Setup
     StaticRoute route = new StaticRoute(new Prefix("10.0.0.0/11"), Ip.ZERO, null, 0, 0);
 
-    // Test: add the same route multiple times
+    // Test
     for (int i = 0; i < 5; i++) {
       _rib.mergeRoute(route);
     }
@@ -88,6 +88,10 @@ public class AbstractRibTest {
     assertThat(_rib.containsRoute(route), is(true));
   }
 
+  /**
+   * Check that containsRoute and route collection works as expected in the presence of
+   * non-overlapping routes in the RIB
+   */
   @Test
   public void testNonOverlappingRouteAdd() {
     // Setup
@@ -101,7 +105,7 @@ public class AbstractRibTest {
     // Assertions
     // Check that both routes exist
     Set<StaticRoute> collectedRoutes = _rib.getRoutes();
-    assertThat(collectedRoutes.size(), is(2));
+    assertThat(collectedRoutes, hasSize(2));
     assertThat(_rib.containsRoute(r1), is(true));
     assertThat(_rib.containsRoute(r2), is(true));
     // Also check route collection via getRoutes()
@@ -109,46 +113,47 @@ public class AbstractRibTest {
     assertThat(collectedRoutes, hasItem(r2));
   }
 
+  /**
+   * Check that containsRoute and route collection works as expected in the presence of overlapping
+   * routes in the RIB
+   */
   @Test
   public void testMultiOverlappingRouteAdd() {
     // Setup/Test: Add multiple routes with overlapping prefixes
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Assertions
-    // Check number of routes
     Set<StaticRoute> collectedRoutes = _rib.getRoutes();
-    assertThat(collectedRoutes.size(), is(routes.size()));
-    // Check that contains returns true for all routes
+    assertThat(collectedRoutes, hasSize(routes.size()));
     assertThat(_rib.containsRoute(_mostGeneralRoute), is(false));
     for (StaticRoute r : routes) {
       assertThat(_rib.containsRoute(r), is(true));
-      // And check getRoutes() collection
       assertThat(collectedRoutes, hasItem(r));
     }
   }
 
+  /** Ensure that empty RIB doesn't have any prefix matches */
   @Test
   public void testLongestPrefixMatchWhenEmpty() {
-    // Setup/Test: the setupEmptyRib() fixture
-
-    // Assertions
-    // Check that for empty rib prefix match is empty when the RIB is empty
     assertThat(_rib.longestPrefixMatch(new Ip("1.1.1.1")), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(_rib.longestPrefixMatch(new Ip("0.0.0.0")), is(emptyIterableOf(StaticRoute.class)));
   }
 
+  /** Ensure that longestPrefixMatch() returns correct routes when the RIB is non-empty */
   @Test
   public void testLongestPrefixMatch() {
-    // Setup/Test:
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Assertions
-    // Check that longestPrefixMatch executes correctly
     Set<StaticRoute> match = _rib.longestPrefixMatch(new Ip("10.1.1.1"));
-    assertThat(match.size(), equalTo(1));
+    assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(3)));
 
     match = _rib.longestPrefixMatch(new Ip("10.1.1.2"));
-    assertThat(match.size(), equalTo(1));
+    assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(1)));
+
+    match = _rib.longestPrefixMatch(new Ip("11.1.1.1"));
+    assertThat(match, is(emptyIterableOf(StaticRoute.class)));
   }
 }
