@@ -252,7 +252,7 @@ public class PropertyChecker {
     }
     Set<String> abstractNodes = new HashSet<>();
     for (String c : concreteNodes) {
-      Set<String> abs = ec.getAbstraction().getRepresentatives(c);
+      Set<String> abs = ec.getAbstraction().getAbstractRepresentatives(c);
       abstractNodes.addAll(abs);
     }
     return abstractNodes;

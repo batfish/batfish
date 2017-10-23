@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,7 +15,6 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Supplier;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
@@ -57,21 +55,26 @@ import org.batfish.symbolic.utils.Tuple;
 // - add parent / client RRs?
 // - Always assume multipath?
 
-public class Abstraction implements Iterable<EquivalenceClass> {
+public class Abstraction {
 
   private IBatfish _batfish;
+
   private Graph _graph;
+
   private BDDNetwork _network;
+
   private HeaderSpace _headerspace;
+
   private int _possibleFailures;
-  private Map<Set<String>, List<Prefix>> _destinationMap;
+
+  private Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> _headerspaceMap;
 
   private Abstraction(IBatfish batfish, @Nullable HeaderSpace h, int fails) {
     _batfish = batfish;
     _graph = new Graph(batfish);
     _network = BDDNetwork.create(_graph);
-    _destinationMap = new HashMap<>();
     _headerspace = h;
+    _headerspaceMap = new HashMap<>();
     _possibleFailures = fails;
   }
 
@@ -120,7 +123,6 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
       Configuration conf = entry.getValue();
-      // System.out.println("Looking at router: " + router);
       for (Protocol proto : protoMap.get(router)) {
         Set<Prefix> destinations = new HashSet<>();
         if (!proto.isStatic()) {
@@ -128,18 +130,71 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         }
         // Add all destinations to the prefix trie relevant to this slice
         for (Prefix p : destinations) {
-          if (_headerspace == null
-              || (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps))) {
+          if (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps)) {
             pt.add(p, router);
           }
         }
       }
     }
 
-    // Map collections of devices to the destination IP ranges that are rooted there
-    _destinationMap = pt.createDestinationMap();
-    _destinationMap.forEach(
-        (devices, prefixes) -> System.out.println("Check for: " + devices + " --> " + prefixes));
+    // Create a headerspace for each collection of prefixes
+    Map<Set<String>, List<Prefix>> destinationMap = pt.createDestinationMap();
+    destinationMap.forEach(
+        (devices, prefixes) -> {
+          HeaderSpace h = createHeaderSpace(prefixes);
+          if (_headerspace != null) {
+            copyAllButDestinationIp(h, _headerspace);
+          }
+          Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(h, prefixes);
+          _headerspaceMap.put(devices, tup);
+        });
+
+    // Create a catch-all headerspace for anything that might only be from outside
+    HeaderSpace catchAll = createHeaderSpace(dstIps);
+    for (Prefix pfx : notDstIps) {
+      catchAll.getNotDstIps().add(new IpWildcard(pfx));
+    }
+    destinationMap.forEach(
+        (devices, prefixes) -> {
+          for (Prefix pfx : prefixes) {
+            System.out.println("Check for: " + devices + " --> " + prefixes);
+            catchAll.getNotDstIps().add(new IpWildcard(pfx));
+          }
+        });
+    if (_headerspace != null) {
+      copyAllButDestinationIp(catchAll, _headerspace);
+    }
+    if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
+      System.out.println("Catch all: " + catchAll.getNotDstIps());
+      Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(catchAll, null);
+      _headerspaceMap.put(new HashSet<>(), tup);
+    }
+  }
+
+  private void copyAllButDestinationIp(HeaderSpace h1, HeaderSpace h2) {
+    h1.setDscps(h2.getDscps());
+    h1.setDstPorts(h2.getDstPorts());
+    h1.setNotDstPorts(h2.getNotDstPorts());
+    h1.setNotDstProtocols(h2.getNotDstProtocols());
+    h1.setDstProtocols(h2.getDstProtocols());
+    h1.setSrcPorts(h2.getSrcPorts());
+    h1.setSrcIps(h2.getSrcIps());
+    h1.setSrcOrDstIps(h2.getSrcOrDstIps());
+    h1.setSrcOrDstPorts(h2.getSrcOrDstPorts());
+    h1.setNotSrcIps(h2.getNotSrcIps());
+    h1.setNotSrcPorts(h2.getNotSrcPorts());
+    h1.setEcns(h2.getEcns());
+    h1.setNotEcns(h2.getNotEcns());
+    h1.setFragmentOffsets(h2.getFragmentOffsets());
+    h1.setNotFragmentOffsets(h2.getNotFragmentOffsets());
+    h1.setPacketLengths(h2.getPacketLengths());
+    h1.setNotPacketLengths(h2.getNotPacketLengths());
+    h1.setIcmpCodes(h2.getIcmpCodes());
+    h1.setNotIcmpCodes(h2.getNotIcmpCodes());
+    h1.setIcmpTypes(h2.getIcmpTypes());
+    h1.setNotIcmpTypes(h2.getNotIcmpTypes());
+    h1.setStates(h2.getStates());
+    h1.setTcpFlags(h2.getTcpFlags());
   }
 
   /*
@@ -175,19 +230,14 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
   public ArrayList<Supplier<EquivalenceClass>> equivalenceClasses() {
     ArrayList<Supplier<EquivalenceClass>> classes = new ArrayList<>();
-    for (Entry<Set<String>, List<Prefix>> entry : _destinationMap.entrySet()) {
+    for (Entry<Set<String>, Tuple<HeaderSpace, List<Prefix>>> entry : _headerspaceMap.entrySet()) {
       Set<String> devices = entry.getKey();
-      List<Prefix> prefixes = entry.getValue();
-      Supplier<EquivalenceClass> sup = () -> computeAbstraction(devices, prefixes);
+      HeaderSpace headerspace = entry.getValue().getFirst();
+      List<Prefix> prefixes = entry.getValue().getSecond();
+      Supplier<EquivalenceClass> sup = () -> computeAbstraction(devices, headerspace, prefixes);
       classes.add(sup);
     }
     return classes;
-  }
-
-  @Nonnull
-  @Override
-  public Iterator<EquivalenceClass> iterator() {
-    return new AbstractionIterator();
   }
 
   /*
@@ -208,11 +258,18 @@ public class Abstraction implements Iterable<EquivalenceClass> {
    * Create an abstract network that is forwarding-equivalent to the original
    * network for a given destination-based slice of the original network.
    */
-  private EquivalenceClass computeAbstraction(Set<String> devices, List<Prefix> prefixes) {
+  private EquivalenceClass computeAbstraction(
+      Set<String> devices, HeaderSpace headerspace, List<Prefix> prefixes) {
+
     Map<GraphEdge, InterfacePolicy> exportPol = new HashMap<>();
     Map<GraphEdge, InterfacePolicy> importPol = new HashMap<>();
 
-    specializeBdds(prefixes, exportPol, importPol);
+    if (prefixes == null) {
+      exportPol = _network.getExportPolicyMap();
+      importPol = _network.getImportPolicyMap();
+    } else {
+      specializeBdds(prefixes, exportPol, importPol);
+    }
 
     UnionSplit<String> workset = new UnionSplit<>(_graph.getRouters());
 
@@ -242,7 +299,7 @@ public class Abstraction implements Iterable<EquivalenceClass> {
         // If something changed, then start over early
         // Helps the next iteration to use the newly reflected information.
         if (todo.size() > 0) {
-           break;
+          break;
         }
       }
 
@@ -259,13 +316,12 @@ public class Abstraction implements Iterable<EquivalenceClass> {
 
     System.out.println("EC Devices: " + devices);
     System.out.println("EC Prefixes: " + prefixes);
-    // System.out.println("Groups: \n" + workset.partitions());
+    System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
     System.out.println("Num Groups: " + workset.partitions().size());
     System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
 
-    HeaderSpace h = createHeaderSpace(prefixes);
-    return new EquivalenceClass(h, abstractGraph, abstraction);
+    return new EquivalenceClass(headerspace, abstractGraph, abstraction);
   }
 
   /*
@@ -335,11 +391,12 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     // If there is more than one policy to the same abstract neighbor, we make concrete
     // Since by definition this can not be a valid abstraction
     Set<String> makeConcrete = new HashSet<>();
-    byId.forEach((router, peerGroup, edges) -> {
-      if (edges.size() > 1) {
-        makeConcrete.add(router);
-      }
-    });
+    byId.forEach(
+        (router, peerGroup, edges) -> {
+          if (edges.size() > 1) {
+            makeConcrete.add(router);
+          }
+        });
 
     Collection<Set<String>> newPartitions = new HashSet<>();
 
@@ -428,11 +485,12 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     // If there is more than one policy to the same abstract neighbor, we make concrete
     // Since by definition this can not be a valid abstraction
     Set<String> makeConcrete = new HashSet<>();
-    byId.forEach((router, peerGroup, edges) -> {
-      if (edges.size() > 1) {
-        makeConcrete.add(router);
-      }
-    });
+    byId.forEach(
+        (router, peerGroup, edges) -> {
+          if (edges.size() > 1) {
+            makeConcrete.add(router);
+          }
+        });
 
     Collection<Set<String>> newPartitions = new HashSet<>();
 
@@ -505,24 +563,41 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     Stack<String> stack = new Stack<>();
     List<String> options = new ArrayList<>();
 
-    // Start with the concrete nodes
-    for (String d : dsts) {
-      stack.push(d);
-      Set<String> dest = new HashSet<>();
-      dest.add(d);
-      chosen.put(us.getHandle(d), dest);
+    if (dsts.isEmpty()) {
+      // When destination only can be from external
+      // Pick a representative from each externally-facing abstract group
+      Set<Integer> picked = new HashSet<>();
+      for (GraphEdge ge : _graph.getAllRealEdges()) {
+        if (_graph.isExternal(ge)) {
+          String d = ge.getRouter();
+          Integer i = us.getHandle(d);
+          if (!picked.contains(i)) {
+            Set<String> dest = new HashSet<>();
+            dest.add(d);
+            stack.push(d);
+            chosen.put(i, dest);
+            picked.add(i);
+          }
+        }
+      }
+    } else {
+      // Start with the concrete nodes
+      for (String d : dsts) {
+        stack.push(d);
+        Set<String> dest = new HashSet<>();
+        dest.add(d);
+        chosen.put(us.getHandle(d), dest);
+      }
     }
 
     // Need to choose representatives that are connected
     while (!stack.isEmpty()) {
       String router = stack.pop();
-
       Map<Integer, Set<String>> byId = neighborByAbstractId.get(router);
       for (Entry<Integer, Set<String>> entry : byId.entrySet()) {
         Integer j = entry.getKey();
         Set<String> peers = entry.getValue();
         Set<String> chosenPeers = chosen.computeIfAbsent(j, k -> new HashSet<>());
-
         // Find how many choices we need, and collect the options
         int numNeeded = _possibleFailures + 1;
         options.clear();
@@ -720,27 +795,5 @@ public class Abstraction implements Iterable<EquivalenceClass> {
     Graph abstractGraph = new Graph(_batfish, newConfigs);
     AbstractionMap map = new AbstractionMap(canonicalChoices, us.getParitionMap());
     return new Tuple<>(abstractGraph, map);
-  }
-
-  private class AbstractionIterator implements Iterator<EquivalenceClass> {
-
-    private Iterator<Entry<Set<String>, List<Prefix>>> _iter;
-
-    AbstractionIterator() {
-      _iter = _destinationMap.entrySet().iterator();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return _iter.hasNext();
-    }
-
-    @Override
-    public EquivalenceClass next() {
-      Entry<Set<String>, List<Prefix>> x = _iter.next();
-      Set<String> devices = x.getKey();
-      List<Prefix> prefixes = x.getValue();
-      return computeAbstraction(devices, prefixes);
-    }
   }
 }

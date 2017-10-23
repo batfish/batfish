@@ -9,12 +9,12 @@ public class AbstractionMap {
 
   private Map<String, Integer> _groupMap;
 
-  public AbstractionMap(Map<Integer, Set<String>> choiceMap, Map<String, Integer> groupMap) {
+  AbstractionMap(Map<Integer, Set<String>> choiceMap, Map<String, Integer> groupMap) {
     this._canonicalChoiceMap = choiceMap;
     this._groupMap = groupMap;
   }
 
-  public Set<String> getRepresentatives(String router) {
+  public Set<String> getAbstractRepresentatives(String router) {
     Integer idx = _groupMap.get(router);
     return _canonicalChoiceMap.get(idx);
   }

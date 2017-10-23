@@ -187,6 +187,13 @@ public class Graph {
   }
 
   /*
+   * Is a graph edge external facing (can receive BGP advertisements)
+   */
+  public boolean isExternal(GraphEdge ge) {
+    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
+  }
+
+  /*
    * Find the common (default) routing policy for the protocol.
    */
   @Nullable
