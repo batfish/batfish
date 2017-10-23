@@ -238,8 +238,11 @@ class PropertyAdder {
   public Map<String, BoolExpr> instrumentReachabilityFast(Set<GraphEdge> ges) {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
+    EncoderSlice slice = _encoderSlice;
     String sliceName = _encoderSlice.getSliceName();
+    Graph g = slice.getGraph();
     Map<String, BoolExpr> reachableVars = new HashMap<>();
+
     _encoderSlice
         .getGraph()
         .getConfigurations()
@@ -252,35 +255,55 @@ class PropertyAdder {
               _encoderSlice.getAllVariables().put(var.toString(), var);
             });
 
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              BoolExpr reach = reachableVars.get(router);
-              // Add the base case, reachable if we forward to a directly connected interface
-              BoolExpr hasDirectRoute = ctx.mkFalse();
-              for (GraphEdge ge : edges) {
-                if (!ge.isAbstract() && ges.contains(ge)) {
-                  BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
-                  assert (fwdIface != null);
-                  hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
-                }
-              }
-              // Add the recursive case, where it is reachable through a neighbor
-              BoolExpr hasRecursiveRoute = ctx.mkFalse();
-              for (GraphEdge edge : edges) {
-                if (!edge.isAbstract()) {
-                  BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
-                  if (edge.getPeer() != null) {
-                    BoolExpr peerReachable = reachableVars.get(edge.getPeer());
-                    BoolExpr sendToReachable = ctx.mkAnd(fwd, peerReachable);
-                    hasRecursiveRoute = ctx.mkOr(hasRecursiveRoute, sendToReachable);
-                  }
-                }
-              }
-              solver.add(ctx.mkEq(reach, ctx.mkOr(hasDirectRoute, hasRecursiveRoute)));
-            });
+    for (Entry<String, List<GraphEdge>> entry : g.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      BoolExpr reach = reachableVars.get(router);
+
+      // Add the base case, reachable if we forward to a directly connected interface
+      BoolExpr hasDirectRoute = ctx.mkFalse();
+      BoolExpr isAbsorbed = ctx.mkFalse();
+      SymbolicRoute r = _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+
+      for (GraphEdge ge : edges) {
+        if (!ge.isAbstract() && ges.contains(ge)) {
+          // If a host, consider reachable
+          if (g.isHost(router)) {
+            hasDirectRoute = ctx.mkTrue();
+            break;
+          }
+          // Reachable if we leave the network
+          if (ge.getPeer() == null) {
+            BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+            assert (fwdIface != null);
+            hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+          }
+          // Also reachable if connected route and we use it despite not forwarding
+          if (r != null) {
+            BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
+            BoolExpr reachable = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+            isAbsorbed = ctx.mkOr(isAbsorbed, reachable);
+          }
+        }
+      }
+
+      // Add the recursive case, where it is reachable through a neighbor
+      BoolExpr hasRecursiveRoute = ctx.mkFalse();
+      for (GraphEdge edge : edges) {
+        if (!edge.isAbstract()) {
+          BoolExpr fwd = _encoderSlice.getForwardsAcross().get(router, edge);
+          if (edge.getPeer() != null) {
+            BoolExpr peerReachable = reachableVars.get(edge.getPeer());
+            BoolExpr sendToReachable = ctx.mkAnd(fwd, peerReachable);
+            hasRecursiveRoute = ctx.mkOr(hasRecursiveRoute, sendToReachable);
+          }
+        }
+      }
+
+      BoolExpr cond = slice.mkOr(hasDirectRoute, isAbsorbed, hasRecursiveRoute);
+      solver.add(slice.mkEq(reach, cond));
+    }
 
     return reachableVars;
   } */

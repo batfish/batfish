@@ -323,7 +323,7 @@ public class PropertyChecker {
               long ecTime = System.currentTimeMillis();
               EquivalenceClass ec = lazyEc.get();
               if (q.getBenchmark()) {
-                System.out.println("  Next EC: " + (System.currentTimeMillis() - ecTime));
+                System.out.println("  Compute EC: " + (System.currentTimeMillis() - ecTime));
               }
 
               // Make sure the headerspace is correct

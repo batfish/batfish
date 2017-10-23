@@ -176,7 +176,6 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
-import org.batfish.symbolic.abstraction.Abstraction;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
@@ -4419,12 +4418,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public void setTerminatedWithException(boolean terminatedWithException) {
     _terminatedWithException = terminatedWithException;
-  }
-
-  @Override
-  public AnswerElement smtAbstraction() {
-    Abstraction a = Abstraction.create(this, null, 0);
-    return a.asAnswer();
   }
 
   @Override

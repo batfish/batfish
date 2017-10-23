@@ -49,6 +49,13 @@ public class UnionSplit<T> {
     _nextCount++;
   }
 
+  public void split(T element) {
+    Set<T> elements = new HashSet<>();
+    elements.add(element);
+    createPartition(_nextCount, elements);
+    _nextCount++;
+  }
+
 
   public Integer getHandle(T element) {
     return _partitionMap.get(element);
