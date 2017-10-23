@@ -31,6 +31,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -224,10 +225,12 @@ public class PropertyChecker {
   }
 
   private Stream<Supplier<EquivalenceClass>> findAllEquivalenceClasses(
-      HeaderQuestion q, @Nullable Graph graph) {
+      HeaderQuestion q, @Nullable Graph graph, boolean useDefaultCase) {
     if (q.getUseAbstraction()) {
       long l = System.currentTimeMillis();
-      Abstraction abs = Abstraction.create(_batfish, q.getHeaderSpace(), q.getFailures());
+      HeaderSpace h = q.getHeaderSpace();
+      int numFailures = q.getFailures();
+      Abstraction abs = Abstraction.create(_batfish, h, numFailures, useDefaultCase);
       if (q.getBenchmark()) {
         System.out.println("  Create abstraction: " + (System.currentTimeMillis() - l));
       }
@@ -267,7 +270,7 @@ public class PropertyChecker {
   public AnswerElement checkForwarding(HeaderQuestion question) {
     HeaderQuestion q = new HeaderQuestion(question);
     q.setFailures(0);
-    Stream<Supplier<EquivalenceClass>> sups = findAllEquivalenceClasses(q, null);
+    Stream<Supplier<EquivalenceClass>> sups = findAllEquivalenceClasses(q, null, false);
     Optional<Supplier<EquivalenceClass>> opt = sups.findFirst();
     if (!opt.isPresent()) {
       throw new BatfishException("Unexpected Error: checkForwarding");
@@ -308,7 +311,7 @@ public class PropertyChecker {
 
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
-    Stream<Supplier<EquivalenceClass>> stream = findAllEquivalenceClasses(q, graph);
+    Stream<Supplier<EquivalenceClass>> stream = findAllEquivalenceClasses(q, graph, true);
 
     AnswerElement[] answerElement = new AnswerElement[1];
     VerificationResult[] result = new VerificationResult[1];

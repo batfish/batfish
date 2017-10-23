@@ -1,5 +1,6 @@
 package org.batfish.symbolic.abstraction;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +17,10 @@ public class AbstractionMap {
 
   public Set<String> getAbstractRepresentatives(String router) {
     Integer idx = _groupMap.get(router);
-    return _canonicalChoiceMap.get(idx);
+    Set<String> result = _canonicalChoiceMap.get(idx);
+    if (result == null) {
+      return new HashSet<>();
+    }
+    return result;
   }
 }

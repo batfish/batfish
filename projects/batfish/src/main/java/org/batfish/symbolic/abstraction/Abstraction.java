@@ -67,25 +67,29 @@ public class Abstraction {
 
   private int _possibleFailures;
 
+  private boolean _useDefaultCase;
+
   private Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> _headerspaceMap;
 
-  private Abstraction(IBatfish batfish, @Nullable HeaderSpace h, int fails) {
+  private Abstraction(IBatfish batfish, @Nullable HeaderSpace h, int fails, boolean defaultCase) {
     _batfish = batfish;
     _graph = new Graph(batfish);
     _network = BDDNetwork.create(_graph);
     _headerspace = h;
     _headerspaceMap = new HashMap<>();
     _possibleFailures = fails;
+    _useDefaultCase = defaultCase;
   }
 
-  public static Abstraction create(IBatfish batfish, @Nullable HeaderSpace h, int fails) {
-    Abstraction abs = new Abstraction(batfish, h, fails);
+  public static Abstraction create(
+      IBatfish batfish, @Nullable HeaderSpace h, int fails, boolean defaultCase) {
+    Abstraction abs = new Abstraction(batfish, h, fails, defaultCase);
     abs.initDestinationMap();
     return abs;
   }
 
-  public static Abstraction create(IBatfish batfish, int fails) {
-    Abstraction abs = new Abstraction(batfish, null, fails);
+  public static Abstraction create(IBatfish batfish, int fails, boolean defaultCase) {
+    Abstraction abs = new Abstraction(batfish, null, fails, defaultCase);
     abs.initDestinationMap();
     return abs;
   }
@@ -97,10 +101,93 @@ public class Abstraction {
    */
   private void initDestinationMap() {
     Map<String, List<Protocol>> protoMap = buildProtocolMap();
-
-    // Convert headerspace to list of prefixes
     List<Prefix> dstIps = new ArrayList<>();
     List<Prefix> notDstIps = new ArrayList<>();
+    extractPrefixesFromHeaderSpace(dstIps, notDstIps);
+    PrefixTrieMap pt = new PrefixTrieMap();
+    buildPrefixTrie(protoMap, dstIps, notDstIps, pt);
+    Map<Set<String>, List<Prefix>> destinationMap = pt.createDestinationMap();
+    buildHeaderSpaceEcs(destinationMap);
+    if (_useDefaultCase) {
+      addCatchAllCase(dstIps, notDstIps, destinationMap);
+    }
+  }
+
+  private void addCatchAllCase(
+      List<Prefix> dstIps, List<Prefix> notDstIps, Map<Set<String>, List<Prefix>> destinationMap) {
+    HeaderSpace catchAll = createHeaderSpace(dstIps);
+    System.out.println("DstIps: " + dstIps);
+    for (Prefix pfx : notDstIps) {
+      catchAll.getNotDstIps().add(new IpWildcard(pfx));
+    }
+    for (Entry<Set<String>, List<Prefix>> entry : destinationMap.entrySet()) {
+      Set<String> devices = entry.getKey();
+      List<Prefix> prefixes = entry.getValue();
+      for (Prefix pfx : prefixes) {
+        System.out.println("Check for: " + devices + " --> " + prefixes);
+        catchAll.getNotDstIps().add(new IpWildcard(pfx));
+      }
+    }
+    if (_headerspace != null) {
+      copyAllButDestinationIp(catchAll, _headerspace);
+    }
+    if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
+      System.out.println("Catch all: " + catchAll.getDstIps());
+      System.out.println("Catch all: " + catchAll.getNotDstIps());
+      Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(catchAll, null);
+      _headerspaceMap.put(new HashSet<>(), tup);
+    }
+  }
+
+  private void buildHeaderSpaceEcs(Map<Set<String>, List<Prefix>> destinationMap) {
+    destinationMap.forEach(
+        (devices, prefixes) -> {
+          HeaderSpace h = createHeaderSpace(prefixes);
+          if (_headerspace != null) {
+            copyAllButDestinationIp(h, _headerspace);
+          }
+          Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(h, prefixes);
+          _headerspaceMap.put(devices, tup);
+        });
+  }
+
+  private void buildPrefixTrie(
+      Map<String, List<Protocol>> protoMap,
+      List<Prefix> dstIps,
+      List<Prefix> notDstIps,
+      PrefixTrieMap pt) {
+    // Populate prefix trie
+    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      for (Protocol proto : protoMap.get(router)) {
+        Set<Prefix> destinations = new HashSet<>();
+        if (!proto.isStatic()) {
+          destinations = Graph.getOriginatedNetworks(conf, proto);
+        }
+        // Add all destinations to the prefix trie relevant to this slice
+        for (Prefix p : destinations) {
+          if (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps)) {
+            Set<Prefix> toAdd = new HashSet<>();
+            for (Prefix pfx : dstIps) {
+              if (p.equals(pfx.getNetworkPrefix())) {
+                toAdd.add(p);
+              } else if (pfx.containsPrefix(p)) {
+                toAdd.add(p);
+              } else if (p.containsPrefix(pfx)) {
+                toAdd.add(pfx);
+              }
+            }
+            for (Prefix prefix : toAdd) {
+              pt.add(prefix, router);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private void extractPrefixesFromHeaderSpace(List<Prefix> dstIps, List<Prefix> notDstIps) {
     if (_headerspace == null || _headerspace.getDstIps().isEmpty()) {
       dstIps.add(new Prefix("0.0.0.0/0"));
     } else {
@@ -116,58 +203,6 @@ public class Abstraction {
         }
         notDstIps.add(ip.toPrefix());
       }
-    }
-
-    PrefixTrieMap pt = new PrefixTrieMap();
-
-    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
-      String router = entry.getKey();
-      Configuration conf = entry.getValue();
-      for (Protocol proto : protoMap.get(router)) {
-        Set<Prefix> destinations = new HashSet<>();
-        if (!proto.isStatic()) {
-          destinations = Graph.getOriginatedNetworks(conf, proto);
-        }
-        // Add all destinations to the prefix trie relevant to this slice
-        for (Prefix p : destinations) {
-          if (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps)) {
-            pt.add(p, router);
-          }
-        }
-      }
-    }
-
-    // Create a headerspace for each collection of prefixes
-    Map<Set<String>, List<Prefix>> destinationMap = pt.createDestinationMap();
-    destinationMap.forEach(
-        (devices, prefixes) -> {
-          HeaderSpace h = createHeaderSpace(prefixes);
-          if (_headerspace != null) {
-            copyAllButDestinationIp(h, _headerspace);
-          }
-          Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(h, prefixes);
-          _headerspaceMap.put(devices, tup);
-        });
-
-    // Create a catch-all headerspace for anything that might only be from outside
-    HeaderSpace catchAll = createHeaderSpace(dstIps);
-    for (Prefix pfx : notDstIps) {
-      catchAll.getNotDstIps().add(new IpWildcard(pfx));
-    }
-    destinationMap.forEach(
-        (devices, prefixes) -> {
-          for (Prefix pfx : prefixes) {
-            System.out.println("Check for: " + devices + " --> " + prefixes);
-            catchAll.getNotDstIps().add(new IpWildcard(pfx));
-          }
-        });
-    if (_headerspace != null) {
-      copyAllButDestinationIp(catchAll, _headerspace);
-    }
-    if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
-      System.out.println("Catch all: " + catchAll.getNotDstIps());
-      Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(catchAll, null);
-      _headerspaceMap.put(new HashSet<>(), tup);
     }
   }
 
@@ -316,7 +351,7 @@ public class Abstraction {
 
     System.out.println("EC Devices: " + devices);
     System.out.println("EC Prefixes: " + prefixes);
-    System.out.println("Groups: \n" + workset.partitions());
+    // System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
     System.out.println("Num Groups: " + workset.partitions().size());
     System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
