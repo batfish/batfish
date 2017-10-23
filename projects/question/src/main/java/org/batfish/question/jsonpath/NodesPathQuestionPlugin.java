@@ -1,12 +1,14 @@
 package org.batfish.question.jsonpath;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -16,6 +18,7 @@ import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerElemen
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerer;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathQuestion;
 
+@AutoService(Plugin.class)
 public class NodesPathQuestionPlugin extends QuestionPlugin {
 
   public static class NodesPathAnswerer extends Answerer {

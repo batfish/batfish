@@ -1,10 +1,12 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.Collections;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
@@ -13,6 +15,7 @@ import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerE
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerer;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameQuestion;
 
+@AutoService(Plugin.class)
 public class AclReachabilityQuestionPlugin extends QuestionPlugin {
 
   public static class AclReachabilityAnswerer extends Answerer {

@@ -1,7 +1,6 @@
 package org.batfish.allinone;
 
 import com.google.common.base.Strings;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -10,7 +9,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 
 public class AllInOne {
 
@@ -81,16 +79,6 @@ public class AllInOne {
 
     String[] initialArgArray = getArgArrayFromString(argString);
     List<String> clientArgs = new ArrayList<>(Arrays.asList(initialArgArray));
-    List<Path> pluginDirs = _settings.getPluginDirs();
-    if (pluginDirs != null && !pluginDirs.isEmpty()) {
-      clientArgs.add("-" + BfConsts.ARG_PLUGIN_DIRS);
-      StringBuilder sb = new StringBuilder();
-      sb.append(pluginDirs.get(0));
-      for (int i = 1; i < _settings.getPluginDirs().size(); i++) {
-        sb.append("," + _settings.getPluginDirs().get(i));
-      }
-      clientArgs.add(sb.toString());
-    }
     final String[] argArray = clientArgs.toArray(new String[] {});
 
     try {
@@ -139,16 +127,6 @@ public class AllInOne {
             "true");
     String[] initialArgArray = getArgArrayFromString(batfishArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
-    List<Path> pluginDirs = _settings.getPluginDirs();
-    if (pluginDirs != null && !pluginDirs.isEmpty()) {
-      args.add("-" + BfConsts.ARG_PLUGIN_DIRS);
-      StringBuilder sb = new StringBuilder();
-      sb.append(_settings.getPluginDirs().get(0));
-      for (int i = 1; i < _settings.getPluginDirs().size(); i++) {
-        sb.append("," + _settings.getPluginDirs().get(i));
-      }
-      args.add(sb.toString());
-    }
     final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting batfish worker with args: %s\n", Arrays.toString(argArray));
     Thread thread =
@@ -170,16 +148,6 @@ public class AllInOne {
   private void runCoordinator() {
     String[] initialArgArray = getArgArrayFromString(_settings.getCoordinatorArgs());
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
-    List<Path> pluginDirs = _settings.getPluginDirs();
-    if (pluginDirs != null && !pluginDirs.isEmpty()) {
-      args.add("-" + BfConsts.ARG_PLUGIN_DIRS);
-      StringBuilder sb = new StringBuilder();
-      sb.append(_settings.getPluginDirs().get(0));
-      for (int i = 1; i < _settings.getPluginDirs().size(); i++) {
-        sb.append("," + _settings.getPluginDirs().get(i));
-      }
-      args.add(sb.toString());
-    }
     final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
 

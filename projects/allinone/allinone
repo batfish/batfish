@@ -7,13 +7,8 @@ if batfish_cygwin; then
    ALLINONE_JAVA_ARGS="$ALLINONE_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
 fi
-if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then
-   java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" -plugindirs "${BATFISH_PLUGIN_DIRS}" "$@"
-   EXIT_CODE=$?
-else
-   java $ALLINONE_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$ALLINONE_JAR" "$@"
-   EXIT_CODE=$?
-fi
+java $ALLINONE_JAVA_ARGS -cp "${ALLINONE_JAR}:${ALLINONE_CLASSPATH}" org.batfish.allinone.Main "$@"
+EXIT_CODE=$?
 if batfish_cygwin; then
    stty icanon echo
 fi

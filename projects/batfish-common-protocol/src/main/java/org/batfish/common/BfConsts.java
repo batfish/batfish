@@ -52,7 +52,6 @@ public class BfConsts {
   public static final String ARG_OUTPUT_ENV = "outputenv";
   public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";
   public static final String ARG_PEDANTIC_SUPPRESS = "pedanticsuppress";
-  public static final String ARG_PLUGIN_DIRS = "plugindirs";
   public static final String ARG_PRETTY_PRINT_ANSWER = "ppa";
   public static final String ARG_QUESTION_NAME = "questionname";
   public static final String ARG_RED_FLAG_AS_ERROR = "redflagerror";
@@ -103,7 +102,6 @@ public class BfConsts {
   public static final String PROP_MIN_LENGTH = "minLength";
   public static final String PROP_OPTIONAL = "optional";
   public static final String PROP_QUESTION = "question";
-  public static final String PROP_QUESTION_PLUGIN_DIR = "batfishQuestionPluginDir";
   public static final String PROP_STATUS = "status";
   public static final String PROP_SUMMARY = "summary";
   public static final String PROP_TAGS = "tags";

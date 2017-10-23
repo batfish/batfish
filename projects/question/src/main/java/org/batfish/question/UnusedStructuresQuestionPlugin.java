@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -9,6 +10,7 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -16,6 +18,7 @@ import org.batfish.datamodel.answers.Problem;
 import org.batfish.datamodel.answers.ProblemsAnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
   public static class UnusedStructuresAnswerElement extends ProblemsAnswerElement {

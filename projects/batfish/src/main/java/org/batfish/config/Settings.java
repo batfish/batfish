@@ -1,7 +1,6 @@
 package org.batfish.config;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
@@ -477,8 +476,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARGNAME_PATH = "path";
 
-  private static final String ARGNAME_PATHS = "path..";
-
   private static final String ARGNAME_PORT = "port";
 
   private static final String ARGNAME_ROLE = "role";
@@ -602,8 +599,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private boolean _pedanticAsError;
 
   private boolean _pedanticRecord;
-
-  private List<Path> _pluginDirs;
 
   private List<String> _predicates;
 
@@ -919,10 +914,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _pedanticRecord;
   }
 
-  public List<Path> getPluginDirs() {
-    return _pluginDirs;
-  }
-
   public List<String> getPredicates() {
     return _predicates;
   }
@@ -1121,7 +1112,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
-    setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
@@ -1331,8 +1321,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
 
-    addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
-
     addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
 
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
@@ -1444,7 +1432,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       printHelp(EXECUTABLE_NAME);
       return;
     }
-    _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
 
     // REGULAR OPTIONS
     _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
@@ -1631,10 +1618,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setMaxRuntimeMs(int runtimeMs) {
     _maxRuntimeMs = runtimeMs;
-  }
-
-  public void setPluginDirs(List<Path> pluginDirs) {
-    _pluginDirs = pluginDirs;
   }
 
   public void setQuestionPath(@Nullable Path questionPath) {

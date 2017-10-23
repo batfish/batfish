@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.function.Function;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -27,6 +29,7 @@ import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.OutliersHypothesis;
 
+@AutoService(Plugin.class)
 public class OutliersQuestionPlugin extends QuestionPlugin {
 
   public static class OutliersAnswerElement implements AnswerElement {

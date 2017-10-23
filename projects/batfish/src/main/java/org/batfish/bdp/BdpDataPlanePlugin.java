@@ -1,5 +1,6 @@
 package org.batfish.bdp;
 
+import com.google.auto.service.AutoService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.BdpSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -55,6 +57,7 @@ import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RouteSet;
 
+@AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   private static final String TRACEROUTE_INGRESS_NODE_INTERFACE_NAME =

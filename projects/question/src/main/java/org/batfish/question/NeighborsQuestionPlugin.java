@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.auto.service.AutoService;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class NeighborsQuestionPlugin extends QuestionPlugin {
 
   public enum EdgeStyle {

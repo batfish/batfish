@@ -1,19 +1,15 @@
 #!/bin/bash
 BATFISH_CLIENT=${BASH_SOURCE[0]}
 BATFISH_CLIENT_PATH=$(dirname $BATFISH_CLIENT)
-BATFISH_CLIENT_JAR=$BATFISH_CLIENT_PATH/target/batfish-client-bundle-${BATFISH_VERSION}.jar
+ALLINONE_PATH="${BATFISH_CLIENT_PATH}/../allinone"
+ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
 if batfish_cygwin; then
-   BATFISH_CLIENT_JAR="$(cygpath -w $BATFISH_CLIENT_JAR)"
+   ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
    BATFISH_CLIENT_JAVA_ARGS="$BATFISH_CLIENT_JAVA_ARGS -Djline.terminal=jline.UnixTerminal"
    stty -icanon min 1 -echo
 fi
-if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then
-   java $BATFISH_CLIENT_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$BATFISH_CLIENT_JAR" -plugindirs "${BATFISH_PLUGIN_DIRS}" "$@"
-   EXIT_CODE=$?
-else
-   java $BATFISH_CLIENT_JAVA_ARGS -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}" -jar "$BATFISH_CLIENT_JAR" "$@"
-   EXIT_CODE=$?
-fi
+java $BATFISH_CLIENT_JAVA_ARGS -cp "${ALLINONE_JAR}:${BATFISH_CLIENT_CLASSPATH}" org.batfish.client.Main "$@"
+EXIT_CODE=$?
 if batfish_cygwin; then
    stty icanon echo
 fi

@@ -1,16 +1,18 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 
-
+@AutoService(Plugin.class)
 public class SmtLocalConsistencyQuestionPlugin extends QuestionPlugin {
 
   public static class LocalConsistencyAnswerer extends Answerer {

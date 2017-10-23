@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -DbatfishQuestionPluginDir=$PLUGIN_DIR -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG'
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -138,7 +138,7 @@ start() {
       echo "Missing pid file, but lock file present: $BATFISH_LOCK"
       return 1
    fi
-   su -c "bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -DbatfishQuestionPluginDir=$PLUGIN_DIR -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG & echo \\\$! > $BATFISH_PID_FILE'" batfish
+   su -c "bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -servicemode -register true &>> $BATFISH_JAVA_LOG & echo \\\$! > $BATFISH_PID_FILE'" batfish
    touch $BATFISH_LOCK
    echo "Sucess"
 }
@@ -304,18 +304,6 @@ package() {
    COORDINATOR_PROPERTIES_SRC=${BATFISH_PATH}/projects/coordinator/target/classes/org/batfish/coordinator/config/${COORDINATOR_PROPERTIES_NAME}
    COORDINATOR_PROPERTIES=${CONF_DIR}/${COORDINATOR_PROPERTIES_NAME}
    COORDINATOR_PROPERTIES_P=${PBASE}${COORDINATOR_PROPERTIES}
-   EXTRA_PLUGIN_DIR=${CONF_DIR}/plugins
-   EXTRA_PLUGIN_DIR_P=${PBASE}${EXTRA_PLUGIN_DIR}
-   EXTRA_PLUGIN_README_NAME=README
-   EXTRA_PLUGIN_README=${EXTRA_PLUGIN_DIR}/${EXTRA_PLUGIN_README_NAME}
-   EXTRA_PLUGIN_README_P=${PBASE}${EXTRA_PLUGIN_README}
-   PLUGIN_DIR=${DATA_DIR}/plugins
-   PLUGIN_DIR_P=${PBASE}${PLUGIN_DIR}
-   QUESTION_JAR_SRC_NAME=question-${BATFISH_VERSION}.jar
-   QUESTION_JAR_SRC=${BATFISH_PATH}/projects/question/target/${QUESTION_JAR_SRC_NAME}
-   QUESTION_JAR_NAME=question.jar
-   QUESTION_JAR=${PLUGIN_DIR}/${QUESTION_JAR_NAME}
-   QUESTION_JAR_P=${PBASE}${QUESTION_JAR}
    COPYRIGHT_NAME=copyright
    COPYRIGHT=${DOC_DIR}/${COPYRIGHT_NAME}
    COPYRIGHT_P=${PBASE}${COPYRIGHT}
@@ -346,10 +334,6 @@ package() {
       echo "Missing $ALLINONE_JAR_SRC" >&2
       return 1
    fi
-   if [ ! -f "$QUESTION_JAR_SRC" ]; then
-      echo "Missing $QUESTION_JAR_SRC" >&2
-      return 1
-   fi
    mkdir -p $RBASE/BUILD
    mkdir -p $RBASE/BUILDROOT
    mkdir -p $RBASE/RPMS
@@ -360,15 +344,12 @@ package() {
    mkdir -p $CONF_DIR_P
    mkdir -p $DATA_DIR_P
    mkdir -p $DOC_DIR_P
-   mkdir -p $EXTRA_PLUGIN_DIR_P
    mkdir -p $INIT_DIR_P
-   mkdir -p $PLUGIN_DIR_P
    cp $ALLINONE_JAR_SRC $ALLINONE_JAR_P
    cp $ALLINONE_PROPERTIES_SRC $ALLINONE_PROPERTIES_P
    cp $BATFISH_PROPERTIES_SRC $BATFISH_PROPERTIES_P
    cp $CLIENT_PROPERTIES_SRC $CLIENT_PROPERTIES_P
    cp $COORDINATOR_PROPERTIES_SRC $COORDINATOR_PROPERTIES_P
-   cp $QUESTION_JAR_SRC $QUESTION_JAR_P
 
    write_init_scripts
 
@@ -428,11 +409,6 @@ $(reload_init_scripts)
 /bin/chown root:$BATFISH_USER $CONF_DIR
 /bin/chmod 0770 $CONF_DIR
 /bin/chown root:$BATFISH_USER $COORDINATOR_CLASSPATH
-/bin/chmod 0660 $EXTRA_PLUGIN_DIR
-/bin/chown root:$BATFISH_USER $EXTRA_PLUGIN_DIR
-/bin/chmod 0770 $EXTRA_PLUGIN_DIR
-/bin/chown root:$BATFISH_USER $EXTRA_PLUGIN_README
-/bin/chmod 0660 $EXTRA_PLUGIN_README
 /bin/chown root:$BATFISH_USER $ALLINONE_PROPERTIES
 /bin/chmod 0660 $ALLINONE_PROPERTIES
 /bin/chown root:$BATFISH_USER $BATFISH_PROPERTIES
@@ -466,7 +442,6 @@ ${SERVICE} coordinator stop || /bin/true
 %config(noreplace) $CLIENT_PROPERTIES
 %config(noreplace) $COORDINATOR_CLASSPATH
 %config(noreplace) $COORDINATOR_PROPERTIES
-%config $EXTRA_PLUGIN_README
 %config $BATFISH_INIT
 %config $COORDINATOR_INIT
 $DATA_DIR/*
@@ -493,10 +468,6 @@ License: Apache-2.0
  On Debian systems, the full text of the Apache 2.0
  License can be found in the file
  '/usr/share/common-licenses/Apache-2.0'.
-EOF
-
-   cat > $EXTRA_PLUGIN_README_P <<EOF
-Put additional plugin jars here
 EOF
 
    touch $COORDINATOR_CLASSPATH_P

@@ -1,8 +1,6 @@
 package org.batfish.common.plugin;
 
-import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.batfish.common.BatfishException;
@@ -11,8 +9,8 @@ public abstract class AbstractCoordinator extends PluginConsumer implements ICoo
 
   protected final Map<String, SyncTestrigsPlugin> _testrigSyncers;
 
-  public AbstractCoordinator(boolean serializeToText, List<Path> pluginDirs) {
-    super(serializeToText, pluginDirs);
+  public AbstractCoordinator(boolean serializeToText) {
+    super(serializeToText);
     _testrigSyncers = new HashMap<>();
   }
 

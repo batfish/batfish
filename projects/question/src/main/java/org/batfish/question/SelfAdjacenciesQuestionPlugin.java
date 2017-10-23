@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -25,6 +27,7 @@ import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
   public static class SelfAdjacenciesAnswerElement implements AnswerElement {

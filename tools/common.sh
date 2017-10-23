@@ -2,6 +2,10 @@
 
 export BATFISH_ROOT="$(dirname "$BATFISH_TOOLS_PATH")"
 export PROJECTS_PATH="$BATFISH_ROOT/projects"
+
+# Use Maven to print the current Batfish java version
+export BATFISH_VERSION="$(grep -1 batfish-parent "${PROJECTS_PATH}/pom.xml" | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
+
 export BATFISH_PATH="$PROJECTS_PATH/batfish"
 export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/test_rigs"
 export BATFISH="$BATFISH_PATH/batfish"
@@ -34,13 +38,10 @@ export COMMON_JAR="$COMMON_PATH/target/batfish-common-protocol-${BATFISH_VERSION
 export QUESTION_PATH="$PROJECTS_PATH/question"
 export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
 
-export ALLINONE_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-allinone.tmp
-export BATFISH_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish.tmp
-export BATFISH_CLIENT_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-batfish-client.tmp
-export COORDINATOR_COMPLETION_FILE=$BATFISH_TOOLS_PATH/completion-coordinator.tmp
-
-# Use Maven to print the current Batfish java version
-export BATFISH_VERSION=$(grep -1 batfish-parent ${PROJECTS_PATH}/pom.xml | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)
+export ALLINONE_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-allinone.tmp"
+export BATFISH_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-batfish.tmp"
+export BATFISH_CLIENT_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-batfish-client.tmp"
+export COORDINATOR_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-coordinator.tmp"
 
 batfish() {
    # if cygwin, shift and replace each parameter
@@ -388,10 +389,4 @@ _common_build() {
    mvn install -DskipTests -pl batfish-common-protocol -am || return 1
 }
 export -f _common_build
-
-if batfish_cygwin; then
-   export BATFISH_JAVA_QUESTION_PLUGIN_DIR="$(cygpath -w "${BATFISH_QUESTION_PLUGIN_DIR}")"
-else
-   export BATFISH_JAVA_QUESTION_PLUGIN_DIR="${BATFISH_QUESTION_PLUGIN_DIR}"
-fi
 

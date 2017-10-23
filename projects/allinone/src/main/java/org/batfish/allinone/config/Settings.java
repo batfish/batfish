@@ -1,8 +1,5 @@
 package org.batfish.allinone.config;
 
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -32,7 +29,6 @@ public class Settings extends BaseSettings {
   private String _coordinatorArgs;
   private String _logFile;
   private String _logLevel;
-  private List<Path> _pluginDirs;
   private boolean _runClient;
   private String _runMode;
   private String _testrigDir;
@@ -74,10 +70,6 @@ public class Settings extends BaseSettings {
     return _logLevel;
   }
 
-  public List<Path> getPluginDirs() {
-    return _pluginDirs;
-  }
-
   public boolean getRunClient() {
     return _runClient;
   }
@@ -103,7 +95,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_COORDINATOR_ARGS, "");
     setDefaultProperty(ARG_RUN_CLIENT, true);
     setDefaultProperty(ARG_RUN_MODE, "batch");
-    setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_VERSION, false);
   }
 
@@ -130,11 +121,6 @@ public class Settings extends BaseSettings {
 
     addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
-    addOption(
-        BfConsts.ARG_PLUGIN_DIRS,
-        "plugin directories to be passed to batfish and client processes",
-        "paths");
-
     addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
   }
 
@@ -160,6 +146,5 @@ public class Settings extends BaseSettings {
     _runClient = getBooleanOptionValue(ARG_RUN_CLIENT);
     _runMode = getStringOptionValue(ARG_RUN_MODE);
     _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
-    _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
   }
 }
