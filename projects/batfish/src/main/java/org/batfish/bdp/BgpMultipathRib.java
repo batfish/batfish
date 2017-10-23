@@ -1,7 +1,14 @@
 package org.batfish.bdp;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.SortedSet;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpMultipathRib extends AbstractRib<BgpRoute> {
@@ -9,8 +16,16 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private Map<Prefix, AsPath> _bestAsPaths;
+
+  private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
+
   public BgpMultipathRib(VirtualRouter owner) {
     super(owner);
+    BgpProcess proc = _owner._vrf.getBgpProcess();
+    if (proc != null) {
+      _multipathEquivalentAsPathMatchMode = proc.getMultipathEquivalentAsPathMatchMode();
+    }
   }
 
   @Override
@@ -44,6 +59,61 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
     res = Integer.compare(rhs.getAsPath().size(), lhs.getAsPath().size());
     if (res != 0) {
       return res;
+    }
+
+    /*
+     * AS path size is same. Now compare to best asPath (if available). Note we do not necessarily
+     * guarantee existing rhs route is better than best path, since rhs may have been merged before
+     * best as paths map was supplied.
+     */
+    if (_bestAsPaths != null) {
+      AsPath bestAsPath = _bestAsPaths.get(lhs.getNetwork());
+      AsPath lhsAsPath = lhs.getAsPath();
+      AsPath rhsAsPath = rhs.getAsPath();
+      switch (_multipathEquivalentAsPathMatchMode) {
+        case EXACT_PATH:
+          if (bestAsPath.equals(lhsAsPath)) {
+            if (!bestAsPath.equals(rhsAsPath)) {
+              return 1;
+            }
+          } else if (bestAsPath.equals(rhsAsPath)) {
+            return -1;
+          }
+          break;
+
+        case FIRST_AS:
+          SortedSet<Integer> lhsFirstAsSet =
+              lhsAsPath.getAsSets().isEmpty()
+                  ? Collections.emptySortedSet()
+                  : lhsAsPath.getAsSets().get(0);
+          SortedSet<Integer> rhsFirstAsSet =
+              rhsAsPath.getAsSets().isEmpty()
+                  ? Collections.emptySortedSet()
+                  : rhsAsPath.getAsSets().get(0);
+          SortedSet<Integer> bestFirstAsSet =
+              bestAsPath.getAsSets().isEmpty()
+                  ? Collections.emptySortedSet()
+                  : bestAsPath.getAsSets().get(0);
+
+          if (bestFirstAsSet.equals(lhsFirstAsSet)) {
+            if (!bestFirstAsSet.equals(rhsFirstAsSet)) {
+              return 1;
+            }
+          } else if (bestFirstAsSet.equals(rhsFirstAsSet)) {
+            return -1;
+          }
+          break;
+
+        case PATH_LENGTH:
+          // Skip since already compared
+          break;
+        default:
+          throw new BatfishException(
+              String.format(
+                  "Unsupported %s: %s",
+                  MultipathEquivalentAsPathMatchMode.class.getName(),
+                  _multipathEquivalentAsPathMatchMode));
+      }
     }
 
     /*
@@ -101,5 +171,9 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
       default:
         throw new BatfishException("Invalid BGP protocol: '" + protocol + "'");
     }
+  }
+
+  public void setBestAsPaths(Map<Prefix, AsPath> bestAsPaths) {
+    _bestAsPaths = bestAsPaths;
   }
 }

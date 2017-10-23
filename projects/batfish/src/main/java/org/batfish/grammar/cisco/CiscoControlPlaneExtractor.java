@@ -148,6 +148,7 @@ import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
+import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
@@ -2137,6 +2138,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitAlways_compare_med_rb_stanza(Always_compare_med_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     proc.setAlwaysCompareMed(true);
+  }
+
+  @Override
+  public void exitAs_path_multipath_relax_rb_stanza(As_path_multipath_relax_rb_stanzaContext ctx) {
+    currentVrf().getBgpProcess().setAsPathMultipathRelax(ctx.NO() == null);
   }
 
   @Override

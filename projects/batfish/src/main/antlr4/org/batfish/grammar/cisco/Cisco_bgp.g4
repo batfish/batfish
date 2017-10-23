@@ -135,6 +135,11 @@ as_override_bgp_tail
    AS_OVERRIDE NEWLINE
 ;
 
+as_path_multipath_relax_rb_stanza
+:
+   NO? BGP? BESTPATH AS_PATH MULTIPATH_RELAX NEWLINE
+;
+
 auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
@@ -545,6 +550,9 @@ null_bgp_tail
          BESTPATH
          (
             AS_PATH
+            (
+               CONFED
+            )
          )
       )
       | BFD
@@ -559,6 +567,9 @@ null_bgp_tail
                BESTPATH
                (
                   AS_PATH
+                  (
+                     CONFED
+                  )
                )
             )
             | CLIENT_TO_CLIENT
@@ -812,6 +823,7 @@ router_bgp_stanza_tail
    | af_group_rb_stanza
    | aggregate_address_rb_stanza
    | always_compare_med_rb_stanza
+   | as_path_multipath_relax_rb_stanza
    | bgp_advertise_inactive_rb_stanza
    | bgp_confederation_rb_stanza
    | bgp_listen_range_rb_stanza
