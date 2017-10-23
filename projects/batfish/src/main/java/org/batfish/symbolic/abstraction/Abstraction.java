@@ -116,7 +116,7 @@ public class Abstraction {
   private void addCatchAllCase(
       List<Prefix> dstIps, List<Prefix> notDstIps, Map<Set<String>, List<Prefix>> destinationMap) {
     HeaderSpace catchAll = createHeaderSpace(dstIps);
-    System.out.println("DstIps: " + dstIps);
+    // System.out.println("DstIps: " + dstIps);
     for (Prefix pfx : notDstIps) {
       catchAll.getNotDstIps().add(new IpWildcard(pfx));
     }
@@ -124,7 +124,7 @@ public class Abstraction {
       Set<String> devices = entry.getKey();
       List<Prefix> prefixes = entry.getValue();
       for (Prefix pfx : prefixes) {
-        System.out.println("Check for: " + devices + " --> " + prefixes);
+        // System.out.println("Check for: " + devices + " --> " + prefixes);
         catchAll.getNotDstIps().add(new IpWildcard(pfx));
       }
     }
@@ -132,8 +132,8 @@ public class Abstraction {
       copyAllButDestinationIp(catchAll, _headerspace);
     }
     if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
-      System.out.println("Catch all: " + catchAll.getDstIps());
-      System.out.println("Catch all: " + catchAll.getNotDstIps());
+      // System.out.println("Catch all: " + catchAll.getDstIps());
+      // System.out.println("Catch all: " + catchAll.getNotDstIps());
       Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(catchAll, null);
       _headerspaceMap.put(new HashSet<>(), tup);
     }
@@ -415,10 +415,12 @@ public class Abstraction {
           i = (i == null ? 1 : i + 1);
           existentialMap.put(router, ee, i);
           // Update the id map
-          Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
-          existing = (existing == null ? new HashSet<>() : existing);
-          existing.add(ee);
-          byId.put(router, peerGroup, existing);
+          if (peerGroup != -1) {
+            Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
+            existing = (existing == null ? new HashSet<>() : existing);
+            existing.add(ee);
+            byId.put(router, peerGroup, existing);
+          }
         }
       }
     }
@@ -509,10 +511,12 @@ public class Abstraction {
               universalMap.computeIfAbsent(router, k -> new HashSet<>());
           group.add(tup);
           // Update the id map
-          Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
-          existing = (existing == null ? new HashSet<>() : existing);
-          existing.add(ee);
-          byId.put(router, peerGroup, existing);
+          if (peerGroup != -1) {
+            Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
+            existing = (existing == null ? new HashSet<>() : existing);
+            existing.add(ee);
+            byId.put(router, peerGroup, existing);
+          }
         }
       }
     }

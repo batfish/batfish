@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -58,45 +56,6 @@ class LogicalGraph {
   boolean isEdgeUsed(Configuration conf, Protocol proto, LogicalEdge e) {
     GraphEdge ge = e.getEdge();
     return _graph.isEdgeUsed(conf, proto, ge);
-  }
-
-  /*
-   * Find the router Id for the neighbor corresponding to a logical edge.
-   */
-  long findRouterId(LogicalEdge e, Protocol proto) {
-    LogicalEdge eOther = _otherEnd.get(e);
-
-    if (proto.isOspf() || proto.isConnected() || proto.isStatic()) {
-      return 0L;
-    }
-
-    if (eOther != null) {
-      String peer = eOther.getEdge().getRouter();
-      Configuration peerConf = getGraph().getConfigurations().get(peer);
-      return routerId(peerConf, proto);
-    }
-
-    BgpNeighbor n = getGraph().findBgpNeighbor(e.getEdge());
-
-    if (n != null && n.getAddress() != null) {
-      return n.getAddress().asLong();
-    }
-
-    throw new BatfishException("Unable to find router id for " + e + "," + proto.name());
-  }
-
-  /*
-   * Find the router Id for a router and a protocol.
-   */
-  private long routerId(Configuration conf, Protocol proto) {
-    if (proto.isBgp()) {
-      return conf.getDefaultVrf().getBgpProcess().getRouterId().asLong();
-    }
-    if (proto.isOspf()) {
-      return conf.getDefaultVrf().getOspfProcess().getRouterId().asLong();
-    } else {
-      return 0;
-    }
   }
 
   /*

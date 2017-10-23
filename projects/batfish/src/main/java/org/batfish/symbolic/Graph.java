@@ -969,6 +969,45 @@ public class Graph {
   }
 
   /*
+ * Find the router Id for the neighbor corresponding to a logical edge.
+ */
+  public long findRouterId(GraphEdge ge, Protocol proto) {
+    GraphEdge eOther = _otherEnd.get(ge);
+
+    if (proto.isOspf() || proto.isConnected() || proto.isStatic()) {
+      return 0L;
+    }
+
+    if (eOther != null) {
+      String peer = eOther.getRouter();
+      Configuration peerConf = getConfigurations().get(peer);
+      return routerId(peerConf, proto);
+    }
+
+    BgpNeighbor n = findBgpNeighbor(ge);
+
+    if (n != null && n.getAddress() != null) {
+      return n.getAddress().asLong();
+    }
+
+    throw new BatfishException("Unable to find router id for " + ge + "," + proto.name());
+  }
+
+  /*
+   * Find the router Id for a router and a protocol.
+   */
+  private long routerId(Configuration conf, Protocol proto) {
+    if (proto.isBgp()) {
+      return conf.getDefaultVrf().getBgpProcess().getRouterId().asLong();
+    }
+    if (proto.isOspf()) {
+      return conf.getDefaultVrf().getOspfProcess().getRouterId().asLong();
+    } else {
+      return 0;
+    }
+  }
+
+  /*
    * Check if an interface is active for a particular protocol.
    */
   public boolean isInterfaceActive(Protocol proto, Interface iface) {
