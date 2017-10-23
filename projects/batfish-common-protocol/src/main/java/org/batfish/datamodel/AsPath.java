@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.collections.SingletonSortedSet;
 
 public class AsPath implements Serializable, Comparable<AsPath> {
 
@@ -33,7 +32,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
 
   public static final AsPath ofSingletonAsSets(List<Integer> asNums) {
     return new AsPath(
-        asNums.stream().map(as -> SingletonSortedSet.of(as)).collect(Collectors.toList()));
+        asNums.stream().map(as -> ImmutableSortedSet.of(as)).collect(Collectors.toList()));
   }
 
   public static List<SortedSet<Integer>> removePrivateAs(List<SortedSet<Integer>> asPath) {
