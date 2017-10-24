@@ -14,10 +14,9 @@ import java.util.concurrent.TimeUnit;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
-import org.batfish.common.CompositeBatfishException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.job.BatfishJobExecutor.HandleProcessingErrorException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,12 +25,15 @@ import org.junit.rules.ExpectedException;
 /** Tests for {@link BatfishJobExecutor}. */
 public class BatfishJobExecutorTest {
 
+  private static final long TEST_JOB_DELAY = 1000L;
+  private static final String TEST_EXECUTOR_DESC = "Test Job Executor";
+
   @Rule public ExpectedException _thrown = ExpectedException.none();
   BatfishLogger _logger;
 
   @Before
   public void setup() {
-    _logger = new BatfishLogger("info", false);
+    _logger = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
   }
 
   @Test
@@ -48,7 +50,7 @@ public class BatfishJobExecutorTest {
     BfTestAnswerElement ae = new BfTestAnswerElement();
     BatfishJobExecutor<BfTestJob, BfTestAnswerElement, BfTestResult, Set<String>> executor =
         new BatfishJobExecutor<>(
-            settings, _logger, settings.getHaltOnParseError(), "Test Job Executor");
+            settings, _logger, settings.getHaltOnParseError(), TEST_EXECUTOR_DESC);
     executor.executeJobs(jobs, output, ae);
 
     // checking the outputs produced by the tasks
@@ -68,13 +70,13 @@ public class BatfishJobExecutorTest {
     BfTestAnswerElement ae = new BfTestAnswerElement();
     BatfishJobExecutor<BfTestJob, BfTestAnswerElement, BfTestResult, Set<String>> executor =
         new BatfishJobExecutor<>(
-            settings, _logger, settings.getHaltOnParseError(), "Test Job Executor");
+            settings, _logger, settings.getHaltOnParseError(), TEST_EXECUTOR_DESC);
     long startTime = System.currentTimeMillis();
     executor.executeJobs(jobs, output, ae);
     long elapsedTime = System.currentTimeMillis() - startTime;
 
-    // tasks executed in parallel should take less than sequential time in most normal cases
-    assertThat(elapsedTime, lessThanOrEqualTo(2000L));
+    // Without polling and correct parallel execution, following should be true
+    assertThat(elapsedTime, lessThanOrEqualTo(2 * TEST_JOB_DELAY));
   }
 
   @Test
@@ -85,28 +87,23 @@ public class BatfishJobExecutorTest {
     // initializing executor
     BatfishJobExecutor<BfTestJob, BfTestAnswerElement, BfTestResult, Set<String>> executor =
         new BatfishJobExecutor<>(
-            settings, _logger, settings.getHaltOnParseError(), "Test Job Executor");
+            settings, _logger, settings.getHaltOnParseError(), TEST_EXECUTOR_DESC);
     executor.initializeJobsStats(Lists.newArrayList(new BfTestJob(settings, "result1")));
 
     // Simulating finishing of a job and handling the result
-    BfTestResult bfTestResult = new BfTestResult(1000L, _logger.getHistory(), "result");
+    // initiating a separate logger from the Executor logger
+    BatfishLogger jobLogger = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
+    BfTestResult bfTestResult = new BfTestResult(TEST_JOB_DELAY, _logger.getHistory(), "result");
     Set<String> output = new HashSet<>();
     List<BatfishException> failureCauses = new ArrayList<>();
     BfTestAnswerElement ae = new BfTestAnswerElement();
-    executor.updateJobsStats();
+    executor.markJobCompleted();
     executor.handleJobResult(bfTestResult, output, ae, failureCauses);
 
     // checking the log of the executor for the job finished
     assertEquals(
-        _logger.getHistory().toString(400),
-        String.format(
-            "Job terminated successfully with result: %s after elapsed time: %s - %d/%d "
-                + "(%.1f%%) complete\n",
-            bfTestResult.toString(),
-            CommonUtil.getTime(bfTestResult.getElapsedTime()),
-            1,
-            1,
-            100.0));
+        _logger.getHistory().toString(BatfishLogger.LEVEL_INFO),
+        executor.getSuccessMessage(bfTestResult));
   }
 
   @Test
@@ -117,26 +114,26 @@ public class BatfishJobExecutorTest {
     // initializing executor
     BatfishJobExecutor<BfTestJob, BfTestAnswerElement, BfTestResult, Set<String>> executor =
         new BatfishJobExecutor<>(
-            settings, _logger, settings.getHaltOnParseError(), "Test Job Executor");
+            settings, _logger, settings.getHaltOnParseError(), TEST_EXECUTOR_DESC);
     executor.initializeJobsStats(Lists.newArrayList(new BfTestJob(settings, "result1")));
 
     // Simulating failure of a job and handling the result
+    // initiating a separate logger from the Executor logger
+    BatfishLogger jobLogger = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
     BfTestResult bfTestResult =
         new BfTestResult(
-            1000L, _logger.getHistory(), new BatfishException("Test Job Failure Message"));
+            TEST_JOB_DELAY,
+            jobLogger.getHistory(),
+            new BatfishException("Test Job Failure Message"));
+
     Set<String> output = new HashSet<>();
     List<BatfishException> failureCauses = new ArrayList<>();
     BfTestAnswerElement ae = new BfTestAnswerElement();
-    executor.updateJobsStats();
+    executor.markJobCompleted();
     executor.handleJobResult(bfTestResult, output, ae, failureCauses);
 
     //checking that correct failure message is written in the log
-    assertEquals(
-        failureCauses.get(0).getMessage(),
-        String.format(
-            "Failure running job after elapsed time: %s\n-----"
-                + "BEGIN JOB LOG-----\n\n-----END JOB LOG-----",
-            CommonUtil.getTime(bfTestResult.getElapsedTime())));
+    assertEquals(failureCauses.get(0).getMessage(), executor.getFailureMessage(bfTestResult));
   }
 
   @Test
@@ -147,12 +144,11 @@ public class BatfishJobExecutorTest {
     // initializing executor
     BatfishJobExecutor<BfTestJob, BfTestAnswerElement, BfTestResult, Set<String>> executor =
         new BatfishJobExecutor<>(
-            settings, _logger, settings.getHaltOnParseError(), "Test Job Executor");
+            settings, _logger, settings.getHaltOnParseError(), TEST_EXECUTOR_DESC);
     List<BatfishException> failureCauses = new ArrayList<>();
 
     // checking if the exception thrown has correct class and message
-    _thrown.expect(CompositeBatfishException.class);
-    _thrown.expectMessage("Fatal exception due to failure of at least one job");
+    _thrown.expect(HandleProcessingErrorException.class);
     executor.handleProcessingError(
         Lists.newArrayList(new BfTestJob(settings, "result1")), failureCauses);
   }
