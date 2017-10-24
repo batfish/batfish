@@ -995,8 +995,8 @@ public class ClientTest {
   @Test
   public void testMergeQuestions1() throws Exception {
     Multimap<String, String> sourceMap = HashMultimap.create();
-    sourceMap.put("sourcequestion", "sourcequestionvalue");
-    sourceMap.put("destinationquestion", "destinationquestionvalue");
+    sourceMap.put("sourceQuestion", "sourcequestionvalue");
+    sourceMap.put("destinationQuestion", "destinationquestionvalue");
     Map<String, String> destMap = new HashMap<>();
     destMap.put("destinationquestion", "destinationquestionvalue");
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
@@ -1007,23 +1007,23 @@ public class ClientTest {
 
     //Test the merging populates ae and destinationquestion get replaced
     assertThat(expectedMap.entrySet(), equalTo(destMap.entrySet()));
-    assertEquals(new TreeSet<>(Arrays.asList("destinationquestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
+    assertEquals(new TreeSet<>(Arrays.asList("destinationQuestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
 
   @Test
   public void testMergeQuestions2() throws Exception {
     Multimap<String, String> sourceMap = HashMultimap.create();
-    sourceMap.put("sourcequestion", "sourcequestionvalue1");
-    sourceMap.put("sourcequestion", "sourcequestionvalue2");
+    sourceMap.put("sourceQuestion", "sourcequestionvalue1");
+    sourceMap.put("sourceQuestion", "sourcequestionvalue2");
     Map<String, String> destMap = new HashMap<>();
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
     Client.mergeQuestions(sourceMap, destMap, ae);
 
     //Test the merging populates ae and sourcequestion get replaced
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
+    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
 
