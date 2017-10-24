@@ -229,7 +229,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param areaPrefix The Ip prefix of the OSPF area
    * @param currentMetric The current summary metric for the area
    * @param areaNum Area number.
-   * @param useOldRfc Whether to use the older RFC 1583 computation, which takes the minimum of
+   * @param useMin Whether to use the older RFC 1583 computation, which takes the minimum of
    *     metrics as opposed to the newer RFC 2328, which uses the maximum
    * @return the newly computed summary metric.
    */
@@ -239,7 +239,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       Prefix areaPrefix,
       @Nullable Long currentMetric,
       long areaNum,
-      boolean useOldRfc) {
+      boolean useMin) {
     Prefix contributingRoutePrefix = route.getNetwork();
     // Only update metric for different areas and if the area prefix contains the route prefix
     if (areaNum == route.getArea() || !areaPrefix.containsPrefix(contributingRoutePrefix)) {
@@ -258,7 +258,9 @@ public class VirtualRouter extends ComparableStructure<String> {
      * as described in RFC 2328.
      * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
      */
-    if (useOldRfc) {
+    //TODO: add parsing logic for "(no) compatible rfc1583" command and propagate that to the useMin
+    //variable
+    if (useMin) {
       return Math.min(currentMetric, contributingRouteMetric);
     }
     return Math.max(currentMetric, contributingRouteMetric);
