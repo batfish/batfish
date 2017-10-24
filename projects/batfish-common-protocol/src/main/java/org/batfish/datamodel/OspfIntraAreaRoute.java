@@ -2,17 +2,11 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class OspfIntraAreaRoute extends OspfRoute {
+public class OspfIntraAreaRoute extends OspfAreaRoute {
 
-  private static final String PROP_AREA = "area";
-
-  /** */
   private static final long serialVersionUID = 1L;
-
-  private final long _area;
 
   @JsonCreator
   public OspfIntraAreaRoute(
@@ -21,8 +15,11 @@ public class OspfIntraAreaRoute extends OspfRoute {
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_AREA) long area) {
-    super(network, nextHopIp, admin, metric);
-    _area = area;
+    super(network, nextHopIp, admin, metric, area);
+  }
+
+  @Override public RoutingProtocol getProtocol() {
+    return RoutingProtocol.OSPF;
   }
 
   @Override
@@ -50,44 +47,6 @@ public class OspfIntraAreaRoute extends OspfRoute {
       return false;
     }
     return _network.equals(other._network);
-  }
-
-  @JsonProperty(PROP_AREA)
-  public long getArea() {
-    return _area;
-  }
-
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
-  }
-
-  @Override
-  public RoutingProtocol getProtocol() {
-    return RoutingProtocol.OSPF;
-  }
-
-  @Override
-  public int getTag() {
-    return NO_TAG;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _admin;
-    result = prime * result + (int) (_area ^ (_area >>> 32));
-    result = prime * result + Long.hashCode(_metric);
-    result = prime * result + _network.hashCode();
-    result = prime * result + (_nextHopIp == null ? 0 : _nextHopIp.hashCode());
-    return result;
-  }
-
-  @Override
-  protected final String protocolRouteString() {
-    return " area:" + _area;
   }
 
   @Override
