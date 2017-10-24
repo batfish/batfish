@@ -43,7 +43,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_NOT_SRC_IPS = "notSrcIps";
 
-  private static final String PROP_NOT_SRC_PORTS_VAR = "notSrcPorts";
+  private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
 
   private static final String PROP_SRC_IPS = "srcIps";
 
@@ -210,7 +210,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _headerSpace.getNotSrcIps();
   }
 
-  @JsonProperty(PROP_NOT_SRC_PORTS_VAR)
+  @JsonProperty(PROP_NOT_SRC_PORTS)
   public Set<SubRange> getNotSrcPorts() {
     return _headerSpace.getNotSrcPorts();
   }
@@ -397,7 +397,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
   }
 
-  @JsonProperty(PROP_NOT_SRC_PORTS_VAR)
+  @JsonProperty(PROP_NOT_SRC_PORTS)
   public void setNotSrcPortRange(Set<SubRange> notSrcPorts) {
     _headerSpace.setNotSrcPorts(new TreeSet<>(notSrcPorts));
   }
