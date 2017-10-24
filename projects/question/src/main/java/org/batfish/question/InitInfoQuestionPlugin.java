@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.questions.Question;
@@ -17,8 +18,22 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     @Override
     public InitInfoAnswerElement answer() {
       InitInfoQuestion question = (InitInfoQuestion) _question;
-      return _batfish.initInfo(
-          question._summary, question._verboseError, question._environmentRoutes);
+      boolean b = question._environmentBgpTables;
+      boolean r = question._environmentRoutes;
+      if (b && r) {
+        throw new BatfishException(
+            String.format(
+                "Only one of the following may be true: '%s' and '%s'",
+                InitInfoQuestion.PROP_ENVIRONMENT_ROUTES,
+                InitInfoQuestion.PROP_ENVIRONMENT_BGP_TABLES));
+      }
+      if (b) {
+        return _batfish.initInfoBgpAdvertisements(question._summary, question._verboseError);
+      } else if (r) {
+        return _batfish.initInfoRoutes(question._summary, question._verboseError);
+      } else {
+        return _batfish.initInfo(question._summary, question._verboseError);
+      }
     }
   }
 
@@ -33,9 +48,15 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
    */
   public static class InitInfoQuestion extends Question {
 
+    public static final String PROP_ENVIRONMENT_BGP_TABLES = "environmentBgpTables";
+
+    public static final String PROP_ENVIRONMENT_ROUTES = "environmentRoutes";
+
     private static final String PROP_SUMMARY = "summary";
 
     private static final String PROP_VERBOSE_ERROR = "verboseError";
+
+    private boolean _environmentBgpTables;
 
     private boolean _environmentRoutes;
 
@@ -50,6 +71,12 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
+    @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
+    public boolean getEnvironmentBgpTables() {
+      return _environmentBgpTables;
+    }
+
+    @JsonProperty(PROP_ENVIRONMENT_ROUTES)
     public boolean getEnvironmentRoutes() {
       return _environmentRoutes;
     }
@@ -87,6 +114,12 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
           + _verboseError;
     }
 
+    @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
+    public void setEnvironmentBgpTables(boolean environmentBgpTables) {
+      _environmentBgpTables = environmentBgpTables;
+    }
+
+    @JsonProperty(PROP_ENVIRONMENT_ROUTES)
     public void setEnvironmentRoutes(boolean environmentRoutes) {
       _environmentRoutes = environmentRoutes;
     }

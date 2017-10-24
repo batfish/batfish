@@ -1,12 +1,8 @@
 package org.batfish.question;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -23,43 +19,9 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.role.OutliersHypothesis;
 
 public class OutliersQuestionPlugin extends QuestionPlugin {
-
-  public enum Hypothesis {
-    SAME_DEFINITION("sameDefinition"), SAME_NAME("sameName");
-
-    private static final Map<String, OutliersQuestionPlugin.Hypothesis> _map = buildMap();
-
-    private static synchronized Map<String, OutliersQuestionPlugin.Hypothesis> buildMap() {
-      Map<String, OutliersQuestionPlugin.Hypothesis> map = new HashMap<>();
-      for (OutliersQuestionPlugin.Hypothesis value : OutliersQuestionPlugin.Hypothesis.values()) {
-        String name = value._name;
-        map.put(name, value);
-      }
-      return Collections.unmodifiableMap(map);
-    }
-
-    @JsonCreator public static OutliersQuestionPlugin.Hypothesis fromName(String name) {
-      OutliersQuestionPlugin.Hypothesis instance = _map.get(name);
-      if (instance == null) {
-        throw new BatfishException(
-            "No " + OutliersQuestionPlugin.Hypothesis.class.getSimpleName() + " with name: '" + name
-                + "'");
-      }
-      return instance;
-    }
-
-    private final String _name;
-
-    private Hypothesis(String name) {
-      _name = name;
-    }
-
-    @JsonValue public String hypothesisName() {
-      return _name;
-    }
-  }
 
   public static class OutliersAnswerElement implements AnswerElement {
 
@@ -76,10 +38,34 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String prettyPrint() {
+      if (_rankedOutliers.size() == 0) {
+        return "";
+      }
+
       StringBuilder sb = new StringBuilder("Results for outliers\n");
       for (NamedStructureOutlierSet<?> outlier : _rankedOutliers) {
-        sb.append(outlier.getStructType() + " named " + outlier.getName() + ":\n");
+        switch (outlier.getHypothesis()) {
+        case SAME_DEFINITION:
+          sb.append("  Hypothesis: every " + outlier.getStructType()
+              + " named " + outlier.getName() + " has the same definition\n");
+          break;
+        case SAME_NAME:
+          sb.append("  Hypothesis: ");
+          if (outlier.getNamedStructure() != null) {
+            sb.append(" every ");
+          } else {
+            sb.append(" no ");
+          }
+          sb.append("node should define a " + outlier.getStructType()
+                + " named " + outlier.getName() + "\n");
+          break;
+        default:
+          throw new BatfishException("Unexpected hypothesis" + outlier.getHypothesis());
+        }
+        sb.append("  Outliers: ");
         sb.append(outlier.getOutliers() + "\n");
+        sb.append("  Conformers: ");
+        sb.append(outlier.getConformers() + "\n\n");
       }
       return sb.toString();
     }
@@ -94,12 +80,17 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     private OutliersAnswerElement _answerElement;
 
+    // only report outliers that represent this percentage or less of
+    // the total number of nodes
+    private static double OUTLIERS_THRESHOLD = 1.0 / 3.0;
+
     public OutliersAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
 
     private <T> void addOutliers(
+        OutliersHypothesis hypothesis,
         NamedStructureEquivalenceSets<T> equivSet,
         SortedSet<NamedStructureOutlierSet<?>> rankedOutliers) {
       String structType = equivSet.getStructureClassName();
@@ -121,7 +112,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         }
         rankedOutliers.add(
             new NamedStructureOutlierSet<>(
-                structType, name, max.getNamedStructure(), conformers, outliers));
+                hypothesis, structType, name, max.getNamedStructure(), conformers, outliers));
       }
     }
 
@@ -136,6 +127,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
           new CompareSameNameQuestionPlugin.CompareSameNameQuestion();
       inner.setNodeRegex(question.getNodeRegex());
       inner.setNamedStructTypes(question.getNamedStructTypes());
+      inner.setExcludedNamedStructTypes(new TreeSet<>());
       inner.setSingletons(true);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer =
           new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);
@@ -145,10 +137,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets =
           innerAnswer.getEquivalenceSets();
 
-      switch (question.getHypothesis()) {
-      case SAME_DEFINITION:
-        // nothing to do before ranking outliers
-        break;
+      OutliersHypothesis hypothesis = question.getHypothesis();
+      switch (hypothesis) {
+        case SAME_DEFINITION:
+          // nothing to do before ranking outliers
+          break;
       case SAME_NAME:
         // create at most two equivalence classes for each name:
         // one containing the nodes that have a structure of that name,
@@ -165,7 +158,19 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         eSets.clean();
       }
 
-      _answerElement.setRankedOutliers(rankOutliers(equivalenceSets));
+      SortedSet<NamedStructureOutlierSet<?>> outliers =
+          rankOutliers(hypothesis, equivalenceSets);
+
+      // remove outlier sets that don't meet our threshold
+      outliers.removeIf(
+          oset -> {
+            double cSize = oset.getConformers().size();
+            double oSize = oset.getOutliers().size();
+            return (oSize / (cSize + oSize)) > OUTLIERS_THRESHOLD;
+          }
+      );
+
+      _answerElement.setRankedOutliers(outliers);
 
       return _answerElement;
     }
@@ -177,6 +182,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       for (Map.Entry<String, SortedSet<NamedStructureEquivalenceSet<T>>> entry :
           eSets.getSameNamedStructures().entrySet()) {
         SortedSet<String> presentNodes = new TreeSet<>();
+        T struct = entry.getValue().first().getNamedStructure();
         for (NamedStructureEquivalenceSet<T> eSet : entry.getValue()) {
           presentNodes.addAll(eSet.getNodes());
         }
@@ -184,7 +190,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         absentNodes.removeAll(presentNodes);
         SortedSet<NamedStructureEquivalenceSet<T>> newESets = new TreeSet<>();
         NamedStructureEquivalenceSet<T> presentSet =
-            new NamedStructureEquivalenceSet<T>(presentNodes.first());
+            new NamedStructureEquivalenceSet<T>(presentNodes.first(), struct);
         presentSet.setNodes(presentNodes);
         newESets.add(presentSet);
         if (absentNodes.size() > 0) {
@@ -205,10 +211,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
      * represent bugs
      */
     private SortedSet<NamedStructureOutlierSet<?>> rankOutliers(
+        OutliersHypothesis hypothesis,
         SortedMap<String, NamedStructureEquivalenceSets<?>> equivSets) {
       SortedSet<NamedStructureOutlierSet<?>> rankedOutliers = new TreeSet<>();
       for (NamedStructureEquivalenceSets<?> entry : equivSets.values()) {
-        addOutliers(entry, rankedOutliers);
+        addOutliers(hypothesis, entry, rankedOutliers);
       }
       return rankedOutliers;
     }
@@ -244,7 +251,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private Hypothesis _hypothesis;
+    private OutliersHypothesis _hypothesis;
 
     private SortedSet<String> _namedStructTypes;
 
@@ -253,7 +260,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     public OutliersQuestion() {
       _namedStructTypes = new TreeSet<>();
       _nodeRegex = ".*";
-      _hypothesis = Hypothesis.SAME_DEFINITION;
+      _hypothesis = OutliersHypothesis.SAME_DEFINITION;
     }
 
     @Override
@@ -262,7 +269,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_HYPOTHESIS)
-    public Hypothesis getHypothesis() {
+    public OutliersHypothesis getHypothesis() {
       return _hypothesis;
     }
 
@@ -288,7 +295,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_HYPOTHESIS)
-    public void setHypothesis(Hypothesis hypothesis) {
+    public void setHypothesis(OutliersHypothesis hypothesis) {
       _hypothesis = hypothesis;
     }
 

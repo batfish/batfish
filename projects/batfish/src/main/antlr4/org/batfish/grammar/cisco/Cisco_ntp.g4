@@ -110,9 +110,11 @@ ntp_master
 ntp_null
 :
    (
-      AUTHENTICATION_KEY
+      ALLOW
+      | AUTHENTICATION_KEY
       | INTERFACE
       | LOG_INTERNAL_SYNC
+      | PASSIVE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -181,7 +183,7 @@ ntp_update_calendar
 
 s_ntp
 :
-   NTP
+   NO? NTP
    (
       ntp_common
       |

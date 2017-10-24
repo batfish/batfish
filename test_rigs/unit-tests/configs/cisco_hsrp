@@ -35,12 +35,14 @@ interface TenGigE0/0/2/2
  hsrp delay minimum 0 reload 0
  no hsrp use-bia
  hsrp 123
+  authentication cisco
   authentication text blah
-  name bloop
+  ip 1.2.3.4
   mac-address 0123.4567.89AB
+  name bloop
+  no preempt
   preempt delay minimum 300 reload 300 sync 0 
   priority 100 forwarding-threshold lower 0 upper 100
   timers  1  4
-  ip 1.2.3.4
 !
 

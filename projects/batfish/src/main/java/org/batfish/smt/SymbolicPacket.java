@@ -1,6 +1,7 @@
 package org.batfish.smt;
 
 import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 
@@ -14,9 +15,9 @@ class SymbolicPacket {
 
   private Context _ctx;
 
-  private ArithExpr _dstIp;
+  private BitVecExpr _dstIp;
 
-  private ArithExpr _srcIp;
+  private BitVecExpr _srcIp;
 
   private ArithExpr _dstPort;
 
@@ -46,8 +47,8 @@ class SymbolicPacket {
 
   SymbolicPacket(Context ctx, int id, String sliceName) {
     _ctx = ctx;
-    _dstIp = ctx.mkIntConst(id + "_" + sliceName + "dst-ip");
-    _srcIp = ctx.mkIntConst(id + "_" + sliceName + "src-ip");
+    _dstIp = ctx.mkBVConst(id + "_" + sliceName + "dst-ip", 32);
+    _srcIp = ctx.mkBVConst(id + "_" + sliceName + "src-ip", 32);
     _dstPort = ctx.mkIntConst(id + "_" + sliceName + "dst-port");
     _srcPort = ctx.mkIntConst(id + "_" + sliceName + "src-port");
     _icmpCode = ctx.mkIntConst(id + "_" + sliceName + "icmp-code");
@@ -82,11 +83,11 @@ class SymbolicPacket {
         _ctx.mkEq(this.getTcpUrg(), other.getTcpUrg()));
   }
 
-  ArithExpr getDstIp() {
+  BitVecExpr getDstIp() {
     return _dstIp;
   }
 
-  ArithExpr getSrcIp() {
+  BitVecExpr getSrcIp() {
     return _srcIp;
   }
 

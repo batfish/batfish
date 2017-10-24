@@ -73,6 +73,7 @@ import org.batfish.common.util.Backoff;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
+import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -605,7 +606,7 @@ public class Client extends AbstractClient implements IClient {
     }
     // answer the question
     WorkItem wItemAs =
-        _workHelper.getWorkItemAnswerQuestion(
+        WorkItemBuilder.getWorkItemAnswerQuestion(
             questionName,
             _currContainerName,
             _currTestrig,
@@ -659,7 +660,7 @@ public class Client extends AbstractClient implements IClient {
 
     // answer the question
     WorkItem wItemAs =
-        _workHelper.getWorkItemAnswerQuestion(
+        WorkItemBuilder.getWorkItemAnswerQuestion(
             questionName,
             _currContainerName,
             _currTestrig,
@@ -1102,7 +1103,7 @@ public class Client extends AbstractClient implements IClient {
 
     // generate the data plane
     WorkItem wItemGenDp =
-        _workHelper.getWorkItemGenerateDataPlane(_currContainerName, _currTestrig, _currEnv);
+        WorkItemBuilder.getWorkItemGenerateDataPlane(_currContainerName, _currTestrig, _currEnv);
 
     return execute(wItemGenDp, outWriter);
   }
@@ -1118,7 +1119,7 @@ public class Client extends AbstractClient implements IClient {
     }
 
     WorkItem wItemGenDdp =
-        _workHelper.getWorkItemGenerateDeltaDataPlane(
+        WorkItemBuilder.getWorkItemGenerateDeltaDataPlane(
             _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig, _currDeltaEnv);
 
     return execute(wItemGenDdp, outWriter);
@@ -1578,14 +1579,14 @@ public class Client extends AbstractClient implements IClient {
     _logger.output("\n");
 
     WorkItem wItemGenDdp =
-        _workHelper.getWorkItemCompileDeltaEnvironment(
+        WorkItemBuilder.getWorkItemCompileDeltaEnvironment(
             _currContainerName, _currDeltaTestrig, _currEnv, _currDeltaEnv);
     if (!execute(wItemGenDdp, outWriter)) {
       return false;
     }
 
     WorkItem wItemValidateEnvironment =
-        _workHelper.getWorkItemValidateEnvironment(
+        WorkItemBuilder.getWorkItemValidateEnvironment(
             _currContainerName, _currDeltaTestrig, _currDeltaEnv);
 
     if (!execute(wItemValidateEnvironment, outWriter)) {
@@ -1728,9 +1729,21 @@ public class Client extends AbstractClient implements IClient {
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
       throws Exception {
     Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
-    if (!isValidArgument(options, parameters, 0, 1, 2, command)) {
+    if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
       return false;
     }
+
+    boolean autoAnalyze = false;
+    if (options.size() == 1) {
+      if (options.get(0).equals("-autoanalyze")) {
+        autoAnalyze = true;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(command);
+        return false;
+      }
+    }
+
     String testrigLocation = parameters.get(0);
     String testrigName =
         (parameters.size() > 1) ? parameters.get(1) : DEFAULT_TESTRIG_PREFIX + UUID.randomUUID();
@@ -1747,18 +1760,21 @@ public class Client extends AbstractClient implements IClient {
       _logger.output("\n");
     }
 
-    if (!uploadTestrig(testrigLocation, testrigName)) {
+    if (!uploadTestrig(testrigLocation, testrigName, autoAnalyze)) {
       unsetTestrig(delta);
       return false;
     }
+    _logger.output("Uploaded testrig.\n");
 
-    _logger.output("Uploaded testrig. Parsing now.\n");
+    if (!autoAnalyze) {
+      _logger.output("Parsing now.\n");
+      WorkItem wItemParse =
+          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
 
-    WorkItem wItemParse = _workHelper.getWorkItemParse(_currContainerName, testrigName, false);
-
-    if (!execute(wItemParse, outWriter)) {
-      unsetTestrig(delta);
-      return false;
+      if (!execute(wItemParse, outWriter)) {
+        unsetTestrig(delta);
+        return false;
+      }
     }
 
     if (!delta) {
@@ -2495,7 +2511,7 @@ public class Client extends AbstractClient implements IClient {
       testrig = _currDeltaTestrig;
     }
 
-    WorkItem wItemParse = _workHelper.getWorkItemParse(_currContainerName, testrig, delta);
+    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig, delta);
 
     if (!execute(wItemParse, outWriter)) {
       return false;
@@ -2589,7 +2605,7 @@ public class Client extends AbstractClient implements IClient {
 
     // answer the question
     WorkItem wItemAs =
-        _workHelper.getWorkItemRunAnalysis(
+        WorkItemBuilder.getWorkItemRunAnalysis(
             analysisName,
             _currContainerName,
             _currTestrig,
@@ -3058,7 +3074,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean uploadTestrig(String fileOrDir, String testrigName) {
+  private boolean uploadTestrig(String fileOrDir, String testrigName, boolean autoAnalyze) {
     Path initialUploadTarget = Paths.get(fileOrDir);
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
@@ -3068,7 +3084,8 @@ public class Client extends AbstractClient implements IClient {
     }
     try {
       boolean result =
-          _workHelper.uploadTestrig(_currContainerName, testrigName, uploadTarget.toString());
+          _workHelper.uploadTestrig(
+              _currContainerName, testrigName, uploadTarget.toString(), autoAnalyze);
       return result;
     } finally {
       if (createZip) {

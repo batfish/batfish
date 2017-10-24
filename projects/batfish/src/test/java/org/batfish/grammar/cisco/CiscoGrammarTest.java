@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -51,8 +53,13 @@ public class CiscoGrammarTest {
         CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
     configurationText.put(configurationName, aaaNewmodelConfigurationText);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
-            configurationText, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configurationText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Configuration newModelConfiguration = configurations.get("aaaNewmodel");
     boolean aaaNewmodel = newModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
@@ -68,7 +75,7 @@ public class CiscoGrammarTest {
     String[] configurationNames = new String[] {"r1", "r2"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -91,12 +98,54 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpMultipathRelax() throws IOException {
+    String testrigName = "bgp-multipath-relax";
+    String[] configurationNames =
+        new String[] {"arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
+    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    MultipathEquivalentAsPathMatchMode aristaDisabled =
+        configurations
+            .get("arista_disabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode aristaEnabled =
+        configurations
+            .get("arista_enabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode nxosDisabled =
+        configurations
+            .get("nxos_disabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode nxosEnabled =
+        configurations
+            .get("nxos_enabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+
+    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+  }
+
+  @Test
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, _folder);
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
     batfish.initRemoteBgpNeighbors(configurations, ipOwners);

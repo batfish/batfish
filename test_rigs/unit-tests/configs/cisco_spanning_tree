@@ -25,6 +25,13 @@ spanning-tree mst configuration
  instance 1 vlan 300
  instance 2 vlan 501-502, 512, 703
 !
+spanning-tree mst configuration
+ ! SUPPORT EMPTY NAME
+ name
+ revision 10
+ instance 1 vlan 300
+ instance 2 vlan 501-502, 512, 703
+!
 spanning-tree mst 2 priority 24576
 !
 

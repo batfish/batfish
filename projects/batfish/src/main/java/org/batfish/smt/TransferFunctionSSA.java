@@ -118,10 +118,8 @@ import org.batfish.smt.collections.PList;
  */
 class TransferFunctionSSA {
 
-  private static int id = 0;
-
   private static final int INLINE_HEURISTIC = 3000;
-
+  private static int id = 0;
   private EncoderSlice _enc;
 
   private Configuration _conf;
@@ -219,26 +217,73 @@ class TransferFunctionSSA {
   /*
    * Converts a prefix set to a boolean expression.
    */
-  private BoolExpr matchPrefixSet(Configuration conf, PrefixSetExpr e, SymbolicRecord other) {
+  private TransferFunctionResult matchPrefixSet(
+      Configuration conf, PrefixSetExpr e, SymbolicRecord other) {
+
+    ArithExpr otherLen = other.getPrefixLength();
+
+    TransferFunctionResult result = new TransferFunctionResult();
+
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
 
       Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
       if (ranges.isEmpty()) {
-        return _enc.mkTrue();
+        return result.setReturnValue(_enc.mkTrue());
       }
 
+      // This is a total hack to deal with the fact that
+      // we keep only a single FIB entry. Since BGP exporting a network
+      // depends on the existence of an IGP route, we become more precise
+      // by checking for static/connected/OSPF routes specifically.
+      if (ranges.size() == 1) {
+        for (PrefixRange r : ranges) {
+          int start = r.getLengthRange().getStart();
+          int end = r.getLengthRange().getEnd();
+          Prefix pfx = r.getPrefix();
+          if (start == end && start == pfx.getPrefixLength()) {
+            String router = _conf.getName();
+            Set<Prefix> origin = _enc.getOriginatedNetworks().get(router, Protocol.BGP);
+            if (origin != null && origin.contains(pfx)) {
+              // Compute static and connected routes
+              Set<Prefix> ostatic = _enc.getOriginatedNetworks().get(router, Protocol.STATIC);
+              Set<Prefix> oconn = _enc.getOriginatedNetworks().get(router, Protocol.CONNECTED);
+              boolean hasStatic = ostatic != null && ostatic.contains(pfx);
+              boolean hasConnected = oconn != null && oconn.contains(pfx);
+              ArithExpr originLength = _enc.mkInt(pfx.getPrefixLength());
+              if (hasStatic || hasConnected) {
+                BoolExpr directRoute = _enc.isRelevantFor(originLength, r);
+                ArithExpr newLength = _enc.mkIf(directRoute, originLength, otherLen);
+                result = result.addChangedVariable("PREFIX-LEN", newLength);
+                return result.setReturnValue(directRoute);
+              } else {
+                // Also use network statement if OSPF has a route with the correct length
+                SymbolicRecord rec = _enc.getBestNeighborPerProtocol(router, Protocol.OSPF);
+                if (rec != null) {
+                  BoolExpr ospfRelevant = _enc.isRelevantFor(rec.getPrefixLength(), r);
+                  ArithExpr newLength = _enc.mkIf(ospfRelevant, originLength, otherLen);
+                  result = result.addChangedVariable("PREFIX-LEN", newLength);
+                  return result.setReturnValue(ospfRelevant);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Compute if the other best route is relevant for this match statement
       BoolExpr acc = _enc.mkFalse();
       for (PrefixRange range : ranges) {
-        acc = _enc.mkOr(acc, _enc.isRelevantFor(other.getPrefixLength(), range));
+        acc = _enc.mkOr(acc, _enc.isRelevantFor(otherLen, range));
       }
-      return acc;
+
+      return result.setReturnValue(acc);
 
     } else if (e instanceof NamedPrefixSet) {
       NamedPrefixSet x = (NamedPrefixSet) e;
       String name = x.getName();
       RouteFilterList fl = conf.getRouteFilterLists().get(name);
-      return matchFilterList(fl, other);
+      return result.setReturnValue(matchFilterList(fl, other));
 
     } else {
       throw new BatfishException("TODO: match prefix set: " + e);
@@ -323,10 +368,11 @@ class TransferFunctionSSA {
       BoolExpr acc = _enc.mkTrue();
       TransferFunctionResult result = new TransferFunctionResult();
       for (BooleanExpr be : c.getConjuncts()) {
-        TransferFunctionResult r = compute(be, p);
+        TransferFunctionResult r = compute(be, p.indent());
         result = result.addChangedVariables(r);
         acc = _enc.mkAnd(acc, r.getReturnValue());
       }
+      p.debug("has changed variable");
       return result.setReturnValue(acc);
     }
 
@@ -336,10 +382,11 @@ class TransferFunctionSSA {
       BoolExpr acc = _enc.mkFalse();
       TransferFunctionResult result = new TransferFunctionResult();
       for (BooleanExpr be : d.getDisjuncts()) {
-        TransferFunctionResult r = compute(be, p);
+        TransferFunctionResult r = compute(be, p.indent());
         result = result.addChangedVariables(r);
         acc = _enc.mkOr(acc, r.getReturnValue());
       }
+      p.debug("has changed variable");
       return result.setReturnValue(acc);
     }
 
@@ -424,7 +471,9 @@ class TransferFunctionSSA {
     if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
-      return fromExpr(matchPrefixSet(_conf, m.getPrefixSet(), p.getOther()));
+      // For BGP, may change prefix length
+      TransferFunctionResult result = matchPrefixSet(_conf, m.getPrefixSet(), p.getOther());
+      return result.setReturnAssignedValue(_enc.mkTrue());
 
       // TODO: implement me
     } else if (expr instanceof MatchPrefix6Set) {
@@ -479,7 +528,13 @@ class TransferFunctionSSA {
       }
     }
 
-    throw new BatfishException("TODO: compute expr transfer function: " + expr);
+    String s = (_isExport ? "export" : "import");
+    String msg =
+        String.format(
+            "Unimplemented feature %s for %s transfer function on interface %s",
+            expr.toString(), s, _graphEdge.toString());
+
+    throw new BatfishException(msg);
   }
 
   /*
@@ -718,6 +773,7 @@ class TransferFunctionSSA {
     ArithExpr otherMed = (p.getOther().getMed() == null ? defaultMed : p.getOther().getMed());
     ArithExpr otherLp = getOrDefault(p.getOther().getLocalPref(), defaultLp);
     ArithExpr otherMet = getOrDefault(p.getOther().getMetric(), defaultMet);
+    // otherMet = applyMetricUpdate(otherMet);
 
     BoolExpr ad = _enc.safeEq(_current.getAdminDist(), otherAd);
     BoolExpr history = _enc.equalHistories(_current, p.getOther());
@@ -773,6 +829,38 @@ class TransferFunctionSSA {
     return r.setFallthroughValue(newFallthrough)
         .setReturnAssignedValue(_enc.mkTrue())
         .addChangedVariable("FALLTHROUGH", newFallthrough);
+  }
+
+  private void updateSingleValue(TransferFunctionParam p, String variableName, Expr expr) {
+    switch (variableName) {
+      case "METRIC":
+        p.getOther().setMetric((ArithExpr) expr);
+        break;
+      case "PREFIX-LEN":
+        p.getOther().setPrefixLength((ArithExpr) expr);
+        break;
+      case "ADMIN-DIST":
+        p.getOther().setAdminDist((ArithExpr) expr);
+        break;
+      case "LOCAL-PREF":
+        p.getOther().setLocalPref((ArithExpr) expr);
+        break;
+      case "OSPF-TYPE":
+        p.getOther().getOspfType().setBitVec((BitVecExpr) expr);
+        break;
+      case "RETURN":
+        break;
+      default:
+        for (Map.Entry<CommunityVar, BoolExpr> entry : p.getOther().getCommunities().entrySet()) {
+          CommunityVar cvar = entry.getKey();
+          if (variableName.equals(cvar.getValue())) {
+            p.getOther().getCommunities().put(cvar, (BoolExpr) expr);
+            return;
+          }
+        }
+
+        throw new BatfishException("Unimplemented: update for " + variableName);
+    }
   }
 
   /*
@@ -960,8 +1048,15 @@ class TransferFunctionSSA {
         result = result.addChangedVariables(r);
         BoolExpr guard = (BoolExpr) r.getReturnValue().simplify();
         String str = guard.toString();
+
+        // If there are updates in the guard, add them to the parameter p before entering branches
+        for (Pair<String, Expr> changed : r.getChangedVariables()) {
+          p.debug("CHANGED: " + changed.getFirst());
+          updateSingleValue(p, changed.getFirst(), changed.getSecond());
+        }
+
         p.debug("guard: " + str);
-        // mkIf we know the branch ahead of time, then specialize
+        // If we know the branch ahead of time, then specialize
         switch (str) {
           case "true":
             p.debug("True Branch");
@@ -1109,7 +1204,14 @@ class TransferFunctionSSA {
         // TODO: implement me
 
       } else {
-        throw new BatfishException("TODO: statement transfer function: " + stmt);
+
+        String s = (_isExport ? "export" : "import");
+        String msg =
+            String.format(
+                "Unimplemented feature %s for %s transfer function on interface %s",
+                stmt.toString(), s, _graphEdge.toString());
+
+        throw new BatfishException(msg);
       }
     }
 
@@ -1224,7 +1326,10 @@ class TransferFunctionSSA {
   }
 
   private void applyMetricUpdate(TransferFunctionParam p) {
-    if (_isExport) {
+    boolean updateOspf = (!_isExport && _to.isOspf());
+    boolean updateBgp = (_isExport && _to.isBgp());
+    boolean updateMetric = updateOspf || updateBgp;
+    if (updateMetric) {
       // If it is a BGP route learned from IGP, then we use metric 0
       ArithExpr newValue;
       ArithExpr cost = _enc.mkInt(_addedCost);

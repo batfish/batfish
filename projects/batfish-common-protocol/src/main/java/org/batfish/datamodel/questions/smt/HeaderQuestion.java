@@ -62,7 +62,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_ENV_DIFF = "envDiff";
 
-  private static final String PROP_ENV_TYPE = "envType";
+  private static final String PROP_BASE_ENV_TYPE = "baseEnvType";
+
+  private static final String PROP_DIFF_ENV_TYPE = "deltaEnvType";
 
   private Set<ForwardingAction> _actions;
 
@@ -80,7 +82,9 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _envDiff;
 
-  private EnvironmentType _envType;
+  private EnvironmentType _baseEnvType;
+
+  private EnvironmentType _deltaEnvType;
 
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
@@ -91,7 +95,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = false;
     _diffType = null;
     _envDiff = false;
-    _envType = EnvironmentType.ANY;
+    _baseEnvType = EnvironmentType.ANY;
+    _deltaEnvType = EnvironmentType.ANY;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -103,7 +108,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _minimize = q._minimize;
     _diffType = q._diffType;
     _envDiff = q._envDiff;
-    _envType = q._envType;
+    _baseEnvType = q._baseEnvType;
+    _deltaEnvType = q._deltaEnvType;
   }
 
   @Override
@@ -236,9 +242,14 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _envDiff;
   }
 
-  @JsonProperty(PROP_ENV_TYPE)
-  public EnvironmentType getEnvironmentType() {
-    return _envType;
+  @JsonProperty(PROP_BASE_ENV_TYPE)
+  public EnvironmentType getBaseEnvironmentType() {
+    return _baseEnvType;
+  }
+
+  @JsonProperty(PROP_DIFF_ENV_TYPE)
+  public EnvironmentType getDeltaEnvironmentType() {
+    return _deltaEnvType;
   }
 
 
@@ -435,9 +446,13 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = b;
   }
 
-  @JsonProperty(PROP_ENV_TYPE)
-  public void setEnvironmentType(EnvironmentType e) {
-    _envType = e;
+  @JsonProperty(PROP_BASE_ENV_TYPE)
+  public void setBaseEnvironmentType(EnvironmentType e) {
+    _baseEnvType = e;
   }
 
+  @JsonProperty(PROP_DIFF_ENV_TYPE)
+  public void setDeltaEnvironmentType(EnvironmentType e) {
+    _deltaEnvType = e;
+  }
 }

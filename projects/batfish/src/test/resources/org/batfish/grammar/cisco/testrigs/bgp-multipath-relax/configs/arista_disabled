@@ -1,0 +1,9 @@
+!
+hostname arista_disabled
+!
+boot system flash fake.swi
+!
+router bgp 1
+ router-id 1.1.1.1
+ no bgp bestpath as-path multipath-relax
+!

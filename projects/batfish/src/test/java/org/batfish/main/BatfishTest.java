@@ -115,8 +115,13 @@ public class BatfishTest {
       iptablesFilesText.put(iptablesName, iptablesText);
     }
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
-            configurationsText, hostsText, iptablesFilesText, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configurationsText,
+            Collections.emptySortedMap(),
+            hostsText,
+            iptablesFilesText,
+            Collections.emptySortedMap(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     assertThat(
         configurations.get("host1").getInterfaces().get("Ethernet0").getIncomingFilterName(),
@@ -134,8 +139,10 @@ public class BatfishTest {
       configurationsText.put(configurationName, configurationText);
     }
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
+        BatfishTestUtils.getBatfishFromTestrigText(
             configurationsText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
             Collections.emptySortedMap(),
             Collections.emptySortedMap(),
             _folder);
@@ -347,8 +354,13 @@ public class BatfishTest {
             });
     SortedMap<String, String> configMap = ImmutableSortedMap.of("host1", configurationText);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
-            configMap, Collections.emptySortedMap(), Collections.emptySortedMap(), _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configMap,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
     SortedMap<String, Configuration> configs = batfish.loadConfigurations();
 
     // Assert that the config parsed successfully

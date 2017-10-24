@@ -18,20 +18,41 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
 
+/**
+ * Implements general RIB (Routing Information Base) semantics. RIB stores routes for different
+ * network prefixes and supports retrieving them based on the longest prefix match between a given
+ * IP address and the route's IP prefix.
+ *
+ * @param <R> Type of route that this RIB will be storing. Required for properly comparing route
+ *     preferences.
+ */
 public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
-  private class ByteTrie implements Serializable {
+  /**
+   * Used to store the routes, supports longest prefix match operation.
+   *
+   * <p>This data structure is a more restrictive version of a ddNF (disjoint difference Normal
+   * Form), where the wildcard symbols can appear only after (to-the-right-of) non wildcard symbols
+   * in the bit vector. E.g., 101010**, but not 1*001***
+   */
+  class RibTree implements Serializable {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
-    private ByteTrieNode _root;
+    private RibTreeNode _root;
 
-    public ByteTrie() {
-      _root = new ByteTrieNode(Prefix.ZERO);
+    RibTree() {
+      _root = new RibTreeNode(Prefix.ZERO);
     }
 
-    public Set<R> getLongestPrefixMatch(Ip address) {
+    boolean containsRoute(R route) {
+      Prefix prefix = route.getNetwork();
+      int prefixLength = prefix.getPrefixLength();
+      BitSet bits = prefix.getAddress().getAddressBits();
+      return _root.containsRoute(route, bits, prefixLength, 0);
+    }
+
+    Set<R> getLongestPrefixMatch(Ip address) {
       BitSet addressBits = address.getAddressBits();
       return _root.getLongestPrefixMatch(address, addressBits, 0);
     }
@@ -42,7 +63,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       return routes;
     }
 
-    public boolean mergeRoute(R route) {
+    boolean mergeRoute(R route) {
       Prefix prefix = route.getNetwork();
       int prefixLength = prefix.getPrefixLength();
       BitSet bits = prefix.getAddress().getAddressBits();
@@ -50,25 +71,29 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     }
   }
 
-  private class ByteTrieNode implements Serializable {
+  /**
+   * RibTree is constructed from nodes of this type. A node has a prefix, a set of routes that match
+   * the prefix (and it's length) and two children. The children's prefixes must always be more
+   * specific (i.e., their prefix length is larger).
+   */
+  class RibTreeNode implements Serializable {
 
-    /** */
     private static final long serialVersionUID = 1L;
 
-    private ByteTrieNode _left;
+    private RibTreeNode _left;
 
     private Prefix _prefix;
 
-    private ByteTrieNode _right;
+    private RibTreeNode _right;
 
     private final Set<R> _routes;
 
-    public ByteTrieNode(Prefix prefix) {
+    RibTreeNode(Prefix prefix) {
       _routes = new HashSet<>();
       _prefix = prefix;
     }
 
-    public void collectRoutes(Set<R> routes) {
+    void collectRoutes(Set<R> routes) {
       if (_left != null) {
         _left.collectRoutes(routes);
       }
@@ -76,6 +101,43 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
         _right.collectRoutes(routes);
       }
       routes.addAll(_routes);
+    }
+
+    /**
+     * Check if the route exists in our subtree
+     *
+     * @param route route in question
+     * @param bits route's IP address represented as a BitSet
+     * @param prefixLength route's prefix length
+     * @param firstUnmatchedBitIndex how far into the address have we matched
+     * @return true if the route is in the subtree
+     */
+    boolean containsRoute(R route, BitSet bits, int prefixLength, int firstUnmatchedBitIndex) {
+      // If prefix lengths match, this is the node where such route would be stored.
+      if (prefixLength == _prefix.getPrefixLength()) {
+        return _routes.contains(route);
+      }
+      boolean currentBit = bits.get(firstUnmatchedBitIndex);
+
+      /*
+       * If prefixes don't match exactly, look at the current bit. That determines whether we look
+       * left or right. As long as the child is not null, recurse.
+       *
+       * Note that:
+       * 1) routes are stored in the nodes where lengths of the node prefix and the route prefix
+       *    match exactly; and
+       * 2) prefix matches only get more specific (longer) the deeper we go in the tree
+       *
+       * Therefore, we can fast-forward the firstUnmatchedBitIndex to the prefix length of the
+       * child node
+       */
+      if (currentBit) {
+        return _right != null
+            && _right.containsRoute(route, bits, prefixLength, _right._prefix.getPrefixLength());
+      } else {
+        return _left != null
+            && _left.containsRoute(route, bits, prefixLength, _left._prefix.getPrefixLength());
+      }
     }
 
     private Set<R> getLongestPrefixMatch(Ip address) {
@@ -89,170 +151,220 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       return longestPrefixMatches;
     }
 
-    public Set<R> getLongestPrefixMatch(Ip address, BitSet bits, int index) {
+    /**
+     * Returns a set of routes with the longest prefix match for a given IP address
+     *
+     * @param address IP address
+     * @param bits IP address represented as a set of bits
+     * @param index the position of the bit up to which the match has already been found
+     *     (tail-recursion way of keeping track how deep we are).
+     * @return a set of routes
+     */
+    Set<R> getLongestPrefixMatch(Ip address, BitSet bits, int index) {
+      // Get the list of routes stored in our node that contain the IP address
       Set<R> longestPrefixMatches = getLongestPrefixMatch(address);
+      // If we reached the max prefix length (e.g., 32 for for IPv4) then return routes
+      // from the current node
       if (index == Prefix.MAX_PREFIX_LENGTH) {
         return longestPrefixMatches;
       }
+
+      // Examine the bit at the given index
       boolean currentBit = bits.get(index);
-      Set<R> longerMatches = null;
+      RibTreeNode child;
+
+      // the current bit is 1, go right recursively
       if (currentBit) {
-        if (_right != null) {
-          longerMatches =
-              _right.getLongestPrefixMatch(address, bits, _right._prefix.getPrefixLength());
-        }
+        child = _right;
       } else {
-        if (_left != null) {
-          longerMatches =
-              _left.getLongestPrefixMatch(address, bits, _left._prefix.getPrefixLength());
-        }
+        child = _left;
       }
+      if (child == null) {
+        return longestPrefixMatches;
+      }
+
+      // Represents any potentially longer route matches (than ones stored at this node)
+      Set<R> longerMatches =
+          child.getLongestPrefixMatch(address, bits, child._prefix.getPrefixLength());
+
+      // If we found no better matches, return the ones from this node
       if (longerMatches == null || longerMatches.isEmpty()) {
         return longestPrefixMatches;
-      } else {
+      } else { // otherwise return longer matches
         return longerMatches;
       }
     }
 
-    public boolean mergeRoute(R route, BitSet bits, int prefixLength, int firstUnmatchedBitIndex) {
-      if (prefixLength == _prefix.getPrefixLength()) {
-        // no routes with this prefix, so just add it
+    void assignChild(RibTreeNode parent, RibTreeNode child, boolean branchRight) {
+      if (branchRight) {
+        parent._right = child;
+      } else {
+        parent._left = child;
+      }
+    }
+
+    /**
+     * Takes care of adding new nodes to the tree and maintaining correct pointers.
+     *
+     * @param parent node that we are trying to merge a route into
+     * @param route the route to merge
+     * @param routeBits the bitSet representation of the route's IP address
+     * @param prefixLength the route's prefix length
+     * @param firstUnmatchedBitIndex the index of the first bit in the route's prefix that we
+     *     haven't checked yet
+     * @param rightBranch whether we should recurse down the right side of the tree
+     * @return True if a route has been inserted into the tree
+     */
+    boolean mergeHelper(
+        RibTreeNode parent,
+        R route,
+        BitSet routeBits,
+        int prefixLength,
+        int firstUnmatchedBitIndex,
+        boolean rightBranch) {
+      RibTreeNode node;
+
+      // Get our node from one of the tree sides
+      if (rightBranch) {
+        node = parent._right;
+      } else {
+        node = parent._left;
+      }
+
+      // Node doesn't exist, so create one. By construction, it will be the best match
+      // for the given route
+      if (node == null) {
+        node = new RibTreeNode(route.getNetwork());
+        node._routes.add(route);
+        // don't forget to assign new node object to parent node
+        assignChild(parent, node, rightBranch);
+        return true;
+      }
+
+      // Node exists, get some helper data out of the current node we are examining
+      Prefix nodePrefix = node._prefix;
+      int nodePrefixLength = nodePrefix.getPrefixLength();
+      Ip nodeAddress = nodePrefix.getAddress();
+      BitSet nodeAddressBits = nodeAddress.getAddressBits();
+      int nextUnmatchedBit;
+      // Set up two "pointers" as we scan through the route's and the node's prefixes
+      boolean currentAddressBit = false;
+      boolean currentNodeAddressBit;
+
+      /*
+       * We know we matched up to firstUnmatchedBitIndex. Continue going forward in the bits
+       * to find a longer match.
+       * At the end of this loop nextUnmatchedBit will be the first place where the route prefix
+       * and this node's prefix diverge.
+       * Note that nextUnmatchedBit can be outside of the node's or the route's prefix.
+       */
+      for (nextUnmatchedBit = firstUnmatchedBitIndex + 1;
+          nextUnmatchedBit < nodePrefixLength && nextUnmatchedBit < prefixLength;
+          nextUnmatchedBit++) {
+        currentAddressBit = routeBits.get(nextUnmatchedBit);
+        currentNodeAddressBit = nodeAddressBits.get(nextUnmatchedBit);
+        if (currentNodeAddressBit != currentAddressBit) {
+          break;
+        }
+      }
+
+      /*
+       * If the next unmatched bit is the same as node prefix length, we "ran off" the node prefix.
+       * Recursively merge the route into this node.
+       */
+      if (nextUnmatchedBit == nodePrefixLength) {
+        return node.mergeRoute(route, routeBits, prefixLength, nextUnmatchedBit);
+      }
+
+      /*
+       * If we reached the route's prefix length (but not the nodes's) we need to create a new node
+       * above the current node that matches the route's prefix and re-attach the current node to
+       * the newly created node.
+       */
+      if (nextUnmatchedBit == prefixLength) {
+        currentNodeAddressBit = nodeAddressBits.get(nextUnmatchedBit);
+        RibTreeNode oldNode = node;
+        node = new RibTreeNode(route.getNetwork());
+        node._routes.add(route);
+        assignChild(parent, node, rightBranch);
+        assignChild(node, oldNode, currentNodeAddressBit);
+        return true;
+      }
+
+      /*
+       * If we are here, there is a bit difference between the node and route prefixes before we
+       * reach the end of either prefix. This requires the following:
+       * - Compute the max prefix match (up to nextUnmatchedBit)
+       * - Create a new node with this new prefix above the current node
+       * - Create a new node with the route's full prefix and assign it the parent.
+       * - Existing node becomes a sibling of the node with full route prefix
+       */
+      RibTreeNode oldNode = node;
+
+      // newNetwork has the max prefix match up to nextUnmatchedBit
+      Prefix newNetwork =
+          new Prefix(route.getNetwork().getAddress(), nextUnmatchedBit).getNetworkPrefix();
+      node = new RibTreeNode(newNetwork); // node is the node we are inserting in the middle
+      RibTreeNode child = new RibTreeNode(route.getNetwork());
+      child._routes.add(route);
+      assignChild(parent, node, rightBranch);
+      // child and old node become siblings, children of the newly inserted node
+      assignChild(node, child, currentAddressBit);
+      assignChild(node, oldNode, !currentAddressBit);
+      return true;
+    }
+
+    boolean mergeRoute(
+        R route, BitSet routeBits, int routePrefixLength, int firstUnmatchedBitIndex) {
+      /*
+       * We have reached the node where a route should be inserted, because:
+       * 1) the prefix length of this node matches the prefix length of the route exactly, and
+       * 2) going deeper can only gets us longer matches
+       */
+      if (routePrefixLength == _prefix.getPrefixLength()) {
+
+        // No routes with this prefix, so just add it. No comparison necessary
         if (_routes.isEmpty()) {
           _routes.add(route);
           return true;
-        } else {
-          // suitability check
-          R rhs = _routes.iterator().next();
-          int preferenceComparison = comparePreference(route, rhs);
-          if (preferenceComparison < 0) {
-            // less preferable, so it doesn't get added
-            return false;
-          } else if (preferenceComparison == 0) {
-            // equal preference, so add for multipath routing
-            if (!_routes.contains(route)) {
-              _routes.add(route);
-              return true;
-            } else {
-              // route is already here, so nothing to do
-              return false;
-            }
-          } else {
-            // better than all pre-existing routes for this prefix, so
-            // replace them with this one
-            _routes.clear();
-            _routes.add(route);
-            return true;
-          }
         }
-      } else {
-        boolean currentBit = bits.get(firstUnmatchedBitIndex);
-        if (currentBit) {
-          if (_right == null) {
-            _right = new ByteTrieNode(route.getNetwork());
-            _right._routes.add(route);
-            return true;
-          } else {
-            Prefix rightPrefix = _right._prefix;
-            int rightPrefixLength = rightPrefix.getPrefixLength();
-            Ip rightAddress = rightPrefix.getAddress();
-            BitSet rightAddressBits = rightAddress.getAddressBits();
-            int nextUnmatchedBit;
-            boolean currentAddressBit = false;
-            boolean currentRightAddressBit;
-            for (nextUnmatchedBit = firstUnmatchedBitIndex + 1;
-                nextUnmatchedBit < rightPrefixLength && nextUnmatchedBit < prefixLength;
-                nextUnmatchedBit++) {
-              currentAddressBit = bits.get(nextUnmatchedBit);
-              currentRightAddressBit = rightAddressBits.get(nextUnmatchedBit);
-              if (currentRightAddressBit != currentAddressBit) {
-                break;
-              }
-            }
-            if (nextUnmatchedBit == rightPrefixLength) {
-              return _right.mergeRoute(route, bits, prefixLength, nextUnmatchedBit);
-            } else if (nextUnmatchedBit == prefixLength) {
-              currentRightAddressBit = rightAddressBits.get(nextUnmatchedBit);
-              ByteTrieNode oldRight = _right;
-              _right = new ByteTrieNode(route.getNetwork());
-              _right._routes.add(route);
-              if (currentRightAddressBit) {
-                _right._right = oldRight;
-              } else {
-                _right._left = oldRight;
-              }
-              return true;
-            } else {
-              ByteTrieNode oldRight = _right;
 
-              Prefix newNetwork =
-                  new Prefix(route.getNetwork().getAddress(), nextUnmatchedBit).getNetworkPrefix();
-              _right = new ByteTrieNode(newNetwork);
-              if (currentAddressBit) {
-                _right._left = oldRight;
-                _right._right = new ByteTrieNode(route.getNetwork());
-                _right._right._routes.add(route);
-              } else {
-                _right._right = oldRight;
-                _right._left = new ByteTrieNode(route.getNetwork());
-                _right._left._routes.add(route);
-              }
-              return true;
-            }
-          }
-        } else {
-          if (_left == null) {
-            _left = new ByteTrieNode(route.getNetwork());
-            _left._routes.add(route);
-            return true;
-          } else {
-            Prefix leftPrefix = _left._prefix;
-            int leftPrefixLength = leftPrefix.getPrefixLength();
-            Ip leftAddress = leftPrefix.getAddress();
-            BitSet leftAddressBits = leftAddress.getAddressBits();
-            int nextUnmatchedBit;
-            boolean currentAddressBit = false;
-            boolean currentLeftAddressBit;
-            for (nextUnmatchedBit = firstUnmatchedBitIndex + 1;
-                nextUnmatchedBit < leftPrefixLength && nextUnmatchedBit < prefixLength;
-                nextUnmatchedBit++) {
-              currentAddressBit = bits.get(nextUnmatchedBit);
-              currentLeftAddressBit = leftAddressBits.get(nextUnmatchedBit);
-              if (currentLeftAddressBit != currentAddressBit) {
-                break;
-              }
-            }
-            if (nextUnmatchedBit == leftPrefixLength) {
-              return _left.mergeRoute(route, bits, prefixLength, nextUnmatchedBit);
-            } else if (nextUnmatchedBit == prefixLength) {
-              currentLeftAddressBit = leftAddressBits.get(nextUnmatchedBit);
-              ByteTrieNode oldLeft = _left;
-              _left = new ByteTrieNode(route.getNetwork());
-              _left._routes.add(route);
-              if (currentLeftAddressBit) {
-                _left._right = oldLeft;
-              } else {
-                _left._left = oldLeft;
-              }
-              return true;
-            } else {
-              ByteTrieNode oldLeft = _left;
-              Prefix newPrefix =
-                  new Prefix(route.getNetwork().getAddress(), nextUnmatchedBit).getNetworkPrefix();
-              _left = new ByteTrieNode(newPrefix);
-              if (currentAddressBit) {
-                _left._left = oldLeft;
-                _left._right = new ByteTrieNode(route.getNetwork());
-                _left._right._routes.add(route);
-              } else {
-                _left._right = oldLeft;
-                _left._left = new ByteTrieNode(route.getNetwork());
-                _left._left._routes.add(route);
-              }
-              return true;
-            }
-          }
+        /*
+         * Check if the route we are adding is preferred to the routes we already have.
+         * We only need to compare to one route, because all routes already in this node have the
+         * same preference level. Hence, the route we are checking will be better than all,
+         * worse than all, or at the same preference level.
+         */
+        R rhs = _routes.iterator().next();
+        int preferenceComparison = comparePreference(route, rhs);
+        if (preferenceComparison < 0) { // less preferable, so route doesn't get added
+          return false;
         }
+        if (preferenceComparison == 0) { // equal preference, so add for multipath routing
+          if (_routes.contains(route)) {
+            // route is already here, so nothing to do
+            return false;
+          }
+          // Otherwise add the route
+          _routes.add(route);
+          return true;
+        }
+        // Last case, preferenceComparison > 0
+        /*
+         * Better than all pre-existing routes for this prefix, so
+         * replace them with this one
+         */
+        _routes.clear();
+        _routes.add(route);
+        return true;
       }
+      /*
+       * The prefix match is not exact, do some extra insertion logic.
+       * Current bit determines which side of the tree to go down (1 = right, 0 = left)
+       */
+      boolean currentBit = routeBits.get(firstUnmatchedBitIndex);
+      return mergeHelper(
+          this, route, routeBits, routePrefixLength, firstUnmatchedBitIndex, currentBit);
     }
 
     @Override
@@ -266,11 +378,15 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
   protected VirtualRouter _owner;
 
-  private ByteTrie _trie;
+  private RibTree _tree;
 
   public AbstractRib(VirtualRouter owner) {
-    _trie = new ByteTrie();
+    _tree = new RibTree();
     _owner = owner;
+  }
+
+  protected final boolean containsRoute(R route) {
+    return _tree.containsRoute(route);
   }
 
   @Override
@@ -295,7 +411,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
   @Override
   public Set<R> getRoutes() {
-    return _trie.getRoutes();
+    return _tree.getRoutes();
   }
 
   @Override
@@ -316,12 +432,12 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
   @Override
   public Set<R> longestPrefixMatch(Ip address) {
-    return _trie.getLongestPrefixMatch(address);
+    return _tree.getLongestPrefixMatch(address);
   }
 
   @Override
   public boolean mergeRoute(R route) {
-    return _trie.mergeRoute(route);
+    return _tree.mergeRoute(route);
   }
 
   @Override

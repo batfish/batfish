@@ -2,11 +2,11 @@ package org.batfish.grammar;
 
 public interface GrammarSettings {
 
+  boolean getDisableUnrecognized();
+
   int getMaxParserContextLines();
 
   int getMaxParserContextTokens();
-
-  boolean getDisableUnrecognized();
 
   boolean getThrowOnLexerError();
 

@@ -10,7 +10,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-public class ConvertConfigurationAnswerElement implements AnswerElement, Serializable {
+public class ConvertConfigurationAnswerElement implements InitStepAnswerElement, Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;

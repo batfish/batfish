@@ -1,0 +1,12 @@
+!
+hostname nxos_misc
+feature privilege
+!
+ip arp inspection log-buffer entries 23
+no ip arp inspection validate src-mac dst-mac ip
+userpassphrase default-gracetime 12
+userpassphrase default-lifetime 12
+userpassphrase default-warntime 12
+userpassphrase min-length 23 max-length 45
+!
+

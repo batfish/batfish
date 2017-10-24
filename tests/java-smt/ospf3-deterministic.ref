@@ -1,0 +1,26 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.smt.answers.SmtDeterminismAnswerElement",
+      "result" : {
+        "verified" : true
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtDeterministicQuestionPlugin$DeterministicQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
+    "differential" : false,
+    "envDiff" : false,
+    "failures" : 0,
+    "fullModel" : false,
+    "minimize" : false
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

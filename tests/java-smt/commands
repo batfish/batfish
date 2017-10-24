@@ -24,6 +24,11 @@ test tests/java-smt/ospf3-equal-len.ref get smt-equal-length finalNodeRegex="R3"
 test tests/java-smt/ospf3-equal-len2.ref get smt-equal-length finalNodeRegex="R3", finalIfaceRegex="Loopback.*", ingressNodeRegex="R(1|0)", fullModel=True
 test tests/java-smt/ospf3-routing-loop.ref get smt-routing-loop fullModel=True
 test tests/java-smt/ospf3-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/ospf3-deterministic.ref get smt-deterministic
+
+# ospf with different costs along different edges
+init-testrig test_rigs/smt-examples/OSPF-COST tr-smt-ospf-cost
+test tests/java-smt/ospf-cost.ref get smt-forwarding dstIps=["192.168.8.3"], fullModel=True
 
 # local consistency with bgp + environment
 init-testrig test_rigs/smt-examples/ENV2 tr-smt-env2
@@ -40,6 +45,11 @@ init-testrig test_rigs/smt-examples/STATIC3 tr-smt-static3
 test tests/java-smt/static3-reachability1.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3"
 test tests/java-smt/static3-reachability2.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.2"]
 test tests/java-smt/static3-reachability3.ref get smt-reachability ingressNodeRegex="host1", finalNodeRegex="host3", dstIps=["192.168.8.1"]
+
+# Correct BGP network semantics if there is an IGP route
+init-testrig test_rigs/smt-examples/BGP3 tr-smt-bgp3
+test tests/java-smt/bgp3-forwarding1.ref get smt-forwarding dstIps=["69.69.69.0"], fullModel=True
+test tests/java-smt/bgp3-forwarding2.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
 
 # redistribution of different protocols
 init-testrig test_rigs/smt-examples/REDISTRIBUTE1 tr-smt-redistribute1
@@ -65,6 +75,7 @@ test tests/java-smt/prepend1-forwarding.ref get smt-forwarding dstIps=["41.41.41
 # Ensure we can find one of multiple stable solutions
 init-testrig test_rigs/smt-examples/STABLE3 tr-smt-stable3
 test tests/java-smt/stable3-forwarding.ref get smt-forwarding dstIps=["42.42.42.0"]
+test tests/java-smt/stable3-nondeterministic.ref get smt-deterministic
 
 # Check proper dropping behavior when the metric has overflow
 init-testrig test_rigs/smt-examples/OVERFLOW1 tr-smt-overflow1
@@ -94,16 +105,16 @@ test tests/java-smt/acl1-differential3.ref get smt-reachability diffType=increas
 
 # Check correctness of iBGP encoding
 init-testrig test_rigs/smt-examples/IBGP1 tr-smt-ibgp1
-test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, envType=none
+test tests/java-smt/ibgp1-forwarding.ref get smt-forwarding dstIps=["20.20.20.20"], fullModel=True, baseEnvType=none
 
 # Check correctness of multiple ASes using both iBGP and eBGP. Also ensures
 # correct handling of transitivity and path metric update
 init-testrig test_rigs/smt-examples/IBGP2 tr-smt-ibgp2
-test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, envType=none
+test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
 # Check correct handling of IGP metric cost for iBGP with eBGP
 init-testrig test_rigs/smt-examples/IBGP3 tr-smt-ibgp3
-test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, envType=none
+test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
 # Putting everything together, check the campus network
 #init-testrig test_rigs/smt-examples/CAMPUS1 tr-smt-campus1

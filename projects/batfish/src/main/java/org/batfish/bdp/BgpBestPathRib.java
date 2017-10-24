@@ -1,7 +1,12 @@
 package org.batfish.bdp;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpBestPathRib extends AbstractRib<BgpRoute> {
@@ -9,8 +14,33 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public BgpBestPathRib(VirtualRouter owner) {
+  private BgpBestPathRib _prev;
+
+  /**
+   * Construct an instance with given owner and previous instance.
+   *
+   * @param owner The virtual router context for this RIB
+   * @param prev The previous RIB used for tie-breaking based on age
+   * @param clearOldPrev Whether to clear out the previous instance's reference to its own previous
+   *     instance to enable GC. This is only safe if prev is no longer used for route preference
+   *     comparison, but only for content inspection.
+   */
+  public BgpBestPathRib(VirtualRouter owner, BgpBestPathRib prev, boolean clearOldPrev) {
     super(owner);
+    _prev = prev;
+    if (clearOldPrev && _prev != null) {
+      _prev._prev = null;
+    }
+  }
+
+  /**
+   * Construct an initial best-path RIB with no age information for tie-breaking
+   *
+   * @param owner The virtual router context for this RIB
+   * @return A new instance
+   */
+  public static final BgpBestPathRib initial(VirtualRouter owner) {
+    return new BgpBestPathRib(owner, new BgpBestPathRib(owner, null, false), false);
   }
 
   @Override
@@ -50,6 +80,9 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
      * origin type (IGP better than EGP, which is better than INCOMPLETE)
      */
     res = Integer.compare(lhs.getOriginType().getPreference(), rhs.getOriginType().getPreference());
+    if (res != 0) {
+      return res;
+    }
 
     /*
      * then compare MED
@@ -76,6 +109,42 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
      * single best-path.
      */
 
+    /*
+     * Break tie with process's chosen tie-breaking mechanism
+     */
+    BgpTieBreaker tieBreaker = _owner._vrf.getBgpProcess().getTieBreaker();
+    boolean bothEbgp =
+        lhs.getProtocol() == RoutingProtocol.BGP && rhs.getProtocol() == RoutingProtocol.BGP;
+    switch (tieBreaker) {
+      case ARRIVAL_ORDER:
+        if (!bothEbgp) {
+          break;
+        }
+        boolean lhsOld = _prev.containsRoute(lhs);
+        boolean rhsOld = _prev.containsRoute(rhs);
+        if (lhsOld && !rhsOld) {
+          return 1;
+        } else if (!lhsOld && rhsOld) {
+          return -1;
+        }
+        break;
+
+      case ROUTER_ID:
+        if (!bothEbgp) {
+          break;
+        }
+        /** Prefer the route that comes from the BGP router with the lowest router ID. */
+        res = rhs.getOriginatorIp().compareTo(lhs.getOriginatorIp());
+        if (res != 0) {
+          return res;
+        }
+        break;
+
+      case CLUSTER_LIST_LENGTH:
+      default:
+        throw new BatfishException("Unhandled tie-breaker: " + tieBreaker);
+    }
+
     /** Prefer the route that comes from the BGP router with the lowest router ID. */
     res = rhs.getOriginatorIp().compareTo(lhs.getOriginatorIp());
     if (res != 0) {
@@ -94,6 +163,14 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     } else {
       return 0;
     }
+  }
+
+  public Map<Prefix, AsPath> getBestAsPaths() {
+    Map<Prefix, AsPath> bestAsPaths = new HashMap<>();
+    for (BgpRoute route : getRoutes()) {
+      bestAsPaths.put(route.getNetwork(), route.getAsPath());
+    }
+    return bestAsPaths;
   }
 
   private int getTypeCost(RoutingProtocol protocol) {

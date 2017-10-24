@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -423,27 +424,25 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _asPath.hashCode();
-    result = prime * result + _clusterList.hashCode();
-    result = prime * result + _communities.hashCode();
-    result = prime * result + _dstIp.hashCode();
-    result = prime * result + _dstNode.hashCode();
-    result = prime * result + (_dstVrf != null ? _dstVrf.hashCode() : 0);
-    result = prime * result + _localPreference;
-    result = prime * result + Long.hashCode(_med);
-    result = prime * result + _network.hashCode();
-    result = prime * result + _nextHopIp.hashCode();
-    result = prime * result + _originType.ordinal();
-    result = prime * result + _originatorIp.hashCode();
-    result = prime * result + _srcIp.hashCode();
-    result = prime * result + _srcNode.hashCode();
-    result = prime * result + _srcProtocol.ordinal();
-    result = prime * result + _srcVrf.hashCode();
-    result = prime * result + _type.ordinal();
-    result = prime * result + _weight;
-    return result;
+    return Objects.hash(
+        _asPath,
+        _clusterList,
+        _communities,
+        _dstIp,
+        _dstNode,
+        _dstVrf,
+        _localPreference,
+        _med,
+        _network,
+        _nextHopIp,
+        _originType.ordinal(),
+        _originatorIp,
+        _srcIp,
+        _srcNode,
+        _srcProtocol.ordinal(),
+        _srcVrf,
+        _type.ordinal(),
+        _weight);
   }
 
   public String prettyPrint(String diffSymbol) {

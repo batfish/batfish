@@ -920,6 +920,7 @@ null_single
       | UPGRADE_PROFILE
       | UPLINK
       | USER_IDENTITY
+      | USERPASSPHRASE
       | USE_VRF
       | USING
       | VALID_NETWORK_OUI_PROFILE

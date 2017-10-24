@@ -14,7 +14,6 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -115,48 +114,6 @@ class Optimizations {
   }
 
   /*
-   * Check if communities can be received from the external environment.
-   */
-  private boolean computeHasExternalCommunity() {
-    Boolean[] val = new Boolean[1];
-    val[0] = false;
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                BgpNeighbor n = _encoderSlice.getGraph().getEbgpNeighbors().get(ge);
-                if (ge.getEnd() == null && n != null && n.getSendCommunity()) {
-                  val[0] = true;
-                }
-              }
-            });
-    return val[0];
-  }
-
-  /*
-   * Check if there is any environmental variable
-   */
-  /* private boolean computeHasEnvironment() {
-    Boolean[] val = new Boolean[1];
-    val[0] = false;
-    _encoderSlice
-        .getGraph()
-        .getEdgeMap()
-        .forEach(
-            (router, edges) -> {
-              for (GraphEdge ge : edges) {
-                BgpNeighbor n = _encoderSlice.getGraph().getEbgpNeighbors().get(ge);
-                if (ge.getEnd() == null && n != null) {
-                  val[0] = true;
-                }
-              }
-            });
-    return val[0];
-  } */
-
-  /*
    * Check if the BGP local preference is needed. If it is never set,
    * then the variable can be removed from the encoding.
    */
@@ -199,8 +156,29 @@ class Optimizations {
     if (!Optimizations.ENABLE_SLICING_OPTIMIZATION) {
       return true;
     }
-    // Currently I don't believe batfish models setting AD
-    return false;
+    AstVisitor v = new AstVisitor();
+    Boolean[] val = new Boolean[1];
+    val[0] = false;
+    _encoderSlice
+        .getGraph()
+        .getConfigurations()
+        .forEach(
+            (router, conf) -> {
+              conf.getRoutingPolicies()
+                  .forEach(
+                      (name, pol) -> {
+                        v.visit(
+                            conf,
+                            pol.getStatements(),
+                            stmt -> {
+                              if (stmt instanceof SetOspfMetricType) {
+                                val[0] = true;
+                              }
+                            },
+                            expr -> { });
+                      });
+            });
+    return val[0];
   }
 
   // TODO: also check if med never set
@@ -297,6 +275,7 @@ class Optimizations {
             });
   }
 
+
   /*
    * We need to model the connected protocol if its interface Ip
    * overlaps with the destination IP of interest in the packet.
@@ -317,12 +296,7 @@ class Optimizations {
     if (Optimizations.ENABLE_SLICING_OPTIMIZATION) {
       return hasRelevantOriginatedRoute(conf, Protocol.STATIC);
     } else {
-      for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-        if (!Graph.isNullRouted(sr)) {
-          return true;
-        }
-      }
-      return false;
+      return !conf.getDefaultVrf().getStaticRoutes().isEmpty();
     }
   }
 
@@ -433,6 +407,7 @@ class Optimizations {
 
                   // Ensure single area for this router
                   Set<Long> areas = _encoderSlice.getGraph().getAreaIds().get(router);
+
                   boolean singleArea = areas.size() <= 1;
 
                   map.put(
@@ -486,7 +461,7 @@ class Optimizations {
                 List<GraphEdge> edges = new ArrayList<>();
                 if (Optimizations.ENABLE_IMPORT_EXPORT_MERGE_OPTIMIZATION) {
 
-                  if (!proto.isConnected() && !proto.isStatic()) {
+                  if (!proto.isConnected() && !proto.isStatic() && !proto.isOspf()) {
 
                     for (GraphEdge ge : _encoderSlice.getGraph().getEdgeMap().get(router)) {
 
@@ -624,7 +599,7 @@ class Optimizations {
    * possibly relevant for symbolic the destination Ip packet.
    */
   private boolean hasRelevantOriginatedRoute(Configuration conf, Protocol proto) {
-    List<Prefix> prefixes = _encoderSlice.getOriginatedNetworks(conf, proto);
+    Set<Prefix> prefixes = _encoderSlice.getOriginatedNetworks(conf, proto);
     for (Prefix p1 : prefixes) {
       if (_encoderSlice.relevantPrefix(p1)) {
         return true;

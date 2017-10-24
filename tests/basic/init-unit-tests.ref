@@ -153,6 +153,7 @@
         "interface_sdr" : "interface_sdr",
         "ios_bgp" : "ios_bgp",
         "ios_xr_acl" : "ios_xr_acl",
+        "ios_xr_bgp" : "ios_xr_bgp",
         "ios_xr_bgp_neighbor_group" : "ios_xr_bgp_neighbor_group",
         "ios_xr_isis" : "ios_xr_isis",
         "ios_xr_multipart" : "ios_xr_multipart",
@@ -175,6 +176,7 @@
         "juniper_ntp" : "juniper_ntp",
         "juniper_passwords" : "juniper_passwords",
         "juniper_relay" : "juniper_relay",
+        "juniper_route_filter" : "juniper_route_filter",
         "juniper_routing_options" : "juniper_routing_options",
         "juniper_snmp" : "juniper_snmp",
         "juniper_syslog" : "juniper_syslog",
@@ -201,6 +203,10 @@
         "no_aaa_group_server" : "no_aaa_group_server",
         "non_nexus_neighbor_af" : "non_nexus_neighbor_af",
         "nxos_acl" : "nxos_acl",
+        "nxos_bgp" : "nxos_bgp",
+        "nxos_interface" : "nxos_interface",
+        "nxos_misc" : "nxos_misc",
+        "nxos_system" : "nxos_system",
         "openflow" : "openflow",
         "peer_template" : "peer_template",
         "pim" : "pim",
@@ -381,6 +387,7 @@
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
         "ios_xr_multipart" : "PASSED",
@@ -403,6 +410,7 @@
         "juniper_ntp" : "PASSED",
         "juniper_passwords" : "PASSED",
         "juniper_relay" : "PASSED",
+        "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",
@@ -429,6 +437,10 @@
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
+        "nxos_bgp" : "PASSED",
+        "nxos_interface" : "PASSED",
+        "nxos_misc" : "PASSED",
+        "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "peer_template" : "PASSED",
         "pim" : "PASSED",
@@ -458,7 +470,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.31.0",
+      "version" : "0.32.0",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -719,41 +731,41 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                97
+                100
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                74
+                75
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                66
+                67
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                100
+                103
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                45
+                46
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                77
+                78
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                78
+                79
               ]
             }
           }
@@ -1345,7 +1357,7 @@
         "arista_bgp" : {
           "bgp group" : {
             "UNDEFINED_PEER_GROUP" : [
-              8
+              9
             ]
           }
         },
@@ -1700,6 +1712,16 @@
             ]
           }
         },
+        "juniper_route_filter" : {
+          "policy-statement" : {
+            "route-filter-test-v4" : [
+              4
+            ],
+            "route-filter-test-v6" : [
+              11
+            ]
+          }
+        },
         "local_v6_addr" : {
           "bgp group" : {
             "NEIGH" : [
@@ -1845,7 +1867,7 @@
           }
         }
       },
-      "version" : "0.31.0",
+      "version" : "0.32.0",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
@@ -1889,7 +1911,8 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system",
             "2" : "MISCELLANEOUS: Missing local-as for neighbor: 1.2.3.5",
-            "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
+            "3" : "MISCELLANEOUS: Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS",
+            "4" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
           }
         },
         "juniper_bgp_authentication" : {
@@ -2098,6 +2121,7 @@
         "interface_sdr" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_xr_acl" : "PASSED",
+        "ios_xr_bgp" : "PASSED",
         "ios_xr_bgp_neighbor_group" : "PASSED",
         "ios_xr_isis" : "PASSED",
         "ios_xr_multipart" : "PASSED",
@@ -2120,6 +2144,7 @@
         "juniper_ntp" : "PASSED",
         "juniper_passwords" : "PASSED",
         "juniper_relay" : "PASSED",
+        "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_snmp" : "PASSED",
         "juniper_syslog" : "PASSED",
@@ -2146,6 +2171,10 @@
         "no_aaa_group_server" : "PASSED",
         "non_nexus_neighbor_af" : "PASSED",
         "nxos_acl" : "PASSED",
+        "nxos_bgp" : "PASSED",
+        "nxos_interface" : "PASSED",
+        "nxos_misc" : "PASSED",
+        "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "peer_template" : "PASSED",
         "pim" : "PASSED",

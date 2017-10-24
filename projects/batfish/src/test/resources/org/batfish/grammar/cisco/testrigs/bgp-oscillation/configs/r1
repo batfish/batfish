@@ -1,0 +1,20 @@
+!
+hostname r1
+!
+interface Ethernet2
+ ip address 10.12.0.1/24
+!
+interface Ethernet3
+ ip address 10.13.0.1/24
+!
+interface Loopback0
+ ip address 1.1.1.1/32
+!
+router bgp 1
+ router-id 1.1.1.1
+ neighbor 10.12.0.2 remote-as 2
+ neighbor 10.12.0.2 activate
+ neighbor 10.13.0.3 remote-as 3
+ neighbor 10.13.0.3 activate
+ network 1.1.1.1/32
+!

@@ -5,8 +5,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
@@ -25,7 +25,7 @@ public class InitInfoAnswerElementTest {
 
   @Test
   public void checkNonEmptyErrors() {
-    _element.getErrors().put("error", new HashSet<>());
+    _element.getErrors().put("error", new ArrayList<>());
     assertThat(_element.getErrors().size(), is(1));
   }
 
@@ -33,7 +33,7 @@ public class InitInfoAnswerElementTest {
   public void checkNonEmptyErrorsSet() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    _element.getErrors().put("error", new HashSet<>());
+    _element.getErrors().put("error", new ArrayList<>());
     _element.getErrors().get("error").add(stackTrace);
     assertThat(_element.getErrors().get("error").size(), is(1));
     assertTrue(_element.getErrors().get("error").contains(stackTrace));
@@ -48,7 +48,7 @@ public class InitInfoAnswerElementTest {
   public void testGetErrors() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    HashSet<BatfishStackTrace> errors = new HashSet<>();
+    List<BatfishStackTrace> errors = new ArrayList<>();
     errors.add(stackTrace);
     _element.getErrors().put("error", errors);
     assertThat(_element.getErrors().get("error"), is(errors));
@@ -59,7 +59,7 @@ public class InitInfoAnswerElementTest {
     String errorMessage = "message is: parser: SampleParser: line 50, sample error\n";
     BatfishException exception = new BatfishException(errorMessage);
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    Set<BatfishStackTrace> errors = new HashSet<>();
+    List<BatfishStackTrace> errors = new ArrayList<>();
     errors.add(stackTrace);
     _element.getErrors().put("sampleError", errors);
     StringBuilder expected = new StringBuilder();
@@ -80,9 +80,9 @@ public class InitInfoAnswerElementTest {
   public void testSetErrors() {
     BatfishException exception = new BatfishException("sample exception");
     BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    HashSet<BatfishStackTrace> errors = new HashSet<>();
+    List<BatfishStackTrace> errors = new ArrayList<>();
     errors.add(stackTrace);
-    SortedMap<String, Set<BatfishStackTrace>> error = new TreeMap<>();
+    SortedMap<String, List<BatfishStackTrace>> error = new TreeMap<>();
     error.put("error", errors);
     _element.setErrors(error);
     assertThat(_element.getErrors().get("error"), is(errors));

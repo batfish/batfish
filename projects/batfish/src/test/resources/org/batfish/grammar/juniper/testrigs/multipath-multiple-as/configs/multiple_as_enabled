@@ -1,0 +1,7 @@
+#
+set system host-name multiple_as_enabled
+#
+set protocols bgp neighbor 2.2.2.2 peer-as 2
+set protocols bgp neighbor 2.2.2.2 multipath multiple-as
+set routing-options autonomous-system 1
+#

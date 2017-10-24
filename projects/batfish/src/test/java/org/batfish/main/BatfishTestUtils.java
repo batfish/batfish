@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
@@ -14,6 +13,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
@@ -70,45 +70,37 @@ public class BatfishTestUtils {
     return batfish;
   }
 
-  private static Batfish initBatfishFromConfigurationText(
-      SortedMap<String, String> configurationText,
-      SortedMap<String, String> hostsText,
-      SortedMap<String, String> iptablesFilesText,
+  private static Batfish initBatfishFromTestrigText(
+      @Nullable SortedMap<String, String> configurationText,
+      @Nullable SortedMap<String, String> bgpTablesText,
+      @Nullable SortedMap<String, String> hostsText,
+      @Nullable SortedMap<String, String> iptablesFilesText,
+      @Nullable SortedMap<String, String> routingTablesText,
       @Nullable TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
     settings.setDisableUnrecognized(true);
+    settings.setHaltOnConvertError(true);
+    settings.setHaltOnParseError(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    settings.setVerboseParse(true);
     Path containerDir = tempFolder.newFolder("container").toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
     Batfish.initTestrigSettings(settings);
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
-    testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).toFile().mkdirs();
-    testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR).toFile().mkdirs();
-    testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR).toFile().mkdirs();
-    testrigPath.resolve("iptables").toFile().mkdirs();
-    settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
-    configurationText.forEach(
-        (filename, content) -> {
-          Path filePath =
-              testrigPath.resolve(Paths.get(BfConsts.RELPATH_CONFIGURATIONS_DIR, filename));
-          CommonUtil.writeFile(filePath, content);
-        });
-    hostsText.forEach(
-        (filename, content) -> {
-          Path filePath =
-              testrigPath.resolve(Paths.get(BfConsts.RELPATH_HOST_CONFIGS_DIR, filename));
-          CommonUtil.writeFile(filePath, content);
-        });
-    iptablesFilesText.forEach(
-        (filename, content) -> {
-          Path filePath = testrigPath.resolve(Paths.get("iptables", filename));
-          CommonUtil.writeFile(filePath, content);
-        });
-
+    EnvironmentSettings envSettings = settings.getBaseTestrigSettings().getEnvironmentSettings();
+    envSettings.getEnvironmentBasePath().toFile().mkdirs();
+    writeTemporaryTestrigFiles(
+        configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+    writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
+    writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
+    writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(
             settings,
@@ -116,11 +108,16 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache());
-    batfish.serializeVendorConfigs(
-        testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
-    batfish.serializeIndependentConfigs(
-        settings.getBaseTestrigSettings().getSerializeVendorPath(),
-        settings.getBaseTestrigSettings().getSerializeIndependentPath());
+    try {
+      batfish.serializeVendorConfigs(
+          testrigPath, settings.getBaseTestrigSettings().getSerializeVendorPath());
+      batfish.serializeIndependentConfigs(
+          settings.getBaseTestrigSettings().getSerializeVendorPath(),
+          settings.getBaseTestrigSettings().getSerializeIndependentPath());
+    } catch (CompositeBatfishException e) {
+      throw new BatfishException(
+          "Failed to initialize test batfish: " + e.getAnswerElement().prettyPrint(), e);
+    }
     return batfish;
   }
 
@@ -145,30 +142,50 @@ public class BatfishTestUtils {
   /**
    * Prepares a default scenario from provided configs and returns a Batfish pointing to it.
    *
-   * @param configsResourcePrefix Denotes the resource path to the directory containing the
-   *     configurations
+   * @param testrigResourcePrefix Denotes the resource path to the input testrig
    * @param configFilenames The names of the configuration files. The filename for each
-   *     configuration should be identical to hostname declared therein.
+   *     configuration should be identical to the hostname declared therein.
+   * @param bgpFilenames The names of the routing table files. The filename for each routing table
+   *     should be identical to the hostname of the corresponding configuration.
+   * @param hostFilenames The names of the host configuration files. The filename for each host
+   *     configuration should be identical to the hostname declared therein.
+   * @param iptablesFilenames The names of the iptables configuration files. The filename for each
+   *     iptables configuration should match that declared in the corresponding host file.
+   * @param rtFilenames The names of the bgp table files. The filename for each bgp table should be
+   *     identical to the hostname of the corresponding configuration.
    * @param tempFolder Temporary folder in which to place the container for the scenario
    * @return A Batfish pointing to the newly prepared scenario.
    */
   public static Batfish getBatfishFromTestrigResource(
-      String configsResourcePrefix, String[] configFilenames, @Nullable TemporaryFolder tempFolder)
+      String testrigResourcePrefix,
+      @Nullable String[] configFilenames,
+      @Nullable String[] bgpFilenames,
+      @Nullable String[] hostFilenames,
+      @Nullable String[] iptablesFilenames,
+      @Nullable String[] rtFilenames,
+      @Nullable TemporaryFolder tempFolder)
       throws IOException {
-    SortedMap<String, String> configurationsText = new TreeMap<>();
-    for (String configurationName : configFilenames) {
-      String configurationPath =
-          String.format(
-              "%s/%s/%s",
-              configsResourcePrefix, BfConsts.RELPATH_CONFIGURATIONS_DIR, configurationName);
-      String configurationText = CommonUtil.readResource(configurationPath);
-      configurationsText.put(configurationName, configurationText);
-    }
+    SortedMap<String, String> configurationsText =
+        readTestrigResources(
+            testrigResourcePrefix, BfConsts.RELPATH_CONFIGURATIONS_DIR, configFilenames);
+    SortedMap<String, String> bgpTablesText =
+        readTestrigResources(
+            testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES, bgpFilenames);
+    SortedMap<String, String> hostFilesText =
+        readTestrigResources(
+            testrigResourcePrefix, BfConsts.RELPATH_HOST_CONFIGS_DIR, hostFilenames);
+    SortedMap<String, String> iptablesFilesText =
+        readTestrigResources(testrigResourcePrefix, "iptables", iptablesFilenames);
+    SortedMap<String, String> routingTablesText =
+        readTestrigResources(
+            testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES, rtFilenames);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromConfigurationText(
+        BatfishTestUtils.getBatfishFromTestrigText(
             configurationsText,
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
+            bgpTablesText,
+            hostFilesText,
+            iptablesFilesText,
+            routingTablesText,
             tempFolder);
     return batfish;
   }
@@ -177,20 +194,37 @@ public class BatfishTestUtils {
    * Get a new Batfish instance with given configurations, tempFolder should be present for
    * non-empty configurations
    *
-   * @param configurations Map of all Configuration Name -> Configuration Object
+   * @param configurationText Map from vendor configuration names to their text
+   * @param bgpTablesText Map from hostnames to their bgp table text
+   * @param hostText Map from host configuration names to their text
+   * @param iptablesText Map from iptables configuration names to their text
+   * @param routingTablesText Map from hostnames names to their routing table text
    * @param tempFolder Temporary folder to be used to files required for Batfish
    * @return New Batfish instance
    */
-  public static Batfish getBatfishFromConfigurationText(
-      SortedMap<String, String> configurationText,
-      SortedMap<String, String> hostText,
-      SortedMap<String, String> iptablesText,
+  public static Batfish getBatfishFromTestrigText(
+      @Nullable SortedMap<String, String> configurationText,
+      @Nullable SortedMap<String, String> bgpTablesText,
+      @Nullable SortedMap<String, String> hostText,
+      @Nullable SortedMap<String, String> iptablesText,
+      @Nullable SortedMap<String, String> routingTablesText,
       @Nullable TemporaryFolder tempFolder)
       throws IOException {
-    if (!configurationText.isEmpty() && tempFolder == null) {
-      throw new BatfishException("tempFolder must be set for non-empty configurations");
+    if (tempFolder == null) {
+      if (configurationText != null && !configurationText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty configurations");
+      } else if (bgpTablesText != null && !bgpTablesText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty bgp tables");
+      } else if (hostText != null && !hostText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty host configurations");
+      } else if (iptablesText != null && !iptablesText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty iptables configurations");
+      } else if (routingTablesText != null && !routingTablesText.isEmpty()) {
+        throw new BatfishException("tempFolder must be set for non-empty routing tables");
+      }
     }
-    return initBatfishFromConfigurationText(configurationText, hostText, iptablesText, tempFolder);
+    return initBatfishFromTestrigText(
+        configurationText, bgpTablesText, hostText, iptablesText, routingTablesText, tempFolder);
   }
 
   /**
@@ -208,5 +242,29 @@ public class BatfishTestUtils {
       throw new BatfishException("tempFolder must be set for non-empty configurations");
     }
     return initBatfish(configurations, tempFolder);
+  }
+
+  private static SortedMap<String, String> readTestrigResources(
+      String testrigResourcePrefix, String subfolder, String[] filenames) {
+    SortedMap<String, String> content = new TreeMap<>();
+    if (filenames != null) {
+      for (String filename : filenames) {
+        String path = String.format("%s/%s/%s", testrigResourcePrefix, subfolder, filename);
+        String text = CommonUtil.readResource(path);
+        content.put(filename, text);
+      }
+    }
+    return content;
+  }
+
+  private static void writeTemporaryTestrigFiles(
+      @Nullable SortedMap<String, String> filesText, Path outputDirectory) {
+    if (filesText != null) {
+      filesText.forEach(
+          (filename, text) -> {
+            outputDirectory.toFile().mkdirs();
+            CommonUtil.writeFile(outputDirectory.resolve(filename), text);
+          });
+    }
   }
 }

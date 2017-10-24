@@ -807,38 +807,6 @@ public class WorkMgrService {
     }
   }
 
-  /**
-   * Fetches the questions in the provided questions directory
-   *
-   * @return Questions in configured questions directory(Empty if not provided)
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_GET_GLOBAL_QUESTIONS)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getGlobalQuestions(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
-    try {
-      _logger.info("WMS:getGlobalQuestions " + apiKey + " " + "\n");
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-
-      Map<String, String> globalQuestions = Main.getWorkMgr().getGlobalQuestions();
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
-      String globalQuestionsStr = mapper.writeValueAsString(globalQuestions);
-      return successResponse(
-          new JSONObject().put(CoordConsts.SVC_KEY_GLOBAL_QUESTIONS, globalQuestionsStr));
-    } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:getGlobalQuestions exception: " + stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
@@ -847,6 +815,8 @@ public class WorkMgrService {
       _logger.info("WMS:getQuestionTemplates " + apiKey + "\n");
 
       checkStringParam(apiKey, "API key");
+
+      checkApiKeyValidity(apiKey);
 
       Map<String, String> questionTemplates = Main.getQuestionTemplates();
 
@@ -1615,7 +1585,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
-      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
+      @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
+      @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
     try {
       _logger.info("WMS:uploadTestrig " + apiKey + " " + containerName + " " + testrigName + "\n");
 
@@ -1628,7 +1599,12 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream);
+      boolean autoAnalyze = false;
+      if (!Strings.isNullOrEmpty(autoAnalyzeStr)) {
+        autoAnalyze = Boolean.parseBoolean(autoAnalyzeStr);
+      }
+
+      Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
     } catch (FileExistsException

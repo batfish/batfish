@@ -9,13 +9,14 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtBoundedLengthQuestionPlugin$BoundedLengthQuestion",
+    "baseEnvType" : "any",
     "bound" : 1,
+    "deltaEnvType" : "any",
     "differential" : false,
     "dstIps" : [
       "42.42.42.0/24"
     ],
     "envDiff" : false,
-    "envType" : "any",
     "failNode1Regex" : ".*",
     "failNode2Regex" : ".*",
     "failures" : 0,

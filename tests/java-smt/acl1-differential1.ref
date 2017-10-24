@@ -132,6 +132,8 @@
   ],
   "question" : {
     "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "baseEnvType" : "any",
+    "deltaEnvType" : "any",
     "diffType" : "any",
     "differential" : false,
     "dstIps" : [
@@ -146,7 +148,6 @@
       "192.4.64.2"
     ],
     "envDiff" : false,
-    "envType" : "any",
     "failNode1Regex" : "R2",
     "failNode2Regex" : "R3",
     "failures" : 1,

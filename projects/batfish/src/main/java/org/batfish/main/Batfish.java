@@ -109,13 +109,16 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
 import org.batfish.datamodel.answers.NodSatAnswerElement;
+import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -264,6 +267,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
           envPath.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
       envSettings.setDeltaVendorConfigurationsDir(
           envPath.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
+    }
+  }
+
+  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
+    for (Edge edge : topology.getEdges()) {
+      if (!configurations.containsKey(edge.getNode1())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
+      }
+      if (!configurations.containsKey(edge.getNode2())) {
+        throw new BatfishException(
+            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
+      }
+      // nodes are valid, now checking corresponding interfaces
+      Configuration config1 = configurations.get(edge.getNode1());
+      Configuration config2 = configurations.get(edge.getNode2());
+      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt1(), edge.getNode1()));
+      }
+      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
+        throw new BatfishException(
+            String.format(
+                "Topology contains a non-existent interface '%s' on node '%s'",
+                edge.getInt2(), edge.getNode2()));
+      }
     }
   }
 
@@ -472,6 +503,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer analyze() {
     Answer answer = new Answer();
+    AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
     Path analysisQuestionsDir =
         _settings
@@ -496,9 +528,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
             _settings.setQuestionPath(null);
+            summary.combine(currentAnswer.getSummary());
           });
     }
     answer.addAnswerElement(ae);
+    answer.setSummary(summary);
     return answer;
   }
 
@@ -738,6 +772,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines, numLines, percentUnreachableLines);
 
     return answerElement;
+  }
+
+  private Warnings buildWarnings() {
+    return new Warnings(
+        _settings.getPedanticAsError(),
+        _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
+        _settings.getRedFlagAsError(),
+        _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
+        _settings.getUnimplementedAsError(),
+        _settings.getUnimplementedRecord() && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+        _settings.printParseTree());
   }
 
   private void checkBaseDirExists() {
@@ -1078,16 +1123,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = new TreeMap<>();
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
     for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       GenericConfigObject vc = config.getValue();
       ConvertConfigurationJob job =
           new ConvertConfigurationJob(_settings, vc, config.getKey(), warnings);
@@ -1345,16 +1381,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path inputFile = configFile.getKey();
       String fileText = configFile.getValue();
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       String name = inputFile.getFileName().toString();
       Path outputFile = outputConfigDir.resolve(name);
       FlattenVendorConfigurationJob job =
@@ -1716,7 +1743,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Environment getEnvironment() {
     EdgeSet edgeBlackList = getEdgeBlacklist();
-    Set<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
+    SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
     NodeSet nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
@@ -1810,8 +1837,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowHistory;
   }
 
-  public Set<NodeInterfacePair> getInterfaceBlacklist() {
-    Set<NodeInterfacePair> blacklistInterfaces = null;
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+    SortedSet<NodeInterfacePair> blacklistInterfaces = null;
     Path interfaceBlacklistPath =
         _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
     if (interfaceBlacklistPath != null) {
@@ -1836,6 +1863,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
     return blacklistNodes;
+  }
+
+  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
+     If inferred is true, it returns the inferred roles;
+     otherwise it prefers the user-specified roles if they exist.
+  */
+  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
+    NodeRoleSpecifier result;
+    boolean inferredRoles = false;
+    TestrigSettings settings = _settings.getActiveTestrigSettings();
+    Path nodeRolesPath = settings.getNodeRolesPath();
+    if (!Files.exists(nodeRolesPath) || inferred) {
+      inferredRoles = true;
+      nodeRolesPath = settings.getInferredNodeRolesPath();
+      if (!Files.exists(nodeRolesPath)) {
+        return new NodeRoleSpecifier();
+      }
+    }
+    result = parseNodeRoles(nodeRolesPath);
+    result.setInferred(inferredRoles);
+    return result;
   }
 
   @Override
@@ -2120,78 +2168,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // }
   }
 
-  @Override
-  public InitInfoAnswerElement initInfo(
-      boolean summary, boolean verboseError, boolean environmentRoutes) {
-    InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
-    if (environmentRoutes) {
-      ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
-          loadParseEnvironmentRoutingTablesAnswerElement();
-      if (!summary) {
-        if (verboseError) {
-          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
-          parseAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, parseErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
-                  });
-          parseAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, convertErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
-                  });
-        }
-        SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
-        warnings.putAll(parseAnswer.getWarnings());
-      }
-      answerElement.setParseStatus(parseAnswer.getParseStatus());
-      answerElement.setParseTrees(parseAnswer.getParseTrees());
-    } else {
-      ParseVendorConfigurationAnswerElement parseAnswer =
-          loadParseVendorConfigurationAnswerElement();
-      ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
-      if (!summary) {
-        if (verboseError) {
-          SortedMap<String, Set<BatfishStackTrace>> errors = answerElement.getErrors();
-          parseAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, parseErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(parseErrors);
-                  });
-          convertAnswer
-              .getErrors()
-              .forEach(
-                  (hostname, convertErrors) -> {
-                    errors.computeIfAbsent(hostname, k -> new HashSet<>()).add(convertErrors);
-                  });
-        }
-        SortedMap<String, org.batfish.common.Warnings> warnings = answerElement.getWarnings();
-        warnings.putAll(parseAnswer.getWarnings());
-        convertAnswer
-            .getWarnings()
-            .forEach(
-                (hostname, convertWarnings) -> {
-                  org.batfish.common.Warnings combined = warnings.get(hostname);
-                  if (combined == null) {
-                    warnings.put(hostname, convertWarnings);
-                  } else {
-                    combined.getPedanticWarnings().addAll(convertWarnings.getPedanticWarnings());
-                    combined.getRedFlagWarnings().addAll(convertWarnings.getRedFlagWarnings());
-                    combined
-                        .getUnimplementedWarnings()
-                        .addAll(convertWarnings.getUnimplementedWarnings());
-                  }
-                });
-      }
-      answerElement.setParseStatus(parseAnswer.getParseStatus());
-      answerElement.setParseTrees(parseAnswer.getParseTrees());
-      for (String failed : convertAnswer.getFailed()) {
-        answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
-      }
-    }
+  public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
+    ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
+    mergeConvertAnswer(summary, verboseError, answerElement);
+    _logger.info(answerElement.prettyPrint());
+    return answerElement;
+  }
+
+  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+    ParseEnvironmentBgpTablesAnswerElement parseAnswer =
+        loadParseEnvironmentBgpTablesAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
+    _logger.info(answerElement.prettyPrint());
+    return answerElement;
+  }
+
+  public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
+    ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
+        loadParseEnvironmentRoutingTablesAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     _logger.info(answerElement.prettyPrint());
     return answerElement;
   }
@@ -2739,6 +2735,55 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private void mergeConvertAnswer(
+      boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
+    ConvertConfigurationAnswerElement convertAnswer = loadConvertConfigurationAnswerElement();
+    mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
+    for (String failed : convertAnswer.getFailed()) {
+      answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
+    }
+  }
+
+  private void mergeInitStepAnswer(
+      InitInfoAnswerElement initInfoAnswerElement,
+      InitStepAnswerElement initStepAnswerElement,
+      boolean summary,
+      boolean verboseError) {
+    if (!summary) {
+      if (verboseError) {
+        SortedMap<String, List<BatfishStackTrace>> errors = initInfoAnswerElement.getErrors();
+        initStepAnswerElement
+            .getErrors()
+            .forEach(
+                (hostname, initStepErrors) -> {
+                  errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors);
+                });
+      }
+      SortedMap<String, org.batfish.common.Warnings> warnings = initInfoAnswerElement.getWarnings();
+      initStepAnswerElement
+          .getWarnings()
+          .forEach(
+              (hostname, initStepWarnings) -> {
+                org.batfish.common.Warnings combined =
+                    warnings.computeIfAbsent(hostname, h -> buildWarnings());
+                combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
+                combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
+                combined
+                    .getUnimplementedWarnings()
+                    .addAll(initStepWarnings.getUnimplementedWarnings());
+              });
+    }
+  }
+
+  private InitInfoAnswerElement mergeParseAnswer(
+      boolean summary, boolean verboseError, ParseAnswerElement parseAnswer) {
+    InitInfoAnswerElement answerElement = new InitInfoAnswerElement();
+    mergeInitStepAnswer(answerElement, parseAnswer, summary, verboseError);
+    answerElement.setParseStatus(parseAnswer.getParseStatus());
+    answerElement.setParseTrees(parseAnswer.getParseTrees());
+    return answerElement;
+  }
+
   @Override
   public AnswerElement multipath(HeaderSpace headerSpace) {
     if (SystemUtils.IS_OS_MAC_OSX) {
@@ -2970,16 +3015,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!configurations.containsKey(hostname)) {
         continue;
       }
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       ParseEnvironmentBgpTableJob job =
           new ParseEnvironmentBgpTableJob(
               _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
@@ -3015,16 +3051,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         continue;
       }
 
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       ParseEnvironmentRoutingTableJob job =
           new ParseEnvironmentRoutingTableJob(_settings, fileText, currentFile, warnings, this);
       jobs.add(job);
@@ -3043,7 +3070,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  private Set<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
+  private SortedSet<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
     String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
     SortedSet<NodeInterfacePair> ifaces;
     try {
@@ -3143,16 +3170,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path currentFile = vendorFile.getKey();
       String fileText = vendorFile.getValue();
 
-      Warnings warnings =
-          new Warnings(
-              _settings.getPedanticAsError(),
-              _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-              _settings.getRedFlagAsError(),
-              _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-              _settings.getUnimplementedAsError(),
-              _settings.getUnimplementedRecord()
-                  && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-              _settings.printParseTree());
+      Warnings warnings = buildWarnings();
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings, fileText, currentFile, warnings, configurationFormat);
@@ -3393,29 +3411,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
-      throws JSONException {
-    Iterator<?> iter = questionObject.keys();
-    while (iter.hasNext()) {
-      String key = (String) iter.next();
-      Object value = questionObject.get(key);
-      if (value instanceof String) {
-        if (value.equals("${" + varName + "}")) {
-          iter.remove();
-        }
-      } else if (value instanceof JSONObject) {
-        JSONObject childObject = (JSONObject) value;
-        if (childObject.has("class")) {
-          Object classValue = childObject.get("class");
-          if (classValue instanceof String
-              && ((String) classValue).startsWith("org.batfish.question")) {
-            recursivelyRemoveOptionalVar(childObject, varName);
-          }
-        }
-      }
-    }
-  }
-
   @Override
   public void printElapsedTime() {
     double seconds = getElapsedTime(_timerCount);
@@ -3491,7 +3486,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       try {
         JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
 
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.KEY_BGP_ANNOUNCEMENTS);
+        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -3567,27 +3562,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
       }
     }
-  }
-
-  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
-     If inferred is true, it returns the inferred roles;
-     otherwise it prefers the user-specified roles if they exist.
-  */
-  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
-    NodeRoleSpecifier result;
-    boolean inferredRoles = false;
-    TestrigSettings settings = _settings.getActiveTestrigSettings();
-    Path nodeRolesPath = settings.getNodeRolesPath();
-    if (!Files.exists(nodeRolesPath) || inferred) {
-      inferredRoles = true;
-      nodeRolesPath = settings.getInferredNodeRolesPath();
-      if (!Files.exists(nodeRolesPath)) {
-        return new NodeRoleSpecifier();
-      }
-    }
-    result = parseNodeRoles(nodeRolesPath);
-    result.setInferred(inferredRoles);
-    return result;
   }
 
   /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
@@ -3747,6 +3721,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
               "Fatal exception due to at least one Iptables file is not contained"
                   + " within the testrig"),
           failureCauses);
+    }
+  }
+
+  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
+      throws JSONException {
+    Iterator<?> iter = questionObject.keys();
+    while (iter.hasNext()) {
+      String key = (String) iter.next();
+      Object value = questionObject.get(key);
+      if (value instanceof String) {
+        if (value.equals("${" + varName + "}")) {
+          iter.remove();
+        }
+      } else if (value instanceof JSONObject) {
+        JSONObject childObject = (JSONObject) value;
+        if (childObject.has("class")) {
+          Object classValue = childObject.get("class");
+          if (classValue instanceof String
+              && ((String) classValue).startsWith("org.batfish.question")) {
+            recursivelyRemoveOptionalVar(childObject, varName);
+          }
+        }
+      }
     }
   }
 
@@ -4049,7 +4046,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getInitInfo()) {
-      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false, false);
+      InitInfoAnswerElement initInfoAnswerElement = initInfo(true, false);
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
@@ -4422,6 +4419,59 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public AnswerElement smtBlackhole(HeaderQuestion q) {
+    return PropertyChecker.computeBlackHole(this, q);
+  }
+
+  @Override
+  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
+    if (bound == null) {
+      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
+    }
+    return PropertyChecker.computeBoundedLength(this, q, bound);
+  }
+
+  @Override
+  public AnswerElement smtDeterminism(HeaderQuestion q) {
+    return PropertyChecker.computeDeterminism(this, q);
+  }
+
+  @Override
+  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
+    return PropertyChecker.computeEqualLength(this, q);
+  }
+
+  @Override
+  public AnswerElement smtForwarding(HeaderQuestion q) {
+    return PropertyChecker.computeForwarding(this, q);
+  }
+
+  @Override
+  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
+    return PropertyChecker.computeLoadBalance(this, q, threshold);
+  }
+
+  @Override
+  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
+    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+  }
+
+  @Override
+  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
+    return PropertyChecker.computeMultipathConsistency(this, q);
+  }
+
+  @Override
+  public AnswerElement smtReachability(HeaderLocationQuestion q) {
+    return PropertyChecker.computeReachability(this, q);
+  }
+
+  @Override
+  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
+    return PropertyChecker.computeRoutingLoop(this, q);
+  }
+
+  @Override
   public AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
@@ -4706,81 +4756,5 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (JSONException e) {
       throw new BatfishException("Failed to synthesize JSON topology", e);
     }
-  }
-
-  static void checkTopology(Map<String, Configuration> configurations, Topology topology) {
-    for (Edge edge : topology.getEdges()) {
-      if (!configurations.containsKey(edge.getNode1())) {
-        throw new BatfishException(
-            String.format("Topology contains a non-existent node '%s'", edge.getNode1()));
-      }
-      if (!configurations.containsKey(edge.getNode2())) {
-        throw new BatfishException(
-            String.format("Topology contains a non-existent node '%s'", edge.getNode2()));
-      }
-      // nodes are valid, now checking corresponding interfaces
-      Configuration config1 = configurations.get(edge.getNode1());
-      Configuration config2 = configurations.get(edge.getNode2());
-      if (!config1.getInterfaces().containsKey(edge.getInt1())) {
-        throw new BatfishException(
-            String.format(
-                "Topology contains a non-existent interface '%s' on node '%s'",
-                edge.getInt1(), edge.getNode1()));
-      }
-      if (!config2.getInterfaces().containsKey(edge.getInt2())) {
-        throw new BatfishException(
-            String.format(
-                "Topology contains a non-existent interface '%s' on node '%s'",
-                edge.getInt2(), edge.getNode2()));
-      }
-    }
-  }
-
-  @Override
-  public AnswerElement smtForwarding(HeaderQuestion q) {
-    return PropertyChecker.computeForwarding(this, q);
-  }
-
-  @Override
-  public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    return PropertyChecker.computeReachability(this, q);
-  }
-
-  @Override
-  public AnswerElement smtBlackhole(HeaderQuestion q) {
-    return PropertyChecker.computeBlackHole(this, q);
-  }
-
-  @Override
-  public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    return PropertyChecker.computeRoutingLoop(this, q);
-  }
-
-  @Override
-  public AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound) {
-    if (bound == null) {
-      throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
-    }
-    return PropertyChecker.computeBoundedLength(this, q, bound);
-  }
-
-  @Override
-  public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    return PropertyChecker.computeEqualLength(this, q);
-  }
-
-  @Override
-  public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    return PropertyChecker.computeMultipathConsistency(this, q);
-  }
-
-  @Override
-  public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    return PropertyChecker.computeLoadBalance(this, q, threshold);
-  }
-
-  @Override
-  public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
   }
 }

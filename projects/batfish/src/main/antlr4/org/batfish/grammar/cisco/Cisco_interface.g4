@@ -56,17 +56,17 @@ if_hsrp_null
 
 if_hsrp_preempt
 :
-   PREEMPT ~NEWLINE* NEWLINE
+   NO? PREEMPT ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_priority
 :
-   PRIORITY value = DEC ~NEWLINE* NEWLINE
+   NO? PRIORITY value = DEC ~NEWLINE* NEWLINE
 ;
 
 if_hsrp_track
 :
-   TRACK ~NEWLINE* NEWLINE
+   NO? TRACK ~NEWLINE* NEWLINE
 ;
 
 if_ip_access_group
@@ -724,6 +724,7 @@ if_null_single
    (
       BCMC_OPTIMIZATION
       | JUMBO
+      | LINKDEBOUNCE
       | PHY
       | SUPPRESS_ARP
       | TRIMODE

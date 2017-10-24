@@ -1,8 +1,8 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -12,7 +12,7 @@ import org.batfish.common.Warnings;
 
 public class InitInfoAnswerElement implements AnswerElement {
 
-  private SortedMap<String, Set<BatfishStackTrace>> _errors;
+  private SortedMap<String, List<BatfishStackTrace>> _errors;
 
   private SortedMap<String, ParseStatus> _parseStatus;
 
@@ -27,7 +27,7 @@ public class InitInfoAnswerElement implements AnswerElement {
     _errors = new TreeMap<>();
   }
 
-  public SortedMap<String, Set<BatfishStackTrace>> getErrors() {
+  public SortedMap<String, List<BatfishStackTrace>> getErrors() {
     return _errors;
   }
 
@@ -175,7 +175,7 @@ public class InitInfoAnswerElement implements AnswerElement {
     return sb.toString();
   }
 
-  public void setErrors(SortedMap<String, Set<BatfishStackTrace>> errors) {
+  public void setErrors(SortedMap<String, List<BatfishStackTrace>> errors) {
     _errors = errors;
   }
 

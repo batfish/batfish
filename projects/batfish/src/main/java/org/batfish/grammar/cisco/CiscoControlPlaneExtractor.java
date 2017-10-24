@@ -24,6 +24,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DscpType;
@@ -147,6 +148,7 @@ import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
+import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
@@ -186,6 +188,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cmm_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.CommunityContext;
+import org.batfish.grammar.cisco.CiscoParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
@@ -2138,6 +2141,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitAs_path_multipath_relax_rb_stanza(As_path_multipath_relax_rb_stanzaContext ctx) {
+    currentVrf().getBgpProcess().setAsPathMultipathRelax(ctx.NO() == null);
+  }
+
+  @Override
   public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
@@ -2257,6 +2265,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           CiscoStructureType.DEPI_TUNNEL, name, CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL, line);
     }
+  }
+
+  @Override
+  public void exitCompare_routerid_rb_stanza(Compare_routerid_rb_stanzaContext ctx) {
+    currentVrf().getBgpProcess().setTieBreaker(BgpTieBreaker.ROUTER_ID);
   }
 
   @Override
