@@ -576,14 +576,8 @@ public class BfCoordWorkHelper {
     }
   }
 
-  /**
-   * Gets the questions configured at the coordinator
-   *
-   * @return JSON Object containing question keys and question content as values
-   *         null if there is any failure
-   */
   @Nullable
-  JSONObject getQuestionTemplates() {
+  public JSONObject getQuestionTemplates() {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES);
 
