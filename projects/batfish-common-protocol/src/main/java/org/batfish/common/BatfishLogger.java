@@ -63,23 +63,23 @@ public class BatfishLogger {
 
   public static final int LEVEL_WARN = 300;
 
-  private static final String LEVELSTR_DEBUG = "debug";
+  public static final String LEVELSTR_DEBUG = "debug";
 
-  private static final String LEVELSTR_ERROR = "error";
+  public static final String LEVELSTR_ERROR = "error";
 
-  private static final String LEVELSTR_FATAL = "fatal";
+  public static final String LEVELSTR_FATAL = "fatal";
 
-  private static final String LEVELSTR_INFO = "info";
+  public static final String LEVELSTR_INFO = "info";
 
-  private static final String LEVELSTR_OUTPUT = "output";
+  public static final String LEVELSTR_OUTPUT = "output";
 
-  private static final String LEVELSTR_PEDANTIC = "pedantic";
+  public static final String LEVELSTR_PEDANTIC = "pedantic";
 
-  private static final String LEVELSTR_REDFLAG = "redflag";
+  public static final String LEVELSTR_REDFLAG = "redflag";
 
-  private static final String LEVELSTR_UNIMPLEMENTED = "unimplemented";
+  public static final String LEVELSTR_UNIMPLEMENTED = "unimplemented";
 
-  private static final String LEVELSTR_WARN = "warn";
+  public static final String LEVELSTR_WARN = "warn";
 
   private static final Map<String, Integer> LOG_LEVELS = initializeLogLevels();
 
