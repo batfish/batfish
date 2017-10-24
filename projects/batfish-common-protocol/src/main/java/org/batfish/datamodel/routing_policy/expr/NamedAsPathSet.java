@@ -1,22 +1,23 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class NamedAsPathSet extends AsPathSetExpr {
-
+public final class NamedAsPathSet extends AsPathSetExpr {
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static final String PROP_NAME = "name";
 
   private String _name;
 
   @JsonCreator
-  private NamedAsPathSet() {}
-
-  public NamedAsPathSet(String name) {
+  public NamedAsPathSet(@JsonProperty(PROP_NAME) String name) {
     _name = name;
   }
 
@@ -25,23 +26,14 @@ public class NamedAsPathSet extends AsPathSetExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof NamedAsPathSet)) {
       return false;
     }
     NamedAsPathSet other = (NamedAsPathSet) obj;
-    if (_name == null) {
-      if (other._name != null) {
-        return false;
-      }
-    } else if (!_name.equals(other._name)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_name, other._name);
   }
 
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
@@ -80,7 +72,13 @@ public class NamedAsPathSet extends AsPathSetExpr {
     }
   }
 
+  @JsonProperty(PROP_NAME)
   public void setName(String name) {
     _name = name;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper().add("name", _name).toString();
   }
 }
