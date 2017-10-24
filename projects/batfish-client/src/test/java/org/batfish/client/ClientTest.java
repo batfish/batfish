@@ -101,6 +101,7 @@ import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -891,6 +892,29 @@ public class ClientTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Question in questionSource has no instance data");
     Client.loadQuestionFromText(testQuestion.toString(), "questionSource");
+  }
+
+  @Test
+  public void testLoadQuestionsNames() throws Exception {
+    Client client =
+        new Client(new String[] {"-runmode", "gendatamodel", "-prettyanswers", "false"});
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
+    client._logger = new BatfishLogger("output", false);
+    client.processCommand(
+        new String[] {LOAD_QUESTIONS.commandName(), questionJsonPath.getParent().toString()}, null);
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    Answer answerLoadQuestions =
+        mapper.readValue(client.getLogger().getHistory().toString(220), Answer.class);
+    LoadQuestionAnswerElement ae =
+        (LoadQuestionAnswerElement) answerLoadQuestions.getAnswerElements().get(0);
+    assertEquals("testQuestionName", ae.getAdded().first());
   }
 
   @Test
