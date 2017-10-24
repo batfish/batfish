@@ -76,13 +76,10 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.SUBRANGE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -93,17 +90,12 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang.ArrayUtils;
-import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.questions.Question;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -120,8 +112,10 @@ public class ClientTest {
           + " command line (-testrigdir <testrigdir>) or use command (INIT_TESTRIG <testrigdir>)\n";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+
   private BatfishObjectMapper _mapper;
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
@@ -138,7 +132,7 @@ public class ClientTest {
   @Test
   public void checkTestInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(TEST, new String[] {}, parameters);
+    testInvalidInput(TEST, parameters);
   }
 
   @Test
@@ -164,12 +158,12 @@ public class ClientTest {
 
   @Test
   public void testAddAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(ADD_ANALYSIS_QUESTIONS, new String[] {}, new String[] {});
+    testInvalidInput(ADD_ANALYSIS_QUESTIONS, new String[] {});
   }
 
   @Test
   public void testAddBatfishOptionInvalidParas() throws Exception {
-    testInvalidInput(ADD_BATFISH_OPTION, new String[] {}, new String[] {});
+    testInvalidInput(ADD_BATFISH_OPTION, new String[] {});
   }
 
   @Test
@@ -180,7 +174,7 @@ public class ClientTest {
 
   @Test
   public void testAnswerDeltaInvalidParas() throws Exception {
-    testInvalidInput(ANSWER_DELTA, new String[] {}, new String[] {});
+    testInvalidInput(ANSWER_DELTA, new String[] {});
   }
 
   @Test
@@ -191,7 +185,7 @@ public class ClientTest {
 
   @Test
   public void testAnswerInvalidParas() throws Exception {
-    testInvalidInput(ANSWER, new String[] {}, new String[] {});
+    testInvalidInput(ANSWER, new String[] {});
   }
 
   @Test
@@ -222,13 +216,13 @@ public class ClientTest {
   @Test
   public void testCheckApiKeyInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(CHECK_API_KEY, new String[] {}, parameters);
+    testInvalidInput(CHECK_API_KEY, parameters);
   }
 
   @Test
   public void testClearScreenInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(CLEAR_SCREEN, new String[] {}, parameters);
+    testInvalidInput(CLEAR_SCREEN, parameters);
   }
 
   @Test
@@ -245,12 +239,12 @@ public class ClientTest {
 
   @Test
   public void testDelAnalysisInvalidParas() throws Exception {
-    testInvalidInput(DEL_ANALYSIS, new String[] {}, new String[] {});
+    testInvalidInput(DEL_ANALYSIS, new String[] {});
   }
 
   @Test
   public void testDelAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(DEL_ANALYSIS_QUESTIONS, new String[] {}, new String[] {});
+    testInvalidInput(DEL_ANALYSIS_QUESTIONS, new String[] {});
   }
 
   @Test
@@ -267,7 +261,7 @@ public class ClientTest {
 
   @Test
   public void testDelBatfishOptionInvalidParas() throws Exception {
-    testInvalidInput(DEL_BATFISH_OPTION, new String[] {}, new String[] {});
+    testInvalidInput(DEL_BATFISH_OPTION, new String[] {});
   }
 
   @Test
@@ -279,12 +273,12 @@ public class ClientTest {
 
   @Test
   public void testDelContainerInvalidParas() throws Exception {
-    testInvalidInput(DEL_CONTAINER, new String[] {}, new String[] {});
+    testInvalidInput(DEL_CONTAINER, new String[] {});
   }
 
   @Test
   public void testDelEnvironmentInvalidParas() throws Exception {
-    testInvalidInput(DEL_ENVIRONMENT, new String[] {}, new String[] {});
+    testInvalidInput(DEL_ENVIRONMENT, new String[] {});
   }
 
   @Test
@@ -295,7 +289,7 @@ public class ClientTest {
 
   @Test
   public void testDelQuestionInvalidParas() throws Exception {
-    testInvalidInput(DEL_QUESTION, new String[] {}, new String[] {});
+    testInvalidInput(DEL_QUESTION, new String[] {});
   }
 
   @Test
@@ -306,7 +300,7 @@ public class ClientTest {
 
   @Test
   public void testDelTestrigInvalidParas() throws Exception {
-    testInvalidInput(DEL_TESTRIG, new String[] {}, new String[] {});
+    testInvalidInput(DEL_TESTRIG, new String[] {});
   }
 
   @Test
@@ -318,7 +312,7 @@ public class ClientTest {
   @Test
   public void testDirInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2"};
-    testInvalidInput(DIR, new String[] {}, parameters);
+    testInvalidInput(DIR, parameters);
   }
 
   @Test
@@ -354,7 +348,7 @@ public class ClientTest {
   @Test
   public void testExitInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(EXIT, new String[] {}, parameters);
+    testInvalidInput(EXIT, parameters);
   }
 
   @Test
@@ -365,7 +359,7 @@ public class ClientTest {
   @Test
   public void testGenerateDataplaneDeltaInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GEN_DELTA_DP, new String[] {}, parameters);
+    testInvalidInput(GEN_DELTA_DP, parameters);
   }
 
   @Test
@@ -377,7 +371,7 @@ public class ClientTest {
   @Test
   public void testGenerateDataplaneInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GEN_DP, new String[] {}, parameters);
+    testInvalidInput(GEN_DP, parameters);
   }
 
   @Test
@@ -399,7 +393,7 @@ public class ClientTest {
 
   @Test
   public void testGetAnalysisAnswersInvalidParas() throws Exception {
-    testInvalidInput(GET_ANALYSIS_ANSWERS, new String[] {}, new String[] {});
+    testInvalidInput(GET_ANALYSIS_ANSWERS, new String[] {});
   }
 
   @Test
@@ -422,7 +416,7 @@ public class ClientTest {
 
   @Test
   public void testGetAnswersInvalidParas() throws Exception {
-    testInvalidInput(GET_ANSWER, new String[] {}, new String[] {});
+    testInvalidInput(GET_ANSWER, new String[] {});
   }
 
   @Test
@@ -433,7 +427,7 @@ public class ClientTest {
 
   @Test
   public void testGetDeltaInvalidParas() throws Exception {
-    testInvalidInput(GET_DELTA, new String[] {}, new String[] {});
+    testInvalidInput(GET_DELTA, new String[] {});
   }
 
   @Test
@@ -444,47 +438,12 @@ public class ClientTest {
 
   @Test
   public void testGetInvalidParas() throws Exception {
-    testInvalidInput(GET, new String[] {}, new String[] {});
+    testInvalidInput(GET, new String[] {});
   }
 
   @Test
   public void testGetQuestionInvalidParas() throws Exception {
-    testInvalidInput(GET_QUESTION, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testGetQuestionName() throws JSONException {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject()
-            .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
-
-    //test if question name is correct
-    assertEquals("testQuestionName", Client.getQuestionName(testQuestion, "testquestion"));
-  }
-
-  @Test
-  public void testGetQuestionNameInvalid1() throws JSONException {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put("instance", new JSONObject().put("description", "test question description"));
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "question testquestion does not have instanceName field in instance");
-
-    //check exception when no instanceName is present
-    Client.getQuestionName(testQuestion, "testquestion");
-  }
-
-  @Test
-  public void testGetQuestionNameInvalid2() throws JSONException {
-    JSONObject testQuestion = new JSONObject();
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("question testquestion does not have instance field");
-
-    //check exception when instance itself is not present
-    Client.getQuestionName(testQuestion, "testquestion");
+    testInvalidInput(GET_QUESTION, new String[] {});
   }
 
   @Test
@@ -525,7 +484,7 @@ public class ClientTest {
 
   @Test
   public void testInitAnalysisQuestionInvalidParas() throws Exception {
-    testInvalidInput(INIT_ANALYSIS, new String[] {}, new String[] {});
+    testInvalidInput(INIT_ANALYSIS, new String[] {});
   }
 
   @Test
@@ -560,12 +519,12 @@ public class ClientTest {
   @Test
   public void testInitContainerInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1", "parameter2", "parameter3"};
-    testInvalidInput(INIT_CONTAINER, new String[] {}, parameters);
+    testInvalidInput(INIT_CONTAINER, parameters);
   }
 
   @Test
   public void testInitEnvInvalidParas() throws Exception {
-    testInvalidInput(INIT_ENVIRONMENT, new String[] {}, new String[] {});
+    testInvalidInput(INIT_ENVIRONMENT, new String[] {});
   }
 
   @Test
@@ -576,12 +535,12 @@ public class ClientTest {
 
   @Test
   public void testInitTestrigDeltaInvalidParas() throws Exception {
-    testInvalidInput(INIT_DELTA_TESTRIG, new String[] {}, new String[] {});
+    testInvalidInput(INIT_DELTA_TESTRIG, new String[] {});
   }
 
   @Test
   public void testInitTestrigInvalidParas() throws Exception {
-    testInvalidInput(INIT_TESTRIG, new String[] {}, new String[] {});
+    testInvalidInput(INIT_TESTRIG, new String[] {});
   }
 
   @Test
@@ -626,19 +585,16 @@ public class ClientTest {
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
-  private void testInvalidInput(Command command, String[] options, String[] parameters)
-      throws Exception {
+  private void testInvalidInput(Command command, String[] parameters) throws Exception {
     Pair<String, String> usage = Command.getUsageMap().get(command);
     String expected =
         String.format(
-            "Invalid arguments: %s %s\n%s %s\n\t%s\n\n",
-            Arrays.toString(options),
+            "Invalid arguments: [] %s\n%s %s\n\t%s\n\n",
             Arrays.toString(parameters),
             command.commandName(),
             usage.getFirst(),
             usage.getSecond());
-    checkProcessCommandErrorMessage(
-        command, (String[]) ArrayUtils.addAll(options, parameters), expected);
+    checkProcessCommandErrorMessage(command, parameters, expected);
   }
 
   @Test
@@ -800,7 +756,7 @@ public class ClientTest {
   @Test
   public void testListAnalysisInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_ANALYSES, new String[] {}, parameters);
+    testInvalidInput(LIST_ANALYSES, parameters);
   }
 
   @Test
@@ -812,13 +768,13 @@ public class ClientTest {
   @Test
   public void testListContainersInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_CONTAINERS, new String[] {}, parameters);
+    testInvalidInput(LIST_CONTAINERS, parameters);
   }
 
   @Test
   public void testListEnvironmentsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_ENVIRONMENTS, new String[] {}, parameters);
+    testInvalidInput(LIST_ENVIRONMENTS, parameters);
   }
 
   @Test
@@ -829,7 +785,7 @@ public class ClientTest {
   @Test
   public void testListQuestionsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_QUESTIONS, new String[] {}, parameters);
+    testInvalidInput(LIST_QUESTIONS, parameters);
   }
 
   @Test
@@ -840,170 +796,20 @@ public class ClientTest {
   @Test
   public void testListTestrigsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_TESTRIGS, new String[] {}, parameters);
+    testInvalidInput(LIST_TESTRIGS, parameters);
   }
 
   @Test
-  public void testLoadQuestionFromFile() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject()
-            .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
-    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
-    JSONObject question = Client.loadQuestionFromFile(questionJsonPath);
-
-    //checking if actual and loaded JSONs are same
-    assertEquals(
-        "testQuestionName",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME));
-    assertEquals(
-        "test question description",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+  public void testLoadQuestionsInvalidParas() throws Exception {
+    testInvalidInput(LOAD_QUESTIONS, new String[] {});
   }
 
   @Test
-  public void testLoadQuestionFromText() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject()
-            .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
-    JSONObject question = Client.loadQuestionFromText(testQuestion.toString(), "testquestion");
-
-    //checking if actual and loaded JSONs are same
-    assertEquals(
-        "testQuestionName",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_INSTANCE_NAME));
-    assertEquals(
-        "test question description",
-        question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
-  }
-
-  @Test
-  public void testLoadQuestionFromTextInvalid() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-
-    //checking if exception thrown for instance missing
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Question in questionSource has no instance data");
-    Client.loadQuestionFromText(testQuestion.toString(), "questionSource");
-  }
-
-  @Test
-  public void testLoadQuestionsFromDir() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject()
-            .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
-    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
-    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
-    Multimap<String, String> loadedQuestions =
-        Client.loadQuestionsFromDir(questionJsonPath.toString());
-    Multimap<String, String> expectedMap = HashMultimap.create();
-    expectedMap.put("testQuestionName", testQuestion.toString());
-
-    //checking if questions are loaded from disk correctly
-    assertEquals(expectedMap, loadedQuestions);
-  }
-
-  @Test
-  public void testLoadQuestionsFromServer() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject()
-            .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
-    JSONObject testJson = new JSONObject().put("testQuestion", testQuestion.toString());
-    Multimap<String, String> loadedQuestions = Client.loadQuestionsFromServer(testJson);
-    Multimap<String, String> expectedMap = HashMultimap.create();
-    expectedMap.put("testQuestionName", testQuestion.toString());
-
-    //checking if questions are loaded from json correctly
-    assertEquals(expectedMap, loadedQuestions);
-  }
-
-  @Test
-  public void testLoadQuestionsInvalidParas1() throws Exception {
-    testInvalidInput(LOAD_QUESTIONS, new String[] {}, new String[] {"path1", "path2"});
-  }
-
-  @Test
-  public void testLoadQuestionsInvalidParas2() throws Exception {
-    testInvalidInput(
-        LOAD_QUESTIONS,
-        new String[] {"-loadremote", "-loadlocal"},
-        new String[] {"param1", "param2"});
-  }
-
-  @Test
-  public void testLoadQuestionsValidParas1() throws Exception {
+  public void testLoadQuestionsValidParas() throws Exception {
     Path tempFilePath = _folder.newFolder("temp").toPath();
     String[] parameters = new String[] {tempFilePath.toString()};
     testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
   }
-
-  @Test
-  public void testLoadQuestionsValidParas2() throws Exception {
-    Path tempFilePath = _folder.newFolder("temp").toPath();
-    String[] parameters = new String[] {"-loadremote", tempFilePath.toString()};
-    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
-  }
-
-  @Test
-  public void testLoadQuestionsValidParas3() throws Exception {
-    String[] parameters = new String[] {"-loadremote"};
-    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
-  }
-
-  @Test
-  public void testLoadQuestionsValidParas4() throws Exception {
-    String[] parameters = new String[] {};
-    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
-  }
-
-  @Test
-  public void testMergeQuestions1() throws Exception {
-    Multimap<String, String> sourceMap = HashMultimap.create();
-    sourceMap.put("sourcequestion", "sourcequestionvalue");
-    sourceMap.put("destinationquestion", "destinationquestionvalue");
-    Map<String, String> destMap = new HashMap<>();
-    destMap.put("destinationquestion", "destinationquestionvalue");
-    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    Client.mergeQuestions(sourceMap, destMap, ae);
-    Map<String, String> expectedMap = new HashMap<>();
-    expectedMap.put("sourcequestion", "sourcequestionvalue");
-    expectedMap.put("destinationquestion", "destinationquestionvalue");
-
-    //Test the merging populates ae and destinationquestion get replaced
-    assertThat(expectedMap.entrySet(), equalTo(destMap.entrySet()));
-    assertEquals(new TreeSet<>(Arrays.asList("destinationquestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
-    assertEquals(2, ae.getNumLoaded());
-  }
-
-  @Test
-  public void testMergeQuestions2() throws Exception {
-    Multimap<String, String> sourceMap = HashMultimap.create();
-    sourceMap.put("sourcequestion", "sourcequestionvalue1");
-    sourceMap.put("sourcequestion", "sourcequestionvalue2");
-    Map<String, String> destMap = new HashMap<>();
-    LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
-    Client.mergeQuestions(sourceMap, destMap, ae);
-
-    //Test the merging populates ae and sourcequestion get replaced
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
-    assertEquals(2, ae.getNumLoaded());
-  }
-
-
 
   @Test
   public void testMissingNonOptionalParameterNoValue() {
@@ -1104,8 +910,8 @@ public class ClientTest {
 
   @Test
   public void testParseInitEnvironmentParamsInterfaceBlacklist() {
-    String paramsLine =
-        "interfaceBlacklist=" + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
+    String paramsLine = "interfaceBlacklist="
+        + "[{hostname=\"as2border2\",interface=\"GigabitEthernet0/0\"}]";
     Client.parseInitEnvironmentParams(paramsLine);
   }
 
@@ -1154,7 +960,7 @@ public class ClientTest {
   @Test
   public void testPromptInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(PROMPT, new String[] {}, parameters);
+    testInvalidInput(PROMPT, parameters);
   }
 
   @Test
@@ -1184,7 +990,7 @@ public class ClientTest {
   @Test
   public void testPwdInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(PWD, new String[] {}, parameters);
+    testInvalidInput(PWD, parameters);
   }
 
   @Test
@@ -1198,13 +1004,13 @@ public class ClientTest {
   @Test
   public void testReinitTestrigDeltaInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_DELTA_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(REINIT_DELTA_TESTRIG, parameters);
   }
 
   @Test
   public void testReinitTestrigInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(REINIT_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(REINIT_TESTRIG, parameters);
   }
 
   @Test
@@ -1221,7 +1027,7 @@ public class ClientTest {
 
   @Test
   public void testRunAnalysisInvalidParas() throws Exception {
-    testInvalidInput(RUN_ANALYSIS, new String[] {}, new String[] {});
+    testInvalidInput(RUN_ANALYSIS, new String[] {});
   }
 
   @Test
@@ -1255,7 +1061,7 @@ public class ClientTest {
 
   @Test
   public void testSetBatfishLogLevelInvalidParas() throws Exception {
-    testInvalidInput(SET_BATFISH_LOGLEVEL, new String[] {}, new String[] {});
+    testInvalidInput(SET_BATFISH_LOGLEVEL, new String[] {});
   }
 
   @Test
@@ -1267,7 +1073,7 @@ public class ClientTest {
 
   @Test
   public void testSetContainerInvalidParas() throws Exception {
-    testInvalidInput(SET_CONTAINER, new String[] {}, new String[] {});
+    testInvalidInput(SET_CONTAINER, new String[] {});
   }
 
   @Test
@@ -1281,7 +1087,7 @@ public class ClientTest {
 
   @Test
   public void testSetDeltaEnvInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_ENV, new String[] {}, new String[] {});
+    testInvalidInput(SET_DELTA_ENV, new String[] {});
   }
 
   @Test
@@ -1295,7 +1101,7 @@ public class ClientTest {
 
   @Test
   public void testSetDeltaTestrigInvalidParas() throws Exception {
-    testInvalidInput(SET_DELTA_TESTRIG, new String[] {}, new String[] {});
+    testInvalidInput(SET_DELTA_TESTRIG, new String[] {});
   }
 
   @Test
@@ -1309,7 +1115,7 @@ public class ClientTest {
 
   @Test
   public void testSetEnvInvalidParas() throws Exception {
-    testInvalidInput(SET_ENV, new String[] {}, new String[] {});
+    testInvalidInput(SET_ENV, new String[] {});
   }
 
   @Test
@@ -1320,7 +1126,7 @@ public class ClientTest {
 
   @Test
   public void testSetLogLevelInvalidParas() throws Exception {
-    testInvalidInput(SET_LOGLEVEL, new String[] {}, new String[] {});
+    testInvalidInput(SET_LOGLEVEL, new String[] {});
   }
 
   @Test
@@ -1332,7 +1138,7 @@ public class ClientTest {
 
   @Test
   public void testSetPrettyPrintInvalidParas() throws Exception {
-    testInvalidInput(SET_PRETTY_PRINT, new String[] {}, new String[] {});
+    testInvalidInput(SET_PRETTY_PRINT, new String[] {});
   }
 
   @Test
@@ -1344,7 +1150,7 @@ public class ClientTest {
 
   @Test
   public void testSetTestrigInvalidParas() throws Exception {
-    testInvalidInput(SET_TESTRIG, new String[] {}, new String[] {});
+    testInvalidInput(SET_TESTRIG, new String[] {});
   }
 
   @Test
@@ -1356,7 +1162,7 @@ public class ClientTest {
   @Test
   public void testShowApiKeyInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_API_KEY, new String[] {}, parameters);
+    testInvalidInput(SHOW_API_KEY, parameters);
   }
 
   @Test
@@ -1368,7 +1174,7 @@ public class ClientTest {
   @Test
   public void testShowBatfishLogLevelInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_BATFISH_LOGLEVEL, new String[] {}, parameters);
+    testInvalidInput(SHOW_BATFISH_LOGLEVEL, parameters);
   }
 
   @Test
@@ -1380,7 +1186,7 @@ public class ClientTest {
   @Test
   public void testShowBatfishOptionsInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_BATFISH_OPTIONS, new String[] {}, parameters);
+    testInvalidInput(SHOW_BATFISH_OPTIONS, parameters);
   }
 
   @Test
@@ -1398,13 +1204,13 @@ public class ClientTest {
   @Test
   public void testShowContainerInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_CONTAINER, new String[] {}, parameters);
+    testInvalidInput(SHOW_CONTAINER, parameters);
   }
 
   @Test
   public void testShowCoordinatorHostInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_COORDINATOR_HOST, new String[] {}, parameters);
+    testInvalidInput(SHOW_COORDINATOR_HOST, parameters);
   }
 
   @Test
@@ -1416,7 +1222,7 @@ public class ClientTest {
   @Test
   public void testShowDeltaTestrigInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_DELTA_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(SHOW_DELTA_TESTRIG, parameters);
   }
 
   @Test
@@ -1428,7 +1234,7 @@ public class ClientTest {
   @Test
   public void testShowLogLevelInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_LOGLEVEL, new String[] {}, parameters);
+    testInvalidInput(SHOW_LOGLEVEL, parameters);
   }
 
   @Test
@@ -1440,7 +1246,7 @@ public class ClientTest {
   @Test
   public void testShowTestrigInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(SHOW_TESTRIG, parameters);
   }
 
   @Test
@@ -1452,13 +1258,13 @@ public class ClientTest {
   @Test
   public void testShowVersionInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(SHOW_TESTRIG, new String[] {}, parameters);
+    testInvalidInput(SHOW_TESTRIG, parameters);
   }
 
   @Test
   public void testGetConfigurationInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GET_CONFIGURATION, new String[] {}, parameters);
+    testInvalidInput(GET_CONFIGURATION, parameters);
   }
 
   @Test
@@ -1504,7 +1310,7 @@ public class ClientTest {
 
   @Test
   public void testUploadCustomObjectInvalidParas() throws Exception {
-    testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[] {}, new String[] {});
+    testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[] {});
   }
 
   @Test
