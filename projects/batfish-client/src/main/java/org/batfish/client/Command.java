@@ -249,8 +249,10 @@ public enum Command {
     descs.put(
         LOAD_QUESTIONS,
         new Pair<>(
-            "<path to directory containing question json files",
-            "Load questions from library directory"));
+            "[-loadremote] [path to local directory containing question json files]",
+            "Load questions from local directory, -loadremote loads questions from coordinator, "
+                + "if both are specified, questions from local directory overwrite the remote "
+                + "questions"));
     descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
     descs.put(PWD, new Pair<>("", "Prints the working directory"));
     descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
