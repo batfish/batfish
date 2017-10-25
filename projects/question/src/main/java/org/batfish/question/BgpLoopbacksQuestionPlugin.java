@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -27,6 +29,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+@AutoService(Plugin.class)
 public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
 
   public static class BgpLoopbacksAnswerElement implements AnswerElement {

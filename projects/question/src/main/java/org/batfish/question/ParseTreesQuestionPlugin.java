@@ -1,15 +1,18 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.auto.service.AutoService;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class ParseTreesQuestionPlugin extends QuestionPlugin {
 
   public static class ParseTreesAnswerElement implements AnswerElement {

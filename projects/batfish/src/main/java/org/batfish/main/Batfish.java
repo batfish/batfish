@@ -44,8 +44,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.bdp.BdpDataPlanePlugin;
-import org.batfish.bgp.JsonExternalBgpAdvertisementPlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -484,7 +482,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
       Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
-    super(settings.getSerializeToText(), settings.getPluginDirs());
+    super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
     _cachedConfigurations = cachedConfigurations;
@@ -3958,14 +3956,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Answer run() {
     newBatch("Begin job", 0);
     loadPlugins();
-    if (_dataPlanePlugin == null) {
-      _dataPlanePlugin = new BdpDataPlanePlugin();
-      _dataPlanePlugin.initialize(this);
-    }
-    JsonExternalBgpAdvertisementPlugin jsonExternalBgpAdvertisementsPlugin =
-        new JsonExternalBgpAdvertisementPlugin();
-    jsonExternalBgpAdvertisementsPlugin.initialize(this);
-    _externalBgpAdvertisementPlugins.add(jsonExternalBgpAdvertisementsPlugin);
     boolean action = false;
     Answer answer = new Answer();
 

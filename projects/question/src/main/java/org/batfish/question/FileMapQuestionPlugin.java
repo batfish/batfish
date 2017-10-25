@@ -1,12 +1,15 @@
 package org.batfish.question;
 
+import com.google.auto.service.AutoService;
 import java.util.SortedMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class FileMapQuestionPlugin extends QuestionPlugin {
 
   public static class FileMapAnswerElement implements AnswerElement {

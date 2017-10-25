@@ -87,7 +87,7 @@ public class WorkMgr extends AbstractCoordinator {
   private WorkQueueMgr _workQueueMgr;
 
   public WorkMgr(Settings settings, BatfishLogger logger) {
-    super(false, settings.getPluginDirs());
+    super(false);
     _settings = settings;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr();

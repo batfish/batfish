@@ -1,11 +1,14 @@
 package org.batfish.question;
 
+import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class FileTreeQuestionPlugin extends QuestionPlugin {
 
   public static class FileTreeAnswerElement implements AnswerElement {

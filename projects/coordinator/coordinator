@@ -1,9 +1,10 @@
 #!/bin/bash
-COORDINATOR=${BASH_SOURCE[0]}
-COORDINATOR_PATH=$(dirname $COORDINATOR)
-COORDINATOR_JAR=$COORDINATOR_PATH/target/coordinator-bundle-${BATFISH_VERSION}.jar
+COORDINATOR="${BASH_SOURCE[0]}"
+COORDINATOR_PATH="$(dirname "$COORDINATOR")"
+ALLINONE_PATH="${COORDINATOR_PATH}/../allinone"
+ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
 if batfish_cygwin; then
-   COORDINATOR_JAR="$(cygpath -w $COORDINATOR_JAR)"
+   ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
 fi
-java $COORDINATOR_JAVA_ARGS -jar "$COORDINATOR_JAR" "$@"
+java $COORDINATOR_JAVA_ARGS -cp "${ALLINONE_JAR}:${COORDINATOR_CLASSPATH}" org.batfish.coordinator.Main "$@"
 

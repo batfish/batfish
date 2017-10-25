@@ -1,8 +1,6 @@
 package org.batfish.client.config;
 
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -50,7 +48,6 @@ public class Settings extends BaseSettings {
   private String _logFile;
   private String _logLevel;
   private long _periodCheckWorkMs;
-  private List<Path> _pluginDirs;
   private boolean _prettyPrintAnswers;
   private String _questionsDir;
 
@@ -122,10 +119,6 @@ public class Settings extends BaseSettings {
     return _periodCheckWorkMs;
   }
 
-  public List<Path> getPluginDirs() {
-    return _pluginDirs;
-  }
-
   public boolean getPrettyPrintAnswers() {
     return _prettyPrintAnswers;
   }
@@ -187,7 +180,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
     setDefaultProperty(ARG_NO_SANITY_CHECK, false);
     setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
-    setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_PRETTY_PRINT_ANSWERS, true);
     setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
@@ -224,8 +216,6 @@ public class Settings extends BaseSettings {
 
     addOption(
         ARG_PERIOD_CHECK_WORK, "period with which to check work (ms)", "period_check_work_ms");
-
-    addListOption(BfConsts.ARG_PLUGIN_DIRS, "directories containing plugin jars", "paths");
 
     addBooleanOption(ARG_PRETTY_PRINT_ANSWERS, "pretty print answers");
 
@@ -267,7 +257,6 @@ public class Settings extends BaseSettings {
     _logFile = getStringOptionValue(ARG_LOG_FILE);
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
     _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK);
-    _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
     _prettyPrintAnswers = getBooleanOptionValue(ARG_PRETTY_PRINT_ANSWERS);
     _questionsDir = getStringOptionValue(ARG_QUESTIONS_DIR);
     _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
