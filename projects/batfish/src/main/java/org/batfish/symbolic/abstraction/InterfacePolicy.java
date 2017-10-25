@@ -84,13 +84,19 @@ public class InterfacePolicy {
   }
 
   public InterfacePolicy restrictStatic(List<Prefix> prefixes) {
-    InterfacePolicy pol = new InterfacePolicy(this);
+    if (_staticRoutes == null) {
+      return this;
+    }
     SortedSet<Pair<Prefix,Integer>> newStatic = new TreeSet<>();
     for (Pair<Prefix, Integer> tup : _staticRoutes) {
-      if (!PrefixUtils.isContainedBy(tup.getFirst(), prefixes)) {
+      if (prefixes == null || !PrefixUtils.isContainedBy(tup.getFirst(), prefixes)) {
         newStatic.add(tup);
       }
     }
+    if (newStatic.size() == _staticRoutes.size()) {
+      return this;
+    }
+    InterfacePolicy pol = new InterfacePolicy(this);
     pol._staticRoutes = newStatic;
     return pol;
   }

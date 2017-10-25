@@ -57,12 +57,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     CallbackHandler handler = new CallbackHandler();
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory = JFactory.init(100000, 50000);
+      factory = JFactory.init(100000, 10000);
       factory.disableReorder();
+      factory.setCacheRatio(64);
       // Disables printing
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
+      //factory.registerGCCallback(handler, m);
+      //factory.registerResizeCallback(handler, m);
+      //factory.registerReorderCallback(handler, m);
       pairing = factory.makePair();
     } catch (NoSuchMethodException e) {
       e.printStackTrace();

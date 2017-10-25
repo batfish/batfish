@@ -76,12 +76,15 @@ import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferParam;
 import org.batfish.symbolic.TransferResult;
+import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
 class TransferBDD {
 
   private static BDDFactory factory = BDDRoute.factory;
+
+  private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
 
   private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
@@ -319,11 +322,16 @@ class TransferBDD {
     } else if (expr instanceof CallExpr) {
       p.debug("CallExpr");
       CallExpr c = (CallExpr) expr;
+      String router = _conf.getName();
       String name = c.getCalledPolicyName();
+      TransferResult<TransferReturn, BDD> r  = CACHE.get(router, name);
+      if (r != null) {
+        return r;
+      }
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
       p = p.setCallContext(TransferParam.CallContext.EXPR_CALL);
-      TransferResult<TransferReturn, BDD> r =
-          compute(pol.getStatements(), p.indent().enterScope(name));
+      r = compute(pol.getStatements(), p.indent().enterScope(name));
+      CACHE.put(router, name, r);
       return r;
 
     } else if (expr instanceof WithEnvironmentExpr) {

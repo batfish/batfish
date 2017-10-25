@@ -34,6 +34,7 @@ public class BDDPacket {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
       factory = JFactory.init(10000, 1000);
       factory.disableReorder();
+      factory.setCacheRatio(64);
       // Disables printing
       factory.registerGCCallback(handler, m);
       factory.registerResizeCallback(handler, m);
