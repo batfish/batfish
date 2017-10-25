@@ -39,6 +39,7 @@ test tests/basic/unusedStructures.ref get unusedStructures
 test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
+test tests/basic/outliers3.ref get outliers hypothesis="sameServers"
 test tests/basic/perRole.ref get perRole question={"class": "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"}
 
 #this test has non-deterministic output; commented for now
