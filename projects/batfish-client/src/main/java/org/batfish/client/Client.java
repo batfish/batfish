@@ -2035,13 +2035,14 @@ public class Client extends AbstractClient implements IClient {
     //outputting the final answer
     ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
     String answerStringToPrint;
-    try {
-      answerStringToPrint = mapper.writeValueAsString(answer);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write answer element as string", e);
-    }
     if (outWriter == null && _settings.getPrettyPrintAnswers()) {
       answerStringToPrint = answer.prettyPrint();
+    } else {
+      try {
+        answerStringToPrint = mapper.writeValueAsString(answer);
+      } catch (JsonProcessingException e) {
+        throw new BatfishException("Could not write answer element as string", e);
+      }
     }
     logOutput(outWriter, answerStringToPrint);
 
@@ -2133,8 +2134,8 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
-   * Merges questions in source map into questions in destination map and overwrites
-   * question with same keys
+   * Merges questions in source map into questions in destination map and overwrites question with
+   * same keys
    *
    * @param sourceMap {@link Multimap} containing question names and content
    * @param destinationMap {@link Map} containing the merged questions
@@ -2150,8 +2151,7 @@ public class Client extends AbstractClient implements IClient {
           .get(questionName)
           .forEach(
               questionContent -> {
-                updateLoadedQuestionsInfo(
-                    questionName.toLowerCase(), questionContent, destinationMap, ae);
+                updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae);
               });
     }
   }
@@ -2171,12 +2171,12 @@ public class Client extends AbstractClient implements IClient {
       Map<String, String> loadedQuestions,
       LoadQuestionAnswerElement ae) {
     //adding question name in added list if not present else add in replaced list
-    if (loadedQuestions.containsKey(questionName)) {
+    if (loadedQuestions.containsKey(questionName.toLowerCase())) {
       ae.getReplaced().add(questionName);
     } else {
       ae.getAdded().add(questionName);
     }
-    loadedQuestions.put(questionName, questionContent);
+    loadedQuestions.put(questionName.toLowerCase(), questionContent);
     ae.setNumLoaded(ae.getNumLoaded() + 1);
   }
 

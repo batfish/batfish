@@ -101,6 +101,7 @@ import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Protocol;
+import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -894,6 +895,33 @@ public class ClientTest {
   }
 
   @Test
+  public void testLoadQuestionsNames() throws Exception {
+    Client client =
+        new Client(new String[] {"-runmode", "gendatamodel", "-prettyanswers", "false"});
+    JSONObject testQuestion = new JSONObject();
+    testQuestion.put(
+        "instance",
+        new JSONObject()
+            .put("instanceName", "testQuestionName")
+            .put("description", "test question description"));
+    Path questionJsonPath = _folder.newFile("testquestion.json").toPath();
+    CommonUtil.writeFile(questionJsonPath, testQuestion.toString());
+    client._logger = new BatfishLogger("output", false);
+    client.processCommand(
+        new String[] {LOAD_QUESTIONS.commandName(), questionJsonPath.getParent().toString()}, null);
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+
+    // Reading the answer written by load-questions
+    Answer answerLoadQuestions =
+        mapper.readValue(client.getLogger().getHistory().toString(220), Answer.class);
+    LoadQuestionAnswerElement ae =
+        (LoadQuestionAnswerElement) answerLoadQuestions.getAnswerElements().get(0);
+
+    // Checking that question name in answer element matches instanceName in file
+    assertEquals("testQuestionName", ae.getAdded().first());
+  }
+
+  @Test
   public void testLoadQuestionsFromDir() throws Exception {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
@@ -971,8 +999,8 @@ public class ClientTest {
   @Test
   public void testMergeQuestions1() throws Exception {
     Multimap<String, String> sourceMap = HashMultimap.create();
-    sourceMap.put("sourcequestion", "sourcequestionvalue");
-    sourceMap.put("destinationquestion", "destinationquestionvalue");
+    sourceMap.put("sourceQuestion", "sourcequestionvalue");
+    sourceMap.put("destinationQuestion", "destinationquestionvalue");
     Map<String, String> destMap = new HashMap<>();
     destMap.put("destinationquestion", "destinationquestionvalue");
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
@@ -983,23 +1011,23 @@ public class ClientTest {
 
     //Test the merging populates ae and destinationquestion get replaced
     assertThat(expectedMap.entrySet(), equalTo(destMap.entrySet()));
-    assertEquals(new TreeSet<>(Arrays.asList("destinationquestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
+    assertEquals(new TreeSet<>(Arrays.asList("destinationQuestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
 
   @Test
   public void testMergeQuestions2() throws Exception {
     Multimap<String, String> sourceMap = HashMultimap.create();
-    sourceMap.put("sourcequestion", "sourcequestionvalue1");
-    sourceMap.put("sourcequestion", "sourcequestionvalue2");
+    sourceMap.put("sourceQuestion", "sourcequestionvalue1");
+    sourceMap.put("sourceQuestion", "sourcequestionvalue2");
     Map<String, String> destMap = new HashMap<>();
     LoadQuestionAnswerElement ae = new LoadQuestionAnswerElement();
     Client.mergeQuestions(sourceMap, destMap, ae);
 
     //Test the merging populates ae and sourcequestion get replaced
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourcequestion")), ae.getAdded());
+    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getReplaced());
+    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
 
