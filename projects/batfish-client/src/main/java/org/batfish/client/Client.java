@@ -2035,13 +2035,14 @@ public class Client extends AbstractClient implements IClient {
     //outputting the final answer
     ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
     String answerStringToPrint;
-    try {
-      answerStringToPrint = mapper.writeValueAsString(answer);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write answer element as string", e);
-    }
     if (outWriter == null && _settings.getPrettyPrintAnswers()) {
       answerStringToPrint = answer.prettyPrint();
+    } else {
+      try {
+        answerStringToPrint = mapper.writeValueAsString(answer);
+      } catch (JsonProcessingException e) {
+        throw new BatfishException("Could not write answer element as string", e);
+      }
     }
     logOutput(outWriter, answerStringToPrint);
 

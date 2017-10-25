@@ -910,10 +910,14 @@ public class ClientTest {
     client.processCommand(
         new String[] {LOAD_QUESTIONS.commandName(), questionJsonPath.getParent().toString()}, null);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
+
+    // Reading the answer written by load-questions
     Answer answerLoadQuestions =
         mapper.readValue(client.getLogger().getHistory().toString(220), Answer.class);
     LoadQuestionAnswerElement ae =
         (LoadQuestionAnswerElement) answerLoadQuestions.getAnswerElements().get(0);
+
+    // Checking that question name in answer element matches instanceName in file
     assertEquals("testQuestionName", ae.getAdded().first());
   }
 
