@@ -1055,6 +1055,7 @@
                     ],
                     "bgpProcess" : {
                       "multipathEbgp" : true,
+                      "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                       "multipathIbgp" : true,
                       "neighbors" : {
                         "2.1.2.1/32" : {

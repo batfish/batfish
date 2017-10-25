@@ -1357,7 +1357,7 @@
         "arista_bgp" : {
           "bgp group" : {
             "UNDEFINED_PEER_GROUP" : [
-              8
+              9
             ]
           }
         },
@@ -1911,7 +1911,8 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system",
             "2" : "MISCELLANEOUS: Missing local-as for neighbor: 1.2.3.5",
-            "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
+            "3" : "MISCELLANEOUS: Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS",
+            "4" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
           }
         },
         "juniper_bgp_authentication" : {

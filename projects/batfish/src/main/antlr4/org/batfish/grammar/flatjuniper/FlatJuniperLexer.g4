@@ -1062,6 +1062,11 @@ FOREVER
    'forever'
 ;
 
+FORWARD_SNOOPED_CLIENTS
+:
+    'forward-snooped-clients'
+;
+
 FORWARDING
 :
    'forwarding'

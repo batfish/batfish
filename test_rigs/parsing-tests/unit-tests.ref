@@ -1799,6 +1799,14 @@
             "      DEC:'1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (router_bgp_stanza_tail",
+            "        (as_path_multipath_relax_rb_stanza",
+            "          NO:'no'  <== mode:DEFAULT_MODE",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
+            "          AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "          MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
@@ -13035,7 +13043,7 @@
             "            BGP:'bgp'  <== mode:DEFAULT_MODE",
             "            BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
             "            AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'confed'  <== mode:M_AsPath",
+            "            CONFED:'confed'  <== mode:M_AsPath",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_confederation_rb_stanza",
@@ -35673,6 +35681,27 @@
             "                GROUP:'group'  <== mode:DEFAULT_MODE",
             "                (variable",
             "                  VARIABLE:'someinternalipv4group'  <== mode:M_VarOrWildcard)",
+            "                (b_neighbor",
+            "                  NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "                  IP_ADDRESS:'1.2.3.5'  <== mode:DEFAULT_MODE",
+            "                  (b_common",
+            "                    (b_multipath",
+            "                      MULTIPATH:'multipath'  <== mode:DEFAULT_MODE",
+            "                      MULTIPLE_AS:'multiple-as'  <== mode:DEFAULT_MODE)))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_bgp",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              (b_group",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'someinternalipv4group'  <== mode:M_VarOrWildcard)",
             "                (b_common",
             "                  (b_peer_as",
             "                    PEER_AS:'peer-as'  <== mode:DEFAULT_MODE",
@@ -38269,6 +38298,20 @@
             "                    VARIABLE:'irb'  <== mode:M_Interface",
             "                    PERIOD:'.'  <== mode:DEFAULT_MODE",
             "                    DEC:'20'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_forwarding_options",
+            "            FORWARDING_OPTIONS:'forwarding-options'  <== mode:DEFAULT_MODE",
+            "            (fo_dhcp_relay",
+            "              DHCP_RELAY:'dhcp-relay'  <== mode:DEFAULT_MODE",
+            "              (fod_null",
+            "                FORWARD_SNOOPED_CLIENTS:'forward-snooped-clients'  <== mode:DEFAULT_MODE",
+            "                (null_filler",
+            "                  VARIABLE:'all-interfaces'  <== mode:DEFAULT_MODE)))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -41920,6 +41963,12 @@
             "      BGP:'bgp'  <== mode:DEFAULT_MODE",
             "      DEC:'1'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (as_path_multipath_relax_rb_stanza",
+            "          BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
+            "          AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "          MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
             "        (compare_routerid_rb_stanza",
             "          BESTPATH:'bestpath'  <== mode:DEFAULT_MODE",
@@ -46884,7 +46933,7 @@
         "arista_bgp" : {
           "bgp group" : {
             "UNDEFINED_PEER_GROUP" : [
-              8
+              9
             ]
           }
         },
@@ -47438,7 +47487,8 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system",
             "2" : "MISCELLANEOUS: Missing local-as for neighbor: 1.2.3.5",
-            "3" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
+            "3" : "MISCELLANEOUS: Currently do not support mixed multipath-multiple-as/non-multipath-multiple-as bgpgroups on Juniper - FORCING NON-MULTIPATH-MULTIPLE-AS",
+            "4" : "MISCELLANEOUS: Missing local-as for neighbor: 3.4.5.6"
           }
         },
         "juniper_bgp_authentication" : {

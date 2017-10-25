@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -93,6 +95,48 @@ public class CiscoGrammarTest {
             .get(new Prefix("1.2.0.1/32"))
             .getRemoteBgpNeighbor(),
         is(notNullValue()));
+  }
+
+  @Test
+  public void testBgpMultipathRelax() throws IOException {
+    String testrigName = "bgp-multipath-relax";
+    String[] configurationNames =
+        new String[] {"arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled"};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
+    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    MultipathEquivalentAsPathMatchMode aristaDisabled =
+        configurations
+            .get("arista_disabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode aristaEnabled =
+        configurations
+            .get("arista_enabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode nxosDisabled =
+        configurations
+            .get("nxos_disabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+    MultipathEquivalentAsPathMatchMode nxosEnabled =
+        configurations
+            .get("nxos_enabled")
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getMultipathEquivalentAsPathMatchMode();
+
+    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
   }
 
   @Test
