@@ -913,7 +913,8 @@ public class ClientTest {
 
     // Reading the answer written by load-questions
     Answer answerLoadQuestions =
-        mapper.readValue(client.getLogger().getHistory().toString(220), Answer.class);
+        mapper.readValue(
+            client.getLogger().getHistory().toString(BatfishLogger.LEVEL_OUTPUT), Answer.class);
     LoadQuestionAnswerElement ae =
         (LoadQuestionAnswerElement) answerLoadQuestions.getAnswerElements().get(0);
 
