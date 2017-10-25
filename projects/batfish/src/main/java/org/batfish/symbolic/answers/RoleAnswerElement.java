@@ -136,7 +136,7 @@ public class RoleAnswerElement implements AnswerElement {
     }
 
     if (_interfaceEcs != null) {
-      sb.append("Interface ECs:\n");
+      sb.append("Interface ECs(").append(_interfaceEcs.size()).append(":\n");
       for (SortedSet<String> ec : _interfaceEcs) {
         sb.append("  Class:\n");
         for (String s : ec) {
@@ -146,7 +146,7 @@ public class RoleAnswerElement implements AnswerElement {
     }
 
     if (_nodeEcs != null) {
-      sb.append("Node ECs:\n");
+      sb.append("Node ECs (").append(_nodeEcs.size()).append("):\n");
       for (SortedSet<String> ec : _nodeEcs) {
         sb.append("  Class:\n");
         for (String s : ec) {

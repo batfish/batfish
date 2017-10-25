@@ -31,6 +31,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -218,6 +219,23 @@ public class Graph {
       return null;
     }
     throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
+  }
+
+
+  public static Set<Prefix> getOriginatedNetworks(Configuration conf) {
+    Set<Prefix> allNetworks = new HashSet<>();
+    Vrf vrf = conf.getDefaultVrf();
+    if (vrf.getOspfProcess() != null) {
+      allNetworks.addAll(getOriginatedNetworks(conf, Protocol.OSPF));
+    }
+    if (vrf.getBgpProcess() != null) {
+      allNetworks.addAll(getOriginatedNetworks(conf, Protocol.BGP));
+    }
+    if (vrf.getStaticRoutes() != null) {
+      allNetworks.addAll(getOriginatedNetworks(conf, Protocol.STATIC));
+    }
+    allNetworks.addAll(getOriginatedNetworks(conf, Protocol.CONNECTED));
+    return allNetworks;
   }
 
   /*
@@ -830,7 +848,7 @@ public class Graph {
     return comms;
   }
 
-  private Set<CommunityVar> findAllCommunities(String router) {
+  public Set<CommunityVar> findAllCommunities(String router) {
     Set<CommunityVar> comms = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
 

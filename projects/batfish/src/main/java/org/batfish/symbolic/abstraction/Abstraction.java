@@ -303,7 +303,7 @@ public class Abstraction {
       exportPol = _network.getExportPolicyMap();
       importPol = _network.getImportPolicyMap();
     } else {
-      specializeBdds(prefixes, exportPol, importPol);
+      specialize(prefixes, exportPol, importPol, false);
     }
 
     UnionSplit<String> workset = new UnionSplit<>(_graph.getRouters());
@@ -363,19 +363,24 @@ public class Abstraction {
    * Specialize the collection of BDDs representing ACL and route map policies on
    * each edge. Must be synchronized since BDDs are not thread-safe.
    */
-  private synchronized void specializeBdds(
+  private synchronized void specialize(
       List<Prefix> prefixes,
       Map<GraphEdge, InterfacePolicy> exportPol,
-      Map<GraphEdge, InterfacePolicy> importPol) {
+      Map<GraphEdge, InterfacePolicy> importPol,
+      boolean specializeBdds) {
     for (Entry<GraphEdge, InterfacePolicy> entry : _network.getExportPolicyMap().entrySet()) {
       GraphEdge ge = entry.getKey();
       InterfacePolicy pol = entry.getValue();
-      exportPol.put(ge, pol.restrict(prefixes));
+      InterfacePolicy newPol = pol.restrictStatic(prefixes);
+      newPol = (specializeBdds ? newPol.restrict(prefixes) : newPol);
+      exportPol.put(ge, newPol);
     }
     for (Entry<GraphEdge, InterfacePolicy> entry : _network.getImportPolicyMap().entrySet()) {
       GraphEdge ge = entry.getKey();
       InterfacePolicy pol = entry.getValue();
-      importPol.put(ge, pol.restrict(prefixes));
+      InterfacePolicy newPol = pol.restrictStatic(prefixes);
+      newPol = (specializeBdds ? newPol.restrict(prefixes) : newPol);
+      importPol.put(ge, newPol);
     }
   }
 

@@ -19,6 +19,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
+import org.batfish.symbolic.IDeepCopy;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 
@@ -27,7 +28,7 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-public class BDDRoute {
+public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   static BDDFactory factory;
 
@@ -56,12 +57,12 @@ public class BDDRoute {
     CallbackHandler handler = new CallbackHandler();
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory = JFactory.init(100000, 10000);
+      factory = JFactory.init(100000, 50000);
       factory.disableReorder();
       // Disables printing
-      //factory.registerGCCallback(handler, m);
-      //factory.registerResizeCallback(handler, m);
-      //factory.registerReorderCallback(handler, m);
+      factory.registerGCCallback(handler, m);
+      factory.registerResizeCallback(handler, m);
+      factory.registerReorderCallback(handler, m);
       pairing = factory.makePair();
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
@@ -169,9 +170,10 @@ public class BDDRoute {
   /*
    * Convenience method for the copy constructor
    */
-  public BDDRoute copy() {
+  public BDDRoute deepCopy() {
     return new BDDRoute(this);
   }
+
 
   /*
    * Converts a BDD to the graphviz DOT format for debugging.

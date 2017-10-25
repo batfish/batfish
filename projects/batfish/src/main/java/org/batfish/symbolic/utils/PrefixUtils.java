@@ -1,6 +1,7 @@
 package org.batfish.symbolic.utils;
 
 import java.util.Collection;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -46,9 +47,14 @@ public class PrefixUtils {
     return false;
   }
 
-  public static boolean containsAny(Prefix p, Collection<Prefix> ps) {
+  public static boolean isContainedBy(Prefix p, @Nullable Collection<Prefix> ps) {
+    if (ps == null) {
+      return false;
+    }
+    p = p.getNetworkPrefix();
     for (Prefix p2 : ps) {
-      if (p.containsPrefix(p2)) {
+      p2 = p2.getNetworkPrefix();
+      if (p2.containsPrefix(p) || p2.equals(p)) {
         return true;
       }
     }

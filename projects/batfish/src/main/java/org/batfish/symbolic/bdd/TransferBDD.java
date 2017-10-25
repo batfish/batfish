@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
@@ -41,6 +42,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -58,9 +60,11 @@ import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -72,6 +76,7 @@ import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferParam;
 import org.batfish.symbolic.TransferResult;
+import org.batfish.symbolic.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
 class TransferBDD {
@@ -86,11 +91,11 @@ class TransferBDD {
 
   private Graph _graph;
 
-  private boolean _ignoreNetwork;
+  private Set<Prefix> _ignoredNetworks;
 
   private List<Statement> _statements;
 
-  public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
+  TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
     _conf = conf;
     _statements = statements;
@@ -104,7 +109,7 @@ class TransferBDD {
    * be a bitvector containing only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  public static BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
+  private static BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
     BitSet b = p.getAddress().getAddressBits();
     BDD acc = factory.one();
     for (int i = 0; i < length; i++) {
@@ -167,8 +172,7 @@ class TransferBDD {
    * Convert a Batfish AST boolean expression to a symbolic Z3 boolean expression
    * by performing inlining of stateful side effects.
    */
-  private TransferResult<TransferReturn, BDD> compute(
-      BooleanExpr expr, TransferParam<BDDRoute> p) {
+  private TransferResult<TransferReturn, BDD> compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
@@ -189,10 +193,11 @@ class TransferBDD {
       BDD acc = factory.one();
       TransferResult<TransferReturn, BDD> result = new TransferResult<>();
       for (BooleanExpr be : c.getConjuncts()) {
-        TransferResult<TransferReturn, BDD> r = compute(be, p);
+        TransferResult<TransferReturn, BDD> r = compute(be, p.indent());
         acc = acc.and(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
+      p.debug("Conjunction return: " + acc);
       return result.setReturnValue(ret);
     }
 
@@ -202,11 +207,12 @@ class TransferBDD {
       BDD acc = factory.zero();
       TransferResult<TransferReturn, BDD> result = new TransferResult<>();
       for (BooleanExpr be : d.getDisjuncts()) {
-        TransferResult<TransferReturn, BDD> r = compute(be, p);
+        TransferResult<TransferReturn, BDD> r = compute(be, p.indent());
         result = result.addChangedVariables(r);
         acc = acc.or(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
+      p.debug("Disjunction return: " + acc);
       return result.setReturnValue(ret);
     }
 
@@ -229,7 +235,10 @@ class TransferBDD {
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr conjunct = conjuncts.get(i);
           TransferParam<BDDRoute> param =
-              record.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
+              record
+                  .setDefaultPolicy(null)
+                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                  .indent();
           TransferResult<TransferReturn, BDD> r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
@@ -257,7 +266,10 @@ class TransferBDD {
         for (int i = disjuncts.size() - 1; i >= 0; i--) {
           BooleanExpr disjunct = disjuncts.get(i);
           TransferParam<BDDRoute> param =
-              record.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
+              record
+                  .setDefaultPolicy(null)
+                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                  .indent();
           TransferResult<TransferReturn, BDD> r = compute(disjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
@@ -319,7 +331,7 @@ class TransferBDD {
       // TODO: this is not correct
       WithEnvironmentExpr we = (WithEnvironmentExpr) expr;
       // TODO: postStatements() and preStatements()
-      return compute(we.getExpr(), p);
+      return compute(we.getExpr(), p.deepCopy());
 
     } else if (expr instanceof MatchCommunitySet) {
       p.debug("MatchCommunitySet");
@@ -354,6 +366,12 @@ class TransferBDD {
           throw new BatfishException(
               "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
       }
+
+    } else if (expr instanceof MatchAsPath) {
+      p.debug("MatchAsPath");
+      System.out.println("Warning: use of unimplemented feature MatchAsPath");
+      TransferReturn ret = new TransferReturn(p.getData(), factory.one());
+      return fromExpr(ret);
     }
 
     throw new BatfishException("TODO: compute expr transfer function: " + expr);
@@ -443,6 +461,11 @@ class TransferBDD {
             p.debug("Return");
             break;
 
+          case RemovePrivateAs:
+            p.debug("RemovePrivateAs");
+            System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
+            break;
+
           default:
             throw new BatfishException("TODO: computeTransferFunction: " + ss.getType());
         }
@@ -456,14 +479,14 @@ class TransferBDD {
 
         BDDRoute current = result.getReturnValue().getFirst();
 
-        TransferParam<BDDRoute> pTrue = p.indent().setData(current.copy());
-        TransferParam<BDDRoute> pFalse = p.indent().setData(current.copy());
+        TransferParam<BDDRoute> pTrue = p.indent().setData(current.deepCopy());
+        TransferParam<BDDRoute> pFalse = p.indent().setData(current.deepCopy());
         p.debug("True Branch");
         TransferResult<TransferReturn, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
-        p.debug("True Branch: " + trueBranch.getReturnValue());
+        p.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
         p.debug("False Branch");
         TransferResult<TransferReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
-        p.debug("False Branch: " + trueBranch.getReturnValue());
+        p.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
 
         BDDRoute r1 = trueBranch.getReturnValue().getFirst();
         BDDRoute r2 = falseBranch.getReturnValue().getFirst();
@@ -493,6 +516,8 @@ class TransferBDD {
                 .setReturnValue(new TransferReturn(recordVal, returnVal))
                 .setReturnAssignedValue(returnAss)
                 .setFallthroughValue(fallThrough);
+
+        p.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 
       } else if (stmt instanceof SetDefaultPolicy) {
         p.debug("SetDefaultPolicy");
@@ -547,6 +572,18 @@ class TransferBDD {
           p.getData().getCommunities().put(cvar, newValue);
         }
 
+      } else if (stmt instanceof SetCommunity) {
+        p.debug("SetCommunity");
+        SetCommunity sc = (SetCommunity) stmt;
+        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
+        for (CommunityVar cvar : comms) {
+          p.indent().debug("Value: " + cvar);
+          BDD comm = p.getData().getCommunities().get(cvar);
+          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+          p.indent().debug("New Value: " + newValue);
+          p.getData().getCommunities().put(cvar, newValue);
+        }
+
       } else if (stmt instanceof DeleteCommunity) {
         p.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
@@ -585,6 +622,12 @@ class TransferBDD {
 
       } else if (stmt instanceof SetOrigin) {
         p.debug("SetOrigin");
+        System.out.println("Warning: use of unimplemented feature SetOrigin");
+        // TODO: implement me
+
+      } else if (stmt instanceof SetNextHop) {
+        p.debug("SetNextHop");
+        System.out.println("Warning: use of unimplemented feature SetNextHop");
         // TODO: implement me
 
       } else {
@@ -617,13 +660,14 @@ class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRoute compute(boolean ignoreNetwork) {
-    _ignoreNetwork = ignoreNetwork;
+  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
+    _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.findAllCommunities();
     BDDRoute o = new BDDRoute(_comms);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
+    p.debug("Final Result: " + result.getReturnValue().getFirst().hashCode());
     return result.getReturnValue().getFirst();
   }
 
@@ -800,13 +844,15 @@ class TransferBDD {
     Collections.reverse(lines);
     for (RouteFilterLine line : lines) {
       Prefix pfx = line.getPrefix();
-      SubRange r = line.getLengthRange();
-      PrefixRange range = new PrefixRange(pfx, r);
-      p.debug("Prefix Range: " + range);
-      p.debug("Action: " + line.getAction());
-      BDD matches = isRelevantFor(other, range);
-      BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
-      acc = ite(matches, action, acc);
+      if (!PrefixUtils.isContainedBy(pfx, _ignoredNetworks)) {
+        SubRange r = line.getLengthRange();
+        PrefixRange range = new PrefixRange(pfx, r);
+        p.debug("Prefix Range: " + range);
+        p.debug("Action: " + line.getAction());
+        BDD matches = isRelevantFor(other, range);
+        BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
+        acc = ite(matches, action, acc);
+      }
     }
     return acc;
   }
@@ -825,28 +871,12 @@ class TransferBDD {
         return factory.one();
       }
 
-      // We explicity ignore originated networks
-      // TODO: not quite right -- need network origination context
-      if (_ignoreNetwork) {
-        if (ranges.size() == 1) {
-          for (PrefixRange r : ranges) {
-            int start = r.getLengthRange().getStart();
-            int end = r.getLengthRange().getEnd();
-            Prefix pfx = r.getPrefix();
-            if (start == end && start == pfx.getPrefixLength()) {
-              Set<Prefix> origin = Graph.getOriginatedNetworks(_conf, Protocol.BGP);
-              if (origin.contains(pfx)) {
-                return factory.zero();
-              }
-            }
-          }
-        }
-      }
-
       BDD acc = factory.zero();
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
-        acc = acc.or(isRelevantFor(other, range));
+        if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
+          acc = acc.or(isRelevantFor(other, range));
+        }
       }
       return acc;
 
