@@ -18,14 +18,18 @@ import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.BatfishObjectInputStream;
 
 public abstract class PluginConsumer implements IPluginConsumer {
@@ -125,11 +129,27 @@ public abstract class PluginConsumer implements IPluginConsumer {
   }
 
   protected final void loadPlugins() {
-    Set<Plugin> plugins =
-        new LinkedHashSet<>(
-            Lists.newArrayList(ServiceLoader.load(Plugin.class, _currentClassLoader)));
+    SortedSet<Plugin> plugins;
+    try {
+      plugins =
+          new TreeSet<>(Lists.newArrayList(ServiceLoader.load(Plugin.class, _currentClassLoader)));
+    } catch (ServiceConfigurationError e) {
+      throw new BatfishException("Failed to locate and/or instantiate plugins", e);
+    }
+    List<BatfishException> initializationExceptions = new ArrayList<>();
     for (Plugin plugin : plugins) {
-      plugin.initialize(this);
+      try {
+        plugin.initialize(this);
+      } catch (Exception e) {
+        initializationExceptions.add(
+            new BatfishException(
+                "Failed to initialize plugin: " + plugin.getClass().getCanonicalName(), e));
+      }
+    }
+    if (!initializationExceptions.isEmpty()) {
+      throw new CompositeBatfishException(
+          new BatfishException("Failed to initialize one or more plugins"),
+          initializationExceptions);
     }
   }
 
