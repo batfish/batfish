@@ -11,8 +11,11 @@ import org.batfish.common.BatfishException;
 public enum OutliersHypothesis {
     // the hypothesis that same-named structures should have the same definition
     SAME_DEFINITION("sameDefinition"),
-    // the hypothesis that all nodes (in a given set) should define structures of the same names
-    SAME_NAME("sameName");
+    // the hypothesis that all given nodes should define structures of the same names
+    SAME_NAME("sameName"),
+    // the hypothesis that all given nodes should have the same set of protocol-specific servers
+    // (e.g., DNS servers, NTP servers, etc.)
+    SAME_SERVERS("sameServers");
 
     private static final Map<String, OutliersHypothesis> _map = buildMap();
 

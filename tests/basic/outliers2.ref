@@ -2,7 +2,7 @@
   "answerElements" : [
     {
       "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersAnswerElement",
-      "rankedOutliers" : [
+      "namedStructureOutliers" : [
         {
           "conformers" : [
             "as1border1",
