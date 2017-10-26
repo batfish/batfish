@@ -190,4 +190,34 @@ public class CiscoGrammarTest {
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
   }
+
+  @Test
+  public void testRfc1583Compatible() throws IOException {
+    SortedMap<String, String> configurationText = new TreeMap<>();
+    String configurationName = "rfc1583NoCompatible";
+    String rfc1583NoCompatibleConfigurationText =
+        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
+    configurationText.put(configurationName, rfc1583NoCompatibleConfigurationText);
+    configurationName = "rfc1583Compatible";
+    String rfc1583CompatibleConfigurationText =
+        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
+    configurationText.put(configurationName, rfc1583CompatibleConfigurationText);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configurationText,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+
+    Configuration noCompatibleConfiguration = configurations.get("rfc1583NoCompatible");
+    Boolean rfc1583Compatible = noCompatibleConfiguration.getVendorFamily().getCisco().getRfc1583Compatible();
+    assertThat(rfc1583Compatible, is(Boolean.FALSE));
+
+    Configuration compatibleConfiguration = configurations.get("rfc1583Compatible");
+    rfc1583Compatible = compatibleConfiguration.getVendorFamily().getCisco().getRfc1583Compatible();
+    assertThat(rfc1583Compatible, is(Boolean.TRUE));
+  }
 }

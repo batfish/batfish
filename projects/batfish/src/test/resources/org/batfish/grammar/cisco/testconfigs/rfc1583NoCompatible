@@ -1,0 +1,6 @@
+!
+hostname rfc1583NoCompatible
+!
+router ospf 1
+ no compatible rfc1583
+!
