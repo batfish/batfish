@@ -231,14 +231,13 @@ public class Interface extends ComparableStructure<String> {
   }
 
   public void inheritUnsetFields() {
-    if (_parent != null) {
-      if (!_inherited) {
-        _inherited = true;
-        _parent.inheritUnsetFields();
-        if (_mtu == null) {
-          _mtu = _parent._mtu;
-        }
-      }
+    if (_parent == null || !_inherited) {
+      return;
+    }
+    _inherited = true;
+    _parent.inheritUnsetFields();
+    if (_mtu == null) {
+      _mtu = _parent._mtu;
     }
   }
 
