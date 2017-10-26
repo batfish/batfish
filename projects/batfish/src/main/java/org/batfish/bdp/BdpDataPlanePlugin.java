@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -76,30 +77,28 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
     }
-
-    for (SourceNat sourceNat : sourceNats) {
-      IpAccessList acl = sourceNat.getAcl();
-      if (acl != null) {
-        FilterResult result = acl.filter(flow);
-        if (result.getAction() == LineAction.REJECT) {
-          // This ACL does not match the flow.
-          continue;
-        }
-      }
-
-      Ip natPoolStartIp = sourceNat.getPoolIpFirst();
-      if (natPoolStartIp == null) {
-        throw new BatfishException(
-            String.format(
-                "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
-      }
-      Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
-      transformedFlowBuilder.setSrcIp(natPoolStartIp);
-      return transformedFlowBuilder.build();
+    Optional<SourceNat> matchingSourceNat =
+        sourceNats
+            .stream()
+            .filter(
+                sourceNat ->
+                    sourceNat.getAcl() != null
+                        && sourceNat.getAcl().filter(flow).getAction() != LineAction.REJECT)
+            .findFirst();
+    if (!matchingSourceNat.isPresent()) {
+      // No NAT rule matched.
+      return flow;
     }
-
-    // No NAT rule matched.
-    return flow;
+    SourceNat sourceNat = matchingSourceNat.get();
+    Ip natPoolStartIp = sourceNat.getPoolIpFirst();
+    if (natPoolStartIp == null) {
+      throw new BatfishException(
+          String.format(
+              "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
+    }
+    Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
+    transformedFlowBuilder.setSrcIp(natPoolStartIp);
+    return transformedFlowBuilder.build();
   }
 
   private int _maxRecordedIterations;
