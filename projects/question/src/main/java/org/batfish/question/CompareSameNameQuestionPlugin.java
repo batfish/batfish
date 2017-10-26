@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -36,6 +38,7 @@ import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+@AutoService(Plugin.class)
 public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
   public static class CompareSameNameAnswerElement implements AnswerElement {

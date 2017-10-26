@@ -12,6 +12,7 @@ fo_dhcp_relay
    (
       fod_common
       | fod_group
+      | fod_null
       | fod_server_group
    )
 ;
@@ -57,6 +58,14 @@ fod_group
       | fodg_interface
       | fodg_null
    )
+;
+
+fod_null
+:
+    (
+        FORWARD_SNOOPED_CLIENTS
+    ) null_filler
+
 ;
 
 fod_server_group

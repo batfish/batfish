@@ -1,12 +1,15 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class InitInfoQuestionPlugin extends QuestionPlugin {
 
   public static class InitInfoAnswerer extends Answerer {

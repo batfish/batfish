@@ -1,13 +1,10 @@
 #!/bin/bash
-BATFISH=${BASH_SOURCE[0]}
-BATFISH_PATH=$(dirname $BATFISH)
-BATFISH_JAR=$BATFISH_PATH/target/batfish-bundle-${BATFISH_VERSION}.jar
+BATFISH="${BASH_SOURCE[0]}"
+BATFISH_PATH="$(dirname $BATFISH)"
+ALLINONE_PATH="${BATFISH_PATH}/../allinone"
+ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
 if batfish_cygwin; then
-   BATFISH_JAR="$(cygpath -w $BATFISH_JAR)"
+   ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
 fi
-if [ -n "${BATFISH_PLUGIN_DIRS}" ]; then
-   java ${BATFISH_JAVA_OPTS} -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}"  -jar "$BATFISH_JAR" -plugindirs "$BATFISH_PLUGIN_DIRS" "$@"
-else
-   java ${BATFISH_JAVA_OPTS} -DbatfishQuestionPluginDir="${BATFISH_JAVA_QUESTION_PLUGIN_DIR}"  -jar "$BATFISH_JAR" "$@"
-fi
+java ${BATFISH_JAVA_OPTS} -cp "${ALLINONE_JAR}:${BATFISH_CLASSPATH}" org.batfish.main.Driver "$@"
 

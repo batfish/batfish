@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.google.auto.service.AutoService;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.InvalidPathException;
@@ -30,6 +31,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -38,6 +40,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
+@AutoService(Plugin.class)
 public class JsonPathQuestionPlugin extends QuestionPlugin {
 
   public static class JsonPathAnswerElement implements AnswerElement {
