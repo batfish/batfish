@@ -161,15 +161,10 @@ import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
-import org.batfish.job.ConvertConfigurationResult;
 import org.batfish.job.FlattenVendorConfigurationJob;
-import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
-import org.batfish.job.ParseEnvironmentBgpTableResult;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
-import org.batfish.job.ParseEnvironmentRoutingTableResult;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
@@ -184,11 +179,8 @@ import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
-import org.batfish.z3.NodFirstUnsatResult;
 import org.batfish.z3.NodJob;
-import org.batfish.z3.NodJobResult;
 import org.batfish.z3.NodSatJob;
-import org.batfish.z3.NodSatResult;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
@@ -875,9 +867,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
     resetTimer();
     Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor =
-        new BatfishJobExecutor<>(_settings, _logger, true, "Composite NOD");
-    executor.executeJobs(jobs, flows, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings, _logger, jobs, flows, answerElement, true, "Composite NOD");
     printElapsedTime();
     return flows;
   }
@@ -1046,11 +1037,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
     _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
     resetTimer();
-    BatfishJobExecutor<
-            NodFirstUnsatJob<KeyT, ResultT>, NodFirstUnsatAnswerElement,
-            NodFirstUnsatResult<KeyT, ResultT>, Map<KeyT, ResultT>>
-        executor = new BatfishJobExecutor<>(_settings, _logger, true, "NOD First-UNSAT");
-    executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        output,
+        new NodFirstUnsatAnswerElement(),
+        true,
+        "NOD First-UNSAT");
     printElapsedTime();
   }
 
@@ -1058,10 +1052,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
     resetTimer();
     Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor =
-        new BatfishJobExecutor<>(_settings, _logger, true, "NOD");
-    // todo: do something with nod answer element
-    executor.executeJobs(jobs, flows, new NodAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
     printElapsedTime();
     return flows;
   }
@@ -1069,9 +1061,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public <KeyT> void computeNodSatOutput(List<NodSatJob<KeyT>> jobs, Map<KeyT, Boolean> output) {
     _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
     resetTimer();
-    BatfishJobExecutor<NodSatJob<KeyT>, NodSatAnswerElement, NodSatResult<KeyT>, Map<KeyT, Boolean>>
-        executor = new BatfishJobExecutor<>(_settings, _logger, true, "NOD SAT");
-    executor.executeJobs(jobs, output, new NodSatAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
     printElapsedTime();
   }
 
@@ -1129,16 +1120,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ConvertConfigurationJob(_settings, vc, config.getKey(), warnings);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult,
-            Map<String, Configuration>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getHaltOnConvertError(),
-                "Convert configurations to vendor-independent format");
-    executor.executeJobs(jobs, configurations, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        configurations,
+        answerElement,
+        _settings.getHaltOnConvertError(),
+        "Convert configurations to vendor-independent format");
     printElapsedTime();
     return configurations;
   }
@@ -1388,18 +1377,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new FlattenVendorConfigurationJob(_settings, fileText, inputFile, outputFile, warnings);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement,
-            FlattenVendorConfigurationResult, Map<Path, String>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getFlatten() || _settings.getHaltOnParseError(),
-                "Flatten configurations");
-    // todo: do something with answer element
-    executor.executeJobs(
-        jobs, outputConfigurationData, new FlattenVendorConfigurationAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        outputConfigurationData,
+        new FlattenVendorConfigurationAnswerElement(),
+        _settings.getFlatten() || _settings.getHaltOnParseError(),
+        "Flatten configurations");
     printElapsedTime();
     for (Entry<Path, String> e : outputConfigurationData.entrySet()) {
       Path outputFile = e.getKey();
@@ -3021,16 +3006,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement,
-            ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getHaltOnParseError(),
-                "Parse environment BGP tables");
-    executor.executeJobs(jobs, bgpTables, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        bgpTables,
+        answerElement,
+        _settings.getHaltOnParseError(),
+        "Parse environment BGP tables");
     printElapsedTime();
     return bgpTables;
   }
@@ -3056,16 +3039,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ParseEnvironmentRoutingTableJob(_settings, fileText, currentFile, warnings, this);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ParseEnvironmentRoutingTableJob, ParseEnvironmentRoutingTablesAnswerElement,
-            ParseEnvironmentRoutingTableResult, SortedMap<String, RoutesByVrf>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getHaltOnParseError(),
-                "Parse environment routing tables");
-    executor.executeJobs(jobs, routingTables, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        routingTables,
+        answerElement,
+        _settings.getHaltOnParseError(),
+        "Parse environment routing tables");
     printElapsedTime();
     return routingTables;
   }
@@ -3176,13 +3157,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings, fileText, currentFile, warnings, configurationFormat);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement,
-            ParseVendorConfigurationResult, Map<String, VendorConfiguration>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings, _logger, _settings.getHaltOnParseError(), "Parse configurations");
-    executor.executeJobs(jobs, vendorConfigurations, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        vendorConfigurations,
+        answerElement,
+        _settings.getHaltOnParseError(),
+        "Parse configurations");
     printElapsedTime();
     return vendorConfigurations;
   }
