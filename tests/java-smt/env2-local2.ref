@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtManyAnswerElement"
+      "class" : "org.batfish.symbolic.answers.SmtManyAnswerElement"
     }
   ],
   "question" : {

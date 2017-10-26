@@ -184,6 +184,11 @@
     </dependency>
 
     <dependency>
+      <groupId>net.sf.javabdd</groupId>
+      <artifactId>bdd</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>

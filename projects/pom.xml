@@ -183,6 +183,21 @@
               <sources>${basedir}/lib/z3/com.microsoft.z3-sources.jar</sources>
             </configuration>
           </execution>
+          <!-- JavaBDD Binary Decision Diagram library -->
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <id>install-bdd</id>
+            <configuration>
+              <groupId>net.sf.javabdd</groupId>
+              <artifactId>bdd</artifactId>
+              <version>batfish-internal</version>
+              <packaging>jar</packaging>
+              <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
+            </configuration>
+          </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
           <execution>
             <phase>initialize</phase>
@@ -393,6 +408,12 @@
       <dependency>
         <groupId>com.microsoft.z3</groupId>
         <artifactId>z3</artifactId>
+        <version>batfish-internal</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.sf.javabdd</groupId>
+        <artifactId>bdd</artifactId>
         <version>batfish-internal</version>
       </dependency>
 

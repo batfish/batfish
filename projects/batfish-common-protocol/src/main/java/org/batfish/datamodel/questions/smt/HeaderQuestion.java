@@ -14,6 +14,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.IQuestion;
 import org.batfish.datamodel.questions.Question;
 
+
 public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_DST_IPS = "dstIps";
@@ -42,7 +43,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_NOT_SRC_IPS = "notSrcIps";
 
-  private static final String NOT_SRC_PORTS_VAR = "notSrcPorts";
+  private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
 
   private static final String PROP_SRC_IPS = "srcIps";
 
@@ -66,9 +67,13 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_DIFF_ENV_TYPE = "deltaEnvType";
 
+  private static final String PROP_USE_ABSTRACTION = "useAbstraction";
+
+  private static final String PROP_BENCHMARK = "benchmark";
+
   private Set<ForwardingAction> _actions;
 
-  private final HeaderSpace _headerSpace;
+  private HeaderSpace _headerSpace;
 
   private int _failures;
 
@@ -86,6 +91,10 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private EnvironmentType _deltaEnvType;
 
+  private boolean _useAbstraction;
+
+  private boolean _benchmark;
+
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
     _headerSpace = new HeaderSpace();
@@ -97,6 +106,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = false;
     _baseEnvType = EnvironmentType.ANY;
     _deltaEnvType = EnvironmentType.ANY;
+    _useAbstraction = false;
+    _benchmark = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -110,6 +121,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = q._envDiff;
     _baseEnvType = q._baseEnvType;
     _deltaEnvType = q._deltaEnvType;
+    _useAbstraction = q._useAbstraction;
+    _benchmark = q._benchmark;
   }
 
   @Override
@@ -135,6 +148,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonIgnore
   public HeaderSpace getHeaderSpace() {
     return _headerSpace;
+  }
+
+  @JsonIgnore
+  public void setHeaderSpace(HeaderSpace h) {
+    _headerSpace = h;
   }
 
   @JsonProperty(PROP_ICMP_CODES)
@@ -192,7 +210,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _headerSpace.getNotSrcIps();
   }
 
-  @JsonProperty(NOT_SRC_PORTS_VAR)
+  @JsonProperty(PROP_NOT_SRC_PORTS)
   public Set<SubRange> getNotSrcPorts() {
     return _headerSpace.getNotSrcPorts();
   }
@@ -252,7 +270,15 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _deltaEnvType;
   }
 
+  @JsonProperty(PROP_USE_ABSTRACTION)
+  public boolean getUseAbstraction() {
+    return _useAbstraction;
+  }
 
+  @JsonProperty(PROP_BENCHMARK)
+  public boolean getBenchmark() {
+    return _benchmark;
+  }
 
   @Override
   public boolean getTraffic() {
@@ -371,7 +397,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
   }
 
-  @JsonProperty(NOT_SRC_PORTS_VAR)
+  @JsonProperty(PROP_NOT_SRC_PORTS)
   public void setNotSrcPortRange(Set<SubRange> notSrcPorts) {
     _headerSpace.setNotSrcPorts(new TreeSet<>(notSrcPorts));
   }
@@ -454,5 +480,15 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_DIFF_ENV_TYPE)
   public void setDeltaEnvironmentType(EnvironmentType e) {
     _deltaEnvType = e;
+  }
+
+  @JsonProperty(PROP_USE_ABSTRACTION)
+  public void setUseAbstraction(boolean x) {
+    this._useAbstraction = x;
+  }
+
+  @JsonProperty(PROP_BENCHMARK)
+  public void setBenchmark(boolean x) {
+    this._benchmark = x;
   }
 }

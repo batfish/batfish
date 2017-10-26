@@ -116,11 +116,9 @@ test tests/java-smt/ibgp2-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], 
 init-testrig test_rigs/smt-examples/IBGP3 tr-smt-ibgp3
 test tests/java-smt/ibgp3-forwarding.ref get smt-forwarding dstIps=["4.4.4.4"], fullModel=True, baseEnvType=none
 
-# Putting everything together, check the campus network
-#init-testrig test_rigs/smt-examples/CAMPUS1 tr-smt-campus1
-#test tests/java-smt/campus1-forwarding.ref get smt-forwarding dstIps=["2.128.0.101"], srcIps=["1.0.1.2"], ipProtocols=["IP"], noEnvironment=True
-#test tests/java-smt/campus1-reachability.ref get smt-reachability ingressNodeRegex="as2border.*", finalNodeRegex="as2dept1", finalIfaceRegex="FastEthernet1/0" , fullModel=True, minimize=True
-#test tests/java-smt/campus1-local.ref get smt-local-consistency nodeRegex=".*border.*"
+# Check correct handling of add and delete community commands
+init-testrig test_rigs/smt-examples/COMMUNITY1 tr-smt-community1
+test tests/java-smt/community1.ref get smt-forwarding dstIps=["42.42.42.1"], fullModel=True
 
 # Testing reachability with failures in the campus network with external filters
 init-testrig test_rigs/smt-examples/CAMPUS2 tr-smt-campus2
@@ -136,3 +134,8 @@ test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", 
 # Put everything together in testrigs/example
 #init-testrig test_rigs/example tr-smt-example
 #test tests/java-smt/differential3.ref get smt-reachability failures=1, diffType=any, ingressNodeRegex="host1", finalNodeRegex="as3core1", failNode1Regex="as2border2", failNode2Regex="as3border1", noEnvironment=True
+
+# Test BDD-based encoding of route-maps and ACLs
+init-testrig test_rigs/smt-examples/BDD1 tr-bdd1
+test tests/java-smt/roles1.ref get smt-roles equivType=policy
+

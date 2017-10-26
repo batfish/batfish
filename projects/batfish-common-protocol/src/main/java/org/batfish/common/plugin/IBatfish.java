@@ -35,6 +35,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
@@ -177,6 +178,8 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
+  AnswerElement smtRoles(EquivalenceType t, String nodeRegex);
+
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   AnswerElement standard(
@@ -190,4 +193,5 @@ public interface IBatfish extends IPluginConsumer {
       Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
+
 }
