@@ -44,7 +44,7 @@ public class GraphvizJob extends BatfishJob<GraphvizResult> {
   }
 
   @Override
-  public GraphvizResult call() throws Exception {
+  public GraphvizResult callBatfishJob() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     Throwable failureCause = null;

@@ -57,7 +57,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
   }
 
   @Override
-  public NodJobResult call() throws Exception {
+  public NodJobResult callBatfishJob() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     NodProgram latestProgram = null;

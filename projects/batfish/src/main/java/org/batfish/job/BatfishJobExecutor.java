@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
@@ -22,8 +24,6 @@ public class BatfishJobExecutor<
     AnswerElementT extends AnswerElement,
     JobResultT extends BatfishJobResult<OutputT, AnswerElementT>,
     OutputT> {
-
-  private static final long JOB_POLLING_PERIOD_MS = 1000L;
 
   private final String _description;
 
@@ -57,76 +57,44 @@ public class BatfishJobExecutor<
       Collections.shuffle(jobs);
     }
     List<Future<JobResultT>> futures = new ArrayList<>();
+    Semaphore semaphore = new Semaphore(0);
     for (JobT job : jobs) {
+      job.setSemaphore(semaphore);
       Future<JobResultT> future = pool.submit(job);
       futures.add(future);
     }
-    boolean processingError = false;
-    int finishedJobs = 0;
+    AtomicBoolean processingError = new AtomicBoolean(false);
     int totalJobs = jobs.size();
-    AtomicInteger completed = Driver.newBatch(_settings, _description, totalJobs);
-    double finishedPercent;
+    AtomicInteger finishedJobs = Driver.newBatch(_settings, _description, totalJobs);
     List<BatfishException> failureCauses = new ArrayList<>();
-    while (!futures.isEmpty()) {
-      List<Future<JobResultT>> currentFutures = new ArrayList<>();
-      currentFutures.addAll(futures);
-      for (Future<JobResultT> future : currentFutures) {
-        if (future.isDone()) {
-          futures.remove(future);
-          finishedJobs++;
-          completed.incrementAndGet();
-          finishedPercent = 100 * ((double) finishedJobs) / totalJobs;
-          JobResultT result = null;
-          try {
-            result = future.get();
-          } catch (InterruptedException | ExecutionException e) {
-            throw new BatfishException("Error executing job", e);
-          }
-          String time = CommonUtil.getTime(result.getElapsedTime());
-          Throwable failureCause = result.getFailureCause();
-          if (failureCause == null) {
-            result.applyTo(output, _logger, answerElement);
-            _logger.infof(
-                "Job terminated successfully with result: %s after elapsed time: %s - %d/%d "
-                    + "(%.1f%%) complete\n",
-                result.toString(), time, finishedJobs, totalJobs, finishedPercent);
+    try {
+      while (!futures.isEmpty()) {
+        semaphore.acquire();
+        semaphore.release();
+        List<Future<JobResultT>> currentFutures = new ArrayList<>();
+        currentFutures.addAll(futures);
+        for (Future<JobResultT> future : currentFutures) {
+          if (future.isDone()) {
+            semaphore.acquire();
+            futures.remove(future);
+            processCompletedFuture(
+                output,
+                answerElement,
+                processingError,
+                finishedJobs,
+                totalJobs,
+                failureCauses,
+                future);
           } else {
-            String failureMessage =
-                "Failure running job after elapsed time: "
-                    + time
-                    + "\n-----BEGIN JOB LOG-----\n"
-                    + result
-                        .getHistory()
-                        .toString(BatfishLogger.getLogLevel(_settings.getLogLevel()))
-                    + "\n-----END JOB LOG-----";
-            BatfishException bfc = new BatfishException(failureMessage, failureCause);
-            if (_settings.getExitOnFirstError()) {
-              result.appendHistory(_logger);
-              throw bfc;
-            } else {
-              processingError = true;
-              result.appendHistory(_logger);
-              _logger.error(failureMessage + ":\n\t" + ExceptionUtils.getStackTrace(failureCause));
-              failureCauses.add(bfc);
-              if (!_haltOnProcessingError) {
-                result.applyTo(output, _logger, answerElement);
-              }
-            }
+            continue;
           }
-        } else {
-          continue;
         }
       }
-      if (!futures.isEmpty()) {
-        try {
-          Thread.sleep(JOB_POLLING_PERIOD_MS);
-        } catch (InterruptedException e) {
-          throw new BatfishException("interrupted while sleeping", e);
-        }
-      }
+    } catch (InterruptedException e) {
+      throw new BatfishException("interrupted while sleeping", e);
     }
     pool.shutdown();
-    if (processingError) {
+    if (processingError.get()) {
       int numJobs = jobs.size();
       int numFailed = numJobs - failureCauses.size();
       int numSucceeded = numJobs - numFailed;
@@ -140,6 +108,53 @@ public class BatfishJobExecutor<
       }
     } else if (!_logger.isActive(BatfishLogger.LEVEL_INFO)) {
       _logger.info("All jobs executed successfully\n");
+    }
+  }
+
+  private void processCompletedFuture(
+      OutputT output,
+      AnswerElementT answerElement,
+      AtomicBoolean processingError,
+      AtomicInteger finishedJobs,
+      int totalJobs,
+      List<BatfishException> failureCauses,
+      Future<JobResultT> future) {
+    int newFinishedJobs = finishedJobs.incrementAndGet();
+    double finishedPercent = 100 * ((double) newFinishedJobs) / totalJobs;
+    JobResultT result = null;
+    try {
+      result = future.get();
+    } catch (InterruptedException | ExecutionException e) {
+      throw new BatfishException("Error executing job", e);
+    }
+    String time = CommonUtil.getTime(result.getElapsedTime());
+    Throwable failureCause = result.getFailureCause();
+    if (failureCause == null) {
+      result.applyTo(output, _logger, answerElement);
+      _logger.infof(
+          "Job terminated successfully with result: %s after elapsed time: %s - %d/%d "
+              + "(%.1f%%) complete\n",
+          result.toString(), time, newFinishedJobs, totalJobs, finishedPercent);
+    } else {
+      String failureMessage =
+          "Failure running job after elapsed time: "
+              + time
+              + "\n-----BEGIN JOB LOG-----\n"
+              + result.getHistory().toString(BatfishLogger.getLogLevel(_settings.getLogLevel()))
+              + "\n-----END JOB LOG-----";
+      BatfishException bfc = new BatfishException(failureMessage, failureCause);
+      if (_settings.getExitOnFirstError()) {
+        result.appendHistory(_logger);
+        throw bfc;
+      } else {
+        processingError.set(true);
+        result.appendHistory(_logger);
+        _logger.error(failureMessage + ":\n\t" + ExceptionUtils.getStackTrace(failureCause));
+        failureCauses.add(bfc);
+        if (!_haltOnProcessingError) {
+          result.applyTo(output, _logger, answerElement);
+        }
+      }
     }
   }
 }

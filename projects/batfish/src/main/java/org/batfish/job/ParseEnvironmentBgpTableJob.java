@@ -49,7 +49,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
   }
 
   @Override
-  public ParseEnvironmentBgpTableResult call() throws Exception {
+  public ParseEnvironmentBgpTableResult callBatfishJob() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     String currentPath = _file.toAbsolutePath().toString();
