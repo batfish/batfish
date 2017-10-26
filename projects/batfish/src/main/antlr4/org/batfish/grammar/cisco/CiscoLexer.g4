@@ -1956,6 +1956,11 @@ COMPARE_ROUTERID
    'compare-routerid'
 ;
 
+COMPATIBLE
+:
+   'compatible'
+;
+
 CON
 :
    'con'
@@ -8806,6 +8811,11 @@ RF_SWITCH
 RFC_3576_SERVER
 :
    'rfc-3576-server'
+;
+
+RFC1583
+:
+   'rfc1583'
 ;
 
 RFC1583COMPATIBILITY
