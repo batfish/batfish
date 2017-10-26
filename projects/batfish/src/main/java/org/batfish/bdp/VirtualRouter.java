@@ -258,8 +258,8 @@ public class VirtualRouter extends ComparableStructure<String> {
      * as described in RFC 2328.
      * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
      */
-    //TODO: add parsing logic for "(no) compatible rfc1583" command and propagate that to the useMin
-    //variable
+    //TODO: add parsing logic for "(no) compatible rfc1583" command and propagate it to useMin
+
     if (useMin) {
       return Math.min(currentMetric, contributingRouteMetric);
     }
@@ -291,13 +291,17 @@ public class VirtualRouter extends ComparableStructure<String> {
         Long metric = null;
         // Compute the metric from any possible contributing routes, use older RFC by default
         // as it seems consistent with the GNS3 simulations
+        Boolean useMin = _c.getVendorFamily().getCisco().getRfc1583Compatible();
+        if (useMin == null) {
+          useMin = true;
+        }
         for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
           metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, true);
+              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
         }
         for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
           metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, true);
+              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
         }
 
         // No routes contributed to the summary, nothing to construct
