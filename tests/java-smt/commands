@@ -137,5 +137,5 @@ test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", 
 
 # Test BDD-based encoding of route-maps and ACLs
 init-testrig test_rigs/smt-examples/BDD1 tr-bdd1
-test tests/java-smt/roles1.ref get smt-roles equivType=policy
+test tests/java-smt/roles2.ref get smt-roles equivType=policy
 

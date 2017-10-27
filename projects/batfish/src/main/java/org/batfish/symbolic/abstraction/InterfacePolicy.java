@@ -89,7 +89,7 @@ public class InterfacePolicy {
     }
     SortedSet<Pair<Prefix,Integer>> newStatic = new TreeSet<>();
     for (Pair<Prefix, Integer> tup : _staticRoutes) {
-      if (prefixes == null || !PrefixUtils.isContainedBy(tup.getFirst(), prefixes)) {
+      if (prefixes == null || PrefixUtils.overlap(tup.getFirst(), prefixes)) {
         newStatic.add(tup);
       }
     }

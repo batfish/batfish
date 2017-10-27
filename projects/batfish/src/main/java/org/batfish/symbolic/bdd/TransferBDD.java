@@ -951,7 +951,6 @@ class TransferBDD {
     BDDRoute o = new BDDRoute(_comms);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
-    System.out.println("Time: " + (System.currentTimeMillis() - l));
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
     return result.getReturnValue().getFirst();
