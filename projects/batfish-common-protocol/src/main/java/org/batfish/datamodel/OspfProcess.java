@@ -130,7 +130,7 @@ public class OspfProcess implements Serializable {
     _referenceBandwidth = referenceBandwidth;
   }
 
-  public void setRfc1583Compatible(Boolean rfc1583Compatible) {
+  public void setRfc1583Compatible(@Nullable Boolean rfc1583Compatible) {
     _rfc1583Compatible = rfc1583Compatible;
   }
 
