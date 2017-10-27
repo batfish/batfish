@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfMetricType;
@@ -50,6 +51,8 @@ public class OspfProcess extends ComparableStructure<String> {
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
 
   private double _referenceBandwidth;
+
+  private @Nullable Boolean _rfc1583Compatible;
 
   private Ip _routerId;
 
@@ -149,6 +152,8 @@ public class OspfProcess extends ComparableStructure<String> {
     return _referenceBandwidth;
   }
 
+  public @Nullable Boolean getRfc1583Compatible() { return _rfc1583Compatible; }
+
   public Ip getRouterId() {
     return _routerId;
   }
@@ -192,6 +197,8 @@ public class OspfProcess extends ComparableStructure<String> {
   public void setReferenceBandwidth(double referenceBandwidth) {
     _referenceBandwidth = referenceBandwidth;
   }
+
+  public void setRfc1583Compatible(Boolean rfc1583Compatible) { _rfc1583Compatible = rfc1583Compatible; }
 
   public void setRouterId(Ip routerId) {
     _routerId = routerId;

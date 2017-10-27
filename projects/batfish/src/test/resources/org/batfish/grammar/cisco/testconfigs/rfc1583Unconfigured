@@ -1,0 +1,6 @@
+!
+hostname rfc1583Unconfigured
+!
+router ospf 1
+ router-id 1.1.1.1
+!

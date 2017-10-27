@@ -24,6 +24,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -193,18 +194,16 @@ public class CiscoGrammarTest {
 
   @Test
   public void testRfc1583Compatible() throws IOException {
-    SortedMap<String, String> configurationText = new TreeMap<>();
-    String configurationName = "rfc1583NoCompatible";
-    String rfc1583NoCompatibleConfigurationText =
-        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
-    configurationText.put(configurationName, rfc1583NoCompatibleConfigurationText);
-    configurationName = "rfc1583Compatible";
-    String rfc1583CompatibleConfigurationText =
-        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
-    configurationText.put(configurationName, rfc1583CompatibleConfigurationText);
+    SortedMap<String, String> configurationTextMap = new TreeMap<>();
+    String[] configurationNames = new String[] { "rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured" };
+    Boolean[] expectedResults = new Boolean[] { Boolean.TRUE, Boolean.FALSE, null };
+    for (String configName : configurationNames) {
+      String configurationText = CommonUtil.readResource(TESTCONFIGS_PREFIX + configName);
+      configurationTextMap.put(configName, configurationText);
+    }
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            configurationText,
+            configurationTextMap,
             Collections.emptySortedMap(),
             Collections.emptySortedMap(),
             Collections.emptySortedMap(),
@@ -212,12 +211,12 @@ public class CiscoGrammarTest {
             _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
 
-    Configuration noCompatibleConfiguration = configurations.get("rfc1583NoCompatible");
-    Boolean rfc1583Compatible = noCompatibleConfiguration.getVendorFamily().getCisco().getRfc1583Compatible();
-    assertThat(rfc1583Compatible, is(Boolean.FALSE));
-
-    Configuration compatibleConfiguration = configurations.get("rfc1583Compatible");
-    rfc1583Compatible = compatibleConfiguration.getVendorFamily().getCisco().getRfc1583Compatible();
-    assertThat(rfc1583Compatible, is(Boolean.TRUE));
+    for (int i=0; i<configurationNames.length; i++) {
+      Configuration configuration = configurations.get(configurationNames[i]);
+      assertThat(configuration.getVrfs().size(), equalTo(1));
+      for (Vrf vrf : configuration.getVrfs().values()){
+        assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
+      }
+    }
   }
 }

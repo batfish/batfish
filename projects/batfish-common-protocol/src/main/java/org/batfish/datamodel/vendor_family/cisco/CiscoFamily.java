@@ -38,8 +38,6 @@ public class CiscoFamily implements Serializable {
 
   private Boolean _proxyArp;
 
-  private Boolean _rfc1583Compatible;
-
   private SortedMap<String, Service> _services;
 
   private Sntp _sntp;
@@ -117,8 +115,6 @@ public class CiscoFamily implements Serializable {
     return _proxyArp;
   }
 
-  public Boolean getRfc1583Compatible() { return _rfc1583Compatible; }
-
   public SortedMap<String, Service> getServices() {
     return _services;
   }
@@ -194,8 +190,6 @@ public class CiscoFamily implements Serializable {
   public void setProxyArp(Boolean proxyArp) {
     _proxyArp = proxyArp;
   }
-
-  public void setRfc1583Compatible(Boolean rfc1583Compatible) { _rfc1583Compatible = rfc1583Compatible; }
 
   public void setServices(SortedMap<String, Service> services) {
     _services = services;

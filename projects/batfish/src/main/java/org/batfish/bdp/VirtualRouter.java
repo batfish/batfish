@@ -251,15 +251,6 @@ public class VirtualRouter extends ComparableStructure<String> {
       return contributingRouteMetric;
     }
     // Take the best metric between the route's and current available
-    /*
-     * NOTE: Best was determined using the min function according to RFC 1583.
-     * However, OSPFv2 uses max function.
-     * Cisco claims to have switched to using max in IOS v.12.0 and later,
-     * as described in RFC 2328.
-     * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
-     */
-    //TODO: add parsing logic for "(no) compatible rfc1583" command and propagate it to useMin
-
     if (useMin) {
       return Math.min(currentMetric, contributingRouteMetric);
     }
@@ -275,6 +266,13 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
     // Admin cost for the given protocol
     int admin = RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat());
+
+    // Determine whether to use min based on RFC 1583 compatibility setting
+    Boolean useMin = proc.getRfc1583Compatible();
+    if (useMin == null) {
+      useMin = true;
+    }
+
     // Compute summaries for each area
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
       long areaNum = e.getKey();
@@ -288,13 +286,8 @@ public class VirtualRouter extends ComparableStructure<String> {
           continue;
         }
 
+        // Compute the metric from any possible contributing routes
         Long metric = null;
-        // Compute the metric from any possible contributing routes, use older RFC by default
-        // as it seems consistent with the GNS3 simulations
-        Boolean useMin = _c.getVendorFamily().getCisco().getRfc1583Compatible();
-        if (useMin == null) {
-          useMin = true;
-        }
         for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
           metric =
               computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
