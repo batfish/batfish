@@ -131,7 +131,9 @@ import org.batfish.symbolic.collections.PList;
 class TransferSSA {
 
   private static final int INLINE_HEURISTIC = 3000;
+
   private static int id = 0;
+
   private EncoderSlice _enc;
 
   private Configuration _conf;
@@ -602,6 +604,9 @@ class TransferSSA {
    * for a given routing protocol.
    */
   private BoolExpr noOverflow(ArithExpr metric, Protocol proto) {
+    if (!_enc.getEncoder().getQuestion().getModelOverflow()) {
+      return _enc.mkTrue();
+    }
     if (proto.isConnected()) {
       return _enc.mkTrue();
     }

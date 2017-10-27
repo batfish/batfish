@@ -622,7 +622,13 @@ public class PropertyChecker {
       }
     }
 
-    return new SmtDeterminismAnswerElement(res, flow, case1, case2);
+    // Ensure canonical order
+    boolean less = (case1 == null || (case1.first().compareTo(case2.first()) < 0));
+    if (less) {
+      return new SmtDeterminismAnswerElement(flow, case1, case2);
+    } else {
+      return new SmtDeterminismAnswerElement(flow, case2, case1);
+    }
   }
 
   /*

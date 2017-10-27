@@ -6,19 +6,14 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtDeterminismAnswerElement implements AnswerElement {
-
-  private static final String PROP_RESULT = "result";
 
   private static final String PROP_FLOW = "flow";
 
   private static final String PROP_FORWARDING_CASE1 = "forwardingCase1";
 
   private static final String PROP_FORWARDING_CASE2 = "forwardingCase2";
-
-  private VerificationResult _result;
 
   private Flow _flow;
 
@@ -28,19 +23,12 @@ public class SmtDeterminismAnswerElement implements AnswerElement {
 
   @JsonCreator
   public SmtDeterminismAnswerElement(
-      @JsonProperty(PROP_RESULT) VerificationResult result,
       @JsonProperty(PROP_FLOW) @Nullable Flow flow,
       @JsonProperty(PROP_FORWARDING_CASE1) @Nullable SortedSet<String> case1,
       @JsonProperty(PROP_FORWARDING_CASE2) @Nullable SortedSet<String> case2) {
-    _result = result;
     _flow = flow;
     _forwardingCase1 = case1;
     _forwardingCase2 = case2;
-  }
-
-  @JsonProperty(PROP_RESULT)
-  public VerificationResult getResult() {
-    return _result;
   }
 
   @JsonProperty(PROP_FLOW)
@@ -62,7 +50,7 @@ public class SmtDeterminismAnswerElement implements AnswerElement {
   public String prettyPrint() {
     StringBuilder sb = new StringBuilder();
     sb.append("\n");
-    if (_result.isVerified()) {
+    if (_forwardingCase1 == null) {
       sb.append("Verified\n");
     } else {
       sb.append(_flow).append("\n\n");

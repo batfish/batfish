@@ -1,21 +1,21 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement",
-      "result" : {
-        "verified" : true
-      }
+      "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement"
     }
   ],
   "question" : {
     "class" : "org.batfish.question.SmtDeterministicQuestionPlugin$DeterministicQuestion",
     "baseEnvType" : "any",
+    "benchmark" : false,
     "deltaEnvType" : "any",
     "differential" : false,
     "envDiff" : false,
     "failures" : 0,
     "fullModel" : false,
-    "minimize" : false
+    "minimize" : false,
+    "modelOverflow" : false,
+    "useAbstraction" : false
   },
   "status" : "SUCCESS",
   "summary" : {
