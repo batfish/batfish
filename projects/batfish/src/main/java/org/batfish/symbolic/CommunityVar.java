@@ -51,7 +51,8 @@ public class CommunityVar implements Comparable<CommunityVar> {
     return _long;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return '<' + _value + ',' + _type + '>';
   }
 
