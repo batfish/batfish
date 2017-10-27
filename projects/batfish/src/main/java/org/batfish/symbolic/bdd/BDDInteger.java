@@ -5,13 +5,11 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 
-
 public class BDDInteger {
 
   private BDDFactory _factory;
 
   private BDD[] _bitvec;
-
 
   /*
    * Create an integer, and initialize its values as "don't care"
@@ -27,8 +25,8 @@ public class BDDInteger {
   }
 
   /*
- * Create an integer and initialize it to a concrete value
- */
+   * Create an integer and initialize it to a concrete value
+   */
   public static BDDInteger makeFromValue(BDDFactory factory, int length, long value) {
     BDDInteger bdd = new BDDInteger(factory, length);
     bdd.setValue(value);
@@ -103,8 +101,8 @@ public class BDDInteger {
   }
 
   /*
- * Less than or equal to on integers
- */
+   * Less than or equal to on integers
+   */
   public BDD geq(int val) {
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] greater = new BDD[_bitvec.length];
@@ -204,7 +202,8 @@ public class BDDInteger {
     return _factory;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (!(o instanceof BDDInteger)) {
       return false;
     }
@@ -212,7 +211,8 @@ public class BDDInteger {
     return Arrays.equals(_bitvec, other._bitvec);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Arrays.hashCode(_bitvec);
   }
 }
