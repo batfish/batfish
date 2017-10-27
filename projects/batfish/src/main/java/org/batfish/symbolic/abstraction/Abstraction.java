@@ -317,7 +317,7 @@ public class Abstraction {
     Set<Set<String>> todo;
     do {
       todo = new HashSet<>();
-      List<Set<String>> ps = workset.partitions();
+      Collection<Set<String>> ps = workset.partitions();
 
       for (Set<String> partition : ps) {
         // Nothing to refine if already a concrete node
@@ -350,13 +350,10 @@ public class Abstraction {
     // System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
     System.out.println("Num Groups: " + workset.partitions().size());
-
     Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork(workset, devices);
     Graph abstractGraph = abstractNetwork.getFirst();
     AbstractionMap abstraction = abstractNetwork.getSecond();
-
     System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
-
     return new EquivalenceClass(headerspace, abstractGraph, abstraction);
   }
 
@@ -395,7 +392,7 @@ public class Abstraction {
       Map<GraphEdge, InterfacePolicy> importPol,
       UnionSplit<String> workset,
       Set<Set<String>> todo,
-      List<Set<String>> ps,
+      Collection<Set<String>> ps,
       Set<String> partition,
       boolean countMatters) {
 
@@ -461,6 +458,7 @@ public class Abstraction {
             }
           });
       newPartitions.addAll(inversePolicyMap.values());
+
     } else {
       Map<Set<EquivalenceEdge>, Set<String>> inversePolicyMap = new HashMap<>();
       existentialMap.forEach(
@@ -492,7 +490,7 @@ public class Abstraction {
       Map<GraphEdge, InterfacePolicy> importPol,
       UnionSplit<String> workset,
       Set<Set<String>> todo,
-      List<Set<String>> ps,
+      Collection<Set<String>> ps,
       Set<String> partition) {
 
     // Split by universal abstraction

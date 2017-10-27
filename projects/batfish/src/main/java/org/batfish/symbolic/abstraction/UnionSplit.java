@@ -1,9 +1,8 @@
 package org.batfish.symbolic.abstraction;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,8 +64,8 @@ public class UnionSplit<T> {
     return _reverseMap.get(idx);
   }
 
-  public List<Set<T>> partitions() {
-    return new ArrayList<>(_reverseMap.values());
+  public Collection<Set<T>> partitions() {
+    return _reverseMap.values();
   }
 
   public Set<Integer> handles() {
