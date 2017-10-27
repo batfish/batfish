@@ -154,7 +154,6 @@
   "question" : {
     "class" : "org.batfish.question.SmtLocalConsistencyQuestionPlugin$LocalConsistencyQuestion",
     "baseEnvType" : "any",
-    "benchmark" : false,
     "deltaEnvType" : "any",
     "differential" : false,
     "envDiff" : false,
@@ -163,6 +162,7 @@
     "minimize" : true,
     "modelOverflow" : false,
     "nodeRegex" : ".*",
+    "stats" : false,
     "strict" : false,
     "useAbstraction" : false
   },

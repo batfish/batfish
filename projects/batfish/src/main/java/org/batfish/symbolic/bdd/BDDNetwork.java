@@ -47,7 +47,6 @@ public class BDDNetwork {
     long l = System.currentTimeMillis();
     BDDNetwork network = new BDDNetwork(g, nodeRegex);
     network.computeInterfacePolicies();
-    System.out.println("Time to build BDD network: " + (System.currentTimeMillis() - l));
     return network;
   }
 

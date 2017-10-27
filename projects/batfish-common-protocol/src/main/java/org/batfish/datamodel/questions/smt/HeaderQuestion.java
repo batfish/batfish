@@ -71,7 +71,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_USE_ABSTRACTION = "useAbstraction";
 
-  private static final String PROP_BENCHMARK = "benchmark";
+  private static final String PROP_STATISTICS = "stats";
 
   private Set<ForwardingAction> _actions;
 
@@ -97,7 +97,7 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private boolean _useAbstraction;
 
-  private boolean _benchmark;
+  private boolean _stats;
 
   public HeaderQuestion() {
     _actions = EnumSet.of(ForwardingAction.ACCEPT);
@@ -112,7 +112,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _deltaEnvType = EnvironmentType.ANY;
     _modelOverflow = false;
     _useAbstraction = false;
-    _benchmark = false;
+    _stats = false;
   }
 
   public HeaderQuestion(HeaderQuestion q) {
@@ -128,7 +128,7 @@ public class HeaderQuestion extends Question implements IQuestion {
     _deltaEnvType = q._deltaEnvType;
     _modelOverflow = q._modelOverflow;
     _useAbstraction = q._useAbstraction;
-    _benchmark = q._benchmark;
+    _stats = q._stats;
   }
 
   @Override
@@ -286,9 +286,9 @@ public class HeaderQuestion extends Question implements IQuestion {
     return _useAbstraction;
   }
 
-  @JsonProperty(PROP_BENCHMARK)
+  @JsonProperty(PROP_STATISTICS)
   public boolean getBenchmark() {
-    return _benchmark;
+    return _stats;
   }
 
   @Override
@@ -503,8 +503,8 @@ public class HeaderQuestion extends Question implements IQuestion {
     this._useAbstraction = x;
   }
 
-  @JsonProperty(PROP_BENCHMARK)
+  @JsonProperty(PROP_STATISTICS)
   public void setBenchmark(boolean x) {
-    this._benchmark = x;
+    this._stats = x;
   }
 }

@@ -345,15 +345,15 @@ public class Abstraction {
 
     } while (!todo.isEmpty());
 
-    System.out.println("EC Devices: " + devices);
-    System.out.println("EC Prefixes: " + prefixes);
+    //System.out.println("EC Devices: " + devices);
+    //System.out.println("EC Prefixes: " + prefixes);
     // System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
-    System.out.println("Num Groups: " + workset.partitions().size());
+    //System.out.println("Num Groups: " + workset.partitions().size());
     Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork(workset, devices);
     Graph abstractGraph = abstractNetwork.getFirst();
     AbstractionMap abstraction = abstractNetwork.getSecond();
-    System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
+    //System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
     return new EquivalenceClass(headerspace, abstractGraph, abstraction);
   }
 
