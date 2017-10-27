@@ -198,8 +198,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
-  private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
-
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
 
@@ -902,10 +900,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       popEnvironment();
     }
     NodeSet blacklistNodes = getNodeBlacklist();
-    if (blacklistNodes != null) {
-      if (differentialContext) {
-        flowSinks.removeNodes(blacklistNodes);
-      }
+    if (blacklistNodes != null && differentialContext) {
+      flowSinks.removeNodes(blacklistNodes);
     }
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     if (blacklistInterfaces != null) {
@@ -1430,7 +1426,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // Now we create interfaces for each edge and record the number of
     // neighbors so we know how large to make the subnet
-    long currentStartingIpAsLong = new Ip(GEN_OSPF_STARTING_IP).asLong();
+    long currentStartingIpAsLong = Ip.FIRST_CLASS_A_PRIVATE_IP.asLong();
     Set<Set<NodeInterfacePair>> interfaceSets = new HashSet<>();
     interfaceSets.addAll(interfaceMap.values());
     for (Set<NodeInterfacePair> interfaceSet : interfaceSets) {
@@ -1712,10 +1708,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public EdgeSet getEdgeBlacklist() {
     EdgeSet blacklistEdges = null;
     Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
-    if (edgeBlacklistPath != null) {
-      if (Files.exists(edgeBlacklistPath)) {
-        blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
-      }
+    if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
+      blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
     }
     return blacklistEdges;
   }
@@ -1826,10 +1820,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<NodeInterfacePair> blacklistInterfaces = null;
     Path interfaceBlacklistPath =
         _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
-    if (interfaceBlacklistPath != null) {
-      if (Files.exists(interfaceBlacklistPath)) {
-        blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
-      }
+    if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
+      blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
     }
     return blacklistInterfaces;
   }
@@ -1842,10 +1834,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public NodeSet getNodeBlacklist() {
     NodeSet blacklistNodes = null;
     Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
-    if (nodeBlacklistPath != null) {
-      if (Files.exists(nodeBlacklistPath)) {
-        blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
-      }
+    if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
+      blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
     }
     return blacklistNodes;
   }
@@ -2744,13 +2734,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors);
                 });
       }
-      SortedMap<String, org.batfish.common.Warnings> warnings = initInfoAnswerElement.getWarnings();
+      SortedMap<String, Warnings> warnings = initInfoAnswerElement.getWarnings();
       initStepAnswerElement
           .getWarnings()
           .forEach(
               (hostname, initStepWarnings) -> {
-                org.batfish.common.Warnings combined =
-                    warnings.computeIfAbsent(hostname, h -> buildWarnings());
+                Warnings combined = warnings.computeIfAbsent(hostname, h -> buildWarnings());
                 combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
                 combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
                 combined

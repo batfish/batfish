@@ -16,6 +16,16 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public static final Ip AUTO = new Ip(-1L);
 
+  public static final Ip FIRST_CLASS_A_PRIVATE_IP = new Ip("10.0.0.0");
+
+  public static final Ip FIRST_CLASS_B_PRIVATE_IP = new Ip("172.16.0.0");
+
+  public static final Ip FIRST_CLASS_C_PRIVATE_IP = new Ip("192.168.0.0");
+
+  public static final Ip FIRST_CLASS_E_EXPERIMENTAL_IP = new Ip("240.0.0.0");
+
+  public static final Ip FIRST_MULTICAST_IP = new Ip("224.0.0.0");
+
   public static final Ip MAX = new Ip(0xFFFFFFFFL);
 
   private static final int NUM_BYTES = 4;
