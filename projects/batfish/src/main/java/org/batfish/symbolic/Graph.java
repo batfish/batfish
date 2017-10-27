@@ -116,6 +116,12 @@ public class Graph {
 
   private Map<Integer, Set<String>> _domainMapInverse;
 
+  private Set<CommunityVar> _allCommunities;
+
+  private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
+
+  private Map<String, String> _namedCommunities;
+
   /*
    * Create a graph from a Batfish object
    */
@@ -151,6 +157,7 @@ public class Graph {
     _domainMap = new HashMap<>();
     _domainMapInverse = new HashMap<>();
     _configurations = configs;
+    _communityDependencies = new TreeMap<>();
 
     if (_configurations == null) {
       _configurations = new HashMap<>(_batfish.loadConfigurations());
@@ -178,6 +185,9 @@ public class Graph {
     initIbgpNeighbors();
     initAreaIds();
     initDomains();
+    initAllCommunities();
+    initCommDependencies();
+    initNamedCommunities();
   }
 
   /*
@@ -783,32 +793,30 @@ public class Graph {
     return _domainMapInverse.get(idx);
   }
 
-  /*
-   * Create a community dependency mapping. Each community regex will
-   * map to zero or more actual community values
-   */
-  public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
-    Set<CommunityVar> allComms = findAllCommunities();
 
+  private void initAllCommunities() {
+    _allCommunities = findAllCommunities();
+  }
+
+  private void initCommDependencies() {
     // Map community regex matches to Java regex
     Map<CommunityVar, java.util.regex.Pattern> regexes = new HashMap<>();
-    for (CommunityVar c : allComms) {
+    for (CommunityVar c : _allCommunities) {
       if (c.getType() == CommunityVar.Type.REGEX) {
         java.util.regex.Pattern p = java.util.regex.Pattern.compile(c.getValue());
         regexes.put(c, p);
       }
     }
 
-    SortedMap<CommunityVar, List<CommunityVar>> deps = new TreeMap<>();
-    for (CommunityVar c1 : allComms) {
+    for (CommunityVar c1 : _allCommunities) {
       // map exact match to corresponding regexes
       if (c1.getType() == CommunityVar.Type.REGEX) {
 
         List<CommunityVar> list = new ArrayList<>();
-        deps.put(c1, list);
+        _communityDependencies.put(c1, list);
         java.util.regex.Pattern p = regexes.get(c1);
 
-        for (CommunityVar c2 : allComms) {
+        for (CommunityVar c2 : _allCommunities) {
           if (c2.getType() == CommunityVar.Type.EXACT) {
             Matcher m = p.matcher(c2.getValue());
             if (m.find()) {
@@ -823,15 +831,45 @@ public class Graph {
         }
       }
     }
+  }
 
-    return deps;
+  /*
+   * Map named community sets that contain a single match
+   * back to the community/regex value. This makes it
+   * easier to provide intuitive counter examples.
+   */
+  private void initNamedCommunities() {
+    _namedCommunities = new HashMap<>();
+    for (Configuration conf : getConfigurations().values()) {
+      for (Entry<String,CommunityList> entry : conf.getCommunityLists().entrySet()) {
+        String name = entry.getKey();
+        CommunityList cl = entry.getValue();
+        if (cl != null && cl.getLines().size() == 1) {
+          CommunityListLine line = cl.getLines().get(0);
+          _namedCommunities.put(line.getRegex(), name);
+        }
+      }
+    }
+  }
+
+
+  public Set<CommunityVar> getAllCommunities() {
+    return _allCommunities;
+  }
+
+  public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
+    return _communityDependencies;
+  }
+
+  public Map<String,String> getNamedCommunities() {
+    return _namedCommunities;
   }
 
   /*
    * Finds all uniquely mentioned community matches
    * in the network by walking over every configuration.
    */
-  public Set<CommunityVar> findAllCommunities() {
+  private Set<CommunityVar> findAllCommunities() {
     Set<CommunityVar> comms = new HashSet<>();
     for (String router : getRouters()) {
       comms.addAll(findAllCommunities(router));
@@ -848,7 +886,7 @@ public class Graph {
     return comms;
   }
 
-  public Set<CommunityVar> findAllCommunities(String router) {
+  private Set<CommunityVar> findAllCommunities(String router) {
     Set<CommunityVar> comms = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
 
@@ -925,25 +963,6 @@ public class Graph {
     return comms;
   }
 
-  /*
-   * Map named community sets that contain a single match
-   * back to the community/regex value. This makes it
-   * easier to provide intuitive counter examples.
-   */
-  public Map<String, String> findNamedCommunities() {
-    Map<String, String> comms = new HashMap<>();
-    for (Configuration conf : getConfigurations().values()) {
-      for (Entry<String,CommunityList> entry : conf.getCommunityLists().entrySet()) {
-        String name = entry.getKey();
-        CommunityList cl = entry.getValue();
-        if (cl != null && cl.getLines().size() == 1) {
-          CommunityListLine line = cl.getLines().get(0);
-          comms.put(line.getRegex(), name);
-        }
-      }
-    }
-    return comms;
-  }
 
   /*
    * Find the set of all protocols that might be redistributed into

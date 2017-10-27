@@ -947,7 +947,7 @@ class TransferBDD {
     long l = System.currentTimeMillis();
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
-    _comms = _graph.findAllCommunities();
+    _comms = _graph.getAllCommunities();
     BDDRoute o = new BDDRoute(_comms);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);

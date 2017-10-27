@@ -79,12 +79,6 @@ class EncoderSlice {
 
   private Table2<String, GraphEdge, BoolExpr> _forwardsAcross;
 
-  private Set<CommunityVar> _allCommunities;
-
-  private Map<String, String> _namedCommunities;
-
-  private Map<CommunityVar, List<CommunityVar>> _communityDependencies;
-
   private List<SymbolicRoute> _allSymbolicRoutes;
 
   private Map<String, SymbolicRoute> _ospfRedistributed;
@@ -150,7 +144,6 @@ class EncoderSlice {
 
     initOptimizations();
     initOriginatedPrefixes();
-    initCommunities();
     initRedistributionProtocols();
     initVariables();
     initAclFunctions();
@@ -347,17 +340,6 @@ class EncoderSlice {
               }
               _forwardsAcross.put(router, edge, mkAnd(var, inAcl));
             });
-  }
-
-  /*
-   * Initializes a dependency graph of community values and
-   * community regex matches. Each community regex is mapped
-   * to the collection of exact matches that it subsumes
-   */
-  private void initCommunities() {
-    _allCommunities = getGraph().findAllCommunities();
-    _namedCommunities = getGraph().findNamedCommunities();
-    _communityDependencies = getGraph().getCommunityDependencies();
   }
 
   /*
@@ -1038,7 +1020,7 @@ class EncoderSlice {
         BoolExpr e = entry.getValue();
         if (cvar.getType() == CommunityVar.Type.REGEX) {
           BoolExpr acc = mkFalse();
-          List<CommunityVar> deps = _communityDependencies.get(cvar);
+          List<CommunityVar> deps = getGraph().getCommunityDependencies().get(cvar);
           for (CommunityVar dep : deps) {
             BoolExpr depExpr = r.getCommunities().get(dep);
             acc = mkOr(acc, depExpr);
@@ -2840,11 +2822,11 @@ class EncoderSlice {
   }
 
   Set<CommunityVar> getAllCommunities() {
-    return _allCommunities;
+    return getGraph().getAllCommunities();
   }
 
   Map<String, String> getNamedCommunities() {
-    return _namedCommunities;
+    return getGraph().getNamedCommunities();
   }
 
   UnsatCore getUnsatCore() {
@@ -2860,7 +2842,7 @@ class EncoderSlice {
   }
 
   Map<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
-    return _communityDependencies;
+    return getGraph().getCommunityDependencies();
   }
 
   Table2<String, Protocol, Set<Prefix>> getOriginatedNetworks() {

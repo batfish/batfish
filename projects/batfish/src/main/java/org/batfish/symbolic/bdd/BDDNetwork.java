@@ -82,6 +82,11 @@ public class BDDNetwork {
    */
   private void computeInterfacePolicies() {
 
+    long l1 = 0;
+    long l2 = 0;
+    long l3 = 0;
+    long l;
+
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
       // Skip if doesn't match the node regex
@@ -95,14 +100,18 @@ public class BDDNetwork {
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
+          l = System.currentTimeMillis();
           BDDRoute rec = computeBDD(_graph, conf, importBgp, true);
           _importBgpPolicies.put(ge, rec);
+          l1 = l1 + (System.currentTimeMillis() - l);
         }
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         if (exportBgp != null) {
+          l = System.currentTimeMillis();
           BDDRoute rec = computeBDD(_graph, conf, exportBgp, true);
           _exportBgpPolicies.put(ge, rec);
+          l2 = l2 + (System.currentTimeMillis() - l);
         }
 
         IpAccessList in = ge.getStart().getIncomingFilter();
@@ -121,6 +130,7 @@ public class BDDNetwork {
       }
     }
 
+    l = System.currentTimeMillis();
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
       // Skip if doesn't match the node regex
@@ -150,6 +160,11 @@ public class BDDNetwork {
         _exportPolicyMap.put(ge, epol);
       }
     }
+    l3 = l3 + (System.currentTimeMillis() - l);
+
+    System.out.println("Import BGP Time: " + l1);
+    System.out.println("Export BGP Time: " + l2);
+    System.out.println("Interface Pol Time: " + l3);
   }
 
   public Map<GraphEdge, BDDRoute> getExportBgpPolicies() {
