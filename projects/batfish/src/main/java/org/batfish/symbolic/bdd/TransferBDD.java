@@ -324,7 +324,7 @@ class TransferBDD {
       CallExpr c = (CallExpr) expr;
       String router = _conf.getName();
       String name = c.getCalledPolicyName();
-      TransferResult<TransferReturn, BDD> r  = CACHE.get(router, name);
+      TransferResult<TransferReturn, BDD> r = CACHE.get(router, name);
       if (r != null) {
         return r;
       }
@@ -664,20 +664,6 @@ class TransferBDD {
     return result;
   }
 
-  /*
-   * Create a BDDRecord representing the symbolic output of
-   * the RoutingPolicy given the input variables.
-   */
-  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
-    _ignoredNetworks = ignoredNetworks;
-    _commDeps = _graph.getCommunityDependencies();
-    _comms = _graph.findAllCommunities();
-    BDDRoute o = new BDDRoute(_comms);
-    TransferParam<BDDRoute> p = new TransferParam<>(o, false);
-    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
-    p.debug("Final Result: " + result.getReturnValue().getFirst().hashCode());
-    return result.getReturnValue().getFirst();
-  }
 
   private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
     BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
@@ -951,5 +937,23 @@ class TransferBDD {
     }
     rec.getProtocolHistory().getInteger().setValue(0);
     return rec;
+  }
+
+  /*
+   * Create a BDDRecord representing the symbolic output of
+   * the RoutingPolicy given the input variables.
+   */
+  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
+    long l = System.currentTimeMillis();
+    _ignoredNetworks = ignoredNetworks;
+    _commDeps = _graph.getCommunityDependencies();
+    _comms = _graph.findAllCommunities();
+    BDDRoute o = new BDDRoute(_comms);
+    TransferParam<BDDRoute> p = new TransferParam<>(o, false);
+    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
+    System.out.println("Time: " + (System.currentTimeMillis() - l));
+    // BDDRoute route = result.getReturnValue().getFirst();
+    // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
+    return result.getReturnValue().getFirst();
   }
 }

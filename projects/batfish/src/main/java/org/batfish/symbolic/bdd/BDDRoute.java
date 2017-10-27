@@ -38,8 +38,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private static BDDPairing pairing;
 
-  private static final int prefixIndex = 135;
-
 
   static {
     allMetricTypes = new ArrayList<>();
@@ -58,7 +56,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     try {
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
       factory = JFactory.init(100000, 10000);
-      factory.disableReorder();
+      // factory.disableReorder();
       factory.setCacheRatio(64);
       // Disables printing
       //factory.registerGCCallback(handler, m);
@@ -105,26 +103,26 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     int idx = 0;
     _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
     int len = _protocolHistory.getInteger().getBitvec().length;
-    addBitNames("proto", len, idx);
+    addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
-    _metric = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("metric", 32, idx);
+    _metric = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("metric", 32, idx, false);
     idx += 32;
-    _med = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("med", 32, idx);
+    _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("med", 32, idx, false);
     idx += 32;
-    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("ad", 32, idx);
+    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("ad", 32, idx, false);
     idx += 32;
-    _localPref = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("lp", 32, idx);
+    _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("lp", 32, idx, false);
     idx += 32;
-    _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx);
-    addBitNames("pfxLen", 32, idx);
+    _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx, true);
+    addBitNames("pfxLen", 5, idx, true);
     idx += 5;
-    _prefix = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("pfx", 32, idx);
+    _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
+    addBitNames("pfx", 32, idx, true);
     idx += 32;
     // Initialize communities
     _communities = new TreeMap<>();
@@ -138,7 +136,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().getBitvec().length;
-    addBitNames("ospfMetric", len, idx);
+    addBitNames("ospfMetric", len, idx, false);
   }
 
   /*
@@ -162,9 +160,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
    */
-  private void addBitNames(String s, int length, int index) {
+  private void addBitNames(String s, int length, int index, boolean reverse) {
     for (int i = index; i < index + length; i++) {
-      _bitNames.put(i, s + (i - index));
+      if (reverse) {
+        _bitNames.put(i, s + (length - 1 - (i - index)));
+      } else {
+        _bitNames.put(i, s + (i - index + 1));
+      }
     }
   }
 
@@ -350,7 +352,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // JavaBDD will start to memory leak
     pairing.reset();
     for (int i = 0; i < len; i++) {
-      int var = prefixIndex + i;
+      int var = _prefix.getBitvec()[i].var(); // prefixIndex + i;
       BDD subst = bits.get(i) ? factory.one() : factory.zero();
       vars[i] = var;
       vals[i] = subst;

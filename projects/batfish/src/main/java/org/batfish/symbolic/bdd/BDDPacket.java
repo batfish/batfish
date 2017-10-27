@@ -22,8 +22,6 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
-  private static final int dstIpIndex = 8;
-
   static BDDFactory factory;
 
   private static BDDPairing pairing;
@@ -36,9 +34,9 @@ public class BDDPacket {
       factory.disableReorder();
       factory.setCacheRatio(64);
       // Disables printing
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
+      //factory.registerGCCallback(handler, m);
+      //factory.registerResizeCallback(handler, m);
+      //factory.registerReorderCallback(handler, m);
       pairing = factory.makePair();
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
@@ -94,26 +92,26 @@ public class BDDPacket {
 
     // Initialize integer values
     int idx = 0;
-    _ipProtocol = BDDInteger.makeFromIndex(factory, 8, idx);
-    addBitNames("ipProtocol", 8, idx);
+    _ipProtocol = BDDInteger.makeFromIndex(factory, 8, idx, false);
+    addBitNames("ipProtocol", 8, idx, false);
     idx += 8;
-    _dstIp = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("dstIp", 32, idx);
+    _dstIp = BDDInteger.makeFromIndex(factory, 32, idx, true);
+    addBitNames("dstIp", 32, idx, true);
     idx += 32;
-    _srcIp = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("srcIp", 32, idx);
+    _srcIp = BDDInteger.makeFromIndex(factory, 32, idx, true);
+    addBitNames("srcIp", 32, idx, true);
     idx += 32;
-    _dstPort = BDDInteger.makeFromIndex(factory, 16, idx);
-    addBitNames("dstPort", 16, idx);
+    _dstPort = BDDInteger.makeFromIndex(factory, 16, idx, false);
+    addBitNames("dstPort", 16, idx, false);
     idx += 16;
-    _srcPort = BDDInteger.makeFromIndex(factory, 16, idx);
-    addBitNames("srcPort", 16, idx);
+    _srcPort = BDDInteger.makeFromIndex(factory, 16, idx, false);
+    addBitNames("srcPort", 16, idx, false);
     idx += 16;
-    _icmpCode = BDDInteger.makeFromIndex(factory, 8, idx);
-    addBitNames("icmpCode", 8, idx);
+    _icmpCode = BDDInteger.makeFromIndex(factory, 8, idx, false);
+    addBitNames("icmpCode", 8, idx, false);
     idx += 8;
-    _icmpType = BDDInteger.makeFromIndex(factory, 8, idx);
-    addBitNames("icmpType", 8, idx);
+    _icmpType = BDDInteger.makeFromIndex(factory, 8, idx, false);
+    addBitNames("icmpType", 8, idx, false);
     idx += 8;
     _tcpAck = factory.ithVar(idx);
     _bitNames.put(idx, "tcpAck");
@@ -166,9 +164,13 @@ public class BDDPacket {
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
    */
-  private void addBitNames(String s, int length, int index) {
+  private void addBitNames(String s, int length, int index, boolean reverse) {
     for (int i = index; i < index + length; i++) {
-      _bitNames.put(i, s + (i - index));
+      if (reverse) {
+        _bitNames.put(i, s + (length - 1 - (i - index)));
+      } else {
+        _bitNames.put(i, s + (i - index + 1));
+      }
     }
   }
 
@@ -397,7 +399,7 @@ public class BDDPacket {
     BDD[] vals = new BDD[len];
     pairing.reset();
     for (int i = 0; i < len; i++) {
-      int var = dstIpIndex + i;
+      int var = _dstIp.getBitvec()[i].var(); // dstIpIndex + i;
       BDD subst = bits.get(i) ? factory.one() : factory.zero();
       vars[i] = var;
       vals[i] = subst;
