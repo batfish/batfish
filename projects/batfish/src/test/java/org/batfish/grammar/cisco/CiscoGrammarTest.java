@@ -24,6 +24,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -189,5 +190,34 @@ public class CiscoGrammarTest {
             .flatMap(asSet -> asSet.stream())
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
+  }
+
+  @Test
+  public void testRfc1583Compatible() throws IOException {
+    SortedMap<String, String> configurationTextMap = new TreeMap<>();
+    String[] configurationNames =
+        new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
+    Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
+    for (String configName : configurationNames) {
+      String configurationText = CommonUtil.readResource(TESTCONFIGS_PREFIX + configName);
+      configurationTextMap.put(configName, configurationText);
+    }
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            configurationTextMap,
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            Collections.emptySortedMap(),
+            _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+
+    for (int i = 0; i < configurationNames.length; i++) {
+      Configuration configuration = configurations.get(configurationNames[i]);
+      assertThat(configuration.getVrfs().size(), equalTo(1));
+      for (Vrf vrf : configuration.getVrfs().values()) {
+        assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
+      }
+    }
   }
 }

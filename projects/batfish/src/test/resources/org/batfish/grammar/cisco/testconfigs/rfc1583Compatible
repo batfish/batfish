@@ -1,0 +1,7 @@
+!
+hostname rfc1583Compatible
+!
+router ospf 1
+ router-id 1.1.1.1
+ compatible rfc1583
+!

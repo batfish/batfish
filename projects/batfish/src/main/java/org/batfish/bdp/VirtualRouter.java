@@ -1,5 +1,6 @@
 package org.batfish.bdp;
 
+import com.google.common.base.MoreObjects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -229,8 +230,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param areaPrefix The Ip prefix of the OSPF area
    * @param currentMetric The current summary metric for the area
    * @param areaNum Area number.
-   * @param useMin Whether to use the older RFC 1583 computation, which takes the minimum of
-   *     metrics as opposed to the newer RFC 2328, which uses the maximum
+   * @param useMin Whether to use the older RFC 1583 computation, which takes the minimum of metrics
+   *     as opposed to the newer RFC 2328, which uses the maximum
    * @return the newly computed summary metric.
    */
   @Nullable
@@ -250,16 +251,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     if (currentMetric == null) {
       return contributingRouteMetric;
     }
-    // Take the best metric between the route's and current available
-    /*
-     * NOTE: Best was determined using the min function according to RFC 1583.
-     * However, OSPFv2 uses max function.
-     * Cisco claims to have switched to using max in IOS v.12.0 and later,
-     * as described in RFC 2328.
-     * (see https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/7039-1.html#t29)
-     */
-    //TODO: add parsing logic for "(no) compatible rfc1583" command and propagate that to the useMin
-    //variable
+    // Take the best metric between the route's and current available.
+    // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
+    // RFC1583 compatibility explicitly disabled, in which case they default to max.
     if (useMin) {
       return Math.min(currentMetric, contributingRouteMetric);
     }
@@ -275,6 +269,12 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
     // Admin cost for the given protocol
     int admin = RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat());
+
+    // Determine whether to use min metric by default, based on RFC1583 compatibility setting.
+    // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
+    // RFC1583 compatibility explicitly disabled, in which case they default to max.
+    boolean useMin = MoreObjects.firstNonNull(proc.getRfc1583Compatible(), true);
+
     // Compute summaries for each area
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
       long areaNum = e.getKey();
@@ -288,16 +288,15 @@ public class VirtualRouter extends ComparableStructure<String> {
           continue;
         }
 
+        // Compute the metric from any possible contributing routes
         Long metric = null;
-        // Compute the metric from any possible contributing routes, use older RFC by default
-        // as it seems consistent with the GNS3 simulations
         for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
           metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, true);
+              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
         }
         for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
           metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, true);
+              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
         }
 
         // No routes contributed to the summary, nothing to construct

@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 
@@ -28,6 +29,8 @@ public class OspfProcess implements Serializable {
   private transient Map<Pair<Ip, Ip>, OspfNeighbor> _ospfNeighbors;
 
   private Double _referenceBandwidth;
+
+  private @Nullable Boolean _rfc1583Compatible;
 
   private Ip _routerId;
 
@@ -65,6 +68,10 @@ public class OspfProcess implements Serializable {
           + "cost")
   public Double getReferenceBandwidth() {
     return _referenceBandwidth;
+  }
+
+  public @Nullable Boolean getRfc1583Compatible() {
+    return _rfc1583Compatible;
   }
 
   @JsonPropertyDescription("The router-id of this OSPF process")
@@ -121,6 +128,10 @@ public class OspfProcess implements Serializable {
 
   public void setReferenceBandwidth(Double referenceBandwidth) {
     _referenceBandwidth = referenceBandwidth;
+  }
+
+  public void setRfc1583Compatible(@Nullable Boolean rfc1583Compatible) {
+    _rfc1583Compatible = rfc1583Compatible;
   }
 
   public void setRouterId(Ip id) {
