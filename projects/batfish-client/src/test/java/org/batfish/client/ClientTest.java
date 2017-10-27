@@ -471,8 +471,7 @@ public class ClientTest {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put("instance", new JSONObject().put("description", "test question description"));
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "question testquestion does not have instanceName field in instance");
+    _thrown.expectMessage("question testquestion does not have instanceName field in instance");
 
     //check exception when no instanceName is present
     Client.getQuestionName(testQuestion, "testquestion");
@@ -1031,8 +1030,6 @@ public class ClientTest {
     assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
-
-
 
   @Test
   public void testMissingNonOptionalParameterNoValue() {

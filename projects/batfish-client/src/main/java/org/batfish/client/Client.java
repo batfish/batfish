@@ -2051,8 +2051,8 @@ public class Client extends AbstractClient implements IClient {
    * Loads questions from a JSON containing the questions
    *
    * @param questionTemplatesJson {@link JSONObject} with question key and question content Json
-   * @return loadedQuestions {@link Multimap} containing loaded question names and content, empty
-   *     if questionTemplatesJson is null
+   * @return loadedQuestions {@link Multimap} containing loaded question names and content, empty if
+   *     questionTemplatesJson is null
    * @throws BatfishException if loading of any of the questions is not successful, or if
    *     questionTemplatesJson cannot be deserialized
    */
@@ -2070,8 +2070,7 @@ public class Client extends AbstractClient implements IClient {
       for (Entry<String, String> question : questionsMap.entrySet()) {
         JSONObject questionJSON = loadQuestionFromText(question.getValue(), question.getKey());
         loadedQuestions.put(
-            getQuestionName(questionJSON, question.getKey()),
-            questionJSON.toString());
+            getQuestionName(questionJSON, question.getKey()), questionJSON.toString());
       }
       return loadedQuestions;
     } catch (IOException e) {
@@ -2113,8 +2112,7 @@ public class Client extends AbstractClient implements IClient {
     for (Path jsonQuestionFile : jsonQuestionFiles) {
       JSONObject questionJSON = loadQuestionFromFile(jsonQuestionFile);
       loadedQuestions.put(
-          getQuestionName(questionJSON, jsonQuestionFile.toString()),
-          questionJSON.toString());
+          getQuestionName(questionJSON, jsonQuestionFile.toString()), questionJSON.toString());
     }
     return loadedQuestions;
   }
