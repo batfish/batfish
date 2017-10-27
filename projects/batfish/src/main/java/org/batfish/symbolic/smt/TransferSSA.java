@@ -47,6 +47,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -64,9 +65,11 @@ import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -531,6 +534,10 @@ class TransferSSA {
           throw new BatfishException(
               "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
       }
+    } else if (expr instanceof MatchAsPath) {
+      p.debug("MatchAsPath");
+      System.out.println("Warning: use of unimplemented feature MatchAsPath");
+      return fromExpr(_enc.mkFalse());
     }
 
     String s = (_isExport ? "export" : "import");
@@ -1044,6 +1051,11 @@ class TransferSSA {
             p.debug("Return");
             break;
 
+          case RemovePrivateAs:
+            p.debug("RemovePrivateAs");
+            System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
+            break;
+
           default:
             throw new BatfishException("TODO: computeTransferFunction: " + ss.getType());
         }
@@ -1179,6 +1191,21 @@ class TransferSSA {
           result = result.addChangedVariable(cvar.getValue(), x);
         }
 
+      } else if (stmt instanceof SetCommunity) {
+        p.debug("SetCommunity");
+        SetCommunity sc = (SetCommunity) stmt;
+        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, sc.getExpr());
+        for (CommunityVar cvar : comms) {
+          BoolExpr newValue =
+              _enc.mkIf(
+                  result.getReturnAssignedValue(),
+                  p.getData().getCommunities().get(cvar),
+                  _enc.mkTrue());
+          BoolExpr x = createBoolVariableWith(p, cvar.getValue(), newValue);
+          p.getData().getCommunities().put(cvar, x);
+          result = result.addChangedVariable(cvar.getValue(), x);
+        }
+
       } else if (stmt instanceof DeleteCommunity) {
         p.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
@@ -1220,7 +1247,11 @@ class TransferSSA {
 
       } else if (stmt instanceof SetOrigin) {
         p.debug("SetOrigin");
-        // TODO: implement me
+        System.out.println("Warning: use of unimplemented feature SetOrigin");
+
+      } else if (stmt instanceof SetNextHop) {
+        p.debug("SetNextHop");
+        System.out.println("Warning: use of unimplemented feature SetNextHop");
 
       } else {
 

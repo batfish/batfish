@@ -303,7 +303,7 @@ public class Abstraction {
       exportPol = _network.getExportPolicyMap();
       importPol = _network.getImportPolicyMap();
     } else {
-      specializeBdds(prefixes, exportPol, importPol);
+      specialize(prefixes, exportPol, importPol, false);
     }
 
     UnionSplit<String> workset = new UnionSplit<>(_graph.getRouters());
@@ -345,15 +345,16 @@ public class Abstraction {
 
     } while (!todo.isEmpty());
 
-    Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork(workset, devices);
-    Graph abstractGraph = abstractNetwork.getFirst();
-    AbstractionMap abstraction = abstractNetwork.getSecond();
-
     System.out.println("EC Devices: " + devices);
     System.out.println("EC Prefixes: " + prefixes);
     // System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
     System.out.println("Num Groups: " + workset.partitions().size());
+
+    Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork(workset, devices);
+    Graph abstractGraph = abstractNetwork.getFirst();
+    AbstractionMap abstraction = abstractNetwork.getSecond();
+
     System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
 
     return new EquivalenceClass(headerspace, abstractGraph, abstraction);
@@ -363,19 +364,24 @@ public class Abstraction {
    * Specialize the collection of BDDs representing ACL and route map policies on
    * each edge. Must be synchronized since BDDs are not thread-safe.
    */
-  private synchronized void specializeBdds(
+  private synchronized void specialize(
       List<Prefix> prefixes,
       Map<GraphEdge, InterfacePolicy> exportPol,
-      Map<GraphEdge, InterfacePolicy> importPol) {
+      Map<GraphEdge, InterfacePolicy> importPol,
+      boolean specializeBdds) {
     for (Entry<GraphEdge, InterfacePolicy> entry : _network.getExportPolicyMap().entrySet()) {
       GraphEdge ge = entry.getKey();
       InterfacePolicy pol = entry.getValue();
-      exportPol.put(ge, pol.restrict(prefixes));
+      InterfacePolicy newPol = pol.restrictStatic(prefixes);
+      newPol = (specializeBdds ? newPol.restrict(prefixes) : newPol);
+      exportPol.put(ge, newPol);
     }
     for (Entry<GraphEdge, InterfacePolicy> entry : _network.getImportPolicyMap().entrySet()) {
       GraphEdge ge = entry.getKey();
       InterfacePolicy pol = entry.getValue();
-      importPol.put(ge, pol.restrict(prefixes));
+      InterfacePolicy newPol = pol.restrictStatic(prefixes);
+      newPol = (specializeBdds ? newPol.restrict(prefixes) : newPol);
+      importPol.put(ge, newPol);
     }
   }
 
@@ -633,6 +639,9 @@ public class Abstraction {
     while (!stack.isEmpty()) {
       String router = stack.pop();
       Map<Integer, Set<String>> byId = neighborByAbstractId.get(router);
+      if (byId == null) {
+        continue;
+      }
       for (Entry<Integer, Set<String>> entry : byId.entrySet()) {
         Integer j = entry.getKey();
         Set<String> peers = entry.getValue();

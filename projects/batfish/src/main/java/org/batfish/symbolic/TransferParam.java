@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.symbolic.collections.PList;
 
-public class TransferParam<T> {
+public class TransferParam<T extends IDeepCopy<T>> {
 
   public enum CallContext {
     EXPR_CALL,
@@ -90,6 +90,12 @@ public class TransferParam<T> {
 
   public String getScope() {
     return _scopes.get(0);
+  }
+
+  public TransferParam<T> deepCopy() {
+    TransferParam<T> ret = new TransferParam<>(this);
+    ret._data = ret._data.deepCopy();
+    return ret;
   }
 
   public TransferParam<T> setData(T other) {
