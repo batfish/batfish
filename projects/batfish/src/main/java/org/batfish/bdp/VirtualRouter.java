@@ -1,5 +1,6 @@
 package org.batfish.bdp;
 
+import com.google.common.base.MoreObjects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -250,7 +251,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     if (currentMetric == null) {
       return contributingRouteMetric;
     }
-    // Take the best metric between the route's and current available
+    // Take the best metric between the route's and current available.
+    // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
+    // RFC1583 compatibility explicitly disabled, in which case they default to max.
     if (useMin) {
       return Math.min(currentMetric, contributingRouteMetric);
     }
@@ -267,11 +270,10 @@ public class VirtualRouter extends ComparableStructure<String> {
     // Admin cost for the given protocol
     int admin = RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat());
 
-    // Determine whether to use min based on RFC 1583 compatibility setting
-    Boolean useMin = proc.getRfc1583Compatible();
-    if (useMin == null) {
-      useMin = true;
-    }
+    // Determine whether to use min metric by default, based on RFC1583 compatibility setting.
+    // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
+    // RFC1583 compatibility explicitly disabled, in which case they default to max.
+    boolean useMin = MoreObjects.firstNonNull(proc.getRfc1583Compatible(), true);
 
     // Compute summaries for each area
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
