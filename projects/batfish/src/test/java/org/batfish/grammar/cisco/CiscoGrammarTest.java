@@ -195,8 +195,9 @@ public class CiscoGrammarTest {
   @Test
   public void testRfc1583Compatible() throws IOException {
     SortedMap<String, String> configurationTextMap = new TreeMap<>();
-    String[] configurationNames = new String[] { "rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured" };
-    Boolean[] expectedResults = new Boolean[] { Boolean.TRUE, Boolean.FALSE, null };
+    String[] configurationNames =
+        new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
+    Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
     for (String configName : configurationNames) {
       String configurationText = CommonUtil.readResource(TESTCONFIGS_PREFIX + configName);
       configurationTextMap.put(configName, configurationText);
@@ -211,10 +212,10 @@ public class CiscoGrammarTest {
             _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
 
-    for (int i=0; i<configurationNames.length; i++) {
+    for (int i = 0; i < configurationNames.length; i++) {
       Configuration configuration = configurations.get(configurationNames[i]);
       assertThat(configuration.getVrfs().size(), equalTo(1));
-      for (Vrf vrf : configuration.getVrfs().values()){
+      for (Vrf vrf : configuration.getVrfs().values()) {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
       }
     }

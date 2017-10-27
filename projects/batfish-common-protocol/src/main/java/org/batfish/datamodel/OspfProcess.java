@@ -70,7 +70,9 @@ public class OspfProcess implements Serializable {
     return _referenceBandwidth;
   }
 
-  public @Nullable Boolean getRfc1583Compatible() { return _rfc1583Compatible; }
+  public @Nullable Boolean getRfc1583Compatible() {
+    return _rfc1583Compatible;
+  }
 
   @JsonPropertyDescription("The router-id of this OSPF process")
   public Ip getRouterId() {
@@ -128,7 +130,9 @@ public class OspfProcess implements Serializable {
     _referenceBandwidth = referenceBandwidth;
   }
 
-  public void setRfc1583Compatible(Boolean rfc1583Compatible) { _rfc1583Compatible = rfc1583Compatible; }
+  public void setRfc1583Compatible(Boolean rfc1583Compatible) {
+    _rfc1583Compatible = rfc1583Compatible;
+  }
 
   public void setRouterId(Ip id) {
     _routerId = id;

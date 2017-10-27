@@ -152,7 +152,9 @@ public class OspfProcess extends ComparableStructure<String> {
     return _referenceBandwidth;
   }
 
-  public @Nullable Boolean getRfc1583Compatible() { return _rfc1583Compatible; }
+  public @Nullable Boolean getRfc1583Compatible() {
+    return _rfc1583Compatible;
+  }
 
   public Ip getRouterId() {
     return _routerId;
@@ -198,7 +200,9 @@ public class OspfProcess extends ComparableStructure<String> {
     _referenceBandwidth = referenceBandwidth;
   }
 
-  public void setRfc1583Compatible(Boolean rfc1583Compatible) { _rfc1583Compatible = rfc1583Compatible; }
+  public void setRfc1583Compatible(Boolean rfc1583Compatible) {
+    _rfc1583Compatible = rfc1583Compatible;
+  }
 
   public void setRouterId(Ip routerId) {
     _routerId = routerId;

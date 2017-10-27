@@ -1776,7 +1776,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentMacAccessList = list;
   }
 
-  @Override public void exitRo_rfc1583_compatibility(Ro_rfc1583_compatibilityContext ctx) {
+  @Override
+  public void exitRo_rfc1583_compatibility(Ro_rfc1583_compatibilityContext ctx) {
     currentVrf().getOspfProcess().setRfc1583Compatible(ctx.NO() == null);
   }
 

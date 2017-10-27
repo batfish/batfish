@@ -229,8 +229,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param areaPrefix The Ip prefix of the OSPF area
    * @param currentMetric The current summary metric for the area
    * @param areaNum Area number.
-   * @param useMin Whether to use the older RFC 1583 computation, which takes the minimum of
-   *     metrics as opposed to the newer RFC 2328, which uses the maximum
+   * @param useMin Whether to use the older RFC 1583 computation, which takes the minimum of metrics
+   *     as opposed to the newer RFC 2328, which uses the maximum
    * @return the newly computed summary metric.
    */
   @Nullable
