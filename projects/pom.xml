@@ -133,8 +133,8 @@
           <version>${maven-pmd-plugin.version}</version>
           <configuration>
             <excludeRoots>
-              <excludeRoot>target/generated-sources</excludeRoot>
-              <excludeRoot>target/generated-test-sources</excludeRoot>
+              <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+              <excludeRoot>${project.build.directory}/generated-test-sources</excludeRoot>
             </excludeRoots>
             <rulesets>
               <ruleset>org/batfish/pmd/pmd-ruleset.xml</ruleset>
