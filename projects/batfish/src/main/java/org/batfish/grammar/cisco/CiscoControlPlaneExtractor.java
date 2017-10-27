@@ -387,6 +387,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_staticContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_rangeContext;
@@ -1773,6 +1774,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     MacAccessList list =
         _configuration.getMacAccessLists().computeIfAbsent(name, n -> new MacAccessList(n, line));
     _currentMacAccessList = list;
+  }
+
+  @Override
+  public void exitRo_rfc1583_compatibility(Ro_rfc1583_compatibilityContext ctx) {
+    currentVrf().getOspfProcess().setRfc1583Compatible(ctx.NO() == null);
   }
 
   @Override

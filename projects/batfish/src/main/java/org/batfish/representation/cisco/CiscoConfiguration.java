@@ -2737,6 +2737,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             return result;
           }
         });
+
+    // Set RFC 1583 compatibility
+    newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
+
     for (org.batfish.datamodel.Interface i : vrf.getInterfaces().values()) {
       Prefix interfacePrefix = i.getPrefix();
       if (interfacePrefix == null) {
