@@ -85,7 +85,8 @@ public class GraphEdge {
     return _isNullEdge;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (!(o instanceof GraphEdge)) {
       return false;
     }
@@ -98,7 +99,8 @@ public class GraphEdge {
         && Objects.equals(_end, other._end);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     int result = _start != null ? _start.hashCode() : 0;
     result = 31 * result + (_end != null ? _end.hashCode() : 0);
     result = 31 * result + (_router != null ? _router.hashCode() : 0);
