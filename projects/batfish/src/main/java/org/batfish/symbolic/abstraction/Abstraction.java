@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -121,7 +122,7 @@ public class Abstraction {
       catchAll.getNotDstIps().add(new IpWildcard(pfx));
     }
     for (Entry<Set<String>, List<Prefix>> entry : destinationMap.entrySet()) {
-      Set<String> devices = entry.getKey();
+      // Set<String> devices = entry.getKey();
       List<Prefix> prefixes = entry.getValue();
       for (Prefix pfx : prefixes) {
         // System.out.println("Check for: " + devices + " --> " + prefixes);
@@ -307,6 +308,8 @@ public class Abstraction {
     }
 
     UnionSplit<String> workset = new UnionSplit<>(_graph.getRouters());
+    Table2<String, Integer, Set<EquivalenceEdge>> eeMap = new Table2<>();
+    Table2<String, Integer, Set<InterfacePolicyPair>> polMap = new Table2<>();
 
     // Each origination point will remain concrete
     for (String device : devices) {
@@ -317,19 +320,26 @@ public class Abstraction {
     Set<Set<String>> todo;
     do {
       todo = new HashSet<>();
+      eeMap.clear();
+      polMap.clear();
       Collection<Set<String>> ps = workset.partitions();
+
+      // System.out.println("Partitions: " + ps);
 
       for (Set<String> partition : ps) {
         // Nothing to refine if already a concrete node
         if (partition.size() <= 1) {
           continue;
         }
+
         if (needUniversalAbstraction()) {
-          abstractUniversal(exportPol, importPol, workset, todo, ps, partition);
+          abstractUniversal(eeMap, polMap, exportPol, importPol, workset, todo, ps, partition);
         } else if (_possibleFailures > 0) {
-          abstractExistential(exportPol, importPol, workset, todo, ps, partition, true);
+          abstractExistential(
+              eeMap, polMap, exportPol, importPol, workset, todo, ps, partition, true);
         } else {
-          abstractExistential(exportPol, importPol, workset, todo, ps, partition, false);
+          abstractExistential(
+              eeMap, polMap, exportPol, importPol, workset, todo, ps, partition, false);
         }
         // If something changed, then start over early
         // Helps the next iteration to use the newly reflected information.
@@ -347,10 +357,10 @@ public class Abstraction {
 
     //System.out.println("EC Devices: " + devices);
     //System.out.println("EC Prefixes: " + prefixes);
-    // System.out.println("Groups: \n" + workset.partitions());
+    //System.out.println("Groups: \n" + workset.partitions());
     // System.out.println("New graph: \n" + abstractGraph);
     //System.out.println("Num Groups: " + workset.partitions().size());
-    Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork(workset, devices);
+    Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork(polMap, workset, devices);
     Graph abstractGraph = abstractNetwork.getFirst();
     AbstractionMap abstraction = abstractNetwork.getSecond();
     //System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
@@ -388,6 +398,8 @@ public class Abstraction {
    * edge to the same abstract neighbor.
    */
   private void abstractExistential(
+      Table2<String, Integer, Set<EquivalenceEdge>> eeMap,
+      Table2<String, Integer, Set<InterfacePolicyPair>> polMap,
       Map<GraphEdge, InterfacePolicy> exportPol,
       Map<GraphEdge, InterfacePolicy> importPol,
       UnionSplit<String> workset,
@@ -398,40 +410,53 @@ public class Abstraction {
 
     // Split by existential abstraction
     Table2<String, EquivalenceEdge, Integer> existentialMap = new Table2<>();
-    Table2<String, Integer, Set<EquivalenceEdge>> byId = new Table2<>();
 
     for (String router : partition) {
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge edge : edges) {
-        if (!edge.isAbstract()) {
-          String peer = edge.getPeer();
-          InterfacePolicy ipol = importPol.get(edge);
-          GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
-          InterfacePolicy epol = null;
-          if (otherEnd != null) {
-            epol = exportPol.get(otherEnd);
-          }
-          // Update the existential map
-          Integer peerGroup = (peer == null ? -1 : workset.getHandle(peer));
-          EquivalenceEdge ee = new EquivalenceEdge(peerGroup, ipol, epol);
-          Integer i = existentialMap.get(router, ee);
-          i = (i == null ? 1 : i + 1);
-          existentialMap.put(router, ee, i);
-          // Update the id map
-          if (peerGroup != -1) {
-            Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
-            existing = (existing == null ? new HashSet<>() : existing);
-            existing.add(ee);
-            byId.put(router, peerGroup, existing);
-          }
+        String peer = edge.getPeer();
+        InterfacePolicy ipol = importPol.get(edge);
+        GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
+        InterfacePolicy epol = null;
+        if (otherEnd != null) {
+          epol = exportPol.get(otherEnd);
+        }
+        // Update the existential map
+        Integer peerGroup = (peer == null ? -1 : workset.getHandle(peer));
+        InterfacePolicyPair pair = new InterfacePolicyPair(ipol, epol);
+        EquivalenceEdge ee = new EquivalenceEdge(peerGroup, pair);
+        Integer i = existentialMap.get(router, ee);
+        i = (i == null ? 1 : i + 1);
+        existentialMap.put(router, ee, i);
+        // Update the id map
+        if (peerGroup != -1) {
+          Set<EquivalenceEdge> x =
+              eeMap.computeIfAbsent(router, peerGroup, (k1, k2) -> new HashSet<>());
+          x.add(ee);
+
+          Set<InterfacePolicyPair> y =
+              polMap.computeIfAbsent(router, peerGroup, (k1, k2) -> new HashSet<>());
+          y.add(pair);
         }
       }
+    }
+
+    // Optimization: Find if we can ignore self loops, and if so, delete the entries
+    Set<String> canIgnoreSelfLoops = canIgnoreSelfLoops(polMap, partition);
+    for (String router : canIgnoreSelfLoops) {
+      Integer j = workset.getHandle(router);
+      Map<Integer, Set<EquivalenceEdge>> map = eeMap.get(router);
+      map.remove(j);
+      existentialMap
+          .get(router)
+          .entrySet()
+          .removeIf(entry -> entry.getKey().getAbstractId().equals(j));
     }
 
     // If there is more than one policy to the same abstract neighbor, we make concrete
     // Since by definition this can not be a valid abstraction
     Set<String> makeConcrete = new HashSet<>();
-    byId.forEach(
+    eeMap.forEach(
         (router, peerGroup, edges) -> {
           if (edges.size() > 1) {
             makeConcrete.add(router);
@@ -486,6 +511,8 @@ public class Abstraction {
    * same collection of concrete neighbors for each abstract neighbor.
    */
   private void abstractUniversal(
+      Table2<String, Integer, Set<EquivalenceEdge>> eeMap,
+      Table2<String, Integer, Set<InterfacePolicyPair>> polMap,
       Map<GraphEdge, InterfacePolicy> exportPol,
       Map<GraphEdge, InterfacePolicy> importPol,
       UnionSplit<String> workset,
@@ -495,40 +522,53 @@ public class Abstraction {
 
     // Split by universal abstraction
     Map<String, Set<Tuple<String, EquivalenceEdge>>> universalMap = new HashMap<>();
-    Table2<String, Integer, Set<EquivalenceEdge>> byId = new Table2<>();
 
     for (String router : partition) {
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge edge : edges) {
-        if (!edge.isAbstract()) {
-          String peer = edge.getPeer();
-          InterfacePolicy ipol = importPol.get(edge);
-          GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
-          InterfacePolicy epol = null;
-          if (otherEnd != null) {
-            epol = exportPol.get(otherEnd);
-          }
-          Integer peerGroup = (peer == null ? -1 : workset.getHandle(peer));
-          EquivalenceEdge ee = new EquivalenceEdge(peerGroup, ipol, epol);
-          Tuple<String, EquivalenceEdge> tup = new Tuple<>(peer, ee);
-          Set<Tuple<String, EquivalenceEdge>> group =
-              universalMap.computeIfAbsent(router, k -> new HashSet<>());
-          group.add(tup);
-          // Update the id map
-          if (peerGroup != -1) {
-            Set<EquivalenceEdge> existing = byId.get(router, peerGroup);
-            existing = (existing == null ? new HashSet<>() : existing);
-            existing.add(ee);
-            byId.put(router, peerGroup, existing);
-          }
+        String peer = edge.getPeer();
+        InterfacePolicy ipol = importPol.get(edge);
+        GraphEdge otherEnd = _graph.getOtherEnd().get(edge);
+        InterfacePolicy epol = null;
+        if (otherEnd != null) {
+          epol = exportPol.get(otherEnd);
+        }
+        Integer peerGroup = (peer == null ? -1 : workset.getHandle(peer));
+        InterfacePolicyPair pair = new InterfacePolicyPair(ipol, epol);
+        EquivalenceEdge ee = new EquivalenceEdge(peerGroup, pair);
+        Tuple<String, EquivalenceEdge> tup = new Tuple<>(peer, ee);
+        Set<Tuple<String, EquivalenceEdge>> group =
+            universalMap.computeIfAbsent(router, k -> new HashSet<>());
+        group.add(tup);
+        // Update the id map
+        if (peerGroup != -1) {
+          Set<EquivalenceEdge> x =
+              eeMap.computeIfAbsent(router, peerGroup, (k1, k2) -> new HashSet<>());
+          x.add(ee);
+
+          Set<InterfacePolicyPair> y =
+              polMap.computeIfAbsent(router, peerGroup, (k1, k2) -> new HashSet<>());
+          y.add(pair);
         }
       }
     }
 
+    // Optimization: Find if we can ignore self loops, and if so, delete the entries
+    Set<String> canIgnoreSelfLoops = canIgnoreSelfLoops(polMap, partition);
+    for (String router : canIgnoreSelfLoops) {
+      Integer j = workset.getHandle(router);
+      Map<Integer, Set<EquivalenceEdge>> map = eeMap.get(router);
+      map.remove(j);
+      universalMap
+          .get(router)
+          .removeIf(tup -> tup.getSecond().getAbstractId().equals(j));
+    }
+
+
     // If there is more than one policy to the same abstract neighbor, we make concrete
     // Since by definition this can not be a valid abstraction
     Set<String> makeConcrete = new HashSet<>();
-    byId.forEach(
+    eeMap.forEach(
         (router, peerGroup, edges) -> {
           if (edges.size() > 1) {
             makeConcrete.add(router);
@@ -597,10 +637,14 @@ public class Abstraction {
   }
 
   /*
-   * Given a collection of abstract roles, computes a set of canonical
+   * Given a collection of abstract roles, selects a set of canonical
    * representatives from each role that serve as the abstraction.
    */
-  private Map<Integer, Set<String>> pickCanonicalRouters(UnionSplit<String> us, Set<String> dsts) {
+  private Map<Integer, Set<String>> pickCanonicalRouters(
+      Table2<String, Integer, Set<InterfacePolicyPair>> polMap,
+      UnionSplit<String> us,
+      Set<String> dsts) {
+
     Table2<String, Integer, Set<String>> neighborByAbstractId = collectNeighborByAbstractId(us);
     Map<Integer, Set<String>> chosen = new HashMap<>();
     Stack<String> stack = new Stack<>();
@@ -636,12 +680,21 @@ public class Abstraction {
     // Need to choose representatives that are connected
     while (!stack.isEmpty()) {
       String router = stack.pop();
-      Map<Integer, Set<String>> byId = neighborByAbstractId.get(router);
-      if (byId == null) {
+      Map<Integer, Set<String>> neighbors = neighborByAbstractId.get(router);
+      if (neighbors == null) {
         continue;
       }
-      for (Entry<Integer, Set<String>> entry : byId.entrySet()) {
+      for (Entry<Integer, Set<String>> entry : neighbors.entrySet()) {
         Integer j = entry.getKey();
+
+        // Don't add devices in your own partition if monotonicity holds
+        // If not a self loop, nothing to do
+        if (us.getPartition(j).contains(router)) {
+          if (isMonotonic(polMap.get(router), j)) {
+            continue;
+          }
+        }
+
         Set<String> peers = entry.getValue();
         Set<String> chosenPeers = chosen.computeIfAbsent(j, k -> new HashSet<>());
         // Find how many choices we need, and collect the options
@@ -664,6 +717,42 @@ public class Abstraction {
     }
 
     return chosen;
+  }
+
+  private Set<String> canIgnoreSelfLoops(
+      Table2<String, Integer, Set<InterfacePolicyPair>> polMap, Set<String> partition) {
+    Set<String> ignore = new HashSet<>();
+    for (String router : partition) {
+      Map<Integer, Set<InterfacePolicyPair>> map = polMap.get(router);
+      map.forEach(
+          (i, set) -> {
+            if (isMonotonic(map, i)) {
+              ignore.add(router);
+            }
+          });
+    }
+    return ignore;
+  }
+
+  // TODO: this should be carefully checked and optimized
+  private boolean isMonotonic(Map<Integer, Set<InterfacePolicyPair>> neighborPols, Integer j) {
+
+    // Check if the same policy is used for all neighbors
+    Set<InterfacePolicyPair> pols = neighborPols.get(j);
+    if (pols == null) {
+      return true;
+    }
+
+    for (Entry<Integer, Set<InterfacePolicyPair>> entry : neighborPols.entrySet()) {
+      Integer i = entry.getKey();
+      Set<InterfacePolicyPair> pols2 = entry.getValue();
+      if (!i.equals(j)) {
+        if (!Objects.equals(pols, pols2)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   /*
@@ -820,9 +909,11 @@ public class Abstraction {
    * that connect to non-canonical routers.
    */
   private Tuple<Graph, AbstractionMap> createAbstractNetwork(
-      UnionSplit<String> us, Set<String> dests) {
+      Table2<String, Integer, Set<InterfacePolicyPair>> polMap,
+      UnionSplit<String> us,
+      Set<String> dests) {
 
-    Map<Integer, Set<String>> canonicalChoices = pickCanonicalRouters(us, dests);
+    Map<Integer, Set<String>> canonicalChoices = pickCanonicalRouters(polMap, us, dests);
     Set<String> abstractRouters = new HashSet<>();
     for (Set<String> canonical : canonicalChoices.values()) {
       abstractRouters.addAll(canonical);

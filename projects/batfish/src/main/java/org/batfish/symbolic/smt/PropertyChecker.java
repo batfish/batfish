@@ -243,7 +243,7 @@ public class PropertyChecker {
       EquivalenceClass ec = new EquivalenceClass(q.getHeaderSpace(), g, null);
       Supplier<EquivalenceClass> sup = () -> ec;
       singleEc.add(sup);
-      return new Tuple<>(singleEc.stream(), null);
+      return new Tuple<>(singleEc.stream(), 0L);
     }
   }
 
@@ -322,7 +322,7 @@ public class PropertyChecker {
     Long timeAbstraction = ecs.getSecond();
 
     AnswerElement[] answerElement = new AnswerElement[1];
-    VerificationResult[] result = new VerificationResult[1];
+    VerificationResult[] result = new VerificationResult[2];
     List<VerificationStats> ecStats = new ArrayList<>();
 
     // Checks ECs in parallel, but short circuits when a counterexample is found
@@ -397,17 +397,17 @@ public class PropertyChecker {
                     BoolExpr sourceProp2 = prop2.get(source);
                     BoolExpr val;
                     switch (q.getDiffType()) {
-                    case INCREASED:
-                      val = enc.mkImplies(sourceProp1, sourceProp2);
-                      break;
-                    case REDUCED:
-                      val = enc.mkImplies(sourceProp2, sourceProp1);
-                      break;
-                    case ANY:
-                      val = enc.mkEq(sourceProp1, sourceProp2);
-                      break;
-                    default:
-                      throw new BatfishException("Missing case: " + q.getDiffType());
+                      case INCREASED:
+                        val = enc.mkImplies(sourceProp1, sourceProp2);
+                        break;
+                      case REDUCED:
+                        val = enc.mkImplies(sourceProp2, sourceProp1);
+                        break;
+                      case ANY:
+                        val = enc.mkEq(sourceProp1, sourceProp2);
+                        break;
+                      default:
+                        throw new BatfishException("Missing case: " + q.getDiffType());
                     }
                     required = enc.mkAnd(required, val);
                   }
@@ -451,33 +451,33 @@ public class PropertyChecker {
                   AnswerElement ae = answer.apply(vp);
                   synchronized (_lock) {
                     answerElement[0] = ae;
+                    result[0] = res;
                   }
                   return true;
                 }
 
                 synchronized (_lock) {
-                  result[0] = res;
+                  result[1] = res;
                 }
                 return false;
               }
             });
 
-    VerificationResult res = result[0];
-
-    if (q.getBenchmark()) {
-      totalTime = System.currentTimeMillis() - totalTime;
-      VerificationStats stats = VerificationStats.combineAll(ecStats, totalTime);
-      res.setStats(stats);
-    }
-
+    totalTime = System.currentTimeMillis() - totalTime;
+    VerificationResult res;
     AnswerElement ae;
     if (hasCounterExample) {
+      res = result[0];
       ae = answerElement[0];
     } else {
+      res = result[1];
       VerifyParam vp = new VerifyParam(res, null, null, null, null, null, null);
       ae = answer.apply(vp);
     }
-
+    if (q.getBenchmark()) {
+      VerificationStats stats = VerificationStats.combineAll(ecStats, totalTime);
+      res.setStats(stats);
+    }
     return ae;
   }
 

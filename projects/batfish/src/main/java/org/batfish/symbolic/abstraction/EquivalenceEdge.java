@@ -7,19 +7,13 @@ public class EquivalenceEdge {
 
   private Integer _abstractId;
 
-  private InterfacePolicy _importPol;
-
-  private InterfacePolicy _exportPol;
+  private InterfacePolicyPair _policy;
 
   private int _hcode = 0;
 
-  public EquivalenceEdge(
-      Integer abstractId,
-      @Nullable InterfacePolicy importPol,
-      @Nullable InterfacePolicy exportPol) {
+  public EquivalenceEdge(Integer abstractId, @Nullable InterfacePolicyPair policy) {
     this._abstractId = abstractId;
-    this._importPol = importPol;
-    this._exportPol = exportPol;
+    this._policy = policy;
   }
 
   @Override
@@ -28,17 +22,14 @@ public class EquivalenceEdge {
       return false;
     }
     EquivalenceEdge other = (EquivalenceEdge) o;
-    return Objects.equals(_abstractId, other._abstractId)
-        && Objects.equals(_importPol, other._importPol)
-        && Objects.equals(_exportPol, other._exportPol);
+    return Objects.equals(_abstractId, other._abstractId) && Objects.equals(_policy, other._policy);
   }
 
   @Override
   public int hashCode() {
     if (_hcode == 0) {
       int result = _abstractId != null ? _abstractId.hashCode() : 0;
-      result = 31 * result + (_importPol != null ? _importPol.hashCode() : 0);
-      result = 31 * result + (_exportPol != null ? _exportPol.hashCode() : 0);
+      result = 31 * result + (_policy != null ? _policy.hashCode() : 0);
       _hcode = result;
     }
     return _hcode;
@@ -48,11 +39,17 @@ public class EquivalenceEdge {
     return _abstractId;
   }
 
-  public InterfacePolicy getImportPol() {
-    return _importPol;
+  public InterfacePolicyPair getPolicy() {
+    return _policy;
   }
 
-  public InterfacePolicy getExportPol() {
-    return _exportPol;
+  @Override
+  public String toString() {
+    return "EquivalenceEdge{"
+        + "_abstractId="
+        + _abstractId
+        + ", _policy="
+        + _policy.hashCode()
+        + '}';
   }
 }
