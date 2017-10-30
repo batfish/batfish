@@ -841,6 +841,11 @@ public class WorkMgr extends AbstractCoordinator {
       // successfully. The rightest solution is for workers to be aware of dependencies so they
       // don't try to execute tasks that depend on other tasks that are currently being executed.
 
+      // this check is not foolproof because new workers may be added later but good enough for now
+      if (Main.getPoolMgr().getNumWorkers() > 1) {
+        throw new BatfishException("Cannot auto analyze when multiple workers are present");
+      }
+
       for (WorkItem workItem : autoWorkQueue) {
         if (!queueWork(workItem)) {
           throw new BatfishException("Unable to queue work while auto processing: " + workItem);
