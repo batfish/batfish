@@ -1,4 +1,4 @@
-package org.batfish.symbolic.abstraction;
+package org.batfish.symbolic.collections;
 
 import java.util.Collection;
 import java.util.HashMap;

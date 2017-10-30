@@ -45,7 +45,8 @@ import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.abstraction.Abstraction;
-import org.batfish.symbolic.abstraction.AbstractGraph;
+import org.batfish.symbolic.abstraction.DestinationClasses;
+import org.batfish.symbolic.abstraction.NetworkSlice;
 import org.batfish.symbolic.answers.SmtDeterminismAnswerElement;
 import org.batfish.symbolic.answers.SmtManyAnswerElement;
 import org.batfish.symbolic.answers.SmtOneAnswerElement;
@@ -227,21 +228,22 @@ public class PropertyChecker {
     }
   }
 
-  private Tuple<Stream<Supplier<AbstractGraph>>, Long> findAllEquivalenceClasses(
+  private Tuple<Stream<Supplier<NetworkSlice>>, Long> findAllNetworkSlices(
       HeaderQuestion q, @Nullable Graph graph, boolean useDefaultCase) {
     if (q.getUseAbstraction()) {
       long l = System.currentTimeMillis();
       HeaderSpace h = q.getHeaderSpace();
       int numFailures = q.getFailures();
-      Abstraction abs = Abstraction.create(_batfish, h, numFailures, useDefaultCase);
+      DestinationClasses dcs = DestinationClasses.create(_batfish, h, useDefaultCase);
       l = System.currentTimeMillis() - l;
-      ArrayList<Supplier<AbstractGraph>> ecs = abs.equivalenceClasses();
+      ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
       return new Tuple<>(ecs.parallelStream(), l);
     } else {
-      List<Supplier<AbstractGraph>> singleEc = new ArrayList<>();
+      List<Supplier<NetworkSlice>> singleEc = new ArrayList<>();
       Graph g = graph == null ? new Graph(_batfish) : graph;
-      AbstractGraph ec = new AbstractGraph(q.getHeaderSpace(), g, null);
-      Supplier<AbstractGraph> sup = () -> ec;
+      Abstraction a = new Abstraction(g, null);
+      NetworkSlice slice = new NetworkSlice(q.getHeaderSpace(), a);
+      Supplier<NetworkSlice> sup = () -> slice;
       singleEc.add(sup);
       return new Tuple<>(singleEc.stream(), 0L);
     }
@@ -250,13 +252,13 @@ public class PropertyChecker {
   /*
    * Apply mapping from concrete to abstract nodes
    */
-  private Set<String> mapConcreteToAbstract(AbstractGraph ec, List<String> concreteNodes) {
-    if (ec.getAbstraction() == null) {
+  private Set<String> mapConcreteToAbstract(NetworkSlice slice, List<String> concreteNodes) {
+    if (slice.getAbstraction() == null) {
       return new HashSet<>(concreteNodes);
     }
     Set<String> abstractNodes = new HashSet<>();
     for (String c : concreteNodes) {
-      Set<String> abs = ec.getAbstraction().getAbstractRepresentatives(c);
+      Set<String> abs = slice.getAbstraction().getAbstractionMap().getAbstractRepresentatives(c);
       abstractNodes.addAll(abs);
     }
     return abstractNodes;
@@ -271,18 +273,18 @@ public class PropertyChecker {
   public AnswerElement checkForwarding(HeaderQuestion question) {
     HeaderQuestion q = new HeaderQuestion(question);
     q.setFailures(0);
-    Tuple<Stream<Supplier<AbstractGraph>>, Long> ecs = findAllEquivalenceClasses(q, null, false);
-    Stream<Supplier<AbstractGraph>> stream = ecs.getFirst();
+    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, null, false);
+    Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
-    Optional<Supplier<AbstractGraph>> opt = stream.findFirst();
+    Optional<Supplier<NetworkSlice>> opt = stream.findFirst();
     if (!opt.isPresent()) {
       throw new BatfishException("Unexpected Error: checkForwarding");
     }
-    Supplier<AbstractGraph> sup = opt.get();
-    AbstractGraph ec = sup.get();
-    Graph g = ec.getGraph();
+    Supplier<NetworkSlice> sup = opt.get();
+    NetworkSlice slice = sup.get();
+    Graph g = slice.getGraph();
     q = new HeaderQuestion(q);
-    q.setHeaderSpace(ec.getHeaderSpace());
+    q.setHeaderSpace(slice.getHeaderSpace());
     Encoder encoder = new Encoder(g, q);
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
@@ -317,8 +319,8 @@ public class PropertyChecker {
 
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
-    Tuple<Stream<Supplier<AbstractGraph>>, Long> ecs = findAllEquivalenceClasses(q, graph, true);
-    Stream<Supplier<AbstractGraph>> stream = ecs.getFirst();
+    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
+    Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
 
     AnswerElement[] answerElement = new AnswerElement[1];
@@ -330,17 +332,17 @@ public class PropertyChecker {
         stream.anyMatch(
             lazyEc -> {
               long ecTime = System.currentTimeMillis();
-              AbstractGraph ec = lazyEc.get();
+              NetworkSlice slice = lazyEc.get();
               ecTime = System.currentTimeMillis() - ecTime;
 
               synchronized (_lock) {
                 // Make sure the headerspace is correct
                 HeaderLocationQuestion question = new HeaderLocationQuestion(q);
-                question.setHeaderSpace(ec.getHeaderSpace());
+                question.setHeaderSpace(slice.getHeaderSpace());
 
                 // Get the EC graph and mapping
-                Graph g = ec.getGraph();
-                Set<String> srcRouters = mapConcreteToAbstract(ec, sourceRouters);
+                Graph g = slice.getGraph();
+                Set<String> srcRouters = mapConcreteToAbstract(slice, sourceRouters);
 
                 long timeEncoding = System.currentTimeMillis();
                 Encoder enc = new Encoder(g, question);

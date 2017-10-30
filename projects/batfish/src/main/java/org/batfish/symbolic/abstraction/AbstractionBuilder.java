@@ -32,9 +32,10 @@ import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.collections.Table2;
+import org.batfish.symbolic.collections.UnionSplit;
 import org.batfish.symbolic.utils.Tuple;
 
-class AbstractGraphCreator {
+class AbstractionBuilder {
 
   private static final int EBGP_INDEX = -1;
 
@@ -62,22 +63,22 @@ class AbstractGraphCreator {
 
   private Map<GraphEdge, InterfacePolicy> _importPol;
 
-  private Table2<String, Integer, Set<EquivalenceEdge>> _eeMap;
+  private Table2<String, Integer, Set<EdgePolicyToRole>> _eeMap;
 
-  private Table2<String, Integer, Set<InterfacePolicyPair>> _polMap;
+  private Table2<String, Integer, Set<EdgePolicy>> _polMap;
 
-  private Table2<String, EquivalenceEdge, Integer> _existentialMap;
+  private Table2<String, EdgePolicyToRole, Integer> _existentialMap;
 
-  private Map<String, Set<Tuple<String, EquivalenceEdge>>> _universalMap;
+  private Map<String, Set<Tuple<String, EdgePolicyToRole>>> _universalMap;
 
   private UnionSplit<String> _abstractGroups;
 
-  private AbstractGraphCreator(
-      Abstraction a, Set<String> devices, HeaderSpace h, List<Prefix> pfxs) {
+  private AbstractionBuilder(
+      DestinationClasses a, Set<String> devices, HeaderSpace h, List<Prefix> pfxs, int fails) {
     this._batfish = a.getBatfish();
     this._graph = a.getGraph();
-    this._network = a.getNetwork();
-    this._possibleFailures = a.getPossibleFailures();
+    this._network = BDDNetwork.create(a.getGraph());
+    this._possibleFailures = fails;
     this._destinations = devices;
     this._headerspace = h;
     this._prefixes = pfxs;
@@ -87,9 +88,9 @@ class AbstractGraphCreator {
     this._universalMap = new HashMap<>();
   }
 
-  static AbstractGraph createGraph(
-      Abstraction a, Set<String> devices, HeaderSpace h, List<Prefix> pfxs) {
-    AbstractGraphCreator g = new AbstractGraphCreator(a, devices, h, pfxs);
+  static NetworkSlice createGraph(
+      DestinationClasses a, Set<String> devices, HeaderSpace h, List<Prefix> pfxs, int fails) {
+    AbstractionBuilder g = new AbstractionBuilder(a, devices, h, pfxs, fails);
     return g.computeAbstraction();
   }
 
@@ -97,7 +98,7 @@ class AbstractGraphCreator {
    * Create an abstract network that is forwarding-equivalent to the original
    * network for a given destination-based slice of the original network.
    */
-  private AbstractGraph computeAbstraction() {
+  private NetworkSlice computeAbstraction() {
 
     _exportPol = new HashMap<>();
     _importPol = new HashMap<>();
@@ -134,11 +135,11 @@ class AbstractGraphCreator {
         }
 
         if (needUniversalAbstraction()) {
-          abstractExistential(todo, ps, partition, false, true);
+          refineAbstraction(todo, ps, partition, false, true);
         } else if (_possibleFailures > 0) {
-          abstractExistential(todo, ps, partition, true, false);
+          refineAbstraction(todo, ps, partition, true, false);
         } else {
-          abstractExistential(todo, ps, partition, false, false);
+          refineAbstraction(todo, ps, partition, false, false);
         }
         // If something changed, then start over early
         // Helps the next iteration to use the newly reflected information.
@@ -161,9 +162,10 @@ class AbstractGraphCreator {
     //System.out.println("Num Groups: " + workset.partitions().size());
     Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork();
     Graph abstractGraph = abstractNetwork.getFirst();
-    AbstractionMap abstraction = abstractNetwork.getSecond();
+    AbstractionMap abstractionMap = abstractNetwork.getSecond();
     //System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
-    return new AbstractGraph(_headerspace, abstractGraph, abstraction);
+    Abstraction a = new Abstraction(abstractGraph, abstractionMap);
+    return new NetworkSlice(_headerspace, a);
   }
 
   /*
@@ -192,7 +194,7 @@ class AbstractGraphCreator {
    * we have an existential abstraction. For each node there exists an
    * edge to the same abstract neighbor.
    */
-  private void abstractExistential(
+  private void refineAbstraction(
       Set<Set<String>> todo,
       Collection<Set<String>> ps,
       Set<String> partition,
@@ -233,7 +235,7 @@ class AbstractGraphCreator {
     // Collect router by policy type
     if (isUniversal) {
       // Universal Abstraction
-      Map<Set<Tuple<String, EquivalenceEdge>>, Set<String>> inversePolicyMap = new HashMap<>();
+      Map<Set<Tuple<String, EdgePolicyToRole>>, Set<String>> inversePolicyMap = new HashMap<>();
       _universalMap.forEach(
           (router, set) -> {
             if (!makeConcrete.contains(router)) {
@@ -243,7 +245,7 @@ class AbstractGraphCreator {
           });
     } else {
       if (countMatters) {
-        Map<Map<EquivalenceEdge, Integer>, Set<String>> inversePolicyMap = new HashMap<>();
+        Map<Map<EdgePolicyToRole, Integer>, Set<String>> inversePolicyMap = new HashMap<>();
         _existentialMap.forEach(
             (router, map) -> {
               if (partition.contains(router) && !makeConcrete.contains(router)) {
@@ -254,11 +256,11 @@ class AbstractGraphCreator {
         newPartitions.addAll(inversePolicyMap.values());
 
       } else {
-        Map<Set<EquivalenceEdge>, Set<String>> inversePolicyMap = new HashMap<>();
+        Map<Set<EdgePolicyToRole>, Set<String>> inversePolicyMap = new HashMap<>();
         _existentialMap.forEach(
             (router, map) -> {
               if (partition.contains(router) && !makeConcrete.contains(router)) {
-                Set<EquivalenceEdge> edges = map.keySet();
+                Set<EdgePolicyToRole> edges = map.keySet();
                 Set<String> routers = inversePolicyMap.computeIfAbsent(edges, k -> new HashSet<>());
                 routers.add(router);
               }
@@ -282,7 +284,7 @@ class AbstractGraphCreator {
         Set<String> canIgnoreSelfLoops = canIgnoreSelfLoops(partition);
         for (String router : canIgnoreSelfLoops) {
           Integer j = _abstractGroups.getHandle(router);
-          Map<Integer, Set<EquivalenceEdge>> map = _eeMap.get(router);
+          Map<Integer, Set<EdgePolicyToRole>> map = _eeMap.get(router);
           map.remove(j);
           _universalMap.get(router).removeIf(tup -> tup.getSecond().getAbstractId().equals(j));
         }
@@ -291,7 +293,7 @@ class AbstractGraphCreator {
         Set<String> canIgnoreSelfLoops = canIgnoreSelfLoops(partition);
         for (String router : canIgnoreSelfLoops) {
           Integer j = _abstractGroups.getHandle(router);
-          Map<Integer, Set<EquivalenceEdge>> map = _eeMap.get(router);
+          Map<Integer, Set<EdgePolicyToRole>> map = _eeMap.get(router);
           map.remove(j);
           _existentialMap
               .get(router)
@@ -316,7 +318,7 @@ class AbstractGraphCreator {
           continue;
         }
         // Check if a single policy to some neighbor
-        Set<Set<InterfacePolicyPair>> allPolicies = collectAllPolicies(i, partition);
+        Set<Set<EdgePolicy>> allPolicies = collectAllPolicies(i, partition);
         //System.out.println("  All current policies: " + allPolicies);
         if (allPolicies.size() != 1) {
           continue;
@@ -334,7 +336,7 @@ class AbstractGraphCreator {
         }
         // System.out.println("  NEIGHBORS ARE ISOLATED");
         // All have same policy towards this group
-        Set<Set<InterfacePolicyPair>> allPols = collectAllPolicies(currentIdx, neighbors);
+        Set<Set<EdgePolicy>> allPols = collectAllPolicies(currentIdx, neighbors);
         //System.out.println("  All policies from neighbor: " + allPols);
         //System.out.println("  All pols: " + allPols);
         if (allPols.size() == 1) {
@@ -355,11 +357,11 @@ class AbstractGraphCreator {
   }
 
   @Nonnull
-  private Set<Set<InterfacePolicyPair>> collectAllPolicies(
+  private Set<Set<EdgePolicy>> collectAllPolicies(
       Integer currentIdx, Set<String> neighbors) {
-    Set<Set<InterfacePolicyPair>> allPols = new HashSet<>();
+    Set<Set<EdgePolicy>> allPols = new HashSet<>();
     for (String router : neighbors) {
-      Set<InterfacePolicyPair> pols = _polMap.get(router, currentIdx);
+      Set<EdgePolicy> pols = _polMap.get(router, currentIdx);
       if (pols != null) {
         allPols.add(pols);
       }
@@ -383,13 +385,13 @@ class AbstractGraphCreator {
             (peer == null
                 ? (_graph.isExternal(edge) ? EBGP_INDEX : HOST_OR_LOOPBACK_INDEX)
                 : _abstractGroups.getHandle(peer));
-        InterfacePolicyPair pair = new InterfacePolicyPair(ipol, epol);
-        EquivalenceEdge ee = new EquivalenceEdge(peerGroup, pair);
+        EdgePolicy pair = new EdgePolicy(ipol, epol);
+        EdgePolicyToRole ee = new EdgePolicyToRole(peerGroup, pair);
 
         if (isUniversal) {
           // Universal abstraction
-          Tuple<String, EquivalenceEdge> tup = new Tuple<>(peer, ee);
-          Set<Tuple<String, EquivalenceEdge>> group =
+          Tuple<String, EdgePolicyToRole> tup = new Tuple<>(peer, ee);
+          Set<Tuple<String, EdgePolicyToRole>> group =
               _universalMap.computeIfAbsent(router, k -> new HashSet<>());
           group.add(tup);
         } else {
@@ -401,11 +403,11 @@ class AbstractGraphCreator {
 
         // Update the id map
         if (peerGroup >= 0) {
-          Set<EquivalenceEdge> x =
+          Set<EdgePolicyToRole> x =
               _eeMap.computeIfAbsent(router, peerGroup, (k1, k2) -> new HashSet<>());
           x.add(ee);
 
-          Set<InterfacePolicyPair> y =
+          Set<EdgePolicy> y =
               _polMap.computeIfAbsent(router, peerGroup, (k1, k2) -> new HashSet<>());
           y.add(pair);
         }
@@ -549,7 +551,7 @@ class AbstractGraphCreator {
   private Set<String> canIgnoreSelfLoops(Set<String> partition) {
     Set<String> ignore = new HashSet<>();
     for (String router : partition) {
-      Map<Integer, Set<InterfacePolicyPair>> map = _polMap.get(router);
+      Map<Integer, Set<EdgePolicy>> map = _polMap.get(router);
       map.forEach(
           (i, set) -> {
             if (isMonotonic(map, i)) {
@@ -561,15 +563,15 @@ class AbstractGraphCreator {
   }
 
   // TODO: this should be carefully checked and optimized
-  private boolean isMonotonic(Map<Integer, Set<InterfacePolicyPair>> neighborPols, Integer j) {
+  private boolean isMonotonic(Map<Integer, Set<EdgePolicy>> neighborPols, Integer j) {
     // Check if the same policy is used for all neighbors
-    Set<InterfacePolicyPair> pols = neighborPols.get(j);
+    Set<EdgePolicy> pols = neighborPols.get(j);
     if (pols == null) {
       return true;
     }
-    for (Entry<Integer, Set<InterfacePolicyPair>> entry : neighborPols.entrySet()) {
+    for (Entry<Integer, Set<EdgePolicy>> entry : neighborPols.entrySet()) {
       Integer i = entry.getKey();
-      Set<InterfacePolicyPair> pols2 = entry.getValue();
+      Set<EdgePolicy> pols2 = entry.getValue();
       if (!i.equals(j)) {
         if (!Objects.equals(pols, pols2)) {
           return false;

@@ -3,7 +3,7 @@ package org.batfish.symbolic.abstraction;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-public class InterfacePolicyPair {
+class EdgePolicy {
 
   private InterfacePolicy _importPol;
 
@@ -11,19 +11,17 @@ public class InterfacePolicyPair {
 
   private int _hcode = 0;
 
-  public InterfacePolicyPair(
-      @Nullable InterfacePolicy importPol,
-      @Nullable InterfacePolicy exportPol) {
+  EdgePolicy(@Nullable InterfacePolicy importPol, @Nullable InterfacePolicy exportPol) {
     this._importPol = importPol;
     this._exportPol = exportPol;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof InterfacePolicyPair)) {
+    if (!(o instanceof EdgePolicy)) {
       return false;
     }
-    InterfacePolicyPair other = (InterfacePolicyPair) o;
+    EdgePolicy other = (EdgePolicy) o;
     return Objects.equals(_importPol, other._importPol)
         && Objects.equals(_exportPol, other._exportPol);
   }
@@ -38,11 +36,4 @@ public class InterfacePolicyPair {
     return _hcode;
   }
 
-  public InterfacePolicy getImportPol() {
-    return _importPol;
-  }
-
-  public InterfacePolicy getExportPol() {
-    return _exportPol;
-  }
 }

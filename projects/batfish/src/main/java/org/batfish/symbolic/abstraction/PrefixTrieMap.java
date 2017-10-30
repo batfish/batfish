@@ -1,9 +1,7 @@
 package org.batfish.symbolic.abstraction;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,12 +12,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
-public class PrefixTrieMap implements Serializable {
+class PrefixTrieMap {
 
-  private class ByteTrie implements Serializable {
-
-    /** */
-    private static final long serialVersionUID = 1L;
+  private class ByteTrie {
 
     private ByteTrieNode _root;
 
@@ -36,10 +31,7 @@ public class PrefixTrieMap implements Serializable {
     }
   }
 
-  private class ByteTrieNode implements Serializable {
-
-    /** */
-    private static final long serialVersionUID = 1L;
+  private class ByteTrieNode {
 
     private ByteTrieNode _left;
 
@@ -100,10 +92,8 @@ public class PrefixTrieMap implements Serializable {
     }
 
     private boolean hasUniqueDevice(@Nullable Set<String> devices) {
-      if (devices == null) {
-        return true;
-      }
-      return _devices != null && !devices.containsAll(_devices)
+      return devices == null
+          || _devices != null && !devices.containsAll(_devices)
           || _left != null && _left.hasUniqueDevice(devices)
           || _right != null && _right.hasUniqueDevice(devices);
     }
@@ -139,29 +129,26 @@ public class PrefixTrieMap implements Serializable {
     }
   }
 
-  /** */
-  private static final long serialVersionUID = 1L;
-
   private ByteTrie _trie;
 
-  public PrefixTrieMap() {
+  PrefixTrieMap() {
     _trie = new ByteTrie();
   }
 
-  public void add(Prefix prefix, String device) {
+  void add(Prefix prefix, String device) {
     if (prefix == null) {
       throw new BatfishException("Cannot add null prefix to trie");
     }
     _trie.addPrefix(prefix, device);
   }
 
-  public void addAll(Collection<Prefix> prefixes, String device) {
+  /* void addAll(Collection<Prefix> prefixes, String device) {
     for (Prefix prefix : prefixes) {
       add(prefix, device);
     }
-  }
+  } */
 
-  public Map<Set<String>, List<Prefix>> createDestinationMap() {
+  Map<Set<String>, List<Prefix>> createDestinationMap() {
     Map<Set<String>, List<Prefix>> map = new HashMap<>();
     _trie._root.createDestinationMap(map, null, null);
     return map;

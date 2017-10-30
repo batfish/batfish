@@ -3,25 +3,25 @@ package org.batfish.symbolic.abstraction;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-public class EquivalenceEdge {
+class EdgePolicyToRole {
 
   private Integer _abstractId;
 
-  private InterfacePolicyPair _policy;
+  private EdgePolicy _policy;
 
   private int _hcode = 0;
 
-  public EquivalenceEdge(Integer abstractId, @Nullable InterfacePolicyPair policy) {
+  EdgePolicyToRole(Integer abstractId, @Nullable EdgePolicy policy) {
     this._abstractId = abstractId;
     this._policy = policy;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof EquivalenceEdge)) {
+    if (!(o instanceof EdgePolicyToRole)) {
       return false;
     }
-    EquivalenceEdge other = (EquivalenceEdge) o;
+    EdgePolicyToRole other = (EdgePolicyToRole) o;
     return Objects.equals(_abstractId, other._abstractId) && Objects.equals(_policy, other._policy);
   }
 
@@ -35,11 +35,11 @@ public class EquivalenceEdge {
     return _hcode;
   }
 
-  public Integer getAbstractId() {
+  Integer getAbstractId() {
     return _abstractId;
   }
 
-  public InterfacePolicyPair getPolicy() {
+  EdgePolicy getPolicy() {
     return _policy;
   }
 
