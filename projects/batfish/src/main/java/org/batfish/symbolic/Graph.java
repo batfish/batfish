@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import javax.annotation.Nullable;
@@ -31,7 +32,6 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -323,7 +323,7 @@ public class Graph {
       routerIfaceMap.put(router, ifacePairs);
     }
 
-    Map<NodeInterfacePair, EdgeSet> ifaceEdges = topology.getInterfaceEdges();
+    Map<NodeInterfacePair, SortedSet<Edge>> ifaceEdges = topology.getInterfaceEdges();
 
     _neighbors = new HashMap<>();
 
@@ -334,7 +334,7 @@ public class Graph {
       Set<String> neighs = new HashSet<>();
 
       for (NodeInterfacePair nip : nips) {
-        EdgeSet es = ifaceEdges.get(nip);
+        SortedSet<Edge> es = ifaceEdges.get(nip);
         Interface i1 = ifaceMap.get(nip);
         boolean hasNoOtherEnd = (es == null && i1.getPrefix() != null);
         if (hasNoOtherEnd) {

@@ -50,7 +50,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.AdvertisementSet;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -1323,7 +1322,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     String node = _c.getHostname();
     if (_vrf.getOspfProcess() != null) {
       int admin = RoutingProtocol.OSPF.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-      EdgeSet edges = topology.getNodeEdges().get(node);
+      SortedSet<Edge> edges = topology.getNodeEdges().get(node);
       if (edges == null) {
         // there are no edges, so OSPF won't produce anything
         return false;
@@ -1408,7 +1407,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     String node = _c.getHostname();
     if (_vrf.getOspfProcess() != null) {
       int admin = RoutingProtocol.OSPF.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-      EdgeSet edges = topology.getNodeEdges().get(node);
+      SortedSet<Edge> edges = topology.getNodeEdges().get(node);
       if (edges == null) {
         // there are no edges, so OSPF won't produce anything
         return false;
@@ -1567,7 +1566,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     String node = _c.getHostname();
     if (_vrf.getRipProcess() != null) {
       int admin = RoutingProtocol.RIP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-      EdgeSet edges = topology.getNodeEdges().get(node);
+      SortedSet<Edge> edges = topology.getNodeEdges().get(node);
       if (edges == null) {
         // there are no edges, so RIP won't produce anything
         return false;
