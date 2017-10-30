@@ -253,7 +253,7 @@ public class PropertyChecker {
    * Apply mapping from concrete to abstract nodes
    */
   private Set<String> mapConcreteToAbstract(NetworkSlice slice, List<String> concreteNodes) {
-    if (slice.getAbstraction() == null) {
+    if (slice.getAbstraction().getAbstractionMap() == null) {
       return new HashSet<>(concreteNodes);
     }
     Set<String> abstractNodes = new HashSet<>();
