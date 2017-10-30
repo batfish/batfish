@@ -5,7 +5,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.symbolic.Graph;
 
 
-public class EquivalenceClass {
+public class AbstractGraph {
 
   private Graph _graph;
 
@@ -13,7 +13,7 @@ public class EquivalenceClass {
 
   private AbstractionMap _abstraction;
 
-  public EquivalenceClass(
+  public AbstractGraph(
       HeaderSpace headerSpace, Graph graph, @Nullable AbstractionMap abstraction) {
     this._headerSpace = headerSpace;
     this._graph = graph;

@@ -45,7 +45,7 @@ import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.abstraction.Abstraction;
-import org.batfish.symbolic.abstraction.EquivalenceClass;
+import org.batfish.symbolic.abstraction.AbstractGraph;
 import org.batfish.symbolic.answers.SmtDeterminismAnswerElement;
 import org.batfish.symbolic.answers.SmtManyAnswerElement;
 import org.batfish.symbolic.answers.SmtOneAnswerElement;
@@ -227,7 +227,7 @@ public class PropertyChecker {
     }
   }
 
-  private Tuple<Stream<Supplier<EquivalenceClass>>, Long> findAllEquivalenceClasses(
+  private Tuple<Stream<Supplier<AbstractGraph>>, Long> findAllEquivalenceClasses(
       HeaderQuestion q, @Nullable Graph graph, boolean useDefaultCase) {
     if (q.getUseAbstraction()) {
       long l = System.currentTimeMillis();
@@ -235,13 +235,13 @@ public class PropertyChecker {
       int numFailures = q.getFailures();
       Abstraction abs = Abstraction.create(_batfish, h, numFailures, useDefaultCase);
       l = System.currentTimeMillis() - l;
-      ArrayList<Supplier<EquivalenceClass>> ecs = abs.equivalenceClasses();
+      ArrayList<Supplier<AbstractGraph>> ecs = abs.equivalenceClasses();
       return new Tuple<>(ecs.parallelStream(), l);
     } else {
-      List<Supplier<EquivalenceClass>> singleEc = new ArrayList<>();
+      List<Supplier<AbstractGraph>> singleEc = new ArrayList<>();
       Graph g = graph == null ? new Graph(_batfish) : graph;
-      EquivalenceClass ec = new EquivalenceClass(q.getHeaderSpace(), g, null);
-      Supplier<EquivalenceClass> sup = () -> ec;
+      AbstractGraph ec = new AbstractGraph(q.getHeaderSpace(), g, null);
+      Supplier<AbstractGraph> sup = () -> ec;
       singleEc.add(sup);
       return new Tuple<>(singleEc.stream(), 0L);
     }
@@ -250,7 +250,7 @@ public class PropertyChecker {
   /*
    * Apply mapping from concrete to abstract nodes
    */
-  private Set<String> mapConcreteToAbstract(EquivalenceClass ec, List<String> concreteNodes) {
+  private Set<String> mapConcreteToAbstract(AbstractGraph ec, List<String> concreteNodes) {
     if (ec.getAbstraction() == null) {
       return new HashSet<>(concreteNodes);
     }
@@ -271,15 +271,15 @@ public class PropertyChecker {
   public AnswerElement checkForwarding(HeaderQuestion question) {
     HeaderQuestion q = new HeaderQuestion(question);
     q.setFailures(0);
-    Tuple<Stream<Supplier<EquivalenceClass>>, Long> ecs = findAllEquivalenceClasses(q, null, false);
-    Stream<Supplier<EquivalenceClass>> stream = ecs.getFirst();
+    Tuple<Stream<Supplier<AbstractGraph>>, Long> ecs = findAllEquivalenceClasses(q, null, false);
+    Stream<Supplier<AbstractGraph>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
-    Optional<Supplier<EquivalenceClass>> opt = stream.findFirst();
+    Optional<Supplier<AbstractGraph>> opt = stream.findFirst();
     if (!opt.isPresent()) {
       throw new BatfishException("Unexpected Error: checkForwarding");
     }
-    Supplier<EquivalenceClass> sup = opt.get();
-    EquivalenceClass ec = sup.get();
+    Supplier<AbstractGraph> sup = opt.get();
+    AbstractGraph ec = sup.get();
     Graph g = ec.getGraph();
     q = new HeaderQuestion(q);
     q.setHeaderSpace(ec.getHeaderSpace());
@@ -317,8 +317,8 @@ public class PropertyChecker {
 
     inferDestinationHeaderSpace(graph, destPorts, q);
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
-    Tuple<Stream<Supplier<EquivalenceClass>>, Long> ecs = findAllEquivalenceClasses(q, graph, true);
-    Stream<Supplier<EquivalenceClass>> stream = ecs.getFirst();
+    Tuple<Stream<Supplier<AbstractGraph>>, Long> ecs = findAllEquivalenceClasses(q, graph, true);
+    Stream<Supplier<AbstractGraph>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
 
     AnswerElement[] answerElement = new AnswerElement[1];
@@ -330,7 +330,7 @@ public class PropertyChecker {
         stream.anyMatch(
             lazyEc -> {
               long ecTime = System.currentTimeMillis();
-              EquivalenceClass ec = lazyEc.get();
+              AbstractGraph ec = lazyEc.get();
               ecTime = System.currentTimeMillis() - ecTime;
 
               synchronized (_lock) {
