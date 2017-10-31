@@ -364,8 +364,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       for (int i = first + 1; i <= last; i++) {
         SortedSet<Route> baseRoutes = iterationRoutes.get(i - 1);
         SortedSet<Route> deltaRoutes = iterationRoutes.get(i);
-        SortedSet<Route> added = CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
-        SortedSet<Route> removed = CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
+        SortedSet<Route> added =
+            CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
+        SortedSet<Route> removed =
+            CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
         SortedSet<Route> changed = CommonUtil.union(added, removed, TreeSet<Route>::new);
         for (Route route : changed) {
           oscillatingPrefixes.add(route.getNetwork());
@@ -1253,7 +1255,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       SortedSet<Route> baseRoutes = iterationRoutes.get(i - 1);
       SortedSet<Route> deltaRoutes = iterationRoutes.get(i);
       SortedSet<Route> added = CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
-      SortedSet<Route> removed = CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
+      SortedSet<Route> removed =
+          CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
       SortedSet<Route> changed = CommonUtil.union(added, removed, TreeSet<Route>::new);
       sb.append("Changed routes (iteration " + (i - 1) + " ==> " + i + "):\n");
       for (Route route : changed) {
