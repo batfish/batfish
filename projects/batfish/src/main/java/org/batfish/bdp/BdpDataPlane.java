@@ -32,7 +32,6 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.FibSet;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 
 public class BdpDataPlane implements Serializable, DataPlane {
 
@@ -314,9 +313,9 @@ public class BdpDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public PolicyRouteFibNodeMap getPolicyRouteFibNodeMap() {
+  public SortedMap<String, HashMap<Ip, SortedSet<Edge>>> getPolicyRouteFibNodeMap() {
     // TODO: implement
-    return new PolicyRouteFibNodeMap();
+    return new TreeMap<>();
   }
 
   @Override
