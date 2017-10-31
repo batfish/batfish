@@ -55,7 +55,6 @@ import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.RouteSet;
 
 @AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
@@ -285,7 +284,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   private SortedSet<Prefix> collectOscillatingPrefixes(
-      Map<Integer, RouteSet> iterationRoutes,
+      Map<Integer, SortedSet<Route>> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbsRoutes,
       int first,
@@ -362,11 +361,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       }
     } else {
       for (int i = first + 1; i <= last; i++) {
-        RouteSet baseRoutes = iterationRoutes.get(i - 1);
-        RouteSet deltaRoutes = iterationRoutes.get(i);
-        RouteSet added = CommonUtil.difference(deltaRoutes, baseRoutes, RouteSet::new);
-        RouteSet removed = CommonUtil.difference(baseRoutes, deltaRoutes, RouteSet::new);
-        RouteSet changed = CommonUtil.union(added, removed, RouteSet::new);
+        SortedSet<Route> baseRoutes = iterationRoutes.get(i - 1);
+        SortedSet<Route> deltaRoutes = iterationRoutes.get(i);
+        SortedSet<Route> added =
+            CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
+        SortedSet<Route> removed =
+            CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
+        SortedSet<Route> changed = CommonUtil.union(added, removed, TreeSet<Route>::new);
         for (Route route : changed) {
           oscillatingPrefixes.add(route.getNetwork());
         }
@@ -911,7 +912,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
     Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
     SortedMap<Integer, Integer> iterationHashCodes = new TreeMap<>();
-    Map<Integer, RouteSet> iterationRoutes = null;
+    Map<Integer, SortedSet<Route>> iterationRoutes = null;
     Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
         iterationAbstractRoutes = null;
     if (_settings.getBdpRecordAllIterations()) {
@@ -1101,8 +1102,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     return outputRoutes;
   }
 
-  private RouteSet computeOutputRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
-    RouteSet outputRoutes = new RouteSet();
+  private SortedSet<Route> computeOutputRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
+    SortedSet<Route> outputRoutes = new TreeSet<>();
     nodes.forEach(
         (hostname, node) -> {
           node._virtualRouters.forEach(
@@ -1239,22 +1240,23 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   private String debugIterations(
-      String msg, Map<Integer, RouteSet> iterationRoutes, int first, int last) {
+      String msg, Map<Integer, SortedSet<Route>> iterationRoutes, int first, int last) {
     StringBuilder sb = new StringBuilder();
     sb.append(msg);
     sb.append("\n");
-    RouteSet initialRoutes = iterationRoutes.get(first);
+    SortedSet<Route> initialRoutes = iterationRoutes.get(first);
     sb.append("Initial routes (iteration " + first + "):\n");
     for (Route route : initialRoutes) {
       String routeStr = route.prettyPrint(null);
       sb.append(routeStr);
     }
     for (int i = first + 1; i <= last; i++) {
-      RouteSet baseRoutes = iterationRoutes.get(i - 1);
-      RouteSet deltaRoutes = iterationRoutes.get(i);
-      RouteSet added = CommonUtil.difference(deltaRoutes, baseRoutes, RouteSet::new);
-      RouteSet removed = CommonUtil.difference(baseRoutes, deltaRoutes, RouteSet::new);
-      RouteSet changed = CommonUtil.union(added, removed, RouteSet::new);
+      SortedSet<Route> baseRoutes = iterationRoutes.get(i - 1);
+      SortedSet<Route> deltaRoutes = iterationRoutes.get(i);
+      SortedSet<Route> added = CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
+      SortedSet<Route> removed =
+          CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
+      SortedSet<Route> changed = CommonUtil.union(added, removed, TreeSet<Route>::new);
       sb.append("Changed routes (iteration " + (i - 1) + " ==> " + i + "):\n");
       for (Route route : changed) {
         String diffSymbol = added.contains(route) ? "+" : "-";
@@ -1395,7 +1397,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    */
   private void handleOscillation(
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes,
-      Map<Integer, RouteSet> iterationRoutes,
+      Map<Integer, SortedSet<Route>> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbstractRoutes,
       int start,
@@ -1680,7 +1682,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   private void recordIterationDebugInfo(
       Map<String, Node> nodes,
       BdpDataPlane dp,
-      Map<Integer, RouteSet> iterationRoutes,
+      Map<Integer, SortedSet<Route>> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbstractRoutes,
       int dependentRoutesIterations) {
