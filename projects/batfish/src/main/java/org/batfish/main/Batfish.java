@@ -1987,7 +1987,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    LinkedHashSet<BgpAdvertisement> globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
+    Set<BgpAdvertisement> globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
     for (Configuration node : configurations.values()) {
       node.initBgpAdvertisements();
       for (Vrf vrf : node.getVrfs().values()) {
@@ -3422,12 +3422,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public LinkedHashSet<BgpAdvertisement> processExternalBgpAnnouncements(
+  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
-    LinkedHashSet<BgpAdvertisement> advertSet = new LinkedHashSet<>();
+    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
-      LinkedHashSet<BgpAdvertisement> currentAdvertisements =
-          plugin.loadExternalBgpAdvertisements();
+      Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements();
       advertSet.addAll(currentAdvertisements);
     }
     return advertSet;
@@ -3439,9 +3438,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *
    * @param configurations The vendor-independent configurations to be modified
    */
-  public LinkedHashSet<BgpAdvertisement> processExternalBgpAnnouncements(
+  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    LinkedHashSet<BgpAdvertisement> advertSet = new LinkedHashSet<>();
+    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     Path externalBgpAnnouncementsPath =
         _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {

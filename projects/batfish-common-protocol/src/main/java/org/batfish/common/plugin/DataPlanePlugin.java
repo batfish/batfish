@@ -1,6 +1,5 @@
 package org.batfish.common.plugin;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -45,7 +44,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   protected void dataPlanePluginInitialize() {}
 
-  public abstract LinkedHashSet<BgpAdvertisement> getAdvertisements();
+  public abstract Set<BgpAdvertisement> getAdvertisements();
 
   public abstract List<Flow> getHistoryFlows();
 

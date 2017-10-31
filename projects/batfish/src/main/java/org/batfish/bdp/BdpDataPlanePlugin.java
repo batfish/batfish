@@ -421,7 +421,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
     _batfish.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
     SortedMap<String, Node> nodes = new TreeMap<>();
-    LinkedHashSet<BgpAdvertisement> externalAdverts =
+    Set<BgpAdvertisement> externalAdverts =
         _batfish.processExternalBgpAnnouncements(configurations);
     SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
     do {
@@ -764,7 +764,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       SortedMap<String, Node> nodes,
       Topology topology,
       BdpDataPlane dp,
-      LinkedHashSet<BgpAdvertisement> externalAdverts,
+      Set<BgpAdvertisement> externalAdverts,
       BdpAnswerElement ae,
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes) {
     SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
@@ -1313,8 +1313,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public LinkedHashSet<BgpAdvertisement> getAdvertisements() {
-    LinkedHashSet<BgpAdvertisement> adverts = new LinkedHashSet<>();
+  public Set<BgpAdvertisement> getAdvertisements() {
+    Set<BgpAdvertisement> adverts = new LinkedHashSet<>();
     BdpDataPlane dp = loadDataPlane();
     for (Node node : dp._nodes.values()) {
       for (VirtualRouter vrf : node._virtualRouters.values()) {

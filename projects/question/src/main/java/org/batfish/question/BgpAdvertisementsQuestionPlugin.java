@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.auto.service.AutoService;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -71,7 +70,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     public BgpAdvertisementsAnswerElement(
-        LinkedHashSet<BgpAdvertisement> externalAdverts,
+        Set<BgpAdvertisement> externalAdverts,
         Map<String, Configuration> configurations,
         Pattern nodeRegex,
         PrefixSpace prefixSpace) {
@@ -275,7 +274,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
-        LinkedHashSet<BgpAdvertisement> externalAdverts =
+        Set<BgpAdvertisement> externalAdverts =
             _batfish.processExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(

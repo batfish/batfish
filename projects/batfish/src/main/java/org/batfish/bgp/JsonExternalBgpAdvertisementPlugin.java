@@ -5,6 +5,7 @@ import com.google.auto.service.AutoService;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
@@ -21,8 +22,8 @@ public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisement
   protected void externalBgpAdvertisementPluginInitialize() {}
 
   @Override
-  public LinkedHashSet<BgpAdvertisement> loadExternalBgpAdvertisements() {
-    LinkedHashSet<BgpAdvertisement> advertSet = new LinkedHashSet<>();
+  public Set<BgpAdvertisement> loadExternalBgpAdvertisements() {
+    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     String externalBgpAnnouncementsFileContents = _batfish.readExternalBgpAnnouncementsFile();
     if (externalBgpAnnouncementsFileContents != null) {
       // Populate advertSet with BgpAdvertisements that

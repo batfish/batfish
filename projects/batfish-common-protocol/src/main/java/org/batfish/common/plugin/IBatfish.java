@@ -1,6 +1,5 @@
 package org.batfish.common.plugin;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -134,8 +133,7 @@ public interface IBatfish extends IPluginConsumer {
 
   void printElapsedTime();
 
-  LinkedHashSet<BgpAdvertisement> processExternalBgpAnnouncements(
-      Map<String, Configuration> configurations);
+  Set<BgpAdvertisement> processExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
   void processFlows(Set<Flow> flows);
 
