@@ -128,7 +128,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient OspfExternalType2Rib _prevOspfExternalType2Rib;
 
-  LinkedHashSet<BgpAdvertisement> _receivedBgpAdvertisements;
+  Set<BgpAdvertisement> _receivedBgpAdvertisements;
 
   transient RipInternalRib _ripInternalRib;
 
@@ -136,7 +136,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient RipRib _ripRib;
 
-  LinkedHashSet<BgpAdvertisement> _sentBgpAdvertisements;
+  Set<BgpAdvertisement> _sentBgpAdvertisements;
 
   transient StaticRib _staticInterfaceRib;
 
@@ -359,7 +359,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   public void initBaseBgpRibs(
-      LinkedHashSet<BgpAdvertisement> externalAdverts, Map<Ip, Set<String>> ipOwners) {
+      Set<BgpAdvertisement> externalAdverts, Map<Ip, Set<String>> ipOwners) {
     _bgpMultipathRib = new BgpMultipathRib(this);
     _baseEbgpRib = new BgpMultipathRib(this);
     _baseIbgpRib = new BgpMultipathRib(this);
