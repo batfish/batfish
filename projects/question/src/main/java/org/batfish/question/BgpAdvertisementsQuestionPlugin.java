@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.auto.service.AutoService;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,7 +27,6 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -71,7 +71,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     public BgpAdvertisementsAnswerElement(
-        AdvertisementSet externalAdverts,
+        LinkedHashSet<BgpAdvertisement> externalAdverts,
         Map<String, Configuration> configurations,
         Pattern nodeRegex,
         PrefixSpace prefixSpace) {
@@ -275,7 +275,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
-        AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
+        LinkedHashSet<BgpAdvertisement> externalAdverts =
+            _batfish.processExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 externalAdverts, configurations, nodeRegex, question.getPrefixSpace());

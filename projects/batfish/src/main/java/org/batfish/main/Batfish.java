@@ -126,7 +126,6 @@ import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
@@ -1988,7 +1987,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    AdvertisementSet globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
+    LinkedHashSet<BgpAdvertisement> globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
     for (Configuration node : configurations.values()) {
       node.initBgpAdvertisements();
       for (Vrf vrf : node.getVrfs().values()) {
@@ -3423,11 +3422,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AdvertisementSet processExternalBgpAnnouncements(
+  public LinkedHashSet<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
-    AdvertisementSet advertSet = new AdvertisementSet();
+    LinkedHashSet<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
-      AdvertisementSet currentAdvertisements = plugin.loadExternalBgpAdvertisements();
+      LinkedHashSet<BgpAdvertisement> currentAdvertisements =
+          plugin.loadExternalBgpAdvertisements();
       advertSet.addAll(currentAdvertisements);
     }
     return advertSet;
@@ -3439,9 +3439,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *
    * @param configurations The vendor-independent configurations to be modified
    */
-  public AdvertisementSet processExternalBgpAnnouncements(
+  public LinkedHashSet<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    AdvertisementSet advertSet = new AdvertisementSet();
+    LinkedHashSet<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     Path externalBgpAnnouncementsPath =
         _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {

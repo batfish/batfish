@@ -52,7 +52,6 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -422,7 +421,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
     _batfish.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
     SortedMap<String, Node> nodes = new TreeMap<>();
-    AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
+    LinkedHashSet<BgpAdvertisement> externalAdverts =
+        _batfish.processExternalBgpAnnouncements(configurations);
     SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
     do {
       configurations.values().forEach(c -> nodes.put(c.getHostname(), new Node(c, nodes)));
@@ -764,7 +764,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       SortedMap<String, Node> nodes,
       Topology topology,
       BdpDataPlane dp,
-      AdvertisementSet externalAdverts,
+      LinkedHashSet<BgpAdvertisement> externalAdverts,
       BdpAnswerElement ae,
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes) {
     SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
@@ -1313,8 +1313,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public AdvertisementSet getAdvertisements() {
-    AdvertisementSet adverts = new AdvertisementSet();
+  public LinkedHashSet<BgpAdvertisement> getAdvertisements() {
+    LinkedHashSet<BgpAdvertisement> adverts = new LinkedHashSet<>();
     BdpDataPlane dp = loadDataPlane();
     for (Node node : dp._nodes.values()) {
       for (VirtualRouter vrf : node._virtualRouters.values()) {
