@@ -128,7 +128,6 @@ import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
@@ -1066,9 +1065,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Topology computeTopology(Map<String, Configuration> configurations) {
     resetTimer();
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
-    EdgeSet blacklistEdges = getEdgeBlacklist();
+    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     if (blacklistEdges != null) {
-      EdgeSet edges = topology.getEdges();
+      SortedSet<Edge> edges = topology.getEdges();
       edges.removeAll(blacklistEdges);
     }
     NodeSet blacklistNodes = getNodeBlacklist();
@@ -1705,8 +1704,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return DIFFERENTIAL_FLOW_TAG;
   }
 
-  public EdgeSet getEdgeBlacklist() {
-    EdgeSet blacklistEdges = null;
+  public SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges = null;
     Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
     if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
       blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
@@ -1721,7 +1720,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Environment getEnvironment() {
-    EdgeSet edgeBlackList = getEdgeBlacklist();
+    SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
     SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
     NodeSet nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
@@ -1907,7 +1906,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings;
   }
 
-  private Set<Edge> getSymmetricEdgePairs(EdgeSet edges) {
+  private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
     LinkedHashSet<Edge> consumedEdges = new LinkedHashSet<>();
     for (Edge edge : edges) {
       if (consumedEdges.contains(edge)) {
@@ -2321,7 +2320,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             OspfArea area = e3.getValue();
             for (Interface iface : area.getInterfaces()) {
               String ifaceName = iface.getName();
-              EdgeSet ifaceEdges =
+              SortedSet<Edge> ifaceEdges =
                   topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
               boolean hasNeighbor = false;
               Ip localIp = iface.getPrefix().getAddress();
@@ -2404,7 +2403,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           String vrfName = e2.getKey();
           for (String ifaceName : proc.getInterfaces()) {
             Interface iface = vrf.getInterfaces().get("ifaceName");
-            EdgeSet ifaceEdges =
+            SortedSet<Edge> ifaceEdges =
                 topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
             boolean hasNeighbor = false;
             Ip localIp = iface.getPrefix().getAddress();
@@ -2956,7 +2955,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private EdgeSet parseEdgeBlacklist(Path edgeBlacklistPath) {
+  private SortedSet<Edge> parseEdgeBlacklist(Path edgeBlacklistPath) {
     String edgeBlacklistText = CommonUtil.readFile(edgeBlacklistPath);
     SortedSet<Edge> edges;
     try {
@@ -2967,7 +2966,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to parse edge blacklist", e);
     }
-    return new EdgeSet(edges);
+    return edges;
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
@@ -3183,7 +3182,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushDeltaEnvironment();
     NodeSet blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    EdgeSet blacklistEdges = getEdgeBlacklist();
+    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
 
     BlacklistDstIpQuerySynthesizer blacklistQuery =
@@ -3200,7 +3199,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // generate local edge reachability and black hole queries
     Topology diffTopology = computeTopology(diffConfigurations);
-    EdgeSet diffEdges = diffTopology.getEdges();
+    SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
       String outInterface = edge.getInt1();
@@ -3228,8 +3227,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     Topology baseTopology = computeTopology(baseConfigurations);
-    EdgeSet baseEdges = baseTopology.getEdges();
-    EdgeSet missingEdges = new EdgeSet();
+    SortedSet<Edge> baseEdges = baseTopology.getEdges();
+    SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
     missingEdges.removeAll(diffEdges);
     for (Edge missingEdge : missingEdges) {
@@ -3390,7 +3389,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void printSymmetricEdgePairs() {
     Map<String, Configuration> configs = loadConfigurations();
-    EdgeSet edges = synthesizeTopology(configs).getEdges();
+    SortedSet<Edge> edges = synthesizeTopology(configs).getEdges();
     Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
     List<Edge> edgeList = new ArrayList<>();
     edgeList.addAll(symmetricEdgePairs);
@@ -3747,7 +3746,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushDeltaEnvironment();
     NodeSet blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    EdgeSet blacklistEdges = getEdgeBlacklist();
+    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
 
     BlacklistDstIpQuerySynthesizer blacklistQuery =
@@ -4603,7 +4602,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private Topology synthesizeTopology(Map<String, Configuration> configurations) {
     _logger.info("\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
     resetTimer();
-    EdgeSet edges = new EdgeSet();
+    SortedSet<Edge> edges = new TreeSet<>();
     Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
         (nodeName, node) -> {
@@ -4716,7 +4715,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void writeJsonTopology() {
     try {
       Map<String, Configuration> configs = loadConfigurations();
-      EdgeSet textEdges = synthesizeTopology(configs).getEdges();
+      SortedSet<Edge> textEdges = synthesizeTopology(configs).getEdges();
       JSONArray jEdges = new JSONArray();
       for (Edge textEdge : textEdges) {
         Configuration node1 = configs.get(textEdge.getNode1());

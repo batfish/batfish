@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class Topology implements Serializable {
@@ -17,16 +16,16 @@ public class Topology implements Serializable {
 
   @JsonCreator
   private static Topology jacksonCreateTopology(SortedSet<Edge> edges) {
-    return new Topology(new EdgeSet(edges));
+    return new Topology(edges);
   }
 
-  private final EdgeSet _edges;
+  private final SortedSet<Edge> _edges;
 
-  private final Map<NodeInterfacePair, EdgeSet> _interfaceEdges;
+  private final Map<NodeInterfacePair, SortedSet<Edge>> _interfaceEdges;
 
-  private final Map<String, EdgeSet> _nodeEdges;
+  private final Map<String, SortedSet<Edge>> _nodeEdges;
 
-  public Topology(EdgeSet edges) {
+  public Topology(SortedSet<Edge> edges) {
     _edges = edges;
     _nodeEdges = new HashMap<>();
     _interfaceEdges = new HashMap<>();
@@ -36,32 +35,32 @@ public class Topology implements Serializable {
       NodeInterfacePair int1 = edge.getInterface1();
       NodeInterfacePair int2 = edge.getInterface2();
 
-      EdgeSet node1Edges = _nodeEdges.computeIfAbsent(node1, k -> new EdgeSet());
+      SortedSet<Edge> node1Edges = _nodeEdges.computeIfAbsent(node1, k -> new TreeSet<>());
       node1Edges.add(edge);
 
-      EdgeSet node2Edges = _nodeEdges.computeIfAbsent(node2, k -> new EdgeSet());
+      SortedSet<Edge> node2Edges = _nodeEdges.computeIfAbsent(node2, k -> new TreeSet<>());
       node2Edges.add(edge);
 
-      EdgeSet interface1Edges = _interfaceEdges.computeIfAbsent(int1, k -> new EdgeSet());
+      SortedSet<Edge> interface1Edges = _interfaceEdges.computeIfAbsent(int1, k -> new TreeSet<>());
       interface1Edges.add(edge);
 
-      EdgeSet interface2Edges = _interfaceEdges.computeIfAbsent(int2, k -> new EdgeSet());
+      SortedSet<Edge> interface2Edges = _interfaceEdges.computeIfAbsent(int2, k -> new TreeSet<>());
       interface2Edges.add(edge);
     }
   }
 
   @JsonIgnore
-  public EdgeSet getEdges() {
+  public SortedSet<Edge> getEdges() {
     return _edges;
   }
 
   @JsonIgnore
-  public Map<NodeInterfacePair, EdgeSet> getInterfaceEdges() {
+  public Map<NodeInterfacePair, SortedSet<Edge>> getInterfaceEdges() {
     return _interfaceEdges;
   }
 
   @JsonIgnore
-  public Map<String, EdgeSet> getNodeEdges() {
+  public Map<String, SortedSet<Edge>> getNodeEdges() {
     return _nodeEdges;
   }
 
@@ -70,14 +69,14 @@ public class Topology implements Serializable {
   }
 
   public void removeInterface(NodeInterfacePair iface) {
-    EdgeSet interfaceEdges = _interfaceEdges.get(iface);
+    SortedSet<Edge> interfaceEdges = _interfaceEdges.get(iface);
     if (interfaceEdges != null) {
       _edges.removeAll(interfaceEdges);
     }
   }
 
   public void removeNode(String hostname) {
-    EdgeSet nodeEdges = _nodeEdges.get(hostname);
+    SortedSet<Edge> nodeEdges = _nodeEdges.get(hostname);
     if (nodeEdges != null) {
       _edges.removeAll(nodeEdges);
     }

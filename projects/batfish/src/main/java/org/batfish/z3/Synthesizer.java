@@ -37,7 +37,6 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Zone;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.InterfaceSet;
@@ -878,7 +877,7 @@ public class Synthesizer {
 
   private final boolean _simplify;
 
-  private final EdgeSet _topologyEdges;
+  private final SortedSet<Edge> _topologyEdges;
 
   private final Map<String, Set<Interface>> _topologyInterfaces;
 

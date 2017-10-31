@@ -53,7 +53,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.AdvertisementSet;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RouteSet;
@@ -217,7 +216,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             // Apply any relevant source NAT rules.
             transformedFlow = applySourceNat(transformedFlow, outgoingInterface.getSourceNats());
 
-            EdgeSet edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
+            SortedSet<Edge> edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
               boolean continueToNextNextHopInterface = false;
               continueToNextNextHopInterface =
@@ -1492,7 +1491,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       SortedSet<String> routesForThisNextHopInterface,
       @Nullable Ip finalNextHopIp,
       @Nullable NodeInterfacePair nextHopInterface,
-      EdgeSet edges,
+      SortedSet<Edge> edges,
       boolean arp) {
     boolean continueToNextNextHopInterface = false;
     int unreachableNeighbors = 0;
@@ -1645,7 +1644,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               Set<Edge> visitedEdges = Collections.emptySet();
               List<FlowTraceHop> hops = new ArrayList<>();
               Set<String> dstIpOwners = dp._ipOwners.get(dstIp);
-              EdgeSet edges = new EdgeSet();
+              SortedSet<Edge> edges = new TreeSet<>();
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
                 edges.add(
