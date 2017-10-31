@@ -133,7 +133,6 @@ import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
@@ -897,7 +896,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       flowSinks = loadDataPlane().getFlowSinks();
       popEnvironment();
     }
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null && differentialContext) {
       flowSinks.removeNodes(blacklistNodes);
     }
@@ -1069,7 +1068,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       SortedSet<Edge> edges = topology.getEdges();
       edges.removeAll(blacklistEdges);
     }
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null) {
       for (String blacklistNode : blacklistNodes) {
         topology.removeNode(blacklistNode);
@@ -1399,7 +1398,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void generateOspfConfigs(Path topologyPath, Path outputPath) {
     Topology topology = parseTopology(topologyPath);
     Map<String, Configuration> configs = new TreeMap<>();
-    NodeSet allNodes = new NodeSet();
+    SortedSet<String> allNodes = new TreeSet<>();
     Map<NodeInterfacePair, Set<NodeInterfacePair>> interfaceMap = new HashMap<>();
     // first we collect set of all mentioned nodes, and build mapping from
     // each interface to the set of interfaces that connect to each other
@@ -1721,7 +1720,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Environment getEnvironment() {
     SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
     SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
-    NodeSet nodeBlackList = getNodeBlacklist();
+    SortedSet<String> nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
         getEnvironmentName(),
@@ -1829,8 +1828,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _logger;
   }
 
-  public NodeSet getNodeBlacklist() {
-    NodeSet blacklistNodes = null;
+  public SortedSet<String> getNodeBlacklist() {
+    SortedSet<String> blacklistNodes = null;
     Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
     if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
       blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
@@ -3052,7 +3051,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return ifaces;
   }
 
-  private NodeSet parseNodeBlacklist(Path nodeBlacklistPath) {
+  private SortedSet<String> parseNodeBlacklist(Path nodeBlacklistPath) {
     String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
     SortedSet<String> nodes;
     try {
@@ -3063,7 +3062,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to parse node blacklist", e);
     }
-    return new NodeSet(nodes);
+    return nodes;
   }
 
   private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
@@ -3179,7 +3178,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     popEnvironment();
 
     pushDeltaEnvironment();
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
@@ -3516,7 +3515,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void processNodeBlacklist(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null) {
       for (String hostname : blacklistNodes) {
         Configuration node = configurations.get(hostname);
@@ -3743,7 +3742,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     commonNodes.retainAll(diffConfigurations.keySet());
 
     pushDeltaEnvironment();
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
