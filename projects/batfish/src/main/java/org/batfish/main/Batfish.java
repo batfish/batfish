@@ -135,7 +135,6 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.NodeSet;
-import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
@@ -2775,7 +2774,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           for (String vrf : configuration.getVrfs().keySet()) {
             MultipathInconsistencyQuerySynthesizer query =
                 new MultipathInconsistencyQuerySynthesizer(node, vrf, headerSpace);
-            NodeVrfSet nodes = new NodeVrfSet();
+            SortedSet<Pair<String, String>> nodes = new TreeSet<>();
             nodes.add(new Pair<>(node, vrf));
             NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
             jobs.add(job);
@@ -3215,7 +3214,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       queries.add(reachQuery);
       queries.add(noReachQuery);
       queries.add(blacklistQuery);
-      NodeVrfSet nodes = new NodeVrfSet();
+      SortedSet<Pair<String, String>> nodes = new TreeSet<>();
       nodes.add(new Pair<>(ingressNode, vrf));
       CompositeNodJob job =
           new CompositeNodJob(settings, commonEdgeSynthesizers, queries, nodes, tag);
@@ -3249,7 +3248,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         List<QuerySynthesizer> queries = new ArrayList<>();
         queries.add(reachQuery);
         queries.add(blacklistQuery);
-        NodeVrfSet nodes = new NodeVrfSet();
+        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
         nodes.add(new Pair<>(ingressNode, vrf));
         CompositeNodJob job =
             new CompositeNodJob(settings, missingEdgeSynthesizers, queries, nodes, tag);
@@ -3781,7 +3780,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 Collections.<String>emptySet(),
                 Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
-        NodeVrfSet nodes = new NodeVrfSet();
+        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
         nodes.add(new Pair<>(node, vrf));
         List<QuerySynthesizer> queries = new ArrayList<>();
         queries.add(acceptQuery);
@@ -4540,7 +4539,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ReachabilityQuerySynthesizer query =
             new ReachabilityQuerySynthesizer(
                 actions, headerSpace, activeFinalNodes, nodeVrfs, transitNodes, notTransitNodes);
-        NodeVrfSet nodes = new NodeVrfSet();
+        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
         jobs.add(job);

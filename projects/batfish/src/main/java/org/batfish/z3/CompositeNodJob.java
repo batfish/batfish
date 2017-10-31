@@ -19,18 +19,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.job.BatfishJob;
 
 public class CompositeNodJob extends BatfishJob<NodJobResult> {
 
   private List<Synthesizer> _dataPlaneSynthesizers;
 
-  private final NodeVrfSet _nodeVrfSet;
+  private final SortedSet<Pair<String, String>> _nodeVrfSet;
 
   private int _numPrograms;
 
@@ -42,7 +43,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      NodeVrfSet nodeVrfSet,
+      SortedSet<Pair<String, String>> nodeVrfSet,
       String tag) {
     super(settings);
     _numPrograms = dataPlaneSynthesizer.size();
@@ -51,7 +52,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
     }
     _dataPlaneSynthesizers = dataPlaneSynthesizer;
     _querySynthesizers = querySynthesizer;
-    _nodeVrfSet = new NodeVrfSet();
+    _nodeVrfSet = new TreeSet<>();
     _nodeVrfSet.addAll(nodeVrfSet);
     _tag = tag;
   }
