@@ -1,6 +1,7 @@
 package org.batfish.common.plugin;
 
-import org.batfish.datamodel.collections.AdvertisementSet;
+import java.util.LinkedHashSet;
+import org.batfish.datamodel.BgpAdvertisement;
 
 public abstract class ExternalBgpAdvertisementPlugin extends BatfishPlugin
     implements IExternalBgpAdvertisementPlugin {
@@ -13,5 +14,5 @@ public abstract class ExternalBgpAdvertisementPlugin extends BatfishPlugin
 
   protected abstract void externalBgpAdvertisementPluginInitialize();
 
-  public abstract AdvertisementSet loadExternalBgpAdvertisements();
+  public abstract LinkedHashSet<BgpAdvertisement> loadExternalBgpAdvertisements();
 }

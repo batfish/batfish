@@ -1,14 +1,15 @@
 package org.batfish.common.plugin;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 
 public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlanePlugin {
@@ -44,7 +45,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   protected void dataPlanePluginInitialize() {}
 
-  public abstract AdvertisementSet getAdvertisements();
+  public abstract LinkedHashSet<BgpAdvertisement> getAdvertisements();
 
   public abstract List<Flow> getHistoryFlows();
 

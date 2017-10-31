@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -128,7 +128,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient OspfExternalType2Rib _prevOspfExternalType2Rib;
 
-  AdvertisementSet _receivedBgpAdvertisements;
+  LinkedHashSet<BgpAdvertisement> _receivedBgpAdvertisements;
 
   transient RipInternalRib _ripInternalRib;
 
@@ -136,7 +136,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient RipRib _ripRib;
 
-  AdvertisementSet _sentBgpAdvertisements;
+  LinkedHashSet<BgpAdvertisement> _sentBgpAdvertisements;
 
   transient StaticRib _staticInterfaceRib;
 
@@ -358,7 +358,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
-  public void initBaseBgpRibs(AdvertisementSet externalAdverts, Map<Ip, Set<String>> ipOwners) {
+  public void initBaseBgpRibs(
+      LinkedHashSet<BgpAdvertisement> externalAdverts, Map<Ip, Set<String>> ipOwners) {
     _bgpMultipathRib = new BgpMultipathRib(this);
     _baseEbgpRib = new BgpMultipathRib(this);
     _baseIbgpRib = new BgpMultipathRib(this);
@@ -836,8 +837,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       Map<BgpNeighbor, Map<BgpNeighbor, List<BgpMultipathRib>>> deferredIncomingRouteRibs,
       Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
     int numRoutes = 0;
-    _receivedBgpAdvertisements = new AdvertisementSet();
-    _sentBgpAdvertisements = new AdvertisementSet();
+    _receivedBgpAdvertisements = new LinkedHashSet<BgpAdvertisement>();
+    _sentBgpAdvertisements = new LinkedHashSet<BgpAdvertisement>();
     if (_vrf.getBgpProcess() != null) {
       int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
       int ibgpAdmin =
