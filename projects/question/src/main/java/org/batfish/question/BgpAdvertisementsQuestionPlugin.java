@@ -26,7 +26,6 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -71,7 +70,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     public BgpAdvertisementsAnswerElement(
-        AdvertisementSet externalAdverts,
+        Set<BgpAdvertisement> externalAdverts,
         Map<String, Configuration> configurations,
         Pattern nodeRegex,
         PrefixSpace prefixSpace) {
@@ -275,7 +274,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
-        AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
+        Set<BgpAdvertisement> externalAdverts =
+            _batfish.processExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 externalAdverts, configurations, nodeRegex, question.getPrefixSpace());
