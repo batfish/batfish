@@ -1905,7 +1905,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
-    LinkedHashSet<Edge> consumedEdges = new LinkedHashSet<>();
+    Set<Edge> consumedEdges = new LinkedHashSet<>();
     for (Edge edge : edges) {
       if (consumedEdges.contains(edge)) {
         continue;
