@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import java.io.Serializable;
 import java.util.SortedMap;
-import org.batfish.datamodel.collections.EdgeSet;
+import java.util.SortedSet;
 import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
@@ -17,5 +17,5 @@ public interface DataPlane extends Serializable {
 
   SortedMap<String, SortedMap<String, IRib<AbstractRoute>>> getRibs();
 
-  EdgeSet getTopologyEdges();
+  SortedSet<Edge> getTopologyEdges();
 }

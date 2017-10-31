@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
@@ -38,7 +40,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
@@ -222,7 +223,8 @@ public class BatfishTest {
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
     configs.put(
         "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
-    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+    SortedSet<Edge> edges =
+        new TreeSet<>(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
     // test that checkTopology does not throw
@@ -234,7 +236,8 @@ public class BatfishTest {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
-    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
+    SortedSet<Edge> edges =
+        new TreeSet<>(Collections.singletonList(new Edge("h1", "eth0", "h2", "e0")));
     Topology topology = new Topology(edges);
 
     _thrown.expect(BatfishException.class);
@@ -249,7 +252,8 @@ public class BatfishTest {
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
     configs.put(
         "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
-    EdgeSet edges = new EdgeSet(Collections.singletonList(new Edge("h1", "eth1", "h2", "e0")));
+    SortedSet<Edge> edges =
+        new TreeSet<>(Collections.singletonList(new Edge("h1", "eth1", "h2", "e0")));
     Topology topology = new Topology(edges);
 
     _thrown.expect(BatfishException.class);
