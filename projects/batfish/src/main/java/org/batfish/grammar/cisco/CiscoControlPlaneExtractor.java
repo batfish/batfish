@@ -4631,6 +4631,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
     }
+    if (_configuration.getVendor() == ConfigurationFormat.CISCO_ASA) {
+      wildcard = wildcard.inverted();
+    }
     long area;
     if (ctx.area_int != null) {
       area = toLong(ctx.area_int);
@@ -5874,6 +5877,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void initInterface(Interface iface, ConfigurationFormat format) {
     switch (format) {
+      case CISCO_ASA:
       case CISCO_IOS:
         iface.setProxyArp(true);
         break;

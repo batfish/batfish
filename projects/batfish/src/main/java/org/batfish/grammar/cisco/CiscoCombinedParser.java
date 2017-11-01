@@ -15,6 +15,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
       case FOUNDRY:
       case ARISTA:
       case CADANT:
+      case CISCO_ASA:
       case CISCO_IOS:
       case FORCE10:
         multilineBgpNeighbors = false;
