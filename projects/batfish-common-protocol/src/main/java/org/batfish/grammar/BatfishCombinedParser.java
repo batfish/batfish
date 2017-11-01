@@ -3,6 +3,7 @@ package org.batfish.grammar;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -69,6 +70,25 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
     }
     _parser.initErrorListener(this);
     _parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+  }
+
+  public BatfishCombinedParser(
+      Class<P> pClass,
+      Class<L> lClass,
+      String input,
+      GrammarSettings settings,
+      BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory batfishANTLRErrorStrategyFactor,
+      Set<Integer> separatorChars) {
+    this(pClass, lClass, input, settings);
+    /*
+     * Do not supply recovery infrastructure with associated overhead unless recovery is actually
+     * enabled.
+     */
+    if (!settings.getDisableUnrecognized()) {
+      _parser.setInterpreter(new BatfishParserATNSimulator(_parser.getInterpreter()));
+      _parser.setErrorHandler(batfishANTLRErrorStrategyFactor.build(_input));
+      _lexer.setRecoveryStrategy(new BatfishLexerRecoveryStrategy(_lexer, separatorChars));
+    }
   }
 
   public List<String> getErrors() {
