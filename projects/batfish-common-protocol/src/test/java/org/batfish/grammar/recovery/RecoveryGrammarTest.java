@@ -1,6 +1,7 @@
 package org.batfish.grammar.recovery;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -16,12 +17,14 @@ public class RecoveryGrammarTest {
   @Test
   public void testParsingRecovery() throws IOException {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_text");
+    int totalLines = recoveryText.split("\n").length;
     GrammarSettings settings = new TestGrammarSettings(false, 0, 0, false, true, true);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(extractor, ctx);
+
     assertThat(extractor.getNumBlockStatements(), equalTo(2));
     assertThat(extractor.getNumErrorNodes(), equalTo(15));
     assertThat(extractor.getNumInnerStatements(), equalTo(1));
@@ -30,5 +33,16 @@ public class RecoveryGrammarTest {
         extractor.getNumStatements(),
         equalTo(extractor.getNumBlockStatements() + extractor.getNumSimpleStatements()));
     assertThat(extractor.getNumTailWords(), equalTo(5));
+    /*
+     *  We don't know how many lines were hidden comments, so we only know there should be more
+     *  lines than the ones that actually end up in the parse tree.
+     */
+    assertThat(
+        totalLines,
+        greaterThanOrEqualTo(
+            extractor.getNumBlockStatements()
+                + extractor.getNumInnerStatements()
+                + extractor.getNumSimpleStatements()
+                + extractor.getNumErrorNodes()));
   }
 }

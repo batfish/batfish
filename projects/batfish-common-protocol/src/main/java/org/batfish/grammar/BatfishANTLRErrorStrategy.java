@@ -25,7 +25,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 /**
  * Intended as a replacement for default ANTLR parser error recovery strategy. The basic idea here
  * is to throw out any lines containing invalidities, and try to parse as if those lines were never
- * there. Meanwhile, each invalid lines should show up in the parse tree as {@link ErrorNode} at an
+ * there. Meanwhile, each invalid line should show up in the parse tree as {@link ErrorNode} at an
  * appropriate scope. The advantage of this strategy is that we do not unnecessarily pop back up to
  * the top level as soon as an error occurs.
  */
@@ -33,7 +33,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
   /**
    * Construct a factory for making instances of {@link BatfishANTLRErrorStrategy} with supplied
-   * {@link separatorToken} and {@link minimRequiredSeparatorText}.
+   * {@code separatorToken} and {@code minimumRequiredSeparatorText}.
    */
   public static class BatfishANTLRErrorStrategyFactory {
 
@@ -90,9 +90,10 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
   }
 
   /**
-   * Consume all tokens until the next token is one expected by the current rule. Each line (as
-   * delimited by supplied separator token) starting from the current line up to the last line
-   * consumed is placed in an {@link ErrorNode} and inserted as a child of the current rule.
+   * Consume all tokens a whole line at a time until the next token is one expected by the current
+   * rule. Each line (as delimited by supplied separator token) starting from the current line up to
+   * the last line consumed is placed in an {@link ErrorNode} and inserted as a child of the current
+   * rule.
    *
    * @param recognizer The {@link Parser} to whom to delegate creation of each {@link ErrorNode}
    */
@@ -100,12 +101,10 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     IntervalSet expecting = recognizer.getExpectedTokens();
     IntervalSet whatFollowsLoopIterationOrRule = expecting.or(getErrorRecoverySet(recognizer));
 
-    IntervalSet followSet = new IntervalSet();
-    followSet.add(_separatorToken);
     int nextToken;
     do {
       // Eat tokens until we are at the end of the line
-      consumeUntil(recognizer, followSet);
+      consumeUntilEndOfLine(recognizer);
 
       // Get the line number and separator text from the separator token
       Token separatorToken = recognizer.getCurrentToken();
@@ -120,6 +119,10 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
       nextToken = recognizer.getInputStream().LA(1);
     } while (!whatFollowsLoopIterationOrRule.contains(nextToken));
+  }
+
+  private void consumeUntilEndOfLine(Parser parser) {
+    consumeUntil(parser, IntervalSet.of(_separatorToken));
   }
 
   /**
@@ -163,34 +166,41 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    * @return If base case applies, returns a {@link Token} whose containing the text of the
    *     created @{link ErrorNode}.
    */
-  private Token recover(Parser recognizer) {
-    lastErrorIndex = recognizer.getInputStream().index();
+  private Token recover(Parser parser) {
+    lastErrorIndex = parser.getInputStream().index();
     if (lastErrorStates == null) {
       lastErrorStates = new IntervalSet();
     }
-    lastErrorStates.add(recognizer.getState());
-    IntervalSet followSet = new IntervalSet();
-    followSet.add(_separatorToken);
-    consumeUntil(recognizer, followSet);
+    lastErrorStates.add(parser.getState());
+
+    // Consume anything left on the line
+    consumeUntilEndOfLine(parser);
+
+    ParserRuleContext ctx = parser.getContext();
+    ParserRuleContext parent = ctx.getParent();
+
+    // Recursive case
+    if (parent != null
+        && parent.parent != null
+        && (parent.getStart() == null || parent.getStart().getLine() == ctx.getStart().getLine())) {
+      throw new BatfishRecognitionException(parser, parser.getInputStream(), parent);
+    }
 
     // Get the line number and separator text from the separator token
-    Token separatorToken = recognizer.getCurrentToken();
+    Token separatorToken = parser.getCurrentToken();
     int lineIndex = separatorToken.getLine() - 1;
     String separator = separatorToken.getText();
 
-    ParserRuleContext ctx = recognizer.getContext();
-    ParserRuleContext parent = ctx.getParent();
     if (parent == null) {
-      recognizer.consume();
-      return createErrorNode(recognizer, parent, lineIndex, separator);
-    } else if (parent.parent != null
-        && (parent.getStart() == null || parent.getStart().getLine() == ctx.getStart().getLine())) {
-      throw new BatfishRecognitionException(recognizer, recognizer.getInputStream(), parent);
+      // First base case
+      parser.consume();
+      return createErrorNode(parser, ctx, lineIndex, separator);
     } else {
+      // Second base case
       List<ParseTree> parentChildren = parent.children;
       parentChildren.remove(parentChildren.size() - 1);
-      recognizer.consume();
-      return createErrorNode(recognizer, parent, lineIndex, separator);
+      parser.consume();
+      return createErrorNode(parser, parent, lineIndex, separator);
     }
   }
 
@@ -214,9 +224,8 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
       lastErrorStates = new IntervalSet();
     }
     lastErrorStates.add(recognizer.getState());
-    IntervalSet followSet = new IntervalSet();
-    followSet.add(_separatorToken);
-    consumeUntil(recognizer, followSet);
+
+    consumeUntilEndOfLine(recognizer);
 
     // Get the line number and separator text from the separator token
     Token separatorToken = recognizer.getCurrentToken();
@@ -244,7 +253,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
   @Override
   public void sync(Parser recognizer) throws RecognitionException {
     /*
-     * Copied from super
+     * BEGIN: Copied from super
      */
     ATNState s = recognizer.getInterpreter().atn.states.get(recognizer.getState());
     if (inErrorRecoveryMode(recognizer)) {
@@ -256,6 +265,9 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     if (nextTokens.contains(Token.EPSILON) || nextTokens.contains(la)) {
       return;
     }
+    /*
+     * END: Copied from super
+     */
 
     boolean topLevel = recognizer.getContext().parent == null;
 
