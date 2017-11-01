@@ -1456,6 +1456,74 @@
             }
           }
         },
+        "asa_ospf" : {
+          "name" : "asa_ospf",
+          "configurationFormat" : "CISCO_ASA",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "interfaces" : {
+            "Ethernet0/0" : {
+              "name" : "Ethernet0/0",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.1.0/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E7,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfArea" : 0,
+              "ospfCost" : 10,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : true,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "prefix" : "192.168.1.0/24",
+              "proxyArp" : true,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "routingPolicies" : {
+            "~OSPF_EXPORT_POLICY:default~" : {
+              "name" : "~OSPF_EXPORT_POLICY:default~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "hostname" : "asa_ospf"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "Ethernet0/0"
+              ],
+              "ospfProcess" : {
+                "areas" : {
+                  "0" : {
+                    "name" : 0,
+                    "interfaces" : [
+                      "Ethernet0/0"
+                    ]
+                  }
+                },
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "referenceBandwidth" : 1.0E8,
+                "routerId" : "192.168.1.0"
+              }
+            }
+          }
+        },
         "asa_ssh" : {
           "name" : "asa_ssh",
           "configurationFormat" : "CISCO_NX",
