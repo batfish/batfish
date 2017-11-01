@@ -9,6 +9,7 @@ public enum ConfigurationFormat {
   AWS_VPC("aws_vpc"),
   BLADENETWORK("bladenetwork"),
   CADANT("cadant"),
+  CISCO_ASA("cisco"),
   CISCO_IOS("cisco"),
   CISCO_IOS_XR("cisco"),
   CISCO_NX("cisco"),
