@@ -51,6 +51,7 @@ public class Interface extends ComparableStructure<String> {
 
         case ALCATEL_AOS:
         case CADANT:
+        case CISCO_ASA:
         case CISCO_IOS:
         case CISCO_IOS_XR:
         case FORCE10:
@@ -193,6 +194,7 @@ public class Interface extends ComparableStructure<String> {
         case ALCATEL_AOS:
         case AWS_VPC:
         case CADANT:
+        case CISCO_ASA:
         case CISCO_IOS:
         case CISCO_IOS_XR:
         case CISCO_NX:

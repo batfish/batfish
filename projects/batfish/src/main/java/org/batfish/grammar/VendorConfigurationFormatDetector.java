@@ -72,6 +72,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkCisco() {
+    Matcher asaVersionLine = Pattern.compile("(?m)(^ASA Version.*$)").matcher(_fileText);
     Matcher ciscoLike =
         Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)").matcher(_fileText);
     Matcher ciscoStyleAcl = Pattern.compile("(?m)(^(ip )?access-list.*$)").matcher(_fileText);
@@ -82,6 +83,9 @@ public final class VendorConfigurationFormatDetector {
         Pattern.compile("(?m)^ *neighbor.*activate$").matcher(_fileText);
     Matcher neighborPeerGroupMatcher =
         Pattern.compile("(?m)^ *neighbor.*peer-group$").matcher(_fileText);
+    if (asaVersionLine.find()) {
+      return ConfigurationFormat.CISCO_ASA;
+    }
     if (nexusFeatureLine.find()) {
       return ConfigurationFormat.CISCO_NX;
     }

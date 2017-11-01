@@ -126,6 +126,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case ARISTA:
       case CADANT:
+      case CISCO_ASA:
       case CISCO_IOS:
       case CISCO_IOS_XR:
       case CISCO_NX:
