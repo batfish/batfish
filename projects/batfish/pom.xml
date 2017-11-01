@@ -42,9 +42,6 @@
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <configuration>
-          <treatWarningsAsErrors>true</treatWarningsAsErrors>
-        </configuration>
         <executions>
           <!--
           Some of the more complex grammars are broken up into main files and imports. Since the
@@ -159,7 +156,7 @@
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service</artifactId>
 		<optional>true</optional>
-    </dependency>                                                                                                                                                                                               
+    </dependency>
 
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
