@@ -1,7 +1,9 @@
 package org.batfish.bdp;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterableOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -16,7 +18,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests of {@link AbstractRib} */
 public class AbstractRibTest {
@@ -28,6 +32,7 @@ public class AbstractRibTest {
   private AbstractRib<StaticRoute> _rib;
   private static final StaticRoute _mostGeneralRoute =
       new StaticRoute(new Prefix("0.0.0.0/0"), Ip.ZERO, null, 0, 0);
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setupEmptyRib() {
@@ -174,19 +179,19 @@ public class AbstractRibTest {
 
     // And create a new different RIB
     AbstractRib<StaticRoute> rib2 = new StaticRib(null);
-    assertThat(rib2.equals(_rib), is(false));
+    assertThat(rib2, not(equalTo(_rib)));
 
     // Add routes
     rib2.mergeRoute(routes.get(0));
     rib2.mergeRoute(routes.get(2));
     rib2.mergeRoute(routes.get(3));
-    assertThat(rib2.equals(_rib), is(false));
+    assertThat(rib2, not(equalTo(_rib)));
 
     rib2.mergeRoute(routes.get(1));
-    assertThat(rib2.equals(_rib), is(true));
+    assertThat(rib2, equalTo(_rib));
   }
 
-  @Test(expected = UnmodifiableRibException.class)
+  @Test()
   public void testRibFreeze() {
     setupOverlappingRoutes();
 
@@ -196,6 +201,7 @@ public class AbstractRibTest {
 
     assertThat(_rib._finalRoutes, is(notNullValue()));
     // This throws an exception
+    _expectedException.expect(UnmodifiableRibException.class);
     _rib.mergeRoute(_mostGeneralRoute);
   }
 }

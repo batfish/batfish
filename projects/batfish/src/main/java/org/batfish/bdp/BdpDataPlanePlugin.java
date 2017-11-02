@@ -385,17 +385,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .forEach(
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
-                boolean changed = false;
-                if (!vr._mainRib.equals(vr._prevMainRib)) {
-                  changed = true;
-                }
-                if (!vr._ospfExternalType1Rib.equals(vr._prevOspfExternalType1Rib)) {
-                  changed = true;
-                }
-                if (!vr._ospfExternalType2Rib.equals(vr._prevOspfExternalType2Rib)) {
-                  changed = true;
-                }
-                if (changed) {
+                if (vr.compareRibs()) {
                   dependentRoutesChanged.set(true);
                 }
               }
@@ -438,7 +428,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   /** Initialize OSPF internal routes */
   int initOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
-    final AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
+    AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
     int ospfInternalIterations = 0;
     while (ospfInternalChanged.get()) {
       ospfInternalIterations++;
@@ -497,9 +487,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .forEach(
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
-                vr.importRib(vr._ospfRib, vr._ospfIntraAreaRib);
-                vr.importRib(vr._ospfRib, vr._ospfInterAreaRib);
-                vr.importRib(vr._independentRib, vr._ospfRib);
+                vr.importOspfInternalRoutes();
               }
               ospfInternalImportCompleted.incrementAndGet();
             });
@@ -548,7 +536,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
                  * For RIBs that do not require comparison to previous version, just re-init
                  */
                 vr.reinitRibsNewIteration();
-
               }
               reinitializeDependentCompleted.incrementAndGet();
             });
@@ -567,9 +554,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               do {
                 staticChanged = false;
                 for (VirtualRouter vr : n._virtualRouters.values()) {
-                  if (vr.activateStaticRoutes()) {
-                    staticChanged = true;
-                  }
+                  staticChanged |= vr.activateStaticRoutes();
                 }
               } while (staticChanged);
               recomputeStaticCompleted.incrementAndGet();
@@ -586,11 +571,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .forEach(
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
-                boolean generatedChanged;
                 vr._generatedRib = new Rib(vr);
-                do {
-                  generatedChanged = vr.activateGeneratedRoutes();
-                } while (generatedChanged);
+                while (vr.activateGeneratedRoutes()) {}
                 vr.importRib(vr._mainRib, vr._generatedRib);
               }
               recomputeAggregateCompleted.incrementAndGet();
@@ -609,7 +591,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             });
 
     // repropagate exports
-    final AtomicBoolean ospfExternalChanged = new AtomicBoolean(true);
+    AtomicBoolean ospfExternalChanged = new AtomicBoolean(true);
     int ospfExternalSubIterations = 0;
     while (ospfExternalChanged.get()) {
       ospfExternalSubIterations++;
@@ -746,6 +728,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   /**
    * Run computeFib on all of the given nodes
+   *
    * @param nodes mapping of node names to node instances
    */
   private void computeFibs(Map<String, Node> nodes) {
@@ -795,9 +778,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .parallelStream()
         .forEach(
             n -> {
-              n._virtualRouters
-                  .values()
-                  .forEach(vr -> vr.initRibsForBdp(dp.getIpOwners(), externalAdverts));
+              for (VirtualRouter vr : n._virtualRouters.values()) {
+                vr.initRibsForBdp(dp.getIpOwners(), externalAdverts);
+              }
               initialCompleted.incrementAndGet();
             });
 
@@ -809,7 +792,18 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
     // END DONE ONCE
 
-    // Setup maps to track iterations. We need this for oscillation detection
+    /*
+     * Setup maps to track iterations. We need this for oscillation detection.
+     * Specifically, if we detect that an iteration hashcode (a hash of all the nodes' RIBs)
+     * has been previously encountered, we go into recovery mode.
+     * Recovery mode means enabling "lockstep route propagation" for oscillating prefixes.
+     *
+     * Lockstep route propagation only allows one of the neighbors to propagate routes for
+     * oscillating prefixes in a given iteration.
+     * E.g., lexicographically lower neighbor propagates routes during
+     * odd iterations, and lex-higher neighbor during even iterations.
+     */
+
     Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
     SortedMap<Integer, Integer> iterationHashCodes = new TreeMap<>();
     Map<Integer, SortedSet<Route>> iterationRoutes = null;
@@ -905,7 +899,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   private int initRipInternalRoutes(SortedMap<String, Node> nodes, Topology topology) {
-    final AtomicBoolean ripInternalChanged = new AtomicBoolean(true);
+    AtomicBoolean ripInternalChanged = new AtomicBoolean(true);
     int ripInternalIterations = 0;
     while (ripInternalChanged.get()) {
       ripInternalIterations++;
@@ -1347,7 +1341,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    * @param recoveryIterationHashCodes A mapping from iteration number to corresponding iteration
    *     hash
    * @param iterationRoutes A mapping from iteration number to router summaries
-   * @param iterationAbstractRoutes A mapping from iteraiton number to detailed route information
+   * @param iterationAbstractRoutes A mapping from iteration number to detailed route information
    * @param start The first iteration in the oscillation
    * @param end The last iteration in the oscillation, which should be identical to the first
    * @param oscillatingPrefixes A set of prefixes to be populated with the set of all prefixes

@@ -1,5 +1,6 @@
 package org.batfish.bdp;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Ip;
@@ -36,7 +38,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
    * Form), where the wildcard symbols can appear only after (to-the-right-of) non wildcard symbols
    * in the bit vector. E.g., 101010**, but not 1*001***
    */
-  class RibTree implements Serializable {
+  private class RibTree implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -71,7 +73,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       return _root.mergeRoute(route, bits, prefixLength, 0);
     }
 
-    boolean hasSameRoutes(RibTree other) {
+    private boolean hasSameRoutes(AbstractRib<?>.RibTree other) {
       return _root.hasSameRoutes(other._root);
     }
   }
@@ -377,42 +379,25 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       return _prefix.toString();
     }
 
-    boolean hasSameRoutes(RibTreeNode other) {
-      // Make sure other node is not null, then check if routes are the same
-      boolean checkSelf = (other != null && _routes.equals(other._routes));
-      if (!checkSelf) { // found a mismatch, exit with false
-        return false;
-      }
+    private boolean hasSameRoutes(@Nullable AbstractRib<?>.RibTreeNode other) {
 
-      // Check left children, make sure to avoid null pointer exceptions
-      boolean checkLeft;
-      if (_left == null) {
-        checkLeft = (other._left == null);
-      } else {
-        checkLeft = _left.hasSameRoutes(other._left);
-      }
-      if (!checkLeft) { // if found a mismatch, exit early
-        return false;
-      }
-
-      // Check right children, and again check for null
-      boolean checkRight;
-      if (_right == null) {
-        checkRight = (other._right == null);
-      } else {
-        checkRight = _right.hasSameRoutes(other._right);
-      }
-      return checkRight;
+      /*
+       * If other is not null, compare routes stored at this node with routes at other node,
+       * followed by comparison of left and right branches recursively (with null handling as well)
+       */
+      return (other != null && _routes.equals(other._routes))
+          && (_left == null ? other._left == null : _left.hasSameRoutes(other._left))
+          && (_right == null ? other._right == null : _right.hasSameRoutes(other._right));
     }
   }
 
   private static final long serialVersionUID = 1L;
 
-  VirtualRouter _owner;
+  protected VirtualRouter _owner;
 
   private RibTree _tree;
 
-  Set<R> _finalRoutes;
+  @VisibleForTesting Set<R> _finalRoutes;
 
   public AbstractRib(VirtualRouter owner) {
     _tree = new RibTree();
@@ -444,7 +429,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     return prefixes;
   }
 
-  /** Return a set of routes this RIB contains. */
   @Override
   public final Set<R> getRoutes() {
     if (_finalRoutes != null) {
@@ -457,7 +441,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
    * Freeze the RIB. Prevents addition (merging) of new routes. Also computes and caches the set of
    * all routes for quick subsequent access.
    */
-  void freeze() {
+  public void freeze() {
     _finalRoutes = Collections.unmodifiableSet(getRoutes());
   }
 
@@ -513,13 +497,16 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
   /**
    * Check if two RIBs have exactly same sets of routes.
    *
-   * <p>Designed to be faster (in an average case) than doing two calls to getRoutes() and then
-   * testing the sets for equality.
+   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getRoutes} and
+   * then testing the sets for equality.
    *
    * @param other the other RIB
    * @return True if both ribs contain identical routes
    */
-  boolean equals(AbstractRib<R> other) {
-    return _tree.hasSameRoutes(other._tree);
+  @Override
+  public boolean equals(@Nullable Object other) {
+    return other != null
+        && (other instanceof AbstractRib<?>)
+        && _tree.hasSameRoutes(((AbstractRib<?>) other)._tree);
   }
 }

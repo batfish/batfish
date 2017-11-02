@@ -23,6 +23,7 @@ public interface IRib<R extends AbstractRoute> extends Serializable {
 
   SortedSet<Prefix> getPrefixes();
 
+  /** Return a set of routes this RIB contains. */
   Set<R> getRoutes();
 
   Map<Integer, Map<Ip, List<AbstractRoute>>> getRoutesByPrefixPopularity();

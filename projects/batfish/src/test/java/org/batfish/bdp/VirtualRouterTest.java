@@ -434,14 +434,14 @@ public class VirtualRouterTest {
     int interfaceCost = 22;
     OspfInterAreaRoute reject1 =
         new OspfInterAreaRoute(new Prefix("192.168.1.1/32"), new Ip("7.7.1.1"), admin, metric, 1);
-    OspfInterAreaRoute reject2 =
-        new OspfInterAreaRoute(new Prefix("192.168.1.2/32"), new Ip("7.7.1.2"), admin, metric, 0);
     OspfInterAreaRoute accept1 =
         new OspfInterAreaRoute(new Prefix("192.168.1.3/32"), new Ip("7.7.1.3"), admin, metric, 2);
+    OspfInterAreaRoute accept2 =
+        new OspfInterAreaRoute(new Prefix("192.168.1.2/32"), new Ip("7.7.1.2"), admin, metric, 0);
     OspfIntraAreaRoute acceptIntra =
         new OspfIntraAreaRoute(new Prefix("192.168.1.4/32"), new Ip("7.7.1.4"), admin, metric, 2);
     exportingRouter._ospfInterAreaRib.mergeRoute(reject1);
-    exportingRouter._ospfInterAreaRib.mergeRoute(reject2);
+    exportingRouter._ospfInterAreaRib.mergeRoute(accept2);
     exportingRouter._ospfInterAreaRib.mergeRoute(accept1);
     exportingRouter._ospfIntraAreaRib.mergeRoute(acceptIntra);
 
@@ -461,7 +461,8 @@ public class VirtualRouterTest {
     // Assert post-conditions, that routes have been successfully propagated, and with updated
     // metrics. In this case one of the inter-routes and one of the intra routes (converted to
     // inter-route) should make it to the test router
-    for (String prefixString : new String[] {"192.168.1.3/32", "192.168.1.4/32"}) {
+    for (String prefixString :
+        new String[] {"192.168.1.2/32", "192.168.1.3/32", "192.168.1.4/32"}) {
       assertThat(
           testRouter._ospfInterAreaStagingRib.containsRoute(
               new OspfInterAreaRoute(
@@ -478,8 +479,18 @@ public class VirtualRouterTest {
     assertThat(
         testRouter._ospfInterAreaStagingRib.longestPrefixMatch(reject1.getNetwork().getAddress()),
         is(emptyIterableOf(OspfInterAreaRoute.class)));
+
+    // Flip the routers to ensure that receiving in area 0 filters correctly
+    testRouter._ospfInterAreaRib.mergeRoute(
+        new OspfInterAreaRoute(new Prefix("3.3.3.3/32"), new Ip("33.33.33.33"), admin, 10, 3));
+    exportingRouter.propagateOspfInternalRoutesDifferentAreaNeighbor(
+        testRouter.getNodes().get("R1"),
+        testRouter._c.getInterfaces().get("Eth1"),
+        interfaceCost,
+        admin,
+        0);
     assertThat(
-        testRouter._ospfInterAreaStagingRib.longestPrefixMatch(reject2.getNetwork().getAddress()),
+        exportingRouter._ospfInterAreaStagingRib.getRoutes(),
         is(emptyIterableOf(OspfInterAreaRoute.class)));
   }
 

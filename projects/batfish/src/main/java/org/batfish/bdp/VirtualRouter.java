@@ -1,5 +1,6 @@
 package org.batfish.bdp;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Collections;
 import java.util.HashMap;
@@ -219,6 +220,10 @@ public class VirtualRouter extends ComparableStructure<String> {
     return changed;
   }
 
+  /**
+   * Re-activate static routes at the beginning of an iteration. Directly adds a static route to the
+   * main RIB if the route's next-hop-ip matches routes from the previous iterations.
+   */
   boolean activateStaticRoutes() {
     boolean changed = false;
     for (StaticRoute sr : _staticRib.getRoutes()) {
@@ -233,8 +238,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (matchingRoutePrefix.getAddress().asLong() > staticRoutePrefix.getAddress().asLong()
             || matchingRoutePrefix.getEndAddress().asLong()
                 < staticRoutePrefix.getEndAddress().asLong()) {
-          changed = _mainRib.mergeRoute(sr);
-          break;
+          changed |= _mainRib.mergeRoute(sr);
+          break; // break out of the inner loop but continue processing static routes
         }
       }
     }
@@ -242,7 +247,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /** Compute the FIB from the main RIB */
-  void computeFib() {
+  public void computeFib() {
     _fib = new Fib(_mainRib);
   }
 
@@ -584,7 +589,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /** Initialize Intra-area OSPF routes from the interface prefixes */
-  void initIntraAreaOspfRoutes() {
+  private void initIntraAreaOspfRoutes() {
     if (_vrf.getOspfProcess() == null) {
       return; // nothing to do
     }
@@ -621,6 +626,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /** Initialize RIP routes from the interface prefixes */
+  @VisibleForTesting
   void initBaseRipRoutes() {
     if (_vrf.getRipProcess() == null) {
       return; // nothing to do
@@ -689,6 +695,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    * Initialize the connected RIB -- a RIB containing connected routes (i.e., direct connections to
    * neighbors).
    */
+  @VisibleForTesting
   void initConnectedRib() {
     // Look at all connected interfaces
     for (Interface i : _vrf.getInterfaces().values()) {
@@ -705,7 +712,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     _connectedRib.freeze();
   }
 
-  void initEbgpTopology(Map<Ip, Set<String>> ipOwners) {
+  private void initEbgpTopology(Map<Ip, Set<String>> ipOwners) {
     if (_vrf.getBgpProcess() == null) {
       return; // Nothing to do
     }
@@ -743,6 +750,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   @Nullable
+  @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
       AbstractRoute potentialExportRoute, RoutingPolicy exportPolicy) {
     OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
@@ -798,6 +806,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /** Initialize all ribs on this router. All RIBs will be empty */
+  @VisibleForTesting
   void initRibs() {
     _bgpMultipathRib = new BgpMultipathRib(this);
     _connectedRib = new ConnectedRib(this);
@@ -852,7 +861,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         _staticRib.mergeRoute(sr);
       }
     }
-    // Static RIBs should not be changed past this point
+    // Given instance of static RIBs should not be changed past this point
     _staticRib.freeze();
     _staticInterfaceRib.freeze();
   }
@@ -1470,7 +1479,9 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /**
-   * Construct an OSPF Inter-Area route and put into our staging rib. No validity check performed.
+   * Construct an OSPF Inter-Area route and put into our staging rib. Note, no route validity checks
+   * are performed, (i.e., whether the route should even go into the staging rib). {@link
+   * #propagateOspfInternalRoutesFromNeighbor} takes care of such logic.
    *
    * @param neighborRoute the route to propagate
    * @param nextHopIp nextHopIp for this route (the neighbor's IP)
@@ -1480,6 +1491,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param areaNum area number of the route
    * @return True if the route was added to the inter-area staging RIB
    */
+  @VisibleForTesting
   boolean stageOspfInterAreaRoute(
       OspfAreaRoute neighborRoute,
       Ip nextHopIp,
@@ -1492,7 +1504,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     return _ospfInterAreaStagingRib.mergeRoute(newRoute);
   }
 
-  static boolean isOSPFpropagationAllowed(
+  private static boolean isOspfPropagationAllowed(
       Node neighbor, OspfAreaRoute neighborRoute, OspfArea neighborArea) {
     Prefix neighborRouteNetwork = neighborRoute.getNetwork();
     String neighborSummaryFilterName = neighborArea.getSummaryFilter();
@@ -1545,7 +1557,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
 
-      if (isOSPFpropagationAllowed(neighbor, neighborRoute, neighborArea)) {
+      if (isOspfPropagationAllowed(neighbor, neighborRoute, neighborArea)) {
         changed |=
             stageOspfInterAreaRoute(
                 neighborRoute,
@@ -1580,19 +1592,28 @@ public class VirtualRouter extends ComparableStructure<String> {
     OspfArea neighborArea = neighborInterface.getOspfArea();
     for (OspfInterAreaRoute neighborRoute : neighborVirtualRouter._ospfInterAreaRib.getRoutes()) {
       long neighborRouteArea = neighborRoute.getArea();
-      // do not receive inter-area routes that originally came
-      // from this area.
-      // Also,
-      // inter-area routes can only be sent FROM area 0 when the sender
-      // is in different area, unless the route is from the
-      // neighbor's area
-      if (areaNum == neighborRouteArea
-          || (neighborArea.getName().equals(0L)
-              && neighborArea.getName().equals(neighborRouteArea))) {
+
+      /*
+       * The following conditions allow inter-area propagation:
+       *
+       * 1) Do not receive inter-area routes that originally came
+       *    from our own area.
+       *
+       * 2) Do receive all other inter-area routes from area 0.
+       *
+       * 3) If we are in area 0, receive inter-area routes from the neighbor only if they
+       * originated in the neighbor's area. That is, router located in area 2 should not advertise
+       * routes from area 3 to the backbone.
+       *
+       */
+      if (areaNum == neighborRouteArea // route from the same area, so skip
+          || (areaNum == 0 // we are in area 0, so
+              // if the route does not originate in the neighbor's area, ignore it.
+              && !neighborArea.getName().equals(neighborRouteArea))) {
         continue;
       }
 
-      if (isOSPFpropagationAllowed(neighbor, neighborRoute, neighborArea)) {
+      if (isOspfPropagationAllowed(neighbor, neighborRoute, neighborArea)) {
         changed |=
             stageOspfInterAreaRoute(
                 neighborRoute,
@@ -1609,7 +1630,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       return changed;
     }
     for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
-      if (isOSPFpropagationAllowed(neighbor, neighborRoute, neighborArea)) {
+      if (isOspfPropagationAllowed(neighbor, neighborRoute, neighborArea)) {
         changed |=
             stageOspfInterAreaRoute(
                 neighborRoute,
@@ -1896,6 +1917,26 @@ public class VirtualRouter extends ComparableStructure<String> {
      * Re-add independent RIP routes to ripRib for tie-breaking
      */
     importRib(_ripRib, _ripInternalRib);
+  }
+
+  /**
+   * Compare main RIB and OSPF-external RIBs to their respective previous versions.
+   *
+   * @return true if there are any differences between the RIBs
+   */
+  boolean compareRibs() {
+    return !_mainRib.equals(_prevMainRib)
+        || !_ospfExternalType1Rib.equals(_prevOspfExternalType1Rib)
+        || !_ospfExternalType2Rib.equals(_prevOspfExternalType2Rib);
+  }
+
+  /**
+   * Merge intra/inter OSPF RIBs into a general OSPF RIB, then merge that into the independent RIB
+   */
+  void importOspfInternalRoutes() {
+    importRib(_ospfRib, _ospfIntraAreaRib);
+    importRib(_ospfRib, _ospfInterAreaRib);
+    importRib(_independentRib, _ospfRib);
   }
 
   Map<String, Node> getNodes() {

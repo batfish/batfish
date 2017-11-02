@@ -12,7 +12,7 @@ public class RipInternalRib extends AbstractRib<RipInternalRoute> {
 
   @Override
   public int comparePreference(RipInternalRoute lhs, RipInternalRoute rhs) {
-    // reversed on purpose, because lower metric is more preferable for RIP
+    // reversed on purpose, because lower metric is more preferable
     return Long.compare(rhs.getMetric(), lhs.getMetric());
   }
 }
