@@ -66,7 +66,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder("Results for outliers\n");
 
       for (OutlierSet<?> outlier : _serverOutliers) {
-        sb.append("  Hypothesis: every node has the following set of ");
+        sb.append("  Hypothesis: every node should have the following set of ");
         sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
         sb.append("  Outliers: ");
         sb.append(outlier.getOutliers() + "\n");
@@ -78,7 +78,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         switch (outlier.getHypothesis()) {
         case SAME_DEFINITION:
           sb.append("  Hypothesis: every " + outlier.getStructType()
-              + " named " + outlier.getName() + " has the same definition\n");
+              + " named " + outlier.getName() + " should have the same definition\n");
           break;
         case SAME_NAME:
           sb.append("  Hypothesis:");
@@ -265,6 +265,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       SortedSet<NamedStructureOutlierSet<?>> outliers =
           rankNamedStructureOutliers(hypothesis, equivalenceSets);
 
+      // remove outlier sets where the hypothesis is that a particular named structure
+      // should *not* exist (this  happens when more nodes lack such a structure than contain
+      // such a structure).  such hypotheses do not seem to be useful in general.
+      outliers.removeIf(
+          oset -> oset.getNamedStructure() == null
+      );
+
       // remove outlier sets that don't meet our threshold
       outliers.removeIf(
           oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers())
@@ -287,6 +294,10 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
 
+    /* Use the results of CompareSameName to partition nodes into those containing a structure
+       of a given name and those lacking such a structure.  This information will later be used
+       to test the sameName hypothesis.
+     */
     private <T> void toNameOnlyEquivalenceSets(NamedStructureEquivalenceSets<T> eSets,
         List<String> nodes) {
       SortedMap<String, SortedSet<NamedStructureEquivalenceSet<T>>> newESetsMap =
