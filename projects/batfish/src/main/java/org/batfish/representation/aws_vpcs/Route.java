@@ -16,10 +16,16 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class Route implements Serializable {
 
+  public enum State {
+    ACTIVE,
+    BLACKHOLE
+  }
+
   public enum TargetType {
     Gateway,
     Instance,
     NetworkInterface,
+    Unavailable,
     VpcPeeringConnection
   }
 
@@ -30,14 +36,14 @@ public class Route implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Prefix _destinationCidrBlock;
-  private String _state;
+  private State _state;
   private String _target;
   private TargetType _targetType;
 
   public Route(JSONObject jObj, BatfishLogger logger) throws JSONException {
     _destinationCidrBlock =
         new Prefix(jObj.getString(AwsVpcEntity.JSON_KEY_DESTINATION_CIDR_BLOCK));
-    _state = jObj.getString(AwsVpcEntity.JSON_KEY_STATE);
+    _state = State.valueOf(jObj.getString(AwsVpcEntity.JSON_KEY_STATE).toUpperCase());
 
     if (jObj.has(AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTION_ID)) {
       _targetType = TargetType.VpcPeeringConnection;
@@ -53,6 +59,9 @@ public class Route implements Serializable {
       // networkInterfaceId above it!
       _targetType = TargetType.Instance;
       _target = jObj.getString(AwsVpcEntity.JSON_KEY_INSTANCE_ID);
+    } else if (_state == State.BLACKHOLE) {
+      _targetType = TargetType.Unavailable;
+      _target = null;
     } else {
       throw new JSONException("Target not found in route " + jObj);
     }
@@ -73,7 +82,7 @@ public class Route implements Serializable {
             .setAdministrativeCost(DEFAULT_STATIC_ROUTE_ADMIN)
             .setTag(DEFAULT_STATIC_ROUTE_COST);
 
-    if (_state.equals("blackhole")) {
+    if (_state == State.BLACKHOLE) {
       srBuilder.setNextHopInterface(Interface.NULL_INTERFACE_NAME);
     } else {
       switch (_targetType) {
