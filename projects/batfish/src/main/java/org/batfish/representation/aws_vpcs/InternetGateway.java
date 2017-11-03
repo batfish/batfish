@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -38,6 +39,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
 
   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
     Configuration cfgNode = new Configuration(_internetGatewayId);
+    cfgNode.setConfigurationFormat(ConfigurationFormat.AWS_VPC);
 
     for (String vpcId : _attachmentVpcIds) {
 
