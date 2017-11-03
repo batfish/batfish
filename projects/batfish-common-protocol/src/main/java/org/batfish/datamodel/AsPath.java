@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.util.CommonUtil;
 
 public class AsPath implements Serializable, Comparable<AsPath> {
@@ -26,13 +27,13 @@ public class AsPath implements Serializable, Comparable<AsPath> {
     return (as >= 64512 && as <= 65535);
   }
 
-  public static final AsPath ofSingletonAsSets(Integer... asNums) {
+  public static AsPath ofSingletonAsSets(Integer... asNums) {
     return ofSingletonAsSets(Arrays.asList(asNums));
   }
 
-  public static final AsPath ofSingletonAsSets(List<Integer> asNums) {
+  public static AsPath ofSingletonAsSets(List<Integer> asNums) {
     return new AsPath(
-        asNums.stream().map(as -> ImmutableSortedSet.of(as)).collect(Collectors.toList()));
+        asNums.stream().map(ImmutableSortedSet::of).collect(Collectors.toList()));
   }
 
   public static List<SortedSet<Integer>> removePrivateAs(List<SortedSet<Integer>> asPath) {
@@ -56,7 +57,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   @Override
-  public int compareTo(AsPath rhs) {
+  public int compareTo(@Nonnull AsPath rhs) {
     Iterator<SortedSet<Integer>> l = _asSets.iterator();
     Iterator<SortedSet<Integer>> r = rhs._asSets.iterator();
     while (l.hasNext()) {
@@ -134,8 +135,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
       }
       sb.append(" ");
     }
-    String result = sb.toString().trim();
-    return result;
+    return sb.toString().trim();
   }
 
   @JsonValue

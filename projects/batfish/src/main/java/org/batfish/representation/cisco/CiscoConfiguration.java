@@ -608,11 +608,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
-  public final Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
+  public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
     return _expandedCommunityLists;
   }
 
-  public final Map<String, ExtendedAccessList> getExtendedAcls() {
+  public Map<String, ExtendedAccessList> getExtendedAcls() {
     return _extendedAccessLists;
   }
 
@@ -657,7 +657,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public final String getHostname() {
+  public String getHostname() {
     return _hostname;
   }
 
@@ -665,7 +665,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _igmpAcls;
   }
 
-  public final Map<String, Interface> getInterfaces() {
+  public Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
@@ -721,7 +721,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _prefix6Lists;
   }
 
-  public final Map<String, PrefixList> getPrefixLists() {
+  public Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
   }
 
@@ -734,11 +734,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _roles;
   }
 
-  public final Map<String, RouteMap> getRouteMaps() {
+  public Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
 
-  public final Map<String, RoutePolicy> getRoutePolicies() {
+  public Map<String, RoutePolicy> getRoutePolicies() {
     return _routePolicies;
   }
 
@@ -838,11 +838,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _sshIpv6Acls;
   }
 
-  public final Map<String, StandardAccessList> getStandardAcls() {
+  public Map<String, StandardAccessList> getStandardAcls() {
     return _standardAccessLists;
   }
 
-  public final Map<String, StandardCommunityList> getStandardCommunityLists() {
+  public Map<String, StandardCommunityList> getStandardCommunityLists() {
     return _standardCommunityLists;
   }
 
@@ -1177,28 +1177,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void markServiceClasses(CiscoStructureUsage usage, Configuration c) {
     SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
         _structureReferences.get(CiscoStructureType.ROUTE_MAP);
-    if (_cf.getCable() != null) {
-      if (byName != null) {
-        byName.forEach(
-            (serviceClassName, byUsage) -> {
-              SortedSet<Integer> lines = byUsage.get(usage);
-              if (lines != null) {
-                ServiceClass serviceClass;
-                serviceClass = _cf.getCable().getServiceClasses().get(serviceClassName);
-                if (serviceClass == null) {
-                  serviceClass = _cf.getCable().getServiceClassesByName().get(serviceClassName);
-                }
-                if (serviceClass != null) {
-                  String msg = usage.getDescription();
-                  serviceClass.getReferers().put(this, msg);
-                } else {
-                  for (int line : lines) {
-                    undefined(CiscoStructureType.SERVICE_CLASS, serviceClassName, usage, line);
-                  }
+    if (_cf.getCable() != null && byName != null) {
+      byName.forEach(
+          (serviceClassName, byUsage) -> {
+            SortedSet<Integer> lines = byUsage.get(usage);
+            if (lines != null) {
+              ServiceClass serviceClass;
+              serviceClass = _cf.getCable().getServiceClasses().get(serviceClassName);
+              if (serviceClass == null) {
+                serviceClass = _cf.getCable().getServiceClassesByName().get(serviceClassName);
+              }
+              if (serviceClass != null) {
+                String msg = usage.getDescription();
+                serviceClass.getReferers().put(this, msg);
+              } else {
+                for (int line : lines) {
+                  undefined(CiscoStructureType.SERVICE_CLASS, serviceClassName, usage, line);
                 }
               }
-            });
-      }
+            }
+          });
     }
   }
 
@@ -1232,19 +1230,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void processLines() {
     // nxos does not have 'login authentication' for lines, so just have it
     // use default list if one exists
-    if (_vendor == ConfigurationFormat.CISCO_NX) {
-      if (_cf.getAaa() != null
-          && _cf.getAaa().getAuthentication() != null
-          && _cf.getAaa().getAuthentication().getLogin() != null
-          && _cf.getAaa()
-                  .getAuthentication()
-                  .getLogin()
-                  .getLists()
-                  .get(AaaAuthenticationLogin.DEFAULT_LIST_NAME)
-              != null) {
-        for (Line line : _cf.getLines().values()) {
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        }
+    if (_vendor == ConfigurationFormat.CISCO_NX
+        && _cf.getAaa() != null
+        && _cf.getAaa().getAuthentication() != null
+        && _cf.getAaa().getAuthentication().getLogin() != null
+        && _cf.getAaa()
+                .getAuthentication()
+                .getLogin()
+                .getLists()
+                .get(AaaAuthenticationLogin.DEFAULT_LIST_NAME)
+            != null) {
+      for (Line line : _cf.getLines().values()) {
+        line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
       }
     }
   }
@@ -1283,7 +1280,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public final void setHostname(String hostname) {
+  public void setHostname(String hostname) {
     _hostname = hostname;
   }
 
@@ -2740,6 +2737,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             return result;
           }
         });
+
+    // Set RFC 1583 compatibility
+    newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
+
     for (org.batfish.datamodel.Interface i : vrf.getInterfaces().values()) {
       Prefix interfacePrefix = i.getPrefix();
       if (interfacePrefix == null) {
@@ -3522,10 +3523,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         AaaAuthentication authentication = aaa.getAuthentication();
         if (authentication != null) {
           AaaAuthenticationLogin login = authentication.getLogin();
-          if (login != null) {
-            if (login.getLists().containsKey(list)) {
-              found = true;
-            }
+          if (login != null && login.getLists().containsKey(list)) {
+            found = true;
           }
         }
       }

@@ -8,7 +8,7 @@ interface Serial1
   ip address 10.0.15.1/31
 !
 router bgp 19
-  network 70.0.19.0/24
+  network 70.0.19.0/32
   neighbor 10.0.13.0 remote-as 16
   neighbor 10.0.15.0 remote-as 17
 !

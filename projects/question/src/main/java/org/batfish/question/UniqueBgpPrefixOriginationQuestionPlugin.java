@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -10,6 +11,7 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
@@ -17,6 +19,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
 
   public static class UniqueBgpPrefixOriginationAnswerElement implements AnswerElement {
@@ -110,11 +113,9 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
                 space2.addSpace(proc2.getOriginationSpace());
               }
             }
-            if (!empty2) {
-              if (space1.overlaps(space2)) {
-                PrefixSpace intersection = space1.intersection(space2);
-                answerElement.addIntersection(node1, node2, intersection);
-              }
+            if (!empty2 && space1.overlaps(space2)) {
+              PrefixSpace intersection = space1.intersection(space2);
+              answerElement.addIntersection(node1, node2, intersection);
             }
           }
         }

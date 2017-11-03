@@ -449,7 +449,7 @@ public class Client extends AbstractClient implements IClient {
   private BfCoordWorkHelper _workHelper;
 
   public Client(Settings settings) {
-    super(false, settings.getPluginDirs());
+    super(false);
     _additionalBatfishOptions = new HashMap<>();
     _bfq = new TreeMap<>();
     _settings = settings;
@@ -1129,11 +1129,9 @@ public class Client extends AbstractClient implements IClient {
 
     File questionsDir = Paths.get(_settings.getQuestionsDir()).toFile();
 
-    if (!questionsDir.exists()) {
-      if (!questionsDir.mkdirs()) {
-        _logger.errorf("Could not create questions dir %s\n", _settings.getQuestionsDir());
-        System.exit(1);
-      }
+    if (!questionsDir.exists() && !questionsDir.mkdirs()) {
+      _logger.errorf("Could not create questions dir %s\n", _settings.getQuestionsDir());
+      System.exit(1);
     }
 
     _questions.forEach(
@@ -2053,8 +2051,8 @@ public class Client extends AbstractClient implements IClient {
    * Loads questions from a JSON containing the questions
    *
    * @param questionTemplatesJson {@link JSONObject} with question key and question content Json
-   * @return loadedQuestions {@link Multimap} containing loaded question names and content, empty
-   *     if questionTemplatesJson is null
+   * @return loadedQuestions {@link Multimap} containing loaded question names and content, empty if
+   *     questionTemplatesJson is null
    * @throws BatfishException if loading of any of the questions is not successful, or if
    *     questionTemplatesJson cannot be deserialized
    */
@@ -2072,8 +2070,7 @@ public class Client extends AbstractClient implements IClient {
       for (Entry<String, String> question : questionsMap.entrySet()) {
         JSONObject questionJSON = loadQuestionFromText(question.getValue(), question.getKey());
         loadedQuestions.put(
-            getQuestionName(questionJSON, question.getKey()),
-            questionJSON.toString());
+            getQuestionName(questionJSON, question.getKey()), questionJSON.toString());
       }
       return loadedQuestions;
     } catch (IOException e) {
@@ -2115,8 +2112,7 @@ public class Client extends AbstractClient implements IClient {
     for (Path jsonQuestionFile : jsonQuestionFiles) {
       JSONObject questionJSON = loadQuestionFromFile(jsonQuestionFile);
       loadedQuestions.put(
-          getQuestionName(questionJSON, jsonQuestionFile.toString()),
-          questionJSON.toString());
+          getQuestionName(questionJSON, jsonQuestionFile.toString()), questionJSON.toString());
     }
     return loadedQuestions;
   }
@@ -2274,10 +2270,8 @@ public class Client extends AbstractClient implements IClient {
     }
     _logger.debug("Doing command: " + line + "\n");
     String[] words = line.split("\\s+");
-    if (words.length > 0) {
-      if (!validCommandUsage(words)) {
-        return false;
-      }
+    if (words.length > 0 && !validCommandUsage(words)) {
+      return false;
     }
     return processCommand(words, null);
   }
@@ -2533,11 +2527,10 @@ public class Client extends AbstractClient implements IClient {
     }
 
     // set container if specified
-    if (_settings.getContainerId() != null) {
-      if (!processCommand(
-          Command.SET_CONTAINER.commandName() + "  " + _settings.getContainerId())) {
-        return;
-      }
+    if (_settings.getContainerId() != null
+        && !processCommand(
+            Command.SET_CONTAINER.commandName() + "  " + _settings.getContainerId())) {
+      return;
     }
 
     // set testrig if dir or id is specified
@@ -2550,10 +2543,9 @@ public class Client extends AbstractClient implements IClient {
         return;
       }
     }
-    if (_settings.getTestrigId() != null) {
-      if (!processCommand(Command.SET_TESTRIG.commandName() + "  " + _settings.getTestrigId())) {
-        return;
-      }
+    if (_settings.getTestrigId() != null
+        && !processCommand(Command.SET_TESTRIG.commandName() + "  " + _settings.getTestrigId())) {
+      return;
     }
 
     switch (_settings.getRunMode()) {
@@ -3013,15 +3005,13 @@ public class Client extends AbstractClient implements IClient {
             + (testPassed ? ": Pass\n" : ": Fail\n");
 
     _logger.output(message);
-    if (!failingTest) {
-      if (!testPassed) {
-        String outFileName = referenceFile + ".testout";
-        Files.move(
-            Paths.get(testoutFile.getAbsolutePath()),
-            Paths.get(referenceFile + ".testout"),
-            StandardCopyOption.REPLACE_EXISTING);
-        _logger.outputf("Copied output to %s\n", outFileName);
-      }
+    if (!failingTest && !testPassed) {
+      String outFileName = referenceFile + ".testout";
+      Files.move(
+          Paths.get(testoutFile.getAbsolutePath()),
+          Paths.get(referenceFile + ".testout"),
+          StandardCopyOption.REPLACE_EXISTING);
+      _logger.outputf("Copied output to %s\n", outFileName);
     }
     return true;
   }

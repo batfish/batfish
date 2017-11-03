@@ -2,6 +2,7 @@ package org.batfish.question.assertion;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.auto.service.AutoService;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
 import com.jayway.jsonpath.JsonPath;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
@@ -26,6 +28,7 @@ import org.batfish.question.NodesQuestionPlugin.NodesAnswerer;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.batfish.question.QuestionPlugin;
 
+@AutoService(Plugin.class)
 public class AssertQuestionPlugin extends QuestionPlugin {
 
   public static class AssertAnswerElement implements AnswerElement {

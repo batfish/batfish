@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.google.auto.service.AutoService;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,14 +20,15 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
   @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
@@ -68,7 +70,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     public BgpAdvertisementsAnswerElement(
-        AdvertisementSet externalAdverts,
+        Set<BgpAdvertisement> externalAdverts,
         Map<String, Configuration> configurations,
         Pattern nodeRegex,
         PrefixSpace prefixSpace) {
@@ -272,7 +274,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
-        AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
+        Set<BgpAdvertisement> externalAdverts =
+            _batfish.processExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 externalAdverts, configurations, nodeRegex, question.getPrefixSpace());

@@ -126,6 +126,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case ARISTA:
       case CADANT:
+      case CISCO_ASA:
       case CISCO_IOS:
       case CISCO_IOS_XR:
       case CISCO_NX:
@@ -298,11 +299,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     try {
       _logger.info("\tParsing...");
       tree = Batfish.parse(combinedParser, _logger, _settings);
-      if (_settings.printParseTree()) {
+      if (_settings.getPrintParseTree()) {
         _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree, combinedParser);
       }
       _logger.info("\tPost-processing...");
       extractor.processParseTree(tree);
+      if (!combinedParser.getErrors().isEmpty()) {
+        elapsedTime = System.currentTimeMillis() - startTime;
+        return new ParseVendorConfigurationResult(
+            elapsedTime,
+            _logger.getHistory(),
+            _file,
+            new BatfishException(
+                String.format(
+                    "Configuration file: '%s' contains unrecognized lines:\n%s",
+                    _file.getFileName().toString(),
+                    String.join("\n", combinedParser.getErrors()))));
+      }
       _logger.info("OK\n");
     } catch (ParserBatfishException e) {
       String error = "Error parsing configuration file: '" + currentPath + "'";

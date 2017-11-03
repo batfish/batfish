@@ -6,6 +6,7 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Z3Exception;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -37,12 +38,9 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Zone;
-import org.batfish.datamodel.collections.EdgeSet;
-import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.NodeSet;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AclDenyExpr;
 import org.batfish.z3.node.AclMatchExpr;
@@ -870,7 +868,7 @@ public class Synthesizer {
 
   private final Map<String, Configuration> _configurations;
 
-  private final FibMap _fibs;
+  private final HashMap<String, Map<String, SortedSet<FibRow>>> _fibs;
 
   private InterfaceSet _flowSinks;
 
@@ -878,7 +876,7 @@ public class Synthesizer {
 
   private final boolean _simplify;
 
-  private final EdgeSet _topologyEdges;
+  private final SortedSet<Edge> _topologyEdges;
 
   private final Map<String, Set<Interface>> _topologyInterfaces;
 
@@ -1534,8 +1532,8 @@ public class Synthesizer {
     return statements;
   }
 
-  public NodeSet getNodeSet() {
-    NodeSet nodes = new NodeSet();
+  public SortedSet<String> getNodeSet() {
+    SortedSet<String> nodes = new TreeSet<>();
     nodes.addAll(_configurations.keySet());
     return nodes;
   }

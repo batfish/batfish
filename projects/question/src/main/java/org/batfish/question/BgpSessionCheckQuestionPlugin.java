@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
 import org.batfish.datamodel.BgpProcess;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
   public static class BgpSessionCheckAnswerElement implements AnswerElement {
@@ -530,18 +533,15 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       for (Configuration c : configurations.values()) {
         for (Interface i : c.getInterfaces().values()) {
-          if (i.getActive()) {
-            if (i.getPrefix() != null) {
-              for (Prefix prefix : i.getAllPrefixes()) {
-                Ip address = prefix.getAddress();
-                if (i.isLoopback(c.getConfigurationFormat())) {
-                  loopbackIps.add(address);
-                }
-                allInterfaceIps.add(address);
-                Set<String> currentIpOwners =
-                    ipOwners.computeIfAbsent(address, k -> new HashSet<>());
-                currentIpOwners.add(c.getHostname());
+          if (i.getActive() && i.getPrefix() != null) {
+            for (Prefix prefix : i.getAllPrefixes()) {
+              Ip address = prefix.getAddress();
+              if (i.isLoopback(c.getConfigurationFormat())) {
+                loopbackIps.add(address);
               }
+              allInterfaceIps.add(address);
+              Set<String> currentIpOwners = ipOwners.computeIfAbsent(address, k -> new HashSet<>());
+              currentIpOwners.add(c.getHostname());
             }
           }
         }

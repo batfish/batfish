@@ -73,6 +73,10 @@ public class PoolMgr {
     return workers;
   }
 
+  public synchronized int getNumWorkers() {
+    return _workerPool.size();
+  }
+
   public synchronized HashMap<String, String> getPoolStatus() {
     HashMap<String, String> copy = new HashMap<>();
 

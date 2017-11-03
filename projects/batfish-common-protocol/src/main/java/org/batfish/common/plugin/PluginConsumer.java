@@ -1,12 +1,12 @@
 package org.batfish.common.plugin;
 
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -16,33 +16,23 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BfConsts;
+import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.BatfishObjectInputStream;
 
 public abstract class PluginConsumer implements IPluginConsumer {
-
-  private static final String CLASS_EXTENSION = ".class";
 
   /**
    * A byte-array containing the first 4 bytes of the header for a file that is the output of java
@@ -54,23 +44,11 @@ public abstract class PluginConsumer implements IPluginConsumer {
 
   private ClassLoader _currentClassLoader;
 
-  private final List<Path> _pluginDirs;
-
   private final boolean _serializeToText;
 
-  public PluginConsumer(boolean serializeToText, List<Path> pluginDirs) {
-    // _currentClassLoader = getClass().getClassLoader();
+  public PluginConsumer(boolean serializeToText) {
     _currentClassLoader = Thread.currentThread().getContextClassLoader();
     _serializeToText = serializeToText;
-    _pluginDirs = new ArrayList<>(pluginDirs);
-    String questionPluginDirStr = System.getProperty(BfConsts.PROP_QUESTION_PLUGIN_DIR);
-    // try to place question plugin first if system property is defined
-    if (questionPluginDirStr != null) {
-      Path questionPluginDir = Paths.get(questionPluginDirStr);
-      if (_pluginDirs.isEmpty() || !_pluginDirs.get(0).equals(questionPluginDir)) {
-        _pluginDirs.add(0, questionPluginDir);
-      }
-    }
   }
 
   protected <S extends Serializable> S deserializeObject(byte[] data, Class<S> outputClass) {
@@ -150,153 +128,28 @@ public abstract class PluginConsumer implements IPluginConsumer {
     return ret;
   }
 
-  private boolean loadPluginJar(Path path) {
-    /*
-     * Adapted from
-     * http://stackoverflow.com/questions/11016092/how-to-load-classes-at-
-     * runtime-from-a-folder-or-jar Retrieved: 2016-08-31 Original Authors:
-     * Kevin Crain http://stackoverflow.com/users/2688755/kevin-crain
-     * Apfelsaft http://stackoverflow.com/users/1447641/apfelsaft License:
-     * https://creativecommons.org/licenses/by-sa/3.0/
-     */
-    String pathString = path.toString();
-    if (pathString.endsWith(".jar")) {
-      try {
-        URL[] urls = {new URL("jar:file:" + pathString + "!/")};
-        URLClassLoader cl = URLClassLoader.newInstance(urls, _currentClassLoader);
-        _currentClassLoader = cl;
-        Thread.currentThread().setContextClassLoader(cl);
-        JarFile jar = new JarFile(path.toFile());
-        Enumeration<JarEntry> entries = jar.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry element = entries.nextElement();
-          String name = element.getName();
-          if (element.isDirectory() || !name.endsWith(CLASS_EXTENSION)) {
-            continue;
-          }
-          String className =
-              name.substring(0, name.length() - CLASS_EXTENSION.length()).replace("/", ".");
-          try {
-            loadPluginClass(cl, className);
-          } catch (ClassNotFoundException e) {
-            jar.close();
-            throw new BatfishException("Unexpected error loading classes from jar", e);
-          }
-        }
-        jar.close();
-        return true;
-      } catch (IOException e) {
-        throw new BatfishException("Error loading plugin jar: '" + path + "'", e);
-      }
-    }
-
-    return false;
-  }
-
-  private void loadPluginFolder(Path pluginPath) throws IOException {
-    URL[] urls = {pluginPath.toUri().toURL()};
-    final URLClassLoader cl = URLClassLoader.newInstance(urls);
-    _currentClassLoader = cl;
-    Thread.currentThread().setContextClassLoader(cl);
-
-    final int baseLen = pluginPath.toString().length() + 1;
-
-    Files.walkFileTree(
-        pluginPath,
-        new SimpleFileVisitor<Path>() {
-          @Override
-          public FileVisitResult visitFile(Path path, BasicFileAttributes attrs)
-              throws IOException {
-            String name = path.toString();
-            if (name.endsWith(CLASS_EXTENSION)) {
-              String className =
-                  name.substring(baseLen, name.length() - CLASS_EXTENSION.length())
-                      .replace(File.separatorChar, '.');
-              try {
-                loadPluginClass(cl, className);
-              } catch (ClassNotFoundException e) {
-                throw new BatfishException("Unexpected error loading from folder " + path, e);
-              }
-            }
-            return FileVisitResult.CONTINUE;
-          }
-        });
-  }
-
-  private void loadPluginClass(URLClassLoader cl, String className) throws ClassNotFoundException {
-    Class<?> pluginClass = null;
-    try {
-      cl.loadClass(className);
-      pluginClass = Class.forName(className, true, cl);
-    } catch (ClassNotFoundException | NoClassDefFoundError e) {
-      // Ignoring this exception is a potentially dangerous hack
-      // but I don't quite know yet why some classes cannot be loaded and how to do things cleanly
-      getLogger().warn("Couldn't load class " + className + ". Skipping.\n");
-      return;
-    }
-    if (!Plugin.class.isAssignableFrom(pluginClass)
-        || Modifier.isAbstract(pluginClass.getModifiers())) {
-      return;
-    }
-    Constructor<?> pluginConstructor;
-    try {
-      pluginConstructor = pluginClass.getConstructor();
-    } catch (NoSuchMethodException | SecurityException e) {
-      throw new BatfishException(
-          "Could not find default constructor in plugin: '" + className + "'", e);
-    }
-    Object pluginObj;
-    try {
-      pluginObj = pluginConstructor.newInstance();
-    } catch (InstantiationException
-        | IllegalAccessException
-        | IllegalArgumentException
-        | InvocationTargetException e) {
-      throw new BatfishException(
-          "Could not instantiate plugin '" + className + "' from constructor", e);
-    }
-    Plugin plugin = (Plugin) pluginObj;
-    plugin.initialize(this);
-  }
-
-  private class JarVisitor extends SimpleFileVisitor<Path> {
-    boolean _hasJars = false;
-    boolean _hasClasses = false;
-
-    @Override
-    public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-      if (loadPluginJar(path)) {
-        _hasJars = true;
-      } else if (path.toString().endsWith(CLASS_EXTENSION)) {
-        _hasClasses = true;
-      }
-      return FileVisitResult.CONTINUE;
-    }
-  }
-
   protected final void loadPlugins() {
-    // this supports loading plugins either from a directory of jars, or
-    // from a folder of classfiles (useful for eclipse development)
-    for (Path pluginDir : _pluginDirs) {
-      if (Files.exists(pluginDir)) {
-        JarVisitor jarVisitor = new JarVisitor();
-        try {
-          // first load any jars
-          Files.walkFileTree(pluginDir, jarVisitor);
-        } catch (IOException e) {
-          throw new BatfishException("Error walking through plugin dir: '" + pluginDir + "'", e);
-        }
-
-        // if there are class files and no jars, then try to load as a folder
-        if (jarVisitor._hasClasses && !jarVisitor._hasJars) {
-          try {
-            loadPluginFolder(pluginDir);
-          } catch (IOException e) {
-            throw new BatfishException(
-                "Error loading plugin folder: '" + pluginDir.toString() + "'", e);
-          }
-        }
+    SortedSet<Plugin> plugins;
+    try {
+      plugins =
+          new TreeSet<>(Lists.newArrayList(ServiceLoader.load(Plugin.class, _currentClassLoader)));
+    } catch (ServiceConfigurationError e) {
+      throw new BatfishException("Failed to locate and/or instantiate plugins", e);
+    }
+    List<BatfishException> initializationExceptions = new ArrayList<>();
+    for (Plugin plugin : plugins) {
+      try {
+        plugin.initialize(this);
+      } catch (Exception e) {
+        initializationExceptions.add(
+            new BatfishException(
+                "Failed to initialize plugin: " + plugin.getClass().getCanonicalName(), e));
       }
+    }
+    if (!initializationExceptions.isEmpty()) {
+      throw new CompositeBatfishException(
+          new BatfishException("Failed to initialize one or more plugins"),
+          initializationExceptions);
     }
   }
 

@@ -44,8 +44,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.bdp.BdpDataPlanePlugin;
-import org.batfish.bgp.JsonExternalBgpAdvertisementPlugin;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -128,22 +126,19 @@ import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.NodeSet;
-import org.batfish.datamodel.collections.NodeVrfSet;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -162,20 +157,16 @@ import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ConvertConfigurationJob;
-import org.batfish.job.ConvertConfigurationResult;
 import org.batfish.job.FlattenVendorConfigurationJob;
-import org.batfish.job.FlattenVendorConfigurationResult;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
-import org.batfish.job.ParseEnvironmentBgpTableResult;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
-import org.batfish.job.ParseEnvironmentRoutingTableResult;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
-import org.batfish.smt.PropertyChecker;
+import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
@@ -184,11 +175,8 @@ import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
-import org.batfish.z3.NodFirstUnsatResult;
 import org.batfish.z3.NodJob;
-import org.batfish.z3.NodJobResult;
 import org.batfish.z3.NodSatJob;
-import org.batfish.z3.NodSatResult;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
@@ -205,8 +193,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private static final String DELTA_TESTRIG_TAG = "DELTA";
 
   private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
-
-  private static final String GEN_OSPF_STARTING_IP = "10.0.0.0";
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -430,7 +416,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         logger.error(prefixedMsg + "\n");
       }
       throw new ParserBatfishException("Parser error(s)");
-    } else if (!settings.printParseTree()) {
+    } else if (!settings.getPrintParseTree()) {
       logger.info("OK\n");
     } else {
       logger.info("OK, PRINTING PARSE TREE:\n");
@@ -484,7 +470,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
       Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
-    super(settings.getSerializeToText(), settings.getPluginDirs());
+    super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
     _cachedConfigurations = cachedConfigurations;
@@ -782,7 +768,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
         _settings.getUnimplementedAsError(),
         _settings.getUnimplementedRecord() && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-        _settings.printParseTree());
+        _settings.getPrintParseTree());
   }
 
   private void checkBaseDirExists() {
@@ -875,9 +861,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
     resetTimer();
     Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor<CompositeNodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor =
-        new BatfishJobExecutor<>(_settings, _logger, true, "Composite NOD");
-    executor.executeJobs(jobs, flows, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings, _logger, jobs, flows, answerElement, true, "Composite NOD");
     printElapsedTime();
     return flows;
   }
@@ -910,11 +895,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       flowSinks = loadDataPlane().getFlowSinks();
       popEnvironment();
     }
-    NodeSet blacklistNodes = getNodeBlacklist();
-    if (blacklistNodes != null) {
-      if (differentialContext) {
-        flowSinks.removeNodes(blacklistNodes);
-      }
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
+    if (blacklistNodes != null && differentialContext) {
+      flowSinks.removeNodes(blacklistNodes);
     }
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     if (blacklistInterfaces != null) {
@@ -1046,11 +1029,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
     _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
     resetTimer();
-    BatfishJobExecutor<
-            NodFirstUnsatJob<KeyT, ResultT>, NodFirstUnsatAnswerElement,
-            NodFirstUnsatResult<KeyT, ResultT>, Map<KeyT, ResultT>>
-        executor = new BatfishJobExecutor<>(_settings, _logger, true, "NOD First-UNSAT");
-    executor.executeJobs(jobs, output, new NodFirstUnsatAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        output,
+        new NodFirstUnsatAnswerElement(),
+        true,
+        "NOD First-UNSAT");
     printElapsedTime();
   }
 
@@ -1058,10 +1044,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
     resetTimer();
     Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor<NodJob, NodAnswerElement, NodJobResult, Set<Flow>> executor =
-        new BatfishJobExecutor<>(_settings, _logger, true, "NOD");
-    // todo: do something with nod answer element
-    executor.executeJobs(jobs, flows, new NodAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
     printElapsedTime();
     return flows;
   }
@@ -1069,9 +1053,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public <KeyT> void computeNodSatOutput(List<NodSatJob<KeyT>> jobs, Map<KeyT, Boolean> output) {
     _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
     resetTimer();
-    BatfishJobExecutor<NodSatJob<KeyT>, NodSatAnswerElement, NodSatResult<KeyT>, Map<KeyT, Boolean>>
-        executor = new BatfishJobExecutor<>(_settings, _logger, true, "NOD SAT");
-    executor.executeJobs(jobs, output, new NodSatAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
     printElapsedTime();
   }
 
@@ -1079,12 +1062,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Topology computeTopology(Map<String, Configuration> configurations) {
     resetTimer();
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
-    EdgeSet blacklistEdges = getEdgeBlacklist();
+    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     if (blacklistEdges != null) {
-      EdgeSet edges = topology.getEdges();
+      SortedSet<Edge> edges = topology.getEdges();
       edges.removeAll(blacklistEdges);
     }
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null) {
       for (String blacklistNode : blacklistNodes) {
         topology.removeNode(blacklistNode);
@@ -1129,16 +1112,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ConvertConfigurationJob(_settings, vc, config.getKey(), warnings);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ConvertConfigurationJob, ConvertConfigurationAnswerElement, ConvertConfigurationResult,
-            Map<String, Configuration>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getHaltOnConvertError(),
-                "Convert configurations to vendor-independent format");
-    executor.executeJobs(jobs, configurations, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        configurations,
+        answerElement,
+        _settings.getHaltOnConvertError(),
+        "Convert configurations to vendor-independent format");
     printElapsedTime();
     return configurations;
   }
@@ -1388,18 +1369,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new FlattenVendorConfigurationJob(_settings, fileText, inputFile, outputFile, warnings);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            FlattenVendorConfigurationJob, FlattenVendorConfigurationAnswerElement,
-            FlattenVendorConfigurationResult, Map<Path, String>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getFlatten() || _settings.getHaltOnParseError(),
-                "Flatten configurations");
-    // todo: do something with answer element
-    executor.executeJobs(
-        jobs, outputConfigurationData, new FlattenVendorConfigurationAnswerElement());
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        outputConfigurationData,
+        new FlattenVendorConfigurationAnswerElement(),
+        _settings.getFlatten() || _settings.getHaltOnParseError(),
+        "Flatten configurations");
     printElapsedTime();
     for (Entry<Path, String> e : outputConfigurationData.entrySet()) {
       Path outputFile = e.getKey();
@@ -1420,7 +1397,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void generateOspfConfigs(Path topologyPath, Path outputPath) {
     Topology topology = parseTopology(topologyPath);
     Map<String, Configuration> configs = new TreeMap<>();
-    NodeSet allNodes = new NodeSet();
+    SortedSet<String> allNodes = new TreeSet<>();
     Map<NodeInterfacePair, Set<NodeInterfacePair>> interfaceMap = new HashMap<>();
     // first we collect set of all mentioned nodes, and build mapping from
     // each interface to the set of interfaces that connect to each other
@@ -1445,7 +1422,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // Now we create interfaces for each edge and record the number of
     // neighbors so we know how large to make the subnet
-    long currentStartingIpAsLong = new Ip(GEN_OSPF_STARTING_IP).asLong();
+    long currentStartingIpAsLong = Ip.FIRST_CLASS_A_PRIVATE_IP.asLong();
     Set<Set<NodeInterfacePair>> interfaceSets = new HashSet<>();
     interfaceSets.addAll(interfaceMap.values());
     for (Set<NodeInterfacePair> interfaceSet : interfaceSets) {
@@ -1724,13 +1701,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return DIFFERENTIAL_FLOW_TAG;
   }
 
-  public EdgeSet getEdgeBlacklist() {
-    EdgeSet blacklistEdges = null;
+  public SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges = null;
     Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
-    if (edgeBlacklistPath != null) {
-      if (Files.exists(edgeBlacklistPath)) {
-        blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
-      }
+    if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
+      blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
     }
     return blacklistEdges;
   }
@@ -1742,9 +1717,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Environment getEnvironment() {
-    EdgeSet edgeBlackList = getEdgeBlacklist();
+    SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
     SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
-    NodeSet nodeBlackList = getNodeBlacklist();
+    SortedSet<String> nodeBlackList = getNodeBlacklist();
     // TODO: add bgp tables and external announcements as well
     return new Environment(
         getEnvironmentName(),
@@ -1841,10 +1816,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedSet<NodeInterfacePair> blacklistInterfaces = null;
     Path interfaceBlacklistPath =
         _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
-    if (interfaceBlacklistPath != null) {
-      if (Files.exists(interfaceBlacklistPath)) {
-        blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
-      }
+    if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
+      blacklistInterfaces = parseInterfaceBlacklist(interfaceBlacklistPath);
     }
     return blacklistInterfaces;
   }
@@ -1854,13 +1827,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _logger;
   }
 
-  public NodeSet getNodeBlacklist() {
-    NodeSet blacklistNodes = null;
+  public SortedSet<String> getNodeBlacklist() {
+    SortedSet<String> blacklistNodes = null;
     Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
-    if (nodeBlacklistPath != null) {
-      if (Files.exists(nodeBlacklistPath)) {
-        blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
-      }
+    if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
+      blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
     }
     return blacklistNodes;
   }
@@ -1932,8 +1903,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings;
   }
 
-  private Set<Edge> getSymmetricEdgePairs(EdgeSet edges) {
-    LinkedHashSet<Edge> consumedEdges = new LinkedHashSet<>();
+  private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
+    Set<Edge> consumedEdges = new LinkedHashSet<>();
     for (Edge edge : edges) {
       if (consumedEdges.contains(edge)) {
         continue;
@@ -2015,7 +1986,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    AdvertisementSet globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
+    Set<BgpAdvertisement> globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
     for (Configuration node : configurations.values()) {
       node.initBgpAdvertisements();
       for (Vrf vrf : node.getVrfs().values()) {
@@ -2346,7 +2317,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             OspfArea area = e3.getValue();
             for (Interface iface : area.getInterfaces()) {
               String ifaceName = iface.getName();
-              EdgeSet ifaceEdges =
+              SortedSet<Edge> ifaceEdges =
                   topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
               boolean hasNeighbor = false;
               Ip localIp = iface.getPrefix().getAddress();
@@ -2429,7 +2400,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           String vrfName = e2.getKey();
           for (String ifaceName : proc.getInterfaces()) {
             Interface iface = vrf.getInterfaces().get("ifaceName");
-            EdgeSet ifaceEdges =
+            SortedSet<Edge> ifaceEdges =
                 topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
             boolean hasNeighbor = false;
             Ip localIp = iface.getPrefix().getAddress();
@@ -2759,13 +2730,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   errors.computeIfAbsent(hostname, k -> new ArrayList<>()).add(initStepErrors);
                 });
       }
-      SortedMap<String, org.batfish.common.Warnings> warnings = initInfoAnswerElement.getWarnings();
+      SortedMap<String, Warnings> warnings = initInfoAnswerElement.getWarnings();
       initStepAnswerElement
           .getWarnings()
           .forEach(
               (hostname, initStepWarnings) -> {
-                org.batfish.common.Warnings combined =
-                    warnings.computeIfAbsent(hostname, h -> buildWarnings());
+                Warnings combined = warnings.computeIfAbsent(hostname, h -> buildWarnings());
                 combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
                 combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
                 combined
@@ -2801,7 +2771,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           for (String vrf : configuration.getVrfs().keySet()) {
             MultipathInconsistencyQuerySynthesizer query =
                 new MultipathInconsistencyQuerySynthesizer(node, vrf, headerSpace);
-            NodeVrfSet nodes = new NodeVrfSet();
+            SortedSet<Pair<String, String>> nodes = new TreeSet<>();
             nodes.add(new Pair<>(node, vrf));
             NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
             jobs.add(job);
@@ -2982,7 +2952,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private EdgeSet parseEdgeBlacklist(Path edgeBlacklistPath) {
+  private SortedSet<Edge> parseEdgeBlacklist(Path edgeBlacklistPath) {
     String edgeBlacklistText = CommonUtil.readFile(edgeBlacklistPath);
     SortedSet<Edge> edges;
     try {
@@ -2993,7 +2963,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to parse edge blacklist", e);
     }
-    return new EdgeSet(edges);
+    return edges;
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
@@ -3021,16 +2991,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ParseEnvironmentBgpTableJob, ParseEnvironmentBgpTablesAnswerElement,
-            ParseEnvironmentBgpTableResult, SortedMap<String, BgpAdvertisementsByVrf>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getHaltOnParseError(),
-                "Parse environment BGP tables");
-    executor.executeJobs(jobs, bgpTables, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        bgpTables,
+        answerElement,
+        _settings.getHaltOnParseError(),
+        "Parse environment BGP tables");
     printElapsedTime();
     return bgpTables;
   }
@@ -3056,16 +3024,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ParseEnvironmentRoutingTableJob(_settings, fileText, currentFile, warnings, this);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ParseEnvironmentRoutingTableJob, ParseEnvironmentRoutingTablesAnswerElement,
-            ParseEnvironmentRoutingTableResult, SortedMap<String, RoutesByVrf>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings,
-                _logger,
-                _settings.getHaltOnParseError(),
-                "Parse environment routing tables");
-    executor.executeJobs(jobs, routingTables, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        routingTables,
+        answerElement,
+        _settings.getHaltOnParseError(),
+        "Parse environment routing tables");
     printElapsedTime();
     return routingTables;
   }
@@ -3084,7 +3050,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return ifaces;
   }
 
-  private NodeSet parseNodeBlacklist(Path nodeBlacklistPath) {
+  private SortedSet<String> parseNodeBlacklist(Path nodeBlacklistPath) {
     String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
     SortedSet<String> nodes;
     try {
@@ -3095,7 +3061,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (IOException e) {
       throw new BatfishException("Failed to parse node blacklist", e);
     }
-    return new NodeSet(nodes);
+    return nodes;
   }
 
   private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
@@ -3176,13 +3142,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings, fileText, currentFile, warnings, configurationFormat);
       jobs.add(job);
     }
-    BatfishJobExecutor<
-            ParseVendorConfigurationJob, ParseVendorConfigurationAnswerElement,
-            ParseVendorConfigurationResult, Map<String, VendorConfiguration>>
-        executor =
-            new BatfishJobExecutor<>(
-                _settings, _logger, _settings.getHaltOnParseError(), "Parse configurations");
-    executor.executeJobs(jobs, vendorConfigurations, answerElement);
+    BatfishJobExecutor.runJobsInExecutor(
+        _settings,
+        _logger,
+        jobs,
+        vendorConfigurations,
+        answerElement,
+        _settings.getHaltOnParseError(),
+        "Parse configurations");
     printElapsedTime();
     return vendorConfigurations;
   }
@@ -3210,9 +3177,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     popEnvironment();
 
     pushDeltaEnvironment();
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    EdgeSet blacklistEdges = getEdgeBlacklist();
+    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
 
     BlacklistDstIpQuerySynthesizer blacklistQuery =
@@ -3229,7 +3196,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // generate local edge reachability and black hole queries
     Topology diffTopology = computeTopology(diffConfigurations);
-    EdgeSet diffEdges = diffTopology.getEdges();
+    SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
       String outInterface = edge.getInt1();
@@ -3244,7 +3211,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       queries.add(reachQuery);
       queries.add(noReachQuery);
       queries.add(blacklistQuery);
-      NodeVrfSet nodes = new NodeVrfSet();
+      SortedSet<Pair<String, String>> nodes = new TreeSet<>();
       nodes.add(new Pair<>(ingressNode, vrf));
       CompositeNodJob job =
           new CompositeNodJob(settings, commonEdgeSynthesizers, queries, nodes, tag);
@@ -3257,8 +3224,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     Topology baseTopology = computeTopology(baseConfigurations);
-    EdgeSet baseEdges = baseTopology.getEdges();
-    EdgeSet missingEdges = new EdgeSet();
+    SortedSet<Edge> baseEdges = baseTopology.getEdges();
+    SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
     missingEdges.removeAll(diffEdges);
     for (Edge missingEdge : missingEdges) {
@@ -3278,7 +3245,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         List<QuerySynthesizer> queries = new ArrayList<>();
         queries.add(reachQuery);
         queries.add(blacklistQuery);
-        NodeVrfSet nodes = new NodeVrfSet();
+        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
         nodes.add(new Pair<>(ingressNode, vrf));
         CompositeNodJob job =
             new CompositeNodJob(settings, missingEdgeSynthesizers, queries, nodes, tag);
@@ -3419,7 +3386,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void printSymmetricEdgePairs() {
     Map<String, Configuration> configs = loadConfigurations();
-    EdgeSet edges = synthesizeTopology(configs).getEdges();
+    SortedSet<Edge> edges = synthesizeTopology(configs).getEdges();
     Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
     List<Edge> edgeList = new ArrayList<>();
     edgeList.addAll(symmetricEdgePairs);
@@ -3454,11 +3421,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AdvertisementSet processExternalBgpAnnouncements(
+  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
-    AdvertisementSet advertSet = new AdvertisementSet();
+    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
-      AdvertisementSet currentAdvertisements = plugin.loadExternalBgpAdvertisements();
+      Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements();
       advertSet.addAll(currentAdvertisements);
     }
     return advertSet;
@@ -3470,9 +3437,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
    *
    * @param configurations The vendor-independent configurations to be modified
    */
-  public AdvertisementSet processExternalBgpAnnouncements(
+  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
       Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    AdvertisementSet advertSet = new AdvertisementSet();
+    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     Path externalBgpAnnouncementsPath =
         _testrigSettings.getEnvironmentSettings().getExternalBgpAnnouncementsPath();
     if (Files.exists(externalBgpAnnouncementsPath)) {
@@ -3547,7 +3514,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void processNodeBlacklist(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null) {
       for (String hostname : blacklistNodes) {
         Configuration node = configurations.get(hostname);
@@ -3774,9 +3741,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     commonNodes.retainAll(diffConfigurations.keySet());
 
     pushDeltaEnvironment();
-    NodeSet blacklistNodes = getNodeBlacklist();
+    SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    EdgeSet blacklistEdges = getEdgeBlacklist();
+    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
 
     BlacklistDstIpQuerySynthesizer blacklistQuery =
@@ -3810,7 +3777,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 Collections.<String>emptySet(),
                 Collections.<String>emptySet());
         notAcceptQuery.setNegate(true);
-        NodeVrfSet nodes = new NodeVrfSet();
+        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
         nodes.add(new Pair<>(node, vrf));
         List<QuerySynthesizer> queries = new ArrayList<>();
         queries.add(acceptQuery);
@@ -3958,14 +3925,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Answer run() {
     newBatch("Begin job", 0);
     loadPlugins();
-    if (_dataPlanePlugin == null) {
-      _dataPlanePlugin = new BdpDataPlanePlugin();
-      _dataPlanePlugin.initialize(this);
-    }
-    JsonExternalBgpAdvertisementPlugin jsonExternalBgpAdvertisementsPlugin =
-        new JsonExternalBgpAdvertisementPlugin();
-    jsonExternalBgpAdvertisementsPlugin.initialize(this);
-    _externalBgpAdvertisementPlugins.add(jsonExternalBgpAdvertisementsPlugin);
     boolean action = false;
     Answer answer = new Answer();
 
@@ -4420,7 +4379,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
-    return PropertyChecker.computeBlackHole(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkBlackHole(q);
   }
 
   @Override
@@ -4428,47 +4388,64 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (bound == null) {
       throw new BatfishException("Missing parameter length bound: (e.g., bound=3)");
     }
-    return PropertyChecker.computeBoundedLength(this, q, bound);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkBoundedLength(q, bound);
   }
 
   @Override
   public AnswerElement smtDeterminism(HeaderQuestion q) {
-    return PropertyChecker.computeDeterminism(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkDeterminism(q);
   }
 
   @Override
   public AnswerElement smtEqualLength(HeaderLocationQuestion q) {
-    return PropertyChecker.computeEqualLength(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkEqualLength(q);
   }
 
   @Override
   public AnswerElement smtForwarding(HeaderQuestion q) {
-    return PropertyChecker.computeForwarding(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkForwarding(q);
   }
 
   @Override
   public AnswerElement smtLoadBalance(HeaderLocationQuestion q, int threshold) {
-    return PropertyChecker.computeLoadBalance(this, q, threshold);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkLoadBalancing(q, threshold);
   }
 
   @Override
   public AnswerElement smtLocalConsistency(Pattern routerRegex, boolean strict, boolean fullModel) {
-    return PropertyChecker.computeLocalConsistency(this, routerRegex, strict, fullModel);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkLocalEquivalence(routerRegex, strict, fullModel);
   }
 
   @Override
   public AnswerElement smtMultipathConsistency(HeaderLocationQuestion q) {
-    return PropertyChecker.computeMultipathConsistency(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkMultipathConsistency(q);
   }
 
   @Override
   public AnswerElement smtReachability(HeaderLocationQuestion q) {
-    return PropertyChecker.computeReachability(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkReachability(q);
+  }
+
+  @Override
+  public AnswerElement smtRoles(EquivalenceType t, String nodeRegex) {
+    Pattern p = Pattern.compile(nodeRegex);
+
+    Roles roles = Roles.create(this, p);
+    return roles.asAnswer(t);
   }
 
   @Override
   public AnswerElement smtRoutingLoop(HeaderQuestion q) {
-    return PropertyChecker.computeRoutingLoop(this, q);
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkRoutingLoop(q);
   }
 
   @Override
@@ -4559,7 +4536,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ReachabilityQuerySynthesizer query =
             new ReachabilityQuerySynthesizer(
                 actions, headerSpace, activeFinalNodes, nodeVrfs, transitNodes, notTransitNodes);
-        NodeVrfSet nodes = new NodeVrfSet();
+        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
         nodes.add(new Pair<>(ingressNode, ingressVrf));
         NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
         jobs.add(job);
@@ -4622,7 +4599,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private Topology synthesizeTopology(Map<String, Configuration> configurations) {
     _logger.info("\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
     resetTimer();
-    EdgeSet edges = new EdgeSet();
+    SortedSet<Edge> edges = new TreeSet<>();
     Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
         (nodeName, node) -> {
@@ -4735,7 +4712,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void writeJsonTopology() {
     try {
       Map<String, Configuration> configs = loadConfigurations();
-      EdgeSet textEdges = synthesizeTopology(configs).getEdges();
+      SortedSet<Edge> textEdges = synthesizeTopology(configs).getEdges();
       JSONArray jEdges = new JSONArray();
       for (Edge textEdge : textEdges) {
         Configuration node1 = configs.get(textEdge.getNode1());

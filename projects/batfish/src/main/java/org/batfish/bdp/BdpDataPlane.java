@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -26,13 +28,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.collections.EdgeSet;
-import org.batfish.datamodel.collections.FibMap;
 import org.batfish.datamodel.collections.FibRow;
-import org.batfish.datamodel.collections.FibSet;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.PolicyRouteFibNodeMap;
 
 public class BdpDataPlane implements Serializable, DataPlane {
 
@@ -50,8 +48,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
   Topology _topology;
 
   @Override
-  public FibMap getFibs() {
-    FibMap fibs = new FibMap();
+  public HashMap<String, Map<String, SortedSet<FibRow>>> getFibs() {
+    HashMap<String, Map<String, SortedSet<FibRow>>> fibs = new HashMap<>();
     Object fibsMonitor = new Object();
     _nodes
         .values()
@@ -59,13 +57,13 @@ public class BdpDataPlane implements Serializable, DataPlane {
         .forEach(
             (node) -> {
               String hostname = node._c.getHostname();
-              final Map<String, FibSet> vrfToFibSet = new HashMap<>();
+              final Map<String, SortedSet<FibRow>> vrfToFibSet = new HashMap<>();
               synchronized (fibsMonitor) {
                 fibs.put(hostname, vrfToFibSet);
               }
               node._virtualRouters.forEach(
                   (vrName, vr) -> {
-                    FibSet fibSet = new FibSet();
+                    SortedSet<FibRow> fibSet = new TreeSet<>();
                     vrfToFibSet.put(vrName, fibSet);
                     // handle routes
                     Map<AbstractRoute, Set<FibRow>> interfaceRouteRows = new LinkedHashMap<>();
@@ -103,7 +101,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
                             Set<FibRow> currentRows = new HashSet<>();
                             interfaceRouteRows.put(route, currentRows);
-                            EdgeSet edges =
+                            SortedSet<Edge> edges =
                                 _topology
                                     .getInterfaceEdges()
                                     .get(new NodeInterfacePair(hostname, outInt));
@@ -167,7 +165,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                                 interfaceRouteRows.put(route, Collections.singleton(row));
                               } else {
                                 Set<FibRow> currentRows = new HashSet<>();
-                                EdgeSet edges =
+                                SortedSet<Edge> edges =
                                     _topology
                                         .getInterfaceEdges()
                                         .get(new NodeInterfacePair(hostname, srNextHopInterface));
@@ -201,7 +199,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                                 interfaceRouteRows.put(route, Collections.singleton(row));
                               } else {
                                 Set<FibRow> currentRows = new HashSet<>();
-                                EdgeSet edges =
+                                SortedSet<Edge> edges =
                                     _topology
                                         .getInterfaceEdges()
                                         .get(new NodeInterfacePair(hostname, srNextHopInterface));
@@ -314,9 +312,9 @@ public class BdpDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public PolicyRouteFibNodeMap getPolicyRouteFibNodeMap() {
+  public SortedMap<String, HashMap<Ip, SortedSet<Edge>>> getPolicyRouteFibNodeMap() {
     // TODO: implement
-    return new PolicyRouteFibNodeMap();
+    return new TreeMap<>();
   }
 
   @Override
@@ -336,7 +334,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public EdgeSet getTopologyEdges() {
+  public SortedSet<Edge> getTopologyEdges() {
     return _topology.getEdges();
   }
 

@@ -66,6 +66,7 @@ ro_common
 :
    ro_authentication
    | ro_nssa
+   | ro_rfc1583_compatibility
    | ro_null
 ;
 
@@ -192,10 +193,18 @@ ro_null
       )
       | NSF
       | NSR
-      | RFC1583COMPATIBILITY
       | SNMP
       | TIMERS
    ) ~NEWLINE* NEWLINE
+;
+
+ro_rfc1583_compatibility
+:
+   NO?
+   (
+      RFC1583COMPATIBILITY
+      | COMPATIBLE RFC1583
+   ) NEWLINE
 ;
 
 ro_passive_interface_default
@@ -447,7 +456,6 @@ rov3_address_family
 rov3_common
 :
    rov3_null
-   | { !_disableUnrecognized }? unrecognized_line
 ;
 
 rov3_null
@@ -529,7 +537,6 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
-      | { !_disableUnrecognized }? unrecognized_line
    )*
 ;
 

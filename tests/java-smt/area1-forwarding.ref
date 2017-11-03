@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtOneAnswerElement",
+      "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
       "result" : {
         "forwardingModel" : [
           "R2,Serial1 --> R3,Serial0 (OSPF)"

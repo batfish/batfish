@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -28,13 +29,13 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
-import org.batfish.datamodel.collections.AdvertisementSet;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.grammar.BgpTableFormat;
@@ -132,7 +133,7 @@ public interface IBatfish extends IPluginConsumer {
 
   void printElapsedTime();
 
-  AdvertisementSet processExternalBgpAnnouncements(Map<String, Configuration> configurations);
+  Set<BgpAdvertisement> processExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
   void processFlows(Set<Flow> flows);
 
@@ -176,6 +177,8 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
+
+  AnswerElement smtRoles(EquivalenceType t, String nodeRegex);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 

@@ -1,0 +1,36 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
+      "result" : {
+        "as2dept1,FastEthernet1/0" : {
+          "failuresModel" : [
+            "link(as2dept1,as2dist1)",
+            "link(as2dept1,as2dist2)"
+          ],
+          "forwardingModel" : [
+            "as2dept1,FastEthernet1/0 --> _,_"
+          ],
+          "packetModel" : {
+            "dstIp" : "2.128.0.0",
+            "protocol" : "CBT"
+          },
+          "verified" : false
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
+    "differential" : false,
+    "equivalence" : false,
+    "failures" : 2,
+    "finalIfaceRegex" : "FastEthernet1/0",
+    "finalNodeRegex" : "as2dept1",
+    "fullModel" : false,
+    "ingressNodeRegex" : "as2border.*",
+    "minimize" : false,
+    "noEnvironment" : true
+  },
+  "status" : "SUCCESS"
+}

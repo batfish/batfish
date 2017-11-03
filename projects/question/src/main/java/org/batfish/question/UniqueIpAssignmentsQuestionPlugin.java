@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -12,6 +13,7 @@ import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -22,6 +24,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
   public static class UniqueIpAssignmentsAnswerElement implements AnswerElement {
@@ -178,10 +181,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
             if (allIps.count(ip) != 1) {
               answerElement.add(answerElement.getAllIps(), ip, hostname, interfaceName);
             }
-            if (iface.getActive()) {
-              if (enabledIps.count(ip) != 1) {
-                answerElement.add(answerElement.getEnabledIps(), ip, hostname, interfaceName);
-              }
+            if (iface.getActive() && enabledIps.count(ip) != 1) {
+              answerElement.add(answerElement.getEnabledIps(), ip, hostname, interfaceName);
             }
           }
         }

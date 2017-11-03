@@ -23,7 +23,7 @@
               <goals><goal>analyze-only</goal></goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  org.slf4j:slf4j-jdk14
+                  org.slf4j:slf4j-jdk14,com.google.auto.service:auto-service
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -42,9 +42,6 @@
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-maven-plugin</artifactId>
-        <configuration>
-          <treatWarningsAsErrors>true</treatWarningsAsErrors>
-        </configuration>
         <executions>
           <!--
           Some of the more complex grammars are broken up into main files and imports. Since the
@@ -112,33 +109,21 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
+        <artifactId>maven-pmd-plugin</artifactId>
         <executions>
           <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
+            <id>check</id>
+            <goals><goal>check</goal></goals>
             <configuration>
-              <finalName>${project.artifactId}-bundle-${project.version}</finalName>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                    <exclude>META-INF/*.SF</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <manifestEntries>
-                    <Main-Class>org.batfish.main.Driver</Main-Class>
-                  </manifestEntries>
-                </transformer>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-              </transformers>
+               <failOnViolation>false</failOnViolation>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>cpd-check</id>
+            <goals><goal>cpd-check</goal></goals>
+            <configuration>
+               <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
         </executions>
@@ -168,6 +153,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.auto.service</groupId>
+      <artifactId>auto-service</artifactId>
+		<optional>true</optional>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
     </dependency>
@@ -175,6 +166,11 @@
     <dependency>
       <groupId>com.microsoft.z3</groupId>
       <artifactId>z3</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>net.sf.javabdd</groupId>
+      <artifactId>bdd</artifactId>
     </dependency>
 
     <dependency>

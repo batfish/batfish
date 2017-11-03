@@ -87,7 +87,7 @@ public class WorkMgr extends AbstractCoordinator {
   private WorkQueueMgr _workQueueMgr;
 
   public WorkMgr(Settings settings, BatfishLogger logger) {
-    super(false, settings.getPluginDirs());
+    super(false);
     _settings = settings;
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr();
@@ -840,6 +840,11 @@ public class WorkMgr extends AbstractCoordinator {
       // The right solution is to put workitem2 on the queue only after workitem1 has finished
       // successfully. The rightest solution is for workers to be aware of dependencies so they
       // don't try to execute tasks that depend on other tasks that are currently being executed.
+
+      // this check is not foolproof because new workers may be added later but good enough for now
+      if (Main.getPoolMgr().getNumWorkers() > 1) {
+        throw new BatfishException("Cannot auto analyze when multiple workers are present");
+      }
 
       for (WorkItem workItem : autoWorkQueue) {
         if (!queueWork(workItem)) {

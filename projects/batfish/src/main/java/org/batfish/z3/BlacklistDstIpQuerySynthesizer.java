@@ -5,6 +5,7 @@ import com.microsoft.z3.Z3Exception;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
@@ -12,7 +13,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.BooleanExpr;
@@ -33,7 +33,7 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
       @Nullable Set<Ip> explicitBlacklistIps,
       Set<String> blacklistNodes,
       Set<NodeInterfacePair> blacklistInterfaces,
-      EdgeSet blacklistEdges,
+      SortedSet<Edge> blacklistEdges,
       Map<String, Configuration> configurations) {
     _blacklistIps = new TreeSet<>();
     if (explicitBlacklistIps != null) {

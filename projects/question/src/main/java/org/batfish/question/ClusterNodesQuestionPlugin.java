@@ -1,6 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.auto.service.AutoService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,11 +15,13 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.Question;
 
+@AutoService(Plugin.class)
 public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
   public static class ClusterNodesAnswerElement implements AnswerElement {
@@ -209,9 +212,8 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     private List<Set<String>> kModes(int k, Set<String> vectors) {
 
       int vecLen = 0;
-      for (String vector : vectors) {
-        vecLen = vector.length();
-        break;
+      if (!vectors.isEmpty()) {
+        vecLen = vectors.iterator().next().length();
       }
 
       String[] centers = new String[k];

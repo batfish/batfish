@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.smt.answers.SmtManyAnswerElement",
+      "class" : "org.batfish.symbolic.answers.SmtManyAnswerElement",
       "result" : {
         "R1<-->R2" : {
           "verified" : true

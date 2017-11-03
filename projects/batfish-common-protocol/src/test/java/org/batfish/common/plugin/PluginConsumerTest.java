@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.nio.file.Path;
-import java.util.Collections;
 import org.batfish.common.BatfishLogger;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,7 +17,7 @@ public class PluginConsumerTest {
 
   private static class TestPluginConsumer extends PluginConsumer {
     private TestPluginConsumer(boolean serializeToText) {
-      super(serializeToText, Collections.emptyList());
+      super(serializeToText);
     }
 
     @Override

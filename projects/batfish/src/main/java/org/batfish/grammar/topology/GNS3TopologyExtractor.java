@@ -1,8 +1,9 @@
 package org.batfish.grammar.topology;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.grammar.topology.GNS3TopologyParser.Edge_lineContext;
 import org.batfish.grammar.topology.GNS3TopologyParser.Router_lineContext;
 import org.batfish.grammar.topology.GNS3TopologyParser.TopologyContext;
@@ -11,11 +12,11 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
     implements TopologyExtractor {
 
   private String _currentRouter;
-  private EdgeSet _edges;
+  private SortedSet<Edge> _edges;
   private Topology _topology;
 
   public GNS3TopologyExtractor() {
-    _edges = new EdgeSet();
+    _edges = new TreeSet<>();
   }
 
   private String convertInterfaceName(String shortName) {

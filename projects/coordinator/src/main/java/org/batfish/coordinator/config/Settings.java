@@ -11,6 +11,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.queues.WorkQueue;
+import org.batfish.datamodel.Ip;
 
 public class Settings extends BaseSettings {
 
@@ -80,7 +81,6 @@ public class Settings extends BaseSettings {
   private long _periodAssignWorkMs;
   private long _periodCheckWorkMs;
   private long _periodWorkerStatusRefreshMs;
-  private List<Path> _pluginDirs;
   private String _poolBindHost;
   private List<Path> _questionTemplateDirs;
   private String _queueCompletedWork;
@@ -173,10 +173,6 @@ public class Settings extends BaseSettings {
 
   public long getPeriodWorkerStatusRefreshMs() {
     return _periodWorkerStatusRefreshMs;
-  }
-
-  public List<Path> getPluginDirs() {
-    return _pluginDirs;
   }
 
   public String getPoolBindHost() {
@@ -294,14 +290,13 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
-    setDefaultProperty(BfConsts.ARG_PLUGIN_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.<String>emptyList());
     setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
     setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
     setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
-    setDefaultProperty(ARG_POOL_BIND_HOST, "0.0.0.0");
+    setDefaultProperty(ARG_POOL_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
-    setDefaultProperty(ARG_WORK_BIND_HOST, "0.0.0.0");
+    setDefaultProperty(ARG_WORK_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
     setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
     setDefaultProperty(ARG_SSL_POOL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
@@ -362,8 +357,6 @@ public class Settings extends BaseSettings {
     addOption(
         ARG_PERIOD_CHECK_WORK_MS, "period with which to check work (ms)", "period_check_work_ms");
 
-    addListOption(BfConsts.ARG_PLUGIN_DIRS, "paths to plugin directories", ARGNAME_PATHS);
-
     addListOption(
         ARG_QUESTION_TEMPLATE_DIRS, "paths to question template directories", ARGNAME_PATHS);
 
@@ -414,7 +407,6 @@ public class Settings extends BaseSettings {
     _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
-    _pluginDirs = getPathListOptionValue(BfConsts.ARG_PLUGIN_DIRS);
     _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
     _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
     _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);

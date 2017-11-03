@@ -1,5 +1,6 @@
 package org.batfish.bdp;
 
+import com.google.auto.service.AutoService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -23,6 +25,7 @@ import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.BdpSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -49,12 +52,10 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.AdvertisementSet;
-import org.batfish.datamodel.collections.EdgeSet;
 import org.batfish.datamodel.collections.IbgpTopology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.RouteSet;
 
+@AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   private static final String TRACEROUTE_INGRESS_NODE_INTERFACE_NAME =
@@ -73,30 +74,28 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
     }
-
-    for (SourceNat sourceNat : sourceNats) {
-      IpAccessList acl = sourceNat.getAcl();
-      if (acl != null) {
-        FilterResult result = acl.filter(flow);
-        if (result.getAction() == LineAction.REJECT) {
-          // This ACL does not match the flow.
-          continue;
-        }
-      }
-
-      Ip natPoolStartIp = sourceNat.getPoolIpFirst();
-      if (natPoolStartIp == null) {
-        throw new BatfishException(
-            String.format(
-                "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
-      }
-      Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
-      transformedFlowBuilder.setSrcIp(natPoolStartIp);
-      return transformedFlowBuilder.build();
+    Optional<SourceNat> matchingSourceNat =
+        sourceNats
+            .stream()
+            .filter(
+                sourceNat ->
+                    sourceNat.getAcl() != null
+                        && sourceNat.getAcl().filter(flow).getAction() != LineAction.REJECT)
+            .findFirst();
+    if (!matchingSourceNat.isPresent()) {
+      // No NAT rule matched.
+      return flow;
     }
-
-    // No NAT rule matched.
-    return flow;
+    SourceNat sourceNat = matchingSourceNat.get();
+    Ip natPoolStartIp = sourceNat.getPoolIpFirst();
+    if (natPoolStartIp == null) {
+      throw new BatfishException(
+          String.format(
+              "Error processing Source NAT rule %s: missing NAT address or pool", sourceNat));
+    }
+    Flow.Builder transformedFlowBuilder = new Flow.Builder(flow);
+    transformedFlowBuilder.setSrcIp(natPoolStartIp);
+    return transformedFlowBuilder.build();
   }
 
   private int _maxRecordedIterations;
@@ -215,7 +214,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             // Apply any relevant source NAT rules.
             transformedFlow = applySourceNat(transformedFlow, outgoingInterface.getSourceNats());
 
-            EdgeSet edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
+            SortedSet<Edge> edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
               boolean continueToNextNextHopInterface = false;
               continueToNextNextHopInterface =
@@ -284,7 +283,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   private SortedSet<Prefix> collectOscillatingPrefixes(
-      Map<Integer, RouteSet> iterationRoutes,
+      Map<Integer, SortedSet<Route>> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbsRoutes,
       int first,
@@ -361,11 +360,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       }
     } else {
       for (int i = first + 1; i <= last; i++) {
-        RouteSet baseRoutes = iterationRoutes.get(i - 1);
-        RouteSet deltaRoutes = iterationRoutes.get(i);
-        RouteSet added = CommonUtil.difference(deltaRoutes, baseRoutes, RouteSet::new);
-        RouteSet removed = CommonUtil.difference(baseRoutes, deltaRoutes, RouteSet::new);
-        RouteSet changed = CommonUtil.union(added, removed, RouteSet::new);
+        SortedSet<Route> baseRoutes = iterationRoutes.get(i - 1);
+        SortedSet<Route> deltaRoutes = iterationRoutes.get(i);
+        SortedSet<Route> added =
+            CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
+        SortedSet<Route> removed =
+            CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
+        SortedSet<Route> changed = CommonUtil.union(added, removed, TreeSet<Route>::new);
         for (Route route : changed) {
           oscillatingPrefixes.add(route.getNetwork());
         }
@@ -420,7 +421,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
     _batfish.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
     SortedMap<String, Node> nodes = new TreeMap<>();
-    AdvertisementSet externalAdverts = _batfish.processExternalBgpAnnouncements(configurations);
+    Set<BgpAdvertisement> externalAdverts =
+        _batfish.processExternalBgpAnnouncements(configurations);
     SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
     do {
       configurations.values().forEach(c -> nodes.put(c.getHostname(), new Node(c, nodes)));
@@ -762,7 +764,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       SortedMap<String, Node> nodes,
       Topology topology,
       BdpDataPlane dp,
-      AdvertisementSet externalAdverts,
+      Set<BgpAdvertisement> externalAdverts,
       BdpAnswerElement ae,
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes) {
     SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
@@ -910,7 +912,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
     Map<Integer, SortedSet<Integer>> iterationsByHashCode = new HashMap<>();
     SortedMap<Integer, Integer> iterationHashCodes = new TreeMap<>();
-    Map<Integer, RouteSet> iterationRoutes = null;
+    Map<Integer, SortedSet<Route>> iterationRoutes = null;
     Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
         iterationAbstractRoutes = null;
     if (_settings.getBdpRecordAllIterations()) {
@@ -1100,8 +1102,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     return outputRoutes;
   }
 
-  private RouteSet computeOutputRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
-    RouteSet outputRoutes = new RouteSet();
+  private SortedSet<Route> computeOutputRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
+    SortedSet<Route> outputRoutes = new TreeSet<>();
     nodes.forEach(
         (hostname, node) -> {
           node._virtualRouters.forEach(
@@ -1238,22 +1240,23 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   private String debugIterations(
-      String msg, Map<Integer, RouteSet> iterationRoutes, int first, int last) {
+      String msg, Map<Integer, SortedSet<Route>> iterationRoutes, int first, int last) {
     StringBuilder sb = new StringBuilder();
     sb.append(msg);
     sb.append("\n");
-    RouteSet initialRoutes = iterationRoutes.get(first);
+    SortedSet<Route> initialRoutes = iterationRoutes.get(first);
     sb.append("Initial routes (iteration " + first + "):\n");
     for (Route route : initialRoutes) {
       String routeStr = route.prettyPrint(null);
       sb.append(routeStr);
     }
     for (int i = first + 1; i <= last; i++) {
-      RouteSet baseRoutes = iterationRoutes.get(i - 1);
-      RouteSet deltaRoutes = iterationRoutes.get(i);
-      RouteSet added = CommonUtil.difference(deltaRoutes, baseRoutes, RouteSet::new);
-      RouteSet removed = CommonUtil.difference(baseRoutes, deltaRoutes, RouteSet::new);
-      RouteSet changed = CommonUtil.union(added, removed, RouteSet::new);
+      SortedSet<Route> baseRoutes = iterationRoutes.get(i - 1);
+      SortedSet<Route> deltaRoutes = iterationRoutes.get(i);
+      SortedSet<Route> added = CommonUtil.difference(deltaRoutes, baseRoutes, TreeSet<Route>::new);
+      SortedSet<Route> removed =
+          CommonUtil.difference(baseRoutes, deltaRoutes, TreeSet<Route>::new);
+      SortedSet<Route> changed = CommonUtil.union(added, removed, TreeSet<Route>::new);
       sb.append("Changed routes (iteration " + (i - 1) + " ==> " + i + "):\n");
       for (Route route : changed) {
         String diffSymbol = added.contains(route) ? "+" : "-";
@@ -1310,8 +1313,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public AdvertisementSet getAdvertisements() {
-    AdvertisementSet adverts = new AdvertisementSet();
+  public Set<BgpAdvertisement> getAdvertisements() {
+    Set<BgpAdvertisement> adverts = new LinkedHashSet<>();
     BdpDataPlane dp = loadDataPlane();
     for (Node node : dp._nodes.values()) {
       for (VirtualRouter vrf : node._virtualRouters.values()) {
@@ -1394,7 +1397,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
    */
   private void handleOscillation(
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes,
-      Map<Integer, RouteSet> iterationRoutes,
+      Map<Integer, SortedSet<Route>> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbstractRoutes,
       int start,
@@ -1490,7 +1493,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       SortedSet<String> routesForThisNextHopInterface,
       @Nullable Ip finalNextHopIp,
       @Nullable NodeInterfacePair nextHopInterface,
-      EdgeSet edges,
+      SortedSet<Edge> edges,
       boolean arp) {
     boolean continueToNextNextHopInterface = false;
     int unreachableNeighbors = 0;
@@ -1606,18 +1609,16 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       collectFlowTraces(
           dp, nextNodeName, newVisitedEdges, newHops, flowTraces, originalFlow, transformedFlow);
     }
-    if (arp) {
-      if (unreachableNeighbors > 0 && unreachableNeighbors == potentialNeighbors) {
-        FlowTrace trace =
-            neighborUnreachableTrace(
-                hopsSoFar,
-                nextHopInterface,
-                routesForThisNextHopInterface,
-                originalFlow,
-                transformedFlow);
-        flowTraces.add(trace);
-        continueToNextNextHopInterface = true;
-      }
+    if (arp && unreachableNeighbors > 0 && unreachableNeighbors == potentialNeighbors) {
+      FlowTrace trace =
+          neighborUnreachableTrace(
+              hopsSoFar,
+              nextHopInterface,
+              routesForThisNextHopInterface,
+              originalFlow,
+              transformedFlow);
+      flowTraces.add(trace);
+      continueToNextNextHopInterface = true;
     }
     return continueToNextNextHopInterface;
   }
@@ -1645,7 +1646,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               Set<Edge> visitedEdges = Collections.emptySet();
               List<FlowTraceHop> hops = new ArrayList<>();
               Set<String> dstIpOwners = dp._ipOwners.get(dstIp);
-              EdgeSet edges = new EdgeSet();
+              SortedSet<Edge> edges = new TreeSet<>();
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
                 edges.add(
@@ -1681,7 +1682,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   private void recordIterationDebugInfo(
       Map<String, Node> nodes,
       BdpDataPlane dp,
-      Map<Integer, RouteSet> iterationRoutes,
+      Map<Integer, SortedSet<Route>> iterationRoutes,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbstractRoutes,
       int dependentRoutesIterations) {

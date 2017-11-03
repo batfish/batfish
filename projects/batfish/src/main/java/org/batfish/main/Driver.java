@@ -389,8 +389,6 @@ public class Driver {
     final Settings settings;
     try {
       settings = new Settings(args);
-      // inherit pluginDir passed to service on startup
-      settings.setPluginDirs(_mainSettings.getPluginDirs());
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {

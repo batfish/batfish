@@ -26,25 +26,32 @@
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
     <antlr4-maven-plugin.version>4.7-batfish-internal</antlr4-maven-plugin.version>
+    <maven-artifact.version>3.5.0</maven-artifact.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.0.1</maven-dependency-plugin.version>
-    <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+    <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
+    <maven-pmd-plugin.version>3.8</maven-pmd-plugin.version>
+    <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
     <antlr.version>4.7</antlr.version>
+    <autoservice.version>1.0-rc3</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
+    <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
     <commons-cli.version>1.3.1</commons-cli.version>
     <commons-collections4.version>4.1</commons-collections4.version>
     <commons-configuration2.version>2.0</commons-configuration2.version>
     <commons-exec.version>1.3</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
+    <commons-lang3.version>3.6</commons-lang3.version>
     <grizzly.version>2.3.18</grizzly.version>
     <guava.version>22.0</guava.version>
     <hamcrest.version>1.3</hamcrest.version>
@@ -59,7 +66,6 @@
     <junit.version>4.12</junit.version>
     <jackson-jsonschema.version>1.0.11-batfish-internal</jackson-jsonschema.version>
     <puppycrawl.version>8.0</puppycrawl.version>
-    <maven-artifact.version>3.5.0</maven-artifact.version>
     <slf4j.version>1.7.25</slf4j.version>
     <xstream.version>1.4.7</xstream.version>
   </properties>
@@ -77,6 +83,7 @@
             <compilerArgs>
               <arg>-Werror</arg>
               <arg>-Xlint:all</arg>
+              <arg>-Xlint:-processing</arg>
             </compilerArgs>
             <useIncrementalCompilation>false</useIncrementalCompilation>
           </configuration>
@@ -99,6 +106,8 @@
             <failOnViolation>true</failOnViolation>
             <includeResources>false</includeResources>
             <includeTestSourceDirectory>true</includeTestSourceDirectory>
+            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+            <testSourceDirectory>${project.build.testSourceDirectory}</testSourceDirectory>
             <violationSeverity>warning</violationSeverity>
           </configuration>
         </plugin>
@@ -110,19 +119,92 @@
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
           <version>${maven-install-plugin.version}</version>
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jxr-plugin</artifactId>
+          <version>${maven-jxr-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>${maven-pmd-plugin.version}</version>
+          <configuration>
+            <excludeRoots>
+              <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+              <excludeRoot>${project.build.directory}/generated-test-sources</excludeRoot>
+            </excludeRoots>
+            <rulesets>
+              <ruleset>org/batfish/pmd/pmd-ruleset.xml</ruleset>
+            </rulesets>
+            <printFailingErrors>true</printFailingErrors>
+          </configuration>
+          <executions>
+            <execution>
+              <id>check</id>
+              <goals><goal>check</goal></goals>
+              <configuration>
+                 <failOnViolation>true</failOnViolation>
+              </configuration>
+            </execution>
+
+            <execution>
+              <id>cpd-check</id>
+              <goals><goal>cpd-check</goal></goals>
+              <configuration>
+                 <failOnViolation>true</failOnViolation>
+              </configuration>
+            </execution>
+          </executions>
+          <dependencies>
+            <dependency>
+              <groupId>org.batfish</groupId>
+              <artifactId>build-tools</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <version>${maven-shade-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>${maven-project-info-reports-plugin.version}</version>
         </plugin>
 
         <plugin>
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
           <version>${antlr4-maven-plugin.version}</version>
+          <configuration>
+            <treatWarningsAsErrors>true</treatWarningsAsErrors>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>add-test-sources</id>
+              <phase>generate-test-sources</phase>
+              <goals><goal>add-test-source</goal></goals>
+              <configuration>
+                <sources><source>${project.build.directory}/generated-test-sources/antlr4</source></sources>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
@@ -155,9 +237,6 @@
         <executions>
           <execution><goals><goal>check</goal></goals></execution>
         </executions>
-        <configuration>
-          <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-        </configuration>
       </plugin>
 
       <plugin>
@@ -178,6 +257,21 @@
               <packaging>jar</packaging>
               <file>${basedir}/lib/z3/com.microsoft.z3.jar</file>
               <sources>${basedir}/lib/z3/com.microsoft.z3-sources.jar</sources>
+            </configuration>
+          </execution>
+          <!-- JavaBDD Binary Decision Diagram library -->
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <id>install-bdd</id>
+            <configuration>
+              <groupId>net.sf.javabdd</groupId>
+              <artifactId>bdd</artifactId>
+              <version>batfish-internal</version>
+              <packaging>jar</packaging>
+              <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
@@ -258,6 +352,7 @@
             </goals>
             <configuration>
               <rules>
+                <dependencyConvergence/>
                 <requireMavenVersion>
                   <version>3.3.9</version>
                 </requireMavenVersion>
@@ -278,6 +373,25 @@
       </plugin>
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-project-info-reports-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <dependencyManagement>
     <dependencies>
@@ -302,6 +416,12 @@
 
       <dependency>
         <groupId>org.batfish</groupId>
+        <artifactId>build-tools</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
         <artifactId>coordinator</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -313,31 +433,40 @@
       </dependency>
 
       <!-- External modules. -->
-
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
         <artifactId>jackson-jaxrs-base</artifactId>
         <version>${jackson.version}</version>
       </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
         <artifactId>jackson-jaxrs-json-provider</artifactId>
         <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.auto.service</groupId>
+        <artifactId>auto-service</artifactId>
+        <version>${autoservice.version}</version>
       </dependency>
 
       <dependency>
@@ -379,6 +508,12 @@
       <dependency>
         <groupId>com.microsoft.z3</groupId>
         <artifactId>z3</artifactId>
+        <version>batfish-internal</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.sf.javabdd</groupId>
+        <artifactId>bdd</artifactId>
         <version>batfish-internal</version>
       </dependency>
 
@@ -458,6 +593,12 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-exec</artifactId>
         <version>${commons-exec.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
 
       <dependency>
@@ -558,6 +699,12 @@
 
       <dependency>
         <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
@@ -569,6 +716,7 @@
     <module>batfish</module>
     <module>batfish-client</module>
     <module>batfish-common-protocol</module>
+    <module>build-tools</module>
     <module>coordinator</module>
     <module>question</module>
   </modules>
