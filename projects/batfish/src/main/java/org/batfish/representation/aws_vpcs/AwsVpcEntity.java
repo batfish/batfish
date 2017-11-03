@@ -58,6 +58,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_RULE_ACTION = "RuleAction";
   String JSON_KEY_RULE_NUMBER = "RuleNumber";
   String JSON_KEY_SECURITY_GROUPS = "SecurityGroups";
+  String JSON_KEY_SERVICE_NAMES = "ServiceNames";
   String JSON_KEY_STATE = "State";
   String JSON_KEY_STATIC_ROUTES_ONLY = "StaticRoutesOnly";
   String JSON_KEY_STATUS = "Status";
