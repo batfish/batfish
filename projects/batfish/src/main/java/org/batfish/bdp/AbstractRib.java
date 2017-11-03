@@ -38,7 +38,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
    * Form), where the wildcard symbols can appear only after (to-the-right-of) non wildcard symbols
    * in the bit vector. E.g., 101010**, but not 1*001***
    */
-  private class RibTree implements Serializable {
+  class RibTree implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -380,10 +380,9 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     }
 
     private boolean hasSameRoutes(@Nullable AbstractRib<?>.RibTreeNode other) {
-
       /*
        * If other is not null, compare routes stored at this node with routes at other node,
-       * followed by comparison of left and right branches recursively (with null handling as well)
+       * followed by comparison of left and right branches recursively.
        */
       return (other != null && _routes.equals(other._routes))
           && (_left == null ? other._left == null : _left.hasSameRoutes(other._left))

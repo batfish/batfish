@@ -27,16 +27,10 @@ public class RipInternalRoute extends RipRoute {
       return false;
     }
     RipInternalRoute other = (RipInternalRoute) o;
-    if (_metric != other._metric) {
-      return false;
-    }
-    if (_admin != other._admin) {
-      return false;
-    }
-    if (!Objects.equals(_nextHopIp, other._nextHopIp)) {
-      return false;
-    }
-    return _network.equals(other._network);
+    return _metric == other._metric
+        && _admin == other._admin
+        && Objects.equals(_nextHopIp, other._nextHopIp)
+        && _network.equals(other._network);
   }
 
   @Nonnull
@@ -57,7 +51,7 @@ public class RipInternalRoute extends RipRoute {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
+    int prime = 31;
     int result = 1;
     result = prime * result + _admin;
     result = prime * result + Long.hashCode(_metric);

@@ -166,11 +166,11 @@ public class AbstractRibTest {
 
   @Test
   public void testSelfHasSameRoutes() {
-    assertThat(_rib.equals(_rib), is(true));
+    assertThat(_rib, equalTo(_rib));
 
     // Add some stuff to the rib
     setupOverlappingRoutes();
-    assertThat(_rib.equals(_rib), is(true));
+    assertThat(_rib, equalTo(_rib));
   }
 
   @Test
@@ -200,7 +200,6 @@ public class AbstractRibTest {
     _rib.freeze();
 
     assertThat(_rib._finalRoutes, is(notNullValue()));
-    // This throws an exception
     _expectedException.expect(UnmodifiableRibException.class);
     _rib.mergeRoute(_mostGeneralRoute);
   }

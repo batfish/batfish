@@ -14,7 +14,7 @@ public abstract class RipRoute extends AbstractRoute {
   private static final long serialVersionUID = 1L;
 
   /** Maximum allowable route metric in RIP */
-  private static final long MAX_ROUTE_METRIC = 16;
+  public static final long MAX_ROUTE_METRIC = 16;
 
   protected final int _admin;
 
@@ -30,7 +30,9 @@ public abstract class RipRoute extends AbstractRoute {
       @JsonProperty(PROP_METRIC) long metric) {
     super(network);
     if (metric < 0 || metric > MAX_ROUTE_METRIC) {
-      throw new BatfishException("Invalid RIP route metric. Must be between 0 and 16");
+      throw new BatfishException(
+          String.format(
+              "Invalid RIP route metric %d. Must be between 0 and %d", metric, MAX_ROUTE_METRIC));
     }
     _admin = admin;
     _metric = metric;
