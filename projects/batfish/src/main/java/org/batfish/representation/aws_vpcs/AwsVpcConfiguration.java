@@ -221,9 +221,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       case AwsVpcEntity.JSON_KEY_AVAILABILITY_ZONES:
       case AwsVpcEntity.JSON_KEY_DHCP_OPTIONS:
       case AwsVpcEntity.JSON_KEY_REGIONS:
-      case AwsVpcEntity.JSON_KEY_TAGS:
       case AwsVpcEntity.JSON_KEY_INSTANCE_STATUSES:
       case AwsVpcEntity.JSON_KEY_PLACEMENT_GROUPS:
+      case AwsVpcEntity.JSON_KEY_SERVICE_NAMES:
+      case AwsVpcEntity.JSON_KEY_TAGS:
         return true;
       default:
         return false;
