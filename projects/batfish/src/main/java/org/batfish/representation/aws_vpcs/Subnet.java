@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
@@ -61,12 +60,17 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   private RouteTable findMyRouteTable(Map<String, RouteTable> routeTables) {
     // All route tables for this VPC.
-    Stream<RouteTable> sameVpcTables =
-        routeTables.values().stream().filter((RouteTable rt) -> rt.getVpcId().equals(_vpcId));
+    List<RouteTable> sameVpcTables =
+        routeTables
+            .values()
+            .stream()
+            .filter((RouteTable rt) -> rt.getVpcId().equals(_vpcId))
+            .collect(Collectors.toList());
 
     // First we look for the unique route table with an association for this subnet.
     List<RouteTable> matchingRouteTables =
         sameVpcTables
+            .stream()
             .filter(
                 (RouteTable rt) ->
                     rt.getAssociations()
@@ -90,6 +94,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // If no route table has an association with this subnet, find the unique main routing table.
     List<RouteTable> mainRouteTables =
         sameVpcTables
+            .stream()
             .filter(
                 (RouteTable rt) ->
                     rt.getAssociations().stream().anyMatch(RouteTableAssociation::isMain))
@@ -131,7 +136,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
-    Configuration cfgNode = new Configuration(_subnetId);
+    Configuration cfgNode = Utils.newAwsConfiguration(_subnetId);
 
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;

@@ -50,7 +50,7 @@ public class Vpc implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
-    Configuration cfgNode = new Configuration(_vpcId);
+    Configuration cfgNode = Utils.newAwsConfiguration(_vpcId);
 
     // we only create a node here
     // interfaces are added to this node as we traverse subnets and
