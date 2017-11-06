@@ -7,11 +7,9 @@ import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.codehaus.jettison.json.JSONArray;
@@ -261,13 +259,6 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
     for (VpnConnection vpnConnection : _vpnConnections.values()) {
       vpnConnection.applyToVpnGateway(this);
-    }
-
-    // set the right vendor
-    for (Configuration cfgNode : _configurationNodes.values()) {
-      cfgNode.setConfigurationFormat(ConfigurationFormat.AWS_VPC);
-      cfgNode.setDefaultInboundAction(LineAction.ACCEPT);
-      cfgNode.setDefaultCrossZoneAction(LineAction.ACCEPT);
     }
 
     // TODO: for now, set all interfaces to have the same bandwidth

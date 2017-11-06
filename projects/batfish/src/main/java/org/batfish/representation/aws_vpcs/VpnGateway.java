@@ -41,7 +41,7 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
-    Configuration cfgNode = new Configuration(_vpnGatewayId);
+    Configuration cfgNode = Utils.newAwsConfiguration(_vpnGatewayId);
 
     for (String vpcId : _attachmentVpcIds) {
 
