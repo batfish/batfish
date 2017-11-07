@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.utils.Tuple;
 
 public class NetworkSlice {
@@ -23,6 +24,7 @@ public class NetworkSlice {
   }
 
   public static ArrayList<Supplier<NetworkSlice>> allSlices(DestinationClasses dcs, int fails) {
+    BDDNetwork network = BDDNetwork.create(dcs.getGraph());
     ArrayList<Supplier<NetworkSlice>> classes = new ArrayList<>();
     for (Entry<Set<String>, Tuple<HeaderSpace, List<Prefix>>> entry :
         dcs.getHeaderspaceMap().entrySet()) {
@@ -30,7 +32,7 @@ public class NetworkSlice {
       HeaderSpace headerspace = entry.getValue().getFirst();
       List<Prefix> prefixes = entry.getValue().getSecond();
       Supplier<NetworkSlice> sup =
-          () -> AbstractionBuilder.createGraph(dcs, devices, headerspace, prefixes, fails);
+          () -> AbstractionBuilder.createGraph(dcs, network, devices, headerspace, prefixes, fails);
       classes.add(sup);
     }
     return classes;

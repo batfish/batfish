@@ -74,10 +74,15 @@ class AbstractionBuilder {
   private UnionSplit<String> _abstractGroups;
 
   private AbstractionBuilder(
-      DestinationClasses a, Set<String> devices, HeaderSpace h, List<Prefix> pfxs, int fails) {
+      DestinationClasses a,
+      BDDNetwork network,
+      Set<String> devices,
+      HeaderSpace h,
+      List<Prefix> pfxs,
+      int fails) {
     this._batfish = a.getBatfish();
     this._graph = a.getGraph();
-    this._network = BDDNetwork.create(a.getGraph());
+    this._network = network;
     this._possibleFailures = fails;
     this._destinations = devices;
     this._headerspace = h;
@@ -89,8 +94,13 @@ class AbstractionBuilder {
   }
 
   static NetworkSlice createGraph(
-      DestinationClasses a, Set<String> devices, HeaderSpace h, List<Prefix> pfxs, int fails) {
-    AbstractionBuilder g = new AbstractionBuilder(a, devices, h, pfxs, fails);
+      DestinationClasses a,
+      BDDNetwork network,
+      Set<String> devices,
+      HeaderSpace h,
+      List<Prefix> pfxs,
+      int fails) {
+    AbstractionBuilder g = new AbstractionBuilder(a, network, devices, h, pfxs, fails);
     return g.computeAbstraction();
   }
 
@@ -155,10 +165,10 @@ class AbstractionBuilder {
 
     } while (!todo.isEmpty());
 
-    //System.out.println("EC Devices: " + devices);
-    //System.out.println("EC Prefixes: " + prefixes);
-    // System.out.println("Groups: \n" + workset.partitions());
-    // System.out.println("New graph: \n" + abstractGraph);
+    System.out.println("EC Devices: " + _destinations);
+    System.out.println("EC Prefixes: " + _prefixes);
+    System.out.println("Groups: \n" + _abstractGroups.partitions());
+    //System.out.println("New graph: \n" + abstractGraph);
     //System.out.println("Num Groups: " + workset.partitions().size());
     Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork();
     Graph abstractGraph = abstractNetwork.getFirst();
@@ -357,8 +367,7 @@ class AbstractionBuilder {
   }
 
   @Nonnull
-  private Set<Set<EdgePolicy>> collectAllPolicies(
-      Integer currentIdx, Set<String> neighbors) {
+  private Set<Set<EdgePolicy>> collectAllPolicies(Integer currentIdx, Set<String> neighbors) {
     Set<Set<EdgePolicy>> allPols = new HashSet<>();
     for (String router : neighbors) {
       Set<EdgePolicy> pols = _polMap.get(router, currentIdx);
@@ -418,15 +427,16 @@ class AbstractionBuilder {
   @Nonnull
   private Set<Integer> collectNeighborGroups(Set<String> partition) {
     Set<Integer> neighborGroups = new HashSet<>();
-    _polMap.forEach(
-        (router, i, pols) -> {
-          if (partition.contains(router) && i >= 0) {
-            Set<String> p = _abstractGroups.getPartition(i);
-            if (!p.equals(partition)) {
-              neighborGroups.add(i);
-            }
+    for (String router : partition) {
+      for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
+        if (ge.getPeer() != null) {
+          Integer peerGroup = _abstractGroups.getHandle(ge.getPeer());
+          if (peerGroup >= 0) {
+            neighborGroups.add(peerGroup);
           }
-        });
+        }
+      }
+    }
     return neighborGroups;
   }
 
@@ -738,7 +748,6 @@ class AbstractionBuilder {
     Map<Integer, Set<String>> canonicalChoices = pickCanonicalRouters();
     Set<String> abstractRouters = new HashSet<>();
     for (Set<String> canonical : canonicalChoices.values()) {
-      // System.out.println("Canonical: " + canonical);
       abstractRouters.addAll(canonical);
     }
     // Create the abstract configurations
@@ -776,7 +785,7 @@ class AbstractionBuilder {
             }
             Integer j = _abstractGroups.getHandle(neighbor);
             if (!i.equals(j)) {
-              individualGroups.add(_abstractGroups.getHandle(neighbor));
+              individualGroups.add(j);
             }
           }
           if (!individualGroups.equals(partitionGroups)) {
