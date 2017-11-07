@@ -902,6 +902,261 @@ public class VirtualRouter extends ComparableStructure<String> {
         .add(prefix);
   }
 
+  int computeBgpAdvertisementsToOutside(Map<Ip, Set<String>> ipOwners) {
+    int numAdvertisements = 0;
+
+    // If we have no BGP process, nothing to do
+    if (_vrf.getBgpProcess() == null) {
+      return numAdvertisements;
+    }
+
+    for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
+      Ip localIp = neighbor.getLocalIp();
+      Set<String> localIpOwners = ipOwners.get(localIp);
+      String hostname = _c.getHostname();
+      if (localIpOwners == null || !localIpOwners.contains(hostname)) {
+        continue;
+      }
+      Prefix remotePrefix = neighbor.getPrefix();
+      if (remotePrefix.getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+        // Do not support dynamic outside neighbors
+        continue;
+      }
+      Ip remoteIp = remotePrefix.getAddress();
+      if (ipOwners.get(remoteIp) != null) {
+        // Skip if neighbor is not outside the network
+        continue;
+      }
+
+      int localAs = neighbor.getLocalAs();
+      int remoteAs = neighbor.getRemoteAs();
+      String remoteHostname = remoteIp.toString();
+      String remoteVrfName = Configuration.DEFAULT_VRF_NAME;
+      RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(neighbor.getExportPolicy());
+      boolean ebgpSession = localAs != remoteAs;
+      RoutingProtocol targetProtocol = ebgpSession ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+      Set<AbstractRoute> candidateRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
+
+      // Add IGP routes
+      Set<AbstractRoute> activeRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
+      activeRoutes.addAll(_mainRib.getRoutes());
+      for (AbstractRoute candidateRoute : activeRoutes) {
+        if (candidateRoute.getProtocol() != RoutingProtocol.BGP
+            && candidateRoute.getProtocol() != RoutingProtocol.IBGP) {
+          candidateRoutes.add(candidateRoute);
+        }
+      }
+
+      /*
+       * bgp advertise-external
+       *
+       * When this is set, add best eBGP path independently of whether
+       * it is preempted by an iBGP or IGP route. Only applicable to
+       * iBGP sessions.
+       */
+      boolean advertiseExternal = !ebgpSession && neighbor.getAdvertiseExternal();
+      if (advertiseExternal) {
+        candidateRoutes.addAll(_ebgpBestPathRib.getRoutes());
+      }
+
+      /*
+       * bgp advertise-inactive
+       *
+       * When this is set, add best BGP path independently of whether
+       * it is preempted by an IGP route. Only applicable to eBGP
+       * sessions.
+       */
+      boolean advertiseInactive = ebgpSession && neighbor.getAdvertiseInactive();
+      /* Add best bgp paths if they are active, or if advertise-inactive */
+      for (AbstractRoute candidateRoute : _bgpBestPathRib.getRoutes()) {
+        if (advertiseInactive || activeRoutes.contains(candidateRoute)) {
+          candidateRoutes.add(candidateRoute);
+        }
+      }
+
+      /* Add all bgp paths if additional-paths active for this session */
+      boolean additionalPaths =
+          !ebgpSession
+              && neighbor.getAdditionalPathsSend()
+              && neighbor.getAdditionalPathsSelectAll();
+      if (additionalPaths) {
+        for (AbstractRoute candidateRoute : _bgpMultipathRib.getRoutes()) {
+          candidateRoutes.add(candidateRoute);
+        }
+      }
+      for (AbstractRoute route : candidateRoutes) {
+        BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
+        RoutingProtocol routeProtocol = route.getProtocol();
+        boolean routeIsBgp =
+            routeProtocol == RoutingProtocol.IBGP || routeProtocol == RoutingProtocol.BGP;
+
+        // originatorIP
+        Ip originatorIp;
+        if (!ebgpSession && routeProtocol.equals(RoutingProtocol.IBGP)) {
+          BgpRoute bgpRoute = (BgpRoute) route;
+          originatorIp = bgpRoute.getOriginatorIp();
+        } else {
+          originatorIp = _vrf.getBgpProcess().getRouterId();
+        }
+        transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
+
+        // clusterList, receivedFromRouteReflectorClient, (originType
+        // for bgp remote route)
+        if (routeIsBgp) {
+          BgpRoute bgpRoute = (BgpRoute) route;
+          transformedOutgoingRouteBuilder.setOriginType(bgpRoute.getOriginType());
+          if (ebgpSession
+              && bgpRoute.getAsPath().containsAs(neighbor.getRemoteAs())
+              && !neighbor.getAllowRemoteAsOut()) {
+            // skip routes containing peer's AS unless
+            // disable-peer-as-check (getAllowRemoteAsOut) is set
+            continue;
+          }
+          /*
+           * route reflection: reflect everything received from
+           * clients to clients and non-clients. reflect everything
+           * received from non-clients to clients. Do not reflect to
+           * originator
+           */
+
+          Ip routeOriginatorIp = bgpRoute.getOriginatorIp();
+          /*
+           *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
+           *  same as originator id of advertisement
+           */
+          if (!ebgpSession && routeOriginatorIp != null && remoteIp.equals(routeOriginatorIp)) {
+            continue;
+          }
+          if (routeProtocol.equals(RoutingProtocol.IBGP) && !ebgpSession) {
+            boolean routeReceivedFromRouteReflectorClient =
+                bgpRoute.getReceivedFromRouteReflectorClient();
+            boolean sendingToRouteReflectorClient = neighbor.getRouteReflectorClient();
+            transformedOutgoingRouteBuilder.getClusterList().addAll(bgpRoute.getClusterList());
+            if (!routeReceivedFromRouteReflectorClient && !sendingToRouteReflectorClient) {
+              continue;
+            }
+            if (sendingToRouteReflectorClient) {
+              // sender adds its local cluster id to clusterlist of
+              // new route
+              transformedOutgoingRouteBuilder.getClusterList().add(neighbor.getClusterId());
+            }
+          }
+        }
+
+        // Outgoing asPath
+        // Outgoing communities
+        if (routeIsBgp) {
+          BgpRoute bgpRoute = (BgpRoute) route;
+          transformedOutgoingRouteBuilder.setAsPath(bgpRoute.getAsPath().getAsSets());
+          if (neighbor.getSendCommunity()) {
+            transformedOutgoingRouteBuilder.getCommunities().addAll(bgpRoute.getCommunities());
+          }
+        }
+        if (ebgpSession) {
+          SortedSet<Integer> newAsPathElement = new TreeSet<>();
+          newAsPathElement.add(localAs);
+          transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
+        }
+
+        // Outgoing protocol
+        transformedOutgoingRouteBuilder.setProtocol(targetProtocol);
+        transformedOutgoingRouteBuilder.setNetwork(route.getNetwork());
+
+        // Outgoing metric
+        if (routeIsBgp) {
+          transformedOutgoingRouteBuilder.setMetric(route.getMetric());
+        }
+
+        // Outgoing nextHopIp
+        // Outgoing localPreference
+        Ip nextHopIp;
+        int localPreference;
+        if (ebgpSession || !routeIsBgp) {
+          nextHopIp = neighbor.getLocalIp();
+          localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+        } else {
+          nextHopIp = route.getNextHopIp();
+          BgpRoute ibgpRoute = (BgpRoute) route;
+          localPreference = ibgpRoute.getLocalPreference();
+        }
+        if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+          // should only happen for ibgp
+          String nextHopInterface = route.getNextHopInterface();
+          Prefix nextHopPrefix = _c.getInterfaces().get(nextHopInterface).getPrefix();
+          if (nextHopPrefix == null) {
+            throw new BatfishException("route's nextHopInterface has no address");
+          }
+          nextHopIp = nextHopPrefix.getAddress();
+        }
+        transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
+        transformedOutgoingRouteBuilder.setLocalPreference(localPreference);
+
+        // Outgoing srcProtocol
+        transformedOutgoingRouteBuilder.setSrcProtocol(route.getProtocol());
+
+        /*
+         * CREATE OUTGOING ROUTE
+         */
+        boolean acceptOutgoing =
+            exportPolicy.process(
+                route, transformedOutgoingRouteBuilder, remoteIp, remoteVrfName, Direction.OUT);
+        if (acceptOutgoing) {
+          BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
+          // Record sent advertisement
+          BgpAdvertisementType sentType =
+              ebgpSession ? BgpAdvertisementType.EBGP_SENT : BgpAdvertisementType.IBGP_SENT;
+          Ip sentOriginatorIp = transformedOutgoingRoute.getOriginatorIp();
+          SortedSet<Long> sentClusterList =
+              new TreeSet<>(transformedOutgoingRoute.getClusterList());
+          AsPath sentAsPath = transformedOutgoingRoute.getAsPath();
+          SortedSet<Long> sentCommunities =
+              new TreeSet<>(transformedOutgoingRoute.getCommunities());
+          Prefix sentNetwork = route.getNetwork();
+          Ip sentNextHopIp;
+          String sentSrcNode = hostname;
+          String sentSrcVrf = _vrf.getName();
+          Ip sentSrcIp = neighbor.getLocalIp();
+          String sentDstNode = remoteHostname;
+          String sentDstVrf = remoteVrfName;
+          Ip sentDstIp = remoteIp;
+          int sentWeight = -1;
+          if (ebgpSession) {
+            sentNextHopIp = nextHopIp;
+          } else {
+            sentNextHopIp = transformedOutgoingRoute.getNextHopIp();
+          }
+          int sentLocalPreference = transformedOutgoingRoute.getLocalPreference();
+          long sentMed = transformedOutgoingRoute.getMetric();
+          OriginType sentOriginType = transformedOutgoingRoute.getOriginType();
+          RoutingProtocol sentSrcProtocol = targetProtocol;
+          BgpAdvertisement sentAdvert =
+              new BgpAdvertisement(
+                  sentType,
+                  sentNetwork,
+                  sentNextHopIp,
+                  sentSrcNode,
+                  sentSrcVrf,
+                  sentSrcIp,
+                  sentDstNode,
+                  sentDstVrf,
+                  sentDstIp,
+                  sentSrcProtocol,
+                  sentOriginType,
+                  sentLocalPreference,
+                  sentMed,
+                  sentOriginatorIp,
+                  sentAsPath,
+                  new TreeSet<>(sentCommunities),
+                  new TreeSet<>(sentClusterList),
+                  sentWeight);
+          _sentBgpAdvertisements.add(sentAdvert);
+          numAdvertisements++;
+        }
+      }
+    }
+    return numAdvertisements;
+  }
+
   int propagateBgpRoutes(
       Map<Ip, Set<String>> ipOwners,
       int dependentRoutesIterations,

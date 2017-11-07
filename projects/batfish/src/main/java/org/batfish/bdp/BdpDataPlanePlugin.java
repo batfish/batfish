@@ -892,6 +892,19 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         oscillatingPrefixes,
         numDependentRoutesIterations));
 
+    AtomicInteger computeBgpAdvertisementsToOutsideCompleted =
+        _batfish.newBatch("Compute BGP advertisements sent to outside", nodes.size());
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n._virtualRouters.values()) {
+                vr.computeBgpAdvertisementsToOutside(dp.getIpOwners());
+              }
+              computeBgpAdvertisementsToOutsideCompleted.incrementAndGet();
+            });
+
     // Set iteration stats in the answer
     ae.setOspfInternalIterations(numOspfInternalIterations);
     ae.setDependentRoutesIterations(numDependentRoutesIterations);
