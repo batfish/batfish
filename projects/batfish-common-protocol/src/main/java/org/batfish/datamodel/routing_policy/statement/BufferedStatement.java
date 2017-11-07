@@ -1,8 +1,12 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class BufferedStatement extends Statement {
 
@@ -16,6 +20,12 @@ public class BufferedStatement extends Statement {
 
   public BufferedStatement(Statement statement) {
     _statement = statement;
+  }
+
+  @Override
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    _statement.collectSources(sources, routingPolicies, w);
   }
 
   @Override

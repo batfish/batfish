@@ -2,6 +2,9 @@ package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -20,6 +23,20 @@ public class CallStatement extends Statement {
 
   public CallStatement(String includedPolicyName) {
     _calledPolicyName = includedPolicyName;
+  }
+
+  @Override
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    if (sources.contains(_calledPolicyName)) {
+      w.redFlag("Circular reference to routing policy: '" + _calledPolicyName + "'");
+      return;
+    }
+    RoutingPolicy calledPolicy = routingPolicies.get(_calledPolicyName);
+    if (calledPolicy == null) {
+      return;
+    }
+    calledPolicy.computeSources(sources, routingPolicies, w);
   }
 
   @Override

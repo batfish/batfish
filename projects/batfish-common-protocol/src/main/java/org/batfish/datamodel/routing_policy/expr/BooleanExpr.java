@@ -5,8 +5,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.io.Serializable;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class BooleanExpr implements Serializable {
@@ -16,6 +21,17 @@ public abstract class BooleanExpr implements Serializable {
   private static final String PROP_COMMENT = "comment";
 
   private String _comment;
+
+  /**
+   * Get all the routing-policies referenced by this expression.
+   *
+   * @return A {@link SortedSet} containing the names of each {@link RoutingPolicy} directly or
+   *     indirectly referenced by this expression
+   */
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    return;
+  }
 
   @Override
   public abstract boolean equals(Object obj);

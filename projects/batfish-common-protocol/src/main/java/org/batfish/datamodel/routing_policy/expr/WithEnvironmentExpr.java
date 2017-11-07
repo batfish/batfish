@@ -2,8 +2,12 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class WithEnvironmentExpr extends BooleanExpr {
@@ -23,6 +27,21 @@ public class WithEnvironmentExpr extends BooleanExpr {
     _preStatements = new ArrayList<>();
     _postStatements = new ArrayList<>();
     _postTrueStatements = new ArrayList<>();
+  }
+
+  @Override
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    _expr.collectSources(sources, routingPolicies, w);
+    for (Statement statement : _postStatements) {
+      statement.collectSources(sources, routingPolicies, w);
+    }
+    for (Statement statement : _postTrueStatements) {
+      statement.collectSources(sources, routingPolicies, w);
+    }
+    for (Statement statement : _preStatements) {
+      statement.collectSources(sources, routingPolicies, w);
+    }
   }
 
   @Override

@@ -4,8 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
@@ -24,6 +28,20 @@ public class If extends Statement {
   public If() {
     _falseStatements = new ArrayList<>();
     _trueStatements = new ArrayList<>();
+  }
+
+  @Override
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    for (Statement statement : _falseStatements) {
+      statement.collectSources(sources, routingPolicies, w);
+    }
+    for (Statement statement : _trueStatements) {
+      statement.collectSources(sources, routingPolicies, w);
+    }
+    if (_guard != null) {
+      _guard.collectSources(sources, routingPolicies, w);
+    }
   }
 
   @Override

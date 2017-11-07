@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
@@ -18,11 +19,17 @@ public class OspfProcess implements Serializable {
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
+  private static final String PROP_EXPORT_POLICY = "exportPolicy";
+
+  private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
+
   private static final long serialVersionUID = 1L;
 
   private SortedMap<Long, OspfArea> _areas;
 
   private String _exportPolicy;
+
+  private SortedSet<String> _exportPolicySources;
 
   private SortedSet<GeneratedRoute> _generatedRoutes;
 
@@ -35,6 +42,7 @@ public class OspfProcess implements Serializable {
   private Ip _routerId;
 
   public OspfProcess() {
+    _exportPolicySources = new TreeSet<>();
     _generatedRoutes = new TreeSet<>();
     _areas = new TreeMap<>();
   }
@@ -44,11 +52,17 @@ public class OspfProcess implements Serializable {
     return _areas;
   }
 
+  @JsonProperty(PROP_EXPORT_POLICY)
   @JsonPropertyDescription(
       "The routing policy applied to routes in the main RIB to determine which ones are to be "
           + "exported into OSPF and how")
   public String getExportPolicy() {
     return _exportPolicy;
+  }
+
+  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
+  public SortedSet<String> getExportPolicySources() {
+    return _exportPolicySources;
   }
 
   @JsonPropertyDescription(
@@ -113,8 +127,14 @@ public class OspfProcess implements Serializable {
     _areas = areas;
   }
 
+  @JsonProperty(PROP_EXPORT_POLICY)
   public void setExportPolicy(String exportPolicy) {
     _exportPolicy = exportPolicy;
+  }
+
+  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
+  public void setExportPolicySources(SortedSet<String> exportPolicySources) {
+    _exportPolicySources = exportPolicySources;
   }
 
   public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {

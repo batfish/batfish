@@ -5,15 +5,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.batfish.common.BfJson;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.VendorFamily;
@@ -24,6 +28,10 @@ import org.codehaus.jettison.json.JSONObject;
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
 public final class Configuration extends ComparableStructure<String> {
+
+  public static final String DEFAULT_VRF_NAME = "default";
+
+  public static final String NODE_NONE_NAME = "(none)";
 
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
 
@@ -36,8 +44,6 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
 
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
-
-  public static final String DEFAULT_VRF_NAME = "default";
 
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
 
@@ -57,8 +63,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
 
-  public static final String NODE_NONE_NAME = "(none)";
-
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
   private static final String PROP_ROLES = "roles";
@@ -67,17 +71,17 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_ROUTING_POLICIES = "routingPolicies";
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_SNMP_SOURCE_INTERFACE = "snmpSourceInterface";
 
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
 
+  private static final String PROP_ZONES = "zones";
+
+  private static final long serialVersionUID = 1L;
+
   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
-
-  private static final String PROP_ZONES = "zones";
 
   private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
@@ -200,6 +204,43 @@ public final class Configuration extends ComparableStructure<String> {
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private SortedSet<String> collectRoutingPolicySources(String routingPolicyName, Warnings w) {
+    if (routingPolicyName == null) {
+      return Collections.emptySortedSet();
+    }
+    RoutingPolicy routingPolicy = _routingPolicies.get(routingPolicyName);
+    if (routingPolicy == null) {
+      return Collections.emptySortedSet();
+    }
+    Set<String> sources = new LinkedHashSet<>();
+    routingPolicy.computeSources(sources, _routingPolicies, w);
+    return new TreeSet<>(
+        sources.stream().filter(s -> !RoutingPolicy.isGenerated(s)).collect(Collectors.toSet()));
+  }
+
+  public void computeRoutingPolicySources(Warnings w) {
+    for (Vrf vrf : _vrfs.values()) {
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
+          neighbor.setExportPolicySources(
+              collectRoutingPolicySources(neighbor.getExportPolicy(), w));
+          neighbor.setImportPolicySources(
+              collectRoutingPolicySources(neighbor.getImportPolicy(), w));
+        }
+      }
+      OspfProcess ospfProcess = vrf.getOspfProcess();
+      if (ospfProcess != null) {
+        ospfProcess.setExportPolicySources(
+            collectRoutingPolicySources(ospfProcess.getExportPolicy(), w));
+      }
+      for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
+        gr.setAttributePolicySources(collectRoutingPolicySources(gr.getAttributePolicy(), w));
+        gr.setGenerationPolicySources(collectRoutingPolicySources(gr.getGenerationPolicy(), w));
+      }
+    }
   }
 
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)

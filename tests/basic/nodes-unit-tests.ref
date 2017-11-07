@@ -15973,6 +15973,9 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "group" : "ABC",
                     "importPolicy" : "FROM_ABC_V4",
+                    "importPolicySources" : [
+                      "FROM_ABC_V4"
+                    ],
                     "localAs" : 1,
                     "remoteAs" : 2,
                     "remotePrefix" : "1.1.1.1/32",
