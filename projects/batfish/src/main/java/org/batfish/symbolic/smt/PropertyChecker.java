@@ -271,26 +271,41 @@ public class PropertyChecker {
    * environment, failure scenario, and data plane packet.
    */
   public AnswerElement checkForwarding(HeaderQuestion question) {
+    long totalTime = System.currentTimeMillis();
     HeaderQuestion q = new HeaderQuestion(question);
     q.setFailures(0);
-    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, null, false);
+    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, null, true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
     Optional<Supplier<NetworkSlice>> opt = stream.findFirst();
     if (!opt.isPresent()) {
       throw new BatfishException("Unexpected Error: checkForwarding");
     }
+    long timeEc = System.currentTimeMillis();
     Supplier<NetworkSlice> sup = opt.get();
     NetworkSlice slice = sup.get();
+    timeEc = System.currentTimeMillis() - timeEc;
     Graph g = slice.getGraph();
     q = new HeaderQuestion(q);
     q.setHeaderSpace(slice.getHeaderSpace());
+    long timeEncoding = System.currentTimeMillis();
     Encoder encoder = new Encoder(g, q);
     encoder.computeEncoding();
     addEnvironmentConstraints(encoder, q.getBaseEnvironmentType());
+    timeEncoding = System.currentTimeMillis() - timeEncoding;
     VerificationResult result = encoder.verify().getFirst();
+    totalTime = System.currentTimeMillis() - totalTime;
+    VerificationStats stats = result.getStats();
     if (q.getBenchmark()) {
-      result.getStats().setTimeCreateBdds((double) timeAbstraction);
+      stats.setTimeCreateBdds((double) timeAbstraction);
+      stats.setTotalTime(totalTime);
+      stats.setAvgComputeEcTime(timeEc);
+      stats.setMaxComputeEcTime(timeEc);
+      stats.setMinComputeEcTime(timeEc);
+      stats.setAvgEncodingTime(timeEncoding);
+      stats.setMaxEncodingTime(timeEncoding);
+      stats.setMinEncodingTime(timeEncoding);
+      stats.setTimeCreateBdds((double) timeAbstraction);
     }
     return new SmtOneAnswerElement(result);
   }
@@ -331,9 +346,9 @@ public class PropertyChecker {
     boolean hasCounterExample =
         stream.anyMatch(
             lazyEc -> {
-              long ecTime = System.currentTimeMillis();
+              long timeEc = System.currentTimeMillis();
               NetworkSlice slice = lazyEc.get();
-              ecTime = System.currentTimeMillis() - ecTime;
+              timeEc = System.currentTimeMillis() - timeEc;
 
               synchronized (_lock) {
                 // Make sure the headerspace is correct
@@ -435,9 +450,9 @@ public class PropertyChecker {
 
                 if (q.getBenchmark()) {
                   VerificationStats stats = res.getStats();
-                  stats.setAvgComputeEcTime(ecTime);
-                  stats.setMaxComputeEcTime(ecTime);
-                  stats.setMinComputeEcTime(ecTime);
+                  stats.setAvgComputeEcTime(timeEc);
+                  stats.setMaxComputeEcTime(timeEc);
+                  stats.setMinComputeEcTime(timeEc);
                   stats.setAvgEncodingTime(timeEncoding);
                   stats.setMaxEncodingTime(timeEncoding);
                   stats.setMinEncodingTime(timeEncoding);
@@ -465,7 +480,7 @@ public class PropertyChecker {
               }
             });
 
-    totalTime = System.currentTimeMillis() - totalTime;
+    totalTime = (System.currentTimeMillis() - totalTime);
     VerificationResult res;
     AnswerElement ae;
     if (hasCounterExample) {

@@ -165,9 +165,9 @@ class AbstractionBuilder {
 
     } while (!todo.isEmpty());
 
-    System.out.println("EC Devices: " + _destinations);
-    System.out.println("EC Prefixes: " + _prefixes);
-    System.out.println("Groups: \n" + _abstractGroups.partitions());
+    //System.out.println("EC Devices: " + _destinations);
+    //System.out.println("EC Prefixes: " + _prefixes);
+    //System.out.println("Groups: \n" + _abstractGroups.partitions());
     //System.out.println("New graph: \n" + abstractGraph);
     //System.out.println("Num Groups: " + workset.partitions().size());
     Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork();
