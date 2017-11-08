@@ -33,11 +33,11 @@ public final class StandardCommunityList extends ComparableStructure<String> {
       List<Long> standardCommunities = line.getCommunities();
       String regex;
       if (standardCommunities.size() == 1) {
-        regex = CommonUtil.longToCommunity(standardCommunities.get(0));
+        regex = "^" + CommonUtil.longToCommunity(standardCommunities.get(0)) + "$";
       } else {
         regex = "(";
         for (Long l : standardCommunities) {
-          regex += CommonUtil.longToCommunity(l) + "|";
+          regex += "^" + CommonUtil.longToCommunity(l) + "$|";
         }
         regex = regex.substring(0, regex.length() - 1) + ")";
       }
