@@ -422,7 +422,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       String retString =
           String.format(
-              "%s %s%s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\"",
+              "%s %s%s=%s %s=%s %s=\"%s\" %s=%s %s=%s %s=%s",
               getName(),
               prettyPrintBase(),
               PROP_EBGP,
