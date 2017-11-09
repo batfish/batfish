@@ -11,6 +11,10 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.samplers.ConstSampler;
+import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1788,6 +1792,20 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private void initTracer() {
+    GlobalTracer.register(
+        new com.uber.jaeger.Configuration(
+                BfConsts.PROP_CLIENT_SERVICE,
+                new SamplerConfiguration(ConstSampler.TYPE, 1),
+                new ReporterConfiguration(
+                    false,
+                    _settings.getTracingAgentHost(),
+                    _settings.getTracingAgentPort(),
+                    /* flush interval in ms */ 1000,
+                    /* max buffered Spans */ 10000))
+            .getTracer());
+  }
+
   private boolean isSetContainer(boolean printError) {
     if (!_settings.getSanityCheck()) {
       return true;
@@ -2517,7 +2535,9 @@ public class Client extends AbstractClient implements IClient {
   public void run(List<String> initialCommands) {
     loadPlugins();
     initHelpers();
-
+    if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
+      initTracer();
+    }
     _logger.debugf(
         "Will use coordinator at %s://%s\n",
         (_settings.getSslDisable()) ? "http" : "https", _settings.getCoordinatorHost());
