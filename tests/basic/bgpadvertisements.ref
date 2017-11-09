@@ -742,7 +742,11 @@
           2,
           3,
           4,
-          5,
+          5
+        ]
+      },
+      "receivedIbgpAdvertisements" : {
+        "as2border2" : [
           9,
           10,
           11,
@@ -759,14 +763,15 @@
           22
         ]
       },
-      "receivedIbgpAdvertisements" : {
-        "as2border2" : [ ]
-      },
       "sentEbgpAdvertisements" : {
         "as2border2" : [
           6,
           7,
-          8,
+          8
+        ]
+      },
+      "sentIbgpAdvertisements" : {
+        "as2border2" : [
           23,
           24,
           25,
@@ -774,9 +779,6 @@
           27,
           28
         ]
-      },
-      "sentIbgpAdvertisements" : {
-        "as2border2" : [ ]
       }
     }
   ],
@@ -791,5 +793,10 @@
     "received" : true,
     "sent" : true
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }
