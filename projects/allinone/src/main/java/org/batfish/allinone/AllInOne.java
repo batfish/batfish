@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.uber.jaeger.Configuration;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
-import com.uber.jaeger.samplers.ProbabilisticSampler;
+import com.uber.jaeger.samplers.ConstSampler;
 import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,16 +130,13 @@ public class AllInOne {
     GlobalTracer.register(
         new Configuration(
                 BfConsts.PROP_ALLINONE_SERVICE,
-                new SamplerConfiguration(ProbabilisticSampler.TYPE, 1),
+                new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,
                     _settings.getTracingAgentHost(),
                     _settings.getTracingAgentPort(),
-                    1000,
-                    // flush internal in ms
-                    10000)
-                // max buffered Spans
-                )
+                    /* flush interval in ms */ 1000,
+                    /* max buffered Spans */ 10000))
             .getTracer());
   }
 
