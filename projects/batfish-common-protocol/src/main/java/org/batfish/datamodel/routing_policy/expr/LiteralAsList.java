@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -43,12 +43,10 @@ public class LiteralAsList extends AsPathListExpr {
 
   @Override
   public List<Integer> evaluate(Environment environment) {
-    List<Integer> list = new ArrayList<>(_list.size());
-    for (AsExpr expr : _list) {
-      int as = expr.evaluate(environment);
-      list.add(as);
-    }
-    return list;
+    return _list
+        .stream()
+        .map(expr -> expr.evaluate(environment))
+        .collect(ImmutableList.toImmutableList());
   }
 
   public List<AsExpr> getList() {
