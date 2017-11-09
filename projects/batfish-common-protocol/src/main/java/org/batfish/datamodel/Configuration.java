@@ -93,6 +93,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private LineAction _defaultInboundAction;
 
+  private DeviceType _deviceType;
+
   private NavigableSet<String> _dnsServers;
 
   private String _dnsSourceInterface;
@@ -250,6 +252,26 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonIgnore
   public Vrf getDefaultVrf() {
     return _vrfs.get(DEFAULT_VRF_NAME);
+  }
+
+  public DeviceType getDeviceType() {
+    if (_deviceType == null) {
+      // It's a host iff the configuration format is HOST
+      if (this._configurationFormat == ConfigurationFormat.HOST) {
+        _deviceType = DeviceType.HOST;
+      }
+      // If any vrf has BGP, OSPF, or RIP process, assume it's a router (ignore firewalls for now)
+      for (Vrf vrf : this._vrfs.values()) {
+        if (vrf.getBgpProcess() != null
+            || vrf.getOspfProcess() != null
+            || vrf.getRipProcess() != null) {
+          _deviceType = DeviceType.ROUTER;
+        }
+      }
+      // If it's not a host and doesn't have BGP, OSPF, or RIP, it's a switch
+      _deviceType = DeviceType.SWITCH;
+    }
+    return _deviceType;
   }
 
   public NavigableSet<String> getDnsServers() {
