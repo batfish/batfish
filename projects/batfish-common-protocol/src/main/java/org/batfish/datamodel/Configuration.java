@@ -259,6 +259,7 @@ public final class Configuration extends ComparableStructure<String> {
       // It's a host iff the configuration format is HOST
       if (this._configurationFormat == ConfigurationFormat.HOST) {
         _deviceType = DeviceType.HOST;
+        return _deviceType;
       }
       // If any vrf has BGP, OSPF, or RIP process, assume it's a router (ignore firewalls for now)
       for (Vrf vrf : this._vrfs.values()) {
@@ -266,6 +267,7 @@ public final class Configuration extends ComparableStructure<String> {
             || vrf.getOspfProcess() != null
             || vrf.getRipProcess() != null) {
           _deviceType = DeviceType.ROUTER;
+          return _deviceType;
         }
       }
       // If it's not a host and doesn't have BGP, OSPF, or RIP, it's a switch
