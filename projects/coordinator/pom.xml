@@ -29,12 +29,9 @@
                   <ignoredUnusedDeclaredDependency>
                     org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util
-                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>

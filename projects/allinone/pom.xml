@@ -23,16 +23,11 @@
               <goals><goal>analyze-only</goal></goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.batfish:question
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing.contrib:opentracing-jaxrs2
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util
-                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.batfish:question</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing.contrib:opentracing-jaxrs2</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -106,11 +101,6 @@
     </dependency>
 
     <dependency>
-       <groupId>org.batfish</groupId>
-       <artifactId>question</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
@@ -141,6 +131,12 @@
     </dependency>
 
     <!-- Runtime dependencies to add logging. -->
+    <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>question</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
