@@ -558,12 +558,6 @@
 
       <dependency>
         <groupId>io.opentracing</groupId>
-        <artifactId>opentracing-api</artifactId>
-        <version>${opentracing.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>io.opentracing</groupId>
         <artifactId>opentracing-util</artifactId>
         <version>${opentracing.version}</version>
       </dependency>

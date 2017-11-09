@@ -26,8 +26,6 @@
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.batfish:question</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>io.opentracing.contrib:opentracing-jaxrs2</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -106,18 +104,13 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.uber.jaeger</groupId>
       <artifactId>jaeger-core</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jaxrs2</artifactId>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
     </dependency>
 
     <dependency>
@@ -125,12 +118,13 @@
       <artifactId>opentracing-util</artifactId>
     </dependency>
 
+    <!-- Runtime dependencies to add logging. -->
     <dependency>
-      <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-api</artifactId>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-jaxrs2</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
-    <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>question</artifactId>
