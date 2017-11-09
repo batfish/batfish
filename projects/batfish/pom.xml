@@ -25,16 +25,11 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing.contrib:opentracing-jaxrs2
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api
-                  </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util
-                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing.contrib:opentracing-jaxrs2</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-api</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>io.opentracing:opentracing-util</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
