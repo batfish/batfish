@@ -4,6 +4,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.google.common.collect.Lists;
+import com.uber.jaeger.Configuration;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.samplers.ProbabilisticSampler;
+import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -68,6 +74,21 @@ public class Main {
   public static PoolMgr getPoolMgr() {
     checkState(_poolManager != null, "Error: Pool Manager has not been configured");
     return _poolManager;
+  }
+
+  private static void initTracer() {
+    GlobalTracer.register(new Configuration(
+        BfConsts.PROP_COORDINATOR_SERVICE,
+        new SamplerConfiguration(ProbabilisticSampler.TYPE, 1),
+        new ReporterConfiguration(
+            false,
+            _settings.getTracingAgentHost(),
+            _settings.getTracingAgentPort(),
+            1000,
+            //flush internal in ms
+            10000)
+        // max buffered Spans
+    ).getTracer());
   }
 
   public static Map<String, String> getQuestionTemplates() {
@@ -223,6 +244,9 @@ public class Main {
         new ResourceConfig(serviceClass)
             .register(ExceptionMapper.class)
             .register(CrossDomainFilter.class);
+    if (_settings.getTracingEnable()) {
+      rcWork.register(ServerTracingDynamicFeature.class);
+    }
     for (Class<?> feature : features) {
       rcWork.register(feature);
     }
@@ -301,6 +325,9 @@ public class Main {
     try {
       initAuthorizer();
       initPoolManager();
+      if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
+        initTracer();
+      }
       initWorkManager();
     } catch (Exception e) {
       System.err.println(

@@ -2,6 +2,11 @@ package org.batfish.main;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.samplers.ProbabilisticSampler;
+import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
+import io.opentracing.util.GlobalTracer;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -160,6 +165,21 @@ public class Driver {
     }
   }
 
+  private static void initTracer() {
+    GlobalTracer.register(new com.uber.jaeger.Configuration(
+        BfConsts.PROP_WORKER_SERVICE,
+        new SamplerConfiguration(ProbabilisticSampler.TYPE, 1),
+        new ReporterConfiguration(
+            false,
+            _mainSettings.getTracingAgentHost(),
+            _mainSettings.getTracingAgentPort(),
+            1000,
+            //flush internal in ms
+            10000)
+        // max buffered Spans
+    ).getTracer());
+  }
+
   public static void main(String[] args) {
     mainInit(args);
     _mainLogger =
@@ -197,12 +217,17 @@ public class Driver {
     System.setOut(_mainLogger.getPrintStream());
     _mainSettings.setLogger(_mainLogger);
     if (_mainSettings.runInServiceMode()) {
-
+      if (_mainSettings.getTracingEnable() && !GlobalTracer.isRegistered()) {
+        initTracer();
+      }
       String protocol = _mainSettings.getSslDisable() ? "http" : "https";
       String baseUrl = String.format("%s://%s", protocol, _mainSettings.getServiceBindHost());
       URI baseUri = UriBuilder.fromUri(baseUrl).port(_mainSettings.getServicePort()).build();
       _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
       ResourceConfig rc = new ResourceConfig(Service.class).register(new JettisonFeature());
+      if (_mainSettings.getTracingEnable()) {
+        rc.register(ServerTracingDynamicFeature.class);
+      }
       try {
         if (_mainSettings.getSslDisable()) {
           GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);

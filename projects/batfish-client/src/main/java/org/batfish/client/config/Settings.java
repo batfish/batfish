@@ -34,6 +34,9 @@ public class Settings extends BaseSettings {
   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
   public static final String ARG_TESTRIG_DIR = "testrigdir";
   public static final String ARG_TESTRIG_ID = "testrigid";
+  public static final String ARG_TRACING_ENABLE = "tracingenable";
+  private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
+  private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
 
   private static final String EXECUTABLE_NAME = "batfish_client";
 
@@ -61,6 +64,9 @@ public class Settings extends BaseSettings {
   private String _sslTruststorePassword;
   private String _testrigDir;
   private String _testrigId;
+  private String _tracingAgentHost;
+  private Integer _tracingAgentPort;
+  private boolean _tracingEnable;
 
   public Settings(String[] args) throws Exception {
     super(
@@ -167,6 +173,18 @@ public class Settings extends BaseSettings {
     return _testrigId;
   }
 
+  public Integer getTracingAgentPort() {
+    return _tracingAgentPort;
+  }
+
+  public String getTracingAgentHost() {
+    return _tracingAgentHost;
+  }
+
+  public boolean getTracingEnable() {
+    return _tracingEnable;
+  }
+
   private void initConfigDefaults() {
     setDefaultProperty(ARG_API_KEY, CoordConsts.DEFAULT_API_KEY);
     setDefaultProperty(
@@ -190,6 +208,9 @@ public class Settings extends BaseSettings {
     setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
+    setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
+    setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
+    setDefaultProperty(ARG_TRACING_ENABLE, false);
   }
 
   private void initOptions() {
@@ -239,6 +260,12 @@ public class Settings extends BaseSettings {
     addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
     addOption(ARG_TESTRIG_ID, "testrig to attach to", "testrig_id");
+
+    addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
+
+    addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
+
+    addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
   }
 
   private void parseCommandLine(String[] args) {
@@ -253,6 +280,9 @@ public class Settings extends BaseSettings {
     _batchCommandFile = getStringOptionValue(ARG_COMMAND_FILE);
     _batfishLogLevel = getStringOptionValue(ARG_BATFISH_LOG_LEVEL);
     _containerId = getStringOptionValue(ARG_CONTAINER_ID);
+    _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
+    _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
+    _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
     _datamodelDir = getStringOptionValue(ARG_DATAMODEL_DIR);
     _logFile = getStringOptionValue(ARG_LOG_FILE);
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
@@ -270,10 +300,10 @@ public class Settings extends BaseSettings {
 
     _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
     _testrigId = getStringOptionValue(ARG_TESTRIG_ID);
+    _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
+    _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
+    _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
 
-    _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
-    _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
-    _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
   }
 
   public void setBatfishLogLevel(String logLevel) {
