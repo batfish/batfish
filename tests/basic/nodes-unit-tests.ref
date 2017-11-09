@@ -7585,7 +7585,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
-                  "regex" : "9999:8888"
+                  "regex" : "^9999:8888$"
                 }
               ],
               "name" : "9999-RRR",
@@ -7661,7 +7661,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
-                  "regex" : "9999:8888"
+                  "regex" : "^9999:8888$"
                 }
               ],
               "name" : "9999-RRR",
@@ -7737,7 +7737,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
-                  "regex" : "75:42"
+                  "regex" : "^75:42$"
                 }
               ],
               "name" : "COMM_LIST_NAME",

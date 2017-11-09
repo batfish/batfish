@@ -2026,7 +2026,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             if (originationNode != null) {
               originationNode.getBgpAdvertisements().add(bgpAdvertisement);
               originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
+              originationNode.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
               Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
               originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
               originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
@@ -2063,7 +2063,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             if (receivingNode != null) {
               receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
               receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
+              receivingNode.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
               Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
               receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
               receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
@@ -2095,7 +2095,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             if (sendingNode != null) {
               sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
               sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+              sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
               Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
               sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
               sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
