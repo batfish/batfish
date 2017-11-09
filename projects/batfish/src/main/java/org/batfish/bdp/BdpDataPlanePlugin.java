@@ -4,7 +4,6 @@ import com.google.auto.service.AutoService;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BdpOscillationException;
-import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
@@ -30,9 +28,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.BdpSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
@@ -501,18 +497,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       int dependentRoutesIterations,
       SortedSet<Prefix> oscillatingPrefixes) {
 
-    /*
-     * Oscillation recovery data structures
-     */
-    Map<BgpNeighbor, Map<BgpNeighbor, List<BgpAdvertisement>>> deferredBgpAdvertisements =
-        new IdentityHashMap<>();
-    Map<BgpNeighbor, Map<BgpNeighbor, List<BgpRoute>>> deferredIncomingRoutes =
-        new IdentityHashMap<>();
-    Map<BgpNeighbor, Map<BgpNeighbor, List<BgpMultipathRib>>> deferredIncomingRouteRibs =
-        new IdentityHashMap<>();
-    Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes =
-        new HashMap<>();
-
     // (Re)initialization of dependent route calculation
     AtomicInteger reinitializeDependentCompleted =
         _batfish.newBatch(
@@ -673,39 +657,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
                 vr.propagateBgpRoutes(
-                    dp.getIpOwners(),
-                    dependentRoutesIterations,
-                    oscillatingPrefixes,
-                    deferredBgpAdvertisements,
-                    deferredIncomingRoutes,
-                    deferredIncomingRouteRibs,
-                    markedPrefixes);
+                    dp.getIpOwners(), dependentRoutesIterations, oscillatingPrefixes);
               }
               propagateBgpCompleted.incrementAndGet();
-            });
-    AtomicInteger propagateDeferredBgpCompleted =
-        _batfish.newBatch(
-            "Iteration "
-                + dependentRoutesIterations
-                + ": Propagate deferred BGP routes (oscillation recovery)",
-            nodes.size());
-    nodes
-        .values()
-        .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n._virtualRouters.values()) {
-                vr.propagateDeferredBgpRoutes(
-                    nodes,
-                    dp.getIpOwners(),
-                    dependentRoutesIterations,
-                    oscillatingPrefixes,
-                    deferredBgpAdvertisements,
-                    deferredIncomingRoutes,
-                    deferredIncomingRouteRibs,
-                    markedPrefixes);
-              }
-              propagateDeferredBgpCompleted.incrementAndGet();
             });
     AtomicInteger importBgpCompleted =
         _batfish.newBatch(

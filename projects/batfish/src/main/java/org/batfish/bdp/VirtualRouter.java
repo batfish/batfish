@@ -3,13 +3,8 @@ package org.batfish.bdp;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -149,6 +144,8 @@ public class VirtualRouter extends ComparableStructure<String> {
   transient StaticRib _staticRib;
 
   final Vrf _vrf;
+
+  private Set<BgpAdvertisement> _prevSentBgpAdvertisements;
 
   public VirtualRouter(String name, Configuration c, Map<String, Node> nodes) {
     super(name);
@@ -866,42 +863,6 @@ public class VirtualRouter extends ComparableStructure<String> {
     _staticInterfaceRib.freeze();
   }
 
-  private boolean isMarkedPrefix(
-      Prefix prefix,
-      BgpNeighbor neighbor,
-      BgpNeighbor remoteBgpNeighbor,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
-    Pair<String, String> vrf = new Pair<>(neighbor.getOwner().getHostname(), neighbor.getVrf());
-    Pair<String, String> remoteVrf =
-        new Pair<>(remoteBgpNeighbor.getOwner().getHostname(), remoteBgpNeighbor.getVrf());
-    Pair<String, String> lowerVrf = vrf.compareTo(remoteVrf) < 0 ? vrf : remoteVrf;
-    Pair<String, String> higherVrf = vrf == lowerVrf ? remoteVrf : vrf;
-    Map<Pair<String, String>, Set<Prefix>> byHigherVrf = markedPrefixes.get(lowerVrf);
-    if (byHigherVrf != null) {
-      Set<Prefix> currentMarkedPrefixes = byHigherVrf.get(higherVrf);
-      if (currentMarkedPrefixes != null) {
-        return currentMarkedPrefixes.contains(prefix);
-      }
-    }
-    return false;
-  }
-
-  private static synchronized void markPrefix(
-      Prefix prefix,
-      BgpNeighbor neighbor,
-      BgpNeighbor remoteBgpNeighbor,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
-    Pair<String, String> vrf = new Pair<>(neighbor.getOwner().getHostname(), neighbor.getVrf());
-    Pair<String, String> remoteVrf =
-        new Pair<>(remoteBgpNeighbor.getOwner().getHostname(), remoteBgpNeighbor.getVrf());
-    Pair<String, String> lowerVrf = vrf.compareTo(remoteVrf) < 0 ? vrf : remoteVrf;
-    Pair<String, String> higherVrf = vrf == lowerVrf ? remoteVrf : vrf;
-    markedPrefixes
-        .computeIfAbsent(lowerVrf, v -> new HashMap<>())
-        .computeIfAbsent(higherVrf, v -> new HashSet<>())
-        .add(prefix);
-  }
-
   int computeBgpAdvertisementsToOutside(Map<Ip, Set<String>> ipOwners) {
     int numAdvertisements = 0;
 
@@ -1160,13 +1121,12 @@ public class VirtualRouter extends ComparableStructure<String> {
   int propagateBgpRoutes(
       Map<Ip, Set<String>> ipOwners,
       int dependentRoutesIterations,
-      SortedSet<Prefix> oscillatingPrefixes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpAdvertisement>>> deferredBgpAdvertisements,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpRoute>>> deferredIncomingRoutes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpMultipathRib>>> deferredIncomingRouteRibs,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
+      SortedSet<Prefix> oscillatingPrefixes) {
+
     int numRoutes = 0;
     _receivedBgpAdvertisements = new LinkedHashSet<>();
+    _prevSentBgpAdvertisements =
+        _sentBgpAdvertisements != null ? _sentBgpAdvertisements : new LinkedHashSet<>();
     _sentBgpAdvertisements = new LinkedHashSet<>();
 
     // If we have no BGP process, nothing to do
@@ -1257,9 +1217,6 @@ public class VirtualRouter extends ComparableStructure<String> {
         }
       }
       for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
-        /*
-         * If the prefix for this route is oscillating, only continue if it is our turn.
-         */
         BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
         RoutingProtocol remoteRouteProtocol = remoteRoute.getProtocol();
         boolean remoteRouteIsBgp =
@@ -1501,6 +1458,21 @@ public class VirtualRouter extends ComparableStructure<String> {
                   new TreeSet<>(sentCommunities),
                   new TreeSet<>(sentClusterList),
                   sentWeight);
+
+          Prefix prefix = remoteRoute.getNetwork();
+          boolean isOscillatingPrefix = oscillatingPrefixes.contains(prefix);
+          boolean hasAdvertisementPriorityDuringRecovery =
+              hasAdvertisementPriorityDuringRecovery(
+                  remoteRoute,
+                  dependentRoutesIterations,
+                  oscillatingPrefixes,
+                  neighbor,
+                  remoteBgpNeighbor);
+          if (isOscillatingPrefix
+              && !hasAdvertisementPriorityDuringRecovery
+              && !_prevSentBgpAdvertisements.contains(sentAdvert)) {
+            continue;
+          }
           _sentBgpAdvertisements.add(sentAdvert);
 
           /*
@@ -1563,89 +1535,15 @@ public class VirtualRouter extends ComparableStructure<String> {
                     new TreeSet<>(receivedCommunities),
                     new TreeSet<>(receivedClusterList),
                     receivedWeight);
-
-            Prefix prefix = remoteRoute.getNetwork();
-            if (oscillatingPrefixes.contains(prefix)) {
-              if (hasAdvertisementPriorityDuringRecovery(
-                  remoteRoute,
-                  dependentRoutesIterations,
-                  oscillatingPrefixes,
-                  neighbor,
-                  remoteBgpNeighbor)) {
-                if (targetRib.mergeRoute(transformedIncomingRoute)) {
-                  markPrefix(prefix, neighbor, remoteBgpNeighbor, markedPrefixes);
-                  numRoutes++;
-                }
-                _receivedBgpAdvertisements.add(receivedAdvert);
-
-              } else {
-                synchronized (deferredBgpAdvertisements) {
-                  deferredBgpAdvertisements
-                      .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                      .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<>())
-                      .add(receivedAdvert);
-                  deferredIncomingRoutes
-                      .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                      .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<>())
-                      .add(transformedIncomingRoute);
-                  deferredIncomingRouteRibs
-                      .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                      .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<>())
-                      .add(targetRib);
-                }
-              }
-            } else {
-              if (targetRib.mergeRoute(transformedIncomingRoute)) {
-                numRoutes++;
-              }
-              _receivedBgpAdvertisements.add(receivedAdvert);
+            if (targetRib.mergeRoute(transformedIncomingRoute)) {
+              numRoutes++;
             }
+            _receivedBgpAdvertisements.add(receivedAdvert);
           }
         }
       }
     }
     return numRoutes;
-  }
-
-  public void propagateDeferredBgpRoutes(
-      Map<String, Node> nodes,
-      Map<Ip, Set<String>> ipOwners,
-      int dependentRoutesIterations,
-      SortedSet<Prefix> oscillatingPrefixes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpAdvertisement>>> deferredBgpAdvertisements,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpRoute>>> deferredIncomingRoutes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpMultipathRib>>> deferredIncomingRouteRibs,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
-    if (_vrf.getBgpProcess() != null) {
-      for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
-        Map<BgpNeighbor, List<BgpAdvertisement>> deferredAdvertisementsByRemoteBgpNeighbor =
-            deferredBgpAdvertisements.get(neighbor);
-        if (deferredAdvertisementsByRemoteBgpNeighbor != null) {
-          BgpNeighbor remoteBgpNeighbor = neighbor.getRemoteBgpNeighbor();
-          if (remoteBgpNeighbor != null) {
-            List<BgpAdvertisement> deferredAdvertisements =
-                deferredAdvertisementsByRemoteBgpNeighbor.get(remoteBgpNeighbor);
-            List<BgpRoute> currentDeferredIncomingRoutes =
-                deferredIncomingRoutes.get(neighbor).get(remoteBgpNeighbor);
-            List<BgpMultipathRib> currentDeferredIncomingRouteRibs =
-                deferredIncomingRouteRibs.get(neighbor).get(remoteBgpNeighbor);
-            Iterator<BgpAdvertisement> iAdvert = deferredAdvertisements.iterator();
-            Iterator<BgpRoute> iRoute = currentDeferredIncomingRoutes.iterator();
-            Iterator<BgpMultipathRib> iRib = currentDeferredIncomingRouteRibs.iterator();
-            while (iAdvert.hasNext()) {
-              BgpRoute route = iRoute.next();
-              BgpAdvertisement advert = iAdvert.next();
-              BgpMultipathRib rib = iRib.next();
-              Prefix prefix = route.getNetwork();
-              if (!isMarkedPrefix(prefix, neighbor, remoteBgpNeighbor, markedPrefixes)) {
-                rib.mergeRoute(route);
-                _receivedBgpAdvertisements.add(advert);
-              }
-            }
-          }
-        }
-      }
-    }
   }
 
   public boolean propagateOspfExternalRoutes(Map<String, Node> nodes, Topology topology) {
