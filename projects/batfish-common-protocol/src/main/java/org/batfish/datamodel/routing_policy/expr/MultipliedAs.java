@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -53,13 +53,13 @@ public class MultipliedAs extends AsPathListExpr {
 
   @Override
   public List<Integer> evaluate(Environment environment) {
-    List<Integer> list = new ArrayList<>();
+    ImmutableList.Builder<Integer> listBuilder = ImmutableList.builder();
     int as = _expr.evaluate(environment);
     int number = _number.evaluate(environment);
     for (int i = 0; i < number; i++) {
-      list.add(as);
+      listBuilder.add(as);
     }
-    return list;
+    return listBuilder.build();
   }
 
   public AsExpr getExpr() {

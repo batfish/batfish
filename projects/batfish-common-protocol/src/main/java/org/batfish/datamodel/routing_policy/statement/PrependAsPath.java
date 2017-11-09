@@ -1,10 +1,10 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -50,16 +50,22 @@ public class PrependAsPath extends Statement {
   public Result execute(Environment environment) {
     List<Integer> toPrepend = _expr.evaluate(environment);
     List<SortedSet<Integer>> newAsPaths =
-        toPrepend.stream().map(ImmutableSortedSet::of).collect(Collectors.toList());
+        toPrepend.stream().map(ImmutableSortedSet::of).collect(ImmutableList.toImmutableList());
 
     BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-    List<SortedSet<Integer>> asPath = bgpRouteBuilder.getAsPath();
-    asPath.addAll(0, newAsPaths);
+    bgpRouteBuilder.setAsPath(
+        ImmutableList.<SortedSet<Integer>>builder()
+            .addAll(newAsPaths)
+            .addAll(bgpRouteBuilder.getAsPath())
+            .build());
 
     if (environment.getWriteToIntermediateBgpAttributes()) {
       BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
-      List<SortedSet<Integer>> iAsPath = ir.getAsPath();
-      iAsPath.addAll(0, newAsPaths);
+      ir.setAsPath(
+          ImmutableList.<SortedSet<Integer>>builder()
+              .addAll(newAsPaths)
+              .addAll(ir.getAsPath())
+              .build());
     }
 
     Result result = new Result();
