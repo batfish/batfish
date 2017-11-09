@@ -66,7 +66,7 @@
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <jackson-jsonschema.version>1.0.11-batfish-internal</jackson-jsonschema.version>
-    <opentracing-jaxrs2.version>0.0.8</opentracing-jaxrs2.version>
+    <opentracing-jaxrs2.version>0.0.10</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
     <puppycrawl.version>8.0</puppycrawl.version>
     <slf4j.version>1.7.25</slf4j.version>

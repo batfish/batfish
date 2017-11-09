@@ -4,7 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
-import com.uber.jaeger.samplers.ProbabilisticSampler;
+import com.uber.jaeger.samplers.ConstSampler;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
 import java.net.URI;
@@ -161,16 +161,13 @@ public class Driver {
     GlobalTracer.register(
         new com.uber.jaeger.Configuration(
                 BfConsts.PROP_WORKER_SERVICE,
-                new SamplerConfiguration(ProbabilisticSampler.TYPE, 1),
+                new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,
                     _mainSettings.getTracingAgentHost(),
                     _mainSettings.getTracingAgentPort(),
-                    1000,
-                    // flush internal in ms
-                    10000)
-                // max buffered Spans
-                )
+                    /* flush interval in ms */ 1000,
+                    /* max buffered Spans */ 10000))
             .getTracer());
   }
 

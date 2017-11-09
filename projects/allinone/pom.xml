@@ -25,7 +25,6 @@
                 <ignoredUnusedDeclaredDependencies>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.batfish:question</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>io.opentracing.contrib:opentracing-jaxrs2</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -119,12 +118,6 @@
     </dependency>
 
     <!-- Runtime dependencies to add logging. -->
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jaxrs2</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>question</artifactId>
