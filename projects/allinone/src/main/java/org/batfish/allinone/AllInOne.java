@@ -79,6 +79,11 @@ public class AllInOne {
       initTracer();
     }
 
+    argString +=
+        String.format(
+            " -%s %s",
+            org.batfish.client.config.Settings.ARG_TRACING_ENABLE, _settings.getTracingEnable());
+
     // if we are not running the client, we were like not specified a cmdfile.
     // lets do a dummy cmdfile do client initialization does not barf
     if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
@@ -172,7 +177,13 @@ public class AllInOne {
   }
 
   private void runCoordinator() {
-    String[] initialArgArray = getArgArrayFromString(_settings.getCoordinatorArgs());
+    String coordinatorArgs =
+        String.format(
+            "%s -%s %s",
+            _settings.getCoordinatorArgs(),
+            org.batfish.coordinator.config.Settings.ARG_TRACING_ENABLE,
+            _settings.getTracingEnable());
+    String[] initialArgArray = getArgArrayFromString(coordinatorArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
     final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));
