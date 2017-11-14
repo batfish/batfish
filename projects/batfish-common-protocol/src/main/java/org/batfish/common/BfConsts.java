@@ -146,6 +146,7 @@ public class BfConsts {
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
+  public static final String RELPATH_METADATA_FILE = "metadata.json";
   public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";

@@ -794,6 +794,13 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException(
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
+
+    // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
+    Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
+    long time = (new java.util.Date()).getTime();
+    CommonUtil.writeFile(metadataPath, "{\n\t\"timestamp\": "+Long.toString(time)+"\n}");
+
+
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
