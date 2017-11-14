@@ -1,6 +1,6 @@
 {
   "hostname": "z2-firewall",
-  "iptablesFile": "iptables/z2-firewall.v4",
+  "iptablesFilename" : "z2-firewall.v4",
   "overlay": true,
   "hostInterfaces": {
     "eth1": {

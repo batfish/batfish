@@ -102,7 +102,8 @@ public class BatfishTestUtils {
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    writeTemporaryTestrigFiles(
+        iptablesFilesText, testrigPath.resolve(BfConsts.RELPATH_IPTABLES_CONFIGS_DIR));
     writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
     Batfish batfish =
         new Batfish(
@@ -176,7 +177,8 @@ public class BatfishTestUtils {
         readTestrigResources(
             testrigResourcePrefix, BfConsts.RELPATH_HOST_CONFIGS_DIR, hostFilenames);
     SortedMap<String, String> iptablesFilesText =
-        readTestrigResources(testrigResourcePrefix, "iptables", iptablesFilenames);
+        readTestrigResources(
+            testrigResourcePrefix, BfConsts.RELPATH_IPTABLES_CONFIGS_DIR, iptablesFilenames);
     SortedMap<String, String> routingTablesText =
         readTestrigResources(
             testrigResourcePrefix, BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES, rtFilenames);

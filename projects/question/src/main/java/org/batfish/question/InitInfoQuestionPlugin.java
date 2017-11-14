@@ -2,11 +2,14 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.InitInfoComponent;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -21,22 +24,25 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     @Override
     public InitInfoAnswerElement answer() {
       InitInfoQuestion question = (InitInfoQuestion) _question;
-      boolean b = question._environmentBgpTables;
-      boolean r = question._environmentRoutes;
-      if (b && r) {
-        throw new BatfishException(
-            String.format(
-                "Only one of the following may be true: '%s' and '%s'",
-                InitInfoQuestion.PROP_ENVIRONMENT_ROUTES,
-                InitInfoQuestion.PROP_ENVIRONMENT_BGP_TABLES));
-      }
-      if (b) {
-        return _batfish.initInfoBgpAdvertisements(question._summary, question._verboseError);
-      } else if (r) {
-        return _batfish.initInfoRoutes(question._summary, question._verboseError);
+      InitInfoAnswerElement answerElement;
+      if (question._components.contains(InitInfoComponent.CONFIGS)) {
+        answerElement = _batfish.initInfo(question._summary, question._verboseError);
       } else {
-        return _batfish.initInfo(question._summary, question._verboseError);
+        answerElement = new InitInfoAnswerElement();
       }
+      question
+          ._components
+          .stream()
+          .filter(c -> c != InitInfoComponent.CONFIGS)
+          .forEach(
+              initInfoComponent ->
+                  answerElement
+                      .getExtraComponents()
+                      .put(
+                          initInfoComponent,
+                          _batfish.initInfoExtraComponent(
+                              question._summary, question._verboseError, initInfoComponent)));
+      return answerElement;
     }
   }
 
@@ -51,37 +57,30 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
    */
   public static class InitInfoQuestion extends Question {
 
-    public static final String PROP_ENVIRONMENT_BGP_TABLES = "environmentBgpTables";
-
-    public static final String PROP_ENVIRONMENT_ROUTES = "environmentRoutes";
+    private static final String PROP_COMPONENTS = "components";
 
     private static final String PROP_SUMMARY = "summary";
 
     private static final String PROP_VERBOSE_ERROR = "verboseError";
 
-    private boolean _environmentBgpTables;
-
-    private boolean _environmentRoutes;
+    private SortedSet<InitInfoComponent> _components;
 
     private boolean _summary;
 
     private boolean _verboseError;
 
-    public InitInfoQuestion() {}
+    public InitInfoQuestion() {
+      _components = new TreeSet<>(Collections.singleton(InitInfoComponent.CONFIGS));
+    }
 
     @Override
     public boolean getDataPlane() {
       return false;
     }
 
-    @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
-    public boolean getEnvironmentBgpTables() {
-      return _environmentBgpTables;
-    }
-
-    @JsonProperty(PROP_ENVIRONMENT_ROUTES)
-    public boolean getEnvironmentRoutes() {
-      return _environmentRoutes;
+    @JsonProperty(PROP_COMPONENTS)
+    public SortedSet<InitInfoComponent> getComponents() {
+      return _components;
     }
 
     @Override
@@ -117,14 +116,9 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
           + _verboseError;
     }
 
-    @JsonProperty(PROP_ENVIRONMENT_BGP_TABLES)
-    public void setEnvironmentBgpTables(boolean environmentBgpTables) {
-      _environmentBgpTables = environmentBgpTables;
-    }
-
-    @JsonProperty(PROP_ENVIRONMENT_ROUTES)
-    public void setEnvironmentRoutes(boolean environmentRoutes) {
-      _environmentRoutes = environmentRoutes;
+    @JsonProperty(PROP_COMPONENTS)
+    public void setComponents(SortedSet<InitInfoComponent> components) {
+      _components = components;
     }
 
     @JsonProperty(PROP_SUMMARY)

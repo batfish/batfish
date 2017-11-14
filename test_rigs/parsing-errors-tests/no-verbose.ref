@@ -11,10 +11,17 @@
   ],
   "question" : {
     "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
+    "components" : [
+      "CONFIGS"
+    ],
     "differential" : false,
-    "environmentRoutes" : false,
     "summary" : false,
     "verboseError" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

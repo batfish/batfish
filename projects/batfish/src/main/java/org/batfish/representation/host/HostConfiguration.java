@@ -2,8 +2,6 @@ package org.batfish.representation.host;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
@@ -13,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -56,7 +55,7 @@ public class HostConfiguration extends VendorConfiguration {
 
   private static final String PROP_HOSTNAME = "hostname";
 
-  private static final String PROP_IPTABLES_FILE = "iptablesFile";
+  private static final String PROP_IPTABLES_FILENAME = "iptablesFilename";
 
   private static final String PROP_OVERLAY = "overlay";
 
@@ -67,10 +66,15 @@ public class HostConfiguration extends VendorConfiguration {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public static HostConfiguration fromJson(String text, Warnings warnings)
-      throws JsonParseException, JsonMappingException, IOException {
+  public static HostConfiguration fromJson(String text, Warnings warnings) {
     ObjectMapper mapper = new BatfishObjectMapper();
-    HostConfiguration hostConfiguration = mapper.readValue(text, HostConfiguration.class);
+    HostConfiguration hostConfiguration;
+    try {
+      hostConfiguration = mapper.readValue(text, HostConfiguration.class);
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Failed to convert host file json to " + HostConfiguration.class.getName(), e);
+    }
     hostConfiguration._w = warnings;
     return hostConfiguration;
   }
@@ -81,7 +85,7 @@ public class HostConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
-  private String _iptablesFile;
+  private String _iptablesFilename;
 
   private IptablesVendorConfiguration _iptablesVendorConfig;
 
@@ -118,9 +122,9 @@ public class HostConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  @JsonProperty(PROP_IPTABLES_FILE)
-  public String getIptablesFile() {
-    return _iptablesFile;
+  @JsonProperty(PROP_IPTABLES_FILENAME)
+  public String getIptablesFilename() {
+    return _iptablesFilename;
   }
 
   public IptablesVendorConfiguration getIptablesVendorConfig() {
@@ -149,8 +153,8 @@ public class HostConfiguration extends VendorConfiguration {
     _hostname = hostname;
   }
 
-  public void setIptablesFile(String file) {
-    _iptablesFile = file;
+  public void setIptablesFilename(String iptablesFilename) {
+    _iptablesFilename = iptablesFilename;
   }
 
   public void setIptablesVendorConfig(IptablesVendorConfiguration config) {

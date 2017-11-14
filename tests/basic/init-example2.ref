@@ -17,9 +17,7 @@
         "dc1-host-01-02" : "dc1-host-01-02.json",
         "dc1-leaf-01" : "dc1-leaf-01.cfg",
         "dc1-spine-01" : "dc1-spine-01.cfg",
-        "dc1-spine-02" : "dc1-spine-02.cfg",
-        "testrig/iptables/dc1-host-01-01.iptables" : "dc1-host-01-01.iptables",
-        "testrig/iptables/dc1-host-01-02.iptables" : "dc1-host-01-02.iptables"
+        "dc1-spine-02" : "dc1-spine-02.cfg"
       },
       "parseStatus" : {
         "bb1-border-01" : "PASSED",
@@ -36,11 +34,20 @@
         "dc1-host-01-02" : "PASSED",
         "dc1-leaf-01" : "PASSED",
         "dc1-spine-01" : "PASSED",
-        "dc1-spine-02" : "PASSED",
-        "testrig/iptables/dc1-host-01-01.iptables" : "PASSED",
-        "testrig/iptables/dc1-host-01-02.iptables" : "PASSED"
+        "dc1-spine-02" : "PASSED"
       },
       "version" : "0.32.0"
+    },
+    {
+      "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileMap" : {
+        "dc1-host-01-01.iptables" : "dc1-host-01-01.iptables",
+        "dc1-host-01-02.iptables" : "dc1-host-01-02.iptables"
+      },
+      "parseStatus" : {
+        "dc1-host-01-01.iptables" : "PASSED",
+        "dc1-host-01-02.iptables" : "PASSED"
+      }
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -195,6 +202,14 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
+      "extraComponents" : {
+        "IPTABLES" : {
+          "parseStatus" : {
+            "dc1-host-01-01.iptables" : "PASSED",
+            "dc1-host-01-02.iptables" : "PASSED"
+          }
+        }
+      },
       "parseStatus" : {
         "bb1-border-01" : "PASSED",
         "bb1-border-02" : "PASSED",
@@ -210,9 +225,7 @@
         "dc1-host-01-02" : "PASSED",
         "dc1-leaf-01" : "PASSED",
         "dc1-spine-01" : "PASSED",
-        "dc1-spine-02" : "PASSED",
-        "testrig/iptables/dc1-host-01-01.iptables" : "PASSED",
-        "testrig/iptables/dc1-host-01-02.iptables" : "PASSED"
+        "dc1-spine-02" : "PASSED"
       }
     }
   ],

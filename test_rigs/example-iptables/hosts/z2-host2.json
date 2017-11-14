@@ -1,6 +1,6 @@
 {
   "hostname": "z2-host2",
-  "iptablesFile": "iptables/z2-host2.v4",
+  "iptablesFilename" : "z2-host2.v4",
   "hostInterfaces": {
     "eth0": {
       "name": "eth0",

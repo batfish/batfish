@@ -111,7 +111,9 @@ import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfo;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.answers.InitInfoComponent;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
 import org.batfish.datamodel.answers.NodAnswerElement;
 import org.batfish.datamodel.answers.NodFirstUnsatAnswerElement;
@@ -209,6 +211,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         testrigDir.resolve(BfConsts.RELPATH_VENDOR_SPECIFIC_CONFIG_DIR));
     settings.setTestRigPath(testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR));
     settings.setParseAnswerPath(testrigDir.resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH));
+    settings.setParseIptablesAnswerPath(
+        testrigDir.resolve(BfConsts.RELPATH_PARSE_IPTABLES_ANSWER_PATH));
     settings.setConvertAnswerPath(testrigDir.resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH));
     settings.setNodeRolesPath(
         testrigDir.resolve(
@@ -2143,11 +2147,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
     mergeConvertAnswer(summary, verboseError, answerElement);
+    ParseVendorConfigurationAnswerElement parseIptablesAnswer =
+        loadParseIptablesConfigurationAnswerElement();
+    if (!parseIptablesAnswer.getParseStatus().isEmpty()) {
+      InitInfo iptablesInfo = mergeParseAnswer(summary, verboseError, parseIptablesAnswer);
+      answerElement.getExtraComponents().put(InitInfoComponent.IPTABLES, iptablesInfo);
+    }
     _logger.info(answerElement.prettyPrint());
     return answerElement;
   }
 
-  public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
+  private InitInfo initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
     ParseEnvironmentBgpTablesAnswerElement parseAnswer =
         loadParseEnvironmentBgpTablesAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -2155,7 +2165,40 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
+  @Override
+  public InitInfo initInfoExtraComponent(
+      boolean summary, boolean verboseError, InitInfoComponent initInfoExtraComponent) {
+    switch (initInfoExtraComponent) {
+      case BGP_TABLES:
+        return initInfoBgpAdvertisements(summary, verboseError);
+
+      case CONFIGS:
+        throw new BatfishException(
+            "Not an extra init info component: " + InitInfoComponent.CONFIGS);
+
+      case IPTABLES:
+        return initInfoIptables(summary, verboseError);
+
+      case ROUTING_TABLES:
+        return initInfoRoutes(summary, verboseError);
+
+      default:
+        throw new BatfishException(
+            String.format(
+                "Unsupported %s: %s",
+                InitInfoComponent.class.getCanonicalName(), initInfoExtraComponent));
+    }
+  }
+
+  private InitInfo initInfoIptables(boolean summary, boolean verboseError) {
+    ParseVendorConfigurationAnswerElement parseAnswer =
+        loadParseIptablesConfigurationAnswerElement();
+    InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
+    _logger.info(answerElement.prettyPrint());
+    return answerElement;
+  }
+
+  private InitInfo initInfoRoutes(boolean summary, boolean verboseError) {
     ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
         loadParseEnvironmentRoutingTablesAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -2655,6 +2698,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     } else {
       return pertae;
+    }
+  }
+
+  @Override
+  public ParseVendorConfigurationAnswerElement loadParseIptablesConfigurationAnswerElement() {
+    return loadParseIptablesConfigurationAnswerElement(true);
+  }
+
+  private ParseVendorConfigurationAnswerElement loadParseIptablesConfigurationAnswerElement(
+      boolean firstAttempt) {
+    if (Files.exists(_testrigSettings.getParseIptablesAnswerPath())) {
+      ParseVendorConfigurationAnswerElement ae =
+          deserializeObject(
+              _testrigSettings.getParseIptablesAnswerPath(),
+              ParseVendorConfigurationAnswerElement.class);
+      if (Version.isCompatibleVersion("Service", "Old processed configurations", ae.getVersion())) {
+        return ae;
+      }
+    }
+    if (firstAttempt) {
+      repairVendorConfigurations();
+      return loadParseIptablesConfigurationAnswerElement(false);
+    } else {
+      throw new BatfishException(
+          "Version error repairing vendor configurations for parse iptables answer element");
     }
   }
 
@@ -3627,7 +3695,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Read Iptable Files for each host in the keyset of {@code hostConfigurations}, and store the
+   * Read Iptables files for each host in the keyset of {@code hostConfigurations}, and store the
    * contents in {@code iptablesDate}. Each task fails if the Iptable file specified by host is not
    * under {@code testRigPath} or does not exist.
    *
@@ -3635,7 +3703,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * @throws CompositeBatfishException if there is at least one failed task, {@code
    *     _exitOnFirstError} is not set, and {@code _haltOnParseError} is set.
    */
-  void readIptableFiles(
+  void readIptablesFiles(
       Path testRigPath,
       SortedMap<String, VendorConfiguration> hostConfigurations,
       SortedMap<Path, String> iptablesData,
@@ -3643,41 +3711,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<BatfishException> failureCauses = new ArrayList<>();
     for (VendorConfiguration vc : hostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
-      if (hostConfig.getIptablesFile() != null) {
-        Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
+      if (hostConfig.getIptablesFilename() != null) {
+        Path path =
+            testRigPath.resolve(
+                Paths.get(BfConsts.RELPATH_IPTABLES_CONFIGS_DIR, hostConfig.getIptablesFilename()));
 
         // ensure that the iptables file is not taking us outside of the
         // testrig
-        try {
-          if (!path.toFile().getCanonicalPath().contains(testRigPath.toFile().getCanonicalPath())
-              || !path.toFile().exists()) {
-            String failureMessage =
-                String.format(
-                    "Iptables file %s for host %s is not contained within the testrig",
-                    hostConfig.getIptablesFile(), hostConfig.getHostname());
-            BatfishException bfc;
-            if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
-              bfc =
-                  new BatfishException(
-                      failureMessage,
-                      answerElement.getErrors().get(hostConfig.getHostname()).getException());
-              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
-            } else {
-              bfc = new BatfishException(failureMessage);
-              if (_settings.getExitOnFirstError()) {
-                throw bfc;
-              } else {
-                failureCauses.add(bfc);
-                answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
-                answerElement.getParseStatus().put(hostConfig.getHostname(), ParseStatus.FAILED);
-              }
-            }
+        if (!Files.exists(path)) {
+          String failureMessage =
+              String.format(
+                  "Iptables file %s for host %s is not contained within the testrig",
+                  hostConfig.getIptablesFilename(), hostConfig.getHostname());
+          BatfishException bfc;
+          if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
+            bfc =
+                new BatfishException(
+                    failureMessage,
+                    answerElement.getErrors().get(hostConfig.getHostname()).getException());
+            answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
           } else {
-            String fileText = CommonUtil.readFile(path);
-            iptablesData.put(path, fileText);
+            bfc = new BatfishException(failureMessage);
+            if (_settings.getExitOnFirstError()) {
+              throw bfc;
+            } else {
+              failureCauses.add(bfc);
+              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
+              answerElement.getParseStatus().put(hostConfig.getHostname(), ParseStatus.FAILED);
+            }
           }
-        } catch (IOException e) {
-          throw new BatfishException("Could not get canonical path", e);
+        } else {
+          String fileText = CommonUtil.readFile(path);
+          iptablesData.put(path, fileText);
         }
       }
     }
@@ -4009,6 +4074,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
       initInfoAnswerElement.setParseTrees(Collections.emptySortedMap());
+      InitInfo iptablesInfo =
+          initInfoAnswerElement.getExtraComponents().get(InitInfoComponent.IPTABLES);
+      if (iptablesInfo != null) {
+        iptablesInfo.setParseTrees(Collections.emptySortedMap());
+      }
       answer.addAnswerElement(initInfoAnswerElement);
       action = true;
     }
@@ -4138,7 +4208,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
-      Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
+      Path testRigPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement,
+      ParseVendorConfigurationAnswerElement parseIptablesAnswerElement) {
     SortedMap<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
@@ -4166,18 +4239,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // read and associate iptables files for specified hosts
     SortedMap<Path, String> iptablesData = new TreeMap<>();
-    readIptableFiles(testRigPath, allHostConfigurations, iptablesData, answerElement);
+    readIptablesFiles(testRigPath, allHostConfigurations, iptablesData, answerElement);
 
     SortedMap<String, VendorConfiguration> iptablesConfigurations =
-        parseVendorConfigurations(iptablesData, answerElement, ConfigurationFormat.IPTABLES);
+        parseVendorConfigurations(
+            iptablesData, parseIptablesAnswerElement, ConfigurationFormat.IPTABLES);
+
     for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
-      if (hostConfig.getIptablesFile() != null) {
-        Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
-        String relativePathStr = _testrigSettings.getBasePath().relativize(path).toString();
-        if (iptablesConfigurations.containsKey(relativePathStr)) {
-          hostConfig.setIptablesVendorConfig(
-              (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
+      String iptablesFilename = hostConfig.getIptablesFilename();
+      if (iptablesFilename != null) {
+        VendorConfiguration iptablesConfiguration = iptablesConfigurations.get(iptablesFilename);
+        if (iptablesConfiguration != null) {
+          hostConfig.setIptablesVendorConfig((IptablesVendorConfiguration) iptablesConfiguration);
         }
       }
     }
@@ -4194,8 +4268,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           output.put(currentOutputPath, vc);
         });
     serializeObjects(output);
-    // serialize warnings
-    serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
     printElapsedTime();
     return overlayConfigurations;
   }
@@ -4329,6 +4401,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path networkConfigsPath = testRigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
+    ParseVendorConfigurationAnswerElement parseIptablesAnswerElement =
+        new ParseVendorConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);
@@ -4338,7 +4412,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, VendorConfiguration> overlayHostConfigurations = new TreeMap<>();
     Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
     if (Files.exists(hostConfigsPath)) {
-      overlayHostConfigurations = serializeHostConfigs(testRigPath, outputPath, answerElement);
+      overlayHostConfigurations =
+          serializeHostConfigs(testRigPath, outputPath, answerElement, parseIptablesAnswerElement);
       configsFound = true;
     }
 
@@ -4354,12 +4429,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configsFound = true;
     }
 
+    /*
+     *  Add iptables parse info if it is non-empty and verbose parse is on.
+     */
+    if (_settings.getVerboseParse() && !parseIptablesAnswerElement.getParseStatus().isEmpty()) {
+      answer.addAnswerElement(parseIptablesAnswerElement);
+    }
+
     if (!configsFound) {
       throw new BatfishException("No valid configurations found");
     }
 
     // serialize warnings
     serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
+    serializeObject(parseIptablesAnswerElement, _testrigSettings.getParseIptablesAnswerPath());
 
     return answer;
   }

@@ -22,7 +22,7 @@ test test_rigs/parsing-tests/indirection.ref init-testrig test_rigs/indirection
 
 #ios_rt
 test test_rigs/parsing-tests/ios_rt.ref init-testrig test_rigs/ios_rt
-test test_rigs/parsing-tests/ios_rt-initInfo.ref get initInfo environmentRoutes=true
+test test_rigs/parsing-tests/ios_rt-initInfo.ref get initInfo components=["ROUTING_TABLES"]
 
 #isis
 test test_rigs/parsing-tests/isis.ref init-testrig test_rigs/isis
