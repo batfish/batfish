@@ -797,8 +797,8 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
     Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
-    long time = (new java.util.Date()).getTime();
-    CommonUtil.writeFile(metadataPath, "{\n\t\"timestamp\": "+Long.toString(time)+"\n}");
+    CommonUtil.writeFile(metadataPath, "{\n\t\"creationTimestamp\": \""
+        + java.time.Instant.now().toString() + "\"\n}");
 
 
     Path srcSubdir = srcDirEntries.iterator().next();
