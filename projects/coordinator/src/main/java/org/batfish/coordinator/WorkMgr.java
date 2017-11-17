@@ -334,6 +334,51 @@ public class WorkMgr extends AbstractCoordinator {
       List<String> questionsToDelete) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
+    configureAnalysisOrAdhoc(
+        containerName, newAnalysis, aName, questionsToAdd, questionsToDelete, aDir);
+  }
+
+  /**
+   * Update or truncate differential adhoc questions with provided questions or and/or question
+   * names
+   *
+   * @param containerName The container in which the questions reside
+   * @param questionsToAdd The new differential adhoc questions to be added.
+   * @param questionsToDelete A list of question names to be deleted from existing differential
+   *     adhoc questions.
+   */
+  public void configureCompare(
+      String containerName, Map<String, String> questionsToAdd, List<String> questionsToDelete) {
+    Path containerDir = getdirContainer(containerName);
+    Path aDir = containerDir.resolve(BfConsts.RELPATH_COMPARE_DIR);
+    configureAnalysisOrAdhoc(
+        containerName, false, "compare", questionsToAdd, questionsToDelete, aDir);
+  }
+
+  /**
+   * Update or truncate non-differential adhoc questions with provided questions or and/or question
+   * names
+   *
+   * @param containerName The container in which the questions reside
+   * @param questionsToAdd The new non-differential adhoc questions to be added.
+   * @param questionsToDelete A list of question names to be deleted from existing non-differential
+   *     adhoc questions.
+   */
+  public void configureExplore(
+      String containerName, Map<String, String> questionsToAdd, List<String> questionsToDelete) {
+    Path containerDir = getdirContainer(containerName);
+    Path aDir = containerDir.resolve(BfConsts.RELPATH_EXPLORE_DIR);
+    configureAnalysisOrAdhoc(
+        containerName, false, "explore", questionsToAdd, questionsToDelete, aDir);
+  }
+
+  private void configureAnalysisOrAdhoc(
+      String containerName,
+      boolean newAnalysis,
+      String aName,
+      Map<String, String> questionsToAdd,
+      List<String> questionsToDelete,
+      Path aDir) {
     if (Files.exists(aDir) && newAnalysis) {
       throw new BatfishException(
           "Analysis '" + aName + "' already exists for container '" + containerName);

@@ -42,6 +42,8 @@ public class CoordConsts {
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
+  public static final String SVC_KEY_CONFIGURE_COMPARE = "configurecompare";
+  public static final String SVC_KEY_CONFIGURE_EXPLORE = "configureexplore";
   public static final String SVC_KEY_CONTAINERS = "containers";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
@@ -79,6 +81,8 @@ public class CoordConsts {
   public static final String SVC_RSC_CHECK_API_KEY = "checkapikey";
 
   public static final String SVC_RSC_CONFIGURE_ANALYSIS = "configureanalysis";
+  public static final String SVC_RSC_CONFIGURE_COMPARE = "configurecompare";
+  public static final String SVC_RSC_CONFIGURE_EXPLORE = "configureexplore";
   public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";
   public static final String SVC_RSC_DEL_CONTAINER = "delcontainer";
   public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";

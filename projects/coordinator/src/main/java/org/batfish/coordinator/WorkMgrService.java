@@ -201,6 +201,152 @@ public class WorkMgrService {
   }
 
   /**
+   * Configures new/deleted differential adhoc questions for the container
+   *
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to configure
+   * @param addQuestionsStream A stream providing the new differential questions to add
+   * @param delQuestions A list of existing differential questions to delete
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_CONFIGURE_COMPARE)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray configureCompare(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
+      @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
+    try {
+      _logger.info(
+          "WMS:configureCompare " + apiKey + " " + containerName + " " + delQuestions + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      Map<String, String> questionsToAdd = new HashMap<>();
+      if (addQuestionsStream != null) {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Map<String, Object> streamValue;
+        try {
+          streamValue =
+              mapper.readValue(addQuestionsStream, new TypeReference<Map<String, Object>>() {});
+          for (Entry<String, Object> entry : streamValue.entrySet()) {
+            String textValue = mapper.writeValueAsString(entry.getValue());
+            questionsToAdd.put(entry.getKey(), textValue);
+          }
+        } catch (IOException e) {
+          throw new BatfishException("Failed to read question JSON from input stream", e);
+        }
+      }
+      List<String> questionsToDelete = new ArrayList<>();
+      if (!Strings.isNullOrEmpty(delQuestions)) {
+        JSONArray delQuestionsArray = new JSONArray(delQuestions);
+        for (int i = 0; i < delQuestionsArray.length(); i++) {
+          questionsToDelete.add(delQuestionsArray.getString(i));
+        }
+      }
+
+      Main.getWorkMgr().configureCompare(containerName, questionsToAdd, questionsToDelete);
+
+      return successResponse(new JSONObject().put("result", "successfully configured compare"));
+
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException
+        | ZipException e) {
+      _logger.error("WMS:configureCompare exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:configureCompare exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Configures new/deleted non-differential adhoc questions for the container
+   *
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to configure
+   * @param addQuestionsStream A stream providing the new non-differential questions to add
+   * @param delQuestions A list of existing non-differential questions to delete
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_CONFIGURE_EXPLORE)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray configureExplore(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
+      @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
+    try {
+      _logger.info(
+          "WMS:configureExplore " + apiKey + " " + containerName + " " + delQuestions + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      Map<String, String> questionsToAdd = new HashMap<>();
+      if (addQuestionsStream != null) {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Map<String, Object> streamValue;
+        try {
+          streamValue =
+              mapper.readValue(addQuestionsStream, new TypeReference<Map<String, Object>>() {});
+          for (Entry<String, Object> entry : streamValue.entrySet()) {
+            String textValue = mapper.writeValueAsString(entry.getValue());
+            questionsToAdd.put(entry.getKey(), textValue);
+          }
+        } catch (IOException e) {
+          throw new BatfishException("Failed to read question JSON from input stream", e);
+        }
+      }
+      List<String> questionsToDelete = new ArrayList<>();
+      if (!Strings.isNullOrEmpty(delQuestions)) {
+        JSONArray delQuestionsArray = new JSONArray(delQuestions);
+        for (int i = 0; i < delQuestionsArray.length(); i++) {
+          questionsToDelete.add(delQuestionsArray.getString(i));
+        }
+      }
+
+      Main.getWorkMgr().configureExplore(containerName, questionsToAdd, questionsToDelete);
+
+      return successResponse(new JSONObject().put("result", "successfully configured compare"));
+
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException
+        | ZipException e) {
+      _logger.error("WMS:configureExplore exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:configureExplore exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * Delete an analysis from the container
    *
    * @param apiKey The API key of the requester

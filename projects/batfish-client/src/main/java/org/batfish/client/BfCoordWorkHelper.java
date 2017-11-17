@@ -135,6 +135,78 @@ public class BfCoordWorkHelper {
     }
   }
 
+  public boolean configureCompare(
+      String containerName,
+      @Nullable String addQuestionsFileName,
+      @Nullable String delQuestionsStr) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_COMPARE);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      if (addQuestionsFileName != null) {
+        addFileMultiPart(multiPart, CoordConsts.SVC_KEY_FILE, addQuestionsFileName);
+      }
+      if (delQuestionsStr != null) {
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS, delQuestionsStr);
+      }
+
+      return postData(webTarget, multiPart) != null;
+    } catch (Exception e) {
+      if (e.getMessage().contains("FileNotFoundException")) {
+        _logger.errorf("File not found: %s (addQuestionsFile file)\n", addQuestionsFileName);
+      } else {
+        _logger.errorf(
+            "Exception when configuring compare to %s using (%s, %s, %s): %s\n",
+            _coordWorkMgr,
+            containerName,
+            addQuestionsFileName,
+            delQuestionsStr,
+            ExceptionUtils.getStackTrace(e));
+      }
+      return false;
+    }
+  }
+
+  public boolean configureExplore(
+      String containerName,
+      @Nullable String addQuestionsFileName,
+      @Nullable String delQuestionsStr) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_EXPLORE);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      if (addQuestionsFileName != null) {
+        addFileMultiPart(multiPart, CoordConsts.SVC_KEY_FILE, addQuestionsFileName);
+      }
+      if (delQuestionsStr != null) {
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS, delQuestionsStr);
+      }
+
+      return postData(webTarget, multiPart) != null;
+    } catch (Exception e) {
+      if (e.getMessage().contains("FileNotFoundException")) {
+        _logger.errorf("File not found: %s (addQuestionsFile file)\n", addQuestionsFileName);
+      } else {
+        _logger.errorf(
+            "Exception when configuring explore to %s using (%s, %s, %s): %s\n",
+            _coordWorkMgr,
+            containerName,
+            addQuestionsFileName,
+            delQuestionsStr,
+            ExceptionUtils.getStackTrace(e));
+      }
+      return false;
+    }
+  }
+
   public boolean delAnalysis(String containerName, String analysisName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_ANALYSIS);
