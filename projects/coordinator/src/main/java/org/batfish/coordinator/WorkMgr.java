@@ -835,9 +835,30 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getTestrigQuestion(String containerName, String testrigName, String questionName) {
     Path questionDir = getdirTestrigQuestion(containerName, testrigName, questionName);
+    return getQuestion(questionDir, questionName);
+  }
+
+  public String getCompareQuestion(String containerName, String questionName) {
+    Path containerDir = getdirContainer(containerName, true);
+    Path questionDir =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_COMPARE_DIR, BfConsts.RELPATH_QUESTIONS_DIR, questionName));
+    return getQuestion(questionDir, questionName);
+  }
+
+  public String getExploreQuestion(String containerName, String questionName) {
+    Path containerDir = getdirContainer(containerName, true);
+    Path questionDir =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_EXPLORE_DIR, BfConsts.RELPATH_QUESTIONS_DIR, questionName));
+    return getQuestion(questionDir, questionName);
+  }
+
+  private String getQuestion(Path questionDir, String questionName) {
     Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
     if (!Files.exists(qFile)) {
-      throw new BatfishException("Question file not found for " + questionName);
+      throw new BatfishException(
+          "Question file not found for " + questionName + "; trying for path " + qFile.toString());
     }
     return CommonUtil.readFile(qFile);
   }

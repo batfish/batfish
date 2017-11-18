@@ -1383,7 +1383,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
     try {
-      _logger.info("WMS:listTestrigQuestions " + apiKey + " " + containerName + "\n");
+      _logger.info(
+          "WMS:listTestrigQuestions " + apiKey + " " + containerName + " " + testrigName + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1413,6 +1414,102 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:listTestrigQuestions exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * List the differential adhoc questions under the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the adhoc questions reside
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_COMPARE_QS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listCompareQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    try {
+      _logger.info("WMS:listCompareQuestions " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      JSONObject retObject = new JSONObject();
+
+      for (String questionName : Main.getWorkMgr().listCompareQuestions(containerName)) {
+        String questionText = Main.getWorkMgr().getCompareQuestion(containerName, questionName);
+
+        retObject.put(questionName, new JSONObject(questionText));
+      }
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:listCompareQuestions exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listCompareQuestions exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * List the non-differential adhoc questions under the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the adhoc questions reside
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_EXPLORE_QS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listExploreQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    try {
+      _logger.info("WMS:listExploreQuestions " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      JSONObject retObject = new JSONObject();
+
+      for (String questionName : Main.getWorkMgr().listExploreQuestions(containerName)) {
+        String questionText = Main.getWorkMgr().getExploreQuestion(containerName, questionName);
+
+        retObject.put(questionName, new JSONObject(questionText));
+      }
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:listExploreQuestions exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listExploreQuestions exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }

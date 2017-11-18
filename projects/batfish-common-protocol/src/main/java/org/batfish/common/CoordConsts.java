@@ -42,8 +42,6 @@ public class CoordConsts {
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
-  public static final String SVC_KEY_CONFIGURE_COMPARE = "configurecompare";
-  public static final String SVC_KEY_CONFIGURE_EXPLORE = "configureexplore";
   public static final String SVC_KEY_CONTAINERS = "containers";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
   public static final String SVC_KEY_CONTAINER_NAME = "container";
@@ -100,8 +98,10 @@ public class CoordConsts {
   public static final String SVC_RSC_GETSTATUS = "getstatus";
   public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
   public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
+  public static final String SVC_RSC_LIST_COMPARE_QS = "listcompareqs";
   public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
   public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
+  public static final String SVC_RSC_LIST_EXPLORE_QS = "listexploreqs";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";
