@@ -772,8 +772,16 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      java.nio.file.Path file =
-          Main.getWorkMgr().getTestrigObject(containerName, testrigName, objectName);
+      java.nio.file.Path file;
+      try {
+        file = Main.getWorkMgr().getTestrigObject(containerName, testrigName, objectName);
+      } catch (BatfishException e) {
+        if (e.getMessage().contains("not exist")) {
+          file = null;
+        } else {
+          throw e;
+        }
+      }
 
       if (file == null || !Files.exists(file)) {
         return Response.status(Response.Status.NOT_FOUND)
