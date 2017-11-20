@@ -22,4 +22,4 @@ echo
 # Create a file containing names of all relevant files
 ${GNU_FIND} projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' > files_to_check
 java -jar ${JAR} --dry-run --set-exit-if-changed @files_to_check \
-  || (echo "\n\nThe files listed above are not formatted correctly. Use google-java-format (https://github.com/google/google-java-format#google-java-format) version ${GJF_VERSION} to correct these issues. We recommend you install the Eclipse or IntelliJ plugins." && exit 1)
+  || (echo -e "\nThe files listed above are not formatted correctly. Use google-java-format (https://github.com/google/google-java-format#google-java-format) version ${GJF_VERSION} to correct these issues. We recommend you install the Eclipse or IntelliJ plugins." && exit 1)
