@@ -2414,6 +2414,10 @@ public class Client extends AbstractClient implements IClient {
         return runAnalysis(outWriter, options, parameters, true, false);
       case RUN_ANALYSIS_DIFFERENTIAL:
         return runAnalysis(outWriter, options, parameters, false, true);
+      case RUN_COMPARE:
+        return runCompare(outWriter, options, parameters);
+      case RUN_EXPLORE:
+        return runExplore(outWriter, options, parameters);
       case REINIT_TESTRIG:
         return reinitTestrig(outWriter, options, parameters, false);
       case SET_BATFISH_LOGLEVEL:
@@ -2632,6 +2636,41 @@ public class Client extends AbstractClient implements IClient {
             _currDeltaEnv,
             delta,
             differential);
+
+    return execute(wItemAs, outWriter);
+  }
+
+  private boolean runCompare(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
+    Command command = Command.RUN_COMPARE;
+    if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
+      return false;
+    }
+    if (!isSetContainer(true) || !isSetTestrig()) {
+      return false;
+    }
+
+    // answer the question
+    WorkItem wItemAs =
+        WorkItemBuilder.getWorkItemRunCompare(
+            _currContainerName, _currTestrig, _currEnv, _currDeltaTestrig, _currDeltaEnv);
+
+    return execute(wItemAs, outWriter);
+  }
+
+  private boolean runExplore(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
+    Command command = Command.RUN_EXPLORE;
+    if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
+      return false;
+    }
+    if (!isSetContainer(true) || !isSetTestrig()) {
+      return false;
+    }
+
+    // answer the question
+    WorkItem wItemAs =
+        WorkItemBuilder.getWorkItemRunExplore(_currContainerName, _currTestrig, _currEnv);
 
     return execute(wItemAs, outWriter);
   }

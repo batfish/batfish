@@ -102,6 +102,32 @@ public class WorkItemBuilder {
     return wItem;
   }
 
+  public static WorkItem getWorkItemRunCompare(
+      String containerName,
+      String testrigName,
+      String envName,
+      String deltaTestrig,
+      String deltaEnvName) {
+    WorkItem wItem = new WorkItem(containerName, testrigName);
+    wItem.addRequestParam(BfConsts.COMMAND_COMPARE, "");
+    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
+    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    wItem.addRequestParam(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
+    wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, deltaEnvName);
+    wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
+    wItem.addRequestParam(BfConsts.ARG_DIFFERENTIAL, "");
+    return wItem;
+  }
+
+  public static WorkItem getWorkItemRunExplore(
+      String containerName, String testrigName, String envName) {
+    WorkItem wItem = new WorkItem(containerName, testrigName);
+    wItem.addRequestParam(BfConsts.COMMAND_EXPLORE, "");
+    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
+    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    return wItem;
+  }
+
   public static WorkItem getWorkItemValidateEnvironment(
       String containerName, String testrigName, String envName) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
