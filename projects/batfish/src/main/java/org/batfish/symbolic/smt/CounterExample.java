@@ -335,8 +335,11 @@ class CounterExample {
             Interface i = ge.getEnd();
             IpAccessList acl = i.getIncomingFilter();
             FilterResult fr = acl.filter(f);
-            IpAccessListLine line = acl.getLines().get(fr.getMatchLine());
-            String note = String.format("DENIED_IN{%s}{%s}", acl.getName(), line.getName());
+            String line = "default deny";
+            if (fr.getMatchLine() != null) {
+              line = acl.getLines().get(fr.getMatchLine()).getName();
+            }
+            String note = String.format("DENIED_IN{%s}{%s}", acl.getName(), line);
             FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_IN, hops, note);
             return new Tuple<>(f, ft);
           }
