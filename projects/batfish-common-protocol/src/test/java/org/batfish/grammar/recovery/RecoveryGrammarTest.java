@@ -18,7 +18,7 @@ public class RecoveryGrammarTest {
   public void testParsingRecovery() throws IOException {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_text");
     int totalLines = recoveryText.split("\n").length;
-    GrammarSettings settings = new TestGrammarSettings(false, 0, 0, false, true, true);
+    GrammarSettings settings = new TestGrammarSettings(false, 0, 0, 0, false, true, true);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
