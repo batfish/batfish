@@ -28,6 +28,13 @@ public interface GrammarSettings {
   int getMaxParserContextTokens();
 
   /**
+   * The maximum number of characters display of a parse tree when prettyPrinting.
+   *
+   * @return The max number of characters to display
+   */
+  int getMaxParseTreePrintLength();
+
+  /**
    * Controls whether parse trees are stored in parse job results.
    *
    * @return true iff parse trees should be stored in parse job results
