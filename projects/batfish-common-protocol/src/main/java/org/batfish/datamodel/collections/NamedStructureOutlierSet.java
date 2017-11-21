@@ -104,5 +104,4 @@ public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
   public int hashCode() {
     return Objects.hash(_structType, _name);
   }
-
 }

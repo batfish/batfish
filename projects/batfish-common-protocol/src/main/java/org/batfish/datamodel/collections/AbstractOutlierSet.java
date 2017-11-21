@@ -12,7 +12,7 @@ public abstract class AbstractOutlierSet {
   protected static final String PROP_OUTLIERS = "outliers";
 
   /** A lower bound on the probability at which a hypothesis should be considered to be true. */
-  private static final double THRESHOLD_PROBABILITY = 2.0/3.0;
+  private static final double THRESHOLD_PROBABILITY = 2.0 / 3.0;
 
   /** The nodes that satisfy the hypothesis */
   private SortedSet<String> _conformers;
@@ -52,9 +52,9 @@ public abstract class AbstractOutlierSet {
   }
 
   /* A metric indicating how likely this outlier set represents an actual bug.
-     A higher score means that it is more likely to be a bug.
-     This metric is used to rank outliers for presentation to users.
-   */
+    A higher score means that it is more likely to be a bug.
+    This metric is used to rank outliers for presentation to users.
+  */
   public double outlierScore() {
     return zScore();
   }
