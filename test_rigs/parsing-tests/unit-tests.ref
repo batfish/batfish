@@ -47565,6 +47565,18 @@
             "1" : "MISCELLANEOUS: missing action in firewall filter: 'blah', term: 'blorp'"
           }
         },
+        "nat-08c21704416f06046" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046",
+            "2" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+          }
+        },
+        "nat-09fd8f73171d2d9a3" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046",
+            "2" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+          }
+        },
         "neighbor" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '123.123.123.123'"
