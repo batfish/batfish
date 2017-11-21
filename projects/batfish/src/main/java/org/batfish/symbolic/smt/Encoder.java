@@ -170,7 +170,7 @@ public class Encoder {
       _solver = solver;
     }
 
-    _symbolicFailures = new SymbolicFailures();
+    _symbolicFailures = new SymbolicFailures(this._ctx);
 
     if (vars == null) {
       _allVariables = new HashMap<>();
@@ -265,7 +265,6 @@ public class Encoder {
 
           // TODO: create domains once
           Graph gNew = new Graph(g.getBatfish(), null, g.getDomain(router));
-
           String sliceName = "SLICE-" + router + "_";
           EncoderSlice slice = new EncoderSlice(this, hs, gNew, sliceName);
           _slices.put(sliceName, slice);
