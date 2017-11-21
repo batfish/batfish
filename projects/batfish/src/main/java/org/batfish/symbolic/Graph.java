@@ -714,6 +714,26 @@ public class Graph {
     }
   }
 
+
+  /*
+   * Conservatively check if an edge may be used by an IGP protocol
+   * such as OSPF, static routes etc. We can do better possibly
+   * by taking into account constraints on the packet header.
+   */
+  private boolean maybeIgpEdge(GraphEdge ge) {
+    String peer = ge.getPeer();
+    if (peer == null) {
+      return true;
+    }
+    String router = ge.getRouter();
+    Interface i = ge.getStart();
+    List<StaticRoute> srs = _staticRoutes.get(router, peer);
+    BgpNeighbor n = _ibgpNeighbors.get(ge);
+    boolean mightUseStatic = (srs != null && !srs.isEmpty());
+    boolean mightUseOspf = i.getOspfEnabled() && i.getActive();
+    return (mightUseOspf || mightUseStatic || n != null);
+  }
+
   /*
    * Determines the collection of routers within the same AS
    * as the router provided as a parameter
@@ -727,9 +747,10 @@ public class Graph {
       sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        BgpNeighbor n = _ebgpNeighbors.get(ge);
-        if (peer != null && n == null && !sameDomain.contains(peer)) {
-          todo.add(peer);
+        if (peer != null) {
+          if (maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
+            todo.add(peer);
+          }
         }
       }
     }
@@ -1067,8 +1088,10 @@ public class Graph {
    * Determine if an edge is potentially attached to a host
    */
   public boolean isHost(String router) {
-    Configuration peerConf = _configurations.get(router);
-    String vendor = peerConf.getConfigurationFormat().getVendorString();
+    Configuration conf = _configurations.get(router);
+    // System.out.println("Router: " + router);
+    // System.out.println("Conf: " + conf);
+    String vendor = conf.getConfigurationFormat().getVendorString();
     return "host".equals(vendor);
   }
 
