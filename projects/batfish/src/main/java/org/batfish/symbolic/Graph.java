@@ -66,53 +66,26 @@ import org.batfish.symbolic.collections.Table2;
  */
 public class Graph {
 
-  public enum BgpSendType {
-    TO_EBGP,
-    TO_NONCLIENT,
-    TO_CLIENT,
-    TO_RR
-  }
-
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
-
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
-
   private static final String NULL_INTERFACE_NAME = "null_interface";
-
   private IBatfish _batfish;
-
   private Set<String> _routers;
-
   private Map<String, Configuration> _configurations;
-
   private Map<String, Set<Long>> _areaIds;
-
   private Table2<String, String, List<StaticRoute>> _staticRoutes;
-
   private Map<String, List<StaticRoute>> _nullStaticRoutes;
-
   private Map<String, Set<String>> _neighbors;
-
   private Map<String, List<GraphEdge>> _edgeMap;
-
   private Set<GraphEdge> _allRealEdges;
-
   private Set<GraphEdge> _allEdges;
-
   private Map<GraphEdge, GraphEdge> _otherEnd;
-
   private Map<GraphEdge, BgpNeighbor> _ebgpNeighbors;
-
   private Map<GraphEdge, BgpNeighbor> _ibgpNeighbors;
-
   private Map<String, String> _routeReflectorParent;
-
   private Map<String, Set<String>> _routeReflectorClients;
-
   private Map<String, Integer> _originatorId;
-
   private Map<String, Integer> _domainMap;
-
   private Map<Integer, Set<String>> _domainMapInverse;
 
   /*
@@ -184,13 +157,6 @@ public class Graph {
    */
   private static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
-  }
-
-  /*
-   * Is a graph edge external facing (can receive BGP advertisements)
-   */
-  public boolean isExternal(GraphEdge ge) {
-    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
   }
 
   /*
@@ -298,6 +264,13 @@ public class Graph {
     }
 
     throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
+  }
+
+  /*
+   * Is a graph edge external facing (can receive BGP advertisements)
+   */
+  public boolean isExternal(GraphEdge ge) {
+    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
   }
 
   /*
@@ -713,7 +686,6 @@ public class Graph {
       _areaIds.put(router, areaIds);
     }
   }
-
 
   /*
    * Conservatively check if an edge may be used by an IGP protocol
@@ -1238,13 +1210,13 @@ public class Graph {
     return _routeReflectorParent;
   }
 
-  /*
-   * Getters and setters
-   */
-
   public Map<String, Set<String>> getRouteReflectorClients() {
     return _routeReflectorClients;
   }
+
+  /*
+   * Getters and setters
+   */
 
   public Map<String, Integer> getOriginatorId() {
     return _originatorId;
@@ -1296,5 +1268,12 @@ public class Graph {
 
   public Set<String> getRouters() {
     return _routers;
+  }
+
+  public enum BgpSendType {
+    TO_EBGP,
+    TO_NONCLIENT,
+    TO_CLIENT,
+    TO_RR
   }
 }
