@@ -10,6 +10,7 @@ import org.batfish.datamodel.Interface;
  * An edge in the network graph. Contains the router and interface as well as the peer router and
  * interface. Each edge can also be abstract, as in the case of iBGP, or concrete where it
  * corresponds to a particular edge in the topology.
+ * There is an invariant that whenever peer == null, it must be that end == null
  *
  * @author Ryan Beckett
  */
@@ -48,9 +49,9 @@ public class GraphEdge {
       @JsonProperty(ABSTRACT_VAR) boolean isAbstract,
       @JsonProperty(NULL_VAR) boolean isNullEdge) {
     _start = start;
-    _end = end;
+    _end = (peer == null ? null : end);
     _router = router;
-    _peer = peer;
+    _peer = (end == null ? null : peer);
     _isAbstract = isAbstract;
     _isNullEdge = isNullEdge;
   }

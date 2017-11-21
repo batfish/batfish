@@ -1,6 +1,7 @@
 package org.batfish.symbolic.smt;
 
 import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -14,11 +15,14 @@ import org.batfish.symbolic.collections.Table2;
  */
 class SymbolicFailures {
 
+  private ArithExpr _zero;
+
   private Table2<String, String, ArithExpr> _failedInternalLinks;
 
   private Map<GraphEdge, ArithExpr> _failedEdgeLinks;
 
-  SymbolicFailures() {
+  SymbolicFailures(Context ctx) {
+    _zero = ctx.mkInt(0);
     _failedInternalLinks = new Table2<>();
     _failedEdgeLinks = new HashMap<>();
   }
@@ -33,6 +37,9 @@ class SymbolicFailures {
 
   @Nullable
   ArithExpr getFailedVariable(GraphEdge ge) {
+    if (ge.isAbstract()) {
+      return _zero;
+    }
     if (ge.getPeer() == null) {
       return _failedEdgeLinks.get(ge);
     }
