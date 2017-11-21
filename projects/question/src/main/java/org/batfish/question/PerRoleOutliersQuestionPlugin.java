@@ -122,7 +122,6 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       super(question, batfish);
     }
 
-
     @Override
     public PerRoleOutliersAnswerElement answer() {
 
@@ -156,8 +155,6 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
       return _answerElement;
     }
-
-
   }
 
   // <question_page_comment>
@@ -184,7 +181,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
-    private static final String PROP_ROLES  = "roles";
+    private static final String PROP_ROLES = "roles";
 
     private OutliersHypothesis _hypothesis;
 

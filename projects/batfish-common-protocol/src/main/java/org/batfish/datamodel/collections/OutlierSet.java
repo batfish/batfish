@@ -64,5 +64,4 @@ public class OutlierSet<T> extends AbstractOutlierSet implements Comparable<Outl
   public int hashCode() {
     return Objects.hash(_definition, _name);
   }
-
 }
