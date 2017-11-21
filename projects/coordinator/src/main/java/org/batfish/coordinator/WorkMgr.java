@@ -971,6 +971,11 @@ public class WorkMgr extends AbstractCoordinator {
                 false,
                 false);
         autoWorkQueue.add(analyzeWork);
+
+        WorkItem exploreWork =
+            WorkItemBuilder.getWorkItemRunExplore(
+                containerName, testrigName, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+        autoWorkQueue.add(exploreWork);
       }
 
       // NB: This way of doing things only works when we have a single worker; otherwise workitems
