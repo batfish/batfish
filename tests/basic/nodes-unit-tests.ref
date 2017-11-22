@@ -11725,6 +11725,30 @@
             }
           }
         },
+        "nat-08c21704416f06046" : {
+          "name" : "nat-08c21704416f06046",
+          "configurationFormat" : "AWS_VPC",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "nat-09fd8f73171d2d9a3" : {
+          "name" : "nat-09fd8f73171d2d9a3",
+          "configurationFormat" : "AWS_VPC",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "neighbor" : {
           "name" : "neighbor",
           "configurationFormat" : "CISCO_NX",
