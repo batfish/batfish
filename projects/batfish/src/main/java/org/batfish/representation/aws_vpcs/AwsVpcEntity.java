@@ -5,6 +5,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_ACCEPTED_ROUTE_COUNT = "AcceptedRouteCount";
   String JSON_KEY_ACCEPTER_VPC_INFO = "AccepterVpcInfo";
   String JSON_KEY_ADDRESSES = "Addresses";
+  String JSON_KEY_ALLOCATION_ID = "AllocationId";
   String JSON_KEY_ASSOCIATION = "Association";
   String JSON_KEY_ASSOCIATIONS = "Associations";
   String JSON_KEY_ATTACHMENT = "Attachment";
@@ -37,6 +38,9 @@ public interface AwsVpcEntity {
   String JSON_KEY_IP_PROTOCOL = "IpProtocol";
   String JSON_KEY_IP_RANGES = "IpRanges";
   String JSON_KEY_MAIN = "Main";
+  String JSON_KEY_NAT_GATEWAY_ADDRESSES = "NatGatewayAddresses";
+  String JSON_KEY_NAT_GATEWAY_ID = "NatGatewayId";
+  String JSON_KEY_NAT_GATEWAYS = "NatGateways";
   String JSON_KEY_NETWORK_ACL_ID = "NetworkAclId";
   String JSON_KEY_NETWORK_ACLS = "NetworkAcls";
   String JSON_KEY_NETWORK_INTERFACE_ID = "NetworkInterfaceId";
@@ -48,6 +52,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_PRIVATE_IP_ADDRESS = "PrivateIpAddress";
   String JSON_KEY_PRIVATE_IP_ADDRESSES = "PrivateIpAddresses";
   String JSON_KEY_PROTOCOL = "Protocol";
+  String JSON_KEY_PRIVATE_IP = "PrivateIp";
   String JSON_KEY_PUBLIC_IP = "PublicIp";
   String JSON_KEY_REGIONS = "Regions";
   String JSON_KEY_REQUESTER_VPC_INFO = "RequesterVpcInfo";
