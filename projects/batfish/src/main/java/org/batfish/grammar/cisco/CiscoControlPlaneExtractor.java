@@ -29,9 +29,14 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
+import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6Wildcard;
@@ -181,7 +186,13 @@ import org.batfish.grammar.cisco.CiscoParser.Boolean_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_simple_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Boolean_tag_is_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cadant_stdacl_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Cis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cisco_configurationContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispro_authenticationContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispro_encrContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispro_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispro_hashContext;
+import org.batfish.grammar.cisco.CiscoParser.Cispro_lifetimeContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_ruleContext;
 import org.batfish.grammar.cisco.CiscoParser.Clbdg_docsis_policyContext;
@@ -550,6 +561,7 @@ import org.batfish.representation.cisco.ExtendedAccessList;
 import org.batfish.representation.cisco.ExtendedAccessListLine;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
+import org.batfish.representation.cisco.IkePolicy;
 import org.batfish.representation.cisco.Interface;
 import org.batfish.representation.cisco.IpAsPathAccessList;
 import org.batfish.representation.cisco.IpAsPathAccessListLine;
@@ -838,6 +850,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private List<Interface> _currentInterfaces;
 
+  private IkePolicy _currentIkePolicy;
+
+  private IkeProposal _currentIkeProposal;
+
   private IpBgpPeerGroup _currentIpPeerGroup;
 
   private Ipv6BgpPeerGroup _currentIpv6PeerGroup;
@@ -1081,10 +1097,77 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterCis_policy(Cis_policyContext ctx) {
+    if (_currentIkePolicy != null || _currentIkeProposal != null) {
+      throw new BatfishException("These should be null!");
+    }
+    _currentIkePolicy = new IkePolicy(ctx.name.getText(), ctx.getStart().getLine());
+    _currentIkeProposal = new IkeProposal(ctx.name.getText(), ctx.getStart().getLine());
+  }
+
+  @Override
   public void enterCisco_configuration(Cisco_configurationContext ctx) {
     _configuration = new CiscoConfiguration(_unimplementedFeatures);
     _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void enterCispro_authentication(Cispro_authenticationContext ctx) {
+    if (_currentIkeProposal == null) {
+      throw new BatfishException("_currentIkeProposal shouldn't be null!");
+    }
+    if (ctx.PRE_SHARE() != null) {
+      _currentIkeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+    } else {
+      throw new BatfishException("Unsupported authentication method in "
+          + ctx.getText());
+    }
+  }
+
+  @Override
+  public void enterCispro_encr(Cispro_encrContext ctx) {
+    if (_currentIkeProposal == null) {
+      throw new BatfishException("_currentIkeProposal shouldn't be null!");
+    }
+    if (ctx.AES() != null) {
+      _currentIkeProposal.setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC);
+    } else if (ctx.THREE_DES() != null) {
+      _currentIkeProposal.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
+    } else {
+      throw new BatfishException("Unsupported encryption algorithm "
+          + ctx.getText());
+    }
+  }
+
+  @Override
+  public void enterCispro_group(Cispro_groupContext ctx) {
+    if (_currentIkeProposal == null) {
+      throw new BatfishException("_currentIkeProposal shouldn't be null!");
+    }
+    int group = Integer.parseInt(ctx.DEC().getText());
+    _currentIkeProposal.setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
+  }
+
+  @Override
+  public void enterCispro_hash(Cispro_hashContext ctx) {
+    if (_currentIkeProposal == null) {
+      throw new BatfishException("_currentIkeProposal shouldn't be null!");
+    }
+    if (ctx.MD5() != null) {
+      _currentIkeProposal.setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5);
+    } else {
+      throw new BatfishException("Unsupported authentication method in "
+          + ctx.getText());
+    }
+  }
+
+  @Override
+  public void enterCispro_lifetime(Cispro_lifetimeContext ctx) {
+    if (_currentIkeProposal == null) {
+      throw new BatfishException("_currentIkeProposal shouldn't be null!");
+    }
+    _currentIkeProposal.setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
   }
 
   @Override
@@ -2242,6 +2325,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.getStandardAcls().put(name, _currentStandardAcl);
   }
+
+  @Override
+  public void exitCis_policy(Cis_policyContext ctx) {
+    if (_currentIkePolicy == null || _currentIkeProposal == null) {
+      throw new BatfishException("These shouldn't be null!");
+    }
+    _currentIkePolicy.setProposal(_currentIkeProposal);
+    _currentIkePolicy = null;
+    _currentIkeProposal = null;
+  }
+
 
   @Override
   public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
