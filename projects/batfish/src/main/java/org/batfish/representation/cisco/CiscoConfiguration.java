@@ -2741,8 +2741,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
-    for (org.batfish.datamodel.Interface i : vrf.getInterfaces().values()) {
-      Prefix interfacePrefix = i.getPrefix();
+    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+      String ifaceName = e.getKey();
+      org.batfish.datamodel.Interface iface = e.getValue();
+      Prefix interfacePrefix = iface.getPrefix();
       if (interfacePrefix == null) {
         continue;
       }
@@ -2755,14 +2757,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // we have a longest prefix match
           long areaNum = network.getArea();
           OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
-          newArea.getInterfaces().add(i);
-          i.setOspfArea(newArea);
-          i.setOspfEnabled(true);
+          newArea.getInterfaces().put(ifaceName, iface);
+          iface.setOspfArea(newArea);
+          iface.setOspfEnabled(true);
           boolean passive =
-              proc.getPassiveInterfaceList().contains(i.getName())
+              proc.getPassiveInterfaceList().contains(iface.getName())
                   || (proc.getPassiveInterfaceDefault()
-                      && !proc.getActiveInterfaceList().contains(i.getName()));
-          i.setOspfPassive(passive);
+                      && !proc.getActiveInterfaceList().contains(iface.getName()));
+          iface.setOspfPassive(passive);
           break;
         }
       }
@@ -3489,8 +3491,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public Configuration toVendorIndependentConfiguration() {
-    final Configuration c = new Configuration(_hostname);
-    c.setConfigurationFormat(_vendor);
+    final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
     c.setDomainName(_domainName);
     c.setRoles(_roles);

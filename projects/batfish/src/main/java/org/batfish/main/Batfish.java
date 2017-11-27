@@ -1417,7 +1417,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // then we create configs for every mentioned node
     for (String hostname : allNodes) {
-      Configuration config = new Configuration(hostname);
+      Configuration config = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
       configs.put(hostname, config);
     }
     // Now we create interfaces for each edge and record the number of
@@ -1458,7 +1458,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     for (Configuration config : configs.values()) {
       // use cisco arbitrarily
-      config.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
       OspfProcess proc = new OspfProcess();
       config.getDefaultVrf().setOspfProcess(proc);
       proc.setReferenceBandwidth(
@@ -1466,7 +1465,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       long backboneArea = 0;
       OspfArea area = new OspfArea(backboneArea);
       proc.getAreas().put(backboneArea, area);
-      area.getInterfaces().addAll(config.getDefaultVrf().getInterfaces().values());
+      area.getInterfaces().putAll(config.getDefaultVrf().getInterfaces());
     }
 
     serializeIndependentConfigs(configs, outputPath);
@@ -2315,8 +2314,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
             long areaNum = e3.getKey();
             OspfArea area = e3.getValue();
-            for (Interface iface : area.getInterfaces()) {
-              String ifaceName = iface.getName();
+            for (Entry<String, Interface> e4 : area.getInterfaces().entrySet()) {
+              String ifaceName = e4.getKey();
+              Interface iface = e4.getValue();
               SortedSet<Edge> ifaceEdges =
                   topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
               boolean hasNeighbor = false;

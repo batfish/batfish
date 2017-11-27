@@ -597,7 +597,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         .getAreas()
         .forEach(
             (areaNum, area) -> {
-              for (Interface iface : area.getInterfaces()) {
+              for (Interface iface : area.getInterfaces().values()) {
                 if (iface.getActive()) {
                   Set<Prefix> allNetworkPrefixes =
                       iface

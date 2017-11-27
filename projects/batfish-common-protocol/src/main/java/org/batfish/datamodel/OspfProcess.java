@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
@@ -12,9 +13,42 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @JsonSchemaDescription("An OSPF routing process")
 public class OspfProcess implements Serializable {
+
+  public static class Builder extends NetworkFactoryBuilder<OspfProcess> {
+
+    private String _exportPolicy;
+
+    private Vrf _vrf;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, OspfProcess.class);
+    }
+
+    @Override
+    public OspfProcess build() {
+      OspfProcess ospfProcess = new OspfProcess();
+      if (_vrf != null) {
+        _vrf.setOspfProcess(ospfProcess);
+      }
+      ospfProcess.setExportPolicy(_exportPolicy);
+      return ospfProcess;
+    }
+
+    public Builder setExportPolicy(RoutingPolicy exportPolicy) {
+      _exportPolicy = exportPolicy != null ? exportPolicy.getName() : null;
+      return this;
+    }
+
+    public Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+  }
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
 
@@ -37,6 +71,30 @@ public class OspfProcess implements Serializable {
   public OspfProcess() {
     _generatedRoutes = new TreeSet<>();
     _areas = new TreeMap<>();
+  }
+
+  public int computeInterfaceCost(Interface i) {
+    Integer ospfCost = i.getOspfCost();
+    if (ospfCost == null) {
+      String interfaceName = i.getName();
+      if (interfaceName.startsWith("Vlan")) {
+        // TODO: fix for non-cisco
+        ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
+      } else {
+        if (i.getBandwidth() != null) {
+          ospfCost = Math.max((int) (_referenceBandwidth / i.getBandwidth()), 1);
+        } else {
+          String hostname = i.getOwner().getHostname();
+          throw new BatfishException(
+              "Expected non-null interface bandwidth for \""
+                  + hostname
+                  + "\":\""
+                  + interfaceName
+                  + "\"");
+        }
+      }
+    }
+    return ospfCost;
   }
 
   @JsonPropertyDescription("The OSPF areas contained in this process")
@@ -81,29 +139,9 @@ public class OspfProcess implements Serializable {
 
   public void initInterfaceCosts() {
     for (OspfArea area : _areas.values()) {
-      for (Interface i : area.getInterfaces()) {
-        String interfaceName = i.getName();
+      for (Interface i : area.getInterfaces().values()) {
         if (i.getActive()) {
-          Integer ospfCost = i.getOspfCost();
-          if (ospfCost == null) {
-            if (interfaceName.startsWith("Vlan")) {
-              // TODO: fix for non-cisco
-              ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
-            } else {
-              if (i.getBandwidth() != null) {
-                ospfCost = Math.max((int) (_referenceBandwidth / i.getBandwidth()), 1);
-              } else {
-                String hostname = i.getOwner().getHostname();
-                throw new BatfishException(
-                    "Expected non-null interface bandwidth for \""
-                        + hostname
-                        + "\":\""
-                        + interfaceName
-                        + "\"");
-              }
-            }
-          }
-          i.setOspfCost(ospfCost);
+          i.setOspfCost(computeInterfaceCost(i));
         }
       }
     }

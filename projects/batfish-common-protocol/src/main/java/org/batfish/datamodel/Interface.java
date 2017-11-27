@@ -13,11 +13,114 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public final class Interface extends ComparableStructure<String> {
+
+  public static class Builder extends NetworkFactoryBuilder<Interface> {
+
+    private boolean _active;
+
+    private String _name;
+
+    private OspfArea _ospfArea;
+
+    private Integer _ospfCost;
+
+    private boolean _ospfEnabled;
+
+    private boolean _ospfPassive;
+
+    private Configuration _owner;
+
+    private Prefix _prefix;
+
+    private Vrf _vrf;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, Interface.class);
+    }
+
+    @Override
+    public Interface build() {
+      String name = _name != null ? _name : generateName();
+      Interface iface = new Interface(name, _owner);
+      iface.setActive(_active);
+      iface.setOspfArea(_ospfArea);
+      if (_ospfArea != null) {
+        _ospfArea.getInterfaces().put(name, iface);
+        iface.setOspfAreaName(_ospfArea.getName());
+      }
+      iface.setOspfCost(_ospfCost);
+      iface.setOspfEnabled(_ospfEnabled);
+      iface.setOspfPassive(_ospfPassive);
+      iface.setOwner(_owner);
+      if (_owner != null) {
+        _owner.getInterfaces().put(name, iface);
+      }
+      iface.setPrefix(_prefix);
+      if (_prefix != null) {
+        iface.getAllPrefixes().add(_prefix);
+      }
+      iface.setVrf(_vrf);
+      if (_vrf != null) {
+        _vrf.getInterfaces().put(name, iface);
+        OspfProcess proc = _vrf.getOspfProcess();
+        if (proc != null && _active) {
+          iface.setOspfCost(proc.computeInterfaceCost(iface));
+        }
+      }
+      return iface;
+    }
+
+    public Builder setActive(boolean active) {
+      _active = active;
+      return this;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setOspfArea(OspfArea ospfArea) {
+      _ospfArea = ospfArea;
+      return this;
+    }
+
+    public Builder setOspfCost(Integer ospfCost) {
+      _ospfCost = ospfCost;
+      return this;
+    }
+
+    public Builder setOspfEnabled(boolean ospfEnabled) {
+      _ospfEnabled = ospfEnabled;
+      return this;
+    }
+
+    public Builder setOspfPassive(boolean ospfPassive) {
+      _ospfPassive = ospfPassive;
+      return this;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+
+    public Builder setPrefix(Prefix prefix) {
+      _prefix = prefix;
+      return this;
+    }
+
+    public Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+  }
 
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 

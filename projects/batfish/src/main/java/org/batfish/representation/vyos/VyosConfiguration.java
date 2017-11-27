@@ -360,8 +360,7 @@ public class VyosConfiguration extends VendorConfiguration {
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     _ipToInterfaceMap = new HashMap<>();
-    _c = new Configuration(_hostname);
-    _c.setConfigurationFormat(_format);
+    _c = new Configuration(_hostname, _format);
     _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
     _c.setDefaultInboundAction(LineAction.ACCEPT);
 
