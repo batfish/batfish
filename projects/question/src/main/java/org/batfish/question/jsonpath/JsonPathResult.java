@@ -354,7 +354,7 @@ public class JsonPathResult {
       mapper.readValue(value.toString(), baseClass);
     } catch (IOException e) {
       throw new BatfishException(
-          "Could not map extracted value to expected type " + baseClass + "\nValue: " + value);
+          "Could not map extracted value to expected type " + baseClass + "\nValue: " + value, e);
     }
   }
 
