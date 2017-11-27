@@ -2188,6 +2188,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
     }
     newIface.setMtu(iface.getMtu());
+    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
@@ -2715,6 +2716,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.OspfProcess newProcess = new org.batfish.datamodel.OspfProcess();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
+
+    if (proc.getMaxMetricRouterLsa()) {
+      newProcess.setMaxMetricTransitLinks(OspfProcess.MAX_METRIC_ROUTER_LSA);
+      if (proc.getMaxMetricIncludeStub()) {
+        newProcess.setMaxMetricStubNetworks(OspfProcess.MAX_METRIC_ROUTER_LSA);
+      }
+      newProcess.setMaxMetricExternalNetworks(proc.getMaxMetricExternalLsa());
+      newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
+    }
 
     // establish areas and associated interfaces
     Map<Long, OspfArea> areas = newProcess.getAreas();

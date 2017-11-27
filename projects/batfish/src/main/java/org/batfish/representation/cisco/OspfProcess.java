@@ -21,8 +21,14 @@ public class OspfProcess extends ComparableStructure<String> {
 
   private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
 
+  public static final long DEFAULT_MAX_METRIC_EXTERNAL_LSA = 16711680L;
+
+  public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 16711680L;
+
   /** bits per second */
   public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E8;
+
+  public static final long MAX_METRIC_ROUTER_LSA = 65535L;
 
   private static final long serialVersionUID = 1L;
 
@@ -41,6 +47,14 @@ public class OspfProcess extends ComparableStructure<String> {
   private Set<String> _interfaceBlacklist;
 
   private Set<String> _interfaceWhitelist;
+
+  private Long _maxMetricExternalLsa;
+
+  private boolean _maxMetricIncludeStub;
+
+  private boolean _maxMetricRouterLsa;
+
+  private Long _maxMetricSummaryLsa;
 
   private Set<OspfNetwork> _networks;
 
@@ -128,6 +142,22 @@ public class OspfProcess extends ComparableStructure<String> {
     return _defaultInformationOriginateMapLine;
   }
 
+  public Long getMaxMetricExternalLsa() {
+    return _maxMetricExternalLsa;
+  }
+
+  public boolean getMaxMetricIncludeStub() {
+    return _maxMetricIncludeStub;
+  }
+
+  public boolean getMaxMetricRouterLsa() {
+    return _maxMetricRouterLsa;
+  }
+
+  public Long getMaxMetricSummaryLsa() {
+    return _maxMetricSummaryLsa;
+  }
+
   public Set<OspfNetwork> getNetworks() {
     return _networks;
   }
@@ -190,6 +220,22 @@ public class OspfProcess extends ComparableStructure<String> {
 
   public void setDefaultInformationOriginateMapLine(Integer defaultInformationOriginateMapLine) {
     _defaultInformationOriginateMapLine = defaultInformationOriginateMapLine;
+  }
+
+  public void setMaxMetricExternalLsa(Long maxMetricExternalLsa) {
+    _maxMetricExternalLsa = maxMetricExternalLsa;
+  }
+
+  public void setMaxMetricIncludeStub(boolean maxMetricIncludeStub) {
+    _maxMetricIncludeStub = maxMetricIncludeStub;
+  }
+
+  public void setMaxMetricRouterLsa(boolean maxMetricRouterLsa) {
+    _maxMetricRouterLsa = maxMetricRouterLsa;
+  }
+
+  public void setMaxMetricSummaryLsa(Long maxMetricSummaryLsa) {
+    _maxMetricSummaryLsa = maxMetricSummaryLsa;
   }
 
   public void setPassiveInterfaceDefault(boolean b) {
