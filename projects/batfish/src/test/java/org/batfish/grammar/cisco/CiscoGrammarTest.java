@@ -82,8 +82,8 @@ public class CiscoGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
     Configuration r1 = configurations.get("r1");
     Configuration r2 = configurations.get("r2");
     assertThat(
@@ -111,8 +111,8 @@ public class CiscoGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
     MultipathEquivalentAsPathMatchMode aristaDisabled =
         configurations
             .get("arista_disabled")
@@ -152,8 +152,8 @@ public class CiscoGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);

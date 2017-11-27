@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -72,8 +72,6 @@ import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -97,11 +95,9 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
@@ -127,7 +123,6 @@ import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
@@ -458,8 +453,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private TestrigSettings _testrigSettings;
 
   private final List<TestrigSettings> _testrigSettingsStack;
-
-  private long _timerCount;
 
   private boolean _monotonicCache;
 
@@ -859,11 +852,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Set<Flow> computeCompositeNodOutput(
       List<CompositeNodJob> jobs, NodAnswerElement answerElement) {
     _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
-    resetTimer();
+    _logger.resetTimer();
     Set<Flow> flows = new TreeSet<>();
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, flows, answerElement, true, "Composite NOD");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return flows;
   }
 
@@ -887,17 +880,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public InterfaceSet computeFlowSinks(
+  public Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology) {
-    InterfaceSet flowSinks = null;
+    Set<NodeInterfacePair> flowSinks = null;
     if (differentialContext) {
       pushBaseEnvironment();
-      flowSinks = loadDataPlane().getFlowSinks();
+      flowSinks = new LinkedHashSet<>(loadDataPlane().getFlowSinks());
       popEnvironment();
     }
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     if (blacklistNodes != null && differentialContext) {
-      flowSinks.removeNodes(blacklistNodes);
+      flowSinks.removeIf(
+          nodeInterfacePair -> blacklistNodes.contains(nodeInterfacePair.getHostname()));
     }
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     if (blacklistInterfaces != null) {
@@ -910,18 +904,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!differentialContext) {
       flowSinks = computeFlowSinks(configurations, topology);
     }
-    return flowSinks;
+    return ImmutableSet.copyOf(flowSinks);
   }
 
-  private InterfaceSet computeFlowSinks(
+  private Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, Topology topology) {
     // TODO: confirm VRFs are handled correctly
-    InterfaceSet flowSinks = new InterfaceSet();
-    InterfaceSet topologyInterfaces = new InterfaceSet();
+    ImmutableSet.Builder<NodeInterfacePair> flowSinksBuilder = new ImmutableSet.Builder<>();
+    ImmutableSet.Builder<NodeInterfacePair> topologyInterfacesBuilder =
+        new ImmutableSet.Builder<>();
     for (Edge edge : topology.getEdges()) {
-      topologyInterfaces.add(edge.getInterface1());
-      topologyInterfaces.add(edge.getInterface2());
+      topologyInterfacesBuilder.add(edge.getInterface1());
+      topologyInterfacesBuilder.add(edge.getInterface2());
     }
+    Set<NodeInterfacePair> topologyInterfaces = topologyInterfacesBuilder.build();
     for (Configuration node : configurations.values()) {
       String hostname = node.getHostname();
       for (Interface iface : node.getInterfaces().values()) {
@@ -930,105 +926,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
         if (iface.getActive()
             && !iface.isLoopback(node.getConfigurationFormat())
             && !topologyInterfaces.contains(p)) {
-          flowSinks.add(p);
+          flowSinksBuilder.add(p);
         }
       }
     }
-    return flowSinks;
-  }
-
-  @Override
-  public Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    // TODO: confirm VRFs are handled correctly
-    Map<Ip, Set<String>> ipOwners = new HashMap<>();
-    Map<Pair<Prefix, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    configurations.forEach(
-        (hostname, c) -> {
-          for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
-              // collect vrrp info
-              i.getVrrpGroups()
-                  .forEach(
-                      (groupNum, vrrpGroup) -> {
-                        Prefix prefix = vrrpGroup.getVirtualAddress();
-                        if (prefix == null) {
-                          // This Vlan Interface has invalid configuration. The VRRP has no source
-                          // IP address that would be used for VRRP election. This interface could
-                          // never win the election, so is not a candidate.
-                          return;
-                        }
-                        Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
-                        Set<Interface> candidates =
-                            vrrpGroups.computeIfAbsent(
-                                key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                        candidates.add(i);
-                      });
-              // collect prefixes
-              i.getAllPrefixes()
-                  .stream()
-                  .map(p -> p.getAddress())
-                  .forEach(
-                      ip -> {
-                        Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                        owners.add(hostname);
-                      });
-            }
-          }
-        });
-    vrrpGroups.forEach(
-        (p, candidates) -> {
-          int groupNum = p.getSecond();
-          Prefix prefix = p.getFirst();
-          Ip ip = prefix.getAddress();
-          int lowestPriority = Integer.MAX_VALUE;
-          String bestCandidate = null;
-          SortedSet<String> bestCandidates = new TreeSet<>();
-          for (Interface candidate : candidates) {
-            VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
-            int currentPriority = group.getPriority();
-            if (currentPriority < lowestPriority) {
-              lowestPriority = currentPriority;
-              bestCandidates.clear();
-              bestCandidate = candidate.getOwner().getHostname();
-            }
-            if (currentPriority == lowestPriority) {
-              bestCandidates.add(candidate.getOwner().getHostname());
-            }
-          }
-          if (bestCandidates.size() != 1) {
-            String deterministicBestCandidate = bestCandidates.first();
-            bestCandidate = deterministicBestCandidate;
-            _logger.redflag(
-                "Arbitrarily choosing best vrrp candidate: '"
-                    + deterministicBestCandidate
-                    + " for prefix/groupNumber: '"
-                    + p.toString()
-                    + "' among multiple best candidates: "
-                    + bestCandidates);
-          }
-          Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-          owners.add(bestCandidate);
-        });
-    return ipOwners;
-  }
-
-  @Override
-  public Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
-    Map<Ip, String> ipOwnersSimple = new HashMap<>();
-    ipOwners.forEach(
-        (ip, owners) -> {
-          String hostname =
-              owners.size() == 1 ? owners.iterator().next() : Route.AMBIGUOUS_NEXT_HOP;
-          ipOwnersSimple.put(ip, hostname);
-        });
-    return ipOwnersSimple;
+    return flowSinksBuilder.build();
   }
 
   public <KeyT, ResultT> void computeNodFirstUnsatOutput(
       List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
     _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
-    resetTimer();
+    _logger.resetTimer();
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
@@ -1037,30 +945,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new NodFirstUnsatAnswerElement(),
         true,
         "NOD First-UNSAT");
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
-    resetTimer();
+    _logger.resetTimer();
     Set<Flow> flows = new TreeSet<>();
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, flows, new NodAnswerElement(), true, "NOD");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return flows;
   }
 
   public <KeyT> void computeNodSatOutput(List<NodSatJob<KeyT>> jobs, Map<KeyT, Boolean> output) {
     _logger.info("\n*** EXECUTING NOD SAT JOBS ***\n");
-    resetTimer();
+    _logger.resetTimer();
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   @Override
   public Topology computeTopology(Map<String, Configuration> configurations) {
-    resetTimer();
+    _logger.resetTimer();
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     if (blacklistEdges != null) {
@@ -1080,7 +988,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
     Topology prunedTopology = new Topology(topology.getEdges());
-    printElapsedTime();
+    _logger.printElapsedTime();
     return prunedTopology;
   }
 
@@ -1093,7 +1001,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-      topology = synthesizeTopology(configurations);
+      topology = CommonUtil.synthesizeTopology(configurations);
     }
     return topology;
   }
@@ -1102,7 +1010,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, GenericConfigObject> vendorConfigurations,
       ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
-    resetTimer();
+    _logger.resetTimer();
     Map<String, Configuration> configurations = new TreeMap<>();
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
     for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
@@ -1120,7 +1028,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerElement,
         _settings.getHaltOnConvertError(),
         "Convert configurations to vendor-independent format");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return configurations;
   }
 
@@ -1131,7 +1039,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public SortedMap<String, Configuration> deserializeConfigurations(Path serializedConfigPath) {
     _logger.info("\n*** DESERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     if (!Files.exists(serializedConfigPath)) {
       throw new BatfishException(
           "Missing vendor-independent configs directory: '" + serializedConfigPath + "'");
@@ -1148,14 +1056,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     SortedMap<String, Configuration> configurations =
         deserializeObjects(namesByPath, Configuration.class);
-    printElapsedTime();
+    _logger.printElapsedTime();
     return configurations;
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
       Path serializeEnvironmentBgpTablesPath) {
     _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     Map<Path, String> namesByPath = new TreeMap<>();
     try (DirectoryStream<Path> serializedBgpTables =
         Files.newDirectoryStream(serializeEnvironmentBgpTablesPath)) {
@@ -1168,14 +1076,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         deserializeObjects(namesByPath, BgpAdvertisementsByVrf.class);
-    printElapsedTime();
+    _logger.printElapsedTime();
     return bgpTables;
   }
 
   private SortedMap<String, RoutesByVrf> deserializeEnvironmentRoutingTables(
       Path serializeEnvironmentRoutingTablesPath) {
     _logger.info("\n*** DESERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     Map<Path, String> namesByPath = new TreeMap<>();
     try (DirectoryStream<Path> serializedRoutingTables =
         Files.newDirectoryStream(serializeEnvironmentRoutingTablesPath)) {
@@ -1188,7 +1096,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     SortedMap<String, RoutesByVrf> routingTables =
         deserializeObjects(namesByPath, RoutesByVrf.class);
-    printElapsedTime();
+    _logger.printElapsedTime();
     return routingTables;
   }
 
@@ -1236,7 +1144,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Map<String, GenericConfigObject> deserializeVendorConfigurations(
       Path serializedVendorConfigPath) {
     _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     Map<Path, String> namesByPath = new TreeMap<>();
     try (DirectoryStream<Path> serializedConfigs =
         Files.newDirectoryStream(serializedVendorConfigPath)) {
@@ -1249,7 +1157,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     Map<String, GenericConfigObject> vendorConfigurations =
         deserializeObjects(namesByPath, GenericConfigObject.class);
-    printElapsedTime();
+    _logger.printElapsedTime();
     return vendorConfigurations;
   }
 
@@ -1357,7 +1265,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     CommonUtil.createDirectories(outputConfigDir);
     _logger.info("\n*** FLATTENING TEST RIG ***\n");
-    resetTimer();
+    _logger.resetTimer();
     List<FlattenVendorConfigurationJob> jobs = new ArrayList<>();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path inputFile = configFile.getKey();
@@ -1377,7 +1285,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new FlattenVendorConfigurationAnswerElement(),
         _settings.getFlatten() || _settings.getHaltOnParseError(),
         "Flatten configurations");
-    printElapsedTime();
+    _logger.printElapsedTime();
     for (Entry<Path, String> e : outputConfigurationData.entrySet()) {
       Path outputFile = e.getKey();
       String flatConfigText = e.getValue();
@@ -1477,7 +1385,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Map<String, Configuration> stubConfigurations = new TreeMap<>();
     //
     // _logger.info("\n*** GENERATING STUBS ***\n");
-    // resetTimer();
+    // _logger.resetTimer();
     //
     // // load old node-roles to be updated at end
     // RoleSet stubRoles = new RoleSet();
@@ -1636,7 +1544,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // + "\" ...");
     // serializeObject(nodeRoles, nodeRolesPath);
     // _logger.info("OK\n");
-    // printElapsedTime();
+    // _logger.printElapsedTime();
     //
     // // write stubs to disk
     // serializeIndependentConfigs(stubConfigurations,
@@ -1707,12 +1615,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
     }
     return blacklistEdges;
-  }
-
-  private double getElapsedTime(long beforeTime) {
-    long difference = System.currentTimeMillis() - beforeTime;
-    double seconds = difference / 1000d;
-    return seconds;
   }
 
   public Environment getEnvironment() {
@@ -2191,70 +2093,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       pushDeltaEnvironment();
       initQuestionEnvironment(question, dp, true);
       popEnvironment();
-    }
-  }
-
-  @Override
-  public void initRemoteBgpNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners) {
-    // TODO: handle duplicate ips on different vrfs
-    Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
-    Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<>();
-    for (Configuration node : configurations.values()) {
-      String hostname = node.getHostname();
-      for (Vrf vrf : node.getVrfs().values()) {
-        BgpProcess proc = vrf.getBgpProcess();
-        if (proc != null) {
-          for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-            bgpNeighbor.initCandidateRemoteBgpNeighbors();
-            if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
-              throw new BatfishException(
-                  hostname
-                      + ": Do not support dynamic bgp sessions at this time: "
-                      + bgpNeighbor.getPrefix());
-            }
-            Ip remoteAddress = bgpNeighbor.getAddress();
-            if (remoteAddress == null) {
-              throw new BatfishException(
-                  hostname
-                      + ": Could not determine remote address of bgp neighbor: "
-                      + bgpNeighbor);
-            }
-            Ip localAddress = bgpNeighbor.getLocalIp();
-            if (localAddress == null
-                || !ipOwners.containsKey(localAddress)
-                || !ipOwners.get(localAddress).contains(hostname)) {
-              continue;
-            }
-            remoteAddresses.put(bgpNeighbor, remoteAddress);
-            Set<BgpNeighbor> localAddressOwners =
-                localAddresses.computeIfAbsent(
-                    localAddress, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-            localAddressOwners.add(bgpNeighbor);
-          }
-        }
-      }
-    }
-    for (Entry<BgpNeighbor, Ip> e : remoteAddresses.entrySet()) {
-      BgpNeighbor bgpNeighbor = e.getKey();
-      Ip remoteAddress = e.getValue();
-      Ip localAddress = bgpNeighbor.getLocalIp();
-      int localLocalAs = bgpNeighbor.getLocalAs();
-      int localRemoteAs = bgpNeighbor.getRemoteAs();
-      Set<BgpNeighbor> remoteBgpNeighborCandidates = localAddresses.get(remoteAddress);
-      if (remoteBgpNeighborCandidates != null) {
-        for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
-          int remoteLocalAs = remoteBgpNeighborCandidate.getLocalAs();
-          int remoteRemoteAs = remoteBgpNeighborCandidate.getRemoteAs();
-          Ip reciprocalRemoteIp = remoteBgpNeighborCandidate.getAddress();
-          if (localAddress.equals(reciprocalRemoteIp)
-              && localLocalAs == remoteRemoteAs
-              && localRemoteAs == remoteLocalAs) {
-            bgpNeighbor.getCandidateRemoteBgpNeighbors().add(remoteBgpNeighborCandidate);
-            bgpNeighbor.setRemoteBgpNeighbor(remoteBgpNeighborCandidate);
-          }
-        }
-      }
     }
   }
 
@@ -2969,7 +2807,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
       SortedMap<Path, String> inputData, ParseEnvironmentBgpTablesAnswerElement answerElement) {
     _logger.info("\n*** PARSING ENVIRONMENT BGP TABLES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables = new TreeMap<>();
     List<ParseEnvironmentBgpTableJob> jobs = new ArrayList<>();
     SortedMap<String, Configuration> configurations = loadConfigurations();
@@ -2999,14 +2837,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerElement,
         _settings.getHaltOnParseError(),
         "Parse environment BGP tables");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return bgpTables;
   }
 
   private SortedMap<String, RoutesByVrf> parseEnvironmentRoutingTables(
       SortedMap<Path, String> inputData, ParseEnvironmentRoutingTablesAnswerElement answerElement) {
     _logger.info("\n*** PARSING ENVIRONMENT ROUTING TABLES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     SortedMap<String, RoutesByVrf> routingTables = new TreeMap<>();
     List<ParseEnvironmentRoutingTableJob> jobs = new ArrayList<>();
     SortedMap<String, Configuration> configurations = loadConfigurations();
@@ -3032,7 +2870,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerElement,
         _settings.getHaltOnParseError(),
         "Parse environment routing tables");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return routingTables;
   }
 
@@ -3096,7 +2934,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
-    resetTimer();
+    _logger.resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
     _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath() + "\" ...");
     Topology topology = null;
@@ -3120,7 +2958,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         throw new BatfishException("Topology format error", e);
       }
     }
-    printElapsedTime();
+    _logger.printElapsedTime();
     return topology;
   }
 
@@ -3129,7 +2967,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat configurationFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>();
     for (Entry<Path, String> vendorFile : configurationData.entrySet()) {
@@ -3150,7 +2988,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerElement,
         _settings.getHaltOnParseError(),
         "Parse configurations");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return vendorConfigurations;
   }
 
@@ -3378,15 +3216,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  @Override
-  public void printElapsedTime() {
-    double seconds = getElapsedTime(_timerCount);
-    _logger.info("Time taken for this task: " + seconds + " seconds\n");
-  }
-
   private void printSymmetricEdgePairs() {
     Map<String, Configuration> configs = loadConfigurations();
-    SortedSet<Edge> edges = synthesizeTopology(configs).getEdges();
+    SortedSet<Edge> edges = CommonUtil.synthesizeTopology(configs).getEdges();
     Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
     List<Edge> edgeList = new ArrayList<>();
     edgeList.addAll(symmetricEdgePairs);
@@ -3411,7 +3243,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               + edge2.getInt2()
               + "\n");
     }
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   private void processDeltaConfigurations(Map<String, Configuration> configurations) {
@@ -3421,7 +3253,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
+  public Set<BgpAdvertisement> loadExternalBgpAnnouncements(
       Map<String, Configuration> configurations) {
     Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
@@ -3571,7 +3403,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
     _logger.infof("\n*** READING %s FILES ***\n", configsType);
-    resetTimer();
+    _logger.resetTimer();
     SortedMap<Path, String> configurationData = new TreeMap<>();
     Path configsPath = testRigPath.resolve(configsType);
     List<Path> configFilePaths = listAllFiles(configsPath);
@@ -3584,7 +3416,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       configurationData.put(file, fileText);
       completed.incrementAndGet();
     }
-    printElapsedTime();
+    _logger.printElapsedTime();
     return configurationData;
   }
 
@@ -3604,7 +3436,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<Path, String> readFiles(Path directory, String description) {
     _logger.infof("\n*** READING FILES: %s ***\n", description);
-    resetTimer();
+    _logger.resetTimer();
     SortedMap<Path, String> fileData = new TreeMap<>();
     List<Path> filePaths;
     try (Stream<Path> paths = CommonUtil.list(directory)) {
@@ -3622,7 +3454,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       fileData.put(file, fileText);
       completed.incrementAndGet();
     }
-    printElapsedTime();
+    _logger.printElapsedTime();
     return fileData;
   }
 
@@ -3917,11 +3749,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  @Override
-  public void resetTimer() {
-    _timerCount = System.currentTimeMillis();
-  }
-
   public Answer run() {
     newBatch("Begin job", 0);
     loadPlugins();
@@ -4061,13 +3888,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     outputPath.toFile().mkdirs();
     Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
     _logger.debug("Serializing AWS VPCs to " + currentOutputPath + "\"...");
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
-    printElapsedTime();
+    _logger.printElapsedTime();
     return answer;
   }
 
@@ -4092,7 +3919,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to parsing error(s)");
     }
     _logger.info("\n*** SERIALIZING ENVIRONMENT BGP TABLES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     outputPath.toFile().mkdirs();
     SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
     bgpTables.forEach(
@@ -4101,7 +3928,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           output.put(currentOutputPath, rt);
         });
     serializeObjects(output);
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   private Answer serializeEnvironmentRoutingTables(Path inputPath, Path outputPath) {
@@ -4125,7 +3952,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to parsing error(s)");
     }
     _logger.info("\n*** SERIALIZING ENVIRONMENT ROUTING TABLES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     outputPath.toFile().mkdirs();
     SortedMap<Path, RoutesByVrf> output = new TreeMap<>();
     routingTables.forEach(
@@ -4134,7 +3961,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           output.put(currentOutputPath, rt);
         });
     serializeObjects(output);
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
@@ -4184,7 +4011,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // now, serialize
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     CommonUtil.createDirectories(outputPath);
 
     Map<Path, VendorConfiguration> output = new TreeMap<>();
@@ -4196,7 +4023,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeObjects(output);
     // serialize warnings
     serializeObject(answerElement, _testrigSettings.getParseAnswerPath());
-    printElapsedTime();
+    _logger.printElapsedTime();
     return overlayConfigurations;
   }
 
@@ -4206,7 +4033,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to conversion error(s)");
     }
     _logger.info("\n*** SERIALIZING VENDOR-INDEPENDENT CONFIGURATION STRUCTURES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     outputPath.toFile().mkdirs();
     Map<Path, Configuration> output = new TreeMap<>();
     configurations.forEach(
@@ -4215,7 +4042,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           output.put(currentOutputPath, c);
         });
     serializeObjects(output);
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   Answer serializeIndependentConfigs(Path vendorConfigPath, Path outputPath) {
@@ -4250,7 +4077,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to parser errors");
     }
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-    resetTimer();
+    _logger.resetTimer();
     CommonUtil.createDirectories(outputPath);
     Map<Path, VendorConfiguration> output = new TreeMap<>();
     vendorConfigurations.forEach(
@@ -4284,7 +4111,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         });
 
     serializeObjects(output);
-    printElapsedTime();
+    _logger.printElapsedTime();
   }
 
   public <S extends Serializable> void serializeObjects(Map<Path, S> objectsByPath) {
@@ -4554,7 +4381,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-    resetTimer();
+    _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 ACL logic...");
     Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
@@ -4568,14 +4395,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _logger.warn(warning);
       }
     }
-    printElapsedTime();
+    _logger.printElapsedTime();
     return s;
   }
 
   public Synthesizer synthesizeDataPlane() {
 
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
-    resetTimer();
+    _logger.resetTimer();
 
     DataPlane dataPlane = loadDataPlane();
 
@@ -4592,44 +4419,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _logger.warn(warning);
       }
     }
-    printElapsedTime();
+    _logger.printElapsedTime();
     return s;
-  }
-
-  private Topology synthesizeTopology(Map<String, Configuration> configurations) {
-    _logger.info("\n*** SYNTHESIZING TOPOLOGY FROM INTERFACE SUBNET INFORMATION ***\n");
-    resetTimer();
-    SortedSet<Edge> edges = new TreeSet<>();
-    Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
-    configurations.forEach(
-        (nodeName, node) -> {
-          for (Entry<String, Interface> e : node.getInterfaces().entrySet()) {
-            String ifaceName = e.getKey();
-            Interface iface = e.getValue();
-            if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()) {
-              for (Prefix prefix : iface.getAllPrefixes()) {
-                if (prefix.getPrefixLength() < 32) {
-                  Prefix network = new Prefix(prefix.getNetworkAddress(), prefix.getPrefixLength());
-                  NodeInterfacePair pair = new NodeInterfacePair(nodeName, ifaceName);
-                  Set<NodeInterfacePair> interfaceBucket =
-                      prefixInterfaces.computeIfAbsent(network, k -> new HashSet<>());
-                  interfaceBucket.add(pair);
-                }
-              }
-            }
-          }
-        });
-    for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
-      for (NodeInterfacePair p1 : bucket) {
-        for (NodeInterfacePair p2 : bucket) {
-          if (!p1.equals(p2)) {
-            Edge edge = new Edge(p1, p2);
-            edges.add(edge);
-          }
-        }
-      }
-    }
-    return new Topology(edges);
   }
 
   private Answer validateEnvironment() {
@@ -4712,7 +4503,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void writeJsonTopology() {
     try {
       Map<String, Configuration> configs = loadConfigurations();
-      SortedSet<Edge> textEdges = synthesizeTopology(configs).getEdges();
+      SortedSet<Edge> textEdges = CommonUtil.synthesizeTopology(configs).getEdges();
       JSONArray jEdges = new JSONArray();
       for (Edge textEdge : textEdges) {
         Configuration node1 = configs.get(textEdge.getNode1());
