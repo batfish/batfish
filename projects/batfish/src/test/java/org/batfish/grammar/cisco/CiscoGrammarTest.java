@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +28,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
@@ -82,8 +84,8 @@ public class CiscoGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
     Configuration r1 = configurations.get("r1");
     Configuration r2 = configurations.get("r2");
     assertThat(
@@ -111,8 +113,8 @@ public class CiscoGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
     MultipathEquivalentAsPathMatchMode aristaDisabled =
         configurations
             .get("arista_disabled")
@@ -152,8 +154,8 @@ public class CiscoGrammarTest {
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -194,6 +196,77 @@ public class CiscoGrammarTest {
             .flatMap(asSet -> asSet.stream())
             .anyMatch(AsPath::isPrivateAs);
     assertFalse(r3HasPrivate);
+  }
+
+  @Test
+  public void testOspfPointToPoint() throws IOException {
+    String testrigName = "ospf-point-to-point";
+    String iosOspfPointToPoint = "ios-ospf-point-to-point";
+    String[] configurationNames = new String[] {iosOspfPointToPoint};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+    Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
+    Interface e0Sub0 = iosMaxMetric.getInterfaces().get("Ethernet0/0");
+    Interface e0Sub1 = iosMaxMetric.getInterfaces().get("Ethernet0/1");
+
+    assertTrue(e0Sub0.getOspfPointToPoint());
+    assertFalse(e0Sub1.getOspfPointToPoint());
+  }
+
+  @Test
+  public void testOspfMaxMetric() throws IOException {
+    String testrigName = "ospf-max-metric";
+    String iosMaxMetricName = "ios-max-metric";
+    String iosMaxMetricCustomName = "ios-max-metric-custom";
+    String iosMaxMetricOnStartupName = "ios-max-metric-on-startup";
+    String[] configurationNames =
+        new String[] {iosMaxMetricName, iosMaxMetricCustomName, iosMaxMetricOnStartupName};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+    Configuration iosMaxMetric = configurations.get(iosMaxMetricName);
+    Configuration iosMaxMetricCustom = configurations.get(iosMaxMetricCustomName);
+    Configuration iosMaxMetricOnStartup = configurations.get(iosMaxMetricOnStartupName);
+    OspfProcess proc = iosMaxMetric.getDefaultVrf().getOspfProcess();
+    OspfProcess procCustom = iosMaxMetricCustom.getDefaultVrf().getOspfProcess();
+    OspfProcess procOnStartup = iosMaxMetricOnStartup.getDefaultVrf().getOspfProcess();
+    long expectedMaxMetricRouterLsa =
+        org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
+    long expectedMaxMetricStub = org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
+    long expectedMaxMetricExternal =
+        org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_EXTERNAL_LSA;
+    long expectedMaxMetricSummary =
+        org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_SUMMARY_LSA;
+    long expectedCustomMaxMetricExternal = 12345L;
+    long expectedCustomMaxMetricSummary = 23456L;
+
+    assertThat(proc.getMaxMetricTransitLinks(), equalTo(expectedMaxMetricRouterLsa));
+    assertThat(proc.getMaxMetricStubNetworks(), equalTo(expectedMaxMetricStub));
+    assertThat(proc.getMaxMetricExternalNetworks(), equalTo(expectedMaxMetricExternal));
+    assertThat(proc.getMaxMetricSummaryNetworks(), equalTo(expectedMaxMetricSummary));
+    assertThat(procCustom.getMaxMetricTransitLinks(), equalTo(expectedMaxMetricRouterLsa));
+    assertThat(procCustom.getMaxMetricStubNetworks(), equalTo(expectedMaxMetricStub));
+    assertThat(procCustom.getMaxMetricExternalNetworks(), equalTo(expectedCustomMaxMetricExternal));
+    assertThat(procCustom.getMaxMetricSummaryNetworks(), equalTo(expectedCustomMaxMetricSummary));
+    assertThat(procOnStartup.getMaxMetricTransitLinks(), is(nullValue()));
+    assertThat(procOnStartup.getMaxMetricStubNetworks(), is(nullValue()));
+    assertThat(procOnStartup.getMaxMetricExternalNetworks(), is(nullValue()));
+    assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
   }
 
   @Test

@@ -11,6 +11,7 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
@@ -23,7 +24,7 @@ import org.junit.runners.JUnit4;
 public class PrependAsPathTest {
 
   private static Environment newTestEnvironment(BgpRoute.Builder outputRoute) {
-    Configuration c = new Configuration("host");
+    Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     return new Environment(c, "vrf", null, null, outputRoute, null, null);
   }
 

@@ -1,0 +1,10 @@
+!
+hostname ios-ospf-point-to-point
+!
+interface Ethernet0/0
+ ip ospf network point-to-point
+!
+interface Ethernet0/1
+!
+!
+

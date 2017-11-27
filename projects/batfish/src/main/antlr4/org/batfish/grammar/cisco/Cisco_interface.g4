@@ -204,6 +204,11 @@ if_ip_ospf_hello_interval
    IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
 ;
 
+if_ip_ospf_network
+:
+   IP OSPF NETWORK POINT_TO_POINT NEWLINE
+;
+
 if_ip_ospf_passive_interface
 :
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
@@ -457,7 +462,6 @@ if_null_block
                   | DEMAND_CIRCUIT
                   | MESSAGE_DIGEST_KEY
                   | MTU_IGNORE
-                  | NETWORK
                   | PRIORITY
                   | RETRANSMIT_INTERVAL
                   | TRANSMIT_DELAY
@@ -1046,6 +1050,7 @@ s_interface
       | if_ip_ospf_dead_interval
       | if_ip_ospf_dead_interval_minimal
       | if_ip_ospf_hello_interval
+      | if_ip_ospf_network
       | if_ip_ospf_passive_interface
       | if_ip_pim_neighbor_filter
       | if_ip_policy

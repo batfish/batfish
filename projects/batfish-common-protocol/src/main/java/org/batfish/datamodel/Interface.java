@@ -13,11 +13,128 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 public final class Interface extends ComparableStructure<String> {
+
+  public static class Builder extends NetworkFactoryBuilder<Interface> {
+
+    private boolean _active;
+
+    private String _name;
+
+    private OspfArea _ospfArea;
+
+    private Integer _ospfCost;
+
+    private boolean _ospfEnabled;
+
+    private boolean _ospfPassive;
+
+    private boolean _ospfPointToPoint;
+
+    private Configuration _owner;
+
+    private Prefix _prefix;
+
+    private Vrf _vrf;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, Interface.class);
+    }
+
+    @Override
+    public Interface build() {
+      String name = _name != null ? _name : generateName();
+      Interface iface = new Interface(name, _owner);
+      iface.setActive(_active);
+      iface.setOspfArea(_ospfArea);
+      if (_ospfArea != null) {
+        _ospfArea.getInterfaces().put(name, iface);
+        iface.setOspfAreaName(_ospfArea.getName());
+      }
+      iface.setOspfCost(_ospfCost);
+      iface.setOspfEnabled(_ospfEnabled);
+      iface.setOspfPassive(_ospfPassive);
+      iface.setOspfPointToPoint(_ospfPointToPoint);
+      iface.setOwner(_owner);
+      if (_owner != null) {
+        _owner.getInterfaces().put(name, iface);
+      }
+      iface.setPrefix(_prefix);
+      if (_prefix != null) {
+        iface.getAllPrefixes().add(_prefix);
+      }
+      iface.setVrf(_vrf);
+      if (_vrf != null) {
+        _vrf.getInterfaces().put(name, iface);
+        OspfProcess proc = _vrf.getOspfProcess();
+        if (proc != null && _active) {
+          iface.setOspfCost(proc.computeInterfaceCost(iface));
+        }
+      }
+      return iface;
+    }
+
+    public Builder setActive(boolean active) {
+      _active = active;
+      return this;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setOspfArea(OspfArea ospfArea) {
+      _ospfArea = ospfArea;
+      return this;
+    }
+
+    public Builder setOspfCost(Integer ospfCost) {
+      _ospfCost = ospfCost;
+      return this;
+    }
+
+    public Builder setOspfEnabled(boolean ospfEnabled) {
+      _ospfEnabled = ospfEnabled;
+      return this;
+    }
+
+    public Builder setOspfPassive(boolean ospfPassive) {
+      _ospfPassive = ospfPassive;
+      return this;
+    }
+
+    public Builder setOspfPointToPoint(boolean ospfPointToPoint) {
+      _ospfPointToPoint = ospfPointToPoint;
+      return this;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+
+    public Builder setPrefix(Prefix prefix) {
+      _prefix = prefix;
+      return this;
+    }
+
+    public Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+  }
+
+  private static final int DEFAULT_MTU = 1500;
+
+  public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
+
+  public static final String NULL_INTERFACE_NAME = "null_interface";
 
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
@@ -31,13 +148,9 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_BANDWIDTH = "bandwidth";
 
-  private static final int DEFAULT_MTU = 1500;
-
   private static final String PROP_DESCRIPTION = "description";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
-
-  public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
@@ -55,8 +168,6 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
 
-  public static final String NULL_INTERFACE_NAME = "null_interface";
-
   private static final String PROP_OSPF_AREA = "ospfArea";
 
   private static final String PROP_OSPF_COST = "ospfCost";
@@ -69,6 +180,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
 
+  private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
+
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
 
   private static final String PROP_PREFIX = "prefix";
@@ -79,23 +192,23 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_SOURCE_NATS = "sourceNats";
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
+  private static final String PROP_SWITCHPORT = "switchport";
+
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
 
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
-
-  private static final String PROP_SWITCHPORT = "switchport";
 
   private static final String PROP_VRF = "vrf";
 
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
 
   private static final String PROP_ZONE = "zone";
+
+  private static final long serialVersionUID = 1L;
 
   private static InterfaceType computeAosInteraceType(String name) {
     if (name.startsWith("vlan")) {
@@ -305,6 +418,8 @@ public final class Interface extends ComparableStructure<String> {
   private int _ospfHelloMultiplier;
 
   private boolean _ospfPassive;
+
+  private boolean _ospfPointToPoint;
 
   private IpAccessList _outgoingFilter;
 
@@ -634,6 +749,11 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfPassive;
   }
 
+  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
+  public boolean getOspfPointToPoint() {
+    return _ospfPointToPoint;
+  }
+
   @JsonIgnore
   public IpAccessList getOutgoingFilter() {
     return _outgoingFilter;
@@ -921,6 +1041,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_PASSIVE)
   public void setOspfPassive(boolean passive) {
     _ospfPassive = passive;
+  }
+
+  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
+  public void setOspfPointToPoint(boolean ospfPointToPoint) {
+    _ospfPointToPoint = ospfPointToPoint;
   }
 
   @JsonIgnore

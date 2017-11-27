@@ -275,7 +275,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
         Set<BgpAdvertisement> externalAdverts =
-            _batfish.processExternalBgpAnnouncements(configurations);
+            _batfish.loadExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 externalAdverts, configurations, nodeRegex, question.getPrefixSpace());

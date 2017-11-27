@@ -1,6 +1,5 @@
 package org.batfish.bdp;
 
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.util.ComparableStructure;
@@ -13,17 +12,14 @@ public final class Node extends ComparableStructure<String> {
 
   final Configuration _c;
 
-  private Map<String, Node> _nodes;
-
   SortedMap<String, VirtualRouter> _virtualRouters;
 
-  public Node(Configuration c, Map<String, Node> nodes) {
+  public Node(Configuration c) {
     super(c.getHostname());
     _c = c;
-    _nodes = nodes;
     _virtualRouters = new TreeMap<>();
     for (String vrfName : _c.getVrfs().keySet()) {
-      VirtualRouter vr = new VirtualRouter(vrfName, _c, _nodes);
+      VirtualRouter vr = new VirtualRouter(vrfName, _c);
       vr.initRibs();
       _virtualRouters.put(vrfName, vr);
     }

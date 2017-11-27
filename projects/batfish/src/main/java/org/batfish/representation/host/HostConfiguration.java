@@ -213,8 +213,7 @@ public class HostConfiguration extends VendorConfiguration {
       _hostInterfaces.forEach((name, iface) -> iface.setCanonicalName(name));
     }
     String hostname = getHostname();
-    _c = new Configuration(hostname);
-    _c.setConfigurationFormat(ConfigurationFormat.HOST);
+    _c = new Configuration(hostname, ConfigurationFormat.HOST);
     _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
     _c.setDefaultInboundAction(LineAction.ACCEPT);
     _c.setRoles(_roles);
