@@ -22,9 +22,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
     "A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes")
 public class RoutingPolicy extends ComparableStructure<String> {
 
-  /** */
-  private static final long serialVersionUID = 1L;
-
   public static class Builder extends NetworkFactoryBuilder<RoutingPolicy> {
 
     private String _name;
@@ -66,6 +63,9 @@ public class RoutingPolicy extends ComparableStructure<String> {
   }
 
   private static final String PROP_STATEMENTS = "statements";
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   private Configuration _owner;
 

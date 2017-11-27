@@ -122,6 +122,12 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  private static final int DEFAULT_MTU = 1500;
+
+  public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
+
+  public static final String NULL_INTERFACE_NAME = "null_interface";
+
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
   private static final String PROP_ACTIVE = "active";
@@ -134,13 +140,9 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_BANDWIDTH = "bandwidth";
 
-  private static final int DEFAULT_MTU = 1500;
-
   private static final String PROP_DESCRIPTION = "description";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
-
-  public static final String FLOW_SINK_TERMINATION_NAME = "flow_sink_termination";
 
   private static final String PROP_INBOUND_FILTER = "inboundFilter";
 
@@ -157,8 +159,6 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_MTU = "mtu";
 
   private static final String PROP_NATIVE_VLAN = "nativeVlan";
-
-  public static final String NULL_INTERFACE_NAME = "null_interface";
 
   private static final String PROP_OSPF_AREA = "ospfArea";
 
@@ -182,23 +182,23 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_ROUTING_POLICY = "routingPolicy";
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_SOURCE_NATS = "sourceNats";
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
+  private static final String PROP_SWITCHPORT = "switchport";
+
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
 
   private static final String PROP_SWITCHPORT_TRUNK_ENCAPSULATION = "switchportTrunkEncapsulation";
-
-  private static final String PROP_SWITCHPORT = "switchport";
 
   private static final String PROP_VRF = "vrf";
 
   private static final String PROP_VRRP_GROUPS = "vrrpGroups";
 
   private static final String PROP_ZONE = "zone";
+
+  private static final long serialVersionUID = 1L;
 
   private static InterfaceType computeAosInteraceType(String name) {
     if (name.startsWith("vlan")) {

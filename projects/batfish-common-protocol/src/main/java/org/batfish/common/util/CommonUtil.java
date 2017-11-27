@@ -93,10 +93,6 @@ public class CommonUtil {
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
-  public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
-    return collection == null || collection.isEmpty();
-  }
-
   public static String applyPrefix(String prefix, String msg) {
     String[] lines = msg.split("\n");
     StringBuilder sb = new StringBuilder();
@@ -665,6 +661,10 @@ public class CommonUtil {
   public static boolean isNullInterface(String ifaceName) {
     String lcIfaceName = ifaceName.toLowerCase();
     return lcIfaceName.startsWith("null");
+  }
+
+  public static boolean isNullOrEmpty(@Nullable Collection<?> collection) {
+    return collection == null || collection.isEmpty();
   }
 
   public static Stream<Path> list(Path configsPath) {

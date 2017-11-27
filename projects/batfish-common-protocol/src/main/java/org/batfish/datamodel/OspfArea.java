@@ -15,7 +15,6 @@ import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 public class OspfArea extends ComparableStructure<Long> implements Serializable {
 
-  private static final String PROP_INTERFACES = "interfaces";
   public static class Builder extends NetworkFactoryBuilder<OspfArea> {
 
     private Long _number;
@@ -46,6 +45,8 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
       return this;
     }
   }
+
+  private static final String PROP_INTERFACES = "interfaces";
 
   private static final String PROP_SUMMARIES = "summaries";
 

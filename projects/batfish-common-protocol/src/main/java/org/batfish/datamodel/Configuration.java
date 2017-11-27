@@ -56,6 +56,10 @@ public final class Configuration extends ComparableStructure<String> {
     }
   }
 
+  public static final String DEFAULT_VRF_NAME = "default";
+
+  public static final String NODE_NONE_NAME = "(none)";
+
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
 
   private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
@@ -67,8 +71,6 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
 
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
-
-  public static final String DEFAULT_VRF_NAME = "default";
 
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
 
@@ -88,8 +90,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
 
-  public static final String NODE_NONE_NAME = "(none)";
-
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
   private static final String PROP_ROLES = "roles";
@@ -98,17 +98,17 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_ROUTING_POLICIES = "routingPolicies";
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_SNMP_SOURCE_INTERFACE = "snmpSourceInterface";
 
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
 
+  private static final String PROP_ZONES = "zones";
+
+  private static final long serialVersionUID = 1L;
+
   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
-
-  private static final String PROP_ZONES = "zones";
 
   private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
