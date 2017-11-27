@@ -17,6 +17,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -379,8 +380,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
         SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
             _batfish.getRoutes();
         Map<String, Configuration> configurations = _batfish.loadConfigurations();
-        Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
-        Map<Ip, String> ipOwnersSimple = _batfish.computeIpOwnersSimple(ipOwners);
+        Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(configurations, true);
         batfishAnswerElement =
             new RoutesAnswerElement(
                 routesByHostname,

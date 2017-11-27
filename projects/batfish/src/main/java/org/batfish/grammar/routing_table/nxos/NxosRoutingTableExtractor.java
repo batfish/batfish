@@ -1,7 +1,6 @@
 package org.batfish.grammar.routing_table.nxos;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -10,6 +9,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -63,8 +63,7 @@ public class NxosRoutingTableExtractor extends NxosRoutingTableParserBaseListene
     _parser = parser;
     _w = w;
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = batfish.computeIpOwners(configurations, true);
-    Map<Ip, String> ipOwnersSimple = batfish.computeIpOwnersSimple(ipOwners);
+    Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(configurations, true);
     _ipOwners = ipOwnersSimple;
   }
 

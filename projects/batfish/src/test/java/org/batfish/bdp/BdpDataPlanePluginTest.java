@@ -107,7 +107,7 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
+    Flow transformed = BdpEngine.applySourceNat(flow, singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -119,7 +119,7 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("reject", LineAction.REJECT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
+    Flow transformed = BdpEngine.applySourceNat(flow, singletonList(nat));
     assertThat(transformed, is(flow));
   }
 
@@ -135,7 +135,7 @@ public class BdpDataPlanePluginTest {
     secondNat.setAcl(makeAcl("secondAccept", LineAction.ACCEPT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
-    Flow transformed = BdpDataPlanePlugin.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
+    Flow transformed = BdpEngine.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -151,7 +151,7 @@ public class BdpDataPlanePluginTest {
     secondNat.setAcl(makeAcl("acceptAnyway", LineAction.ACCEPT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
-    Flow transformed = BdpDataPlanePlugin.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
+    Flow transformed = BdpEngine.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
 
@@ -164,7 +164,7 @@ public class BdpDataPlanePluginTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    BdpDataPlanePlugin.applySourceNat(flow, singletonList(nat));
+    BdpEngine.applySourceNat(flow, singletonList(nat));
   }
 
   private void testBgpAsPathMultipathHelper(
@@ -213,9 +213,9 @@ public class BdpDataPlanePluginTest {
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
-    Node node = new Node(c, nodes);
+    Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
 
     /*
      * Instantiate routes
@@ -316,9 +316,9 @@ public class BdpDataPlanePluginTest {
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
-    Node node = new Node(c, nodes);
+    Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
     BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Prefix p = new Prefix("0.0.0.0/0");
@@ -425,9 +425,9 @@ public class BdpDataPlanePluginTest {
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
-    Node node = new Node(c, nodes);
+    Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
 
     // good for both ebgp and ibgp
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
@@ -512,9 +512,9 @@ public class BdpDataPlanePluginTest {
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
-    Node node = new Node(c, nodes);
+    Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
+    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
     BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Ip ip1 = new Ip("1.0.0.0");
