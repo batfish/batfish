@@ -163,6 +163,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return _costToAdvertiser;
   }
 
+  @JsonProperty(PROP_LSA_METRIC)
   public long getLsaMetric() {
     return _lsaMetric;
   }

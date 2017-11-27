@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import java.util.Objects;
+
 public abstract class OspfInternalRoute extends OspfRoute {
 
   /** */
@@ -16,13 +18,6 @@ public abstract class OspfInternalRoute extends OspfRoute {
 
   @Override
   public final int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _admin;
-    result = prime * result + (int) (_area ^ (_area >>> 32));
-    result = prime * result + Long.hashCode(_metric);
-    result = prime * result + _network.hashCode();
-    result = prime * result + (_nextHopIp == null ? 0 : _nextHopIp.hashCode());
-    return result;
+    return Objects.hash(_admin, _area, _metric, _network, _nextHopIp);
   }
 }

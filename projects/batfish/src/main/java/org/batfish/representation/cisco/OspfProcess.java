@@ -17,18 +17,18 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public class OspfProcess extends ComparableStructure<String> {
 
-  private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1;
+  private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1L;
 
   private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
 
-  public static final long DEFAULT_MAX_METRIC_EXTERNAL_LSA = 16711680L;
+  public static final long DEFAULT_MAX_METRIC_EXTERNAL_LSA = 0xFF0000L;
 
-  public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 16711680L;
+  public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 0xFF0000L;
 
   /** bits per second */
-  public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E8;
+  public static final double DEFAULT_REFERENCE_BANDWIDTH = 1E8D;
 
-  public static final long MAX_METRIC_ROUTER_LSA = 65535L;
+  public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
   private static final long serialVersionUID = 1L;
 
