@@ -74,6 +74,23 @@
     <xstream.version>1.4.7</xstream.version>
   </properties>
 
+
+  <profiles>
+    <profile>
+      <id>fast</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <cpd.skip>true</cpd.skip>
+        <checkstyle.skip>true</checkstyle.skip>
+        <findbugs.skip>true</findbugs.skip>
+        <pmd.skip>true</pmd.skip>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
+  </profiles>
+
   <build>
     <pluginManagement>
       <plugins>
