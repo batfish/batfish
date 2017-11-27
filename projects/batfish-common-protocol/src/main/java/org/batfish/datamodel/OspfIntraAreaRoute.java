@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 
-public class OspfIntraAreaRoute extends OspfAreaRoute {
+public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
 

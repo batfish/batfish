@@ -34,6 +34,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _ospfPassive;
 
+    private boolean _ospfPointToPoint;
+
     private Configuration _owner;
 
     private Prefix _prefix;
@@ -57,6 +59,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOspfCost(_ospfCost);
       iface.setOspfEnabled(_ospfEnabled);
       iface.setOspfPassive(_ospfPassive);
+      iface.setOspfPointToPoint(_ospfPointToPoint);
       iface.setOwner(_owner);
       if (_owner != null) {
         _owner.getInterfaces().put(name, iface);
@@ -103,6 +106,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOspfPassive(boolean ospfPassive) {
       _ospfPassive = ospfPassive;
+      return this;
+    }
+
+    public Builder setOspfPointToPoint(boolean ospfPointToPoint) {
+      _ospfPointToPoint = ospfPointToPoint;
       return this;
     }
 
@@ -171,6 +179,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_HELLO_MULTIPLIER = "ospfHelloMultiplier";
 
   private static final String PROP_OSPF_PASSIVE = "ospfPassive";
+
+  private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
 
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
 
@@ -408,6 +418,8 @@ public final class Interface extends ComparableStructure<String> {
   private int _ospfHelloMultiplier;
 
   private boolean _ospfPassive;
+
+  private boolean _ospfPointToPoint;
 
   private IpAccessList _outgoingFilter;
 
@@ -737,6 +749,11 @@ public final class Interface extends ComparableStructure<String> {
     return _ospfPassive;
   }
 
+  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
+  public boolean getOspfPointToPoint() {
+    return _ospfPointToPoint;
+  }
+
   @JsonIgnore
   public IpAccessList getOutgoingFilter() {
     return _outgoingFilter;
@@ -1024,6 +1041,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_OSPF_PASSIVE)
   public void setOspfPassive(boolean passive) {
     _ospfPassive = passive;
+  }
+
+  @JsonProperty(PROP_OSPF_POINT_TO_POINT)
+  public void setOspfPointToPoint(boolean ospfPointToPoint) {
+    _ospfPointToPoint = ospfPointToPoint;
   }
 
   @JsonIgnore

@@ -11,7 +11,11 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
     private String _advertiser;
 
+    private Long _area;
+
     private Long _costToAdvertiser;
+
+    private Long _lsaMetric;
 
     private OspfMetricType _ospfMetricType;
 
@@ -26,6 +30,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
                 getNextHopIp(),
                 getAdmin(),
                 getMetric(),
+                _lsaMetric,
+                _area,
                 _costToAdvertiser,
                 _advertiser);
       } else {
@@ -35,15 +41,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
                 getNextHopIp(),
                 getAdmin(),
                 getMetric(),
+                _lsaMetric,
+                _area,
                 _costToAdvertiser,
                 _advertiser);
       }
       return route;
-    }
-
-    @Override
-    protected Builder getThis() {
-      return this;
     }
 
     public String getAdvertiser() {
@@ -58,12 +61,25 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return _ospfMetricType;
     }
 
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
+
     public void setAdvertiser(String advertiser) {
       _advertiser = advertiser;
     }
 
+    public void setArea(long area) {
+      _area = area;
+    }
+
     public void setCostToAdvertiser(long costToAdvertiser) {
       _costToAdvertiser = costToAdvertiser;
+    }
+
+    public void setLsaMetric(long lsaMetric) {
+      _lsaMetric = lsaMetric;
     }
 
     public void setOspfMetricType(OspfMetricType ospfMetricType) {
@@ -75,6 +91,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   protected static final String PROP_COST_TO_ADVERTISER = "costToAdvertiser";
 
+  protected static final String PROP_LSA_METRIC = "lsaMetric";
+
   protected static final String PROP_OSPF_METRIC_TYPE = "ospfMetricType";
 
   /** */
@@ -84,17 +102,22 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   private final long _costToAdvertiser;
 
+  private final long _lsaMetric;
+
   @JsonCreator
   public OspfExternalRoute(
       @JsonProperty(PROP_NETWORK) Prefix prefix,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_METRIC) long metric,
+      @JsonProperty(PROP_LSA_METRIC) long lsaMetric,
+      @JsonProperty(PROP_AREA) long area,
       @JsonProperty(PROP_ADVERTISER) String advertiser,
       @JsonProperty(PROP_COST_TO_ADVERTISER) long costToAdvertiser) {
-    super(prefix, nextHopIp, admin, metric);
+    super(prefix, nextHopIp, admin, metric, area);
     _advertiser = advertiser;
     _costToAdvertiser = costToAdvertiser;
+    _lsaMetric = lsaMetric;
   }
 
   @Override
@@ -118,6 +141,9 @@ public abstract class OspfExternalRoute extends OspfRoute {
     if (_admin != other._admin) {
       return false;
     }
+    if (_lsaMetric != other._lsaMetric) {
+      return false;
+    }
     if (_metric != other._metric) {
       return false;
     }
@@ -135,6 +161,10 @@ public abstract class OspfExternalRoute extends OspfRoute {
   @JsonProperty(PROP_COST_TO_ADVERTISER)
   public long getCostToAdvertiser() {
     return _costToAdvertiser;
+  }
+
+  public long getLsaMetric() {
+    return _lsaMetric;
   }
 
   @Nonnull
@@ -164,6 +194,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     result = prime * result + ((_nextHopIp == null) ? 0 : _nextHopIp.hashCode());
     result = prime * result + _admin;
     result = prime * result + Long.hashCode(_metric);
+    result = prime * result + Long.hashCode(_lsaMetric);
     result = prime * result + ((getOspfMetricType() == null) ? 0 : getOspfMetricType().ordinal());
     return result;
   }
@@ -174,6 +205,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
   protected final String protocolRouteString() {
     return " ospfMetricType:"
         + getOspfMetricType()
+        + " lsaMetric:"
+        + _lsaMetric
         + " advertiser:"
         + _advertiser
         + ospfExternalRouteString();
