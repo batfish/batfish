@@ -2,8 +2,6 @@
 hostname eos
 boot system flash fake.swi
 !
-interface Ethernet0
-!
 ip community-list expanded eos_exp permit 1
 ip community-list expanded eos_exp_multi permit 0:10:20:3
 ip community-list standard eos_std_gshut permit GSHUT
