@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -798,7 +799,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
     BatfishObjectMapper mapper = new BatfishObjectMapper();
-    TestrigMetadata metadata = new TestrigMetadata(java.time.Instant.now());
+    TestrigMetadata metadata = new TestrigMetadata(Instant.now());
     Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
     try {
       CommonUtil.writeFile(metadataPath, mapper.writeValueAsString(metadata));
