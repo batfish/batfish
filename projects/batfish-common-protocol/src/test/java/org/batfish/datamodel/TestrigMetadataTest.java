@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,7 @@ public class TestrigMetadataTest {
           mapper.writeValueAsString(metadata),
           equalTo("{\n  \"creationTimestamp\" : \"1994-01-19T03:10:05.001Z\"\n}"));
     } catch (Exception e) {
-      assertThat(e.getMessage(), 0, equalTo(1));
+      throw new BatfishException("Cannot process the timestamp into json", e);
     }
   }
 }
