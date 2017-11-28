@@ -30,8 +30,8 @@ import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
-import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
@@ -50,13 +50,8 @@ public interface IBatfish extends IPluginConsumer {
 
   void checkEnvironmentExists();
 
-  InterfaceSet computeFlowSinks(
+  Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
-
-  Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive);
-
-  Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners);
 
   Topology computeTopology(Map<String, Configuration> configurations);
 
@@ -94,9 +89,6 @@ public interface IBatfish extends IPluginConsumer {
 
   InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError);
 
-  void initRemoteBgpNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners);
-
   void initRemoteIpsecVpns(Map<String, Configuration> configurations);
 
   void initRemoteOspfNeighbors(
@@ -131,9 +123,7 @@ public interface IBatfish extends IPluginConsumer {
 
   void popEnvironment();
 
-  void printElapsedTime();
-
-  Set<BgpAdvertisement> processExternalBgpAnnouncements(Map<String, Configuration> configurations);
+  Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
   void processFlows(Set<Flow> flows);
 
@@ -155,8 +145,6 @@ public interface IBatfish extends IPluginConsumer {
 
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
-
-  void resetTimer();
 
   void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
 

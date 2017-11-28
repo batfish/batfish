@@ -665,9 +665,9 @@ public class Abstraction {
    * neighbors etc that do not correpond to any abstract neighbors.
    */
   private Configuration createAbstractConfig(Set<String> abstractRouters, Configuration conf) {
-    Configuration abstractConf = new Configuration(conf.getHostname());
+    Configuration abstractConf =
+        new Configuration(conf.getHostname(), conf.getConfigurationFormat());
     abstractConf.setDomainName(conf.getDomainName());
-    abstractConf.setConfigurationFormat(conf.getConfigurationFormat());
     abstractConf.setDnsServers(conf.getDnsServers());
     abstractConf.setDnsSourceInterface(conf.getDnsSourceInterface());
     abstractConf.setAuthenticationKeyChains(conf.getAuthenticationKeyChains());

@@ -19,6 +19,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -736,8 +737,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteBgpNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
-        batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
         _remoteBgpNeighborsInitialized = true;
       }
     }
@@ -745,7 +746,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteOspfNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteOspfNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
         batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
         _remoteOspfNeighborsInitialized = true;
       }
@@ -754,7 +755,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteRipNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteRipNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = _batfish.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
         batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         _remoteRipNeighborsInitialized = true;
       }

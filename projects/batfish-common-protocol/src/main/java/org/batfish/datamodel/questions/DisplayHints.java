@@ -31,7 +31,7 @@ public class DisplayHints {
       aMap.put("Integer", "class:java.lang.Integer");
       aMap.put("Interface", "class:org.batfish.datamodel.collections.NodeInterfacePair");
       aMap.put("Ip", "class:org.batfish.datamodel.Ip");
-      aMap.put("Node", "class:org.batfish.datamodel.Configuration");
+      aMap.put("Node", "class:org.batfish.datamodel.pojo.Node");
       aMap.put("String", "class:java.lang.String");
       schemaAliases = Collections.unmodifiableMap(aMap);
     }

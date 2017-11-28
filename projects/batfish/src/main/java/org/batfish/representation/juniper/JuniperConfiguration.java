@@ -844,7 +844,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       setCost = true;
       long ospfAreaLong = ospfArea.asLong();
       org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
-      newArea.getInterfaces().add(newIface);
+      newArea.getInterfaces().put(name, newIface);
       newIface.setOspfArea(newArea);
       newIface.setOspfEnabled(true);
     }
@@ -852,7 +852,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       setCost = true;
       long ospfAreaLong = passiveArea.asLong();
       org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
-      newArea.getInterfaces().add(newIface);
+      newArea.getInterfaces().put(name, newIface);
       newIface.setOspfEnabled(true);
       newIface.setOspfPassive(true);
     }
@@ -1616,9 +1616,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
-    _c = new Configuration(hostname);
+    _c = new Configuration(hostname, _vendor);
     _c.setAuthenticationKeyChains(convertAuthenticationKeyChains(_authenticationKeyChains));
-    _c.setConfigurationFormat(_vendor);
     _c.setRoles(_roles);
     _c.setDomainName(_defaultRoutingInstance.getDomainName());
     _c.setDnsServers(_dnsServers);

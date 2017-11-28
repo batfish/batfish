@@ -24,6 +24,7 @@ public class Route implements Serializable {
   public enum TargetType {
     Gateway,
     Instance,
+    NatGateway,
     NetworkInterface,
     Unavailable,
     VpcPeeringConnection
@@ -51,6 +52,9 @@ public class Route implements Serializable {
     } else if (jObj.has(AwsVpcEntity.JSON_KEY_GATEWAY_ID)) {
       _targetType = TargetType.Gateway;
       _target = jObj.getString(AwsVpcEntity.JSON_KEY_GATEWAY_ID);
+    } else if (jObj.has(AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID)) {
+      _targetType = TargetType.NatGateway;
+      _target = jObj.getString(AwsVpcEntity.JSON_KEY_NAT_GATEWAY_ID);
     } else if (jObj.has(AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID)) {
       _targetType = TargetType.NetworkInterface;
       _target = jObj.getString(AwsVpcEntity.JSON_KEY_NETWORK_INTERFACE_ID);
@@ -106,6 +110,18 @@ public class Route implements Serializable {
                       + "\" specified in this route not accessible from this subnet");
             }
           }
+          break;
+
+        case NatGateway:
+          // TODO: it is NOT clear that this is the right thing to do
+          // for NATs with multiple interfaces, we should probably match on private IPs?
+          srBuilder.setNextHopIp(
+              awsVpcConfiguration
+                  .getNatGateways()
+                  .get(_target)
+                  .getNatGatewayAddresses()
+                  .get(0)
+                  ._privateIp);
           break;
 
         case NetworkInterface:

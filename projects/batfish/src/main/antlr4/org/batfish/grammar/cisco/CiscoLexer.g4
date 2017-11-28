@@ -3899,6 +3899,11 @@ EXTERNAL
    'external'
 ;
 
+EXTERNAL_LSA
+:
+   'external-lsa'
+;
+
 FABRIC
 :
    'fabric'
@@ -4954,6 +4959,11 @@ INBOUND
 INCLUDE
 :
    'include'
+;
+
+INCLUDE_STUB
+:
+   'include-stub'
 ;
 
 INCOMING
@@ -7188,6 +7198,11 @@ ON_FAILURE
    'on-failure'
 ;
 
+ON_STARTUP
+:
+   'on-startup'
+;
+
 ON_SUCCESS
 :
    'on-success'
@@ -8958,6 +8973,11 @@ ROUTER_INTERFACE
    'router-interface'
 ;
 
+ROUTER_LSA
+:
+  'router-lsa'
+;
+
 ROUTER_SOLICITATION
 :
    'router-solicitation'
@@ -10183,6 +10203,11 @@ SUCCESS
 SUMMARY_ADDRESS
 :
    'summary-address'
+;
+
+SUMMARY_LSA
+:
+   'summary-lsa'
 ;
 
 SUMMARY_ONLY

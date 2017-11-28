@@ -99,6 +99,25 @@ ro_distance
    DISTANCE value = DEC NEWLINE
 ;
 
+ro_max_metric
+:
+   MAX_METRIC ROUTER_LSA
+   (
+      (
+         external_lsa = EXTERNAL_LSA external = DEC?
+      )
+      | stub = INCLUDE_STUB
+      |
+      (
+         on_startup = ON_STARTUP DEC
+      )
+      |
+      (
+         summary_lsa = SUMMARY_LSA summary = DEC?
+      )
+   )* NEWLINE
+;
+
 ro_maximum_paths
 :
    (
@@ -174,7 +193,6 @@ ro_null
       | LOG
       | LOG_ADJACENCY_CHANGES
       | MAX_LSA
-      | MAX_METRIC
       |
       (
          MAXIMUM
@@ -526,6 +544,7 @@ s_router_ospf
       | ro_common
       | ro_default_information
       | ro_distance
+      | ro_max_metric
       | ro_maximum_paths
       | ro_network
       | ro_passive_interface_default

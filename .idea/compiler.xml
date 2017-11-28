@@ -11,6 +11,7 @@
         <module name="batfish" />
         <module name="batfish-client" />
         <module name="batfish-common-protocol" />
+        <module name="build-tools" />
         <module name="coordinator" />
         <module name="question" />
       </profile>
@@ -21,6 +22,7 @@
       <module name="batfish-client" target="1.8" />
       <module name="batfish-common-protocol" target="1.8" />
       <module name="batfish-parent" target="1.5" />
+      <module name="build-tools" target="1.8" />
       <module name="coordinator" target="1.8" />
       <module name="question" target="1.8" />
     </bytecodeTargetLevel>
