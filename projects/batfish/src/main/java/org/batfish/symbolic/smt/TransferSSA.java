@@ -67,6 +67,7 @@ import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -1221,7 +1222,9 @@ class TransferSSA {
       } else if (stmt instanceof SetOrigin) {
         p.debug("SetOrigin");
         // TODO: implement me
-
+      } else if (stmt instanceof SetNextHop) {
+        p.debug("SetNextHop");
+        // TODO: implement me
       } else {
 
         String s = (_isExport ? "export" : "import");

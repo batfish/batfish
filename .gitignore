@@ -8,6 +8,9 @@
 # ignore maven pom version backups
 pom.xml.versionsBackup
 
+# Ignore the list of java files to format-check
+/files_to_check
+
 # IntelliJ project files that should not be shared, per:
 # https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
 workspace.xml

@@ -3,7 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class OspfInterAreaRoute extends OspfAreaRoute {
+public class OspfInterAreaRoute extends OspfInternalRoute {
 
   private static final long serialVersionUID = 1L;
 
