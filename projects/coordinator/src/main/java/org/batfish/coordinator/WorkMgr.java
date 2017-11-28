@@ -43,6 +43,7 @@ import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.codehaus.jettison.json.JSONArray;
@@ -796,10 +797,14 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    TestrigMetadata metadata = new TestrigMetadata(java.time.Instant.now());
     Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
-    CommonUtil.writeFile(
-        metadataPath,
-        "{\n\t\"creationTimestamp\": \"" + java.time.Instant.now().toString() + "\"\n}");
+    try {
+      CommonUtil.writeFile(metadataPath, mapper.writeValueAsString(metadata));
+    } catch (JsonProcessingException e) {
+      _logger.error(e.getMessage());
+    }
 
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
