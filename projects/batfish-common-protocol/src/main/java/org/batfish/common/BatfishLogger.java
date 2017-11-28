@@ -156,6 +156,8 @@ public class BatfishLogger {
 
   private boolean _rotateLog = false;
 
+  private long _timerCount;
+
   private boolean _timestamp;
 
   public BatfishLogger(String logLevel, boolean timestamp) {
@@ -247,6 +249,12 @@ public class BatfishLogger {
     write(LEVEL_FATAL, msg);
   }
 
+  private double getElapsedTime(long beforeTime) {
+    long difference = System.currentTimeMillis() - beforeTime;
+    double seconds = difference / 1000d;
+    return seconds;
+  }
+
   public BatfishLoggerHistory getHistory() {
     return _history;
   }
@@ -287,8 +295,17 @@ public class BatfishLogger {
     write(LEVEL_PEDANTIC, msg);
   }
 
+  public void printElapsedTime() {
+    double seconds = getElapsedTime(_timerCount);
+    info("Time taken for this task: " + seconds + " seconds\n");
+  }
+
   public void redflag(String msg) {
     write(LEVEL_REDFLAG, msg);
+  }
+
+  public void resetTimer() {
+    _timerCount = System.currentTimeMillis();
   }
 
   private synchronized void rotateLog() {

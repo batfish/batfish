@@ -39,7 +39,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.FibRow;
-import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.node.AcceptExpr;
 import org.batfish.z3.node.AclDenyExpr;
@@ -870,7 +869,7 @@ public class Synthesizer {
 
   private final HashMap<String, Map<String, SortedSet<FibRow>>> _fibs;
 
-  private InterfaceSet _flowSinks;
+  private Set<NodeInterfacePair> _flowSinks;
 
   // private final PolicyRouteFibNodeMap _prFibs;
 
