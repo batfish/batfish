@@ -24,6 +24,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
@@ -6298,15 +6299,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.DEC() != null) {
       return toLong(ctx.com);
     } else if (ctx.INTERNET() != null) {
-      return 0L;
+      return WellKnownCommunity.INTERNET.getValue();
     } else if (ctx.GSHUT() != null) {
-      return 0xFFFFFF04L;
+      return WellKnownCommunity.GSHUT.getValue();
     } else if (ctx.LOCAL_AS() != null) {
-      return 0xFFFFFF03L;
+      return WellKnownCommunity.LOCAL_AS.getValue();
     } else if (ctx.NO_ADVERTISE() != null) {
-      return 0xFFFFFF02L;
+      return WellKnownCommunity.NO_ADVERTISE.getValue();
     } else if (ctx.NO_EXPORT() != null) {
-      return 0xFFFFFF01L;
+      return WellKnownCommunity.NO_EXPORT.getValue();
     } else {
       throw convError(Long.class, ctx);
     }

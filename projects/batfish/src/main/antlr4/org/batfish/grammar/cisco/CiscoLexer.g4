@@ -4448,7 +4448,7 @@ GROUP_URL
 
 GSHUT
 :
-   'GSHUT'
+   [Gg][Ss][Hh][Uu][Tt]
 ;
 
 GT
@@ -5700,7 +5700,7 @@ LOCAL
 
 LOCAL_AS
 :
-   'local-as'
+   [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
 LOCAL_ASA
