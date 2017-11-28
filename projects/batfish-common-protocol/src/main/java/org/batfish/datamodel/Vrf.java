@@ -11,9 +11,41 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 @JsonSchemaDescription("A virtual routing and forwarding (VRF) instance on a node.")
 public class Vrf extends ComparableStructure<String> {
+
+  public static class Builder extends NetworkFactoryBuilder<Vrf> {
+
+    private String _name;
+
+    private Configuration _owner;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, Vrf.class);
+    }
+
+    @Override
+    public Vrf build() {
+      String name = _name != null ? _name : generateName();
+      Vrf vrf = new Vrf(name);
+      if (_owner != null) {
+        _owner.getVrfs().put(name, vrf);
+      }
+      return vrf;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+  }
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
 
@@ -72,7 +104,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private SnmpServer _snmpServer;
 
-  private NavigableSet<StaticRoute> _staticRoutes;
+  private SortedSet<StaticRoute> _staticRoutes;
 
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
@@ -193,7 +225,7 @@ public class Vrf extends ComparableStructure<String> {
 
   @JsonPropertyDescription("Static routes for this VRF")
   @JsonProperty(PROP_STATIC_ROUTES)
-  public NavigableSet<StaticRoute> getStaticRoutes() {
+  public SortedSet<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
 
@@ -266,7 +298,7 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_STATIC_ROUTES)
-  public void setStaticRoutes(NavigableSet<StaticRoute> staticRoutes) {
+  public void setStaticRoutes(SortedSet<StaticRoute> staticRoutes) {
     _staticRoutes = staticRoutes;
   }
 }

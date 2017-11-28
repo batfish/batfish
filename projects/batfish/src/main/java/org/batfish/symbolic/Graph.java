@@ -197,7 +197,7 @@ public class Graph {
     if (proto.isOspf()) {
       OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
       for (OspfArea area : ospf.getAreas().values()) {
-        for (Interface iface : area.getInterfaces()) {
+        for (Interface iface : area.getInterfaces().values()) {
           if (iface.getActive() && iface.getOspfEnabled()) {
             acc.add(iface.getPrefix().getNetworkPrefix());
           }
