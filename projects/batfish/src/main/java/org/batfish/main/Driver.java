@@ -6,7 +6,7 @@ import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
 import com.uber.jaeger.samplers.ConstSampler;
 import io.opentracing.ActiveSpan;
-import io.opentracing.NoopActiveSpanSource.NoopActiveSpan;
+import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
@@ -454,10 +454,12 @@ public class Driver {
           final Task task = new Task(args);
 
           logTask(taskId, task);
+
+          @Nullable
           SpanContext runTaskSpanContext =
-              GlobalTracer.isRegistered()
-                  ? GlobalTracer.get().activeSpan().context()
-                  : NoopActiveSpan.INSTANCE.context();
+              GlobalTracer.get().activeSpan() == null
+                  ? null
+                  : GlobalTracer.get().activeSpan().context();
 
           // run batfish on a new thread and set idle to true when done
           Thread thread =
@@ -467,7 +469,7 @@ public class Driver {
                   try (ActiveSpan runBatfishSpan =
                       GlobalTracer.get()
                           .buildSpan("Run Batfish Service")
-                          .addReference("follows_from", runTaskSpanContext)
+                          .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
                           .startActive()) {
                     assert runBatfishSpan != null; // avoid unused warning
                     task.setStatus(TaskStatus.InProgress);

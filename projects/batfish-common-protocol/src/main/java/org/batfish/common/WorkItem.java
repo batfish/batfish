@@ -1,17 +1,17 @@
 package org.batfish.common;
 
 import io.opentracing.ActiveSpan;
-import io.opentracing.NoopActiveSpanSource.NoopActiveSpan;
 import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.propagation.TextMapInjectAdapter;
+import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -98,8 +98,9 @@ public class WorkItem {
    * @return {@link SpanContext} or null if no {@link SpanContext} was serialized in the {@link
    *     WorkItem}
    */
-  public SpanContext getSourceSpan(Tracer tracer) {
-    return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
+  @Nullable
+  public SpanContext getSourceSpan() {
+    return GlobalTracer.get().extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
   }
 
   public HashMap<String, String> getRequestParams() {
@@ -111,12 +112,15 @@ public class WorkItem {
   }
 
   /**
-   * Gets the {@link ActiveSpan} from the current {@link Thread} and attaches it to the {@link
-   * WorkItem} which can be fetched later using {@link WorkItem#getSourceSpan(Tracer)}
+   * Takes an {@link ActiveSpan} and attaches it to the {@link WorkItem} which can be fetched later
+   * using {@link WorkItem#getSourceSpan()}
    */
-  public void setSourceSpan(Tracer tracer, boolean isRegistered) {
-    ActiveSpan sourceSpan = isRegistered ? tracer.activeSpan() : NoopActiveSpan.INSTANCE;
-    tracer.inject(sourceSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
+  public void setSourceSpan(@Nullable ActiveSpan activeSpan) {
+    if (activeSpan == null) {
+      return;
+    }
+    GlobalTracer.get()
+        .inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
   }
 
   public void setId(String idString) {

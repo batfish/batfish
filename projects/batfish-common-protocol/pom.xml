@@ -31,7 +31,8 @@
               <goals><goal>analyze-only</goal></goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  commons-beanutils:commons-beanutils
+                  <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -138,6 +139,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.uber.jaeger</groupId>
+      <artifactId>jaeger-core</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
       <scope>runtime</scope>
@@ -165,7 +171,7 @@
 
     <dependency>
       <groupId>io.opentracing</groupId>
-      <artifactId>opentracing-noop</artifactId>
+      <artifactId>opentracing-util</artifactId>
     </dependency>
 
     <dependency>
@@ -211,6 +217,13 @@
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
+    </dependency>
+
+    <!-- Runtime dependencies to add logging. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <!-- Test dependencies. -->

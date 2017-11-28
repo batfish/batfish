@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.opentracing.ActiveSpan;
+import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
@@ -135,11 +136,11 @@ public class WorkMgr extends AbstractCoordinator {
     boolean assigned = false;
 
     Client client = null;
-    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan(GlobalTracer.get());
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
     try (ActiveSpan assignWorkSpan =
         GlobalTracer.get()
             .buildSpan("Assign Work")
-            .addReference("follows_from", queueWorkSpan)
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
             .startActive()) {
       assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
@@ -1015,7 +1016,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     boolean success;
     try {
-      workItem.setSourceSpan(GlobalTracer.get(), GlobalTracer.isRegistered());
+      workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
