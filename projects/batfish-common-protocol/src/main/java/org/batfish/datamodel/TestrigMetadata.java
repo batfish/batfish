@@ -15,7 +15,7 @@ public class TestrigMetadata {
   }
 
   @JsonProperty(PROP_CREATIONTIMESTAMP)
-  public java.time.Instant getCreationTimestamp() {
+  public Instant getCreationTimestamp() {
     return _creationTimestamp;
   }
 }

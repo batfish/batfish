@@ -51,7 +51,7 @@ public class BatfishObjectMapper extends ObjectMapper {
     }
     enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS);
     enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
-    // Next two lines make Java.time.Instant class serialize as an RFC-3339 timestamp
+    // Next two lines make Instant class serialize as an RFC-3339 timestamp
     registerModule(new JavaTimeModule());
     disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     // See https://groups.google.com/forum/#!topic/jackson-user/WfZzlt5C2Ww
