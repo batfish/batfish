@@ -14,9 +14,11 @@ public class OspfExternalType1Route extends OspfExternalRoute {
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_METRIC) long metric,
+      @JsonProperty(PROP_LSA_METRIC) long lsaMetric,
+      @JsonProperty(PROP_AREA) long area,
       @JsonProperty(PROP_COST_TO_ADVERTISER) long costToAdvertiser,
       @JsonProperty(PROP_ADVERTISER) String advertiser) {
-    super(prefix, nextHopIp, admin, metric, advertiser, costToAdvertiser);
+    super(prefix, nextHopIp, admin, metric, lsaMetric, area, advertiser, costToAdvertiser);
   }
 
   @Override

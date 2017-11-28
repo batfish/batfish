@@ -24,6 +24,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
@@ -243,6 +244,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_costContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_intervalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_interval_minimalContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_policyContext;
@@ -380,6 +382,7 @@ import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interfaceContext;
@@ -702,6 +705,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_SWITCHING_MODE = "switching-mode";
 
   private static final String F_TTL = "acl ttl eq number";
+
+  @Override
+  public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfPointToPoint(true);
+    }
+  }
 
   private static Ip getIp(Access_list_ip_rangeContext ctx) {
     if (ctx.ip != null) {
@@ -1792,6 +1802,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     OspfProcess proc = new OspfProcess(procName);
     currentVrf().setOspfProcess(proc);
     _currentOspfProcess = proc;
+  }
+
+  @Override
+  public void exitRo_max_metric(Ro_max_metricContext ctx) {
+    if (ctx.on_startup != null) {
+      return;
+    }
+    _currentOspfProcess.setMaxMetricRouterLsa(true);
+    _currentOspfProcess.setMaxMetricIncludeStub(ctx.stub != null);
+    if (ctx.external_lsa != null) {
+      _currentOspfProcess.setMaxMetricExternalLsa(
+          ctx.external != null
+              ? toLong(ctx.external)
+              : OspfProcess.DEFAULT_MAX_METRIC_EXTERNAL_LSA);
+    }
+    if (ctx.summary_lsa != null) {
+      _currentOspfProcess.setMaxMetricSummaryLsa(
+          ctx.summary != null ? toLong(ctx.summary) : OspfProcess.DEFAULT_MAX_METRIC_SUMMARY_LSA);
+    }
   }
 
   @Override
@@ -6298,15 +6327,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.DEC() != null) {
       return toLong(ctx.com);
     } else if (ctx.INTERNET() != null) {
-      return 0L;
+      return WellKnownCommunity.INTERNET.getValue();
     } else if (ctx.GSHUT() != null) {
-      return 0xFFFFFF04L;
+      return WellKnownCommunity.GSHUT.getValue();
     } else if (ctx.LOCAL_AS() != null) {
-      return 0xFFFFFF03L;
+      return WellKnownCommunity.LOCAL_AS.getValue();
     } else if (ctx.NO_ADVERTISE() != null) {
-      return 0xFFFFFF02L;
+      return WellKnownCommunity.NO_ADVERTISE.getValue();
     } else if (ctx.NO_EXPORT() != null) {
-      return 0xFFFFFF01L;
+      return WellKnownCommunity.NO_EXPORT.getValue();
     } else {
       throw convError(Long.class, ctx);
     }

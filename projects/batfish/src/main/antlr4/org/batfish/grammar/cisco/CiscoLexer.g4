@@ -3899,6 +3899,11 @@ EXTERNAL
    'external'
 ;
 
+EXTERNAL_LSA
+:
+   'external-lsa'
+;
+
 FABRIC
 :
    'fabric'
@@ -4448,7 +4453,7 @@ GROUP_URL
 
 GSHUT
 :
-   'GSHUT'
+   [Gg][Ss][Hh][Uu][Tt]
 ;
 
 GT
@@ -4954,6 +4959,11 @@ INBOUND
 INCLUDE
 :
    'include'
+;
+
+INCLUDE_STUB
+:
+   'include-stub'
 ;
 
 INCOMING
@@ -5700,7 +5710,7 @@ LOCAL
 
 LOCAL_AS
 :
-   'local-as'
+   [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
 LOCAL_ASA
@@ -7186,6 +7196,11 @@ ON
 ON_FAILURE
 :
    'on-failure'
+;
+
+ON_STARTUP
+:
+   'on-startup'
 ;
 
 ON_SUCCESS
@@ -8958,6 +8973,11 @@ ROUTER_INTERFACE
    'router-interface'
 ;
 
+ROUTER_LSA
+:
+  'router-lsa'
+;
+
 ROUTER_SOLICITATION
 :
    'router-solicitation'
@@ -10183,6 +10203,11 @@ SUCCESS
 SUMMARY_ADDRESS
 :
    'summary-address'
+;
+
+SUMMARY_LSA
+:
+   'summary-lsa'
 ;
 
 SUMMARY_ONLY

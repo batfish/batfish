@@ -17,6 +17,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
 import org.batfish.datamodel.BgpProcess;
@@ -546,7 +547,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
           }
         }
       }
-      _batfish.initRemoteBgpNeighbors(configurations, ipOwners);
+      CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
       for (Configuration co : configurations.values()) {
         String hostname = co.getHostname();
         if (!node1Regex.matcher(co.getHostname()).matches()) {

@@ -2,19 +2,19 @@ package org.batfish.bdp;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.junit.Before;
@@ -191,16 +191,61 @@ public class AbstractRibTest {
     assertThat(rib2, equalTo(_rib));
   }
 
-  @Test()
-  public void testRibFreeze() {
-    setupOverlappingRoutes();
+  /**
+   * Check that getRoutes works as expected even when routes replace other routes based on
+   * preference
+   */
+  @Test
+  public void testGetRoutesWithReplacement() {
+    // Use OSPF RIBs for this, as routes with better metric can replace other routes
+    OspfIntraAreaRib rib = new OspfIntraAreaRib(null);
+    Prefix prefix = new Prefix("1.1.1.1/32");
+    rib.mergeRoute(new OspfIntraAreaRoute(prefix, null, 100, 30, 1));
 
-    assertThat(_rib._finalRoutes, is(nullValue()));
+    assertThat(rib.getRoutes(), hasSize(1));
+    // This new route replaces old route
+    OspfIntraAreaRoute newRoute = new OspfIntraAreaRoute(prefix, null, 100, 10, 1);
+    rib.mergeRoute(newRoute);
+    assertThat(rib.getRoutes(), contains(newRoute));
 
-    _rib.freeze();
+    // Add completely new route and check that the size increases
+    rib.mergeRoute(new OspfIntraAreaRoute(new Prefix("2.2.2.2/32"), null, 100, 30, 1));
+    assertThat(rib.getRoutes(), hasSize(2));
+  }
 
-    assertThat(_rib._finalRoutes, is(notNullValue()));
-    _expectedException.expect(UnmodifiableRibException.class);
+  /** Test that routes obtained from getRoutes() cannot be modified */
+  @Test
+  public void testGetRoutesCannotBeModified() {
     _rib.mergeRoute(_mostGeneralRoute);
+    Set<StaticRoute> routes = _rib.getRoutes();
+    StaticRoute r1 = new StaticRoute(new Prefix("1.1.1.1/32"), Ip.ZERO, null, 0, 0);
+
+    // Exception because ImmutableSet
+    _expectedException.expect(UnsupportedOperationException.class);
+    routes.add(r1);
+  }
+
+  /** Test that routes obtained from getRoutes() do NOT reflect subsequent changes to the RIB */
+  @Test
+  public void testGetRoutesIsNotAView() {
+    _rib.mergeRoute(_mostGeneralRoute);
+    Set<StaticRoute> routes = _rib.getRoutes();
+    StaticRoute r1 = new StaticRoute(new Prefix("1.1.1.1/32"), Ip.ZERO, null, 0, 0);
+
+    _rib.mergeRoute(r1);
+
+    assertThat(routes, not(containsInAnyOrder(r1)));
+  }
+
+  /**
+   * Test that multiple calls to getRoutes() return the same object, if the RIB has not been
+   * modified
+   */
+  @Test
+  public void testGetRoutesSameObject() {
+    _rib.mergeRoute(_mostGeneralRoute);
+
+    Set<StaticRoute> routes = _rib.getRoutes();
+    assertThat(_rib.getRoutes(), is(routes));
   }
 }

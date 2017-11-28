@@ -29,7 +29,6 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.FibRow;
-import org.batfish.datamodel.collections.InterfaceSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class BdpDataPlane implements Serializable, DataPlane {
@@ -37,7 +36,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
   /** */
   private static final long serialVersionUID = 1L;
 
-  InterfaceSet _flowSinks;
+  Set<NodeInterfacePair> _flowSinks;
 
   Map<Ip, Set<String>> _ipOwners;
 
@@ -295,7 +294,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public InterfaceSet getFlowSinks() {
+  public Set<NodeInterfacePair> getFlowSinks() {
     return _flowSinks;
   }
 
@@ -346,7 +345,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
     setIpOwnersSimple(ipOwnersSimple);
   }
 
-  public void setFlowSinks(InterfaceSet flowSinks) {
+  public void setFlowSinks(Set<NodeInterfacePair> flowSinks) {
     _flowSinks = flowSinks;
   }
 

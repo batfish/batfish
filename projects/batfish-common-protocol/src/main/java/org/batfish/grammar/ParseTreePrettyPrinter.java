@@ -2,6 +2,7 @@ package org.batfish.grammar;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -16,28 +17,11 @@ import org.batfish.common.util.CommonUtil;
 
 public class ParseTreePrettyPrinter implements ParseTreeListener {
 
-  public static ParseTreeSentences getParseTreeSentences(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
-    ParseTreeWalker walker = new ParseTreeWalker();
-    ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx, combinedParser);
-    walker.walk(printer, ctx);
-    return printer._ptSentences;
-  }
-
-  public static String print(ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
-    return String.join("\n", getParseTreeSentences(ctx, combinedParser).getSentences());
-  }
-
   private BatfishCombinedParser<?, ?> _combinedParser;
-
   private ParserRuleContext _ctx;
-
   private int _indent;
-
   private ParseTreeSentences _ptSentences;
-
   private List<String> _ruleNames;
-
   private Vocabulary _vocabulary;
 
   private ParseTreePrettyPrinter(
@@ -50,6 +34,48 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     _ctx = ctx;
     _ptSentences = new ParseTreeSentences();
     _indent = 0;
+  }
+
+  public static ParseTreeSentences getParseTreeSentences(
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx, combinedParser);
+    walker.walk(printer, ctx);
+    return printer._ptSentences;
+  }
+
+  // Visible for testing
+  static String printWithCharacterLimit(List<String> strings, int maxStringLength) {
+    StringBuilder sb = new StringBuilder();
+
+    // A limit of <= 0 is treated as effectively no limit
+    if (maxStringLength <= 0) {
+      maxStringLength = Integer.MAX_VALUE;
+    }
+
+    ListIterator<String> iter = strings.listIterator();
+    while (maxStringLength > sb.length() && iter.hasNext()) {
+      String string = iter.next();
+
+      // Assume we're okay adding the whole string even if it pushes us over the maxStringLength
+      sb.append(string);
+      if (iter.hasNext()) {
+        sb.append("\n");
+      }
+    }
+
+    if (iter.hasNext()) {
+      sb.append("and ");
+      sb.append(strings.size() - iter.nextIndex());
+      sb.append(" more line(s)");
+    }
+    return sb.toString();
+  }
+
+  public static String print(ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+    int maxStringLength = combinedParser.getSettings().getMaxParseTreePrintLength();
+    List<String> strings = getParseTreeSentences(ctx, combinedParser).getSentences();
+    return printWithCharacterLimit(strings, maxStringLength);
   }
 
   @Override
