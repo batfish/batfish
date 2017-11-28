@@ -53,13 +53,13 @@ public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
     _namedStructure = namedStructure;
   }
 
-  @Override
   // sort in reverse order of zScore, which is a measure of how likely it is that
   // our hypothesis is correct
+  @Override
   public int compareTo(NamedStructureOutlierSet<T> other) {
-    int oScore = Double.compare(other.outlierScore(), this.outlierScore());
-    if (oScore != 0) {
-      return oScore;
+    int scoreComp = Double.compare(other.outlierScore(), this.outlierScore());
+    if (scoreComp != 0) {
+      return scoreComp;
     }
     int structComp = _structType.compareTo(other.getStructType());
     if (structComp != 0) {
