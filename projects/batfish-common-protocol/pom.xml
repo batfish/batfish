@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -28,7 +29,9 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>
             <execution>
-              <goals><goal>analyze-only</goal></goals>
+              <goals>
+                <goal>analyze-only</goal>
+              </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
                   commons-beanutils:commons-beanutils
@@ -41,7 +44,9 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -60,7 +65,8 @@
             </goals>
             <configuration>
               <sourceDirectory>${basedir}/src/test/antlr4</sourceDirectory>
-              <outputDirectory>${project.build.directory}/generated-test-sources/antlr4</outputDirectory>
+              <outputDirectory>${project.build.directory}/generated-test-sources/antlr4
+              </outputDirectory>
               <includes>**/*.g4</includes>
             </configuration>
           </execution>
@@ -73,17 +79,21 @@
         <executions>
           <execution>
             <id>check</id>
-            <goals><goal>check</goal></goals>
+            <goals>
+              <goal>check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+              <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
 
           <execution>
             <id>cpd-check</id>
-            <goals><goal>cpd-check</goal></goals>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+              <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
         </executions>
@@ -110,6 +120,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
 
     <dependency>
