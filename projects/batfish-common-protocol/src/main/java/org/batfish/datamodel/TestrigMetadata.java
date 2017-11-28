@@ -9,8 +9,7 @@ public class TestrigMetadata {
   private Instant _creationTimestamp;
 
   @JsonCreator
-  public TestrigMetadata(
-      @JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp) {
+  public TestrigMetadata(@JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp) {
     this._creationTimestamp = creationTimestamp;
   }
 
