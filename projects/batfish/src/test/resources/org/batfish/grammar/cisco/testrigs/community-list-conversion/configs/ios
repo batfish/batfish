@@ -1,8 +1,6 @@
 !
 hostname ios
 !
-interface Ethernet0
-!
 ! Communities where standard/expanded is implied in community number
 ! 1-99 implies standard, 100-500 implies expanded
 ip community-list 40 permit 4294967295

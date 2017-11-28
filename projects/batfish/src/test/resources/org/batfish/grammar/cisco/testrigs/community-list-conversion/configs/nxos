@@ -2,8 +2,6 @@
 hostname nxos
 feature privilege
 !
-interface Ethernet0
-!
 ip community-list expanded nxos_exp permit "65535:65535"
 ip community-list expanded nxos_exp_multi permit "0:10:20:3"
 ip community-list standard nxos_std_internet permit internet
