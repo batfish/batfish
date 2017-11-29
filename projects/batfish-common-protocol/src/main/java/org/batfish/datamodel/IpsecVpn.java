@@ -98,7 +98,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     }
     String psk = ikePolicy.getPreSharedKeyHash();
     String remotePsk = remoteIkePolicy.getPreSharedKeyHash();
-    return psk != null && remotePsk != null && psk.equals(remotePsk);
+    return psk != null && psk.equals(remotePsk);
   }
 
   @Nullable
