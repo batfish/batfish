@@ -1,7 +1,11 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.opentracing.ActiveSpan;
+import io.opentracing.References;
+import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -134,7 +138,13 @@ public class WorkMgr extends AbstractCoordinator {
     boolean assigned = false;
 
     Client client = null;
-    try {
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan assignWorkSpan =
+        GlobalTracer.get()
+            .buildSpan("Assign Work")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
       Path containerDir =
@@ -161,9 +171,11 @@ public class WorkMgr extends AbstractCoordinator {
               _settings.getSslPoolKeystorePassword(),
               _settings.getSslPoolTruststoreFile(),
               _settings.getSslPoolTruststorePassword());
-      if (Main.getSettings().getTracingEnable()) {
+
+      if (GlobalTracer.isRegistered()) {
         clientBuilder.register(ClientTracingFeature.class);
       }
+
       client = clientBuilder.build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -1011,6 +1023,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     boolean success;
     try {
+      workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
