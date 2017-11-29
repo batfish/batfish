@@ -15,7 +15,7 @@ public class Keyring extends DefinedStructure<String> {
   private String _key;
 
   public Keyring(String name, int definitionLine) {
-    super(name,definitionLine);
+    super(name, definitionLine);
   }
 
   public String getKey() {
