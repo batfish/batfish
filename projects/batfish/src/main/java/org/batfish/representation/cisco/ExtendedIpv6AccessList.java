@@ -2,33 +2,23 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.DefinedStructure;
 
-public class ExtendedIpv6AccessList extends ComparableStructure<String>
-    implements DefinedStructure {
+public class ExtendedIpv6AccessList extends DefinedStructure<String> {
 
   private static final long serialVersionUID = 1L;
-
-  private final int _definitionLine;
 
   private List<ExtendedIpv6AccessListLine> _lines;
 
   private StandardIpv6AccessList _parent;
 
   public ExtendedIpv6AccessList(String id, int definitionLine) {
-    super(id);
-    _definitionLine = definitionLine;
+    super(id, definitionLine);
     _lines = new ArrayList<>();
   }
 
   public void addLine(ExtendedIpv6AccessListLine all) {
     _lines.add(all);
-  }
-
-  @Override
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   public List<ExtendedIpv6AccessListLine> getLines() {

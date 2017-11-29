@@ -1,15 +1,12 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
-public class Keyring extends ComparableStructure<String> implements DefinedStructure {
+public class Keyring extends DefinedStructure<String> {
 
   private static final long serialVersionUID = 1L;
-
-  private final int _definitionLine;
 
   private Ip _localAddress;
 
@@ -18,13 +15,7 @@ public class Keyring extends ComparableStructure<String> implements DefinedStruc
   private String _key;
 
   public Keyring(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
-  }
-
-  @Override
-  public int getDefinitionLine() {
-    return _definitionLine;
+    super(name,definitionLine);
   }
 
   public String getKey() {
