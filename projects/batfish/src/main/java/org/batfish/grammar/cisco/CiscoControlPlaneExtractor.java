@@ -6344,7 +6344,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ESP_SHA256_HMAC() != null) {
       return IpsecAuthenticationAlgorithm.HMAC_SHA_256_128;
     } else {
-      throw new BatfishException("Unknown ipsec authentication algo " + ctx.getText());
+      throw convError(IpsecAuthenticationAlgorithm.class, ctx);
     }
   }
 
@@ -6420,7 +6420,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.GROUP2() != null) {
       return DiffieHellmanGroup.GROUP2;
     } else {
-      throw new BatfishException("invalid dh-group");
+      throw convError(DiffieHellmanGroup.class, ctx);
     }
   }
 
@@ -6494,7 +6494,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.THREE_DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {
-      throw new BatfishException("Unsupported encryption algorithm " + ctx.getText());
+      throw convError(EncryptionAlgorithm.class, ctx);
     }
   }
 
@@ -6506,7 +6506,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.AES256() != null) {
       return EncryptionAlgorithm.AES_256_CBC;
     } else {
-      throw new BatfishException("Unsupported encryption algorithm " + ctx.getText());
+      throw convError(EncryptionAlgorithm.class, ctx);
     }
   }
 
@@ -6516,7 +6516,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ESP_3DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {
-      throw new BatfishException("Unknown encryption algorithm " + ctx.getText());
+      throw convError(EncryptionAlgorithm.class, ctx);
     }
   }
 
