@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1094,17 +1095,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
           (name, byUsage) -> {
             SortedSet<Integer> lines = byUsage.get(usage);
             if (lines != null) {
-              boolean exists = maps.stream().anyMatch(map -> map != null && map.containsKey(name));
-              if (exists) {
-                String msg = usage.getDescription();
-                for (Map<String, ? extends ReferenceCountedStructure> map : maps) {
-                  if (map.containsKey(name)) {
-                    map.get(name).getReferers().put(this, msg);
-                  }
-                }
-              } else {
+              List<Map<String, ? extends ReferenceCountedStructure>> matchingMaps =
+                  maps.stream()
+                      .filter(map -> map != null && map.containsKey(name))
+                      .collect(ImmutableList.toImmutableList());
+              if (matchingMaps.isEmpty()) {
                 for (int line : lines) {
                   undefined(type, name, usage, line);
+                }
+              } else {
+                String msg = usage.getDescription();
+                for (Map<String, ? extends ReferenceCountedStructure> matchingMap : matchingMaps) {
+                  matchingMap.get(name).getReferers().put(this, msg);
                 }
               }
             }
