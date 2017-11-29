@@ -683,7 +683,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _igmpAcls;
   }
 
-  private Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
+  private @Nullable Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null
