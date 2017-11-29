@@ -4056,7 +4056,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private <T extends ReferenceCountedStructure & DefinedStructure> void warnUnusedStructure(
+  private <T extends DefinedStructure<String>> void warnUnusedStructure(
       Map<String, T> map, CiscoStructureType type) {
     for (Entry<String, T> e : map.entrySet()) {
       String name = e.getKey();

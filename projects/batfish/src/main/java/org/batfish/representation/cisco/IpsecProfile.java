@@ -1,27 +1,18 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
-public class IpsecProfile extends ComparableStructure<String> implements DefinedStructure {
+public class IpsecProfile extends DefinedStructure<String> {
 
   private static final long serialVersionUID = 1L;
-
-  private final int _definitionLine;
 
   private DiffieHellmanGroup _pfsGroup;
 
   private String _transformSet;
 
   public IpsecProfile(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
-  }
-
-  @Override
-  public int getDefinitionLine() {
-    return _definitionLine;
+    super(name, definitionLine);
   }
 
   public DiffieHellmanGroup getPfsGroup() {

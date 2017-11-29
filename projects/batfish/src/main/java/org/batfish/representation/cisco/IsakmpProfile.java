@@ -1,16 +1,13 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
-public class IsakmpProfile extends ComparableStructure<String> implements DefinedStructure {
+public class IsakmpProfile extends DefinedStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
-
-  private final int _definitionLine;
 
   private String _keyring;
 
@@ -19,13 +16,7 @@ public class IsakmpProfile extends ComparableStructure<String> implements Define
   private Prefix _matchIdentity;
 
   public IsakmpProfile(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
-  }
-
-  @Override
-  public int getDefinitionLine() {
-    return _definitionLine;
+    super(name, definitionLine);
   }
 
   public String getKeyring() {
