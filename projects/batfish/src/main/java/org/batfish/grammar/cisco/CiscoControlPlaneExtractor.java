@@ -1151,7 +1151,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCipprf_set_pfs(Cipprf_set_pfsContext ctx) {
+  public void exitCipprf_set_pfs(Cipprf_set_pfsContext ctx) {
     if (_currentIpsecProfile == null) {
       throw new BatfishException("_currentIsakmpProfile shouldn't be null!");
     }
@@ -1159,7 +1159,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCipprf_set_transform_set(Cipprf_set_transform_setContext ctx) {
+  public void exitCipprf_set_transform_set(Cipprf_set_transform_setContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     if (_currentIpsecProfile == null) {
@@ -1174,7 +1174,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCipt_mode(Cipt_modeContext ctx) {
+  public void exitCipt_mode(Cipt_modeContext ctx) {
     if (_currentIpsecTransformSet == null) {
       throw new BatfishException("_currentIsakmpPolicy shouldn't be null!");
     }
@@ -1211,7 +1211,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCispol_authentication(Cispol_authenticationContext ctx) {
+  public void exitCispol_authentication(Cispol_authenticationContext ctx) {
     if (_currentIsakmpPolicy == null) {
       throw new BatfishException("_currentIkeProposal shouldn't be null!");
     }
@@ -1229,7 +1229,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCispol_encr(Cispol_encrContext ctx) {
+  public void exitCispol_encr(Cispol_encrContext ctx) {
     if (_currentIsakmpPolicy == null) {
       throw new BatfishException("IsakmpPolicy shouldn't be null!");
     }
@@ -1239,7 +1239,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCispol_encryption(Cispol_encryptionContext ctx) {
+  public void exitCispol_encryption(Cispol_encryptionContext ctx) {
     if (_currentIsakmpPolicy == null) {
       throw new BatfishException("IsakmpPolicy shouldn't be null!");
     }
@@ -1249,7 +1249,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCispol_group(Cispol_groupContext ctx) {
+  public void exitCispol_group(Cispol_groupContext ctx) {
     if (_currentIsakmpPolicy == null) {
       throw new BatfishException("IsakmpPolicy shouldn't be null!");
     }
@@ -1260,7 +1260,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCispol_hash(Cispol_hashContext ctx) {
+  public void exitCispol_hash(Cispol_hashContext ctx) {
     if (_currentIsakmpPolicy == null) {
       throw new BatfishException("IsakmpPolicy shouldn't be null!");
     }
@@ -1276,7 +1276,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCispol_lifetime(Cispol_lifetimeContext ctx) {
+  public void exitCispol_lifetime(Cispol_lifetimeContext ctx) {
     if (_currentIsakmpPolicy == null) {
       throw new BatfishException("IsakmpPolicy shouldn't be null!");
     }
@@ -1284,7 +1284,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCisprf_keyring(Cisprf_keyringContext ctx) {
+  public void exitCisprf_keyring(Cisprf_keyringContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     if (_currentIsakmpProfile == null) {
@@ -1296,7 +1296,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCisprf_match(Cisprf_matchContext ctx) {
+  public void exitCisprf_match(Cisprf_matchContext ctx) {
     if (_currentIsakmpProfile == null) {
       throw new BatfishException("IsakmpProfile shouldn't be null!");
     }
@@ -1304,7 +1304,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCisprf_local_address(Cisprf_local_addressContext ctx) {
+  public void exitCisprf_local_address(Cisprf_local_addressContext ctx) {
     if (_currentIsakmpProfile == null) {
       throw new BatfishException("IsakmpProfile shouldn't be null!");
     }
@@ -1312,7 +1312,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCkr_local_address(Ckr_local_addressContext ctx) {
+  public void exitCkr_local_address(Ckr_local_addressContext ctx) {
     if (_currentKeyring == null) {
       throw new BatfishException("Keyrin shouldn't be null!");
     }
@@ -1320,7 +1320,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCkr_psk(Ckr_pskContext ctx) {
+  public void exitCkr_psk(Ckr_pskContext ctx) {
     if (_currentKeyring == null) {
       throw new BatfishException("Keyrin shouldn't be null!");
     }
