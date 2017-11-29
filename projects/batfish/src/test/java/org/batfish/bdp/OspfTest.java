@@ -551,22 +551,6 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS);
-    List<AbstractRoute> routes =
-        routesByNode
-            .values()
-            .stream()
-            .flatMap(byVrf -> byVrf.values().stream())
-            .flatMap(currentRoutes -> currentRoutes.stream())
-            .filter(
-                r ->
-                    r.getProtocol() == OSPF
-                        || r.getProtocol() == OSPF_E1
-                        || r.getProtocol() == OSPF_IA)
-            .collect(ImmutableList.toImmutableList());
-    List<String> routeStrings =
-        routes.stream().map(AbstractRoute::fullString).collect(ImmutableList.toImmutableList());
-    String routeSummary = String.join("\n", routeStrings);
-    System.out.println(routeSummary);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_PREFIX, 16711681L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_PREFIX, 16711681L);
@@ -614,22 +598,6 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS);
-    List<AbstractRoute> routes =
-        routesByNode
-            .values()
-            .stream()
-            .flatMap(byVrf -> byVrf.values().stream())
-            .flatMap(currentRoutes -> currentRoutes.stream())
-            .filter(
-                r ->
-                    r.getProtocol() == OSPF
-                        || r.getProtocol() == OSPF_E1
-                        || r.getProtocol() == OSPF_IA)
-            .collect(ImmutableList.toImmutableList());
-    List<String> routeStrings =
-        routes.stream().map(AbstractRoute::fullString).collect(ImmutableList.toImmutableList());
-    String routeSummary = String.join("\n", routeStrings);
-    System.out.println(routeSummary);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_PREFIX, 16711681L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_PREFIX, 16711681L);
