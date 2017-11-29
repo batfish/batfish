@@ -200,7 +200,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_ROLES)
-    public void setRoleRegexes(List<String> roles) {
+    public void setRoles(List<String> roles) {
       _roles = roles;
     }
   }
