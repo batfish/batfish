@@ -1054,6 +1054,15 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ikeProposals" : {
+            "1" : {
+              "name" : "1",
+              "authenticationAlgorithm" : "SHA_256",
+              "authenticationMethod" : "RSA_SIGNATURES",
+              "diffieHellmanGroup" : "GROUP20",
+              "encryptionAlgorithm" : "AES_256_CBC"
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_crypto"
@@ -4223,6 +4232,37 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ikePolicies" : {
+            "myprofile" : {
+              "name" : "myprofile",
+              "proposals" : [
+                "1"
+              ]
+            }
+          },
+          "ikeProposals" : {
+            "1" : {
+              "name" : "1",
+              "authenticationAlgorithm" : "MD5",
+              "authenticationMethod" : "PRE_SHARED_KEYS",
+              "diffieHellmanGroup" : "GROUP2",
+              "encryptionAlgorithm" : "THREEDES_CBC",
+              "lifetimeSeconds" : 28800
+            }
+          },
+          "ipsecPolicies" : {
+            "abcdefg" : {
+              "name" : "abcdefg",
+              "pfsKeyGroupDynamicIke" : false
+            }
+          },
+          "ipsecProposals" : {
+            "ESP-3DES-MD5" : {
+              "name" : "ESP-3DES-MD5",
+              "authenticationAlgorithm" : "HMAC_MD5_96",
+              "encryptionAlgorithm" : "THREEDES_CBC"
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_crypto"
