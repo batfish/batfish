@@ -3764,26 +3764,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
     // warn about unreferenced data structures
-    warnUnusedAsPathSets();
+    warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     warnUnusedCommunityLists();
-    warnUnusedDepiClasses();
-    warnUnusedDepiTunnels();
+    warnUnusedStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
+    warnUnusedStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
     warnUnusedDocsisPolicies();
     warnUnusedDocsisPolicyRules();
-    warnUnusedIpAsPathAccessLists();
+    warnUnusedStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
     warnUnusedIpAccessLists();
-    warnUnusedIpsecProfiles();
-    warnUnusedIpsecTransformSets();
+    warnUnusedStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
+    warnUnusedStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     warnUnusedIpv6AccessLists();
     warnUnusedKeyrings();
-    warnUnusedL2tpClasses();
-    warnUnusedMacAccessLists();
-    warnUnusedNatPools();
-    warnUnusedPrefixLists();
-    warnUnusedPrefix6Lists();
+    warnUnusedStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
+    warnUnusedStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
+    warnUnusedStructure(_natPools, CiscoStructureType.NAT_POOL);
+    warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
+    warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
-    warnUnusedRouteMaps();
+    warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
     return c;
@@ -3952,21 +3952,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return false;
   }
 
-  private void warnUnusedAsPathSets() {
-    warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
-  }
-
   private void warnUnusedCommunityLists() {
     warnUnusedStructure(_expandedCommunityLists, CiscoStructureType.COMMUNITY_LIST_EXPANDED);
     warnUnusedStructure(_standardCommunityLists, CiscoStructureType.COMMUNITY_LIST_STANDARD);
-  }
-
-  private void warnUnusedDepiClasses() {
-    warnUnusedStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
-  }
-
-  private void warnUnusedDepiTunnels() {
-    warnUnusedStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
   }
 
   private void warnUnusedDocsisPolicies() {
@@ -3987,18 +3975,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedStructure(_standardAccessLists, CiscoStructureType.IP_ACCESS_LIST_STANDARD);
   }
 
-  private void warnUnusedIpAsPathAccessLists() {
-    warnUnusedStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-  }
-
-  private void warnUnusedIpsecProfiles() {
-    warnUnusedStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
-  }
-
-  private void warnUnusedIpsecTransformSets() {
-    warnUnusedStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
-  }
-
   private void warnUnusedIpv6AccessLists() {
     warnUnusedStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
     warnUnusedStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
@@ -4006,18 +3982,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void warnUnusedKeyrings() {
     warnUnusedStructure(_keyrings, CiscoStructureType.KEYRING);
-  }
-
-  private void warnUnusedL2tpClasses() {
-    warnUnusedStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
-  }
-
-  private void warnUnusedMacAccessLists() {
-    warnUnusedStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
-  }
-
-  private void warnUnusedNatPools() {
-    warnUnusedStructure(_natPools, CiscoStructureType.NAT_POOL);
   }
 
   private void warnUnusedPeerGroups() {
@@ -4036,18 +4000,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             unused(CiscoStructureType.BGP_PEER_SESSION, name, line);
           });
     }
-  }
-
-  private void warnUnusedPrefix6Lists() {
-    warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
-  }
-
-  private void warnUnusedPrefixLists() {
-    warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
-  }
-
-  private void warnUnusedRouteMaps() {
-    warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
   }
 
   private void warnUnusedServiceClasses() {

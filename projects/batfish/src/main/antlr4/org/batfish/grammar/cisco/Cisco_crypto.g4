@@ -244,7 +244,7 @@ cip_transform_set
 :
    TRANSFORM_SET variable ipsec_encryption ipsec_authentication NEWLINE
    (
-      cipt_line
+      cipt_mode
    )*
 ;
 
@@ -291,11 +291,6 @@ cipprf_set_transform_set
    TRANSFORM_SET variable NEWLINE
 ;
 
-cipt_line
-:
-   cipt_mode
-;
-
 cipt_mode
 :
    MODE
@@ -322,21 +317,6 @@ cis_policy
 :
    POLICY name = variable NEWLINE
    (
-      cispol_line
-   )*
-;
-
-cis_profile
-:
-   PROFILE name = variable NEWLINE
-   (
-      cisprf_line
-   )*
-;
-
-cispol_line
-:
-   (
       cispol_authentication
       | cispol_encr        //cisco
       | cispol_encryption  //aruba
@@ -344,7 +324,18 @@ cispol_line
       | cispol_hash
       | cispol_lifetime
       | cispol_null
-   )
+   )*
+;
+
+cis_profile
+:
+   PROFILE name = variable NEWLINE
+   (
+      cisprf_keyring
+      | cisprf_local_address
+      | cisprf_match
+      | cisprf_null
+   )*
 ;
 
 cispol_authentication
@@ -392,16 +383,6 @@ cispol_null
       PRF
       | VERSION
    ) ~NEWLINE* NEWLINE
-;
-
-cisprf_line
-:
-   (
-      cisprf_keyring
-      | cisprf_local_address
-      | cisprf_match
-      | cisprf_null
-   )
 ;
 
 cisprf_keyring
@@ -461,14 +442,6 @@ ckpn_null
    (
       ADDRESS
    ) ~NEWLINE* NEWLINE
-;
-
-ckr_line
-:
-   (
-      ckr_local_address
-      | ckr_psk
-   )
 ;
 
 ckr_local_address
@@ -632,7 +605,8 @@ crypto_keyring
 :
    KEYRING name = variable_permissive NEWLINE
    (
-      ckr_line
+      ckr_local_address
+      | ckr_psk
    )*
 ;
 
