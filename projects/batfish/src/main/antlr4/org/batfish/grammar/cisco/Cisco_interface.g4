@@ -1014,7 +1014,7 @@ iftunnel_mode
 
 iftunnel_protection
 :
-   PROTECTION IPSEC PROFILE variable NEWLINE
+   PROTECTION IPSEC PROFILE name = variable NEWLINE
 ;
 
 iftunnel_source
