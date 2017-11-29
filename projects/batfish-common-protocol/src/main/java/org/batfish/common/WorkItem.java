@@ -2,6 +2,7 @@ package org.batfish.common;
 
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
 import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.propagation.TextMapInjectAdapter;
@@ -100,7 +101,12 @@ public class WorkItem {
    */
   @Nullable
   public SpanContext getSourceSpan() {
-    return GlobalTracer.get().extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
+    return getSourceSpan(GlobalTracer.get());
+  }
+
+  // visible for testing
+  SpanContext getSourceSpan(Tracer tracer) {
+    return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
   }
 
   public HashMap<String, String> getRequestParams() {
@@ -116,11 +122,15 @@ public class WorkItem {
    * using {@link WorkItem#getSourceSpan()}
    */
   public void setSourceSpan(@Nullable ActiveSpan activeSpan) {
+    setSourceSpan(activeSpan, GlobalTracer.get());
+  }
+
+  // visible for testing
+  void setSourceSpan(@Nullable ActiveSpan activeSpan, Tracer tracer) {
     if (activeSpan == null) {
       return;
     }
-    GlobalTracer.get()
-        .inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
+    tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
   }
 
   public void setId(String idString) {
