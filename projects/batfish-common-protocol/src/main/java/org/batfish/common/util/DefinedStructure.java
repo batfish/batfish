@@ -3,7 +3,8 @@ package org.batfish.common.util;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public abstract class DefinedStructure<KeyT extends Comparable<KeyT>> extends ComparableStructure<KeyT> {
+public abstract class DefinedStructure<KeyT extends Comparable<KeyT>>
+    extends ComparableStructure<KeyT> {
 
   /** */
   private static final long serialVersionUID = 1L;
