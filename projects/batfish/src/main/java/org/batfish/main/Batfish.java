@@ -315,9 +315,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void initQuestionSettings(Settings settings) {
     String questionName = settings.getQuestionName();
-    Path testrigDir = settings.getActiveTestrigSettings().getBasePath();
+    Path containerDir = settings.getContainerDir();
     if (questionName != null) {
-      Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
+      Path questionPath =
+          containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
       settings.setQuestionPath(questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
     }
   }
@@ -4443,32 +4444,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString, String prettyAnswerString) {
-    Path questionPath = _settings.getQuestionPath();
-    if (questionPath != null) {
-      Path questionDir = questionPath.getParent();
-      if (!Files.exists(questionDir)) {
-        throw new BatfishException(
-            "Could not write JSON answer to question dir '"
-                + questionDir
-                + "' because it does not exist");
-      }
-      boolean diff = _settings.getDiffQuestion();
-      String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-      Path answerDir =
-          questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName).toString());
-      if (diff) {
-        String deltaTestrigName = _deltaTestrigSettings.getName();
-        String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
-        answerDir =
-            answerDir.resolve(
-                Paths.get(BfConsts.RELPATH_DELTA, deltaTestrigName, deltaEnvName).toString());
-      }
-      Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-      Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
-      answerDir.toFile().mkdirs();
-      CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-      CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
+    boolean diff = _settings.getDiffQuestion();
+    String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
+    Path testrigDir = _testrigSettings.getBasePath();
+    Path answerDir =
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
+    if (diff) {
+      String deltaTestrigName = _deltaTestrigSettings.getName();
+      String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
+      answerDir =
+          answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
+    } else {
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
     }
+    System.out.println(answerDir);
+    Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+    CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
   }
 
   private void writeJsonAnswerWithLog(
@@ -4477,32 +4472,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (jsonPath != null) {
       CommonUtil.writeFile(jsonPath, answerString);
     }
-    Path questionPath = _settings.getQuestionPath();
-    if (questionPath != null) {
-      Path questionDir = questionPath.getParent();
-      if (!Files.exists(questionDir)) {
-        throw new BatfishException(
-            "Could not write JSON answer to question dir '"
-                + questionDir
-                + "' because it does not exist");
-      }
-      boolean diff = _settings.getDiffQuestion();
-      String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-      Path answerDir =
-          questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName).toString());
-      if (diff) {
-        String deltaTestrigName = _deltaTestrigSettings.getName();
-        String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
-        answerDir =
-            answerDir.resolve(
-                Paths.get(BfConsts.RELPATH_DELTA, deltaTestrigName, deltaEnvName).toString());
-      }
-      Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-      Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
-      answerDir.toFile().mkdirs();
-      CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-      CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
+    boolean diff = _settings.getDiffQuestion();
+    String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
+    Path testrigDir = _testrigSettings.getBasePath();
+    Path answerDir =
+        testrigDir.resolve(
+            Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
+    if (diff) {
+      String deltaTestrigName = _deltaTestrigSettings.getName();
+      String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
+      answerDir =
+          answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
+    } else {
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
     }
+    Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+    CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
   }
 
   private void writeJsonTopology() {
