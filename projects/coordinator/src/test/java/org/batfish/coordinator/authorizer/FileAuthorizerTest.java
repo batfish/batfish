@@ -85,7 +85,7 @@ public class FileAuthorizerTest {
     Files.write(users, "{\"users\": []}".getBytes());
     Files.write(perms, "{\"perms\": [{\"apikey\": \"key\", \"container\": \"cont\"}]}".getBytes());
 
-    // Accepts initial key and initial container, but second key or container.
+    // Accepts initial key and initial container, but not second key or container.
     Authorizer authorizer = new FileAuthorizer(users, perms, _logger);
     assertTrue(authorizer.isAccessibleContainer(KEY, CONT, false));
     assertFalse(authorizer.isAccessibleContainer(KEY, CONT2, false));
@@ -126,7 +126,7 @@ public class FileAuthorizerTest {
     Files.write(users, generateUsers("key1").getBytes());
     Files.write(perms, "{\"perms\": []}".getBytes());
 
-    // Accepts initial key and initial container, but second key or container.
+    // Accepts initial key and initial container, but not second key or container.
     Authorizer authorizer = new FileAuthorizer(users, perms, _logger);
     assertTrue(authorizer.isValidWorkApiKey("key1"));
     assertFalse(authorizer.isValidWorkApiKey("key2"));
