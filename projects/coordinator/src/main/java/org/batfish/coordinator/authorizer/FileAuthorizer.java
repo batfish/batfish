@@ -1,56 +1,63 @@
 package org.batfish.coordinator.authorizer;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import org.batfish.coordinator.config.Settings;
 
-// An authorizer that is backed by a file
-// Useful for testing
+/**
+ * An {@link Authorizer} backed by JSON files on a local file system.
+ *
+ * <p>Primarily used for testing.
+ */
 public class FileAuthorizer implements Authorizer {
 
-  private static final String APIKEY_KEY = "apikey";
-  private static final String CONTAINER_KEY = "container";
-  private static final String PERMS_KEY = "perms";
-  private static final String USERS_KEY = "users";
+  static class Permission {
+    public String apikey;
+    public String container;
+  }
+
+  static class Permissions {
+    public List<Permission> perms;
+  }
+
+  static class User {
+    public String apikey;
+  }
+
+  static class Users {
+    public List<User> users;
+  }
 
   private BatfishLogger _logger;
   private Path _permsFile;
   private Path _usersFile;
 
-  public FileAuthorizer() {
-    _logger = Main.getLogger();
+  /**
+   * Creates a new {@link FileAuthorizer} using the given {@link Settings} to determine the
+   * directory and file names from which to read the user and permissions files.
+   */
+  public static FileAuthorizer createFromSettings(Settings settings) {
     try {
-      _usersFile =
-          Main.getSettings()
-              .getFileAuthorizerRootDir()
-              .resolve(Main.getSettings().getFileAuthorizerUsersFile());
-      _permsFile =
-          Main.getSettings()
-              .getFileAuthorizerRootDir()
-              .resolve(Main.getSettings().getFileAuthorizerPermsFile());
-      if (!Files.exists(_usersFile)) {
-        throw new FileNotFoundException(
-            "Users file not found: '" + _usersFile.toAbsolutePath() + "'");
-      }
-      if (!Files.exists(_permsFile)) {
-        throw new FileNotFoundException(
-            "Perms file not found: '" + _permsFile.toAbsolutePath() + "'");
-      }
+      return new FileAuthorizer(
+          settings.getFileAuthorizerRootDir().resolve(settings.getFileAuthorizerUsersFile()),
+          settings.getFileAuthorizerRootDir().resolve(settings.getFileAuthorizerPermsFile()),
+          Main.getLogger());
     } catch (Exception e) {
       throw new BatfishException(
           String.format(
-              "Could not initialize FileAuthorizer with "
-                  + " RootDir = %s UsersFile=%s. PermsFile=%s",
-              Main.getSettings().getFileAuthorizerRootDir(),
-              Main.getSettings().getFileAuthorizerUsersFile(),
-              Main.getSettings().getFileAuthorizerPermsFile()),
+              "Could not initialize FileAuthorizer with RootDir = %s UsersFile=%s. PermsFile=%s",
+              settings.getFileAuthorizerRootDir(),
+              settings.getFileAuthorizerUsersFile(),
+              settings.getFileAuthorizerPermsFile()),
           e);
     }
   }
@@ -58,84 +65,90 @@ public class FileAuthorizer implements Authorizer {
   @Override
   public synchronized void authorizeContainer(String apiKey, String containerName) {
     _logger.infof("Authorizing %s for %s\n", apiKey, containerName);
-    String allPerms = CommonUtil.readFile(_permsFile);
-    String newAllPerms;
-    try {
-      JSONObject jObj = new JSONObject(allPerms);
-      if (!jObj.has(PERMS_KEY)) {
-        throw new BatfishException("Do not understand the format of perms file");
-      }
-      JSONArray permsArray = jObj.getJSONArray(PERMS_KEY);
-      if (doPermsExist(apiKey, containerName, permsArray)) {
-        _logger.infof("Authorizer: %s is already allowed to access %s\n", apiKey, containerName);
-        return;
-      }
-      JSONObject jPermsObj = new JSONObject();
-      jPermsObj.put(APIKEY_KEY, apiKey);
-      jPermsObj.put(CONTAINER_KEY, containerName);
-      permsArray.put(jPermsObj);
-      jObj.put("perms", permsArray);
-      newAllPerms = jObj.toString();
-    } catch (JSONException e) {
-      throw new BatfishException("Could not update JSON permissions object", e);
-    }
-    CommonUtil.writeFile(_permsFile, newAllPerms);
-  }
 
-  private boolean doPermsExist(String apiKey, String containerName, JSONArray permsArray)
-      throws JSONException {
-    for (int index = 0; index < permsArray.length(); index++) {
-      JSONObject jPermsObj = permsArray.getJSONObject(index);
-      if (apiKey.equals(jPermsObj.getString(APIKEY_KEY))
-          && containerName.equals(jPermsObj.getString(CONTAINER_KEY))) {
-        return true;
-      }
+    Permissions perms = loadPermissions();
+    if (accessAllowed(apiKey, containerName, perms)) {
+      _logger.infof("Authorizer: %s is already allowed to access %s\n", apiKey, containerName);
+      return;
     }
-    return false;
+
+    // Add the new permissions to the list and save them back to disk.
+    Permission newPermission = new Permission();
+    newPermission.apikey = apiKey;
+    newPermission.container = containerName;
+    perms.perms.add(newPermission);
+
+    savePermissions(perms);
   }
 
   @Override
   public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
-    String allPerms = CommonUtil.readFile(_permsFile);
-    try {
-      JSONObject jObj = new JSONObject(allPerms);
-      if (!jObj.has(PERMS_KEY)) {
-        throw new BatfishException("Do not understand the format of perms file");
-      }
-      JSONArray permsArray = jObj.getJSONArray(PERMS_KEY);
-      if (doPermsExist(apiKey, containerName, permsArray)) {
-        _logger.infof("Authorizer: %s is allowed to access %s\n", apiKey, containerName);
-        return true;
-      }
-    } catch (JSONException e) {
-      throw new BatfishException("Could not process perms JSON object", e);
-    }
-    if (logError) {
+    Permissions allPerms = loadPermissions();
+    boolean allowed = accessAllowed(apiKey, containerName, allPerms);
+    if (!allowed && logError) {
       _logger.infof("Authorizer: %s is NOT allowed to access %s\n", apiKey, containerName);
     }
-    return false;
+    return allowed;
   }
 
   @Override
   public boolean isValidWorkApiKey(String apiKey) {
-    String allUsers = CommonUtil.readFile(_usersFile);
-    try {
-      JSONObject jObj = new JSONObject(allUsers);
-      if (!jObj.has(USERS_KEY)) {
-        throw new BatfishException("Do not understand the format of users file");
-      }
-      JSONArray usersArray = jObj.getJSONArray(USERS_KEY);
-      for (int index = 0; index < usersArray.length(); index++) {
-        JSONObject jUserObj = usersArray.getJSONObject(index);
-        if (apiKey.equals(jUserObj.getString(APIKEY_KEY))) {
-          _logger.infof("Authorizer: %s is a valid key\n", apiKey);
-          return true;
-        }
-      }
-    } catch (JSONException e) {
-      throw new BatfishException("Could not process users JSON object", e);
+    Users allUsers = loadUsers();
+    boolean validUser = allUsers.users.stream().anyMatch(u -> apiKey.equals(u.apikey));
+    _logger.infof("Authorizer: %s is %s valid API key\n", apiKey, validUser ? "a" : "NOT a");
+    return validUser;
+  }
+
+  // Visible for testing.
+  FileAuthorizer(Path usersFile, Path permsFile, BatfishLogger logger)
+      throws FileNotFoundException {
+    _logger = checkNotNull(logger, "logger should not be null");
+
+    if (!Files.exists(usersFile)) {
+      throw new FileNotFoundException("Users file not found: '" + usersFile.toAbsolutePath() + "'");
     }
-    _logger.infof("Authorizer: %s is NOT a valid key\n", apiKey);
-    return false;
+    this._usersFile = usersFile;
+
+    if (!Files.exists(permsFile)) {
+      throw new FileNotFoundException("Perms file not found: '" + permsFile.toAbsolutePath() + "'");
+    }
+    this._permsFile = permsFile;
+  }
+
+  private static boolean accessAllowed(String apiKey, String container, Permissions permissions) {
+    return permissions
+        .perms
+        .stream()
+        .anyMatch(p -> apiKey.equals(p.apikey) && container.equals(p.container));
+  }
+
+  private Permissions loadPermissions() {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.readerFor(Permissions.class).readValue(_permsFile.toFile());
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format("Error loading permissions from '%s'", _permsFile.toAbsolutePath()), e);
+    }
+  }
+
+  private void savePermissions(Permissions p) {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      mapper.writerFor(Permissions.class).writeValue(_permsFile.toFile(), p);
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format("Error saving permissions to '%s'", _permsFile.toAbsolutePath()), e);
+    }
+  }
+
+  private Users loadUsers() {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.readerFor(Users.class).readValue(_usersFile.toFile());
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format("Error loading users from '%s'", _usersFile.toAbsolutePath()), e);
+    }
   }
 }
