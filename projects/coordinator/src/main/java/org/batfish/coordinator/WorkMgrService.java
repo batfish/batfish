@@ -347,7 +347,6 @@ public class WorkMgrService {
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the question resides
    * @param questionName The name of the question to delete
-   * @param testrigName The name of the testrig for which the question was asked
    * @return TODO: document JSON response
    */
   @POST
@@ -357,8 +356,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName) {
     try {
       _logger.info("WMS:delQuestion " + containerName + "\n");
 
@@ -1102,7 +1100,6 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the testrig and questions reside
-   * @param testrigName The name of the testrig, the questions on which are to be listed
    * @return TODO: document JSON response
    */
   @POST
@@ -1111,8 +1108,7 @@ public class WorkMgrService {
   public JSONArray listQuestions(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
     try {
       _logger.info("WMS:listQuestions " + apiKey + " " + containerName + "\n");
 
