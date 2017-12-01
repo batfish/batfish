@@ -37,6 +37,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
 
+  private static final String PROP_DEVICE_TYPE = "deviceType";
+
   public static final String DEFAULT_VRF_NAME = "default";
 
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
@@ -254,25 +256,8 @@ public final class Configuration extends ComparableStructure<String> {
     return _vrfs.get(DEFAULT_VRF_NAME);
   }
 
+  @JsonProperty(PROP_DEVICE_TYPE)
   public DeviceType getDeviceType() {
-    if (_deviceType == null) {
-      // It's a host iff the configuration format is HOST
-      if (this._configurationFormat == ConfigurationFormat.HOST) {
-        _deviceType = DeviceType.HOST;
-        return _deviceType;
-      }
-      // If any vrf has BGP, OSPF, or RIP process, assume it's a router (ignore firewalls for now)
-      for (Vrf vrf : this._vrfs.values()) {
-        if (vrf.getBgpProcess() != null
-            || vrf.getOspfProcess() != null
-            || vrf.getRipProcess() != null) {
-          _deviceType = DeviceType.ROUTER;
-          return _deviceType;
-        }
-      }
-      // If it's not a host and doesn't have BGP, OSPF, or RIP, it's a switch
-      _deviceType = DeviceType.SWITCH;
-    }
     return _deviceType;
   }
 
@@ -564,6 +549,11 @@ public final class Configuration extends ComparableStructure<String> {
 
   public void setDefaultInboundAction(LineAction defaultInboundAction) {
     _defaultInboundAction = defaultInboundAction;
+  }
+
+  @JsonProperty(PROP_DEVICE_TYPE)
+  public void setDeviceType(DeviceType deviceType) {
+    _deviceType = deviceType;
   }
 
   public void setDnsServers(NavigableSet<String> dnsServers) {
