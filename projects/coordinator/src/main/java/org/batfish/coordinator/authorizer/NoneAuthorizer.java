@@ -1,8 +1,8 @@
 package org.batfish.coordinator.authorizer;
 
-// a pass through authorizer that answers yes to everything
-// useful for testing and private deployments
-public class NoneAuthorizer implements Authorizer {
+/** An {@link Authorizer} that approves everything. Useful for testing and private deployments. */
+public final class NoneAuthorizer implements Authorizer {
+  public static final NoneAuthorizer INSTANCE = new NoneAuthorizer();
 
   @Override
   public void authorizeContainer(String apiKey, String containerName) {}
@@ -15,5 +15,13 @@ public class NoneAuthorizer implements Authorizer {
   @Override
   public boolean isValidWorkApiKey(String apiKey) {
     return true;
+  }
+
+  // Prevent construction
+  private NoneAuthorizer() {}
+
+  @Override
+  public String toString() {
+    return NoneAuthorizer.class.getSimpleName();
   }
 }

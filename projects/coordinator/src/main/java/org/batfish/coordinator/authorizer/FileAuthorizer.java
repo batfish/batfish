@@ -2,6 +2,7 @@ package org.batfish.coordinator.authorizer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.MoreObjects;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -97,6 +98,14 @@ public class FileAuthorizer implements Authorizer {
     boolean validUser = allUsers.users.stream().anyMatch(u -> apiKey.equals(u.apikey));
     _logger.infof("Authorizer: %s is %s valid API key\n", apiKey, validUser ? "a" : "NOT a");
     return validUser;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(FileAuthorizer.class)
+        .add("users", _usersFile)
+        .add("perms", _permsFile)
+        .toString();
   }
 
   // Visible for testing.
