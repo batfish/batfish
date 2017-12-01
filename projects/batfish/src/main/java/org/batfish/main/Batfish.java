@@ -4465,8 +4465,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       } else {
         answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
       }
-    } else if (_settings.getAnalysisName() != null) {
-      // If settings has an analysis name, we're answering an analysis question
+    } else if (_settings.getAnalysisName() != null && _settings.getQuestionPath() != null) {
+      // If settings has an analysis name and question path, we're answering an analysis question
       Path questionDir = _settings.getQuestionPath().getParent();
       answerDir = questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName));
       if (diff) {
