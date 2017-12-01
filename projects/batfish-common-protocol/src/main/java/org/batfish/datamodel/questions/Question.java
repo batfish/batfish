@@ -272,15 +272,6 @@ public abstract class Question implements IQuestion {
   @JsonIgnore
   public abstract String getName();
 
-  protected boolean isBaseParamKey(String paramKey) {
-    switch (paramKey) {
-      case BfConsts.PROP_DIFFERENTIAL:
-        return true;
-      default:
-        return false;
-    }
-  }
-
   // by default, pretty printing is Json
   // override this function in derived classes to do something more meaningful
   public String prettyPrint() {
