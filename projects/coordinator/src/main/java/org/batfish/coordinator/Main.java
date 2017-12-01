@@ -168,7 +168,7 @@ public class Main {
     Authorizer.Type type = settings.getAuthorizationType();
     switch (type) {
       case none:
-        _authorizer = new NoneAuthorizer();
+        _authorizer = NoneAuthorizer.INSTANCE;
         break;
       case file:
         _authorizer = FileAuthorizer.createFromSettings(settings);
@@ -181,6 +181,7 @@ public class Main {
             "org.batfish.coordinator: Initialization failed. Unsupported authorizer type " + type);
         System.exit(1);
     }
+    getLogger().infof("Using authorizer %s\n", _authorizer);
   }
 
   private static void initPoolManager() {
