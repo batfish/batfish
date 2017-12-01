@@ -4444,21 +4444,43 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString, String prettyAnswerString) {
+    // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
+    // Purpose: to write answer json files for adhoc and analysis questions
+    // Dependencies: Container, tr & env, (delta tr & env), question name, analysis name if present
     boolean diff = _settings.getDiffQuestion();
     String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-    Path testrigDir = _testrigSettings.getBasePath();
-    Path answerDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
-    if (diff) {
-      String deltaTestrigName = _deltaTestrigSettings.getName();
-      String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
+    Path answerDir;
+
+    if (_settings.getQuestionName() != null) {
+      // If settings has a question name, we're answering an adhoc question. Set up path accordingly
+      Path testrigDir = _testrigSettings.getBasePath();
       answerDir =
-          answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
+          testrigDir.resolve(
+              Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
+      if (diff) {
+        String deltaTestrigName = _deltaTestrigSettings.getName();
+        String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
+        answerDir =
+            answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
+      } else {
+        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
+      }
+    } else if (_settings.getAnalysisName() != null) {
+      // If settings has an analysis name, we're answering an analysis question
+      Path questionDir = _settings.getQuestionPath().getParent();
+      answerDir = questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName));
+      if (diff) {
+        answerDir =
+            answerDir.resolve(
+                Paths.get(
+                    BfConsts.RELPATH_DELTA,
+                    _deltaTestrigSettings.getName(),
+                    _deltaTestrigSettings.getEnvironmentSettings().getName()));
+      }
     } else {
-      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
+      // If settings has neither a question nor an analysis configured, don't write a file
+      return;
     }
-    System.out.println(answerDir);
     Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
     Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
     answerDir.toFile().mkdirs();
@@ -4468,29 +4490,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void writeJsonAnswerWithLog(
       String answerString, String structuredAnswerString, String prettyAnswerString) {
+    // Write log of WorkItem task to the configured path for logs
     Path jsonPath = _settings.getAnswerJsonPath();
     if (jsonPath != null) {
       CommonUtil.writeFile(jsonPath, answerString);
     }
-    boolean diff = _settings.getDiffQuestion();
-    String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-    Path testrigDir = _testrigSettings.getBasePath();
-    Path answerDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
-    if (diff) {
-      String deltaTestrigName = _deltaTestrigSettings.getName();
-      String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
-      answerDir =
-          answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
-    } else {
-      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
-    }
-    Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
-    answerDir.toFile().mkdirs();
-    CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-    CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
+    // Write answer.json and answer-pretty.json if WorkItem was answering a question
+    writeJsonAnswer(structuredAnswerString, prettyAnswerString);
   }
 
   private void writeJsonTopology() {
