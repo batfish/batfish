@@ -315,9 +315,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void initQuestionSettings(Settings settings) {
     String questionName = settings.getQuestionName();
-    Path testrigDir = settings.getActiveTestrigSettings().getBasePath();
+    Path containerDir = settings.getContainerDir();
     if (questionName != null) {
-      Path questionPath = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
+      Path questionPath =
+          containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
       settings.setQuestionPath(questionPath.resolve(BfConsts.RELPATH_QUESTION_FILE));
     }
   }
@@ -4443,66 +4444,59 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswer(String structuredAnswerString, String prettyAnswerString) {
-    Path questionPath = _settings.getQuestionPath();
-    if (questionPath != null) {
-      Path questionDir = questionPath.getParent();
-      if (!Files.exists(questionDir)) {
-        throw new BatfishException(
-            "Could not write JSON answer to question dir '"
-                + questionDir
-                + "' because it does not exist");
-      }
-      boolean diff = _settings.getDiffQuestion();
-      String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-      Path answerDir =
-          questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName).toString());
+    // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
+    // Purpose: to write answer json files for adhoc and analysis questions
+    // Dependencies: Container, tr & env, (delta tr & env), question name, analysis name if present
+    boolean diff = _settings.getDiffQuestion();
+    String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
+    Path answerDir;
+
+    if (_settings.getQuestionName() != null) {
+      // If settings has a question name, we're answering an adhoc question. Set up path accordingly
+      Path testrigDir = _testrigSettings.getBasePath();
+      answerDir =
+          testrigDir.resolve(
+              Paths.get(BfConsts.RELPATH_ANSWERS_DIR, _settings.getQuestionName(), baseEnvName));
       if (diff) {
         String deltaTestrigName = _deltaTestrigSettings.getName();
         String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
         answerDir =
-            answerDir.resolve(
-                Paths.get(BfConsts.RELPATH_DELTA, deltaTestrigName, deltaEnvName).toString());
+            answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrigName, deltaEnvName));
+      } else {
+        answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
       }
-      Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-      Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
-      answerDir.toFile().mkdirs();
-      CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-      CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
+    } else if (_settings.getAnalysisName() != null && _settings.getQuestionPath() != null) {
+      // If settings has an analysis name and question path, we're answering an analysis question
+      Path questionDir = _settings.getQuestionPath().getParent();
+      answerDir = questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName));
+      if (diff) {
+        answerDir =
+            answerDir.resolve(
+                Paths.get(
+                    BfConsts.RELPATH_DELTA,
+                    _deltaTestrigSettings.getName(),
+                    _deltaTestrigSettings.getEnvironmentSettings().getName()));
+      }
+    } else {
+      // If settings has neither a question nor an analysis configured, don't write a file
+      return;
     }
+    Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
+    Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
+    answerDir.toFile().mkdirs();
+    CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
+    CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
   }
 
   private void writeJsonAnswerWithLog(
       String answerString, String structuredAnswerString, String prettyAnswerString) {
+    // Write log of WorkItem task to the configured path for logs
     Path jsonPath = _settings.getAnswerJsonPath();
     if (jsonPath != null) {
       CommonUtil.writeFile(jsonPath, answerString);
     }
-    Path questionPath = _settings.getQuestionPath();
-    if (questionPath != null) {
-      Path questionDir = questionPath.getParent();
-      if (!Files.exists(questionDir)) {
-        throw new BatfishException(
-            "Could not write JSON answer to question dir '"
-                + questionDir
-                + "' because it does not exist");
-      }
-      boolean diff = _settings.getDiffQuestion();
-      String baseEnvName = _testrigSettings.getEnvironmentSettings().getName();
-      Path answerDir =
-          questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnvName).toString());
-      if (diff) {
-        String deltaTestrigName = _deltaTestrigSettings.getName();
-        String deltaEnvName = _deltaTestrigSettings.getEnvironmentSettings().getName();
-        answerDir =
-            answerDir.resolve(
-                Paths.get(BfConsts.RELPATH_DELTA, deltaTestrigName, deltaEnvName).toString());
-      }
-      Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-      Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
-      answerDir.toFile().mkdirs();
-      CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-      CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
-    }
+    // Write answer.json and answer-pretty.json if WorkItem was answering a question
+    writeJsonAnswer(structuredAnswerString, prettyAnswerString);
   }
 
   private void writeJsonTopology() {
