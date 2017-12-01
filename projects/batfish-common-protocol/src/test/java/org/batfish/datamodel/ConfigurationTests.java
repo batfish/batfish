@@ -26,7 +26,7 @@ public class ConfigurationTests {
     Prefix generatedRoutePrefix = neighborPrefix;
     Prefix neigborWithMissingPoliciesPrefix = new Prefix(Ip.MAX, Prefix.MAX_PREFIX_LENGTH);
 
-    Configuration c = new Configuration("test");
+    Configuration c = new Configuration("test", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new);
 
     // BGP

@@ -34,6 +34,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
   private Map<String, InternetGateway> _internetGateways = new HashMap<>();
 
+  private Map<String, NatGateway> _natGateways = new HashMap<>();
+
   private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
 
   private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
@@ -96,6 +98,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
       case AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS:
         InternetGateway iGateway = new InternetGateway(jsonObject, logger);
         _internetGateways.put(iGateway.getId(), iGateway);
+        break;
+      case AwsVpcEntity.JSON_KEY_NAT_GATEWAYS:
+        NatGateway natGateway = new NatGateway(jsonObject, logger);
+        _natGateways.put(natGateway.getId(), natGateway);
         break;
       case AwsVpcEntity.JSON_KEY_NETWORK_ACLS:
         NetworkAcl networkAcl = new NetworkAcl(jsonObject, logger);
@@ -165,6 +171,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
   public Map<String, InternetGateway> getInternetGateways() {
     return _internetGateways;
+  }
+
+  public Map<String, NatGateway> getNatGateways() {
+    return _natGateways;
   }
 
   public Map<String, NetworkAcl> getNetworkAcls() {
@@ -239,6 +249,12 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
     for (InternetGateway igw : _internetGateways.values()) {
       Configuration cfgNode = igw.toConfigurationNode(this);
+      _configurationNodes.put(cfgNode.getName(), cfgNode);
+    }
+
+    for (NatGateway ngw : _natGateways.values()) {
+      _warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
+      Configuration cfgNode = ngw.toConfigurationNode(this);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 

@@ -705,6 +705,18 @@
           }
         },
         "cisco_cable" : {
+          "cable service-class" : {
+            "barfoo" : {
+              "cable qos enforce-rule service-class" : [
+                77
+              ]
+            },
+            "foobar" : {
+              "cable qos enforce-rule service-class" : [
+                78
+              ]
+            }
+          },
           "depi-tunnel" : {
             "depitun0" : {
               "controller rf-channel depi-tunnel" : [
@@ -721,6 +733,20 @@
           }
         },
         "cisco_crypto" : {
+          "crypto ipsec transform-set" : {
+            "hijklmnop" : {
+              "ipsec profile set transform-set" : [
+                139
+              ]
+            }
+          },
+          "crypto keyring" : {
+            "VRF:MMS:RMT:UPM:1143" : {
+              "isakmp profile keyring" : [
+                158
+              ]
+            }
+          },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
@@ -1511,6 +1537,23 @@
             ]
           }
         },
+        "cisco_crypto" : {
+          "crypto ipsec profile" : {
+            "abcdefg" : [
+              138
+            ]
+          },
+          "crypto ipsec transform-set" : {
+            "ESP-3DES-MD5" : [
+              143
+            ]
+          },
+          "crypto keyring" : {
+            "VRF:ABC:DEF:GHI:1234" : [
+              180
+            ]
+          }
+        },
         "cisco_eigrp" : {
           "extended ip access-list" : {
             "bippety" : [
@@ -1892,6 +1935,11 @@
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '64.57.21.1'"
           }
         },
+        "cisco_crypto" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile"
+          }
+        },
         "cisco_interface" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
@@ -1927,6 +1975,18 @@
         "juniper_firewall" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: missing action in firewall filter: 'blah', term: 'blorp'"
+          }
+        },
+        "nat-08c21704416f06046" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046",
+            "2" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+          }
+        },
+        "nat-09fd8f73171d2d9a3" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046",
+            "2" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
           }
         },
         "neighbor" : {

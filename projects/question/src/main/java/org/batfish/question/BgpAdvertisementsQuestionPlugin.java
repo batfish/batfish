@@ -275,7 +275,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
         Set<BgpAdvertisement> externalAdverts =
-            _batfish.processExternalBgpAnnouncements(configurations);
+            _batfish.loadExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 externalAdverts, configurations, nodeRegex, question.getPrefixSpace());
@@ -422,7 +422,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       String retString =
           String.format(
-              "%s %s%s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\"",
+              "%s %s%s=%s %s=%s %s=\"%s\" %s=%s %s=%s %s=%s",
               getName(),
               prettyPrintBase(),
               PROP_EBGP,

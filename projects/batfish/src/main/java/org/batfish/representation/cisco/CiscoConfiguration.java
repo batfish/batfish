@@ -1,7 +1,9 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.DefinedStructure;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -35,6 +38,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
+import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -44,6 +49,8 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -97,20 +104,18 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
+import org.batfish.datamodel.vendor_family.cisco.Cable;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.datamodel.vendor_family.cisco.DepiClass;
-import org.batfish.datamodel.vendor_family.cisco.DepiTunnel;
-import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
-import org.batfish.datamodel.vendor_family.cisco.DocsisPolicyRule;
-import org.batfish.datamodel.vendor_family.cisco.L2tpClass;
 import org.batfish.datamodel.vendor_family.cisco.Line;
-import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
+import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
+
+  private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
 
@@ -120,6 +125,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
+  public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+
   private static final long serialVersionUID = 1L;
 
   public static final String VENDOR_NAME = "cisco";
@@ -127,10 +134,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
-
-  public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
-
-  private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
 
   private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
     Map<String, String> prefixes = new LinkedHashMap<>();
@@ -292,6 +295,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _ipPimNeighborFilters;
 
+  private final Map<String, IpsecProfile> _ipsecProfiles;
+
+  private final Map<String, IpsecTransformSet> _ipsecTransformSets;
+
+  private final Map<String, IsakmpPolicy> _isakmpPolicies;
+
+  private final Map<String, IsakmpProfile> _isakmpProfiles;
+
+  private final Map<String, Keyring> _keyrings;
+
   private final Set<String> _lineAccessClassLists;
 
   private final Set<String> _lineIpv6AccessClassLists;
@@ -381,9 +394,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _failoverPrimaryPrefixes = new TreeMap<>();
     _failoverStandbyPrefixes = new TreeMap<>();
     _igmpAcls = new TreeSet<>();
+    _isakmpPolicies = new TreeMap<>();
+    _isakmpProfiles = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipNatDestinationAccessLists = new TreeSet<>();
     _ipPimNeighborFilters = new TreeSet<>();
+    _ipsecTransformSets = new TreeMap<>();
+    _ipsecProfiles = new TreeMap<>();
+    _keyrings = new TreeMap<>();
     _lineAccessClassLists = new TreeSet<>();
     _lineIpv6AccessClassLists = new TreeSet<>();
     _macAccessLists = new TreeMap<>();
@@ -665,6 +683,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _igmpAcls;
   }
 
+  private @Nullable Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
+    for (Interface iface : _interfaces.values()) {
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null
+          && tunnel.getSource() != null
+          && tunnel.getSource().equals(sourceAddress)
+          && tunnel.getDestination() != null
+          && destPrefix.contains(tunnel.getDestination())) {
+        /*
+         * We found a tunnel interface with the required parameters. Now return the external
+         * interface with this address.
+         */
+        return _interfaces
+            .values()
+            .stream()
+            .filter(
+                i ->
+                    i.getAllPrefixes().stream().anyMatch(p -> p.getAddress().equals(sourceAddress)))
+            .findFirst()
+            .orElse(null);
+      }
+    }
+    return null;
+  }
+
   public Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -675,6 +718,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Set<String> getIpPimNeighborFilters() {
     return _ipPimNeighborFilters;
+  }
+
+  public Map<String, IpsecProfile> getIpsecProfiles() {
+    return _ipsecProfiles;
+  }
+
+  public Map<String, IpsecTransformSet> getIpsecTransformSets() {
+    return _ipsecTransformSets;
+  }
+
+  public Map<String, IsakmpPolicy> getIsakmpPolicies() {
+    return _isakmpPolicies;
+  }
+
+  public Map<String, IsakmpProfile> getIsakmpProfiles() {
+    return _isakmpProfiles;
+  }
+
+  public Map<String, Keyring> getKeyrings() {
+    return _keyrings;
   }
 
   public Set<String> getLineAccessClassLists() {
@@ -936,41 +999,114 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _wccpAcls;
   }
 
-  private void markAcls(CiscoStructureUsage usage, Configuration c) {
+  private void markAcls(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.IP_ACCESS_LIST,
+        usage,
+        Arrays.asList(
+            _extendedAccessLists,
+            _standardAccessLists,
+            _extendedIpv6AccessLists,
+            _standardIpv6AccessLists));
+  }
+
+  private void markDepiClasses(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.DEPI_CLASS, usage, _cf.getDepiClasses());
+  }
+
+  private void markDepiTunnels(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.DEPI_TUNNEL, usage, _cf.getDepiTunnels());
+  }
+
+  private void markDocsisPolicies(CiscoStructureUsage usage) {
+    Cable cable = _cf.getCable();
+    markStructure(
+        CiscoStructureType.DOCSIS_POLICY, usage, cable != null ? cable.getDocsisPolicies() : null);
+  }
+
+  private void markDocsisPolicyRules(CiscoStructureUsage usage) {
+    Cable cable = _cf.getCable();
+    markStructure(
+        CiscoStructureType.DOCSIS_POLICY_RULE,
+        usage,
+        cable != null ? cable.getDocsisPolicyRules() : null);
+  }
+
+  private void markIpsecProfiles(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.IPSEC_PROFILE, usage, _ipsecProfiles);
+  }
+
+  private void markIpsecTransformSets(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.IPSEC_TRANSFORM_SET, usage, _ipsecTransformSets);
+  }
+
+  private void markIpv4Acls(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.IPV4_ACCESS_LIST,
+        usage,
+        Arrays.asList(_extendedAccessLists, _standardAccessLists));
+  }
+
+  private void markIpv6Acls(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.IPV6_ACCESS_LIST,
+        usage,
+        Arrays.asList(_extendedIpv6AccessLists, _standardIpv6AccessLists));
+  }
+
+  private void markKeyrings(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.KEYRING, usage, _keyrings);
+  }
+
+  private void markL2tpClasses(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.L2TP_CLASS, usage, _cf.getL2tpClasses());
+  }
+
+  private void markRouteMaps(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.ROUTE_MAP, usage, _routeMaps);
+  }
+
+  private void markServiceClasses(CiscoStructureUsage usage) {
+    Cable cable = _cf.getCable();
+    markStructure(
+        CiscoStructureType.SERVICE_CLASS, usage, cable != null ? cable.getServiceClasses() : null);
+  }
+
+  /**
+   * Mark all structures of a particular type with its recorded usages. This function should
+   * typically be called prior to warning about unused structures of that type.
+   *
+   * @param type The type of the structure to which a reference will be added
+   * @param usage The usage mode of the structure that was pre-recorded
+   * @param maps A list of maps to check for the structure to be updated. Each map could be null.
+   *     There must be at least one element. The structure may exist in more than one map.
+   */
+  private final void markStructure(
+      CiscoStructureType type,
+      CiscoStructureUsage usage,
+      List<Map<String, ? extends ReferenceCountedStructure>> maps) {
+    if (maps.isEmpty()) {
+      throw new BatfishException("List of maps must contain at least one element");
+    }
     SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.IP_ACCESS_LIST);
+        _structureReferences.get(type);
     if (byName != null) {
       byName.forEach(
-          (listName, byUsage) -> {
+          (name, byUsage) -> {
             SortedSet<Integer> lines = byUsage.get(usage);
             if (lines != null) {
-              boolean exists =
-                  _extendedAccessLists.containsKey(listName)
-                      || _standardAccessLists.containsKey(listName)
-                      || _extendedIpv6AccessLists.containsKey(listName)
-                      || _standardIpv6AccessLists.containsKey(listName)
-                      || _macAccessLists.containsKey(listName);
-              if (exists) {
-                String msg = usage.getDescription();
-                ExtendedAccessList extendedAccessList = _extendedAccessLists.get(listName);
-                if (extendedAccessList != null) {
-                  extendedAccessList.getReferers().put(this, msg);
-                }
-                StandardAccessList standardAccessList = _standardAccessLists.get(listName);
-                if (standardAccessList != null) {
-                  standardAccessList.getReferers().put(this, msg);
-                }
-                ExtendedIpv6AccessList extendedAccessList6 = _extendedIpv6AccessLists.get(listName);
-                if (extendedAccessList6 != null) {
-                  extendedAccessList6.getReferers().put(this, msg);
-                }
-                StandardIpv6AccessList standardAccessList6 = _standardIpv6AccessLists.get(listName);
-                if (standardAccessList6 != null) {
-                  standardAccessList6.getReferers().put(this, msg);
+              List<Map<String, ? extends ReferenceCountedStructure>> matchingMaps =
+                  maps.stream()
+                      .filter(map -> map != null && map.containsKey(name))
+                      .collect(ImmutableList.toImmutableList());
+              if (matchingMaps.isEmpty()) {
+                for (int line : lines) {
+                  undefined(type, name, usage, line);
                 }
               } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.IP_ACCESS_LIST, listName, usage, line);
+                String msg = usage.getDescription();
+                for (Map<String, ? extends ReferenceCountedStructure> matchingMap : matchingMaps) {
+                  matchingMap.get(name).getReferers().put(this, msg);
                 }
               }
             }
@@ -978,226 +1114,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private void markDepiClasses(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.DEPI_CLASS);
-    if (byName != null) {
-      byName.forEach(
-          (depiClassName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              DepiClass depiClass = _cf.getDepiClasses().get(depiClassName);
-              if (depiClass != null) {
-                String msg = usage.getDescription();
-                depiClass.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.DEPI_CLASS, depiClassName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markDepiTunnels(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.DEPI_TUNNEL);
-    if (byName != null) {
-      byName.forEach(
-          (depiTunnelName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              DepiTunnel depiTunnel = _cf.getDepiTunnels().get(depiTunnelName);
-              if (depiTunnel != null) {
-                String msg = usage.getDescription();
-                depiTunnel.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.DEPI_TUNNEL, depiTunnelName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markDocsisPolicies(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.DOCSIS_POLICY);
-    if (byName != null) {
-      byName.forEach(
-          (docsisPolicyName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              DocsisPolicy docsisPolicy = _cf.getCable().getDocsisPolicies().get(docsisPolicyName);
-              if (docsisPolicy != null) {
-                String msg = usage.getDescription();
-                docsisPolicy.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.DOCSIS_POLICY, docsisPolicyName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markDocsisPolicyRules(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.DOCSIS_POLICY_RULE);
-    if (byName != null) {
-      byName.forEach(
-          (docsisPolicyRuleName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              DocsisPolicyRule docsisPolicyRule =
-                  _cf.getCable().getDocsisPolicyRules().get(docsisPolicyRuleName);
-              if (docsisPolicyRule != null) {
-                String msg = usage.getDescription();
-                docsisPolicyRule.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(
-                      CiscoStructureType.DOCSIS_POLICY_RULE, docsisPolicyRuleName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markIpv4Acls(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.IPV4_ACCESS_LIST);
-    if (byName != null) {
-      byName.forEach(
-          (listName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              boolean exists =
-                  _extendedAccessLists.containsKey(listName)
-                      || _standardAccessLists.containsKey(listName);
-              if (exists) {
-                String msg = usage.getDescription();
-                ExtendedAccessList extendedAccessList = _extendedAccessLists.get(listName);
-                if (extendedAccessList != null) {
-                  extendedAccessList.getReferers().put(this, msg);
-                }
-                StandardAccessList standardAccessList = _standardAccessLists.get(listName);
-                if (standardAccessList != null) {
-                  standardAccessList.getReferers().put(this, msg);
-                }
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.IPV4_ACCESS_LIST, listName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markIpv6Acls(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.IPV6_ACCESS_LIST);
-    if (byName != null) {
-      byName.forEach(
-          (listName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              boolean exists =
-                  _extendedIpv6AccessLists.containsKey(listName)
-                      || _standardIpv6AccessLists.containsKey(listName);
-              if (exists) {
-                String msg = usage.getDescription();
-                ExtendedIpv6AccessList extendedAccessList = _extendedIpv6AccessLists.get(listName);
-                if (extendedAccessList != null) {
-                  extendedAccessList.getReferers().put(this, msg);
-                }
-                StandardIpv6AccessList standardAccessList = _standardIpv6AccessLists.get(listName);
-                if (standardAccessList != null) {
-                  standardAccessList.getReferers().put(this, msg);
-                }
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.IPV6_ACCESS_LIST, listName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markL2tpClasses(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.L2TP_CLASS);
-    if (byName != null) {
-      byName.forEach(
-          (l2tpClassName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              L2tpClass l2tpClass = _cf.getL2tpClasses().get(l2tpClassName);
-              if (l2tpClass != null) {
-                String msg = usage.getDescription();
-                l2tpClass.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.L2TP_CLASS, l2tpClassName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markRouteMaps(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.ROUTE_MAP);
-    if (byName != null) {
-      byName.forEach(
-          (routeMapName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              RouteMap routeMap = _routeMaps.get(routeMapName);
-              if (routeMap != null) {
-                String msg = usage.getDescription();
-                routeMap.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.ROUTE_MAP, routeMapName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markServiceClasses(CiscoStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(CiscoStructureType.ROUTE_MAP);
-    if (_cf.getCable() != null && byName != null) {
-      byName.forEach(
-          (serviceClassName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              ServiceClass serviceClass;
-              serviceClass = _cf.getCable().getServiceClasses().get(serviceClassName);
-              if (serviceClass == null) {
-                serviceClass = _cf.getCable().getServiceClassesByName().get(serviceClassName);
-              }
-              if (serviceClass != null) {
-                String msg = usage.getDescription();
-                serviceClass.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(CiscoStructureType.SERVICE_CLASS, serviceClassName, usage, line);
-                }
-              }
-            }
-          });
-    }
+  private final void markStructure(
+      CiscoStructureType type,
+      CiscoStructureUsage usage,
+      Map<String, ? extends ReferenceCountedStructure> map) {
+    markStructure(type, usage, Collections.singletonList(map));
   }
 
   private void processFailoverSettings() {
@@ -2188,6 +2109,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
     }
     newIface.setMtu(iface.getMtu());
+    newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
@@ -2716,6 +2638,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     org.batfish.datamodel.OspfProcess newProcess = new org.batfish.datamodel.OspfProcess();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
+    if (proc.getMaxMetricRouterLsa()) {
+      newProcess.setMaxMetricTransitLinks(OspfProcess.MAX_METRIC_ROUTER_LSA);
+      if (proc.getMaxMetricIncludeStub()) {
+        newProcess.setMaxMetricStubNetworks(OspfProcess.MAX_METRIC_ROUTER_LSA);
+      }
+      newProcess.setMaxMetricExternalNetworks(proc.getMaxMetricExternalLsa());
+      newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
+    }
+
     // establish areas and associated interfaces
     Map<Long, OspfArea> areas = newProcess.getAreas();
     List<OspfNetwork> networks = new ArrayList<>();
@@ -2741,8 +2672,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
-    for (org.batfish.datamodel.Interface i : vrf.getInterfaces().values()) {
-      Prefix interfacePrefix = i.getPrefix();
+    for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
+      String ifaceName = e.getKey();
+      org.batfish.datamodel.Interface iface = e.getValue();
+      Prefix interfacePrefix = iface.getPrefix();
       if (interfacePrefix == null) {
         continue;
       }
@@ -2755,14 +2688,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // we have a longest prefix match
           long areaNum = network.getArea();
           OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
-          newArea.getInterfaces().add(i);
-          i.setOspfArea(newArea);
-          i.setOspfEnabled(true);
+          newArea.getInterfaces().put(ifaceName, iface);
+          iface.setOspfArea(newArea);
+          iface.setOspfEnabled(true);
           boolean passive =
-              proc.getPassiveInterfaceList().contains(i.getName())
+              proc.getPassiveInterfaceList().contains(iface.getName())
                   || (proc.getPassiveInterfaceDefault()
-                      && !proc.getActiveInterfaceList().contains(i.getName()));
-          i.setOspfPassive(passive);
+                      && !proc.getActiveInterfaceList().contains(iface.getName()));
+          iface.setOspfPassive(passive);
           break;
         }
       }
@@ -3489,8 +3422,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public Configuration toVendorIndependentConfiguration() {
-    final Configuration c = new Configuration(_hostname);
-    c.setConfigurationFormat(_vendor);
+    final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
     c.setDomainName(_domainName);
     c.setRoles(_roles);
@@ -3659,6 +3591,60 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // apply vrrp settings to interfaces
     applyVrrp(c);
 
+    // get IKE proposals
+    for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
+      c.getIkeProposals().put(e.getKey(), e.getValue().getProposal());
+    }
+
+    addIkePoliciesAndGateways(c);
+
+    // ipsec proposals
+    for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {
+      c.getIpsecProposals().put(e.getKey(), e.getValue().getProposal());
+    }
+
+    // ipsec policies
+    for (Entry<String, IpsecProfile> e : _ipsecProfiles.entrySet()) {
+      String name = e.getKey();
+      IpsecProfile profile = e.getValue();
+
+      IpsecPolicy policy = new IpsecPolicy(name);
+      policy.setPfsKeyGroup(profile.getPfsGroup());
+      String transformSetName = profile.getTransformSet();
+      if (c.getIpsecProposals().containsKey(transformSetName)) {
+        policy.getProposals().put(transformSetName, c.getIpsecProposals().get(transformSetName));
+      }
+      c.getIpsecPolicies().put(name, policy);
+    }
+
+    // ipsec vpns
+    for (Entry<String, Interface> e : _interfaces.entrySet()) {
+      String name = e.getKey();
+      Interface iface = e.getValue();
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null && tunnel.getMode() == TunnelMode.IPSEC) {
+        IpsecVpn ipsecVpn = new IpsecVpn(name, c);
+        ipsecVpn.setBindInterface(c.getInterfaces().get(name));
+        ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
+        Ip source = tunnel.getSource();
+        Ip destination = tunnel.getDestination();
+        if (source == null || destination == null) {
+          _w.redFlag("Can't match IkeGateway: tunnel source or destination is not set for " + name);
+        } else {
+          for (IkeGateway ikeGateway : c.getIkeGateways().values()) {
+            if (source.equals(ikeGateway.getLocalAddress())
+                && destination.equals(ikeGateway.getAddress())) {
+              ipsecVpn.setIkeGateway(ikeGateway);
+            }
+          }
+          if (ipsecVpn.getIkeGateway() == null) {
+            _w.redFlag("Can't find matching IkeGateway for " + name);
+          }
+        }
+        c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
+      }
+    }
+
     // convert routing processes
     _vrfs.forEach(
         (vrfName, vrf) -> {
@@ -3717,87 +3703,139 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // mark references to IPv4/6 ACLs that may not appear in data model
-    markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, c);
-    markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP, c);
-    markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST, c);
-    markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL, c);
-    markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL, c);
-    markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP, c);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST, c);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER, c);
-    markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST, c);
-    markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST, c);
-    markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST, c);
-    markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6, c);
-    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP, c);
-    markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST, c);
-    markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_RP_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_ADDRESS_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL, c);
-    markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST, c);
-    markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL, c);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL, c);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST, c);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4, c);
-    markIpv6Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6, c);
-    markAcls(CiscoStructureUsage.SSH_ACL, c);
-    markIpv4Acls(CiscoStructureUsage.SSH_IPV4_ACL, c);
-    markIpv6Acls(CiscoStructureUsage.SSH_IPV6_ACL, c);
-    markAcls(CiscoStructureUsage.WCCP_GROUP_LIST, c);
-    markAcls(CiscoStructureUsage.WCCP_REDIRECT_LIST, c);
-    markAcls(CiscoStructureUsage.WCCP_SERVICE_LIST, c);
+    markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
+    markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
+    markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
+    markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
+    markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
+    markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER);
+    markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST);
+    markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST);
+    markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
+    markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6);
+    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP);
+    markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST);
+    markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP);
+    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL);
+    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_RP_ACL);
+    markIpv4Acls(CiscoStructureUsage.PIM_RP_ADDRESS_ACL);
+    markIpv4Acls(CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER);
+    markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL);
+    markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
+    markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
+    markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL);
+    markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
+    markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
+    markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);
+    markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST);
+    markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL);
+    markIpv4Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4);
+    markIpv6Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6);
+    markAcls(CiscoStructureUsage.SSH_ACL);
+    markIpv4Acls(CiscoStructureUsage.SSH_IPV4_ACL);
+    markIpv6Acls(CiscoStructureUsage.SSH_IPV6_ACL);
+    markAcls(CiscoStructureUsage.WCCP_GROUP_LIST);
+    markAcls(CiscoStructureUsage.WCCP_REDIRECT_LIST);
+    markAcls(CiscoStructureUsage.WCCP_SERVICE_LIST);
 
     // mark references to mac-ACLs that may not appear in data model
     // TODO: fill in
 
     // mark references to route-maps that may not appear in data model
-    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER, c);
-    markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP, c);
-    markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP, c);
+    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER);
+    markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP);
+    markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP);
 
     // Cable
-    markDepiClasses(CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS, c);
-    markDepiTunnels(CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL, c);
-    markDepiTunnels(CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL, c);
-    markDocsisPolicies(CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY, c);
-    markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE, c);
-    markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS, c);
+    markDepiClasses(CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
+    markDepiTunnels(CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL);
+    markDepiTunnels(CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
+    markDocsisPolicies(CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
+    markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
+    markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
     // L2tp
-    markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS, c);
+    markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+
+    // Vpn
+    markIpsecProfiles(CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
+    markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
+    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
     // warn about unreferenced data structures
-    warnUnusedAsPathSets();
+    warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     warnUnusedCommunityLists();
-    warnUnusedDepiClasses();
-    warnUnusedDepiTunnels();
+    warnUnusedStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
+    warnUnusedStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
     warnUnusedDocsisPolicies();
     warnUnusedDocsisPolicyRules();
-    warnUnusedIpAsPathAccessLists();
+    warnUnusedStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
     warnUnusedIpAccessLists();
+    warnUnusedStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
+    warnUnusedStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     warnUnusedIpv6AccessLists();
-    warnUnusedL2tpClasses();
-    warnUnusedMacAccessLists();
-    warnUnusedNatPools();
-    warnUnusedPrefixLists();
-    warnUnusedPrefix6Lists();
+    warnUnusedKeyrings();
+    warnUnusedStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
+    warnUnusedStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
+    warnUnusedStructure(_natPools, CiscoStructureType.NAT_POOL);
+    warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
+    warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
-    warnUnusedRouteMaps();
+    warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
 
     return c;
+  }
+
+  private void addIkePoliciesAndGateways(Configuration c) {
+    // get IKE gateways and policies from Cisco isakmp profiles and keyrings
+    for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
+      String name = e.getKey();
+      IsakmpProfile isakmpProfile = e.getValue();
+
+      IkePolicy ikePolicy = new IkePolicy(name);
+      c.getIkePolicies().put(name, ikePolicy);
+      ikePolicy.setProposals(c.getIkeProposals());
+
+      String keyringName = isakmpProfile.getKeyring();
+      if (keyringName == null) {
+        _w.redFlag("Cannot get PSK hash since keyring not configured for isakmpProfile " + name);
+      } else if (_keyrings.containsKey(keyringName)) {
+        Keyring keyring = _keyrings.get(keyringName);
+        if (keyring.match(isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
+          ikePolicy.setPreSharedKeyHash(keyring.getKey());
+        } else {
+          _w.redFlag(
+              "The addresses of keyring " + keyringName + " do not match isakmpProfile " + name);
+        }
+      }
+
+      Ip localAddress = isakmpProfile.getLocalAddress();
+      Prefix remotePrefix = isakmpProfile.getMatchIdentity();
+      if (localAddress == null || remotePrefix == null) {
+        _w.redFlag(
+            "Can't get IkeGateway: Local or remote address is not set for isakmpProfile " + name);
+      } else {
+        IkeGateway ikeGateway = new IkeGateway(e.getKey());
+        c.getIkeGateways().put(name, ikeGateway);
+        ikeGateway.setAddress(remotePrefix.getAddress());
+        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remotePrefix);
+        if (oldIface != null) {
+          ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
+        } else {
+          _w.redFlag("External interface not found for ikeGateway for isakmpProfile " + name);
+        }
+        ikeGateway.setIkePolicy(ikePolicy);
+        ikeGateway.setLocalAddress(isakmpProfile.getLocalAddress());
+      }
+    }
   }
 
   private boolean usedForRouting(ExtendedAccessList eaList) {
@@ -3919,194 +3957,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return false;
   }
 
-  private void warnUnusedAsPathSets() {
-    for (Entry<String, AsPathSet> e : _asPathSets.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      AsPathSet asPathSet = e.getValue();
-      if (asPathSet.isUnused()) {
-        unused(CiscoStructureType.AS_PATH_SET, name, asPathSet.getDefinitionLine());
-      }
-    }
-  }
-
   private void warnUnusedCommunityLists() {
-    for (Entry<String, ExpandedCommunityList> e : _expandedCommunityLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      ExpandedCommunityList list = e.getValue();
-      if (list.isUnused()) {
-        unused(CiscoStructureType.COMMUNITY_LIST_EXPANDED, name, list.getDefinitionLine());
-      }
-    }
-    for (Entry<String, StandardCommunityList> e : _standardCommunityLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      StandardCommunityList list = e.getValue();
-      if (list.isUnused()) {
-        unused(CiscoStructureType.COMMUNITY_LIST_STANDARD, name, list.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedDepiClasses() {
-    for (Entry<String, DepiClass> e : _cf.getDepiClasses().entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      DepiClass depiClass = e.getValue();
-      if (depiClass.isUnused()) {
-        unused(CiscoStructureType.DEPI_CLASS, name, depiClass.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedDepiTunnels() {
-    for (Entry<String, DepiTunnel> e : _cf.getDepiTunnels().entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      DepiTunnel depiTunnel = e.getValue();
-      if (depiTunnel.isUnused()) {
-        unused(CiscoStructureType.DEPI_TUNNEL, name, depiTunnel.getDefinitionLine());
-      }
-    }
+    warnUnusedStructure(_expandedCommunityLists, CiscoStructureType.COMMUNITY_LIST_EXPANDED);
+    warnUnusedStructure(_standardCommunityLists, CiscoStructureType.COMMUNITY_LIST_STANDARD);
   }
 
   private void warnUnusedDocsisPolicies() {
     if (_cf.getCable() != null) {
-      for (Entry<String, DocsisPolicy> e : _cf.getCable().getDocsisPolicies().entrySet()) {
-        String name = e.getKey();
-        if (name.startsWith("~")) {
-          continue;
-        }
-        DocsisPolicy docsisPolicy = e.getValue();
-        if (docsisPolicy.isUnused()) {
-          unused(CiscoStructureType.DOCSIS_POLICY, name, docsisPolicy.getDefinitionLine());
-        }
-      }
+      warnUnusedStructure(_cf.getCable().getDocsisPolicies(), CiscoStructureType.DOCSIS_POLICY);
     }
   }
 
   private void warnUnusedDocsisPolicyRules() {
     if (_cf.getCable() != null) {
-      for (Entry<String, DocsisPolicyRule> e : _cf.getCable().getDocsisPolicyRules().entrySet()) {
-        String name = e.getKey();
-        if (name.startsWith("~")) {
-          continue;
-        }
-        DocsisPolicyRule docsisPolicyRule = e.getValue();
-        if (docsisPolicyRule.isUnused()) {
-          unused(CiscoStructureType.DOCSIS_POLICY_RULE, name, docsisPolicyRule.getDefinitionLine());
-        }
-      }
+      warnUnusedStructure(
+          _cf.getCable().getDocsisPolicyRules(), CiscoStructureType.DOCSIS_POLICY_RULE);
     }
   }
 
   private void warnUnusedIpAccessLists() {
-    for (Entry<String, ExtendedAccessList> e : _extendedAccessLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      ExtendedAccessList acl = e.getValue();
-      if (acl.isUnused()) {
-        unused(CiscoStructureType.IP_ACCESS_LIST_EXTENDED, name, acl.getDefinitionLine());
-      }
-    }
-    for (Entry<String, StandardAccessList> e : _standardAccessLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      StandardAccessList acl = e.getValue();
-      if (acl.isUnused()) {
-        unused(CiscoStructureType.IP_ACCESS_LIST_STANDARD, name, acl.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedIpAsPathAccessLists() {
-    for (Entry<String, IpAsPathAccessList> e : _asPathAccessLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      IpAsPathAccessList asPathAccessList = e.getValue();
-      if (asPathAccessList.isUnused()) {
-        unused(CiscoStructureType.AS_PATH_ACCESS_LIST, name, asPathAccessList.getDefinitionLine());
-      }
-    }
+    warnUnusedStructure(_extendedAccessLists, CiscoStructureType.IP_ACCESS_LIST_EXTENDED);
+    warnUnusedStructure(_standardAccessLists, CiscoStructureType.IP_ACCESS_LIST_STANDARD);
   }
 
   private void warnUnusedIpv6AccessLists() {
-    for (Entry<String, ExtendedIpv6AccessList> e : _extendedIpv6AccessLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      ExtendedIpv6AccessList acl = e.getValue();
-      if (acl.isUnused()) {
-        unused(CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED, name, acl.getDefinitionLine());
-      }
-    }
-    for (Entry<String, StandardIpv6AccessList> e : _standardIpv6AccessLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      StandardIpv6AccessList acl = e.getValue();
-      if (acl.isUnused()) {
-        unused(CiscoStructureType.IPV6_ACCESS_LIST_STANDARD, name, acl.getDefinitionLine());
-      }
-    }
+    warnUnusedStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
+    warnUnusedStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
   }
 
-  private void warnUnusedL2tpClasses() {
-    for (Entry<String, L2tpClass> e : _cf.getL2tpClasses().entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      L2tpClass l2tpClass = e.getValue();
-      if (l2tpClass.isUnused()) {
-        unused(CiscoStructureType.L2TP_CLASS, name, l2tpClass.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedMacAccessLists() {
-    for (Entry<String, MacAccessList> e : _macAccessLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      MacAccessList macAccessList = e.getValue();
-      if (macAccessList.isUnused()) {
-        unused(CiscoStructureType.MAC_ACCESS_LIST, name, macAccessList.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedNatPools() {
-    for (Entry<String, NatPool> e : _natPools.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      NatPool natPool = e.getValue();
-      if (natPool.isUnused()) {
-        unused(CiscoStructureType.NAT_POOL, name, natPool.getDefinitionLine());
-      }
-    }
+  private void warnUnusedKeyrings() {
+    warnUnusedStructure(_keyrings, CiscoStructureType.KEYRING);
   }
 
   private void warnUnusedPeerGroups() {
@@ -4127,56 +4007,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnusedPrefix6Lists() {
-    for (Entry<String, Prefix6List> e : _prefix6Lists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      Prefix6List prefixList = e.getValue();
-      if (prefixList.isUnused()) {
-        unused(CiscoStructureType.PREFIX6_LIST, name, prefixList.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedPrefixLists() {
-    for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      PrefixList prefixList = e.getValue();
-      if (prefixList.isUnused()) {
-        unused(CiscoStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
-      }
-    }
-  }
-
-  private void warnUnusedRouteMaps() {
-    for (Entry<String, RouteMap> e : _routeMaps.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      RouteMap routeMap = e.getValue();
-      if (routeMap.isUnused()) {
-        unused(CiscoStructureType.ROUTE_MAP, name, routeMap.getDefinitionLine());
-      }
-    }
-  }
-
   private void warnUnusedServiceClasses() {
     if (_cf.getCable() != null) {
-      for (Entry<String, ServiceClass> e : _cf.getCable().getServiceClasses().entrySet()) {
-        String name = e.getKey();
-        if (name.startsWith("~")) {
-          continue;
-        }
-        ServiceClass serviceClass = e.getValue();
-        if (serviceClass.isUnused()) {
-          unused(CiscoStructureType.SERVICE_CLASS, name, serviceClass.getDefinitionLine());
-        }
+      warnUnusedStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
+    }
+  }
+
+  private <T extends DefinedStructure<String>> void warnUnusedStructure(
+      Map<String, T> map, CiscoStructureType type) {
+    for (Entry<String, T> e : map.entrySet()) {
+      String name = e.getKey();
+      if (name.startsWith("~")) {
+        continue;
+      }
+      T t = e.getValue();
+      if (t.isUnused()) {
+        unused(type, name, t.getDefinitionLine());
       }
     }
   }

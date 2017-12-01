@@ -86,12 +86,15 @@ public class BfConsts {
    * JSON key names
    */
   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
+  public static final String PROP_ALLINONE_SERVICE = "batfish-allinone";
   public static final String PROP_ALLOWED_VALUES = "allowedValues";
   public static final String PROP_ANSWER_ELEMENTS = "answerElements";
   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
   public static final String PROP_BGP_ANNOUNCEMENTS = "Announcements";
   public static final String PROP_CLIENT_PROPERTIES_PATH = "batfishClientPropertiesPath";
+  public static final String PROP_CLIENT_SERVICE = "batfish-client";
   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
+  public static final String PROP_COORDINATOR_SERVICE = "batfish-coordinator";
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
@@ -108,12 +111,14 @@ public class BfConsts {
   public static final String PROP_TYPE = "type";
   public static final String PROP_VALUE = "value";
   public static final String PROP_VARIABLES = "variables";
+  public static final String PROP_WORKER_SERVICE = "batfish-worker";
 
   public static final String RELPATH_ANALYSES_DIR = "analyses";
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
   public static final String RELPATH_ANSWER_HTML = "answer.html";
   public static final String RELPATH_ANSWER_JSON = "answer.json";
   public static final String RELPATH_ANSWER_PRETTY_JSON = "answer-pretty.json";
+  public static final String RELPATH_ANSWERS_DIR = "answers";
   public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_configs";
   public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
@@ -126,7 +131,7 @@ public class BfConsts {
   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
   public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";
   public static final String RELPATH_DELTA = "delta";
-  public static final String RELPATH_DIFF = "diff";
+  public static final String RELPATH_DIFF_DIR = "differential";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
   public static final String RELPATH_ENV_DIR = "env";
   public static final String RELPATH_ENV_NODE_SET = "env-node-set";
@@ -142,6 +147,7 @@ public class BfConsts {
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
+  public static final String RELPATH_METADATA_FILE = "metadata.json";
   public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
@@ -152,6 +158,7 @@ public class BfConsts {
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
+  public static final String RELPATH_STANDARD_DIR = "standard";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
   public static final String RELPATH_TEST_RIG_DIR = "testrig";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";

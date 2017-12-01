@@ -400,29 +400,16 @@ ip_as_path_access_list_tail
 
 ip_community_list_expanded_stanza
 :
+   IP COMMUNITY_LIST
    (
       (
-         IP COMMUNITY_LIST name = variable NEWLINE?
+         (
+            EXPANDED
+            | EXTENDED
+         ) name = variable
       )
-      |
-      (
-         IP COMMUNITY_LIST EXPANDED name = variable
-      )
-      |
-      (
-         IP COMMUNITY_LIST EXTENDED name = variable
-      )
-      |
-      (
-         IP COMMUNITY_LIST num = COMMUNITY_LIST_NUM_EXPANDED
-      )
-   )
-   (
-      (
-         NEWLINE ip_community_list_expanded_tail*
-      )
-      | ip_community_list_expanded_tail
-   )
+      | num = COMMUNITY_LIST_NUM_EXPANDED
+   ) ip_community_list_expanded_tail
 ;
 
 ip_community_list_expanded_tail
@@ -437,21 +424,14 @@ ip_community_list_expanded_tail
 
 ip_community_list_standard_stanza
 :
+   IP COMMUNITY_LIST
    (
       (
-         IP COMMUNITY_LIST STANDARD name = variable
+         STANDARD name = variable
       )
-      |
-      (
-         IP COMMUNITY_LIST num = COMMUNITY_LIST_NUM_STANDARD
-      )
-   )
-   (
-      (
-         NEWLINE ip_community_list_standard_tail*
-      )
-      | ip_community_list_standard_tail
-   )
+      | num = COMMUNITY_LIST_NUM_STANDARD
+      | name_cl = variable_community_list
+   ) ip_community_list_standard_tail
 ;
 
 ip_community_list_standard_tail
@@ -1101,6 +1081,12 @@ standard_ipv6_access_list_tail
    (
       features += standard_access_list_additional_feature
    )* NEWLINE
+;
+
+variable_community_list
+:
+   ~( NEWLINE | COMMUNITY_LIST_NUM_STANDARD | COMMUNITY_LIST_NUM_EXPANDED | DEC
+   )
 ;
 
 xr_mac_specifier

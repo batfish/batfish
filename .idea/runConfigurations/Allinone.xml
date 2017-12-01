@@ -12,8 +12,6 @@
     <option name="PASS_PARENT_ENVS" value="true" />
     <module name="allinone" />
     <envs />
-    <method>
-      <option name="Maven.BeforeRunTask" enabled="true" file="$PROJECT_DIR$/projects/pom.xml" goal="-pl question -am package" />
-    </method>
+    <method />
   </configuration>
 </component>

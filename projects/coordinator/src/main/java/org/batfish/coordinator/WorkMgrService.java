@@ -39,8 +39,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 /** */
-
-/** */
 @Path(CoordConsts.SVC_CFG_WORK_MGR)
 public class WorkMgrService {
 
@@ -343,13 +341,12 @@ public class WorkMgrService {
   }
 
   /**
-   * Delete the specified question under the specified container, testrig
+   * Delete the specified question under the specified container
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the question resides
    * @param questionName The name of the question to delete
-   * @param testrigName The name of the testrig for which the question was asked
    * @return TODO: document JSON response
    */
   @POST
@@ -359,22 +356,20 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName) {
     try {
       _logger.info("WMS:delQuestion " + containerName + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
       checkStringParam(questionName, "Question name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().delTestrigQuestion(containerName, testrigName, questionName);
+      Main.getWorkMgr().delQuestion(containerName, questionName);
 
       return successResponse(new JSONObject().put("result", "true"));
 
@@ -1105,24 +1100,21 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the testrig and questions reside
-   * @param testrigName The name of the testrig, the questions on which are to be listed
    * @return TODO: document JSON response
    */
   @POST
   @Path(CoordConsts.SVC_RSC_LIST_QUESTIONS)
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray listTestrigQuestions(
+  public JSONArray listQuestions(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
     try {
-      _logger.info("WMS:listTestrigQuestions " + apiKey + " " + containerName + "\n");
+      _logger.info("WMS:listQuestions " + apiKey + " " + containerName + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
@@ -1130,9 +1122,8 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
-      for (String questionName : Main.getWorkMgr().listQuestions(containerName, testrigName)) {
-        String questionText =
-            Main.getWorkMgr().getTestrigQuestion(containerName, testrigName, questionName);
+      for (String questionName : Main.getWorkMgr().listQuestions(containerName)) {
+        String questionText = Main.getWorkMgr().getQuestion(containerName, questionName);
 
         retObject.put(questionName, new JSONObject(questionText));
       }
@@ -1142,11 +1133,11 @@ public class WorkMgrService {
         | FileNotFoundException
         | IllegalArgumentException
         | AccessControlException e) {
-      _logger.error("WMS:listTestrigQuestions exception: " + e.getMessage() + "\n");
+      _logger.error("WMS:listQuestions exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:listTestrigQuestions exception: " + stackTrace);
+      _logger.error("WMS:listQuestions exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1541,15 +1532,13 @@ public class WorkMgrService {
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
       checkStringParam(qName, "Question name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr()
-          .uploadQuestion(containerName, testrigName, qName, fileStream, paramFileStream);
+      Main.getWorkMgr().uploadQuestion(containerName, qName, fileStream, paramFileStream);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded question"));
 

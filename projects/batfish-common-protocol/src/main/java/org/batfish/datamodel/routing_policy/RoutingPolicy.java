@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -23,14 +26,54 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
     "A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes")
 public class RoutingPolicy extends ComparableStructure<String> {
 
-  private static final String PROP_STATEMENTS = "statements";
+  public static class Builder extends NetworkFactoryBuilder<RoutingPolicy> {
 
-  /** */
-  private static final long serialVersionUID = 1L;
+    private String _name;
+
+    private Configuration _owner;
+
+    private List<Statement> _statements;
+
+    public Builder(NetworkFactory networkFactory) {
+      super(networkFactory, RoutingPolicy.class);
+      _statements = Collections.emptyList();
+    }
+
+    @Override
+    public RoutingPolicy build() {
+      String name = _name != null ? _name : generateName();
+      RoutingPolicy routingPolicy = new RoutingPolicy(name, _owner);
+      if (_owner != null) {
+        _owner.getRoutingPolicies().put(name, routingPolicy);
+      }
+      routingPolicy.setStatements(_statements);
+      return routingPolicy;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+
+    public Builder setStatements(List<Statement> statements) {
+      _statements = statements;
+      return this;
+    }
+  }
 
   public static boolean isGenerated(String s) {
     return s.startsWith("~");
   }
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  private static final String PROP_STATEMENTS = "statements";
 
   private Configuration _owner;
 

@@ -20,10 +20,13 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>
             <execution>
-              <goals><goal>analyze-only</goal></goals>
+              <goals>
+                <goal>analyze-only</goal>
+              </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  org.slf4j:slf4j-jdk14,com.google.auto.service:auto-service
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -164,13 +167,18 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.microsoft.z3</groupId>
       <artifactId>z3</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>net.sf.javabdd</groupId>
-      <artifactId>bdd</artifactId>
+      <groupId>com.uber.jaeger</groupId>
+      <artifactId>jaeger-core</artifactId>
     </dependency>
 
     <dependency>
@@ -179,8 +187,28 @@
     </dependency>
 
     <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-api</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-util</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentracing.contrib</groupId>
+      <artifactId>opentracing-jaxrs2</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>net.sf.javabdd</groupId>
+      <artifactId>bdd</artifactId>
     </dependency>
 
     <dependency>
@@ -201,11 +229,6 @@
     <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>

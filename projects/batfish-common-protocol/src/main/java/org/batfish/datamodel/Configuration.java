@@ -16,9 +16,12 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BfJson;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.codehaus.jettison.json.JSONException;
@@ -28,6 +31,34 @@ import org.codehaus.jettison.json.JSONObject;
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
 public final class Configuration extends ComparableStructure<String> {
+
+  public static class Builder extends NetworkFactoryBuilder<Configuration> {
+
+    private ConfigurationFormat _configurationFormat;
+
+    private String _hostname;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, Configuration.class);
+    }
+
+    @Override
+    public Configuration build() {
+      String name = _hostname != null ? _hostname : generateName();
+      Configuration configuration = new Configuration(name, _configurationFormat);
+      return configuration;
+    }
+
+    public Builder setConfigurationFormat(ConfigurationFormat configurationFormat) {
+      _configurationFormat = configurationFormat;
+      return this;
+    }
+
+    public Builder setHostname(String hostname) {
+      _hostname = hostname;
+      return this;
+    }
+  }
 
   public static final String DEFAULT_VRF_NAME = "default";
 
@@ -91,7 +122,7 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, CommunityList> _communityLists;
 
-  private ConfigurationFormat _configurationFormat;
+  private final ConfigurationFormat _configurationFormat;
 
   private LineAction _defaultCrossZoneAction;
 
@@ -177,11 +208,17 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Zone> _zones;
 
   @JsonCreator
-  public Configuration(@JsonProperty(PROP_NAME) String hostname) {
+  public Configuration(
+      @JsonProperty(PROP_NAME) String hostname,
+      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
     super(hostname);
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
+    if (configurationFormat == null) {
+      throw new BatfishException("Configuration format cannot be null");
+    }
+    _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
@@ -569,10 +606,6 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_COMMUNITY_LISTS)
   public void setCommunityLists(NavigableMap<String, CommunityList> communityLists) {
     _communityLists = communityLists;
-  }
-
-  public void setConfigurationFormat(ConfigurationFormat configurationFormat) {
-    _configurationFormat = configurationFormat;
   }
 
   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {

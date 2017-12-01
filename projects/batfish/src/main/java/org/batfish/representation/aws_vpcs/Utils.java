@@ -11,8 +11,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class Utils {
 
   public static Configuration newAwsConfiguration(String name) {
-    Configuration config = new Configuration(name);
-    config.setConfigurationFormat(ConfigurationFormat.AWS_VPC);
+    Configuration config = new Configuration(name, ConfigurationFormat.AWS_VPC);
     config.setDefaultInboundAction(LineAction.ACCEPT);
     config.setDefaultCrossZoneAction(LineAction.ACCEPT);
     config.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new);

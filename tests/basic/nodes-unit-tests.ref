@@ -1054,6 +1054,15 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ikeProposals" : {
+            "1" : {
+              "name" : "1",
+              "authenticationAlgorithm" : "SHA_256",
+              "authenticationMethod" : "RSA_SIGNATURES",
+              "diffieHellmanGroup" : "GROUP20",
+              "encryptionAlgorithm" : "AES_256_CBC"
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_crypto"
@@ -4223,6 +4232,37 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ikePolicies" : {
+            "myprofile" : {
+              "name" : "myprofile",
+              "proposals" : [
+                "1"
+              ]
+            }
+          },
+          "ikeProposals" : {
+            "1" : {
+              "name" : "1",
+              "authenticationAlgorithm" : "MD5",
+              "authenticationMethod" : "PRE_SHARED_KEYS",
+              "diffieHellmanGroup" : "GROUP2",
+              "encryptionAlgorithm" : "THREEDES_CBC",
+              "lifetimeSeconds" : 28800
+            }
+          },
+          "ipsecPolicies" : {
+            "abcdefg" : {
+              "name" : "abcdefg",
+              "pfsKeyGroupDynamicIke" : false
+            }
+          },
+          "ipsecProposals" : {
+            "ESP-3DES-MD5" : {
+              "name" : "ESP-3DES-MD5",
+              "authenticationAlgorithm" : "HMAC_MD5_96",
+              "encryptionAlgorithm" : "THREEDES_CBC"
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_crypto"
@@ -7585,7 +7625,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
-                  "regex" : "9999:8888"
+                  "regex" : "^9999:8888$"
                 }
               ],
               "name" : "9999-RRR",
@@ -7661,7 +7701,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
-                  "regex" : "9999:8888"
+                  "regex" : "^9999:8888$"
                 }
               ],
               "name" : "9999-RRR",
@@ -7737,7 +7777,7 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
-                  "regex" : "75:42"
+                  "regex" : "^75:42$"
                 }
               ],
               "name" : "COMM_LIST_NAME",
@@ -11719,6 +11759,30 @@
               "hostname" : "named_and_numbered_lists"
             }
           },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "nat-08c21704416f06046" : {
+          "name" : "nat-08c21704416f06046",
+          "configurationFormat" : "AWS_VPC",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "nat-09fd8f73171d2d9a3" : {
+          "name" : "nat-09fd8f73171d2d9a3",
+          "configurationFormat" : "AWS_VPC",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
           "vrfs" : {
             "default" : {
               "name" : "default"

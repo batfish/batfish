@@ -3,13 +3,8 @@ package org.batfish.bdp;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,14 +29,15 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfAreaRoute;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
+import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
@@ -96,8 +92,6 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** The finalized RIB, a combination different protocol RIBs */
   Rib _mainRib;
 
-  private final Map<String, Node> _nodes;
-
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
   transient OspfExternalType1Rib _ospfExternalType1StagingRib;
@@ -150,10 +144,11 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   final Vrf _vrf;
 
-  public VirtualRouter(String name, Configuration c, Map<String, Node> nodes) {
+  private Set<BgpAdvertisement> _prevSentBgpAdvertisements;
+
+  VirtualRouter(String name, Configuration c) {
     super(name);
     _c = c;
-    _nodes = nodes;
     _vrf = c.getVrfs().get(name);
   }
 
@@ -267,7 +262,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    */
   @Nullable
   static Long computeUpdatedOspfSummaryMetric(
-      OspfAreaRoute route,
+      OspfInternalRoute route,
       Prefix areaPrefix,
       @Nullable Long currentMetric,
       long areaNum,
@@ -590,17 +585,17 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   /** Initialize Intra-area OSPF routes from the interface prefixes */
   private void initIntraAreaOspfRoutes() {
-    if (_vrf.getOspfProcess() == null) {
+    OspfProcess proc = _vrf.getOspfProcess();
+    if (proc == null) {
       return; // nothing to do
     }
     // init intra-area routes from connected routes
     // For each interface within an OSPF area and each interface prefix,
     // construct a new OSPF-IA route. Put it in the IA RIB.
-    _vrf.getOspfProcess()
-        .getAreas()
+    proc.getAreas()
         .forEach(
             (areaNum, area) -> {
-              for (Interface iface : area.getInterfaces()) {
+              for (Interface iface : area.getInterfaces().values()) {
                 if (iface.getActive()) {
                   Set<Prefix> allNetworkPrefixes =
                       iface
@@ -608,8 +603,17 @@ public class VirtualRouter extends ComparableStructure<String> {
                           .stream()
                           .map(Prefix::getNetworkPrefix)
                           .collect(Collectors.toSet());
-                  int cost = iface.getOspfCost();
+                  int interfaceOspfCost = iface.getOspfCost();
                   for (Prefix prefix : allNetworkPrefixes) {
+                    long cost = interfaceOspfCost;
+                    boolean stubNetwork = iface.getOspfPassive() || iface.getOspfPointToPoint();
+                    if (stubNetwork) {
+                      if (proc.getMaxMetricStubNetworks() != null) {
+                        cost = proc.getMaxMetricStubNetworks();
+                      }
+                    } else if (proc.getMaxMetricTransitLinks() != null) {
+                      cost = proc.getMaxMetricTransitLinks();
+                    }
                     OspfIntraAreaRoute route =
                         new OspfIntraAreaRoute(
                             prefix,
@@ -708,8 +712,6 @@ public class VirtualRouter extends ComparableStructure<String> {
         }
       }
     }
-    // Connected routes will not change
-    _connectedRib.freeze();
   }
 
   private void initEbgpTopology(Map<Ip, Set<String>> ipOwners) {
@@ -752,7 +754,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   @Nullable
   @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
-      AbstractRoute potentialExportRoute, RoutingPolicy exportPolicy) {
+      AbstractRoute potentialExportRoute, RoutingPolicy exportPolicy, OspfProcess proc) {
     OspfExternalRoute.Builder outputRouteBuilder = new OspfExternalRoute.Builder();
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
@@ -760,22 +762,36 @@ public class VirtualRouter extends ComparableStructure<String> {
     if (!accept) {
       return null;
     }
+    OspfMetricType metricType = outputRouteBuilder.getOspfMetricType();
     outputRouteBuilder.setAdmin(
         outputRouteBuilder
             .getOspfMetricType()
             .toRoutingProtocol()
             .getDefaultAdministrativeCost(_c.getConfigurationFormat()));
     outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
-    outputRouteBuilder.setCostToAdvertiser(0);
+    Long maxMetricExternalNetworks = proc.getMaxMetricExternalNetworks();
+    long costToAdvertiser;
+    if (maxMetricExternalNetworks != null) {
+      if (metricType == OspfMetricType.E1) {
+        outputRouteBuilder.setMetric(maxMetricExternalNetworks);
+      }
+      costToAdvertiser = maxMetricExternalNetworks;
+    } else {
+      costToAdvertiser = 0L;
+    }
+    outputRouteBuilder.setCostToAdvertiser(costToAdvertiser);
     outputRouteBuilder.setAdvertiser(_c.getHostname());
+    outputRouteBuilder.setArea(OspfRoute.NO_AREA);
+    outputRouteBuilder.setLsaMetric(outputRouteBuilder.getMetric());
     OspfExternalRoute outputRoute = outputRouteBuilder.build();
     outputRoute.setNonRouting(true);
     return outputRoute;
   }
 
   void initOspfExports() {
+    OspfProcess proc = _vrf.getOspfProcess();
     // Nothing to do
-    if (_vrf.getOspfProcess() == null) {
+    if (proc == null) {
       return;
     }
 
@@ -793,7 +809,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     // For each route in the previous RIB, compute an export route and add it to the appropriate
     // RIB.
     for (AbstractRoute potentialExport : _prevMainRib.getRoutes()) {
-      OspfExternalRoute outputRoute = computeOspfExportRoute(potentialExport, exportPolicy);
+      OspfExternalRoute outputRoute = computeOspfExportRoute(potentialExport, exportPolicy, proc);
       if (outputRoute == null) {
         continue; // no need to export
       }
@@ -861,57 +877,273 @@ public class VirtualRouter extends ComparableStructure<String> {
         _staticRib.mergeRoute(sr);
       }
     }
-    // Given instance of static RIBs should not be changed past this point
-    _staticRib.freeze();
-    _staticInterfaceRib.freeze();
   }
 
-  private boolean isMarkedPrefix(
-      Prefix prefix,
-      BgpNeighbor neighbor,
-      BgpNeighbor remoteBgpNeighbor,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
-    Pair<String, String> vrf = new Pair<>(neighbor.getOwner().getHostname(), neighbor.getVrf());
-    Pair<String, String> remoteVrf =
-        new Pair<>(remoteBgpNeighbor.getOwner().getHostname(), remoteBgpNeighbor.getVrf());
-    Pair<String, String> lowerVrf = vrf.compareTo(remoteVrf) < 0 ? vrf : remoteVrf;
-    Pair<String, String> higherVrf = vrf == lowerVrf ? remoteVrf : vrf;
-    Map<Pair<String, String>, Set<Prefix>> byHigherVrf = markedPrefixes.get(lowerVrf);
-    if (byHigherVrf != null) {
-      Set<Prefix> currentMarkedPrefixes = byHigherVrf.get(higherVrf);
-      if (currentMarkedPrefixes != null) {
-        return currentMarkedPrefixes.contains(prefix);
+  int computeBgpAdvertisementsToOutside(Map<Ip, Set<String>> ipOwners) {
+    int numAdvertisements = 0;
+
+    // If we have no BGP process, nothing to do
+    if (_vrf.getBgpProcess() == null) {
+      return numAdvertisements;
+    }
+
+    for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
+      Ip localIp = neighbor.getLocalIp();
+      Set<String> localIpOwners = ipOwners.get(localIp);
+      String hostname = _c.getHostname();
+      if (localIpOwners == null || !localIpOwners.contains(hostname)) {
+        continue;
+      }
+      Prefix remotePrefix = neighbor.getPrefix();
+      if (remotePrefix.getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+        // Do not support dynamic outside neighbors
+        continue;
+      }
+      Ip remoteIp = remotePrefix.getAddress();
+      if (ipOwners.get(remoteIp) != null) {
+        // Skip if neighbor is not outside the network
+        continue;
+      }
+
+      int localAs = neighbor.getLocalAs();
+      int remoteAs = neighbor.getRemoteAs();
+      String remoteHostname = remoteIp.toString();
+      String remoteVrfName = Configuration.DEFAULT_VRF_NAME;
+      RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(neighbor.getExportPolicy());
+      boolean ebgpSession = localAs != remoteAs;
+      RoutingProtocol targetProtocol = ebgpSession ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+      Set<AbstractRoute> candidateRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
+
+      // Add IGP routes
+      Set<AbstractRoute> activeRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
+      activeRoutes.addAll(_mainRib.getRoutes());
+      for (AbstractRoute candidateRoute : activeRoutes) {
+        if (candidateRoute.getProtocol() != RoutingProtocol.BGP
+            && candidateRoute.getProtocol() != RoutingProtocol.IBGP) {
+          candidateRoutes.add(candidateRoute);
+        }
+      }
+
+      /*
+       * bgp advertise-external
+       *
+       * When this is set, add best eBGP path independently of whether
+       * it is preempted by an iBGP or IGP route. Only applicable to
+       * iBGP sessions.
+       */
+      boolean advertiseExternal = !ebgpSession && neighbor.getAdvertiseExternal();
+      if (advertiseExternal) {
+        candidateRoutes.addAll(_ebgpBestPathRib.getRoutes());
+      }
+
+      /*
+       * bgp advertise-inactive
+       *
+       * When this is set, add best BGP path independently of whether
+       * it is preempted by an IGP route. Only applicable to eBGP
+       * sessions.
+       */
+      boolean advertiseInactive = ebgpSession && neighbor.getAdvertiseInactive();
+      /* Add best bgp paths if they are active, or if advertise-inactive */
+      for (AbstractRoute candidateRoute : _bgpBestPathRib.getRoutes()) {
+        if (advertiseInactive || activeRoutes.contains(candidateRoute)) {
+          candidateRoutes.add(candidateRoute);
+        }
+      }
+
+      /* Add all bgp paths if additional-paths active for this session */
+      boolean additionalPaths =
+          !ebgpSession
+              && neighbor.getAdditionalPathsSend()
+              && neighbor.getAdditionalPathsSelectAll();
+      if (additionalPaths) {
+        for (AbstractRoute candidateRoute : _bgpMultipathRib.getRoutes()) {
+          candidateRoutes.add(candidateRoute);
+        }
+      }
+      for (AbstractRoute route : candidateRoutes) {
+        BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
+        RoutingProtocol routeProtocol = route.getProtocol();
+        boolean routeIsBgp =
+            routeProtocol == RoutingProtocol.IBGP || routeProtocol == RoutingProtocol.BGP;
+
+        // originatorIP
+        Ip originatorIp;
+        if (!ebgpSession && routeProtocol.equals(RoutingProtocol.IBGP)) {
+          BgpRoute bgpRoute = (BgpRoute) route;
+          originatorIp = bgpRoute.getOriginatorIp();
+        } else {
+          originatorIp = _vrf.getBgpProcess().getRouterId();
+        }
+        transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
+
+        // clusterList, receivedFromRouteReflectorClient, (originType
+        // for bgp remote route)
+        if (routeIsBgp) {
+          BgpRoute bgpRoute = (BgpRoute) route;
+          transformedOutgoingRouteBuilder.setOriginType(bgpRoute.getOriginType());
+          if (ebgpSession
+              && bgpRoute.getAsPath().containsAs(neighbor.getRemoteAs())
+              && !neighbor.getAllowRemoteAsOut()) {
+            // skip routes containing peer's AS unless
+            // disable-peer-as-check (getAllowRemoteAsOut) is set
+            continue;
+          }
+          /*
+           * route reflection: reflect everything received from
+           * clients to clients and non-clients. reflect everything
+           * received from non-clients to clients. Do not reflect to
+           * originator
+           */
+
+          Ip routeOriginatorIp = bgpRoute.getOriginatorIp();
+          /*
+           *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
+           *  same as originator id of advertisement
+           */
+          if (!ebgpSession && routeOriginatorIp != null && remoteIp.equals(routeOriginatorIp)) {
+            continue;
+          }
+          if (routeProtocol.equals(RoutingProtocol.IBGP) && !ebgpSession) {
+            boolean routeReceivedFromRouteReflectorClient =
+                bgpRoute.getReceivedFromRouteReflectorClient();
+            boolean sendingToRouteReflectorClient = neighbor.getRouteReflectorClient();
+            transformedOutgoingRouteBuilder.getClusterList().addAll(bgpRoute.getClusterList());
+            if (!routeReceivedFromRouteReflectorClient && !sendingToRouteReflectorClient) {
+              continue;
+            }
+            if (sendingToRouteReflectorClient) {
+              // sender adds its local cluster id to clusterlist of
+              // new route
+              transformedOutgoingRouteBuilder.getClusterList().add(neighbor.getClusterId());
+            }
+          }
+        }
+
+        // Outgoing asPath
+        // Outgoing communities
+        if (routeIsBgp) {
+          BgpRoute bgpRoute = (BgpRoute) route;
+          transformedOutgoingRouteBuilder.setAsPath(bgpRoute.getAsPath().getAsSets());
+          if (neighbor.getSendCommunity()) {
+            transformedOutgoingRouteBuilder.getCommunities().addAll(bgpRoute.getCommunities());
+          }
+        }
+        if (ebgpSession) {
+          SortedSet<Integer> newAsPathElement = new TreeSet<>();
+          newAsPathElement.add(localAs);
+          transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
+        }
+
+        // Outgoing protocol
+        transformedOutgoingRouteBuilder.setProtocol(targetProtocol);
+        transformedOutgoingRouteBuilder.setNetwork(route.getNetwork());
+
+        // Outgoing metric
+        if (routeIsBgp) {
+          transformedOutgoingRouteBuilder.setMetric(route.getMetric());
+        }
+
+        // Outgoing nextHopIp
+        // Outgoing localPreference
+        Ip nextHopIp;
+        int localPreference;
+        if (ebgpSession || !routeIsBgp) {
+          nextHopIp = neighbor.getLocalIp();
+          localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+        } else {
+          nextHopIp = route.getNextHopIp();
+          BgpRoute ibgpRoute = (BgpRoute) route;
+          localPreference = ibgpRoute.getLocalPreference();
+        }
+        if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+          // should only happen for ibgp
+          String nextHopInterface = route.getNextHopInterface();
+          Prefix nextHopPrefix = _c.getInterfaces().get(nextHopInterface).getPrefix();
+          if (nextHopPrefix == null) {
+            throw new BatfishException("route's nextHopInterface has no address");
+          }
+          nextHopIp = nextHopPrefix.getAddress();
+        }
+        transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
+        transformedOutgoingRouteBuilder.setLocalPreference(localPreference);
+
+        // Outgoing srcProtocol
+        transformedOutgoingRouteBuilder.setSrcProtocol(route.getProtocol());
+
+        /*
+         * CREATE OUTGOING ROUTE
+         */
+        boolean acceptOutgoing =
+            exportPolicy.process(
+                route, transformedOutgoingRouteBuilder, remoteIp, remoteVrfName, Direction.OUT);
+        if (acceptOutgoing) {
+          BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
+          // Record sent advertisement
+          BgpAdvertisementType sentType =
+              ebgpSession ? BgpAdvertisementType.EBGP_SENT : BgpAdvertisementType.IBGP_SENT;
+          Ip sentOriginatorIp = transformedOutgoingRoute.getOriginatorIp();
+          SortedSet<Long> sentClusterList =
+              new TreeSet<>(transformedOutgoingRoute.getClusterList());
+          AsPath sentAsPath = transformedOutgoingRoute.getAsPath();
+          SortedSet<Long> sentCommunities =
+              new TreeSet<>(transformedOutgoingRoute.getCommunities());
+          Prefix sentNetwork = route.getNetwork();
+          Ip sentNextHopIp;
+          String sentSrcNode = hostname;
+          String sentSrcVrf = _vrf.getName();
+          Ip sentSrcIp = neighbor.getLocalIp();
+          String sentDstNode = remoteHostname;
+          String sentDstVrf = remoteVrfName;
+          Ip sentDstIp = remoteIp;
+          int sentWeight = -1;
+          if (ebgpSession) {
+            sentNextHopIp = nextHopIp;
+          } else {
+            sentNextHopIp = transformedOutgoingRoute.getNextHopIp();
+          }
+          int sentLocalPreference = transformedOutgoingRoute.getLocalPreference();
+          long sentMed = transformedOutgoingRoute.getMetric();
+          OriginType sentOriginType = transformedOutgoingRoute.getOriginType();
+          RoutingProtocol sentSrcProtocol = targetProtocol;
+          BgpAdvertisement sentAdvert =
+              new BgpAdvertisement(
+                  sentType,
+                  sentNetwork,
+                  sentNextHopIp,
+                  sentSrcNode,
+                  sentSrcVrf,
+                  sentSrcIp,
+                  sentDstNode,
+                  sentDstVrf,
+                  sentDstIp,
+                  sentSrcProtocol,
+                  sentOriginType,
+                  sentLocalPreference,
+                  sentMed,
+                  sentOriginatorIp,
+                  sentAsPath,
+                  new TreeSet<>(sentCommunities),
+                  new TreeSet<>(sentClusterList),
+                  sentWeight);
+          _sentBgpAdvertisements.add(sentAdvert);
+          numAdvertisements++;
+        }
       }
     }
-    return false;
-  }
-
-  private static synchronized void markPrefix(
-      Prefix prefix,
-      BgpNeighbor neighbor,
-      BgpNeighbor remoteBgpNeighbor,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
-    Pair<String, String> vrf = new Pair<>(neighbor.getOwner().getHostname(), neighbor.getVrf());
-    Pair<String, String> remoteVrf =
-        new Pair<>(remoteBgpNeighbor.getOwner().getHostname(), remoteBgpNeighbor.getVrf());
-    Pair<String, String> lowerVrf = vrf.compareTo(remoteVrf) < 0 ? vrf : remoteVrf;
-    Pair<String, String> higherVrf = vrf == lowerVrf ? remoteVrf : vrf;
-    markedPrefixes
-        .computeIfAbsent(lowerVrf, v -> new HashMap<>())
-        .computeIfAbsent(higherVrf, v -> new HashSet<>())
-        .add(prefix);
+    return numAdvertisements;
   }
 
   int propagateBgpRoutes(
       Map<Ip, Set<String>> ipOwners,
       int dependentRoutesIterations,
       SortedSet<Prefix> oscillatingPrefixes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpAdvertisement>>> deferredBgpAdvertisements,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpRoute>>> deferredIncomingRoutes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpMultipathRib>>> deferredIncomingRouteRibs,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
+      Map<String, Node> nodes) {
+
     int numRoutes = 0;
     _receivedBgpAdvertisements = new LinkedHashSet<>();
+    _prevSentBgpAdvertisements =
+        _sentBgpAdvertisements != null ? _sentBgpAdvertisements : new LinkedHashSet<>();
     _sentBgpAdvertisements = new LinkedHashSet<>();
 
     // If we have no BGP process, nothing to do
@@ -943,7 +1175,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       String remoteVrfName = remoteBgpNeighbor.getVrf();
       Vrf remoteVrf = remoteConfig.getVrfs().get(remoteVrfName);
       VirtualRouter remoteVirtualRouter =
-          _nodes.get(remoteHostname)._virtualRouters.get(remoteVrfName);
+          nodes.get(remoteHostname)._virtualRouters.get(remoteVrfName);
       RoutingPolicy remoteExportPolicy =
           remoteConfig.getRoutingPolicies().get(remoteBgpNeighbor.getExportPolicy());
       boolean ebgpSession = localAs != remoteAs;
@@ -1002,9 +1234,6 @@ public class VirtualRouter extends ComparableStructure<String> {
         }
       }
       for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
-        /*
-         * If the prefix for this route is oscillating, only continue if it is our turn.
-         */
         BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
         RoutingProtocol remoteRouteProtocol = remoteRoute.getProtocol();
         boolean remoteRouteIsBgp =
@@ -1246,6 +1475,21 @@ public class VirtualRouter extends ComparableStructure<String> {
                   new TreeSet<>(sentCommunities),
                   new TreeSet<>(sentClusterList),
                   sentWeight);
+
+          Prefix prefix = remoteRoute.getNetwork();
+          boolean isOscillatingPrefix = oscillatingPrefixes.contains(prefix);
+          boolean hasAdvertisementPriorityDuringRecovery =
+              hasAdvertisementPriorityDuringRecovery(
+                  remoteRoute,
+                  dependentRoutesIterations,
+                  oscillatingPrefixes,
+                  neighbor,
+                  remoteBgpNeighbor);
+          if (isOscillatingPrefix
+              && !hasAdvertisementPriorityDuringRecovery
+              && !_prevSentBgpAdvertisements.contains(sentAdvert)) {
+            continue;
+          }
           _sentBgpAdvertisements.add(sentAdvert);
 
           /*
@@ -1308,43 +1552,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                     new TreeSet<>(receivedCommunities),
                     new TreeSet<>(receivedClusterList),
                     receivedWeight);
-
-            Prefix prefix = remoteRoute.getNetwork();
-            if (oscillatingPrefixes.contains(prefix)) {
-              if (hasAdvertisementPriorityDuringRecovery(
-                  remoteRoute,
-                  dependentRoutesIterations,
-                  oscillatingPrefixes,
-                  neighbor,
-                  remoteBgpNeighbor)) {
-                if (targetRib.mergeRoute(transformedIncomingRoute)) {
-                  markPrefix(prefix, neighbor, remoteBgpNeighbor, markedPrefixes);
-                  numRoutes++;
-                }
-                _receivedBgpAdvertisements.add(receivedAdvert);
-
-              } else {
-                synchronized (deferredBgpAdvertisements) {
-                  deferredBgpAdvertisements
-                      .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                      .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<>())
-                      .add(receivedAdvert);
-                  deferredIncomingRoutes
-                      .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                      .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<>())
-                      .add(transformedIncomingRoute);
-                  deferredIncomingRouteRibs
-                      .computeIfAbsent(neighbor, n -> new IdentityHashMap<>())
-                      .computeIfAbsent(remoteBgpNeighbor, n -> new LinkedList<>())
-                      .add(targetRib);
-                }
-              }
-            } else {
-              if (targetRib.mergeRoute(transformedIncomingRoute)) {
-                numRoutes++;
-              }
-              _receivedBgpAdvertisements.add(receivedAdvert);
+            if (targetRib.mergeRoute(transformedIncomingRoute)) {
+              numRoutes++;
             }
+            _receivedBgpAdvertisements.add(receivedAdvert);
           }
         }
       }
@@ -1352,51 +1563,11 @@ public class VirtualRouter extends ComparableStructure<String> {
     return numRoutes;
   }
 
-  public void propagateDeferredBgpRoutes(
-      Map<String, Node> nodes,
-      Map<Ip, Set<String>> ipOwners,
-      int dependentRoutesIterations,
-      SortedSet<Prefix> oscillatingPrefixes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpAdvertisement>>> deferredBgpAdvertisements,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpRoute>>> deferredIncomingRoutes,
-      Map<BgpNeighbor, Map<BgpNeighbor, List<BgpMultipathRib>>> deferredIncomingRouteRibs,
-      Map<Pair<String, String>, Map<Pair<String, String>, Set<Prefix>>> markedPrefixes) {
-    if (_vrf.getBgpProcess() != null) {
-      for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
-        Map<BgpNeighbor, List<BgpAdvertisement>> deferredAdvertisementsByRemoteBgpNeighbor =
-            deferredBgpAdvertisements.get(neighbor);
-        if (deferredAdvertisementsByRemoteBgpNeighbor != null) {
-          BgpNeighbor remoteBgpNeighbor = neighbor.getRemoteBgpNeighbor();
-          if (remoteBgpNeighbor != null) {
-            List<BgpAdvertisement> deferredAdvertisements =
-                deferredAdvertisementsByRemoteBgpNeighbor.get(remoteBgpNeighbor);
-            List<BgpRoute> currentDeferredIncomingRoutes =
-                deferredIncomingRoutes.get(neighbor).get(remoteBgpNeighbor);
-            List<BgpMultipathRib> currentDeferredIncomingRouteRibs =
-                deferredIncomingRouteRibs.get(neighbor).get(remoteBgpNeighbor);
-            Iterator<BgpAdvertisement> iAdvert = deferredAdvertisements.iterator();
-            Iterator<BgpRoute> iRoute = currentDeferredIncomingRoutes.iterator();
-            Iterator<BgpMultipathRib> iRib = currentDeferredIncomingRouteRibs.iterator();
-            while (iAdvert.hasNext()) {
-              BgpRoute route = iRoute.next();
-              BgpAdvertisement advert = iAdvert.next();
-              BgpMultipathRib rib = iRib.next();
-              Prefix prefix = route.getNetwork();
-              if (!isMarkedPrefix(prefix, neighbor, remoteBgpNeighbor, markedPrefixes)) {
-                rib.mergeRoute(route);
-                _receivedBgpAdvertisements.add(advert);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   public boolean propagateOspfExternalRoutes(Map<String, Node> nodes, Topology topology) {
     boolean changed = false;
     String node = _c.getHostname();
-    if (_vrf.getOspfProcess() != null) {
+    OspfProcess proc = _vrf.getOspfProcess();
+    if (proc != null) {
       int admin = RoutingProtocol.OSPF.getDefaultAdministrativeCost(_c.getConfigurationFormat());
       SortedSet<Edge> edges = topology.getNodeEdges().get(node);
       if (edges == null) {
@@ -1421,7 +1592,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
         String neighborVrfName = neighborInterface.getVrfName();
         VirtualRouter neighborVirtualRouter =
-            _nodes.get(neighborName)._virtualRouters.get(neighborVrfName);
+            nodes.get(neighborName)._virtualRouters.get(neighborVrfName);
 
         OspfArea neighborArea = neighborInterface.getOspfArea();
         if (connectingInterface.getOspfEnabled()
@@ -1429,7 +1600,8 @@ public class VirtualRouter extends ComparableStructure<String> {
             && neighborInterface.getOspfEnabled()
             && !neighborInterface.getOspfPassive()
             && area != null
-            && neighborArea != null) {
+            && neighborArea != null
+            && area.getName().equals(neighborArea.getName())) {
           /*
            * We have an ospf neighbor relationship on this edge. So we
            * should add all ospf external type 1(2) routes from this
@@ -1438,18 +1610,42 @@ public class VirtualRouter extends ComparableStructure<String> {
            * the cost remains constant, but we must keep track of cost to
            * advertiser as a tie-breaker.
            */
-          int connectingInterfaceCost = connectingInterface.getOspfCost();
+          long connectingInterfaceCost = connectingInterface.getOspfCost();
+          long incrementalCost =
+              proc.getMaxMetricTransitLinks() != null
+                  ? proc.getMaxMetricTransitLinks()
+                  : connectingInterfaceCost;
           for (OspfExternalType1Route neighborRoute :
               neighborVirtualRouter._prevOspfExternalType1Rib.getRoutes()) {
-            long newMetric = neighborRoute.getMetric() + connectingInterfaceCost;
-            long newCostToAdvertiser =
-                neighborRoute.getCostToAdvertiser() + connectingInterfaceCost;
+            long oldArea = neighborRoute.getArea();
+            long connectionArea = area.getName();
+            long newArea;
+            long baseMetric = neighborRoute.getMetric();
+            long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
+            newArea = connectionArea;
+            if (oldArea != OspfRoute.NO_AREA) {
+              Long maxMetricSummaryNetworks =
+                  neighborVirtualRouter._vrf.getOspfProcess().getMaxMetricSummaryNetworks();
+              if (connectionArea != oldArea) {
+                if (connectionArea != 0L && oldArea != 0L) {
+                  continue;
+                }
+                if (maxMetricSummaryNetworks != null) {
+                  baseMetric = maxMetricSummaryNetworks + neighborRoute.getLsaMetric();
+                  baseCostToAdvertiser = maxMetricSummaryNetworks;
+                }
+              }
+            }
+            long newMetric = baseMetric + incrementalCost;
+            long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
             OspfExternalType1Route newRoute =
                 new OspfExternalType1Route(
                     neighborRoute.getNetwork(),
                     neighborInterface.getPrefix().getAddress(),
                     admin,
                     newMetric,
+                    neighborRoute.getLsaMetric(),
+                    newArea,
                     newCostToAdvertiser,
                     neighborRoute.getAdvertiser());
             if (_ospfExternalType1StagingRib.mergeRoute(newRoute)) {
@@ -1458,14 +1654,29 @@ public class VirtualRouter extends ComparableStructure<String> {
           }
           for (OspfExternalType2Route neighborRoute :
               neighborVirtualRouter._prevOspfExternalType2Rib.getRoutes()) {
-            long newCostToAdvertiser =
-                neighborRoute.getCostToAdvertiser() + connectingInterfaceCost;
+            long oldArea = neighborRoute.getArea();
+            long connectionArea = area.getName();
+            long newArea;
+            long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
+            if (oldArea == OspfRoute.NO_AREA) {
+              newArea = connectionArea;
+            } else {
+              newArea = oldArea;
+              Long maxMetricSummaryNetworks =
+                  neighborVirtualRouter._vrf.getOspfProcess().getMaxMetricSummaryNetworks();
+              if (connectionArea != oldArea && maxMetricSummaryNetworks != null) {
+                baseCostToAdvertiser = maxMetricSummaryNetworks;
+              }
+            }
+            long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
             OspfExternalType2Route newRoute =
                 new OspfExternalType2Route(
                     neighborRoute.getNetwork(),
                     neighborInterface.getPrefix().getAddress(),
                     admin,
                     neighborRoute.getMetric(),
+                    neighborRoute.getLsaMetric(),
+                    newArea,
                     newCostToAdvertiser,
                     neighborRoute.getAdvertiser());
             if (_ospfExternalType2StagingRib.mergeRoute(newRoute)) {
@@ -1485,27 +1696,38 @@ public class VirtualRouter extends ComparableStructure<String> {
    *
    * @param neighborRoute the route to propagate
    * @param nextHopIp nextHopIp for this route (the neighbor's IP)
-   * @param connectingInterfaceCost OSPF cost of the interface from which this route came (added to
-   *     route cost)
+   * @param incrementalCost OSPF cost of the interface from which this route came (added to route
+   *     cost)
    * @param adminCost OSPF administrative distance
    * @param areaNum area number of the route
    * @return True if the route was added to the inter-area staging RIB
    */
   @VisibleForTesting
   boolean stageOspfInterAreaRoute(
-      OspfAreaRoute neighborRoute,
+      OspfInternalRoute neighborRoute,
+      Long maxMetricSummaryNetworks,
       Ip nextHopIp,
-      int connectingInterfaceCost,
+      long incrementalCost,
       int adminCost,
       long areaNum) {
-    long newCost = neighborRoute.getMetric() + connectingInterfaceCost;
+    long newCost;
+    if (maxMetricSummaryNetworks != null) {
+      newCost = maxMetricSummaryNetworks + incrementalCost;
+    } else {
+      newCost = neighborRoute.getMetric() + incrementalCost;
+    }
     OspfInterAreaRoute newRoute =
         new OspfInterAreaRoute(neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, areaNum);
     return _ospfInterAreaStagingRib.mergeRoute(newRoute);
   }
 
-  private static boolean isOspfPropagationAllowed(
-      Node neighbor, OspfAreaRoute neighborRoute, OspfArea neighborArea) {
+  private static boolean isOspfInterAreaFromInterAreaPropagationAllowed(
+      long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
+    long neighborRouteAreaNum = neighborRoute.getArea();
+    // May only propagate to or from area 0
+    if (areaNum != neighborRouteAreaNum && areaNum != 0L && neighborRouteAreaNum != 0L) {
+      return false;
+    }
     Prefix neighborRouteNetwork = neighborRoute.getNetwork();
     String neighborSummaryFilterName = neighborArea.getSummaryFilter();
     boolean hasSummaryFilter = neighborSummaryFilterName != null;
@@ -1520,132 +1742,49 @@ public class VirtualRouter extends ComparableStructure<String> {
     return allowed;
   }
 
-  /** Takes care of propagating the routes if the neighbor is in the same OSPF area as us. */
-  boolean propagateOspfInternalRoutesSameAreaNeighbor(
-      Node neighbor,
-      Interface neighborInterface,
-      int connectingInterfaceCost,
-      int adminCost,
-      long areaNum) {
-    boolean changed = false;
-
-    /*
-     * We have an ospf intra-area neighbor relationship on this
-     * edge. So we should add all ospf routes from this neighbor
-     * into our ospf intra-area staging rib, adding the cost of
-     * the connecting interface, and using the neighborInterface's
-     * address as the next hop ip
-     */
-    VirtualRouter neighborVirtualRouter =
-        neighbor._virtualRouters.get(neighborInterface.getVrfName());
-    OspfArea neighborArea = neighborInterface.getOspfArea();
-    for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
-      long newCost = neighborRoute.getMetric() + connectingInterfaceCost;
-      Ip nextHopIp = neighborInterface.getPrefix().getAddress();
-
-      OspfIntraAreaRoute newRoute =
-          new OspfIntraAreaRoute(
-              neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, areaNum);
-      changed |= _ospfIntraAreaStagingRib.mergeRoute(newRoute);
+  private static boolean isOspfInterAreaFromIntraAreaPropagationAllowed(
+      long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
+    long neighborRouteAreaNum = neighborRoute.getArea();
+    // May only propagate to or from area 0
+    if (areaNum == neighborRouteAreaNum || (areaNum != 0L && neighborRouteAreaNum != 0L)) {
+      return false;
     }
+    Prefix neighborRouteNetwork = neighborRoute.getNetwork();
+    String neighborSummaryFilterName = neighborArea.getSummaryFilter();
+    boolean hasSummaryFilter = neighborSummaryFilterName != null;
+    boolean allowed = !hasSummaryFilter;
 
-    // Also propagate inter-area routes that have already made
-    // it into this area, but only if they originate from other areas
-    for (OspfInterAreaRoute neighborRoute : neighborVirtualRouter._ospfInterAreaRib.getRoutes()) {
-      long neighborRouteArea = neighborRoute.getArea();
-      if (neighborRouteArea == areaNum) {
-        continue;
-      }
-
-      if (isOspfPropagationAllowed(neighbor, neighborRoute, neighborArea)) {
-        changed |=
-            stageOspfInterAreaRoute(
-                neighborRoute,
-                neighborInterface.getPrefix().getAddress(),
-                connectingInterfaceCost,
-                adminCost,
-                areaNum);
-      }
+    // If there is a summary filter, run the route through it
+    if (hasSummaryFilter) {
+      RouteFilterList neighborSummaryFilter =
+          neighbor._c.getRouteFilterLists().get(neighborSummaryFilterName);
+      allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
-    return changed;
+    return allowed;
   }
 
-  /** Takes care of propagating routes if the neighbor is in a different OSPF area */
-  boolean propagateOspfInternalRoutesDifferentAreaNeighbor(
+  boolean propagateOspfInterAreaRouteFromIntraAreaRoute(
       Node neighbor,
+      OspfIntraAreaRoute neighborRoute,
+      long incrementalCost,
       Interface neighborInterface,
-      int connectingInterfaceCost,
       int adminCost,
       long areaNum) {
-    /*
-     * We have an ospf inter-area neighbor relationship on this
-     * edge. So we should add all ospf routes from this neighbor
-     * into our ospf inter-area staging rib, adding the cost of
-     * the connecting interface, and using the neighborInterface's
-     * address as the next hop ip
-     *
-     */
-
-    boolean changed = false;
-    VirtualRouter neighborVirtualRouter =
-        neighbor._virtualRouters.get(neighborInterface.getVrfName());
-    OspfArea neighborArea = neighborInterface.getOspfArea();
-    for (OspfInterAreaRoute neighborRoute : neighborVirtualRouter._ospfInterAreaRib.getRoutes()) {
-      long neighborRouteArea = neighborRoute.getArea();
-
-      /*
-       * The following conditions allow inter-area propagation:
-       *
-       * 1) Do not receive inter-area routes that originally came
-       *    from our own area.
-       *
-       * 2) Do receive all other inter-area routes from area 0.
-       *
-       * 3) If we are in area 0, receive inter-area routes from the neighbor only if they
-       * originated in the neighbor's area. That is, router located in area 2 should not advertise
-       * routes from area 3 to the backbone.
-       *
-       */
-      if (areaNum == neighborRouteArea // route from the same area, so skip
-          || (areaNum == 0 // we are in area 0, so
-              // if the route does not originate in the neighbor's area, ignore it.
-              && !neighborArea.getName().equals(neighborRouteArea))) {
-        continue;
-      }
-
-      if (isOspfPropagationAllowed(neighbor, neighborRoute, neighborArea)) {
-        changed |=
-            stageOspfInterAreaRoute(
-                neighborRoute,
-                neighborInterface.getPrefix().getAddress(),
-                connectingInterfaceCost,
-                adminCost,
-                areaNum);
-      }
-    }
-
-    // intra-area routes may be turned into inter-area routes
-    // going either to or from area 0.
-    if (!neighborArea.getName().equals(0L) && areaNum != 0) {
-      return changed;
-    }
-    for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
-      if (isOspfPropagationAllowed(neighbor, neighborRoute, neighborArea)) {
-        changed |=
-            stageOspfInterAreaRoute(
-                neighborRoute,
-                neighborInterface.getPrefix().getAddress(),
-                connectingInterfaceCost,
-                adminCost,
-                areaNum);
-      }
-    }
-    return changed;
+    return isOspfInterAreaFromIntraAreaPropagationAllowed(
+            areaNum, neighbor, neighborRoute, neighborInterface.getOspfArea())
+        && stageOspfInterAreaRoute(
+            neighborRoute,
+            neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
+            neighborInterface.getPrefix().getAddress(),
+            incrementalCost,
+            adminCost,
+            areaNum);
   }
 
   /**
    * Propagate OSPF Internal routes from a single neighbor.
    *
+   * @param proc The receiving OSPF process
    * @param neighbor the neighbor
    * @param connectingInterface interface on which we are connected to the neighbor
    * @param neighborInterface interface that the neighbor uses to connect to us
@@ -1653,9 +1792,11 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @return true if new routes have been added to our staging RIB
    */
   boolean propagateOspfInternalRoutesFromNeighbor(
-      Node neighbor, Interface connectingInterface, Interface neighborInterface, int adminCost) {
-    boolean changed = false;
-
+      OspfProcess proc,
+      Node neighbor,
+      Interface connectingInterface,
+      Interface neighborInterface,
+      int adminCost) {
     OspfArea area = connectingInterface.getOspfArea();
     OspfArea neighborArea = neighborInterface.getOspfArea();
     // Ensure that the link (i.e., both interfaces) has OSPF enabled and OSPF areas are set
@@ -1664,26 +1805,70 @@ public class VirtualRouter extends ComparableStructure<String> {
         || !neighborInterface.getOspfEnabled()
         || neighborInterface.getOspfPassive()
         || area == null
-        || neighborArea == null) {
+        || neighborArea == null
+        || !area.getName().equals(neighborArea.getName())) {
       return false;
     }
-
-    // The OSPF cost of the interface (added to route cost during propagation)
+    /*
+     * An OSPF neighbor relationship exists on this edge. So we examine all intra- and inter-area
+     * routes belonging to the neighbor to see what should be propagated to this router. We add the
+     * incremental cost associated with our settings and the connecting interface, and use the
+     * neighborInterface's address as the next hop ip.
+     */
     int connectingInterfaceCost = connectingInterface.getOspfCost();
-    // Our OSPF area. Then neighbor can be in a different area
+    long incrementalCost =
+        proc.getMaxMetricTransitLinks() != null
+            ? proc.getMaxMetricTransitLinks()
+            : connectingInterfaceCost;
     Long areaNum = area.getName();
-
-    if (areaNum.equals(neighborArea.getName())) {
-      changed =
-          propagateOspfInternalRoutesSameAreaNeighbor(
-              neighbor, neighborInterface, connectingInterfaceCost, adminCost, areaNum);
-    } else if (area.getName().equals(0L) || neighborArea.getName().equals(0L)) {
-      // Only propagate to/from area 0 (backbone)
-      changed =
-          propagateOspfInternalRoutesDifferentAreaNeighbor(
-              neighbor, neighborInterface, connectingInterfaceCost, adminCost, areaNum);
+    VirtualRouter neighborVirtualRouter =
+        neighbor._virtualRouters.get(neighborInterface.getVrfName());
+    boolean changed = false;
+    for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
+      changed |=
+          propagateOspfIntraAreaRoute(
+              neighborRoute, incrementalCost, neighborInterface, adminCost, areaNum);
+      changed |=
+          propagateOspfInterAreaRouteFromIntraAreaRoute(
+              neighbor, neighborRoute, incrementalCost, neighborInterface, adminCost, areaNum);
+    }
+    for (OspfInterAreaRoute neighborRoute : neighborVirtualRouter._ospfInterAreaRib.getRoutes()) {
+      changed |=
+          propagateOspfInterAreaRouteFromInterAreaRoute(
+              neighbor, neighborRoute, incrementalCost, neighborInterface, adminCost, areaNum);
     }
     return changed;
+  }
+
+  boolean propagateOspfInterAreaRouteFromInterAreaRoute(
+      Node neighbor,
+      OspfInterAreaRoute neighborRoute,
+      long incrementalCost,
+      Interface neighborInterface,
+      int adminCost,
+      long areaNum) {
+    return isOspfInterAreaFromInterAreaPropagationAllowed(
+            areaNum, neighbor, neighborRoute, neighborInterface.getOspfArea())
+        && stageOspfInterAreaRoute(
+            neighborRoute,
+            neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
+            neighborInterface.getPrefix().getAddress(),
+            incrementalCost,
+            adminCost,
+            areaNum);
+  }
+
+  boolean propagateOspfIntraAreaRoute(
+      OspfIntraAreaRoute neighborRoute,
+      long incrementalCost,
+      Interface neighborInterface,
+      int adminCost,
+      long areaNum) {
+    long newCost = neighborRoute.getMetric() + incrementalCost;
+    Ip nextHopIp = neighborInterface.getPrefix().getAddress();
+    OspfIntraAreaRoute newRoute =
+        new OspfIntraAreaRoute(neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, areaNum);
+    return neighborRoute.getArea() == areaNum && _ospfIntraAreaStagingRib.mergeRoute(newRoute);
   }
 
   /**
@@ -1694,7 +1879,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @return true if new routes have been added to the staging RIB
    */
   boolean propagateOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
-    if (_vrf.getOspfProcess() == null) {
+    OspfProcess proc = _vrf.getOspfProcess();
+    if (proc == null) {
       return false; // nothing to do
     }
 
@@ -1727,7 +1913,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
       changed |=
           propagateOspfInternalRoutesFromNeighbor(
-              neighbor, connectingInterface, neighborInterface, adminCost);
+              proc, neighbor, connectingInterface, neighborInterface, adminCost);
     }
     return changed;
   }
@@ -1776,7 +1962,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       Interface neighborInterface = neighbor._c.getInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
-          _nodes.get(neighborName)._virtualRouters.get(neighborVrfName);
+          nodes.get(neighborName)._virtualRouters.get(neighborVrfName);
 
       if (connectingInterface.getRipEnabled()
           && !connectingInterface.getRipPassive()
@@ -1848,42 +2034,33 @@ public class VirtualRouter extends ComparableStructure<String> {
    */
   void moveRibs() {
     _prevMainRib = _mainRib;
-    _prevMainRib.freeze();
     _mainRib = new Rib(this);
 
     _prevOspfExternalType1Rib = _ospfExternalType1Rib;
-    _prevOspfExternalType1Rib.freeze();
     _ospfExternalType1Rib = new OspfExternalType1Rib(this);
 
     _prevOspfExternalType2Rib = _ospfExternalType2Rib;
-    _prevOspfExternalType2Rib.freeze();
     _ospfExternalType2Rib = new OspfExternalType2Rib(this);
 
     _prevBgpMultipathRib = _bgpMultipathRib;
-    _prevBgpMultipathRib.freeze();
     _bgpMultipathRib = new BgpMultipathRib(this);
 
     _prevBgpBestPathRib = _bgpBestPathRib;
-    _prevBgpBestPathRib.freeze();
     _bgpBestPathRib = new BgpBestPathRib(this, _prevBgpBestPathRib, true);
 
     _prevEbgpMultipathRib = _ebgpMultipathRib;
-    _prevEbgpMultipathRib.freeze();
     _ebgpMultipathRib = new BgpMultipathRib(this);
     importRib(_ebgpMultipathRib, _baseEbgpRib);
 
     _prevEbgpBestPathRib = _ebgpBestPathRib;
-    _prevEbgpBestPathRib.freeze();
     _ebgpBestPathRib = new BgpBestPathRib(this, _prevEbgpBestPathRib, true);
     importRib(_ebgpBestPathRib, _baseEbgpRib);
 
     _prevIbgpBestPathRib = _ibgpBestPathRib;
-    _prevIbgpBestPathRib.freeze();
     _ibgpBestPathRib = new BgpBestPathRib(this, _prevIbgpBestPathRib, true);
     importRib(_ibgpBestPathRib, _baseIbgpRib);
 
     _prevIbgpMultipathRib = _ibgpMultipathRib;
-    _prevIbgpMultipathRib.freeze();
     _ibgpMultipathRib = new BgpMultipathRib(this);
     importRib(_ibgpMultipathRib, _baseIbgpRib);
   }
@@ -1937,9 +2114,5 @@ public class VirtualRouter extends ComparableStructure<String> {
     importRib(_ospfRib, _ospfIntraAreaRib);
     importRib(_ospfRib, _ospfInterAreaRib);
     importRib(_independentRib, _ospfRib);
-  }
-
-  Map<String, Node> getNodes() {
-    return _nodes;
   }
 }

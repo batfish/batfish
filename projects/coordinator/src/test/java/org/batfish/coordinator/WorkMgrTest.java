@@ -79,11 +79,7 @@ public class WorkMgrTest {
   @Test
   public void listEmptyQuestion() {
     _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions("container", "testrig");
+    SortedSet<String> questions = _manager.listQuestions("container");
     assertThat(questions.isEmpty(), is(true));
   }
 
@@ -92,11 +88,9 @@ public class WorkMgrTest {
     _manager.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
-    Path questionsDir = testrigPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     assertThat(questionsDir.resolve("initinfo").toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions("container", "testrig");
+    SortedSet<String> questions = _manager.listQuestions("container");
     assertThat(questions.size(), is(1));
     assertThat(questions.first(), equalTo("initinfo"));
   }
@@ -105,15 +99,7 @@ public class WorkMgrTest {
   public void listQuestionWithNonExistContainer() {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Container 'container' does not exist"));
-    _manager.listQuestions("container", "testrig");
-  }
-
-  @Test
-  public void listQuestionWithNonExistTestrig() {
-    _manager.initContainer("container", null);
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Testrig 'testrig' does not exist"));
-    _manager.listQuestions("container", "testrig");
+    _manager.listQuestions("container");
   }
 
   @Test
@@ -121,13 +107,11 @@ public class WorkMgrTest {
     _manager.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
-    assertThat(testrigPath.toFile().mkdirs(), is(true));
-    Path questionsDir = testrigPath.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     assertTrue(questionsDir.resolve("nodes").toFile().mkdirs());
     assertTrue(questionsDir.resolve("access").toFile().mkdirs());
     assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
-    SortedSet<String> questions = _manager.listQuestions("container", "testrig");
+    SortedSet<String> questions = _manager.listQuestions("container");
     assertThat(questions.size(), is(3));
     assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
   }
