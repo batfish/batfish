@@ -346,11 +346,6 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       return _node2Regex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_FOREIGN_OSPF_NETWORKS)
     public void setForeignOspfNetworks(SortedSet<Prefix> foreignOspfNetworks) {
       _foreignOspfNetworks = foreignOspfNetworks;

@@ -259,11 +259,6 @@ public class WorkMgrServiceTest {
           }
 
           @Override
-          public boolean getTraffic() {
-            return false;
-          }
-
-          @Override
           public boolean equals(Object obj) {
             if (obj == null) {
               return false;

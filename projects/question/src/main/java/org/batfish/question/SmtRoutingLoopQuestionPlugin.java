@@ -35,11 +35,6 @@ public class SmtRoutingLoopQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "smt-routing-loop";
     }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
   }
 
   @Override

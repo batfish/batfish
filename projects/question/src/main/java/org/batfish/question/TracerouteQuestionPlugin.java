@@ -506,11 +506,6 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public boolean getTraffic() {
-      return true;
-    }
-
-    @Override
     public String prettyPrint() {
       try {
         String retString =

@@ -272,9 +272,6 @@ public abstract class Question implements IQuestion {
   @JsonIgnore
   public abstract String getName();
 
-  @JsonIgnore
-  public abstract boolean getTraffic();
-
   protected boolean isBaseParamKey(String paramKey) {
     switch (paramKey) {
       case BfConsts.PROP_DIFFERENTIAL:
