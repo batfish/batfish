@@ -1,11 +1,15 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Predicates.not;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -253,8 +257,10 @@ public final class Configuration extends ComparableStructure<String> {
     }
     Set<String> sources = new LinkedHashSet<>();
     routingPolicy.computeSources(sources, _routingPolicies, w);
-    return new TreeSet<>(
-        sources.stream().filter(s -> !RoutingPolicy.isGenerated(s)).collect(Collectors.toSet()));
+    return sources
+        .stream()
+        .filter(not(RoutingPolicy::isGenerated))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
   public void computeRoutingPolicySources(Warnings w) {

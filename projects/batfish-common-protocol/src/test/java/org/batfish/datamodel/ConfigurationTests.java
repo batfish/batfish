@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
@@ -101,7 +101,8 @@ public class ConfigurationTests {
         gr.getGenerationPolicySources(),
         equalTo(Collections.singleton(generatedRouteGenerationPolicyName)));
     // OSPF tests
-    assertThat(ospfExportPolicyName, isIn(ospfProcess.getExportPolicySources()));
-    assertThat(ospfExportSubPolicyName, isIn(ospfProcess.getExportPolicySources()));
+    assertThat(
+        ospfProcess.getExportPolicySources(),
+        containsInAnyOrder(ospfExportPolicyName, ospfExportSubPolicyName));
   }
 }

@@ -29,7 +29,12 @@ public class CallExpr extends BooleanExpr {
   public void collectSources(
       Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     if (sources.contains(_calledPolicyName)) {
-      w.redFlag("Circular reference to routing policy: '" + _calledPolicyName + "'");
+      w.redFlag(
+          "Circular reference to routing policy: '"
+              + _calledPolicyName
+              + "' detected at expression: '"
+              + toString()
+              + "'");
       return;
     }
     RoutingPolicy calledPolicy = routingPolicies.get(_calledPolicyName);
