@@ -59,6 +59,8 @@ public enum Command {
   RUN_ANALYSIS("run-analysis"),
   RUN_ANALYSIS_DELTA("run-analysis-delta"),
   RUN_ANALYSIS_DIFFERENTIAL("run-analysis-differential"),
+  RUN_COMPARE("run-compare"),
+  RUN_EXPLORE("run-explore"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_CONTAINER("set-container"),
   SET_DELTA_ENV("set-delta-environment"),
@@ -262,6 +264,8 @@ public enum Command {
     descs.put(REINIT_TESTRIG, new Pair<>("", "Reinitialize the testrig with default environment"));
     descs.put(
         RUN_ANALYSIS, new Pair<>("<analysis-name>", "Run the (previously configured) analysis"));
+    descs.put(RUN_COMPARE, new Pair<>("", "Run the (previously configured) compare questions"));
+    descs.put(RUN_EXPLORE, new Pair<>("", "Run the (previously configured) explore questions"));
     descs.put(
         SET_BATFISH_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));

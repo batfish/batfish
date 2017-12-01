@@ -348,6 +348,51 @@ public class WorkMgr extends AbstractCoordinator {
       List<String> questionsToDelete) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
+    configureAnalysisOrAdhoc(
+        containerName, newAnalysis, aName, questionsToAdd, questionsToDelete, aDir);
+  }
+
+  /**
+   * Update or truncate differential adhoc questions with provided questions or and/or question
+   * names
+   *
+   * @param containerName The container in which the questions reside
+   * @param questionsToAdd The new differential adhoc questions to be added.
+   * @param questionsToDelete A list of question names to be deleted from existing differential
+   *     adhoc questions.
+   */
+  public void configureCompare(
+      String containerName, Map<String, String> questionsToAdd, List<String> questionsToDelete) {
+    Path containerDir = getdirContainer(containerName);
+    Path aDir = containerDir.resolve(BfConsts.RELPATH_COMPARE_DIR);
+    configureAnalysisOrAdhoc(
+        containerName, false, "compare", questionsToAdd, questionsToDelete, aDir);
+  }
+
+  /**
+   * Update or truncate non-differential adhoc questions with provided questions or and/or question
+   * names
+   *
+   * @param containerName The container in which the questions reside
+   * @param questionsToAdd The new non-differential adhoc questions to be added.
+   * @param questionsToDelete A list of question names to be deleted from existing non-differential
+   *     adhoc questions.
+   */
+  public void configureExplore(
+      String containerName, Map<String, String> questionsToAdd, List<String> questionsToDelete) {
+    Path containerDir = getdirContainer(containerName);
+    Path aDir = containerDir.resolve(BfConsts.RELPATH_EXPLORE_DIR);
+    configureAnalysisOrAdhoc(
+        containerName, false, "explore", questionsToAdd, questionsToDelete, aDir);
+  }
+
+  private void configureAnalysisOrAdhoc(
+      String containerName,
+      boolean newAnalysis,
+      String aName,
+      Map<String, String> questionsToAdd,
+      List<String> questionsToDelete,
+      Path aDir) {
     if (Files.exists(aDir) && newAnalysis) {
       throw new BatfishException(
           "Analysis '" + aName + "' already exists for container '" + containerName);
@@ -425,12 +470,58 @@ public class WorkMgr extends AbstractCoordinator {
       throws JsonProcessingException {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path testrigDir = getdirTestrig(containerName, baseTestrig);
+    Path analysisAnswersDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, analysisName));
     SortedSet<String> questions = listAnalysisQuestions(containerName, analysisName);
+    return getAnalysisOrAdhocAnswers(
+        baseEnv, deltaTestrig, deltaEnv, pretty, analysisDir, analysisAnswersDir, questions);
+  }
+
+  public Map<String, String> getCompareAnswers(
+      String containerName,
+      String baseTestrig,
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      boolean pretty)
+      throws JsonProcessingException {
+    Path containerDir = getdirContainer(containerName);
+    Path cDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_COMPARE_DIR));
+
+    Path testrigDir = getdirTestrig(containerName, baseTestrig);
+    Path compareAnswersDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_COMPARE_DIR));
+    SortedSet<String> questions = listCompareQuestions(containerName);
+    return getAnalysisOrAdhocAnswers(
+        baseEnv, deltaTestrig, deltaEnv, pretty, cDir, compareAnswersDir, questions);
+  }
+
+  public Map<String, String> getExploreAnswers(
+      String containerName, String baseTestrig, String baseEnv, boolean pretty)
+      throws JsonProcessingException {
+    Path containerDir = getdirContainer(containerName);
+    Path eDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_EXPLORE_DIR));
+
+    Path testrigDir = getdirTestrig(containerName, baseTestrig);
+    Path exploreAnswersDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_EXPLORE_DIR));
+    SortedSet<String> questions = listExploreQuestions(containerName);
+    return getAnalysisOrAdhocAnswers(
+        baseEnv, null, null, pretty, eDir, exploreAnswersDir, questions);
+  }
+
+  private Map<String, String> getAnalysisOrAdhocAnswers(
+      String baseEnv,
+      String deltaTestrig,
+      String deltaEnv,
+      boolean pretty,
+      Path questionsDir,
+      Path answersDir,
+      SortedSet<String> questions)
+      throws JsonProcessingException {
     Map<String, String> retMap = new TreeMap<>();
     for (String questionName : questions) {
       String answer = "unknown";
       Path questionFile =
-          analysisDir.resolve(
+          questionsDir.resolve(
               Paths.get(
                   BfConsts.RELPATH_QUESTIONS_DIR, questionName, BfConsts.RELPATH_QUESTION_FILE));
       if (!Files.exists(questionFile)) {
@@ -439,10 +530,8 @@ public class WorkMgr extends AbstractCoordinator {
       String answerFilename =
           pretty ? BfConsts.RELPATH_ANSWER_PRETTY_JSON : BfConsts.RELPATH_ANSWER_JSON;
       Path answerDir =
-          testrigDir.resolve(
+          answersDir.resolve(
               Paths.get(
-                  BfConsts.RELPATH_ANALYSES_DIR,
-                  analysisName,
                   BfConsts.RELPATH_QUESTIONS_DIR,
                   questionName,
                   BfConsts.RELPATH_ENVIRONMENTS_DIR,
@@ -760,9 +849,30 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getTestrigQuestion(String containerName, String testrigName, String questionName) {
     Path questionDir = getdirTestrigQuestion(containerName, testrigName, questionName);
+    return getQuestion(questionDir, questionName);
+  }
+
+  public String getCompareQuestion(String containerName, String questionName) {
+    Path containerDir = getdirContainer(containerName, true);
+    Path questionDir =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_COMPARE_DIR, BfConsts.RELPATH_QUESTIONS_DIR, questionName));
+    return getQuestion(questionDir, questionName);
+  }
+
+  public String getExploreQuestion(String containerName, String questionName) {
+    Path containerDir = getdirContainer(containerName, true);
+    Path questionDir =
+        containerDir.resolve(
+            Paths.get(BfConsts.RELPATH_EXPLORE_DIR, BfConsts.RELPATH_QUESTIONS_DIR, questionName));
+    return getQuestion(questionDir, questionName);
+  }
+
+  private String getQuestion(Path questionDir, String questionName) {
     Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
     if (!Files.exists(qFile)) {
-      throw new BatfishException("Question file not found for " + questionName);
+      throw new BatfishException(
+          "Question file not found for " + questionName + "; trying for path " + qFile.toString());
     }
     return CommonUtil.readFile(qFile);
   }
@@ -789,6 +899,14 @@ public class WorkMgr extends AbstractCoordinator {
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!analysesDir.toFile().mkdir()) {
       throw new BatfishException("failed to create directory '" + analysesDir + "'");
+    }
+    Path compareDir = containerDir.resolve(BfConsts.RELPATH_COMPARE_DIR);
+    if (!compareDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + compareDir + "'");
+    }
+    Path exploreDir = containerDir.resolve(BfConsts.RELPATH_EXPLORE_DIR);
+    if (!exploreDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + exploreDir + "'");
     }
     return containerName;
   }
@@ -818,6 +936,15 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (JsonProcessingException e) {
       _logger.error(e.getMessage());
     }
+
+    // Create explore and compare directories with empty question subdirectories
+    // These will store answers, not questions; adhoc questions are container-wide
+    Path compareQuestionDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_COMPARE_DIR, BfConsts.RELPATH_QUESTIONS_DIR));
+    compareQuestionDir.toFile().mkdirs();
+    Path exploreQuestionDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_EXPLORE_DIR, BfConsts.RELPATH_QUESTIONS_DIR));
+    exploreQuestionDir.toFile().mkdirs();
 
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
@@ -863,6 +990,11 @@ public class WorkMgr extends AbstractCoordinator {
                 false,
                 false);
         autoWorkQueue.add(analyzeWork);
+
+        WorkItem exploreWork =
+            WorkItemBuilder.getWorkItemRunExplore(
+                containerName, testrigName, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+        autoWorkQueue.add(exploreWork);
       }
 
       // NB: This way of doing things only works when we have a single worker; otherwise workitems
@@ -907,6 +1039,24 @@ public class WorkMgr extends AbstractCoordinator {
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path questionsDir = analysisDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    return listAnalysisOrAdhocQuestions(questionsDir);
+  }
+
+  public SortedSet<String> listCompareQuestions(String containerName) {
+    Path containerDir = getdirContainer(containerName);
+    Path cDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_COMPARE_DIR));
+    Path questionsDir = cDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    return listAnalysisOrAdhocQuestions(questionsDir);
+  }
+
+  public SortedSet<String> listExploreQuestions(String containerName) {
+    Path containerDir = getdirContainer(containerName);
+    Path edir = containerDir.resolve(Paths.get(BfConsts.RELPATH_EXPLORE_DIR));
+    Path questionsDir = edir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    return listAnalysisOrAdhocQuestions(questionsDir);
+  }
+
+  private SortedSet<String> listAnalysisOrAdhocQuestions(Path questionsDir) {
     if (!Files.exists(questionsDir)) {
       /** TODO: Something better than returning empty set? */
       return new TreeSet<>();

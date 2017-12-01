@@ -523,6 +523,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private boolean _canExecute;
 
+  private boolean _compare;
+
   private boolean _compileDiffEnvironment;
 
   private Path _containerDir;
@@ -554,6 +556,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private String _environmentName;
 
   private boolean _exitOnFirstError;
+
+  private boolean _explore;
 
   private boolean _flatten;
 
@@ -772,6 +776,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _blockNames;
   }
 
+  public boolean getCompare() {
+    return _compare;
+  }
+
   public boolean getCompileEnvironment() {
     return _compileDiffEnvironment;
   }
@@ -835,6 +843,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getExitOnFirstError() {
     return _exitOnFirstError;
+  }
+
+  public boolean getExplore() {
+    return _explore;
   }
 
   public boolean getFlatten() {
@@ -1184,8 +1196,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
+    setDefaultProperty(BfConsts.COMMAND_COMPARE, false);
     setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
     setDefaultProperty(BfConsts.COMMAND_DUMP_DP, false);
+    setDefaultProperty(BfConsts.COMMAND_EXPLORE, false);
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
@@ -1456,11 +1470,15 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(BfConsts.COMMAND_ANSWER, "answer provided question");
 
+    addBooleanOption(BfConsts.COMMAND_COMPARE, "run compare questions");
+
     addBooleanOption(
         BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT,
         "compile configurations for differential environment");
 
     addBooleanOption(BfConsts.COMMAND_DUMP_DP, "compute and serialize data plane");
+
+    addBooleanOption(BfConsts.COMMAND_EXPLORE, "run explore questions");
 
     addBooleanOption(
         BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "serialize vendor-independent configs");
@@ -1502,6 +1520,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _bdpPrintOscillatingIterations =
         getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
+    _compare = getBooleanOptionValue(BfConsts.COMMAND_COMPARE);
     _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     _containerDir = getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
     _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
@@ -1516,6 +1535,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _disableUnrecognized = getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
     _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
     _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
+    _explore = getBooleanOptionValue(BfConsts.COMMAND_EXPLORE);
     _flatten = getBooleanOptionValue(ARG_FLATTEN);
     _flattenDestination = getPathOptionValue(ARG_FLATTEN_DESTINATION);
     _flattenOnTheFly = getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);

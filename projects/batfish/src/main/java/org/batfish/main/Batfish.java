@@ -516,6 +516,37 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
+  private Answer answerAdhoc(String dir) {
+    Answer answer = new Answer();
+    AnswerSummary summary = new AnswerSummary();
+    Path adhocQuestionsDir =
+        _settings
+            .getContainerDir()
+            .resolve(Paths.get(dir, BfConsts.RELPATH_QUESTIONS_DIR).toString());
+    if (!Files.exists(adhocQuestionsDir)) {
+      throw new BatfishException(
+          "Container-level compare dir does not exist: '" + adhocQuestionsDir + "'");
+    }
+    RunAnalysisAnswerElement ae = new RunAnalysisAnswerElement();
+    try (Stream<Path> questions = CommonUtil.list(adhocQuestionsDir)) {
+      questions.forEach(
+          questionDir -> {
+            String questionName = questionDir.getFileName().toString();
+            Path adhocQuestionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+            _settings.setQuestionPath(adhocQuestionPath);
+            Answer currentAnswer = answer();
+            initAdhocQuestionPath(questionName, dir);
+            outputAnswer(currentAnswer);
+            ae.getAnswers().put(questionName, currentAnswer);
+            _settings.setQuestionPath(null);
+            summary.combine(currentAnswer.getSummary());
+          });
+    }
+    answer.addAnswerElement(ae);
+    answer.setSummary(summary);
+    return answer;
+  }
+
   private void anonymizeConfigurations() {
     // TODO Auto-generated method stub
 
@@ -1885,6 +1916,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         BfConsts.RELPATH_QUESTIONS_DIR,
                         questionName)
                     .toString());
+    questionDir.toFile().mkdirs();
+    Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+    _settings.setQuestionPath(questionPath);
+  }
+
+  private void initAdhocQuestionPath(String questionName, String dir) {
+    Path questionDir =
+        _testrigSettings
+            .getBasePath()
+            .resolve(Paths.get(dir, BfConsts.RELPATH_QUESTIONS_DIR, questionName).toString());
     questionDir.toFile().mkdirs();
     Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
     _settings.setQuestionPath(questionPath);
@@ -3858,6 +3899,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getAnalyze()) {
       answer.append(analyze());
       action = true;
+    }
+
+    if (_settings.getCompare()) {
+      answer.append(answerAdhoc(BfConsts.RELPATH_COMPARE_DIR));
+    }
+
+    if (_settings.getExplore()) {
+      answer.append(answerAdhoc(BfConsts.RELPATH_EXPLORE_DIR));
     }
 
     if (_settings.getDataPlane()) {

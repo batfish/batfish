@@ -201,6 +201,152 @@ public class WorkMgrService {
   }
 
   /**
+   * Configures new/deleted differential adhoc questions for the container
+   *
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to configure
+   * @param addQuestionsStream A stream providing the new differential questions to add
+   * @param delQuestions A list of existing differential questions to delete
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_CONFIGURE_COMPARE)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray configureCompare(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
+      @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
+    try {
+      _logger.info(
+          "WMS:configureCompare " + apiKey + " " + containerName + " " + delQuestions + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      Map<String, String> questionsToAdd = new HashMap<>();
+      if (addQuestionsStream != null) {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Map<String, Object> streamValue;
+        try {
+          streamValue =
+              mapper.readValue(addQuestionsStream, new TypeReference<Map<String, Object>>() {});
+          for (Entry<String, Object> entry : streamValue.entrySet()) {
+            String textValue = mapper.writeValueAsString(entry.getValue());
+            questionsToAdd.put(entry.getKey(), textValue);
+          }
+        } catch (IOException e) {
+          throw new BatfishException("Failed to read question JSON from input stream", e);
+        }
+      }
+      List<String> questionsToDelete = new ArrayList<>();
+      if (!Strings.isNullOrEmpty(delQuestions)) {
+        JSONArray delQuestionsArray = new JSONArray(delQuestions);
+        for (int i = 0; i < delQuestionsArray.length(); i++) {
+          questionsToDelete.add(delQuestionsArray.getString(i));
+        }
+      }
+
+      Main.getWorkMgr().configureCompare(containerName, questionsToAdd, questionsToDelete);
+
+      return successResponse(new JSONObject().put("result", "successfully configured compare"));
+
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException
+        | ZipException e) {
+      _logger.error("WMS:configureCompare exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:configureCompare exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Configures new/deleted non-differential adhoc questions for the container
+   *
+   * @param apiKey The API key of the requester
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container to configure
+   * @param addQuestionsStream A stream providing the new non-differential questions to add
+   * @param delQuestions A list of existing non-differential questions to delete
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_CONFIGURE_EXPLORE)
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray configureExplore(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
+      @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
+    try {
+      _logger.info(
+          "WMS:configureExplore " + apiKey + " " + containerName + " " + delQuestions + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      Map<String, String> questionsToAdd = new HashMap<>();
+      if (addQuestionsStream != null) {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        Map<String, Object> streamValue;
+        try {
+          streamValue =
+              mapper.readValue(addQuestionsStream, new TypeReference<Map<String, Object>>() {});
+          for (Entry<String, Object> entry : streamValue.entrySet()) {
+            String textValue = mapper.writeValueAsString(entry.getValue());
+            questionsToAdd.put(entry.getKey(), textValue);
+          }
+        } catch (IOException e) {
+          throw new BatfishException("Failed to read question JSON from input stream", e);
+        }
+      }
+      List<String> questionsToDelete = new ArrayList<>();
+      if (!Strings.isNullOrEmpty(delQuestions)) {
+        JSONArray delQuestionsArray = new JSONArray(delQuestions);
+        for (int i = 0; i < delQuestionsArray.length(); i++) {
+          questionsToDelete.add(delQuestionsArray.getString(i));
+        }
+      }
+
+      Main.getWorkMgr().configureExplore(containerName, questionsToAdd, questionsToDelete);
+
+      return successResponse(new JSONObject().put("result", "successfully configured compare"));
+
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException
+        | ZipException e) {
+      _logger.error("WMS:configureExplore exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:configureExplore exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * Delete an analysis from the container
    *
    * @param apiKey The API key of the requester
@@ -390,7 +536,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Deletesthe specified testrig under the specified container
+   * Deletes the specified testrig under the specified container
    *
    * @param apiKey The API key of the requester
    * @param clientVersion The version of the client
@@ -436,7 +582,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Get answers for a previously run analysis
+   * Get existing answers for a previously run analysis
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -446,7 +592,7 @@ public class WorkMgrService {
    * @param deltaTestrig The name of the delta testrig on which the analysis was run
    * @param deltaEnv The name of the delta environment on which the analysis was run
    * @param analysisName The name of the analysis
-   * @param prettyAnswer Whether or not to pretty&#8208;print the result
+   * @param prettyAnswer Whether or not to pretty-print the result
    * @return TODO: document JSON response
    */
   @POST
@@ -511,6 +657,128 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:getAnalsysisAnswers exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Get existing answers for differential adhoc questions
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the questions reside
+   * @param testrigName The name of the testrig on which to run the questions
+   * @param baseEnv The name of the base environment on which to run the questions
+   * @param deltaTestrig The name of the delta testrig on which to run the questions
+   * @param deltaEnv The name of the delta environment on which to run the questions
+   * @param prettyAnswer Whether or not to pretty-print the result
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_COMPARE_ANSWERS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getCompareAnswers(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
+      @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
+      @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer) {
+    try {
+      _logger.info(
+          "WMS:getCompareAnswers " + apiKey + " " + containerName + " " + testrigName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(testrigName, "Base testrig name");
+      checkStringParam(baseEnv, "Base environment name");
+      checkStringParam(deltaTestrig, "Delta testrig name");
+      checkStringParam(deltaEnv, "Delta environment name");
+      checkStringParam(prettyAnswer, "Retrieve pretty-printed answers");
+      boolean pretty = Boolean.parseBoolean(prettyAnswer);
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      Map<String, String> answers =
+          Main.getWorkMgr()
+              .getCompareAnswers(
+                  containerName, testrigName, baseEnv, deltaTestrig, deltaEnv, pretty);
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String answersStr = mapper.writeValueAsString(answers);
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWERS, answersStr));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:getCompareAnswers exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getCompareAnswers exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Get existing answers for non-differential adhoc questions
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the questions reside
+   * @param testrigName The name of the testrig on which to run the questions
+   * @param baseEnv The name of the base environment on which to run the questions
+   * @param prettyAnswer Whether or not to pretty-print the result
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_GET_EXPLORE_ANSWERS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getExploreAnswers(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String baseEnv,
+      @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer) {
+    try {
+      _logger.info(
+          "WMS:getExploreAnswers " + apiKey + " " + containerName + " " + testrigName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(testrigName, "Base testrig name");
+      checkStringParam(baseEnv, "Base environment name");
+      checkStringParam(prettyAnswer, "Retrieve pretty-printed answers");
+      boolean pretty = Boolean.parseBoolean(prettyAnswer);
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      Map<String, String> answers =
+          Main.getWorkMgr().getExploreAnswers(containerName, testrigName, baseEnv, pretty);
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String answersStr = mapper.writeValueAsString(answers);
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWERS, answersStr));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:getExploreAnswers exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getExploreAnswers exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1115,7 +1383,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
     try {
-      _logger.info("WMS:listTestrigQuestions " + apiKey + " " + containerName + "\n");
+      _logger.info(
+          "WMS:listTestrigQuestions " + apiKey + " " + containerName + " " + testrigName + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1145,6 +1414,102 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:listTestrigQuestions exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * List the differential adhoc questions under the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the adhoc questions reside
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_COMPARE_QS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listCompareQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    try {
+      _logger.info("WMS:listCompareQuestions " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      JSONObject retObject = new JSONObject();
+
+      for (String questionName : Main.getWorkMgr().listCompareQuestions(containerName)) {
+        String questionText = Main.getWorkMgr().getCompareQuestion(containerName, questionName);
+
+        retObject.put(questionName, new JSONObject(questionText));
+      }
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:listCompareQuestions exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listCompareQuestions exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * List the non-differential adhoc questions under the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container in which the adhoc questions reside
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_EXPLORE_QS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listExploreQuestions(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    try {
+      _logger.info("WMS:listExploreQuestions " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      JSONObject retObject = new JSONObject();
+
+      for (String questionName : Main.getWorkMgr().listExploreQuestions(containerName)) {
+        String questionText = Main.getWorkMgr().getExploreQuestion(containerName, questionName);
+
+        retObject.put(questionName, new JSONObject(questionText));
+      }
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject));
+    } catch (FileExistsException
+        | FileNotFoundException
+        | IllegalArgumentException
+        | AccessControlException e) {
+      _logger.error("WMS:listExploreQuestions exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listExploreQuestions exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }

@@ -73,8 +73,10 @@ public class BfConsts {
 
   public static final String COMMAND_ANALYZE = "analyze";
   public static final String COMMAND_ANSWER = "answer";
+  public static final String COMMAND_COMPARE = "compare";
   public static final String COMMAND_COMPILE_DIFF_ENVIRONMENT = "diffcompile";
   public static final String COMMAND_DUMP_DP = "dp";
+  public static final String COMMAND_EXPLORE = "explore";
   public static final String COMMAND_INIT_INFO = "initinfo";
   public static final String COMMAND_PARSE_VENDOR_INDEPENDENT = "si";
   public static final String COMMAND_PARSE_VENDOR_SPECIFIC = "sv";
@@ -120,6 +122,7 @@ public class BfConsts {
   public static final String RELPATH_ANSWER_PRETTY_JSON = "answer-pretty.json";
   public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_configs";
+  public static final String RELPATH_COMPARE_DIR = "compare";
   public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
   public static final String RELPATH_CONFIG_FILE_NAME_BATFISH = "batfish.properties";
   public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
@@ -140,6 +143,7 @@ public class BfConsts {
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES = "rt";
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
   public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
+  public static final String RELPATH_EXPLORE_DIR = "explore";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
   public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
   public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
