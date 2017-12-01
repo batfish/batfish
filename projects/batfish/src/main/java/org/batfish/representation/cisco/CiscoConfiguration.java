@@ -3788,6 +3788,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
+
+    c.computeRoutingPolicySources(_w);
+
     return c;
   }
 

@@ -1987,6 +1987,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     warnUnusedPrefixLists();
     warnEmptyPrefixLists();
     warnAndDisableUnreferencedStInterfaces();
+
+    _c.computeRoutingPolicySources(_w);
+
     return _c;
   }
 

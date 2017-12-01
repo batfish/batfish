@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -32,11 +33,6 @@ public final class GeneratedRoute extends AbstractRoute {
     }
 
     @Override
-    protected Builder getThis() {
-      return this;
-    }
-
-    @Override
     public GeneratedRoute build() {
       GeneratedRoute gr =
           new GeneratedRoute(
@@ -52,24 +48,34 @@ public final class GeneratedRoute extends AbstractRoute {
       return gr;
     }
 
-    public void setAsPath(List<SortedSet<Integer>> asPath) {
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
+
+    public Builder setAsPath(List<SortedSet<Integer>> asPath) {
       _asPath = asPath;
+      return this;
     }
 
-    public void setAttributePolicy(String attributePolicy) {
+    public Builder setAttributePolicy(String attributePolicy) {
       _attributePolicy = attributePolicy;
+      return this;
     }
 
-    public void setDiscard(boolean discard) {
+    public Builder setDiscard(boolean discard) {
       _discard = discard;
+      return this;
     }
 
-    public void setGenerationPolicy(String generationPolicy) {
+    public Builder setGenerationPolicy(String generationPolicy) {
       _generationPolicy = generationPolicy;
+      return this;
     }
 
-    public void setNextHopInterface(String nextHopInterface) {
+    public Builder setNextHopInterface(String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
+      return this;
     }
   }
 
@@ -77,9 +83,13 @@ public final class GeneratedRoute extends AbstractRoute {
 
   private static final String PROP_ATTRIBUTE_POLICY = "attributePolicy";
 
+  private static final String PROP_ATTRIBUTE_POLICY_SOURCES = "attributePolicySources";
+
   private static final String PROP_DISCARD = "discard";
 
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
+
+  private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
 
   private static final String PROP_METRIC = "metric";
 
@@ -91,9 +101,13 @@ public final class GeneratedRoute extends AbstractRoute {
 
   private final String _attributePolicy;
 
+  private SortedSet<String> _attributePolicySources;
+
   private final boolean _discard;
 
   private final String _generationPolicy;
+
+  private SortedSet<String> _generationPolicySources;
 
   private final Long _metric;
 
@@ -116,8 +130,10 @@ public final class GeneratedRoute extends AbstractRoute {
     _administrativeCost = administrativeCost;
     _asPath = asPath;
     _attributePolicy = attributePolicy;
+    _attributePolicySources = Collections.emptySortedSet();
     _discard = discard;
     _generationPolicy = generationPolicy;
+    _generationPolicySources = Collections.emptySortedSet();
     _metric = metric;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
@@ -153,6 +169,11 @@ public final class GeneratedRoute extends AbstractRoute {
     return _attributePolicy;
   }
 
+  @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
+  public SortedSet<String> getAttributePolicySources() {
+    return _attributePolicySources;
+  }
+
   @JsonProperty(PROP_DISCARD)
   @JsonPropertyDescription("Whether this route is route is meant to discard all matching packets")
   public boolean getDiscard() {
@@ -164,6 +185,11 @@ public final class GeneratedRoute extends AbstractRoute {
       "The name of the policy that will generate this route if another route matches it")
   public String getGenerationPolicy() {
     return _generationPolicy;
+  }
+
+  @JsonProperty(PROP_GENERATION_POLICY_SOURCES)
+  public SortedSet<String> getGenerationPolicySources() {
+    return _generationPolicySources;
   }
 
   @JsonIgnore(false)
@@ -265,5 +291,15 @@ public final class GeneratedRoute extends AbstractRoute {
       ret = _generationPolicy.compareTo(castRhs._generationPolicy);
     }
     return ret;
+  }
+
+  @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
+  public void setAttributePolicySources(SortedSet<String> attributePolicySources) {
+    _attributePolicySources = attributePolicySources;
+  }
+
+  @JsonProperty(PROP_GENERATION_POLICY_SOURCES)
+  public void setGenerationPolicySources(SortedSet<String> generationPolicySources) {
+    _generationPolicySources = generationPolicySources;
   }
 }

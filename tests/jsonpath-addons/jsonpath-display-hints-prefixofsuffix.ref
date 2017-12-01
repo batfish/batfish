@@ -1126,8 +1126,14 @@
                           "dynamic" : false,
                           "ebgpMultihop" : false,
                           "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
+                          "exportPolicySources" : [
+                            "as2_to_as1"
+                          ],
                           "group" : "as1",
                           "importPolicy" : "as1_to_as2",
+                          "importPolicySources" : [
+                            "as1_to_as2"
+                          ],
                           "localAs" : 2,
                           "localIp" : "10.12.11.2",
                           "remoteAs" : 1,

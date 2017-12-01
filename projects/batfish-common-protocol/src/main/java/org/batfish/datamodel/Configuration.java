@@ -1,14 +1,21 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Predicates.not;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -16,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfJson;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -237,6 +245,45 @@ public final class Configuration extends ComparableStructure<String> {
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private SortedSet<String> collectRoutingPolicySources(String routingPolicyName, Warnings w) {
+    if (routingPolicyName == null) {
+      return Collections.emptySortedSet();
+    }
+    RoutingPolicy routingPolicy = _routingPolicies.get(routingPolicyName);
+    if (routingPolicy == null) {
+      return Collections.emptySortedSet();
+    }
+    Set<String> sources = new LinkedHashSet<>();
+    routingPolicy.computeSources(sources, _routingPolicies, w);
+    return sources
+        .stream()
+        .filter(not(RoutingPolicy::isGenerated))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  }
+
+  public void computeRoutingPolicySources(Warnings w) {
+    for (Vrf vrf : _vrfs.values()) {
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
+          neighbor.setExportPolicySources(
+              collectRoutingPolicySources(neighbor.getExportPolicy(), w));
+          neighbor.setImportPolicySources(
+              collectRoutingPolicySources(neighbor.getImportPolicy(), w));
+        }
+      }
+      OspfProcess ospfProcess = vrf.getOspfProcess();
+      if (ospfProcess != null) {
+        ospfProcess.setExportPolicySources(
+            collectRoutingPolicySources(ospfProcess.getExportPolicy(), w));
+      }
+      for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
+        gr.setAttributePolicySources(collectRoutingPolicySources(gr.getAttributePolicy(), w));
+        gr.setGenerationPolicySources(collectRoutingPolicySources(gr.getGenerationPolicy(), w));
+      }
+    }
   }
 
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
