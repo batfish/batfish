@@ -1,8 +1,12 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class Not extends BooleanExpr {
 
@@ -16,6 +20,12 @@ public class Not extends BooleanExpr {
 
   public Not(BooleanExpr expr) {
     _expr = expr;
+  }
+
+  @Override
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    _expr.collectSources(sources, routingPolicies, w);
   }
 
   @Override

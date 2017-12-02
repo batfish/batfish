@@ -1120,8 +1120,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
+                    "exportPolicySources" : [
+                      "as1_to_as2"
+                    ],
                     "group" : "as2",
                     "importPolicy" : "as2_to_as1",
+                    "importPolicySources" : [
+                      "as2_to_as1"
+                    ],
                     "localAs" : 1,
                     "localIp" : "10.12.11.1",
                     "remoteAs" : 2,
@@ -2286,8 +2292,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.13.22.3~",
+                    "exportPolicySources" : [
+                      "as1_to_as3"
+                    ],
                     "group" : "as3",
                     "importPolicy" : "as3_to_as1",
+                    "importPolicySources" : [
+                      "as3_to_as1"
+                    ],
                     "localAs" : 1,
                     "localIp" : "10.13.22.1",
                     "remoteAs" : 3,
@@ -2311,8 +2323,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~",
+                    "exportPolicySources" : [
+                      "as1_to_as4"
+                    ],
                     "group" : "as4",
                     "importPolicy" : "as4_to_as1",
+                    "importPolicySources" : [
+                      "as4_to_as1"
+                    ],
                     "localAs" : 1,
                     "localIp" : "10.14.22.1",
                     "remoteAs" : 4,
@@ -3822,8 +3840,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
+                    "exportPolicySources" : [
+                      "as2_to_as1"
+                    ],
                     "group" : "as1",
                     "importPolicy" : "as1_to_as2",
+                    "importPolicySources" : [
+                      "as1_to_as2"
+                    ],
                     "localAs" : 2,
                     "localIp" : "10.12.11.2",
                     "remoteAs" : 1,
@@ -4944,8 +4968,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.23.21.3~",
+                    "exportPolicySources" : [
+                      "as2_to_as3"
+                    ],
                     "group" : "as3",
                     "importPolicy" : "as3_to_as2",
+                    "importPolicySources" : [
+                      "as3_to_as2"
+                    ],
                     "localAs" : 2,
                     "localIp" : "10.23.21.2",
                     "remoteAs" : 3,
@@ -6883,8 +6913,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.34.101.3~",
+                    "exportPolicySources" : [
+                      "dept_to_as2"
+                    ],
                     "group" : "as2",
                     "importPolicy" : "as2_to_dept",
+                    "importPolicySources" : [
+                      "as2_to_dept"
+                    ],
                     "localAs" : 65001,
                     "localIp" : "2.34.101.4",
                     "remoteAs" : 2,
@@ -6908,8 +6944,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.34.201.3~",
+                    "exportPolicySources" : [
+                      "dept_to_as2"
+                    ],
                     "group" : "as2",
                     "importPolicy" : "as2_to_dept",
+                    "importPolicySources" : [
+                      "as2_to_dept"
+                    ],
                     "localAs" : 65001,
                     "localIp" : "2.34.201.4",
                     "remoteAs" : 2,
@@ -7579,8 +7621,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.34.101.4~",
+                    "exportPolicySources" : [
+                      "as2dist_to_dept"
+                    ],
                     "group" : "dept",
                     "importPolicy" : "dept_to_as2dist",
+                    "importPolicySources" : [
+                      "dept_to_as2dist"
+                    ],
                     "localAs" : 2,
                     "localIp" : "2.34.101.3",
                     "remoteAs" : 65001,
@@ -8264,8 +8312,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.34.201.4~",
+                    "exportPolicySources" : [
+                      "as2dist_to_dept"
+                    ],
                     "group" : "dept",
                     "importPolicy" : "dept_to_as2dist",
+                    "importPolicySources" : [
+                      "dept_to_as2dist"
+                    ],
                     "localAs" : 2,
                     "localIp" : "2.34.201.3",
                     "remoteAs" : 65001,
@@ -9324,8 +9378,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.23.21.2~",
+                    "exportPolicySources" : [
+                      "as3_to_as2"
+                    ],
                     "group" : "as2",
                     "importPolicy" : "as2_to_as3",
+                    "importPolicySources" : [
+                      "as2_to_as3"
+                    ],
                     "localAs" : 3,
                     "localIp" : "10.23.21.3",
                     "remoteAs" : 2,
@@ -10325,8 +10385,14 @@
                     "dynamic" : false,
                     "ebgpMultihop" : false,
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.13.22.1~",
+                    "exportPolicySources" : [
+                      "as3_to_as1"
+                    ],
                     "group" : "as1",
                     "importPolicy" : "as1_to_as3",
+                    "importPolicySources" : [
+                      "as1_to_as3"
+                    ],
                     "localAs" : 3,
                     "localIp" : "10.13.22.3",
                     "remoteAs" : 1,

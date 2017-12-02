@@ -1,6 +1,11 @@
 package org.batfish.allinone;
 
 import com.google.common.base.Strings;
+import com.uber.jaeger.Configuration;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.samplers.ConstSampler;
+import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -9,6 +14,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 
 public class AllInOne {
 
@@ -69,6 +75,15 @@ public class AllInOne {
               org.batfish.client.config.Settings.ARG_TESTRIG_DIR, _settings.getTestrigDir());
     }
 
+    if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
+      initTracer();
+    }
+
+    argString +=
+        String.format(
+            " -%s %s",
+            org.batfish.client.config.Settings.ARG_TRACING_ENABLE, _settings.getTracingEnable());
+
     // if we are not running the client, we were like not specified a cmdfile.
     // lets do a dummy cmdfile do client initialization does not barf
     if (!_settings.getRunClient() && _settings.getCommandFile() == null) {
@@ -116,15 +131,31 @@ public class AllInOne {
     }
   }
 
+  private void initTracer() {
+    GlobalTracer.register(
+        new Configuration(
+                BfConsts.PROP_ALLINONE_SERVICE,
+                new SamplerConfiguration(ConstSampler.TYPE, 1),
+                new ReporterConfiguration(
+                    false,
+                    _settings.getTracingAgentHost(),
+                    _settings.getTracingAgentPort(),
+                    /* flush interval in ms */ 1000,
+                    /* max buffered Spans */ 10000))
+            .getTracer());
+  }
+
   private void runBatfish() {
 
     String batfishArgs =
         String.format(
-            "%s -%s -%s %s",
+            "%s -%s -%s %s -%s %s",
             _settings.getBatfishArgs(),
             org.batfish.config.Settings.ARG_SERVICE_MODE,
             org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
-            "true");
+            "true",
+            org.batfish.config.Settings.ARG_TRACING_ENABLE,
+            _settings.getTracingEnable());
     String[] initialArgArray = getArgArrayFromString(batfishArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
     final String[] argArray = args.toArray(new String[] {});
@@ -146,7 +177,13 @@ public class AllInOne {
   }
 
   private void runCoordinator() {
-    String[] initialArgArray = getArgArrayFromString(_settings.getCoordinatorArgs());
+    String coordinatorArgs =
+        String.format(
+            "%s -%s %s",
+            _settings.getCoordinatorArgs(),
+            org.batfish.coordinator.config.Settings.ARG_TRACING_ENABLE,
+            _settings.getTracingEnable());
+    String[] initialArgArray = getArgArrayFromString(coordinatorArgs);
     List<String> args = new ArrayList<>(Arrays.asList(initialArgArray));
     final String[] argArray = args.toArray(new String[] {});
     _logger.debugf("Starting coordinator with args: %s\n", Arrays.toString(argArray));

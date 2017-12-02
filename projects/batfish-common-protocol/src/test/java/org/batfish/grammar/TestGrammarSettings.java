@@ -12,6 +12,8 @@ public class TestGrammarSettings implements GrammarSettings {
 
   private final int _maxParserContextTokens;
 
+  private final int _maxParseTreePrintLength;
+
   private final boolean _printParseTree;
 
   private final boolean _throwOnLexerError;
@@ -24,6 +26,7 @@ public class TestGrammarSettings implements GrammarSettings {
    * @param disableUnrecognized See {@link GrammarSettings#getDisableUnrecognized()}
    * @param maxParserContextLines See {@link GrammarSettings#getMaxParserContextLines()}
    * @param maxParserContextTokens See {@link GrammarSettings#getMaxParserContextTokens()}
+   * @param maxParseTreePrintLength See {@link GrammarSettings#getMaxParseTreePrintLength()}
    * @param printParseTree See {@link GrammarSettings#getPrintParseTree()}
    * @param throwOnLexerError See {@link GrammarSettings#getThrowOnLexerError()}
    * @param throwOnParserError See {@link GrammarSettings#getThrowOnParserError()}
@@ -32,12 +35,14 @@ public class TestGrammarSettings implements GrammarSettings {
       boolean disableUnrecognized,
       int maxParserContextLines,
       int maxParserContextTokens,
+      int maxParseTreePrintLength,
       boolean printParseTree,
       boolean throwOnLexerError,
       boolean throwOnParserError) {
     _disableUnrecognized = disableUnrecognized;
     _maxParserContextLines = maxParserContextLines;
     _maxParserContextTokens = maxParserContextTokens;
+    _maxParseTreePrintLength = maxParseTreePrintLength;
     _printParseTree = printParseTree;
     _throwOnLexerError = throwOnLexerError;
     _throwOnParserError = throwOnParserError;
@@ -56,6 +61,11 @@ public class TestGrammarSettings implements GrammarSettings {
   @Override
   public int getMaxParserContextTokens() {
     return _maxParserContextTokens;
+  }
+
+  @Override
+  public int getMaxParseTreePrintLength() {
+    return _maxParseTreePrintLength;
   }
 
   @Override

@@ -11,6 +11,11 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.samplers.ConstSampler;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -1308,13 +1313,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private List<String> getCommandParameters(String[] words, int numOptions) {
-    List<String> parameters = new LinkedList<>();
-
-    for (int index = numOptions + 1; index < words.length; index++) {
-      parameters.add(words[index]);
-    }
-
-    return parameters;
+    return Arrays.asList(words).subList(numOptions + 1, words.length);
   }
 
   /**
@@ -1786,6 +1785,20 @@ public class Client extends AbstractClient implements IClient {
     }
 
     return true;
+  }
+
+  private void initTracer() {
+    GlobalTracer.register(
+        new com.uber.jaeger.Configuration(
+                BfConsts.PROP_CLIENT_SERVICE,
+                new SamplerConfiguration(ConstSampler.TYPE, 1),
+                new ReporterConfiguration(
+                    false,
+                    _settings.getTracingAgentHost(),
+                    _settings.getTracingAgentPort(),
+                    /* flush interval in ms */ 1000,
+                    /* max buffered Spans */ 10000))
+            .getTracer());
   }
 
   private boolean isSetContainer(boolean printError) {
@@ -2277,172 +2290,183 @@ public class Client extends AbstractClient implements IClient {
   }
 
   boolean processCommand(String[] words, @Nullable FileWriter outWriter) {
+    Command command;
     try {
-      List<String> options = getCommandOptions(words);
-      List<String> parameters = getCommandParameters(words, options.size());
+      command = Command.fromName(words[0]);
+    } catch (BatfishException e) {
+      _logger.errorf("Command failed: %s\n", e.getMessage());
+      return false;
+    }
 
-      Command command;
-      try {
-        command = Command.fromName(words[0]);
-      } catch (BatfishException e) {
-        _logger.errorf("Command failed: %s\n", e.getMessage());
-        return false;
-      }
+    List<String> options = getCommandOptions(words);
+    List<String> parameters = getCommandParameters(words, options.size());
 
-      switch (command) {
-        case ADD_ANALYSIS_QUESTIONS:
-          return initOrAddAnalysis(outWriter, options, parameters, false);
-        case ADD_BATFISH_OPTION:
-          return addBatfishOption(words, options, parameters);
-        case ANSWER:
-          return answer(words, outWriter, options, parameters, false);
-        case ANSWER_DELTA:
-          return answer(words, outWriter, options, parameters, true);
-        case CAT:
-          return cat(words);
-        case CHECK_API_KEY:
-          return checkApiKey(options, parameters);
-        case CLEAR_SCREEN:
-          return clearScreen(options, parameters);
-        case DEL_ANALYSIS:
-          return delAnalysis(outWriter, options, parameters);
-        case DEL_ANALYSIS_QUESTIONS:
-          return delAnalysisQuestions(outWriter, options, parameters);
-        case DEL_BATFISH_OPTION:
-          return delBatfishOption(options, parameters);
-        case DEL_CONTAINER:
-          return delContainer(options, parameters);
-        case DEL_ENVIRONMENT:
-          return delEnvironment(options, parameters);
-        case DEL_QUESTION:
-          return delQuestion(options, parameters);
-        case DEL_TESTRIG:
-          return delTestrig(outWriter, options, parameters);
-        case DIR:
-          return dir(options, parameters);
-        case ECHO:
-          return echo(words);
-        case GEN_DP:
-          return generateDataplane(outWriter, options, parameters);
-        case GEN_DELTA_DP:
-          return generateDeltaDataplane(outWriter, options, parameters);
-        case GET:
-          return get(words, outWriter, options, parameters, false);
-        case GET_CONFIGURATION:
-          return getConfiguration(options, parameters);
-        case GET_CONTAINER:
-          return getContainer(options, parameters);
-        case GET_DELTA:
-          return get(words, outWriter, options, parameters, true);
-        case GET_ANALYSIS_ANSWERS:
-          return getAnalysisAnswers(outWriter, options, parameters, false, false);
-        case GET_ANALYSIS_ANSWERS_DELTA:
-          return getAnalysisAnswers(outWriter, options, parameters, true, false);
-        case GET_ANALYSIS_ANSWERS_DIFFERENTIAL:
-          return getAnalysisAnswers(outWriter, options, parameters, false, true);
-        case GET_ANSWER:
-          return getAnswer(outWriter, options, parameters, false, false);
-        case GET_ANSWER_DELTA:
-          return getAnswer(outWriter, options, parameters, true, false);
-        case GET_ANSWER_DIFFERENTIAL:
-          return getAnswer(outWriter, options, parameters, false, true);
-        case GET_QUESTION:
-          return getQuestion(options, parameters);
-        case GET_QUESTION_TEMPLATES:
-          return getQuestionTemplates(options, parameters);
-        case HELP:
-          return help(options, parameters);
-        case INIT_ANALYSIS:
-          return initOrAddAnalysis(outWriter, options, parameters, true);
-        case INIT_CONTAINER:
-          return initContainer(options, parameters);
-        case INIT_DELTA_TESTRIG:
-          return initTestrig(outWriter, options, parameters, true);
-        case INIT_ENVIRONMENT:
-          return initEnvironment(words, outWriter, options, parameters);
-        case INIT_TESTRIG:
-          return initTestrig(outWriter, options, parameters, false);
-        case LIST_ANALYSES:
-          return listAnalyses(outWriter, options, parameters);
-        case LIST_CONTAINERS:
-          return listContainers(options, parameters);
-        case LIST_ENVIRONMENTS:
-          return listEnvironments(options, parameters);
-        case LIST_QUESTIONS:
-          return listQuestions(options, parameters);
-        case LIST_TESTRIGS:
-          return listTestrigs(outWriter, options, parameters);
-        case LOAD_QUESTIONS:
-          return loadQuestions(outWriter, options, parameters, _bfq);
-        case PROMPT:
-          return prompt(options, parameters);
-        case PWD:
-          return pwd(options, parameters);
-        case REINIT_DELTA_TESTRIG:
-          return reinitTestrig(outWriter, options, parameters, true);
-        case RUN_ANALYSIS:
-          return runAnalysis(outWriter, options, parameters, false, false);
-        case RUN_ANALYSIS_DELTA:
-          return runAnalysis(outWriter, options, parameters, true, false);
-        case RUN_ANALYSIS_DIFFERENTIAL:
-          return runAnalysis(outWriter, options, parameters, false, true);
-        case REINIT_TESTRIG:
-          return reinitTestrig(outWriter, options, parameters, false);
-        case SET_BATFISH_LOGLEVEL:
-          return setBatfishLogLevel(options, parameters);
-        case SET_CONTAINER:
-          return setContainer(options, parameters);
-        case SET_DELTA_ENV:
-          return setDeltaEnv(options, parameters);
-        case SET_ENV:
-          return setEnv(options, parameters);
-        case SET_DELTA_TESTRIG:
-          return setDeltaTestrig(options, parameters);
-        case SET_LOGLEVEL:
-          return setLogLevel(options, parameters);
-        case SET_PRETTY_PRINT:
-          return setPrettyPrint(options, parameters);
-        case SET_TESTRIG:
-          return setTestrig(options, parameters);
-        case SHOW_API_KEY:
-          return showApiKey(options, parameters);
-        case SHOW_BATFISH_LOGLEVEL:
-          return showBatfishLogLevel(options, parameters);
-        case SHOW_BATFISH_OPTIONS:
-          return showBatfishOptions(options, parameters);
-        case SHOW_CONTAINER:
-          return showContainer(options, parameters);
-        case SHOW_COORDINATOR_HOST:
-          return showCoordinatorHost(options, parameters);
-        case SHOW_DELTA_TESTRIG:
-          return showDeltaTestrig(options, parameters);
-        case SHOW_LOGLEVEL:
-          return showLogLevel(options, parameters);
-        case SHOW_TESTRIG:
-          return showTestrig(options, parameters);
-        case SHOW_VERSION:
-          return showVersion(options, parameters);
-        case SYNC_TESTRIGS_SYNC_NOW:
-          return syncTestrigsSyncNow(options, parameters);
-        case SYNC_TESTRIGS_UPDATE_SETTINGS:
-          return syncTestrigsUpdateSettings(words, options, parameters);
-        case TEST:
-          return test(options, parameters);
-        case UPLOAD_CUSTOM_OBJECT:
-          return uploadCustomObject(options, parameters);
-
-        case EXIT:
-        case QUIT:
-          return exit(options, parameters);
-
-        default:
-          _logger.error("Unsupported command " + words[0] + "\n");
-          _logger.error("Type 'help' to see the list of valid commands\n");
-          return false;
-      }
+    try (ActiveSpan span = GlobalTracer.get().buildSpan(command.commandName()).startActive()) {
+      assert span != null; // make span not show up as unused.
+      return processCommand(command, words, outWriter, options, parameters);
     } catch (Exception e) {
       e.printStackTrace();
       return false;
+    }
+  }
+
+  private boolean processCommand(
+      Command command,
+      String[] words,
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters)
+      throws Exception {
+    switch (command) {
+      case ADD_ANALYSIS_QUESTIONS:
+        return initOrAddAnalysis(outWriter, options, parameters, false);
+      case ADD_BATFISH_OPTION:
+        return addBatfishOption(words, options, parameters);
+      case ANSWER:
+        return answer(words, outWriter, options, parameters, false);
+      case ANSWER_DELTA:
+        return answer(words, outWriter, options, parameters, true);
+      case CAT:
+        return cat(words);
+      case CHECK_API_KEY:
+        return checkApiKey(options, parameters);
+      case CLEAR_SCREEN:
+        return clearScreen(options, parameters);
+      case DEL_ANALYSIS:
+        return delAnalysis(outWriter, options, parameters);
+      case DEL_ANALYSIS_QUESTIONS:
+        return delAnalysisQuestions(outWriter, options, parameters);
+      case DEL_BATFISH_OPTION:
+        return delBatfishOption(options, parameters);
+      case DEL_CONTAINER:
+        return delContainer(options, parameters);
+      case DEL_ENVIRONMENT:
+        return delEnvironment(options, parameters);
+      case DEL_QUESTION:
+        return delQuestion(options, parameters);
+      case DEL_TESTRIG:
+        return delTestrig(outWriter, options, parameters);
+      case DIR:
+        return dir(options, parameters);
+      case ECHO:
+        return echo(words);
+      case GEN_DP:
+        return generateDataplane(outWriter, options, parameters);
+      case GEN_DELTA_DP:
+        return generateDeltaDataplane(outWriter, options, parameters);
+      case GET:
+        return get(words, outWriter, options, parameters, false);
+      case GET_CONFIGURATION:
+        return getConfiguration(options, parameters);
+      case GET_CONTAINER:
+        return getContainer(options, parameters);
+      case GET_DELTA:
+        return get(words, outWriter, options, parameters, true);
+      case GET_ANALYSIS_ANSWERS:
+        return getAnalysisAnswers(outWriter, options, parameters, false, false);
+      case GET_ANALYSIS_ANSWERS_DELTA:
+        return getAnalysisAnswers(outWriter, options, parameters, true, false);
+      case GET_ANALYSIS_ANSWERS_DIFFERENTIAL:
+        return getAnalysisAnswers(outWriter, options, parameters, false, true);
+      case GET_ANSWER:
+        return getAnswer(outWriter, options, parameters, false, false);
+      case GET_ANSWER_DELTA:
+        return getAnswer(outWriter, options, parameters, true, false);
+      case GET_ANSWER_DIFFERENTIAL:
+        return getAnswer(outWriter, options, parameters, false, true);
+      case GET_QUESTION:
+        return getQuestion(options, parameters);
+      case GET_QUESTION_TEMPLATES:
+        return getQuestionTemplates(options, parameters);
+      case HELP:
+        return help(options, parameters);
+      case INIT_ANALYSIS:
+        return initOrAddAnalysis(outWriter, options, parameters, true);
+      case INIT_CONTAINER:
+        return initContainer(options, parameters);
+      case INIT_DELTA_TESTRIG:
+        return initTestrig(outWriter, options, parameters, true);
+      case INIT_ENVIRONMENT:
+        return initEnvironment(words, outWriter, options, parameters);
+      case INIT_TESTRIG:
+        return initTestrig(outWriter, options, parameters, false);
+      case LIST_ANALYSES:
+        return listAnalyses(outWriter, options, parameters);
+      case LIST_CONTAINERS:
+        return listContainers(options, parameters);
+      case LIST_ENVIRONMENTS:
+        return listEnvironments(options, parameters);
+      case LIST_QUESTIONS:
+        return listQuestions(options, parameters);
+      case LIST_TESTRIGS:
+        return listTestrigs(outWriter, options, parameters);
+      case LOAD_QUESTIONS:
+        return loadQuestions(outWriter, options, parameters, _bfq);
+      case PROMPT:
+        return prompt(options, parameters);
+      case PWD:
+        return pwd(options, parameters);
+      case REINIT_DELTA_TESTRIG:
+        return reinitTestrig(outWriter, options, parameters, true);
+      case RUN_ANALYSIS:
+        return runAnalysis(outWriter, options, parameters, false, false);
+      case RUN_ANALYSIS_DELTA:
+        return runAnalysis(outWriter, options, parameters, true, false);
+      case RUN_ANALYSIS_DIFFERENTIAL:
+        return runAnalysis(outWriter, options, parameters, false, true);
+      case REINIT_TESTRIG:
+        return reinitTestrig(outWriter, options, parameters, false);
+      case SET_BATFISH_LOGLEVEL:
+        return setBatfishLogLevel(options, parameters);
+      case SET_CONTAINER:
+        return setContainer(options, parameters);
+      case SET_DELTA_ENV:
+        return setDeltaEnv(options, parameters);
+      case SET_ENV:
+        return setEnv(options, parameters);
+      case SET_DELTA_TESTRIG:
+        return setDeltaTestrig(options, parameters);
+      case SET_LOGLEVEL:
+        return setLogLevel(options, parameters);
+      case SET_PRETTY_PRINT:
+        return setPrettyPrint(options, parameters);
+      case SET_TESTRIG:
+        return setTestrig(options, parameters);
+      case SHOW_API_KEY:
+        return showApiKey(options, parameters);
+      case SHOW_BATFISH_LOGLEVEL:
+        return showBatfishLogLevel(options, parameters);
+      case SHOW_BATFISH_OPTIONS:
+        return showBatfishOptions(options, parameters);
+      case SHOW_CONTAINER:
+        return showContainer(options, parameters);
+      case SHOW_COORDINATOR_HOST:
+        return showCoordinatorHost(options, parameters);
+      case SHOW_DELTA_TESTRIG:
+        return showDeltaTestrig(options, parameters);
+      case SHOW_LOGLEVEL:
+        return showLogLevel(options, parameters);
+      case SHOW_TESTRIG:
+        return showTestrig(options, parameters);
+      case SHOW_VERSION:
+        return showVersion(options, parameters);
+      case SYNC_TESTRIGS_SYNC_NOW:
+        return syncTestrigsSyncNow(options, parameters);
+      case SYNC_TESTRIGS_UPDATE_SETTINGS:
+        return syncTestrigsUpdateSettings(words, options, parameters);
+      case TEST:
+        return test(options, parameters);
+      case UPLOAD_CUSTOM_OBJECT:
+        return uploadCustomObject(options, parameters);
+
+      case EXIT:
+      case QUIT:
+        return exit(options, parameters);
+
+      default:
+        _logger.error("Unsupported command " + words[0] + "\n");
+        _logger.error("Type 'help' to see the list of valid commands\n");
+        return false;
     }
   }
 
@@ -2517,7 +2541,9 @@ public class Client extends AbstractClient implements IClient {
   public void run(List<String> initialCommands) {
     loadPlugins();
     initHelpers();
-
+    if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
+      initTracer();
+    }
     _logger.debugf(
         "Will use coordinator at %s://%s\n",
         (_settings.getSslDisable()) ? "http" : "https", _settings.getCoordinatorHost());

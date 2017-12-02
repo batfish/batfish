@@ -1054,6 +1054,15 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ikeProposals" : {
+            "1" : {
+              "name" : "1",
+              "authenticationAlgorithm" : "SHA_256",
+              "authenticationMethod" : "RSA_SIGNATURES",
+              "diffieHellmanGroup" : "GROUP20",
+              "encryptionAlgorithm" : "AES_256_CBC"
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_crypto"
@@ -4223,6 +4232,37 @@
           "configurationFormat" : "CISCO_NX",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "ikePolicies" : {
+            "myprofile" : {
+              "name" : "myprofile",
+              "proposals" : [
+                "1"
+              ]
+            }
+          },
+          "ikeProposals" : {
+            "1" : {
+              "name" : "1",
+              "authenticationAlgorithm" : "MD5",
+              "authenticationMethod" : "PRE_SHARED_KEYS",
+              "diffieHellmanGroup" : "GROUP2",
+              "encryptionAlgorithm" : "THREEDES_CBC",
+              "lifetimeSeconds" : 28800
+            }
+          },
+          "ipsecPolicies" : {
+            "abcdefg" : {
+              "name" : "abcdefg",
+              "pfsKeyGroupDynamicIke" : false
+            }
+          },
+          "ipsecProposals" : {
+            "ESP-3DES-MD5" : {
+              "name" : "ESP-3DES-MD5",
+              "authenticationAlgorithm" : "HMAC_MD5_96",
+              "encryptionAlgorithm" : "THREEDES_CBC"
+            }
+          },
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_crypto"
@@ -11725,6 +11765,30 @@
             }
           }
         },
+        "nat-08c21704416f06046" : {
+          "name" : "nat-08c21704416f06046",
+          "configurationFormat" : "AWS_VPC",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
+        "nat-09fd8f73171d2d9a3" : {
+          "name" : "nat-09fd8f73171d2d9a3",
+          "configurationFormat" : "AWS_VPC",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "vendorFamily" : { },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "neighbor" : {
           "name" : "neighbor",
           "configurationFormat" : "CISCO_NX",
@@ -15973,6 +16037,9 @@
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "group" : "ABC",
                     "importPolicy" : "FROM_ABC_V4",
+                    "importPolicySources" : [
+                      "FROM_ABC_V4"
+                    ],
                     "localAs" : 1,
                     "remoteAs" : 2,
                     "remotePrefix" : "1.1.1.1/32",

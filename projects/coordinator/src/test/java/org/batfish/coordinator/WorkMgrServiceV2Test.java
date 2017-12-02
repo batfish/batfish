@@ -39,8 +39,8 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     BatfishLogger logger = new BatfishLogger("debug", false);
     Settings settings = new Settings(new String[] {});
     Main.mainInit(new String[] {"-containerslocation", _folder.getRoot().toString()});
-    Main.initAuthorizer();
     Main.setLogger(logger);
+    Main.initAuthorizer();
     Main.setWorkMgr(new WorkMgr(settings, logger));
   }
 

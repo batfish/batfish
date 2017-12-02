@@ -59,7 +59,6 @@ public class WorkMgrServiceV2 {
   /** Relocate the request to ContainerResource. */
   @Path("containers/{id}")
   public ContainerResource getResource(@PathParam("id") String id) {
-    _logger.info("Relocate the request to ContainerResource\n");
     return new ContainerResource(_uriInfo, _apiKey, id);
   }
 }

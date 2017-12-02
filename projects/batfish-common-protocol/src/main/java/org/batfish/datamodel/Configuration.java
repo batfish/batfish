@@ -1,20 +1,31 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Predicates.not;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BfJson;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.codehaus.jettison.json.JSONException;
@@ -24,6 +35,38 @@ import org.codehaus.jettison.json.JSONObject;
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
 public final class Configuration extends ComparableStructure<String> {
+
+  public static class Builder extends NetworkFactoryBuilder<Configuration> {
+
+    private ConfigurationFormat _configurationFormat;
+
+    private String _hostname;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, Configuration.class);
+    }
+
+    @Override
+    public Configuration build() {
+      String name = _hostname != null ? _hostname : generateName();
+      Configuration configuration = new Configuration(name, _configurationFormat);
+      return configuration;
+    }
+
+    public Builder setConfigurationFormat(ConfigurationFormat configurationFormat) {
+      _configurationFormat = configurationFormat;
+      return this;
+    }
+
+    public Builder setHostname(String hostname) {
+      _hostname = hostname;
+      return this;
+    }
+  }
+
+  public static final String DEFAULT_VRF_NAME = "default";
+
+  public static final String NODE_NONE_NAME = "(none)";
 
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
 
@@ -38,8 +81,6 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
 
   private static final String PROP_DEVICE_TYPE = "deviceType";
-
-  public static final String DEFAULT_VRF_NAME = "default";
 
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
 
@@ -59,8 +100,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
 
-  public static final String NODE_NONE_NAME = "(none)";
-
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
   private static final String PROP_ROLES = "roles";
@@ -69,17 +108,17 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_ROUTING_POLICIES = "routingPolicies";
 
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_SNMP_SOURCE_INTERFACE = "snmpSourceInterface";
 
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
 
+  private static final String PROP_ZONES = "zones";
+
+  private static final long serialVersionUID = 1L;
+
   private static final int VLAN_NORMAL_MAX_DEFAULT = 4094;
 
   private static final int VLAN_NORMAL_MIN_DEFAULT = 1;
-
-  private static final String PROP_ZONES = "zones";
 
   private NavigableMap<String, AsPathAccessList> _asPathAccessLists;
 
@@ -89,7 +128,7 @@ public final class Configuration extends ComparableStructure<String> {
 
   private NavigableMap<String, CommunityList> _communityLists;
 
-  private ConfigurationFormat _configurationFormat;
+  private final ConfigurationFormat _configurationFormat;
 
   private LineAction _defaultCrossZoneAction;
 
@@ -177,11 +216,17 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, Zone> _zones;
 
   @JsonCreator
-  public Configuration(@JsonProperty(PROP_NAME) String hostname) {
+  public Configuration(
+      @JsonProperty(PROP_NAME) String hostname,
+      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
     super(hostname);
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
+    if (configurationFormat == null) {
+      throw new BatfishException("Configuration format cannot be null");
+    }
+    _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
@@ -204,6 +249,45 @@ public final class Configuration extends ComparableStructure<String> {
     _vendorFamily = new VendorFamily();
     _vrfs = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private SortedSet<String> collectRoutingPolicySources(String routingPolicyName, Warnings w) {
+    if (routingPolicyName == null) {
+      return Collections.emptySortedSet();
+    }
+    RoutingPolicy routingPolicy = _routingPolicies.get(routingPolicyName);
+    if (routingPolicy == null) {
+      return Collections.emptySortedSet();
+    }
+    Set<String> sources = new LinkedHashSet<>();
+    routingPolicy.computeSources(sources, _routingPolicies, w);
+    return sources
+        .stream()
+        .filter(not(RoutingPolicy::isGenerated))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  }
+
+  public void computeRoutingPolicySources(Warnings w) {
+    for (Vrf vrf : _vrfs.values()) {
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
+          neighbor.setExportPolicySources(
+              collectRoutingPolicySources(neighbor.getExportPolicy(), w));
+          neighbor.setImportPolicySources(
+              collectRoutingPolicySources(neighbor.getImportPolicy(), w));
+        }
+      }
+      OspfProcess ospfProcess = vrf.getOspfProcess();
+      if (ospfProcess != null) {
+        ospfProcess.setExportPolicySources(
+            collectRoutingPolicySources(ospfProcess.getExportPolicy(), w));
+      }
+      for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
+        gr.setAttributePolicySources(collectRoutingPolicySources(gr.getAttributePolicy(), w));
+        gr.setGenerationPolicySources(collectRoutingPolicySources(gr.getGenerationPolicy(), w));
+      }
+    }
   }
 
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
@@ -537,10 +621,6 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_COMMUNITY_LISTS)
   public void setCommunityLists(NavigableMap<String, CommunityList> communityLists) {
     _communityLists = communityLists;
-  }
-
-  public void setConfigurationFormat(ConfigurationFormat configurationFormat) {
-    _configurationFormat = configurationFormat;
   }
 
   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {

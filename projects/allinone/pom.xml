@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.batfish</groupId>
     <artifactId>batfish-parent</artifactId>
-    <version>0.32.0</version>
+    <version>0.33.0</version>
   </parent>
 
   <artifactId>allinone</artifactId>
@@ -23,7 +23,8 @@
               <goals><goal>analyze-only</goal></goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  org.slf4j:slf4j-jdk14,org.batfish:question
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.batfish:question</ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -97,13 +98,13 @@
     </dependency>
 
     <dependency>
-       <groupId>org.batfish</groupId>
-       <artifactId>question</artifactId>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
+      <groupId>com.uber.jaeger</groupId>
+      <artifactId>jaeger-core</artifactId>
     </dependency>
 
     <dependency>
@@ -111,7 +112,18 @@
       <artifactId>commons-lang</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-util</artifactId>
+    </dependency>
+
     <!-- Runtime dependencies to add logging. -->
+    <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>question</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>

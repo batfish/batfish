@@ -5,6 +5,8 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -85,7 +87,8 @@ public abstract class PluginConsumer implements IPluginConsumer {
       // Awkward nested try blocks required because we refuse to throw IOExceptions.
       try (Closer closer = Closer.create()) {
         FileInputStream fis = closer.register(new FileInputStream(inputFile.toFile()));
-        GZIPInputStream gis = closer.register(new GZIPInputStream(fis));
+        BufferedInputStream bis = closer.register(new BufferedInputStream(fis));
+        GZIPInputStream gis = closer.register(new GZIPInputStream(bis));
         return deserializeObject(gis, outputClass);
       }
     } catch (IOException e) {
@@ -156,8 +159,10 @@ public abstract class PluginConsumer implements IPluginConsumer {
   /** Serializes the given object to a file with the given output name, using GZIP compression. */
   public void serializeObject(Serializable object, Path outputFile) {
     try {
-      try (OutputStream out = Files.newOutputStream(outputFile)) {
-        serializeToGzipData(object, out);
+      try (Closer closer = Closer.create()) {
+        OutputStream out = closer.register(Files.newOutputStream(outputFile));
+        BufferedOutputStream bout = closer.register(new BufferedOutputStream(out));
+        serializeToGzipData(object, bout);
       }
     } catch (IOException e) {
       throw new BatfishException(
