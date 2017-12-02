@@ -12,23 +12,21 @@ public class DeviceTypeTest {
 
   @Test
   public void emptyConfigurationIsSwitch() {
-    Configuration c = new Configuration("hostname");
+    Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.SWITCH));
   }
 
   @Test
   public void hostConfigIsHost() {
-    Configuration c = new Configuration("hostname");
-    c.setConfigurationFormat(ConfigurationFormat.HOST);
+    Configuration c = new Configuration("hostname", ConfigurationFormat.HOST);
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.HOST));
   }
 
   @Test
   public void hostWithBgpIsHost() {
-    Configuration c = new Configuration("hostname");
-    c.setConfigurationFormat(ConfigurationFormat.HOST);
+    Configuration c = new Configuration("hostname", ConfigurationFormat.HOST);
     Vrf vrf = new Vrf("vrfName");
     vrf.setBgpProcess(new BgpProcess());
     c.getVrfs().put("sampleVrf", vrf);
@@ -38,7 +36,7 @@ public class DeviceTypeTest {
 
   @Test
   public void configWithFirstVrfEmptyIsRouter() {
-    Configuration c = new Configuration("hostname");
+    Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Vrf emptyVrf = new Vrf("empty");
     Vrf vrf = new Vrf("vrfName");
     vrf.setBgpProcess(new BgpProcess());
@@ -50,7 +48,7 @@ public class DeviceTypeTest {
 
   @Test
   public void configWithBgpIsRouter() {
-    Configuration c = new Configuration("hostname");
+    Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = new Vrf("vrfName");
     vrf.setBgpProcess(new BgpProcess());
     c.getVrfs().put("sampleVrf", vrf);
@@ -60,7 +58,7 @@ public class DeviceTypeTest {
 
   @Test
   public void configWithOspfIsRouter() {
-    Configuration c = new Configuration("hostname");
+    Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = new Vrf("vrfName");
     vrf.setOspfProcess(new OspfProcess());
     c.getVrfs().put("sampleVrf", vrf);
@@ -70,7 +68,7 @@ public class DeviceTypeTest {
 
   @Test
   public void configWithRipIsRouter() {
-    Configuration c = new Configuration("hostname");
+    Configuration c = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = new Vrf("vrfName");
     vrf.setRipProcess(new RipProcess());
     c.getVrfs().put("sampleVrf", vrf);
