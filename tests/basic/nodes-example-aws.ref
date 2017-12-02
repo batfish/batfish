@@ -8,6 +8,7 @@
           "name" : "i-0383fda87c012141d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "eni-4b466165" : {
               "name" : "eni-4b466165",
@@ -141,6 +142,7 @@
           "name" : "i-075dc46a9bc347264",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "eni-d2b094fc" : {
               "name" : "eni-d2b094fc",
@@ -245,6 +247,7 @@
           "name" : "i-0837c877110427f2b",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "eni-6b705445" : {
               "name" : "eni-6b705445",
@@ -378,6 +381,7 @@
           "name" : "i-0b26ec095feb42260",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "eni-297b5c07" : {
               "name" : "eni-297b5c07",
@@ -511,6 +515,7 @@
           "name" : "igw-068fee63",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "subnet-1f315846" : {
               "name" : "subnet-1f315846",
@@ -645,6 +650,7 @@
           "name" : "igw-9b93ddfc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "subnet-073b8061" : {
               "name" : "subnet-073b8061",
@@ -833,6 +839,7 @@
           "name" : "igw-fac5839d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "subnet-62f14104" : {
               "name" : "subnet-62f14104",
@@ -940,6 +947,7 @@
           "name" : "lhr-border-02",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "demo.com",
           "ikeGateways" : {
             "isakmp-vpn-ba2e34a8-0" : {
@@ -2293,6 +2301,7 @@
           "name" : "subnet-073b8061",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-9b93ddfc" : {
               "name" : "igw-9b93ddfc",
@@ -2443,6 +2452,7 @@
           "name" : "subnet-1641fa70",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-9b93ddfc" : {
               "name" : "igw-9b93ddfc",
@@ -2593,6 +2603,7 @@
           "name" : "subnet-1f315846",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-068fee63" : {
               "name" : "igw-068fee63",
@@ -2752,6 +2763,7 @@
           "name" : "subnet-30398256",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-9b93ddfc" : {
               "name" : "igw-9b93ddfc",
@@ -2902,6 +2914,7 @@
           "name" : "subnet-62f14104",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-fac5839d" : {
               "name" : "igw-fac5839d",
@@ -3052,6 +3065,7 @@
           "name" : "subnet-7044ff16",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-9b93ddfc" : {
               "name" : "igw-9b93ddfc",
@@ -3202,6 +3216,7 @@
           "name" : "subnet-8d0cbdeb",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-fac5839d" : {
               "name" : "igw-fac5839d",
@@ -3352,6 +3367,7 @@
           "name" : "subnet-9c8adceb",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-068fee63" : {
               "name" : "igw-068fee63",
@@ -3511,6 +3527,7 @@
           "name" : "subnet-d9cafabc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-068fee63" : {
               "name" : "igw-068fee63",
@@ -3670,6 +3687,7 @@
           "name" : "subnet-f73a8191",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-9b93ddfc" : {
               "name" : "igw-9b93ddfc",
@@ -3820,6 +3838,7 @@
           "name" : "vgw-81fd279f",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "ikeGateways" : {
             "vpn-ba2e34a8-1" : {
               "name" : "vpn-ba2e34a8-1",
@@ -4122,6 +4141,7 @@
           "name" : "vpc-815775e7",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "vgw-81fd279f" : {
               "name" : "vgw-81fd279f",
@@ -4165,6 +4185,7 @@
           "name" : "vpc-925131f4",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-fac5839d" : {
               "name" : "igw-fac5839d",
@@ -4280,6 +4301,7 @@
           "name" : "vpc-b390fad5",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-9b93ddfc" : {
               "name" : "igw-9b93ddfc",
@@ -4500,6 +4522,7 @@
           "name" : "vpc-f8fad69d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
           "interfaces" : {
             "igw-068fee63" : {
               "name" : "igw-068fee63",
