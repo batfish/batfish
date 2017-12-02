@@ -86,8 +86,8 @@ public class DeviceTypeTest {
       // If vrf has BGP, OSPF, or RIP process and device isn't a host, set device type to router
       if (c.getDeviceType() == null
           && (vrf.getBgpProcess() != null
-          || vrf.getOspfProcess() != null
-          || vrf.getRipProcess() != null)) {
+              || vrf.getOspfProcess() != null
+              || vrf.getRipProcess() != null)) {
         c.setDeviceType(DeviceType.ROUTER);
       }
       // Compute OSPF interface costs where they are missing
