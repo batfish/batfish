@@ -59,6 +59,7 @@
                 },
                 "defaultCrossZoneAction" : "ACCEPT",
                 "defaultInboundAction" : "ACCEPT",
+                "deviceType" : "ROUTER",
                 "domainName" : "lab.local",
                 "interfaces" : {
                   "Ethernet0/0" : {
