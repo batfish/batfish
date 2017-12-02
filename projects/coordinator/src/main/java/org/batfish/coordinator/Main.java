@@ -4,6 +4,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 import com.google.common.collect.Lists;
+import com.uber.jaeger.Configuration;
+import com.uber.jaeger.Configuration.ReporterConfiguration;
+import com.uber.jaeger.Configuration.SamplerConfiguration;
+import com.uber.jaeger.samplers.ConstSampler;
+import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileVisitResult;
@@ -158,22 +164,24 @@ public class Main {
   }
 
   static void initAuthorizer() throws Exception {
-    switch (_settings.getAuthorizationType()) {
+    Settings settings = getSettings();
+    Authorizer.Type type = settings.getAuthorizationType();
+    switch (type) {
       case none:
-        _authorizer = new NoneAuthorizer();
+        _authorizer = NoneAuthorizer.INSTANCE;
         break;
       case file:
-        _authorizer = new FileAuthorizer();
+        _authorizer = FileAuthorizer.createFromSettings(settings);
         break;
       case database:
         _authorizer = new DbAuthorizer();
         break;
       default:
         System.err.print(
-            "org.batfish.coordinator: Initialization failed. Unsupported authorizer type "
-                + _settings.getAuthorizationType());
+            "org.batfish.coordinator: Initialization failed. Unsupported authorizer type " + type);
         System.exit(1);
     }
+    getLogger().infof("Using authorizer %s\n", _authorizer);
   }
 
   private static void initPoolManager() {
@@ -223,6 +231,9 @@ public class Main {
         new ResourceConfig(serviceClass)
             .register(ExceptionMapper.class)
             .register(CrossDomainFilter.class);
+    if (_settings.getTracingEnable()) {
+      rcWork.register(ServerTracingDynamicFeature.class);
+    }
     for (Class<?> feature : features) {
       rcWork.register(feature);
     }
@@ -250,6 +261,20 @@ public class Main {
           ConfigurationLocator.class,
           Main.class);
     }
+  }
+
+  private static void initTracer() {
+    GlobalTracer.register(
+        new Configuration(
+                BfConsts.PROP_COORDINATOR_SERVICE,
+                new SamplerConfiguration(ConstSampler.TYPE, 1),
+                new ReporterConfiguration(
+                    false,
+                    _settings.getTracingAgentHost(),
+                    _settings.getTracingAgentPort(),
+                    /* flush interval in ms */ 1000,
+                    /* max buffered Spans */ 10000))
+            .getTracer());
   }
 
   private static void initWorkManager() {
@@ -301,6 +326,9 @@ public class Main {
     try {
       initAuthorizer();
       initPoolManager();
+      if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
+        initTracer();
+      }
       initWorkManager();
     } catch (Exception e) {
       System.err.println(

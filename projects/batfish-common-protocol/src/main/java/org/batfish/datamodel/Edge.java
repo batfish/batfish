@@ -31,6 +31,10 @@ public class Edge extends Pair<NodeInterfacePair, NodeInterfacePair> {
     super(new NodeInterfacePair(node1, int1), new NodeInterfacePair(node2, int2));
   }
 
+  public Edge(Interface i1, Interface i2) {
+    this(i1.getOwner().getName(), i1.getName(), i2.getOwner().getName(), i2.getName());
+  }
+
   @JsonProperty(PROP_INT1)
   public String getInt1() {
     return _first.getInterface();

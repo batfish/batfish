@@ -74,7 +74,6 @@ public class NodeRoleSpecifier {
             throw new BatfishException(
                 "Supplied regex does not contain a group: \"" + pattern.pattern() + "\"", e);
           }
-          break;
         }
       }
     }

@@ -56,8 +56,8 @@ public class WorkMgrServiceTest {
           "-templatedirs",
           _questionsTemplatesFolder.getRoot().toString()
         });
-    Main.initAuthorizer();
     Main.setLogger(logger);
+    Main.initAuthorizer();
     WorkMgr manager = new WorkMgr(settings, logger);
     Main.setWorkMgr(manager);
     manager.initContainer(_containerName, null);

@@ -437,6 +437,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARG_MAX_PARSER_CONTEXT_TOKENS = "maxparsercontexttokens";
 
+  private static final String ARG_MAX_PARSE_TREE_PRINT_LENGTH = "maxparsetreeprintlength";
+
   private static final String ARG_MAX_RUNTIME_MS = "maxruntime";
 
   private static final String ARG_NO_SHUFFLE = "noshuffle";
@@ -456,6 +458,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   public static final String ARG_SERVICE_MODE = "servicemode";
 
   private static final String ARG_SERVICE_PORT = "serviceport";
+
+  private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
+
+  private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
+
+  public static final String ARG_TRACING_ENABLE = "tracingenable";
 
   private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
 
@@ -593,6 +601,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private int _maxParserContextTokens;
 
+  private int _maxParseTreePrintLength;
+
   private int _maxRuntimeMs;
 
   private String _outputEnvironmentName;
@@ -664,6 +674,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private boolean _throwOnParserError;
 
   private boolean _timestamp;
+
+  private String _tracingAgentHost;
+
+  private Integer _tracingAgentPort;
+
+  private boolean _tracingEnable;
 
   private boolean _unimplementedAsError;
 
@@ -899,6 +915,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _maxParserContextTokens;
   }
 
+  @Override
+  public int getMaxParseTreePrintLength() {
+    return _maxParseTreePrintLength;
+  }
+
   public int getMaxRuntimeMs() {
     return _maxRuntimeMs;
   }
@@ -1038,6 +1059,18 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _timestamp;
   }
 
+  public Integer getTracingAgentPort() {
+    return _tracingAgentPort;
+  }
+
+  public String getTracingAgentHost() {
+    return _tracingAgentHost;
+  }
+
+  public boolean getTracingEnable() {
+    return _tracingEnable;
+  }
+
   public boolean getUnimplementedAsError() {
     return _unimplementedAsError;
   }
@@ -1113,6 +1146,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
+    setDefaultProperty(ARG_MAX_PARSE_TREE_PRINT_LENGTH, 0);
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
@@ -1141,6 +1175,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
     setDefaultProperty(ARG_THROW_ON_PARSER_ERROR, true);
     setDefaultProperty(ARG_TIMESTAMP, false);
+    setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
+    setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
+    setDefaultProperty(ARG_TRACING_ENABLE, false);
     setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
@@ -1312,6 +1349,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         "max number of context tokens to print on parser error",
         ARGNAME_NUMBER);
 
+    addOption(
+        ARG_MAX_PARSE_TREE_PRINT_LENGTH,
+        "max number of characters to print for parsetree pretty print "
+            + "(<= 0 is treated as no limit)",
+        ARGNAME_NUMBER);
+
     addOption(ARG_MAX_RUNTIME_MS, "maximum time (in ms) to allow a task to run", ARGNAME_NUMBER);
 
     addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
@@ -1385,6 +1428,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(ARG_TIMESTAMP, "print timestamps in log messages");
 
+    addOption(ARG_TRACING_AGENT_HOST, "jaeger agent host", "jaeger_agent_host");
+
+    addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
+
+    addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
         "throws "
@@ -1488,6 +1536,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _logTee = getBooleanOptionValue(ARG_LOG_TEE);
     _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
     _maxParserContextTokens = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
+    _maxParseTreePrintLength = getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
     _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
     _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
     _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
@@ -1521,6 +1570,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
     _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
     _timestamp = getBooleanOptionValue(ARG_TIMESTAMP);
+    _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
+    _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
+    _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
     _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
@@ -1615,6 +1667,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setMaxParserContextTokens(int maxParserContextTokens) {
     _maxParserContextTokens = maxParserContextTokens;
+  }
+
+  public void setMaxParseTreePrintLength(int maxParseTreePrintLength) {
+    _maxParseTreePrintLength = maxParseTreePrintLength;
   }
 
   public void setMaxRuntimeMs(int runtimeMs) {

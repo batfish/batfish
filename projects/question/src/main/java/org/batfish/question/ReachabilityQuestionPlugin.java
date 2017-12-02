@@ -45,7 +45,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         case MULTIPATH_DIFF:
         default:
           throw new BatfishException(
-              "Unsupported non-differential reachabilty type: " + type.reachabilityTypeName());
+              "Unsupported non-differential reachability type: " + type.reachabilityTypeName());
       }
     }
 

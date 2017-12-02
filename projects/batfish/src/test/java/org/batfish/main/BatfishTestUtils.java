@@ -5,14 +5,11 @@ import com.google.common.cache.CacheBuilder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
-import org.batfish.bdp.Node;
-import org.batfish.bdp.VirtualRouter;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -24,7 +21,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.junit.rules.TemporaryFolder;
@@ -124,20 +120,11 @@ public class BatfishTestUtils {
    */
   public static Configuration createTestConfiguration(
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {
-    Configuration config = new Configuration(nodeName);
-    config.setConfigurationFormat(configFormat);
+    Configuration config = new Configuration(nodeName, configFormat);
     for (String interfaceName : interfaceNames) {
       config.getInterfaces().put(interfaceName, new Interface(interfaceName, config));
     }
     return config;
-  }
-
-  public static VirtualRouter createTestRouter(String hostname, Configuration c) {
-    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new);
-    Map<String, Node> nodes = new HashMap<String, Node>();
-    Node node = new Node(c, nodes);
-    nodes.put(hostname, node);
-    return new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c, nodes);
   }
 
   /**

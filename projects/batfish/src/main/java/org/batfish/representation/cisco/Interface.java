@@ -144,6 +144,8 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _ospfPassive;
 
+  private boolean _ospfPointToPoint;
+
   private String _outgoingFilter;
 
   private int _outgoingFilterLine;
@@ -171,6 +173,8 @@ public class Interface extends ComparableStructure<String> {
   private SwitchportMode _switchportMode;
 
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
+
+  private Tunnel _tunnel;
 
   private String _vrf;
 
@@ -307,6 +311,10 @@ public class Interface extends ComparableStructure<String> {
     return _ospfPassive;
   }
 
+  public boolean getOspfPointToPoint() {
+    return _ospfPointToPoint;
+  }
+
   public String getOutgoingFilter() {
     return _outgoingFilter;
   }
@@ -361,6 +369,17 @@ public class Interface extends ComparableStructure<String> {
 
   public SwitchportEncapsulationType getSwitchportTrunkEncapsulation() {
     return _switchportTrunkEncapsulation;
+  }
+
+  public Tunnel getTunnel() {
+    return _tunnel;
+  }
+
+  public Tunnel getTunnelInitIfNull() {
+    if (_tunnel == null) {
+      _tunnel = new Tunnel();
+    }
+    return _tunnel;
   }
 
   public String getVrf() {
@@ -443,6 +462,10 @@ public class Interface extends ComparableStructure<String> {
     _ospfPassive = ospfPassive;
   }
 
+  public void setOspfPointToPoint(boolean ospfPointToPoint) {
+    _ospfPointToPoint = ospfPointToPoint;
+  }
+
   public void setOutgoingFilter(String accessListName) {
     _outgoingFilter = accessListName;
   }
@@ -497,6 +520,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
     _switchportTrunkEncapsulation = encapsulation;
+  }
+
+  public void setTunnel(Tunnel tunnel) {
+    _tunnel = tunnel;
   }
 
   public void setVrf(String vrf) {

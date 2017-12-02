@@ -2,8 +2,12 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class Conjunction extends BooleanExpr {
 
@@ -14,6 +18,14 @@ public class Conjunction extends BooleanExpr {
 
   public Conjunction() {
     _conjuncts = new ArrayList<>();
+  }
+
+  @Override
+  public void collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    for (BooleanExpr conjunct : _conjuncts) {
+      conjunct.collectSources(sources, routingPolicies, w);
+    }
   }
 
   @Override

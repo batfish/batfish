@@ -66,53 +66,26 @@ import org.batfish.symbolic.collections.Table2;
  */
 public class Graph {
 
-  public enum BgpSendType {
-    TO_EBGP,
-    TO_NONCLIENT,
-    TO_CLIENT,
-    TO_RR
-  }
-
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
-
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
-
   private static final String NULL_INTERFACE_NAME = "null_interface";
-
   private IBatfish _batfish;
-
   private Set<String> _routers;
-
   private Map<String, Configuration> _configurations;
-
   private Map<String, Set<Long>> _areaIds;
-
   private Table2<String, String, List<StaticRoute>> _staticRoutes;
-
   private Map<String, List<StaticRoute>> _nullStaticRoutes;
-
   private Map<String, Set<String>> _neighbors;
-
   private Map<String, List<GraphEdge>> _edgeMap;
-
   private Set<GraphEdge> _allRealEdges;
-
   private Set<GraphEdge> _allEdges;
-
   private Map<GraphEdge, GraphEdge> _otherEnd;
-
   private Map<GraphEdge, BgpNeighbor> _ebgpNeighbors;
-
   private Map<GraphEdge, BgpNeighbor> _ibgpNeighbors;
-
   private Map<String, String> _routeReflectorParent;
-
   private Map<String, Set<String>> _routeReflectorClients;
-
   private Map<String, Integer> _originatorId;
-
   private Map<String, Integer> _domainMap;
-
   private Map<Integer, Set<String>> _domainMapInverse;
 
   /*
@@ -187,13 +160,6 @@ public class Graph {
   }
 
   /*
-   * Is a graph edge external facing (can receive BGP advertisements)
-   */
-  public boolean isExternal(GraphEdge ge) {
-    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
-  }
-
-  /*
    * Find the common (default) routing policy for the protocol.
    */
   @Nullable
@@ -231,7 +197,7 @@ public class Graph {
     if (proto.isOspf()) {
       OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
       for (OspfArea area : ospf.getAreas().values()) {
-        for (Interface iface : area.getInterfaces()) {
+        for (Interface iface : area.getInterfaces().values()) {
           if (iface.getActive() && iface.getOspfEnabled()) {
             acc.add(iface.getPrefix().getNetworkPrefix());
           }
@@ -298,6 +264,13 @@ public class Graph {
     }
 
     throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
+  }
+
+  /*
+   * Is a graph edge external facing (can receive BGP advertisements)
+   */
+  public boolean isExternal(GraphEdge ge) {
+    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
   }
 
   /*
@@ -715,6 +688,25 @@ public class Graph {
   }
 
   /*
+   * Conservatively check if an edge may be used by an IGP protocol
+   * such as OSPF, static routes etc. We can do better possibly
+   * by taking into account constraints on the packet header.
+   */
+  private boolean maybeIgpEdge(GraphEdge ge) {
+    String peer = ge.getPeer();
+    if (peer == null) {
+      return true;
+    }
+    String router = ge.getRouter();
+    Interface i = ge.getStart();
+    List<StaticRoute> srs = _staticRoutes.get(router, peer);
+    BgpNeighbor n = _ibgpNeighbors.get(ge);
+    boolean mightUseStatic = (srs != null && !srs.isEmpty());
+    boolean mightUseOspf = i.getOspfEnabled() && i.getActive();
+    return (mightUseOspf || mightUseStatic || n != null);
+  }
+
+  /*
    * Determines the collection of routers within the same AS
    * as the router provided as a parameter
    */
@@ -727,9 +719,10 @@ public class Graph {
       sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        BgpNeighbor n = _ebgpNeighbors.get(ge);
-        if (peer != null && n == null && !sameDomain.contains(peer)) {
-          todo.add(peer);
+        if (peer != null) {
+          if (maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
+            todo.add(peer);
+          }
         }
       }
     }
@@ -1067,8 +1060,10 @@ public class Graph {
    * Determine if an edge is potentially attached to a host
    */
   public boolean isHost(String router) {
-    Configuration peerConf = _configurations.get(router);
-    String vendor = peerConf.getConfigurationFormat().getVendorString();
+    Configuration conf = _configurations.get(router);
+    // System.out.println("Router: " + router);
+    // System.out.println("Conf: " + conf);
+    String vendor = conf.getConfigurationFormat().getVendorString();
     return "host".equals(vendor);
   }
 
@@ -1215,13 +1210,13 @@ public class Graph {
     return _routeReflectorParent;
   }
 
-  /*
-   * Getters and setters
-   */
-
   public Map<String, Set<String>> getRouteReflectorClients() {
     return _routeReflectorClients;
   }
+
+  /*
+   * Getters and setters
+   */
 
   public Map<String, Integer> getOriginatorId() {
     return _originatorId;
@@ -1273,5 +1268,12 @@ public class Graph {
 
   public Set<String> getRouters() {
     return _routers;
+  }
+
+  public enum BgpSendType {
+    TO_EBGP,
+    TO_NONCLIENT,
+    TO_CLIENT,
+    TO_RR
   }
 }

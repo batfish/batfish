@@ -4,27 +4,59 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 public class OspfArea extends ComparableStructure<Long> implements Serializable {
 
-  private static final String PROP_INTERFACES = "interfaces";
+  public static class Builder extends NetworkFactoryBuilder<OspfArea> {
 
-  private static final long serialVersionUID = 1L;
+    private Long _number;
+
+    private OspfProcess _ospfProcess;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, OspfArea.class);
+    }
+
+    @Override
+    public OspfArea build() {
+      long number = _number != null ? _number : generateLong();
+      OspfArea ospfArea = new OspfArea(number);
+      if (_ospfProcess != null) {
+        _ospfProcess.getAreas().put(number, ospfArea);
+      }
+      return ospfArea;
+    }
+
+    public Builder setNumber(Long number) {
+      _number = number;
+      return this;
+    }
+
+    public Builder setOspfProcess(OspfProcess ospfProcess) {
+      _ospfProcess = ospfProcess;
+      return this;
+    }
+  }
+
+  private static final String PROP_INTERFACES = "interfaces";
 
   private static final String PROP_SUMMARIES = "summaries";
 
   private static final String PROP_SUMMARY_FILTER = "summaryFilter";
 
+  private static final long serialVersionUID = 1L;
+
   private transient SortedSet<String> _interfaceNames;
 
-  private SortedSet<Interface> _interfaces;
+  private SortedMap<String, Interface> _interfaces;
 
   private SortedMap<Prefix, Boolean> _summaries;
 
@@ -33,7 +65,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   @JsonCreator
   public OspfArea(@JsonProperty(PROP_NAME) Long number) {
     super(number);
-    _interfaces = new TreeSet<>();
+    _interfaces = new TreeMap<>();
     _summaries = new TreeMap<>();
   }
 
@@ -41,14 +73,14 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   @JsonPropertyDescription("The interfaces assigned to this OSPF area")
   public SortedSet<String> getInterfaceNames() {
     if (_interfaces != null && !_interfaces.isEmpty()) {
-      return new TreeSet<>(_interfaces.stream().map(i -> i.getName()).collect(Collectors.toSet()));
+      return ImmutableSortedSet.copyOf(_interfaces.keySet());
     } else {
       return _interfaceNames;
     }
   }
 
   @JsonIgnore
-  public SortedSet<Interface> getInterfaces() {
+  public SortedMap<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
@@ -64,12 +96,13 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   public void resolveReferences(final Configuration owner) {
     if (_interfaceNames != null) {
-      _interfaces =
-          new TreeSet<>(
-              _interfaceNames
-                  .stream()
-                  .map(ifaceName -> owner.getInterfaces().get(ifaceName))
-                  .collect(Collectors.toSet()));
+      ImmutableSortedMap.Builder<String, Interface> builder =
+          new ImmutableSortedMap.Builder<>(String::compareTo);
+      _interfaceNames
+          .stream()
+          .map(ifaceName -> owner.getInterfaces().get(ifaceName))
+          .forEach(i -> builder.put(i.getName(), i));
+      _interfaces = builder.build();
     }
   }
 
@@ -79,7 +112,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   }
 
   @JsonIgnore
-  public void setInterfaces(SortedSet<Interface> interfaces) {
+  public void setInterfaces(SortedMap<String, Interface> interfaces) {
     _interfaces = interfaces;
   }
 

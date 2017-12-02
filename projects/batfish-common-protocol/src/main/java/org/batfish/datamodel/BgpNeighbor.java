@@ -8,6 +8,8 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 
@@ -34,10 +36,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
     private static final String PROP_REMOTE_PREFIX = "dynamicRemotePrefix";
 
+    private static final String PROP_VRF = "vrf";
+
     /** */
     private static final long serialVersionUID = 1L;
-
-    private static final String PROP_VRF = "vrf";
 
     private final String _description;
 
@@ -172,9 +174,17 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private static final String PROP_EBGP_MULTIHOP = "ebgpMultihop";
 
+  private static final String PROP_EXPORT_POLICY = "exportPolicy";
+
+  private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
+
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
   private static final String PROP_GROUP = "group";
+
+  private static final String PROP_IMPORT_POLICY = "importPolicy";
+
+  private static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
 
   private static final String PROP_LOCAL_AS = "localAs";
 
@@ -223,6 +233,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private String _exportPolicy;
 
+  private SortedSet<String> _exportPolicySources;
+
   /**
    * The set of generated and/or aggregate routes to be potentially sent to this peer before
    * outbound policies are taken into account
@@ -237,6 +249,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private String _group;
 
   private String _importPolicy;
+
+  private SortedSet<String> _importPolicySources;
 
   /** The autonomous system number of the containing BGP process as reported to this peer */
   private Integer _localAs;
@@ -280,7 +294,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonCreator
   public BgpNeighbor(@JsonProperty(PROP_NAME) Prefix prefix) {
     super(prefix);
+    _exportPolicySources = new TreeSet<>();
     _generatedRoutes = new LinkedHashSet<>();
+    _importPolicySources = new TreeSet<>();
   }
 
   /**
@@ -462,9 +478,15 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _ebgpMultihop;
   }
 
+  @JsonProperty(PROP_EXPORT_POLICY)
   @JsonPropertyDescription("The policy governing all advertisements sent to this peer")
   public String getExportPolicy() {
     return _exportPolicy;
+  }
+
+  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
+  public SortedSet<String> getExportPolicySources() {
+    return _exportPolicySources;
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)
@@ -482,9 +504,15 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _group;
   }
 
+  @JsonProperty(PROP_IMPORT_POLICY)
   @JsonPropertyDescription("Routing policy governing all advertisements received from this peer")
   public String getImportPolicy() {
     return _importPolicy;
+  }
+
+  @JsonProperty(PROP_IMPORT_POLICY_SOURCES)
+  public SortedSet<String> getImportPolicySources() {
+    return _importPolicySources;
   }
 
   @JsonProperty(PROP_LOCAL_AS)
@@ -619,8 +647,14 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _ebgpMultihop = ebgpMultihop;
   }
 
+  @JsonProperty(PROP_EXPORT_POLICY)
   public void setExportPolicy(String originationPolicyName) {
     _exportPolicy = originationPolicyName;
+  }
+
+  @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
+  public void setExportPolicySources(SortedSet<String> exportPolicySources) {
+    _exportPolicySources = exportPolicySources;
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)
@@ -633,8 +667,14 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _group = name;
   }
 
+  @JsonProperty(PROP_IMPORT_POLICY)
   public void setImportPolicy(String importPolicy) {
     _importPolicy = importPolicy;
+  }
+
+  @JsonProperty(PROP_IMPORT_POLICY_SOURCES)
+  public void setImportPolicySources(SortedSet<String> importPolicySources) {
+    _importPolicySources = importPolicySources;
   }
 
   @JsonProperty(PROP_LOCAL_AS)

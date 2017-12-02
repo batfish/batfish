@@ -394,6 +394,26 @@ ADVERTISE_INACTIVE
    'advertise-inactive'
 ;
 
+AES
+:
+   'aes'
+;
+
+AES128
+:
+   'aes128'
+;
+
+AES192
+:
+   'aes192'
+;
+
+AES256
+:
+   'aes256'
+;
+
 AES128_SHA1
 :
    'aes128-sha1'
@@ -3677,6 +3697,31 @@ ESP
    'esp'
 ;
 
+ESP_3DES
+:
+   'esp-3des'
+;
+
+ESP_AES
+:
+   'esp-aes'
+;
+
+ESP_MD5_HMAC
+:
+   'esp-md5-hmac'
+;
+
+ESP_SHA_HMAC
+:
+   'esp-sha-hmac'
+;
+
+ESP_SHA256_HMAC
+:
+   'esp-sha256-hmac'
+;
+
 ESSID
 :
    'essid'
@@ -3897,6 +3942,11 @@ EXTENDED_DELAY
 EXTERNAL
 :
    'external'
+;
+
+EXTERNAL_LSA
+:
+   'external-lsa'
 ;
 
 FABRIC
@@ -4446,9 +4496,19 @@ GROUP_URL
    'group-url'
 ;
 
+GROUP1
+:
+   'group1'
+;
+
+GROUP2
+:
+   'group2'
+;
+
 GSHUT
 :
-   'GSHUT'
+   [Gg][Ss][Hh][Uu][Tt]
 ;
 
 GT
@@ -4906,6 +4966,11 @@ IKEV2
    'ikev2'
 ;
 
+IKEV2_PROFILE
+:
+   'ikev2-profile'
+;
+
 ILMI_KEEPALIVE
 :
    'ilmi-keepalive'
@@ -4954,6 +5019,11 @@ INBOUND
 INCLUDE
 :
    'include'
+;
+
+INCLUDE_STUB
+:
+   'include-stub'
 ;
 
 INCOMING
@@ -5698,9 +5768,14 @@ LOCAL
    'local'
 ;
 
+LOCAL_ADDRESS
+:
+   'local-address'
+;
+
 LOCAL_AS
 :
-   'local-as'
+   [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
 LOCAL_ASA
@@ -6186,6 +6261,11 @@ MCAST_BOUNDARY
 MCAST_RATE_OPT
 :
    'mcast-rate-opt'
+;
+
+MD5
+:
+   'md5'
 ;
 
 MDIX
@@ -7188,6 +7268,11 @@ ON_FAILURE
    'on-failure'
 ;
 
+ON_STARTUP
+:
+   'on-startup'
+;
+
 ON_SUCCESS
 :
    'on-success'
@@ -7693,6 +7778,11 @@ PFC
    'pfc'
 ;
 
+PFS
+:
+   'pfs'
+;
+
 PHONE_CONTACT
 :
    'phone-contact' -> pushMode ( M_Description )
@@ -7941,6 +8031,11 @@ PRC_INTERVAL
 PRE_EQUALIZATION
 :
    'pre-equalization'
+;
+
+PRE_SHARE
+:
+   'pre-share'
 ;
 
 PRE_SHARED_KEY
@@ -8958,6 +9053,11 @@ ROUTER_INTERFACE
    'router-interface'
 ;
 
+ROUTER_LSA
+:
+  'router-lsa'
+;
+
 ROUTER_SOLICITATION
 :
    'router-solicitation'
@@ -9006,6 +9106,11 @@ RRM_IE_PROFILE
 RSA
 :
    'rsa'
+;
+
+RSA_SIG
+:
+   'rsa-sig'
 ;
 
 RSAKEYPAIR
@@ -9521,6 +9626,11 @@ SHA
 SHA1
 :
    'sha1' -> pushMode ( M_SHA1 )
+;
+
+SHA2_256_128
+:
+   'sha2-256-128'
 ;
 
 SHA512
@@ -10183,6 +10293,11 @@ SUCCESS
 SUMMARY_ADDRESS
 :
    'summary-address'
+;
+
+SUMMARY_LSA
+:
+   'summary-lsa'
 ;
 
 SUMMARY_ONLY
@@ -12734,6 +12849,16 @@ M_Authentication_POLICY
 M_Authentication_PPP
 :
    'ppp' -> type ( PPP ) , popMode
+;
+
+M_Authentication_PRE_SHARE
+:
+   'pre-share' -> type ( PRE_SHARE ) , popMode
+;
+
+M_Authentication_RSA_SIG
+:
+   'rsa-sig' -> type ( RSA_SIG ) , popMode
 ;
 
 M_Authentication_SGBP
