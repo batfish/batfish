@@ -1,5 +1,7 @@
 package org.batfish.datamodel.pojo;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class Node extends BfObject {
@@ -8,18 +10,32 @@ public class Node extends BfObject {
   public enum DeviceType {
     HOST,
     ROUTER,
-    SWITCH
+    SWITCH,
+    UNKNOWN
   }
+
+  private static final String PROP_NAME = "name";
 
   private List<Interface> _interfaces;
 
-  private String _name;
+  private final String _name;
 
   private DeviceType _type;
 
-  public Node(String name, DeviceType type) {
+  @JsonCreator
+  public Node(@JsonProperty(PROP_NAME) String name) {
     super("node-" + name);
     _name = name;
+    _type = DeviceType.UNKNOWN;
+  }
+
+  public Node(String name, DeviceType type) {
+    this(name);
     _type = type;
+  }
+
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 }
