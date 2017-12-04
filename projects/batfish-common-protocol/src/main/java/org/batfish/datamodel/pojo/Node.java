@@ -1,16 +1,25 @@
 package org.batfish.datamodel.pojo;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.ComparableStructure;
+import java.util.List;
 
-public class Node extends ComparableStructure<String> {
+public class Node extends BfObject {
 
-  @JsonCreator
-  public Node(@JsonProperty(PROP_NAME) String name) {
-    super(name);
+  // remove this class and point to the datamodel.devicetype in PR #661
+  public enum DeviceType {
+    HOST,
+    ROUTER,
+    SWITCH
   }
 
-  /** */
-  private static final long serialVersionUID = 1L;
+  private List<Interface> _interfaces;
+
+  private String _name;
+
+  private DeviceType _type;
+
+  public Node(String name, DeviceType type) {
+    super("node-" + name);
+    _name = name;
+    _type = type;
+  }
 }
