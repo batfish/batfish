@@ -40,6 +40,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -1210,6 +1211,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -2372,6 +2374,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -2778,6 +2781,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -3922,6 +3926,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -5018,6 +5023,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -5589,6 +5595,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -6135,6 +6142,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -6992,6 +7000,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -7683,6 +7692,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -8394,6 +8404,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -9458,6 +9469,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -10433,6 +10445,7 @@
           "configurationFormat" : "CISCO_IOS",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
           "domainName" : "lab.local",
           "interfaces" : {
             "Ethernet0/0" : {
@@ -11003,6 +11016,7 @@
           "configurationFormat" : "HOST",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eth0" : {
               "name" : "eth0",
@@ -11195,6 +11209,7 @@
           "configurationFormat" : "HOST",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eth0" : {
               "name" : "eth0",
