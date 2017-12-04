@@ -58,8 +58,16 @@ public class NetworkFactory {
     return new Interface.Builder(this);
   }
 
+  public BgpProcess.Builder bgpProcessBuilder() {
+    return new BgpProcess.Builder(this);
+  }
+
   public OspfProcess.Builder ospfProcessBuilder() {
     return new OspfProcess.Builder(this);
+  }
+
+  public RipProcess.Builder ripProcessBuilder() {
+    return new RipProcess.Builder(this);
   }
 
   public Vrf.Builder vrfBuilder() {
