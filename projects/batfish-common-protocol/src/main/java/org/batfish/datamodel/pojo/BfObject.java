@@ -9,7 +9,7 @@ public abstract class BfObject {
   private Map<String, String> _properties;
 
   public BfObject(String id) {
-      _id = id;
+    _id = id;
   }
 
   public String getId() {

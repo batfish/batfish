@@ -20,5 +20,4 @@ public class Interface extends BfObject {
     _name = name;
     _type = type;
   }
-
 }
