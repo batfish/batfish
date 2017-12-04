@@ -94,11 +94,6 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
       return _summary;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_VERBOSE_ERROR)
     public boolean getVerboseError() {
       return _verboseError;

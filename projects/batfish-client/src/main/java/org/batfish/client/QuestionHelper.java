@@ -23,10 +23,7 @@ public class QuestionHelper {
       String questionTypeStr, Map<String, Supplier<Question>> questions) {
     Supplier<Question> supplier = questions.get(questionTypeStr);
     if (supplier == null) {
-      throw new BatfishException(
-          "No question found of type: "
-              + questionTypeStr
-              + ". Did you include the questions plugins directory in your JVM arguments?");
+      throw new BatfishException("No question found of type: " + questionTypeStr + '.');
     }
     Question question = supplier.get();
     return question;

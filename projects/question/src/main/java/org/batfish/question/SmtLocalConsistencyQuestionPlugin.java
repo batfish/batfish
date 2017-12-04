@@ -84,11 +84,6 @@ public class SmtLocalConsistencyQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "smt-local-consistency";
     }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
   }
 
   @Override

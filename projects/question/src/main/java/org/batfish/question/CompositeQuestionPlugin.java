@@ -85,11 +85,6 @@ public class CompositeQuestionPlugin extends QuestionPlugin {
       return _questions;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_QUESTIONS)
     public void setQuestions(List<Question> questions) {
       _questions = questions;
