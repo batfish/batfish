@@ -9,10 +9,36 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.OspfProcess.Builder;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** Represents a bgp process on a router */
 @JsonSchemaDescription("A BGP routing process")
 public class BgpProcess implements Serializable {
+
+  public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
+
+    private Vrf _vrf;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, BgpProcess.class);
+    }
+
+    @Override
+    public BgpProcess build() {
+      BgpProcess bgpProcess = new BgpProcess();
+      if (_vrf != null) {
+        _vrf.setBgpProcess(bgpProcess);
+      }
+      return bgpProcess;
+    }
+
+    public BgpProcess.Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+  }
 
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
