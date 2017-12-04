@@ -20,7 +20,7 @@ public abstract class BfObject {
     return _properties;
   }
 
-  public void getProperties(Map<String, String> properties) {
+  public void setProperties(Map<String, String> properties) {
     _properties = properties;
   }
 }

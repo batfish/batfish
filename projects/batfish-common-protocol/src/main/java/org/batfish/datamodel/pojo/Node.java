@@ -14,8 +14,6 @@ public class Node extends BfObject {
     UNKNOWN
   }
 
-  private static final String PROP_NAME = "name";
-
   private List<Interface> _interfaces;
 
   private final String _name;
@@ -23,7 +21,7 @@ public class Node extends BfObject {
   private DeviceType _type;
 
   @JsonCreator
-  public Node(@JsonProperty(PROP_NAME) String name) {
+  public Node(@JsonProperty("name") String name) {
     super("node-" + name);
     _name = name;
     _type = DeviceType.UNKNOWN;
@@ -34,8 +32,15 @@ public class Node extends BfObject {
     _type = type;
   }
 
-  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
+  }
+
+  public DeviceType getType() {
+    return _type;
+  }
+
+  public void setType(DeviceType type) {
+    _type = type;
   }
 }
