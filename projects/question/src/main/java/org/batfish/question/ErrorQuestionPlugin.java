@@ -37,11 +37,6 @@ public class ErrorQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "error";
     }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
   }
 
   @Override

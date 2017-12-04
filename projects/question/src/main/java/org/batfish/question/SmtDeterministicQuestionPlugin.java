@@ -35,11 +35,6 @@ public class SmtDeterministicQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "smt-deterministic";
     }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
   }
 
   @Override

@@ -32,11 +32,6 @@ public class SmtBlackholeQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "smt-blackhole";
     }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
   }
 
   @Override
