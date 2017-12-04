@@ -39,14 +39,14 @@ public class DeviceTypeTest {
 
   @Test
   public void hostConfigIsHost() {
-    Configuration c = this._cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
+    Configuration c = _cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.HOST));
   }
 
   @Test
   public void hostWithBgpIsHost() {
-    Configuration c = this._cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
+    Configuration c = _cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
     Vrf vrf = _vb.setOwner(c).build();
     _nf.bgpProcessBuilder().setVrf(vrf).build();
     postProcessConfiguration(c);
