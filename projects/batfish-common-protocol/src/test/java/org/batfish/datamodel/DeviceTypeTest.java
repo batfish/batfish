@@ -11,81 +11,81 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class DeviceTypeTest {
 
-  NetworkFactory nf;
-  Configuration.Builder cb;
-  Vrf.Builder vb;
+  NetworkFactory _nf;
+  Configuration.Builder _cb;
+  Vrf.Builder _vb;
 
   @Before
   public void initializeBuilders() {
-    nf = new NetworkFactory();
-    cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    _nf = new NetworkFactory();
+    _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
   }
 
   @Test
   public void emptyConfigurationIsSwitch() {
-    Configuration c = cb.build();
+    Configuration c = _cb.build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.SWITCH));
   }
 
   @Test
   public void configWithEmptyVrfIsSwitch() {
-    Configuration c = cb.build();
-    vb.setOwner(c).build();
+    Configuration c = _cb.build();
+    _vb.setOwner(c).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.SWITCH));
   }
 
   @Test
   public void hostConfigIsHost() {
-    Configuration c = this.cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
+    Configuration c = this._cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.HOST));
   }
 
   @Test
   public void hostWithBgpIsHost() {
-    Configuration c = this.cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
-    Vrf vrf = vb.setOwner(c).build();
-    nf.bgpProcessBuilder().setVrf(vrf).build();
+    Configuration c = this._cb.setConfigurationFormat(ConfigurationFormat.HOST).build();
+    Vrf vrf = _vb.setOwner(c).build();
+    _nf.bgpProcessBuilder().setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.HOST));
   }
 
   @Test
   public void configWithFirstVrfEmptyIsRouter() {
-    Configuration c = cb.build();
-    vb.setOwner(c).build();
-    Vrf vrf = vb.setOwner(c).build();
-    nf.bgpProcessBuilder().setVrf(vrf).build();
+    Configuration c = _cb.build();
+    _vb.setOwner(c).build();
+    Vrf vrf = _vb.setOwner(c).build();
+    _nf.bgpProcessBuilder().setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }
 
   @Test
   public void configWithBgpIsRouter() {
-    Configuration c = cb.build();
-    Vrf vrf = vb.setOwner(c).build();
-    nf.bgpProcessBuilder().setVrf(vrf).build();
+    Configuration c = _cb.build();
+    Vrf vrf = _vb.setOwner(c).build();
+    _nf.bgpProcessBuilder().setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }
 
   @Test
   public void configWithOspfIsRouter() {
-    Configuration c = cb.build();
-    Vrf vrf = vb.setOwner(c).build();
-    nf.ospfProcessBuilder().setVrf(vrf).build();
+    Configuration c = _cb.build();
+    Vrf vrf = _vb.setOwner(c).build();
+    _nf.ospfProcessBuilder().setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }
 
   @Test
   public void configWithRipIsRouter() {
-    Configuration c = cb.build();
-    Vrf vrf = vb.setOwner(c).build();
-    nf.ospfProcessBuilder().setVrf(vrf).build();
+    Configuration c = _cb.build();
+    Vrf vrf = _vb.setOwner(c).build();
+    _nf.ospfProcessBuilder().setVrf(vrf).build();
     postProcessConfiguration(c);
     assertThat(c.getDeviceType(), is(DeviceType.ROUTER));
   }

@@ -10,8 +10,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
-import org.batfish.datamodel.OspfProcess.Builder;
-import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** Represents a bgp process on a router */
 @JsonSchemaDescription("A BGP routing process")
