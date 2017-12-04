@@ -65,6 +65,15 @@
       ],
       "description" : "Default forwarding action to take for traffic destined for this device."
     },
+    "deviceType" : {
+      "type" : "string",
+      "enum" : [
+        "HOST",
+        "ROUTER",
+        "SWITCH"
+      ],
+      "description" : "Best guess at type of this device."
+    },
     "domainName" : {
       "type" : "string",
       "description" : "Domain name of this node."
