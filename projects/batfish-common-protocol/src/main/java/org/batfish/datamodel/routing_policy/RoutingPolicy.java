@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,16 +110,18 @@ public class RoutingPolicy extends ComparableStructure<String> {
     return result;
   }
 
-  public void computeSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+  public Set<String> computeSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     if (_sources == null) {
-      _sources = new LinkedHashSet<>();
-      _sources.add(_key);
+      Set<String> newParentSources = Sets.union(parentSources, ImmutableSet.of(_key));
+      ImmutableSet.Builder<String> childSources = ImmutableSet.<String>builder();
+      childSources.add(_key);
       for (Statement statement : _statements) {
-        statement.collectSources(_sources, routingPolicies, w);
+        childSources.addAll(statement.collectSources(newParentSources, routingPolicies, w));
       }
+      _sources = childSources.build();
     }
-    sources.addAll(_sources);
+    return _sources;
   }
 
   @Override
@@ -135,6 +138,11 @@ public class RoutingPolicy extends ComparableStructure<String> {
   @JsonIgnore
   public Configuration getOwner() {
     return _owner;
+  }
+
+  @JsonIgnore
+  public Set<String> getSources() {
+    return _sources;
   }
 
   @JsonProperty(PROP_STATEMENTS)

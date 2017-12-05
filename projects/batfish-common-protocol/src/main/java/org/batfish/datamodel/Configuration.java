@@ -10,12 +10,10 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -247,41 +245,36 @@ public final class Configuration extends ComparableStructure<String> {
     _zones = new TreeMap<>();
   }
 
-  private SortedSet<String> collectRoutingPolicySources(String routingPolicyName, Warnings w) {
+  private void computeRoutingPolicySources(String routingPolicyName, Warnings w) {
     if (routingPolicyName == null) {
-      return Collections.emptySortedSet();
+      return;
     }
     RoutingPolicy routingPolicy = _routingPolicies.get(routingPolicyName);
     if (routingPolicy == null) {
-      return Collections.emptySortedSet();
+      return;
     }
-    Set<String> sources = new LinkedHashSet<>();
-    routingPolicy.computeSources(sources, _routingPolicies, w);
-    return sources
-        .stream()
-        .filter(not(RoutingPolicy::isGenerated))
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+    routingPolicy.computeSources(Collections.emptySet(), _routingPolicies, w);
   }
 
   public void computeRoutingPolicySources(Warnings w) {
+    for (String rpName : _routingPolicies.keySet()) {
+      computeRoutingPolicySources(rpName, w);
+    }
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
         for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
-          neighbor.setExportPolicySources(
-              collectRoutingPolicySources(neighbor.getExportPolicy(), w));
-          neighbor.setImportPolicySources(
-              collectRoutingPolicySources(neighbor.getImportPolicy(), w));
+          neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
+          neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }
       }
       OspfProcess ospfProcess = vrf.getOspfProcess();
       if (ospfProcess != null) {
-        ospfProcess.setExportPolicySources(
-            collectRoutingPolicySources(ospfProcess.getExportPolicy(), w));
+        ospfProcess.setExportPolicySources(getRoutingPolicySources(ospfProcess.getExportPolicy()));
       }
       for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
-        gr.setAttributePolicySources(collectRoutingPolicySources(gr.getAttributePolicy(), w));
-        gr.setGenerationPolicySources(collectRoutingPolicySources(gr.getGenerationPolicy(), w));
+        gr.setAttributePolicySources(getRoutingPolicySources(gr.getAttributePolicy()));
+        gr.setGenerationPolicySources(getRoutingPolicySources(gr.getGenerationPolicy()));
       }
     }
   }
@@ -487,6 +480,20 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all routing policies for this node.")
   public NavigableMap<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
+  }
+
+  private SortedSet<String> getRoutingPolicySources(String routingPolicyName) {
+    if (routingPolicyName == null) {
+      return Collections.emptySortedSet();
+    }
+    RoutingPolicy rp = _routingPolicies.get(routingPolicyName);
+    if (rp == null) {
+      return Collections.emptySortedSet();
+    }
+    return rp.getSources()
+        .stream()
+        .filter(not(RoutingPolicy::isGenerated))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
   @JsonIgnore
