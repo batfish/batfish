@@ -23,9 +23,9 @@ public class BufferedStatement extends Statement {
   }
 
   @Override
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
-    _statement.collectSources(sources, routingPolicies, w);
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    return _statement.collectSources(parentSources, routingPolicies, w);
   }
 
   @Override

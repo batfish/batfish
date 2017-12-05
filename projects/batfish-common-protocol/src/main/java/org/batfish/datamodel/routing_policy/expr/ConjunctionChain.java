@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,11 +27,13 @@ public class ConjunctionChain extends BooleanExpr {
   }
 
   @Override
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
     for (BooleanExpr conjunct : _subroutines) {
-      conjunct.collectSources(sources, routingPolicies, w);
+      childSources.addAll(conjunct.collectSources(parentSources, routingPolicies, w));
     }
+    return childSources.build();
   }
 
   @Override

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -28,9 +29,9 @@ public abstract class BooleanExpr implements Serializable {
    * @return A {@link SortedSet} containing the names of each {@link RoutingPolicy} directly or
    *     indirectly referenced by this expression
    */
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
-    return;
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    return Collections.emptySet();
   }
 
   @Override
