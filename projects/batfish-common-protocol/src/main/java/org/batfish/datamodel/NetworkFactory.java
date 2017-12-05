@@ -62,6 +62,10 @@ public class NetworkFactory {
     return new BgpProcess.Builder(this);
   }
 
+  public BgpNeighbor.Builder bgpNeighborBuilder() {
+    return new BgpNeighbor.Builder(this);
+  }
+
   public OspfProcess.Builder ospfProcessBuilder() {
     return new OspfProcess.Builder(this);
   }

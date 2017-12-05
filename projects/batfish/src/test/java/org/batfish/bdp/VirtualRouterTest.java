@@ -140,10 +140,11 @@ public class VirtualRouterTest {
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
     neighbors.put(ebgpNeighbor.getPrefix(), ebgpNeighbor);
 
-    BgpProcess bgpProcess = new BgpProcess();
+    BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
+    bpBuilder.setVrf(virtualRouter._vrf);
+    BgpProcess bgpProcess = bpBuilder.build();
     bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
-    virtualRouter._vrf.setBgpProcess(bgpProcess);
 
     OspfIntraAreaRoute ospfIntraAreaRoute = new OspfIntraAreaRoute(TEST_NETWORK, null, 100, 30, 1);
     virtualRouter.initRibs();
@@ -190,10 +191,11 @@ public class VirtualRouterTest {
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
     neighbors.put(ibgpNeighbor.getPrefix(), ibgpNeighbor);
 
-    BgpProcess bgpProcess = new BgpProcess();
+    BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
+    bpBuilder.setVrf(virtualRouter._vrf);
+    BgpProcess bgpProcess = bpBuilder.build();
     bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
-    virtualRouter._vrf.setBgpProcess(bgpProcess);
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
@@ -207,6 +209,7 @@ public class VirtualRouterTest {
 
     Map<Ip, Set<String>> ipOwners = ImmutableMap.of(SRC_IP, ImmutableSet.of(TEST_NODE_NAME));
     int bgpAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
+
     // checking number of bgp advertisements
     assertThat(bgpAdvertisements, equalTo(1));
 
@@ -248,10 +251,11 @@ public class VirtualRouterTest {
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
     neighbors.put(ibgpNeighbor.getPrefix(), ibgpNeighbor);
 
-    BgpProcess bgpProcess = new BgpProcess();
+    BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
+    bpBuilder.setVrf(virtualRouter._vrf);
+    BgpProcess bgpProcess = bpBuilder.build();
     bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
-    virtualRouter._vrf.setBgpProcess(bgpProcess);
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
@@ -303,10 +307,11 @@ public class VirtualRouterTest {
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
     neighbors.put(ebgpNeighbor.getPrefix(), ebgpNeighbor);
 
-    BgpProcess bgpProcess = new BgpProcess();
+    BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
+    bpBuilder.setVrf(virtualRouter._vrf);
+    BgpProcess bgpProcess = bpBuilder.build();
     bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
-    virtualRouter._vrf.setBgpProcess(bgpProcess);
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
@@ -360,10 +365,11 @@ public class VirtualRouterTest {
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
     neighbors.put(ibgpNeighbor.getPrefix(), ibgpNeighbor);
 
-    BgpProcess bgpProcess = new BgpProcess();
+    BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
+    bpBuilder.setVrf(virtualRouter._vrf);
+    BgpProcess bgpProcess = bpBuilder.build();
     bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
-    virtualRouter._vrf.setBgpProcess(bgpProcess);
 
     BgpRoute.Builder bgpBuilder1 =
         new BgpRoute.Builder()
@@ -398,13 +404,17 @@ public class VirtualRouterTest {
       int localAs,
       int remoteAs,
       String exportPolicy) {
-    BgpNeighbor bgpNeighbor = new BgpNeighbor(remoteIp, owner);
-    bgpNeighbor.setLocalIp(localIp);
-    // setting for ibgp
-    bgpNeighbor.setLocalAs(localAs);
-    bgpNeighbor.setRemoteAs(remoteAs);
-    bgpNeighbor.setExportPolicy(exportPolicy);
-    return bgpNeighbor;
+    NetworkFactory nf = new NetworkFactory();
+    BgpNeighbor.Builder bb =
+        nf.bgpNeighborBuilder()
+            .setOwner(owner)
+            .setPeerAddress(remoteIp)
+            .setLocalAs(localAs)
+            .setRemoteAs(remoteAs)
+            .setLocalIp(localIp);
+    BgpNeighbor neighbor = bb.build();
+    neighbor.setExportPolicy(exportPolicy);
+    return neighbor;
   }
 
   private static VirtualRouter createEmptyVirtualRouter(String nodeName) {

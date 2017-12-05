@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /**
  * Represents a peering with a single router (by ip address) acting as a bgp peer to the router
@@ -19,6 +20,63 @@ import org.batfish.common.util.ComparableStructure;
  */
 @JsonSchemaDescription("A configured e/iBGP peering relationship")
 public final class BgpNeighbor extends ComparableStructure<Prefix> {
+
+  public static class Builder extends NetworkFactoryBuilder<BgpNeighbor> {
+    private Configuration _owner;
+    private Ip _localIp;
+    private Ip _peerIpAddress;
+    private Integer _localAs;
+    private Integer _remoteAs;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, BgpNeighbor.class);
+    }
+
+    @Override
+    public BgpNeighbor build() {
+      BgpNeighbor bgpNeighbor;
+      if (_owner != null && _peerIpAddress != null) {
+        bgpNeighbor = new BgpNeighbor(_peerIpAddress, _owner);
+      } else {
+        bgpNeighbor = new BgpNeighbor();
+      }
+      if (_localIp != null) {
+        bgpNeighbor.setLocalIp(_localIp);
+      }
+      if (_localAs != null) {
+        bgpNeighbor.setLocalAs(_localAs);
+      }
+      if (_remoteAs != null) {
+        bgpNeighbor.setRemoteAs(_remoteAs);
+      }
+      return bgpNeighbor;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+
+    public Builder setLocalIp(Ip localIp) {
+      _localIp = localIp;
+      return this;
+    }
+
+    public Builder setPeerAddress(Ip peerIpAddress) {
+      _peerIpAddress = peerIpAddress;
+      return this;
+    }
+
+    public Builder setLocalAs(Integer localAs) {
+      _localAs = localAs;
+      return this;
+    }
+
+    public Builder setRemoteAs(Integer remoteAs) {
+      _remoteAs = remoteAs;
+      return this;
+    }
+  }
 
   public static final class BgpNeighborSummary extends ComparableStructure<String> {
 
