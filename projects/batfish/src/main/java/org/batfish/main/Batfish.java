@@ -76,6 +76,7 @@ import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
@@ -3132,13 +3133,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void postProcessConfigurations(Collection<Configuration> configurations) {
-    // ComputeOSPF interface costs where they are missing
     for (Configuration c : configurations) {
+      // Set device type to host iff the configuration format is HOST
+      if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {
+        c.setDeviceType(DeviceType.HOST);
+      }
       for (Vrf vrf : c.getVrfs().values()) {
+        // If vrf has BGP, OSPF, or RIP process and device isn't a host, set device type to router
+        if (c.getDeviceType() == null
+            && (vrf.getBgpProcess() != null
+                || vrf.getOspfProcess() != null
+                || vrf.getRipProcess() != null)) {
+          c.setDeviceType(DeviceType.ROUTER);
+        }
+        // Compute OSPF interface costs where they are missing
         OspfProcess proc = vrf.getOspfProcess();
         if (proc != null) {
           proc.initInterfaceCosts();
         }
+      }
+      // If device was not a host or router, call it a switch
+      if (c.getDeviceType() == null) {
+        c.setDeviceType(DeviceType.SWITCH);
       }
     }
   }

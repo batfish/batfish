@@ -185,11 +185,6 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
       return _node2Regex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_NODE1_REGEX)
     public void setNode1Regex(String regex) {
       _node1Regex = regex;

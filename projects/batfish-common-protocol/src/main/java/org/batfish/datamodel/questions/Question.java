@@ -256,6 +256,7 @@ public abstract class Question implements IQuestion {
     _differential = false;
   }
 
+  /** Returns {@code true} iff this question requires a computed data plane as input. */
   @JsonIgnore
   public abstract boolean getDataPlane();
 
@@ -269,20 +270,12 @@ public abstract class Question implements IQuestion {
     return _instance;
   }
 
+  /**
+   * Returns the short name of this question, used in place of the classname to identify this
+   * question.
+   */
   @JsonIgnore
   public abstract String getName();
-
-  @JsonIgnore
-  public abstract boolean getTraffic();
-
-  protected boolean isBaseParamKey(String paramKey) {
-    switch (paramKey) {
-      case BfConsts.PROP_DIFFERENTIAL:
-        return true;
-      default:
-        return false;
-    }
-  }
 
   // by default, pretty printing is Json
   // override this function in derived classes to do something more meaningful

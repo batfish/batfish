@@ -235,11 +235,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_VERBOSE)
     public boolean getVerbose() {
       return _verbose;
