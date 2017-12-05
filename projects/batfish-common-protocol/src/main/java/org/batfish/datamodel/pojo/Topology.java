@@ -53,5 +53,4 @@ public class Topology extends BfObject {
   public Set<Node> getNodes() {
     return _nodes;
   }
-
 }

@@ -11,12 +11,11 @@ public class Aggregate extends BfObject {
     CLOUD,
     REGION,
     SUBNET,
-    VNET,     //"VPC" in AWS
+    VNET, // "VPC" in AWS
     UNKNOWN
   }
 
-
-  private static final String PROP_CONTENTS= "contents";
+  private static final String PROP_CONTENTS = "contents";
 
   private static final String PROP_NAME = "name";
 
