@@ -94,11 +94,6 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
-    @Override
     public String prettyPrint() {
       String retString =
           String.format(

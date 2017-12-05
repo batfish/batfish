@@ -823,11 +823,6 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       return _node2Regex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
     public void setForeignBgpGroups(SortedSet<String> foreignBgpGroups) {
       _foreignBgpGroups = foreignBgpGroups;

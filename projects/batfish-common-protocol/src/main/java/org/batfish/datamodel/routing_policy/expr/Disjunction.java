@@ -1,9 +1,14 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class Disjunction extends BooleanExpr {
 
@@ -14,6 +19,16 @@ public class Disjunction extends BooleanExpr {
 
   public Disjunction() {
     _disjuncts = new ArrayList<>();
+  }
+
+  @Override
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
+    for (BooleanExpr disjunct : _disjuncts) {
+      childSources.addAll(disjunct.collectSources(parentSources, routingPolicies, w));
+    }
+    return childSources.build();
   }
 
   @Override

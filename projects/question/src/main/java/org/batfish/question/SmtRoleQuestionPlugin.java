@@ -69,11 +69,6 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "smt-roles";
     }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
   }
 
   @Override

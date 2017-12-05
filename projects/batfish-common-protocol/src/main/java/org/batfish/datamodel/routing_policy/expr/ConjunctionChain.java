@@ -1,10 +1,15 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** Juniper subroutine chain */
 public class ConjunctionChain extends BooleanExpr {
@@ -19,6 +24,16 @@ public class ConjunctionChain extends BooleanExpr {
 
   public ConjunctionChain(List<BooleanExpr> subroutines) {
     _subroutines = subroutines;
+  }
+
+  @Override
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
+    for (BooleanExpr conjunct : _subroutines) {
+      childSources.addAll(conjunct.collectSources(parentSources, routingPolicies, w));
+    }
+    return childSources.build();
   }
 
   @Override

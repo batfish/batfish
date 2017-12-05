@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
                 asSet
                     .stream()
                     .filter(as -> !AsPath.isPrivateAs(as))
-                    .collect(ImmutableSortedSet.toImmutableSortedSet(Integer::compare)))
+                    .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))
         .filter(asSet -> !asSet.isEmpty())
         .collect(ImmutableList.toImmutableList());
   }

@@ -1,10 +1,15 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Predicates.not;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -16,6 +21,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfJson;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -72,6 +78,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
 
+  private static final String PROP_DEVICE_TYPE = "deviceType";
+
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
 
   private static final String PROP_IKE_GATEWAYS = "ikeGateways";
@@ -123,6 +131,8 @@ public final class Configuration extends ComparableStructure<String> {
   private LineAction _defaultCrossZoneAction;
 
   private LineAction _defaultInboundAction;
+
+  private DeviceType _deviceType;
 
   private NavigableSet<String> _dnsServers;
 
@@ -239,6 +249,40 @@ public final class Configuration extends ComparableStructure<String> {
     _zones = new TreeMap<>();
   }
 
+  private void computeRoutingPolicySources(String routingPolicyName, Warnings w) {
+    if (routingPolicyName == null) {
+      return;
+    }
+    RoutingPolicy routingPolicy = _routingPolicies.get(routingPolicyName);
+    if (routingPolicy == null) {
+      return;
+    }
+    routingPolicy.computeSources(Collections.emptySet(), _routingPolicies, w);
+  }
+
+  public void computeRoutingPolicySources(Warnings w) {
+    for (String rpName : _routingPolicies.keySet()) {
+      computeRoutingPolicySources(rpName, w);
+    }
+    for (Vrf vrf : _vrfs.values()) {
+      BgpProcess bgpProcess = vrf.getBgpProcess();
+      if (bgpProcess != null) {
+        for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
+          neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
+          neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
+        }
+      }
+      OspfProcess ospfProcess = vrf.getOspfProcess();
+      if (ospfProcess != null) {
+        ospfProcess.setExportPolicySources(getRoutingPolicySources(ospfProcess.getExportPolicy()));
+      }
+      for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
+        gr.setAttributePolicySources(getRoutingPolicySources(gr.getAttributePolicy()));
+        gr.setGenerationPolicySources(getRoutingPolicySources(gr.getGenerationPolicy()));
+      }
+    }
+  }
+
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)
   @JsonPropertyDescription("Dictionary of all AS-path access-lists for this node.")
   public NavigableMap<String, AsPathAccessList> getAsPathAccessLists() {
@@ -287,6 +331,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonIgnore
   public Vrf getDefaultVrf() {
     return _vrfs.get(DEFAULT_VRF_NAME);
+  }
+
+  @JsonProperty(PROP_DEVICE_TYPE)
+  public DeviceType getDeviceType() {
+    return _deviceType;
   }
 
   public NavigableSet<String> getDnsServers() {
@@ -442,6 +491,20 @@ public final class Configuration extends ComparableStructure<String> {
     return _routingPolicies;
   }
 
+  private SortedSet<String> getRoutingPolicySources(String routingPolicyName) {
+    if (routingPolicyName == null) {
+      return Collections.emptySortedSet();
+    }
+    RoutingPolicy rp = _routingPolicies.get(routingPolicyName);
+    if (rp == null) {
+      return Collections.emptySortedSet();
+    }
+    return rp.getSources()
+        .stream()
+        .filter(not(RoutingPolicy::isGenerated))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+  }
+
   @JsonIgnore
   public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
     return _sentAdvertisements;
@@ -573,6 +636,11 @@ public final class Configuration extends ComparableStructure<String> {
 
   public void setDefaultInboundAction(LineAction defaultInboundAction) {
     _defaultInboundAction = defaultInboundAction;
+  }
+
+  @JsonProperty(PROP_DEVICE_TYPE)
+  public void setDeviceType(DeviceType deviceType) {
+    _deviceType = deviceType;
   }
 
   public void setDnsServers(NavigableSet<String> dnsServers) {
