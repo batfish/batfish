@@ -27,6 +27,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private Ip _peerIpAddress;
     private Integer _localAs;
     private Integer _remoteAs;
+    private BgpProcess _bgpProcess;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, BgpNeighbor.class);
@@ -49,11 +50,19 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       if (_remoteAs != null) {
         bgpNeighbor.setRemoteAs(_remoteAs);
       }
+      if (_bgpProcess != null) {
+        _bgpProcess.getNeighbors().put(bgpNeighbor.getPrefix(), bgpNeighbor);
+      }
       return bgpNeighbor;
     }
 
     public Builder setOwner(Configuration owner) {
       _owner = owner;
+      return this;
+    }
+
+    public Builder setBgpProcess(BgpProcess bgpProcess) {
+      _bgpProcess = bgpProcess;
       return this;
     }
 

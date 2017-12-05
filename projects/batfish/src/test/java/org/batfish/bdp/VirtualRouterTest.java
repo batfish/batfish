@@ -21,9 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -135,16 +133,12 @@ public class VirtualRouterTest {
                     Statements.ExitAccept.toStaticStatement()))
             .build();
 
-    BgpNeighbor ebgpNeighbor =
-        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 2, exportPolicy.getName());
-    SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
-    neighbors.put(ebgpNeighbor.getPrefix(), ebgpNeighbor);
-
     BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
     bpBuilder.setVrf(virtualRouter._vrf);
     BgpProcess bgpProcess = bpBuilder.build();
-    bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
+
+    createBgpNeighbor(bgpProcess, neighborConfig, SRC_IP, DEST_IP, 1, 2, exportPolicy.getName());
 
     OspfIntraAreaRoute ospfIntraAreaRoute = new OspfIntraAreaRoute(TEST_NETWORK, null, 100, 30, 1);
     virtualRouter.initRibs();
@@ -182,20 +176,17 @@ public class VirtualRouterTest {
             .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
             .build();
 
-    BgpNeighbor ibgpNeighbor =
-        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
-    ibgpNeighbor.setAdvertiseExternal(true);
-    ibgpNeighbor.setAdditionalPathsSend(true);
-    ibgpNeighbor.setAdditionalPathsSelectAll(true);
-
-    SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
-    neighbors.put(ibgpNeighbor.getPrefix(), ibgpNeighbor);
-
     BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
     bpBuilder.setVrf(virtualRouter._vrf);
     BgpProcess bgpProcess = bpBuilder.build();
-    bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
+
+    BgpNeighbor ibgpNeighbor =
+        createBgpNeighbor(
+            bgpProcess, neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
+    ibgpNeighbor.setAdvertiseExternal(true);
+    ibgpNeighbor.setAdditionalPathsSend(true);
+    ibgpNeighbor.setAdditionalPathsSelectAll(true);
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
@@ -242,20 +233,17 @@ public class VirtualRouterTest {
                     Statements.ExitAccept.toStaticStatement()))
             .build();
 
-    BgpNeighbor ibgpNeighbor =
-        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
-    ibgpNeighbor.setAdvertiseExternal(true);
-    ibgpNeighbor.setAdditionalPathsSend(true);
-    ibgpNeighbor.setAdditionalPathsSelectAll(true);
-
-    SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
-    neighbors.put(ibgpNeighbor.getPrefix(), ibgpNeighbor);
-
     BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
     bpBuilder.setVrf(virtualRouter._vrf);
     BgpProcess bgpProcess = bpBuilder.build();
-    bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
+
+    BgpNeighbor ibgpNeighbor =
+        createBgpNeighbor(
+            bgpProcess, neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
+    ibgpNeighbor.setAdvertiseExternal(true);
+    ibgpNeighbor.setAdditionalPathsSend(true);
+    ibgpNeighbor.setAdditionalPathsSelectAll(true);
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
@@ -300,18 +288,15 @@ public class VirtualRouterTest {
             .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
             .build();
 
-    BgpNeighbor ebgpNeighbor =
-        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 2, exportPolicy.getName());
-    ebgpNeighbor.setAdvertiseInactive(true);
-
-    SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
-    neighbors.put(ebgpNeighbor.getPrefix(), ebgpNeighbor);
-
     BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
     bpBuilder.setVrf(virtualRouter._vrf);
     BgpProcess bgpProcess = bpBuilder.build();
-    bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
+
+    BgpNeighbor ebgpNeighbor =
+        createBgpNeighbor(
+            bgpProcess, neighborConfig, SRC_IP, DEST_IP, 1, 2, exportPolicy.getName());
+    ebgpNeighbor.setAdvertiseInactive(true);
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
@@ -355,21 +340,19 @@ public class VirtualRouterTest {
         rpb.setOwner(virtualRouter._c)
             .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
             .build();
-    BgpNeighbor ibgpNeighbor =
-        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
-
-    ibgpNeighbor.setAdvertiseExternal(true);
-    ibgpNeighbor.setAdditionalPathsSend(true);
-    ibgpNeighbor.setAdditionalPathsSelectAll(true);
-
-    SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
-    neighbors.put(ibgpNeighbor.getPrefix(), ibgpNeighbor);
 
     BgpProcess.Builder bpBuilder = nf.bgpProcessBuilder();
     bpBuilder.setVrf(virtualRouter._vrf);
     BgpProcess bgpProcess = bpBuilder.build();
-    bgpProcess.setNeighbors(neighbors);
     bgpProcess.setRouterId(SRC_IP);
+
+    BgpNeighbor ibgpNeighbor =
+        createBgpNeighbor(
+            bgpProcess, neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
+
+    ibgpNeighbor.setAdvertiseExternal(true);
+    ibgpNeighbor.setAdditionalPathsSend(true);
+    ibgpNeighbor.setAdditionalPathsSelectAll(true);
 
     BgpRoute.Builder bgpBuilder1 =
         new BgpRoute.Builder()
@@ -397,7 +380,20 @@ public class VirtualRouterTest {
     assertThat(numAdvertisements, equalTo(0));
   }
 
+  /**
+   * Creates a {@link BgpNeighbor} with given attributes and adds them to a {@link BgpProcess}
+   *
+   * @param bgpProcess {@link BgpProcess} to which the neighbor will be added
+   * @param owner Owner {@link Configuration} of the Neighbor
+   * @param localIp Local {@link Ip} of the neighbor
+   * @param remoteIp Peer Address of the neighbor
+   * @param localAs {@link BgpNeighbor#_localAs} for the neighbor
+   * @param remoteAs {@link BgpNeighbor#_remoteAs} for the neighbor
+   * @param exportPolicy Name of the routing policy for this {@link BgpNeighbor}
+   * @return new instance of {@link BgpNeighbor}
+   */
   private static BgpNeighbor createBgpNeighbor(
+      BgpProcess bgpProcess,
       Configuration owner,
       Ip localIp,
       Ip remoteIp,
@@ -411,12 +407,20 @@ public class VirtualRouterTest {
             .setPeerAddress(remoteIp)
             .setLocalAs(localAs)
             .setRemoteAs(remoteAs)
-            .setLocalIp(localIp);
+            .setLocalIp(localIp)
+            .setBgpProcess(bgpProcess);
     BgpNeighbor neighbor = bb.build();
     neighbor.setExportPolicy(exportPolicy);
     return neighbor;
   }
 
+  /**
+   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
+   * {@link Vrf}
+   *
+   * @param nodeName Node name of the owner {@link Configuration}
+   * @return new instance of {@link VirtualRouter}
+   */
   private static VirtualRouter createEmptyVirtualRouter(String nodeName) {
     NetworkFactory nf = new NetworkFactory();
     Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
