@@ -1,5 +1,5 @@
 {
-  "id" : "topology-tr_4011dd70-85b1-40e3-bfff-8b365fa752d6",
+  "id" : "topology-basic-example",
   "interfaces" : [
     {
       "name" : "GigabitEthernet2/0",
