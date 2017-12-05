@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,18 +31,22 @@ public class WithEnvironmentExpr extends BooleanExpr {
   }
 
   @Override
-  public void collectSources(
+  public Set<String> collectSources(
       Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
-    _expr.collectSources(sources, routingPolicies, w);
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
+    if (_expr != null) {
+      childSources.addAll(_expr.collectSources(sources, routingPolicies, w));
+    }
     for (Statement statement : _postStatements) {
-      statement.collectSources(sources, routingPolicies, w);
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     for (Statement statement : _postTrueStatements) {
-      statement.collectSources(sources, routingPolicies, w);
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     for (Statement statement : _preStatements) {
-      statement.collectSources(sources, routingPolicies, w);
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
+    return childSources.build();
   }
 
   @Override

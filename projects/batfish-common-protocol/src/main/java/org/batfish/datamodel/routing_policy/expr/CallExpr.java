@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Warnings;
@@ -26,22 +27,22 @@ public class CallExpr extends BooleanExpr {
   }
 
   @Override
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
-    if (sources.contains(_calledPolicyName)) {
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    if (parentSources.contains(_calledPolicyName)) {
       w.redFlag(
           "Circular reference to routing policy: '"
               + _calledPolicyName
               + "' detected at expression: '"
               + toString()
               + "'");
-      return;
+      return Collections.emptySet();
     }
     RoutingPolicy calledPolicy = routingPolicies.get(_calledPolicyName);
     if (calledPolicy == null) {
-      return;
+      return Collections.emptySet();
     }
-    calledPolicy.computeSources(sources, routingPolicies, w);
+    return calledPolicy.computeSources(parentSources, routingPolicies, w);
   }
 
   @Override

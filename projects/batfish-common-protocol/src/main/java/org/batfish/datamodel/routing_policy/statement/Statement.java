@@ -51,9 +51,9 @@ public abstract class Statement implements Serializable {
    * @return A {@link SortedSet} containing the names of each {@link RoutingPolicy} directly or
    *     indirectly referenced by this statement
    */
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
-    return;
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    return Collections.emptySet();
   }
 
   @Override

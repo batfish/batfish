@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,17 +32,19 @@ public class If extends Statement {
   }
 
   @Override
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
     for (Statement statement : _falseStatements) {
-      statement.collectSources(sources, routingPolicies, w);
+      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w));
     }
     for (Statement statement : _trueStatements) {
-      statement.collectSources(sources, routingPolicies, w);
+      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w));
     }
     if (_guard != null) {
-      _guard.collectSources(sources, routingPolicies, w);
+      childSources.addAll(_guard.collectSources(parentSources, routingPolicies, w));
     }
+    return childSources.build();
   }
 
   @Override
