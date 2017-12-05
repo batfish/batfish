@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import jersey.repackaged.com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
