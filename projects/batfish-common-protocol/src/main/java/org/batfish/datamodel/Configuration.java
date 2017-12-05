@@ -286,6 +286,10 @@ public final class Configuration extends ComparableStructure<String> {
         gr.setGenerationPolicySources(collectRoutingPolicySources(gr.getGenerationPolicy(), w));
       }
     }
+    // Compute sources for all other policies (previous ones are cached)
+    for (String rpName : _routingPolicies.keySet()) {
+      collectRoutingPolicySources(rpName, w);
+    }
   }
 
   @JsonProperty(PROP_AS_PATH_ACCESS_LISTS)

@@ -36,13 +36,13 @@ public class If extends Statement {
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
     for (Statement statement : _falseStatements) {
-      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w).iterator());
+      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w));
     }
     for (Statement statement : _trueStatements) {
-      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w).iterator());
+      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w));
     }
     if (_guard != null) {
-      childSources.addAll(_guard.collectSources(parentSources, routingPolicies, w).iterator());
+      childSources.addAll(_guard.collectSources(parentSources, routingPolicies, w));
     }
     return childSources.build();
   }

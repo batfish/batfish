@@ -31,7 +31,7 @@ public class ConjunctionChain extends BooleanExpr {
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
     for (BooleanExpr conjunct : _subroutines) {
-      childSources.addAll(conjunct.collectSources(parentSources, routingPolicies, w).iterator());
+      childSources.addAll(conjunct.collectSources(parentSources, routingPolicies, w));
     }
     return childSources.build();
   }

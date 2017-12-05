@@ -34,15 +34,17 @@ public class WithEnvironmentExpr extends BooleanExpr {
   public Set<String> collectSources(
       Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
-    childSources.addAll(_expr.collectSources(sources, routingPolicies, w).iterator());
+    if (_expr != null) {
+      childSources.addAll(_expr.collectSources(sources, routingPolicies, w));
+    }
     for (Statement statement : _postStatements) {
-      childSources.addAll(statement.collectSources(sources, routingPolicies, w).iterator());
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     for (Statement statement : _postTrueStatements) {
-      childSources.addAll(statement.collectSources(sources, routingPolicies, w).iterator());
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     for (Statement statement : _preStatements) {
-      childSources.addAll(statement.collectSources(sources, routingPolicies, w).iterator());
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
     }
     return childSources.build();
   }

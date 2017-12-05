@@ -117,8 +117,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
       ImmutableSet.Builder<String> childSources = ImmutableSet.<String>builder();
       childSources.add(_key);
       for (Statement statement : _statements) {
-        childSources.addAll(
-            statement.collectSources(newParentSources, routingPolicies, w).iterator());
+        childSources.addAll(statement.collectSources(newParentSources, routingPolicies, w));
       }
       _sources = childSources.build();
     }

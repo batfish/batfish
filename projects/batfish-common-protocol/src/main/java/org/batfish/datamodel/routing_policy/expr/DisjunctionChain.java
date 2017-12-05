@@ -31,7 +31,7 @@ public class DisjunctionChain extends BooleanExpr {
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
     for (BooleanExpr disjunct : _subroutines) {
-      childSources.addAll(disjunct.collectSources(parentSources, routingPolicies, w).iterator());
+      childSources.addAll(disjunct.collectSources(parentSources, routingPolicies, w));
     }
     return childSources.build();
   }
