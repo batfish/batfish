@@ -2,19 +2,13 @@ package org.batfish.datamodel.pojo;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import org.batfish.datamodel.DeviceType;
 
 public class Node extends BfObject {
 
-  // remove this class and point to the datamodel.devicetype in PR #661
-  public enum DeviceType {
-    HOST,
-    ROUTER,
-    SWITCH,
-    UNKNOWN
-  }
-
-  private List<Interface> _interfaces;
+  private Set<Interface> _interfaces;
 
   private final String _name;
 
@@ -22,14 +16,19 @@ public class Node extends BfObject {
 
   @JsonCreator
   public Node(@JsonProperty("name") String name) {
-    super("node-" + name);
+    super(getId(name));
     _name = name;
     _type = DeviceType.UNKNOWN;
+    _interfaces = new HashSet<>();
   }
 
   public Node(String name, DeviceType type) {
     this(name);
     _type = type;
+  }
+
+  public static String getId(String name) {
+    return "node-" + name;
   }
 
   public String getName() {

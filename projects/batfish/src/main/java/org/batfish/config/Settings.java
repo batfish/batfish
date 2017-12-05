@@ -247,6 +247,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     private Path _parseAnswerPath;
 
+    private Path _pojoTopologyPath;
+
     private Path _protocolDependencyGraphPath;
 
     private Path _protocolDependencyGraphZipPath;
@@ -301,6 +303,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public Path getParseAnswerPath() {
       return _parseAnswerPath;
+    }
+
+    public Path getPojoTopologyPath() {
+      return _pojoTopologyPath;
     }
 
     public Path getProtocolDependencyGraphPath() {
@@ -364,6 +370,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public void setParseAnswerPath(Path parseAnswerPath) {
       _parseAnswerPath = parseAnswerPath;
+    }
+
+    public void setPojoTopologyPath(Path path) {
+      _pojoTopologyPath = path;
     }
 
     public void setProtocolDependencyGraphPath(Path protocolDependencyGraphPath) {

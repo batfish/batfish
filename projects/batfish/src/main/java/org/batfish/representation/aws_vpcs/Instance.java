@@ -165,6 +165,9 @@ public class Instance implements AwsVpcEntity, Serializable {
       iface.setOutgoingFilter(outAcl);
       cfgNode.getInterfaces().put(interfaceId, iface);
       cfgNode.getDefaultVrf().getInterfaces().put(interfaceId, iface);
+
+      cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+      cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
     }
 
     return cfgNode;

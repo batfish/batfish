@@ -277,6 +277,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // TODO: ari add acls in myNetworkAcl to the interface facing the VPC
     // router
 
+    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
+
     return cfgNode;
   }
 }

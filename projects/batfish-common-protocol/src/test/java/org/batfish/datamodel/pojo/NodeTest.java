@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.pojo.Node.DeviceType;
+import org.batfish.datamodel.DeviceType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,7 +18,7 @@ public class NodeTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
-  public void nodeConstructorFailTest() throws IOException {
+  public void nodeConstructorFail() throws IOException {
     String nodeStr = "{\"nonamefield\" : \"nodeName\"}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     _thrown.expect(com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
@@ -26,16 +26,17 @@ public class NodeTest {
   }
 
   @Test
-  public void nodeConstructorBasicTest() throws IOException {
+  public void nodeConstructorBasic() throws IOException {
     String nodeStr = "{\"name\" : \"nodeName\"}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Node node = mapper.readValue(nodeStr, Node.class);
 
+    assertThat(node.getId(), equalTo(Node.getId("nodeName")));
     assertThat(node.getName(), equalTo("nodeName"));
   }
 
   @Test
-  public void nodeConstructorExtendedTest() throws IOException {
+  public void nodeConstructorProperties() throws IOException {
     String nodeStr = "{\"name\" : \"nodeName\", \"properties\" : { \"key\": \"value\"}}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     Node node = mapper.readValue(nodeStr, Node.class);
@@ -46,7 +47,7 @@ public class NodeTest {
   }
 
   @Test
-  public void nodeSerializationTest() {
+  public void nodeSerialization() {
     Node node = new Node("testnode", DeviceType.HOST);
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");
