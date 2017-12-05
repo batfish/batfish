@@ -9,15 +9,17 @@ import static org.hamcrest.collection.IsEmptyIterable.emptyIterableOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -68,6 +70,8 @@ public class VirtualRouterTest {
   private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
   private static final Ip SRC_IP = new Ip("1.1.1.1");
   private static final Ip DEST_IP = new Ip("2.2.2.2");
+  private static final Prefix TEST_NETWORK = new Prefix("4.4.4.4/32");
+  private static final Ip TEST_NEXT_HOP_IP = new Ip("1.2.3.4");
   private static final String TEST_NODE_NAME = "testVirtualRouterNode";
   private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
 
@@ -109,6 +113,8 @@ public class VirtualRouterTest {
     VirtualRouter virtualRouter = createEmptyVirtualRouter("testVirtualRouter");
     Map<Ip, Set<String>> ipOwners =
         Collections.singletonMap(SRC_IP, Sets.newHashSet("testVirtualRouter"));
+
+    // checking that no bgp advertisements are sent if the vrf has no BGP process
     assertThat(virtualRouter.computeBgpAdvertisementsToOutside(ipOwners), equalTo(0));
   }
 
@@ -116,20 +122,21 @@ public class VirtualRouterTest {
   public void computeBgpAdvertisementsSentToOutsideIgp() {
     VirtualRouter virtualRouter = createEmptyVirtualRouter(TEST_NODE_NAME);
 
-    Configuration neighbourConfig =
-        BatfishTestUtils.createTestConfiguration("neighbourNode", FORMAT, "neighbourInterface");
+    Configuration neighborConfig =
+        BatfishTestUtils.createTestConfiguration("neighborNode", FORMAT, "neighborInterface");
 
-    RoutingPolicy routingPolicy = new RoutingPolicy("allaccept", virtualRouter._c);
-    routingPolicy
-        .getStatements()
-        .add(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)));
-    routingPolicy.getStatements().add(Statements.ExitAccept.toStaticStatement());
-    NavigableMap<String, RoutingPolicy> routingPolicies = new TreeMap<>();
-    routingPolicies.put(routingPolicy.getName(), routingPolicy);
-    virtualRouter._c.setRoutingPolicies(routingPolicies);
+    NetworkFactory nf = new NetworkFactory();
+    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
+    RoutingPolicy exportPolicy =
+        rpb.setOwner(virtualRouter._c)
+            .setStatements(
+                ImmutableList.of(
+                    new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+                    Statements.ExitAccept.toStaticStatement()))
+            .build();
 
     BgpNeighbor ebgpNeighbor =
-        createBgpNeighbor(neighbourConfig, SRC_IP, DEST_IP, 1, 2, "allaccept");
+        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 2, exportPolicy.getName());
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
     neighbors.put(ebgpNeighbor.getPrefix(), ebgpNeighbor);
 
@@ -138,41 +145,44 @@ public class VirtualRouterTest {
     bgpProcess.setRouterId(SRC_IP);
     virtualRouter._vrf.setBgpProcess(bgpProcess);
 
-    Map<Ip, Set<String>> ipOwners =
-        Collections.singletonMap(SRC_IP, Sets.newHashSet(TEST_NODE_NAME));
-
-    OspfIntraAreaRoute ospfIntraAreaRoute =
-        new OspfIntraAreaRoute(new Prefix("4.4.4.4/32"), null, 100, 30, 1);
+    OspfIntraAreaRoute ospfIntraAreaRoute = new OspfIntraAreaRoute(TEST_NETWORK, null, 100, 30, 1);
     virtualRouter.initRibs();
     virtualRouter._mainRib.mergeRoute(ospfIntraAreaRoute);
 
+    Map<Ip, Set<String>> ipOwners = ImmutableMap.of(SRC_IP, ImmutableSet.of(TEST_NODE_NAME));
     int bgpAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
+
+    // checking number of bgp advertisements
     assertThat(bgpAdvertisements, equalTo(1));
 
-    BgpAdvertisement bgpAdvertisement =
-        virtualRouter._sentBgpAdvertisements.toArray(new BgpAdvertisement[1])[0];
-
-    assertThat(bgpAdvertisement.getDstIp(), equalTo(DEST_IP));
-    assertThat(bgpAdvertisement.getNetwork(), equalTo(new Prefix("4.4.4.4/32")));
-    assertThat(bgpAdvertisement.getOriginatorIp(), equalTo(SRC_IP));
-    assertThat(bgpAdvertisement.getType(), equalTo(BgpAdvertisementType.EBGP_SENT));
-    assertThat(bgpAdvertisement.getSrcIp(), equalTo(SRC_IP));
+    // checking the attributes of the bgp advertisement
+    Iterator<BgpAdvertisement> iterator = virtualRouter._sentBgpAdvertisements.iterator();
+    while (iterator.hasNext()) {
+      BgpAdvertisement bgpAdvertisement = iterator.next();
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(DEST_IP));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(SRC_IP));
+      assertThat(
+          bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.EBGP_SENT));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(SRC_IP));
+    }
   }
 
   @Test
   public void computeBgpAdvertisementsSTOIbgpNeighborEbgpBestPath() {
     VirtualRouter virtualRouter = createEmptyVirtualRouter(TEST_NODE_NAME);
-    Configuration neighbourConfig =
-        BatfishTestUtils.createTestConfiguration("neighbourNode", FORMAT, "neighbourInterface");
+    Configuration neighborConfig =
+        BatfishTestUtils.createTestConfiguration("neighborNode", FORMAT, "neighborInterface");
 
-    RoutingPolicy routingPolicy = new RoutingPolicy("allaccept", virtualRouter._c);
-    routingPolicy.getStatements().add(Statements.ExitAccept.toStaticStatement());
-    NavigableMap<String, RoutingPolicy> routingPolicies = new TreeMap<>();
-    routingPolicies.put(routingPolicy.getName(), routingPolicy);
-    virtualRouter._c.setRoutingPolicies(routingPolicies);
+    NetworkFactory nf = new NetworkFactory();
+    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
+    RoutingPolicy exportPolicy =
+        rpb.setOwner(virtualRouter._c)
+            .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
+            .build();
 
     BgpNeighbor ibgpNeighbor =
-        createBgpNeighbor(neighbourConfig, SRC_IP, DEST_IP, 1, 1, "allaccept");
+        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
     ibgpNeighbor.setAdvertiseExternal(true);
     ibgpNeighbor.setAdditionalPathsSend(true);
     ibgpNeighbor.setAdditionalPathsSelectAll(true);
@@ -187,43 +197,50 @@ public class VirtualRouterTest {
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
-            .setNetwork(new Prefix("4.4.4.4/32"))
+            .setNetwork(TEST_NETWORK)
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(SRC_IP)
-            .setNextHopIp(new Ip("1.2.3.4"));
+            .setNextHopIp(TEST_NEXT_HOP_IP);
 
     virtualRouter._ebgpBestPathRib.mergeRoute(bgpBuilder.build());
 
-    Map<Ip, Set<String>> ipOwners =
-        Collections.singletonMap(SRC_IP, Sets.newHashSet(TEST_NODE_NAME));
-    int numAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
-    assertThat(numAdvertisements, equalTo(1));
+    Map<Ip, Set<String>> ipOwners = ImmutableMap.of(SRC_IP, ImmutableSet.of(TEST_NODE_NAME));
+    int bgpAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
+    // checking number of bgp advertisements
+    assertThat(bgpAdvertisements, equalTo(1));
 
-    BgpAdvertisement bgpAdvertisement =
-        virtualRouter._sentBgpAdvertisements.toArray(new BgpAdvertisement[1])[0];
-
-    assertThat(bgpAdvertisement.getDstIp(), equalTo(DEST_IP));
-    assertThat(bgpAdvertisement.getNetwork(), equalTo(new Prefix("4.4.4.4/32")));
-    assertThat(bgpAdvertisement.getOriginatorIp(), equalTo(SRC_IP));
-    assertThat(bgpAdvertisement.getType(), equalTo(BgpAdvertisementType.IBGP_SENT));
-    assertThat(bgpAdvertisement.getSrcIp(), equalTo(SRC_IP));
+    // checking the attributes of the bgp advertisement
+    Iterator<BgpAdvertisement> iterator = virtualRouter._sentBgpAdvertisements.iterator();
+    while (iterator.hasNext()) {
+      BgpAdvertisement bgpAdvertisement = iterator.next();
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(DEST_IP));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(SRC_IP));
+      assertThat(
+          bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.IBGP_SENT));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(SRC_IP));
+    }
   }
 
   @Test
   public void computeBgpAdvertisementsSTOIbgpNeighborBgpMultiPath() {
     VirtualRouter virtualRouter = createEmptyVirtualRouter(TEST_NODE_NAME);
-    Configuration neighbourConfig =
-        BatfishTestUtils.createTestConfiguration("neighbourNode", FORMAT, "neighbourInterface");
+    Configuration neighborConfig =
+        BatfishTestUtils.createTestConfiguration("neighborNode", FORMAT, "neighborInterface");
 
-    RoutingPolicy routingPolicy = new RoutingPolicy("allaccept", virtualRouter._c);
-    routingPolicy.getStatements().add(Statements.ExitAccept.toStaticStatement());
-    NavigableMap<String, RoutingPolicy> routingPolicies = new TreeMap<>();
-    routingPolicies.put(routingPolicy.getName(), routingPolicy);
-    virtualRouter._c.setRoutingPolicies(routingPolicies);
+    NetworkFactory nf = new NetworkFactory();
+    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
+    RoutingPolicy exportPolicy =
+        rpb.setOwner(virtualRouter._c)
+            .setStatements(
+                ImmutableList.of(
+                    new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+                    Statements.ExitAccept.toStaticStatement()))
+            .build();
 
     BgpNeighbor ibgpNeighbor =
-        createBgpNeighbor(neighbourConfig, SRC_IP, DEST_IP, 1, 1, "allaccept");
+        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
     ibgpNeighbor.setAdvertiseExternal(true);
     ibgpNeighbor.setAdditionalPathsSend(true);
     ibgpNeighbor.setAdditionalPathsSelectAll(true);
@@ -238,42 +255,49 @@ public class VirtualRouterTest {
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
-            .setNetwork(new Prefix("6.6.6.6/32"))
+            .setNetwork(TEST_NETWORK)
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(SRC_IP)
-            .setNextHopIp(new Ip("1.2.3.4"));
+            .setNextHopIp(TEST_NEXT_HOP_IP);
 
     virtualRouter._bgpMultipathRib.mergeRoute(bgpBuilder.build());
 
-    Map<Ip, Set<String>> ipOwners =
-        Collections.singletonMap(SRC_IP, Sets.newHashSet(TEST_NODE_NAME));
-    int numAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
-    assertThat(numAdvertisements, equalTo(1));
-    BgpAdvertisement bgpAdvertisement =
-        virtualRouter._sentBgpAdvertisements.toArray(new BgpAdvertisement[1])[0];
-    assertThat(bgpAdvertisement.getDstIp(), equalTo(DEST_IP));
-    assertThat(bgpAdvertisement.getNetwork(), equalTo(new Prefix("6.6.6.6/32")));
-    assertThat(bgpAdvertisement.getOriginatorIp(), equalTo(SRC_IP));
-    assertThat(bgpAdvertisement.getType(), equalTo(BgpAdvertisementType.IBGP_SENT));
-    assertThat(bgpAdvertisement.getSrcIp(), equalTo(SRC_IP));
+    Map<Ip, Set<String>> ipOwners = ImmutableMap.of(SRC_IP, ImmutableSet.of(TEST_NODE_NAME));
+    int bgpAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
+
+    // checking number of bgp advertisements
+    assertThat(bgpAdvertisements, equalTo(1));
+
+    // checking the attributes of the bgp advertisement
+    Iterator<BgpAdvertisement> iterator = virtualRouter._sentBgpAdvertisements.iterator();
+    while (iterator.hasNext()) {
+      BgpAdvertisement bgpAdvertisement = iterator.next();
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(DEST_IP));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(SRC_IP));
+      assertThat(
+          bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.IBGP_SENT));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(SRC_IP));
+    }
   }
 
   @Test
   public void computeBgpAdvertisementsSTOEbgpNeighbor() {
 
     VirtualRouter virtualRouter = createEmptyVirtualRouter(TEST_NODE_NAME);
-    Configuration neighbourConfig =
-        BatfishTestUtils.createTestConfiguration("neighbourNode", FORMAT, "neighbourInterface");
+    Configuration neighborConfig =
+        BatfishTestUtils.createTestConfiguration("neighborNode", FORMAT, "neighborInterface");
 
-    RoutingPolicy routingPolicy = new RoutingPolicy("allaccept", virtualRouter._c);
-    routingPolicy.getStatements().add(Statements.ExitAccept.toStaticStatement());
-    NavigableMap<String, RoutingPolicy> routingPolicies = new TreeMap<>();
-    routingPolicies.put(routingPolicy.getName(), routingPolicy);
-    virtualRouter._c.setRoutingPolicies(routingPolicies);
+    NetworkFactory nf = new NetworkFactory();
+    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
+    RoutingPolicy exportPolicy =
+        rpb.setOwner(virtualRouter._c)
+            .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
+            .build();
 
     BgpNeighbor ebgpNeighbor =
-        createBgpNeighbor(neighbourConfig, SRC_IP, DEST_IP, 1, 2, "allaccept");
+        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 2, exportPolicy.getName());
     ebgpNeighbor.setAdvertiseInactive(true);
 
     SortedMap<Prefix, BgpNeighbor> neighbors = new TreeMap<>();
@@ -286,7 +310,7 @@ public class VirtualRouterTest {
 
     BgpRoute.Builder bgpBuilder =
         new BgpRoute.Builder()
-            .setNetwork(new Prefix("5.5.5.5/32"))
+            .setNetwork(TEST_NETWORK)
             .setReceivedFromRouteReflectorClient(true)
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.INCOMPLETE)
@@ -294,33 +318,41 @@ public class VirtualRouterTest {
 
     virtualRouter._bgpBestPathRib.mergeRoute(bgpBuilder.build());
 
-    Map<Ip, Set<String>> ipOwners =
-        Collections.singletonMap(SRC_IP, Sets.newHashSet(TEST_NODE_NAME));
-    int numAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
-    assertThat(numAdvertisements, equalTo(1));
-    BgpAdvertisement bgpAdvertisement =
-        virtualRouter._sentBgpAdvertisements.toArray(new BgpAdvertisement[1])[0];
-    assertThat(bgpAdvertisement.getDstIp(), equalTo(DEST_IP));
-    assertThat(bgpAdvertisement.getNetwork(), equalTo(new Prefix("5.5.5.5/32")));
-    assertThat(bgpAdvertisement.getOriginatorIp(), equalTo(SRC_IP));
-    assertThat(bgpAdvertisement.getType(), equalTo(BgpAdvertisementType.EBGP_SENT));
-    assertThat(bgpAdvertisement.getSrcIp(), equalTo(SRC_IP));
+    Map<Ip, Set<String>> ipOwners = ImmutableMap.of(SRC_IP, ImmutableSet.of(TEST_NODE_NAME));
+    int bgpAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
+
+    // checking number of bgp advertisements
+    assertThat(bgpAdvertisements, equalTo(1));
+
+    // checking the attributes of the bgp advertisement
+    Iterator<BgpAdvertisement> iterator = virtualRouter._sentBgpAdvertisements.iterator();
+    while (iterator.hasNext()) {
+      BgpAdvertisement bgpAdvertisement = iterator.next();
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(DEST_IP));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(SRC_IP));
+      assertThat(
+          bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.EBGP_SENT));
+      assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(SRC_IP));
+    }
   }
 
   @Test
   public void computeBgpAdvertisementsSTOIbgpNeighborReject() {
     VirtualRouter virtualRouter = createEmptyVirtualRouter(TEST_NODE_NAME);
-    Configuration neighbourConfig =
-        BatfishTestUtils.createTestConfiguration("neighbourNode", FORMAT, "neighbourInterface");
+    Configuration neighborConfig =
+        BatfishTestUtils.createTestConfiguration("neighborNode", FORMAT, "neighborInterface");
 
-    RoutingPolicy routingPolicy = new RoutingPolicy("allreject", virtualRouter._c);
-    routingPolicy.getStatements().add(Statements.ExitReject.toStaticStatement());
-    NavigableMap<String, RoutingPolicy> routingPolicies = new TreeMap<>();
-    routingPolicies.put(routingPolicy.getName(), routingPolicy);
-    virtualRouter._c.setRoutingPolicies(routingPolicies);
+    NetworkFactory nf = new NetworkFactory();
+    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
 
+    RoutingPolicy exportPolicy =
+        rpb.setOwner(virtualRouter._c)
+            .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
+            .build();
     BgpNeighbor ibgpNeighbor =
-        createBgpNeighbor(neighbourConfig, SRC_IP, DEST_IP, 1, 1, "allreject");
+        createBgpNeighbor(neighborConfig, SRC_IP, DEST_IP, 1, 1, exportPolicy.getName());
+
     ibgpNeighbor.setAdvertiseExternal(true);
     ibgpNeighbor.setAdditionalPathsSend(true);
     ibgpNeighbor.setAdditionalPathsSelectAll(true);
@@ -335,26 +367,27 @@ public class VirtualRouterTest {
 
     BgpRoute.Builder bgpBuilder1 =
         new BgpRoute.Builder()
-            .setNetwork(new Prefix("4.4.4.4/32"))
+            .setNetwork(TEST_NETWORK)
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(SRC_IP)
-            .setNextHopIp(new Ip("1.2.3.4"));
+            .setNextHopIp(TEST_NEXT_HOP_IP);
 
     BgpRoute.Builder bgpBuilder2 =
         new BgpRoute.Builder()
-            .setNetwork(new Prefix("4.4.4.4/32"))
+            .setNetwork(TEST_NETWORK)
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(SRC_IP)
-            .setNextHopIp(new Ip("1.2.3.4"));
+            .setNextHopIp(TEST_NEXT_HOP_IP);
 
     virtualRouter._ebgpBestPathRib.mergeRoute(bgpBuilder1.build());
     virtualRouter._bgpMultipathRib.mergeRoute(bgpBuilder2.build());
 
-    Map<Ip, Set<String>> ipOwners =
-        Collections.singletonMap(SRC_IP, Sets.newHashSet(TEST_NODE_NAME));
+    Map<Ip, Set<String>> ipOwners = ImmutableMap.of(SRC_IP, ImmutableSet.of(TEST_NODE_NAME));
     int numAdvertisements = virtualRouter.computeBgpAdvertisementsToOutside(ipOwners);
+
+    // number of BGP advertisements should be zero given the reject all export policy
     assertThat(numAdvertisements, equalTo(0));
   }
 
@@ -375,8 +408,11 @@ public class VirtualRouterTest {
   }
 
   private static VirtualRouter createEmptyVirtualRouter(String nodeName) {
+    NetworkFactory nf = new NetworkFactory();
     Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
-    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = vb.setOwner(config).build();
+    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
     VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
     virtualRouter.initRibs();
     virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();

@@ -21,6 +21,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.junit.rules.TemporaryFolder;
@@ -120,7 +121,12 @@ public class BatfishTestUtils {
    */
   public static Configuration createTestConfiguration(
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {
-    Configuration config = new Configuration(nodeName, configFormat);
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(nodeName)
+            .build();
     for (String interfaceName : interfaceNames) {
       config.getInterfaces().put(interfaceName, new Interface(interfaceName, config));
     }
