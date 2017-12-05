@@ -140,6 +140,11 @@ public class RoutingPolicy extends ComparableStructure<String> {
     return _owner;
   }
 
+  @JsonIgnore
+  public Set<String> getSources() {
+    return _sources;
+  }
+
   @JsonProperty(PROP_STATEMENTS)
   @JsonPropertyDescription("The list of routing-policy statements to execute")
   public List<Statement> getStatements() {
