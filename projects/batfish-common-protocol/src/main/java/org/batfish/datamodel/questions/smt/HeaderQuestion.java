@@ -280,11 +280,6 @@ public class HeaderQuestion extends Question implements IQuestion {
   }
 
   @Override
-  public boolean getTraffic() {
-    return true;
-  }
-
-  @Override
   public String prettyPrint() {
     return String.format("header %s", prettyPrintParams());
   }

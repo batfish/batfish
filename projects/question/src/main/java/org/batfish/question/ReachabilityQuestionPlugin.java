@@ -411,11 +411,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public boolean getTraffic() {
-      return true;
-    }
-
-    @Override
     public String prettyPrint() {
       try {
         String retString = String.format("reachability %sactions=%s", prettyPrintBase(), _actions);

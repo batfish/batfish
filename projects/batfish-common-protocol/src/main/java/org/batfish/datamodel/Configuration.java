@@ -80,6 +80,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
 
+  private static final String PROP_DEVICE_TYPE = "deviceType";
+
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
 
   private static final String PROP_IKE_GATEWAYS = "ikeGateways";
@@ -131,6 +133,8 @@ public final class Configuration extends ComparableStructure<String> {
   private LineAction _defaultCrossZoneAction;
 
   private LineAction _defaultInboundAction;
+
+  private DeviceType _deviceType;
 
   private NavigableSet<String> _dnsServers;
 
@@ -334,6 +338,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonIgnore
   public Vrf getDefaultVrf() {
     return _vrfs.get(DEFAULT_VRF_NAME);
+  }
+
+  @JsonProperty(PROP_DEVICE_TYPE)
+  public DeviceType getDeviceType() {
+    return _deviceType;
   }
 
   public NavigableSet<String> getDnsServers() {
@@ -620,6 +629,11 @@ public final class Configuration extends ComparableStructure<String> {
 
   public void setDefaultInboundAction(LineAction defaultInboundAction) {
     _defaultInboundAction = defaultInboundAction;
+  }
+
+  @JsonProperty(PROP_DEVICE_TYPE)
+  public void setDeviceType(DeviceType deviceType) {
+    _deviceType = deviceType;
   }
 
   public void setDnsServers(NavigableSet<String> dnsServers) {
