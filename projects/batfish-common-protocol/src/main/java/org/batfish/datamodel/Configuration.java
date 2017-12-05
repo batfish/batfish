@@ -492,6 +492,9 @@ public final class Configuration extends ComparableStructure<String> {
   }
 
   private SortedSet<String> getRoutingPolicySources(String routingPolicyName) {
+    if (routingPolicyName == null) {
+      return Collections.emptySortedSet();
+    }
     RoutingPolicy rp = _routingPolicies.get(routingPolicyName);
     if (rp == null) {
       return Collections.emptySortedSet();
