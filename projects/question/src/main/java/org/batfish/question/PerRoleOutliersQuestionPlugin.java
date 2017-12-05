@@ -219,11 +219,6 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       return _roles;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_HYPOTHESIS)
     public void setHypothesis(OutliersHypothesis hypothesis) {
       _hypothesis = hypothesis;

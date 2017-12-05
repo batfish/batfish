@@ -1,0 +1,25 @@
+!
+hostname ios
+!
+! Communities where standard/expanded is implied in community number
+! 1-99 implies standard, 100-500 implies expanded
+ip community-list 40 permit 4294967295
+ip community-list 400 deny 4294967295
+!
+! Communities where standard/expanded are explicitly specified
+ip community-list standard std_community permit 1 2 3
+ip community-list standard std_as_nn permit 65535:65535
+ip community-list standard std_gshut permit gshut
+ip community-list standard std_internet permit internet
+ip community-list standard std_local_AS permit local-AS
+ip community-list standard std_no_advertise permit no-advertise
+ip community-list standard std_no_export permit no-export
+!
+ip community-list expanded exp_community permit 1 2 3
+ip community-list expanded exp_as_nn permit 65535:65535
+ip community-list expanded exp_gshut permit gshut
+ip community-list expanded exp_internet permit internet
+ip community-list expanded exp_local_AS permit local-AS
+ip community-list expanded exp_no_advertise permit no-advertise
+ip community-list expanded exp_no_export permit no-export
+!

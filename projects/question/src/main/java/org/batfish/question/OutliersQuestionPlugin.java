@@ -413,11 +413,6 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_HYPOTHESIS)
     public void setHypothesis(OutliersHypothesis hypothesis) {
       _hypothesis = hypothesis;

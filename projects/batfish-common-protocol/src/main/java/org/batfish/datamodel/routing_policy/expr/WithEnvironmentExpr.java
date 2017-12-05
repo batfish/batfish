@@ -1,9 +1,14 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class WithEnvironmentExpr extends BooleanExpr {
@@ -23,6 +28,25 @@ public class WithEnvironmentExpr extends BooleanExpr {
     _preStatements = new ArrayList<>();
     _postStatements = new ArrayList<>();
     _postTrueStatements = new ArrayList<>();
+  }
+
+  @Override
+  public Set<String> collectSources(
+      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
+    if (_expr != null) {
+      childSources.addAll(_expr.collectSources(sources, routingPolicies, w));
+    }
+    for (Statement statement : _postStatements) {
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
+    }
+    for (Statement statement : _postTrueStatements) {
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
+    }
+    for (Statement statement : _preStatements) {
+      childSources.addAll(statement.collectSources(sources, routingPolicies, w));
+    }
+    return childSources.build();
   }
 
   @Override

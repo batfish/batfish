@@ -1,9 +1,18 @@
 package org.batfish.common;
 
+import io.opentracing.ActiveSpan;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.propagation.Format.Builtin;
+import io.opentracing.propagation.TextMapExtractAdapter;
+import io.opentracing.propagation.TextMapInjectAdapter;
+import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -47,6 +56,7 @@ public class WorkItem {
   private HashMap<String, String> _requestParams;
   private HashMap<String, String> _responseParams;
   private String _testrigName;
+  private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
   public WorkItem(String containerName, String testrigName) {
     _id = UUID.randomUUID();
@@ -54,6 +64,7 @@ public class WorkItem {
     _testrigName = testrigName;
     _requestParams = new HashMap<>();
     _responseParams = new HashMap<>();
+    _spanData = new HashMap<>();
   }
 
   public WorkItem(
@@ -67,6 +78,7 @@ public class WorkItem {
     _testrigName = testrigName;
     _requestParams = reqParams;
     _responseParams = resParams;
+    _spanData = new HashMap<>();
   }
 
   public void addRequestParam(String key, String value) {
@@ -81,12 +93,44 @@ public class WorkItem {
     return _id;
   }
 
+  /**
+   * Retrieves a {@link SpanContext} which was serialized earlier in the {@link WorkItem}
+   *
+   * @return {@link SpanContext} or null if no {@link SpanContext} was serialized in the {@link
+   *     WorkItem}
+   */
+  @Nullable
+  public SpanContext getSourceSpan() {
+    return getSourceSpan(GlobalTracer.get());
+  }
+
+  // visible for testing
+  SpanContext getSourceSpan(Tracer tracer) {
+    return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
+  }
+
   public HashMap<String, String> getRequestParams() {
     return _requestParams;
   }
 
   public String getTestrigName() {
     return _testrigName;
+  }
+
+  /**
+   * Takes an {@link ActiveSpan} and attaches it to the {@link WorkItem} which can be fetched later
+   * using {@link WorkItem#getSourceSpan()}
+   */
+  public void setSourceSpan(@Nullable ActiveSpan activeSpan) {
+    setSourceSpan(activeSpan, GlobalTracer.get());
+  }
+
+  // visible for testing
+  void setSourceSpan(@Nullable ActiveSpan activeSpan, Tracer tracer) {
+    if (activeSpan == null) {
+      return;
+    }
+    tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
   }
 
   public void setId(String idString) {

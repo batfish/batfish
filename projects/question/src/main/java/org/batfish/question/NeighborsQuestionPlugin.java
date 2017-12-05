@@ -875,11 +875,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
-    @Override
     public String prettyPrint() {
       try {
         String retString =

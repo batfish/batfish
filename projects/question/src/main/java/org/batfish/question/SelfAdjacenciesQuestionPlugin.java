@@ -177,11 +177,6 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String nodeRegex) {
       _nodeRegex = nodeRegex;

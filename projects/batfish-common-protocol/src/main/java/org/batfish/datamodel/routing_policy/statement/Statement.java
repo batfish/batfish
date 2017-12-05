@@ -6,8 +6,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 @JsonSubTypes({
@@ -39,6 +44,17 @@ public abstract class Statement implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String _comment;
+
+  /**
+   * Get all the routing-policies referenced by this statement.
+   *
+   * @return A {@link SortedSet} containing the names of each {@link RoutingPolicy} directly or
+   *     indirectly referenced by this statement
+   */
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    return Collections.emptySet();
+  }
 
   @Override
   public abstract boolean equals(Object obj);

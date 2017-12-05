@@ -20,12 +20,15 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.CompositeBatfishException;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfProcess;
@@ -199,26 +202,148 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testOspfPointToPoint() throws IOException {
-    String testrigName = "ospf-point-to-point";
-    String iosOspfPointToPoint = "ios-ospf-point-to-point";
-    String[] configurationNames = new String[] {iosOspfPointToPoint};
+  public void testCommunityListConversion() throws IOException {
+    String testrigName = "community-list-conversion";
+    String iosName = "ios";
+    String nxosName = "nxos";
+    String eosName = "eos";
+    String[] configurationNames = new String[] {iosName, nxosName, eosName};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
-    batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations;
     try {
       configurations = batfish.loadConfigurations();
     } catch (CompositeBatfishException e) {
       throw e.asSingleException();
     }
-    Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
-    Interface e0Sub0 = iosMaxMetric.getInterfaces().get("Ethernet0/0");
-    Interface e0Sub1 = iosMaxMetric.getInterfaces().get("Ethernet0/1");
 
-    assertTrue(e0Sub0.getOspfPointToPoint());
-    assertFalse(e0Sub1.getOspfPointToPoint());
+    Configuration iosCommunityListConfig = configurations.get(iosName);
+    SortedMap<String, CommunityList> iosCommunityLists = iosCommunityListConfig.getCommunityLists();
+
+    Configuration eosCommunityListConfig = configurations.get(eosName);
+    SortedMap<String, CommunityList> eosCommunityLists = eosCommunityListConfig.getCommunityLists();
+
+    Configuration nxosCommunityListConfig = configurations.get(nxosName);
+    SortedMap<String, CommunityList> nxosCommunityLists =
+        nxosCommunityListConfig.getCommunityLists();
+
+    String iosRegexImpliedStd = getCLRegex(iosCommunityLists, "40");
+    String iosRegexImpliedExp = getCLRegex(iosCommunityLists, "400");
+    String iosRegexStd = getCLRegex(iosCommunityLists, "std_community");
+    String iosRegexExp = getCLRegex(iosCommunityLists, "exp_community");
+    String iosRegexStdAsnn = getCLRegex(iosCommunityLists, "std_as_nn");
+    String iosRegexExpAsnn = getCLRegex(iosCommunityLists, "exp_as_nn");
+    String iosRegexStdGshut = getCLRegex(iosCommunityLists, "std_gshut");
+    String iosRegexExpGshut = getCLRegex(iosCommunityLists, "exp_gshut");
+    String iosRegexStdInternet = getCLRegex(iosCommunityLists, "std_internet");
+    String iosRegexExpInternet = getCLRegex(iosCommunityLists, "exp_internet");
+    String iosRegexStdLocalAs = getCLRegex(iosCommunityLists, "std_local_AS");
+    String iosRegexExpLocalAs = getCLRegex(iosCommunityLists, "exp_local_AS");
+    String iosRegexStdNoAdv = getCLRegex(iosCommunityLists, "std_no_advertise");
+    String iosRegexExpNoAdv = getCLRegex(iosCommunityLists, "exp_no_advertise");
+    String iosRegexStdNoExport = getCLRegex(iosCommunityLists, "std_no_export");
+    String iosRegexExpNoExport = getCLRegex(iosCommunityLists, "exp_no_export");
+
+    String eosRegexStd = getCLRegex(eosCommunityLists, "eos_std");
+    String eosRegexExp = getCLRegex(eosCommunityLists, "eos_exp");
+    String eosRegexStdGshut = getCLRegex(eosCommunityLists, "eos_std_gshut");
+    String eosRegexStdInternet = getCLRegex(eosCommunityLists, "eos_std_internet");
+    String eosRegexStdLocalAs = getCLRegex(eosCommunityLists, "eos_std_local_AS");
+    String eosRegexStdNoAdv = getCLRegex(eosCommunityLists, "eos_std_no_adv");
+    String eosRegexStdNoExport = getCLRegex(eosCommunityLists, "eos_std_no_export");
+    String eosRegexStdMulti = getCLRegex(eosCommunityLists, "eos_std_multi");
+    String eosRegexExpMulti = getCLRegex(eosCommunityLists, "eos_exp_multi");
+
+    String nxosRegexStd = getCLRegex(nxosCommunityLists, "nxos_std");
+    String nxosRegexExp = getCLRegex(nxosCommunityLists, "nxos_exp");
+    String nxosRegexStdInternet = getCLRegex(nxosCommunityLists, "nxos_std_internet");
+    String nxosRegexStdLocalAs = getCLRegex(nxosCommunityLists, "nxos_std_local_AS");
+    String nxosRegexStdNoAdv = getCLRegex(nxosCommunityLists, "nxos_std_no_adv");
+    String nxosRegexStdNoExport = getCLRegex(nxosCommunityLists, "nxos_std_no_export");
+    String nxosRegexStdMulti = getCLRegex(nxosCommunityLists, "nxos_std_multi");
+    String nxosRegexExpMulti = getCLRegex(nxosCommunityLists, "nxos_exp_multi");
+
+    // Check well known community regexes are generated properly
+    String regexInternet =
+        "^" + CommonUtil.longToCommunity(WellKnownCommunity.INTERNET.getValue()) + "$";
+    String regexNoAdv =
+        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_ADVERTISE.getValue()) + "$";
+    String regexNoExport =
+        "^" + CommonUtil.longToCommunity(WellKnownCommunity.NO_EXPORT.getValue()) + "$";
+    String regexGshut = "^" + CommonUtil.longToCommunity(WellKnownCommunity.GSHUT.getValue()) + "$";
+    String regexLocalAs =
+        "^" + CommonUtil.longToCommunity(WellKnownCommunity.LOCAL_AS.getValue()) + "$";
+    assertThat(iosRegexStdInternet, equalTo(regexInternet));
+    assertThat(iosRegexStdNoAdv, equalTo(regexNoAdv));
+    assertThat(iosRegexStdNoExport, equalTo(regexNoExport));
+    assertThat(iosRegexStdGshut, equalTo(regexGshut));
+    assertThat(iosRegexStdLocalAs, equalTo(regexLocalAs));
+    assertThat(eosRegexStdInternet, equalTo(regexInternet));
+    assertThat(eosRegexStdNoAdv, equalTo(regexNoAdv));
+    assertThat(eosRegexStdNoExport, equalTo(regexNoExport));
+    assertThat(eosRegexStdGshut, equalTo(regexGshut));
+    assertThat(eosRegexStdLocalAs, equalTo(regexLocalAs));
+    // NX-OS does not support gshut
+    assertThat(nxosRegexStdInternet, equalTo(regexInternet));
+    assertThat(nxosRegexStdNoAdv, equalTo(regexNoAdv));
+    assertThat(nxosRegexStdNoExport, equalTo(regexNoExport));
+    assertThat(nxosRegexStdLocalAs, equalTo(regexLocalAs));
+
+    // Confirm for the same literal communities, standard and expanded regexs are different
+    assertThat(iosRegexImpliedStd, not(equalTo(iosRegexImpliedExp)));
+    assertThat(iosRegexStd, not(equalTo(iosRegexExp)));
+    assertThat(iosRegexStdAsnn, not(equalTo(iosRegexExpAsnn)));
+    assertThat(iosRegexStdInternet, not(equalTo(iosRegexExpInternet)));
+    assertThat(iosRegexStdNoAdv, not(equalTo(iosRegexExpNoAdv)));
+    assertThat(iosRegexStdNoExport, not(equalTo(iosRegexExpNoExport)));
+    assertThat(iosRegexStdGshut, not(equalTo(iosRegexExpGshut)));
+    assertThat(iosRegexStdLocalAs, not(equalTo(iosRegexExpLocalAs)));
+    assertThat(eosRegexStd, not(equalTo(eosRegexExp)));
+    assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
+    assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
+    assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+  }
+
+  private static String getCLRegex(
+      SortedMap<String, CommunityList> communityLists, String communityName) {
+    return communityLists.get(communityName).getLines().get(0).getRegex();
+  }
+
+  @Test
+  public void testIpsecVpnIos() throws IOException {
+    String testrigName = "ipsec-vpn-ios";
+    String r1Name = "r1";
+    String r2Name = "r2";
+    String r3Name = "r3";
+    String[] configurationNames = new String[] {r1Name, r2Name, r3Name};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+
+    assertThat(
+        configurations.values().stream().flatMap(c -> c.getIpsecVpns().values().stream()).count(),
+        equalTo(6L));
+    configurations
+        .values()
+        .stream()
+        .flatMap(c -> c.getIpsecVpns().values().stream())
+        .forEach(iv -> assertThat(iv.getRemoteIpsecVpn(), not(nullValue())));
+    /* Two tunnels should not be established because of a password mismatch between r1 and r3 */
+    assertThat(
+        configurations
+            .values()
+            .stream()
+            .flatMap(c -> c.getInterfaces().values().stream())
+            .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
+            .count(),
+        equalTo(4L));
   }
 
   @Test
@@ -267,6 +392,28 @@ public class CiscoGrammarTest {
     assertThat(procOnStartup.getMaxMetricStubNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricExternalNetworks(), is(nullValue()));
     assertThat(procOnStartup.getMaxMetricSummaryNetworks(), is(nullValue()));
+  }
+
+  @Test
+  public void testOspfPointToPoint() throws IOException {
+    String testrigName = "ospf-point-to-point";
+    String iosOspfPointToPoint = "ios-ospf-point-to-point";
+    String[] configurationNames = new String[] {iosOspfPointToPoint};
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigResource(
+            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+    Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
+    Interface e0Sub0 = iosMaxMetric.getInterfaces().get("Ethernet0/0");
+    Interface e0Sub1 = iosMaxMetric.getInterfaces().get("Ethernet0/1");
+
+    assertTrue(e0Sub0.getOspfPointToPoint());
+    assertFalse(e0Sub1.getOspfPointToPoint());
   }
 
   @Test

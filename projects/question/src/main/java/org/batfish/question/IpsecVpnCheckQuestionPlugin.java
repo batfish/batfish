@@ -208,11 +208,7 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
               answerElement.addIpsecVpnPair(
                   answerElement.getIncompatibleIpsecProposals(), c, ipsecVpn, remoteIpsecVpn);
             }
-            if (!ipsecVpn
-                .getIkeGateway()
-                .getIkePolicy()
-                .getPreSharedKeyHash()
-                .equals(remoteIpsecVpn.getIkeGateway().getIkePolicy().getPreSharedKeyHash())) {
+            if (!ipsecVpn.compatiblePreSharedKey(remoteIpsecVpn)) {
               answerElement.addIpsecVpnPair(
                   answerElement.getPreSharedKeyMismatch(), c, ipsecVpn, remoteIpsecVpn);
             }
@@ -271,11 +267,6 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE2_REGEX)
     public String getNode2Regex() {
       return _node2Regex;
-    }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
     }
 
     @JsonProperty(PROP_NODE1_REGEX)

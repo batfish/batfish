@@ -507,11 +507,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
       return _protocols;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_AGAINST_ENVIRONMENT)
     public void setAgainstEnvironment(boolean againstEnvironment) {
       _againstEnvironment = againstEnvironment;

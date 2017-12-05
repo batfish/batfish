@@ -364,11 +364,6 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       return _numClusters;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_NAMED_STRUCT_TYPES)
     public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
       _namedStructTypes = namedStructTypes;

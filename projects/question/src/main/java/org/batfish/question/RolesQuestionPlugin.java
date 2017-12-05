@@ -151,11 +151,6 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       return _inferred;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;

@@ -5,6 +5,9 @@ import com.google.common.cache.CacheBuilder;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
 import com.uber.jaeger.samplers.ConstSampler;
+import io.opentracing.ActiveSpan;
+import io.opentracing.References;
+import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
 import java.net.URI;
@@ -452,20 +455,33 @@ public class Driver {
 
           logTask(taskId, task);
 
+          @Nullable
+          SpanContext runTaskSpanContext =
+              GlobalTracer.get().activeSpan() == null
+                  ? null
+                  : GlobalTracer.get().activeSpan().context();
+
           // run batfish on a new thread and set idle to true when done
           Thread thread =
               new Thread() {
                 @Override
                 public void run() {
-                  task.setStatus(TaskStatus.InProgress);
-                  if (runBatfish(settings)) {
-                    task.setStatus(TaskStatus.TerminatedNormally);
-                  } else {
-                    task.setStatus(TaskStatus.TerminatedAbnormally);
+                  try (ActiveSpan runBatfishSpan =
+                      GlobalTracer.get()
+                          .buildSpan("Run Batfish Service")
+                          .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
+                          .startActive()) {
+                    assert runBatfishSpan != null; // avoid unused warning
+                    task.setStatus(TaskStatus.InProgress);
+                    if (runBatfish(settings)) {
+                      task.setStatus(TaskStatus.TerminatedNormally);
+                    } else {
+                      task.setStatus(TaskStatus.TerminatedAbnormally);
+                    }
+                    task.setTerminated();
+                    jobLogger.close();
+                    makeIdle();
                   }
-                  task.setTerminated();
-                  jobLogger.close();
-                  makeIdle();
                 }
               };
 
