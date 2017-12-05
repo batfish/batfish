@@ -23,9 +23,9 @@ public class Not extends BooleanExpr {
   }
 
   @Override
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
-    _expr.collectSources(sources, routingPolicies, w);
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    return _expr.collectSources(parentSources, routingPolicies, w);
   }
 
   @Override

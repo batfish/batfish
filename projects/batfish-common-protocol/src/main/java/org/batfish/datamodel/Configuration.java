@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -259,8 +258,7 @@ public final class Configuration extends ComparableStructure<String> {
     if (routingPolicy == null) {
       return Collections.emptySortedSet();
     }
-    Set<String> sources = new LinkedHashSet<>();
-    routingPolicy.computeSources(sources, _routingPolicies, w);
+    Set<String> sources = routingPolicy.computeSources(Collections.emptySet(), _routingPolicies, w);
     return sources
         .stream()
         .filter(not(RoutingPolicy::isGenerated))

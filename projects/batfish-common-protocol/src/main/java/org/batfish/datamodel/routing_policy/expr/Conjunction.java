@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +22,13 @@ public class Conjunction extends BooleanExpr {
   }
 
   @Override
-  public void collectSources(
-      Set<String> sources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
     for (BooleanExpr conjunct : _conjuncts) {
-      conjunct.collectSources(sources, routingPolicies, w);
+      childSources.addAll(conjunct.collectSources(parentSources, routingPolicies, w).iterator());
     }
+    return childSources.build();
   }
 
   @Override
