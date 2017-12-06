@@ -28,20 +28,21 @@ public class PrefixSpace implements Serializable {
 
     public void addPrefixRange(PrefixRange prefixRange) {
       Prefix prefix = prefixRange.getPrefix();
-      int prefixLength = prefix.getPrefixLength();
       BitSet bits = getAddressBits(prefix.getAddress());
+
+      // The minimum length of the range may be shorter than the actual prefix length.
+      // If so, we need to specially handle all shorter prefixes with a custom address and bitset.
       int minLength = prefixRange.getLengthRange().getStart();
-      int maxLength = prefixRange.getLengthRange().getEnd();
-      int matchLength = prefixRange.getPrefix().getPrefixLength();
-      for (int currentLength = minLength;
-          currentLength < matchLength && currentLength <= maxLength;
-          currentLength++) {
+      int maxLength = Math.min(prefixRange.getLengthRange().getEnd(), prefix.getPrefixLength());
+      for (int currentLength = minLength; currentLength <= maxLength; currentLength++) {
         Prefix currentPrefix = new Prefix(prefix.getAddress(), currentLength).getNetworkPrefix();
         PrefixRange currentPrefixRange = PrefixRange.fromPrefix(currentPrefix);
         BitSet currentBits = getAddressBits(currentPrefix.getAddress());
         _root.addPrefixRange(currentPrefixRange, currentBits, currentLength, 0);
       }
-      _root.addPrefixRange(prefixRange, bits, prefixLength, 0);
+
+      // Otherwise, add the prefix range as-is.
+      _root.addPrefixRange(prefixRange, bits, prefix.getPrefixLength(), 0);
     }
 
     public void addTrieNodeSpace(BitTrieNode node) {
@@ -210,7 +211,7 @@ public class PrefixSpace implements Serializable {
   }
 
   /**
-   * Adds the given prefix range into the {@code BitTrie} representing this {@code PrefixSpace}.
+   * Adds the given prefix range to this {@link PrefixSpace}.
    *
    * @param prefixRange Range of prefixes to add
    */
