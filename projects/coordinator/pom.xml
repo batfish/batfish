@@ -29,7 +29,10 @@
                   <ignoredUnusedDeclaredDependency>
                     org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2
                   </ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.xerial:sqlite-jdbc
+                  </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -39,7 +42,9 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -51,17 +56,21 @@
         <executions>
           <execution>
             <id>check</id>
-            <goals><goal>check</goal></goals>
+            <goals>
+              <goal>check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>true</failOnViolation>
+              <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 
           <execution>
             <id>cpd-check</id>
-            <goals><goal>cpd-check</goal></goals>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+              <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
         </executions>
@@ -220,6 +229,12 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
