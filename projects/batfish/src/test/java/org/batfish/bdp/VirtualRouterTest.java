@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -278,7 +277,10 @@ public class VirtualRouterTest {
         .build();
 
     _testVirtualRouter._bgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).setAsPath(mkAsPath(TEST_AS3)).build());
+        _bgpRouteBuilder
+            .setNextHopIp(TEST_NEXT_HOP_IP1)
+            .setAsPath(AsPath.ofSingletonAsSets(TEST_AS3).getAsSets())
+            .build());
 
     // adding a connected route in main rib
     _testVirtualRouter._mainRib.mergeRoute(
@@ -304,7 +306,7 @@ public class VirtualRouterTest {
         asPaths,
         equalTo(
             ImmutableSet.of(
-                new AsPath(mkAsPath(TEST_AS1, TEST_AS3)), new AsPath(mkAsPath(TEST_AS1)))));
+                AsPath.ofSingletonAsSets(TEST_AS1, TEST_AS3), AsPath.ofSingletonAsSets(TEST_AS1))));
   }
 
   @Test
@@ -345,10 +347,6 @@ public class VirtualRouterTest {
     virtualRouter.initRibs();
     virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
     return virtualRouter;
-  }
-
-  private static List<SortedSet<Integer>> mkAsPath(Integer... explicitAs) {
-    return Arrays.stream(explicitAs).map(ImmutableSortedSet::of).collect(Collectors.toList());
   }
 
   @Test
