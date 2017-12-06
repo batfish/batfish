@@ -9,19 +9,19 @@ public class Topology extends BfObject {
 
   private static final String PROP_TESTRIG_NAME = "testrigName";
 
-  Set<Aggregate> _aggregates;
+  private Set<Aggregate> _aggregates;
 
-  Set<Interface> _interfaces;
+  private Set<Interface> _interfaces;
 
-  Set<Link> _links;
+  private Set<Link> _links;
 
-  Set<Node> _nodes;
+  private Set<Node> _nodes;
 
-  String _testrigName;
+  private final String _testrigName;
 
   @JsonCreator
   public Topology(@JsonProperty(PROP_TESTRIG_NAME) String name) {
-    super("topology-" + name);
+    super(getId(name));
     _testrigName = name;
     _aggregates = new HashSet<>();
     _interfaces = new HashSet<>();
@@ -42,6 +42,10 @@ public class Topology extends BfObject {
     return _aggregates;
   }
 
+  public static String getId(String testrigName) {
+    return "topology-" + testrigName;
+  }
+
   public Set<Interface> getInterfaces() {
     return _interfaces;
   }
@@ -52,5 +56,26 @@ public class Topology extends BfObject {
 
   public Set<Node> getNodes() {
     return _nodes;
+  }
+
+  @JsonProperty(PROP_TESTRIG_NAME)
+  public String getTestrigName() {
+    return _testrigName;
+  }
+
+  public void setAggregates(Set<Aggregate> aggregates) {
+    _aggregates = aggregates;
+  }
+
+  public void setInterfaces(Set<Interface> interfaces) {
+    _interfaces = interfaces;
+  }
+
+  public void setLinks(Set<Link> links) {
+    _links = links;
+  }
+
+  public void setNodes(Set<Node> nodes) {
+    _nodes = nodes;
   }
 }

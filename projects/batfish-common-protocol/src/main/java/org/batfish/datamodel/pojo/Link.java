@@ -12,7 +12,7 @@ public class Link extends BfObject {
   private static final String PROP_TYPE = "type";
 
   public enum LinkType {
-    PHYISCAL,
+    PHYSICAL,
     UNKNOWN,
     VIRTUAL,
   }
@@ -24,20 +24,24 @@ public class Link extends BfObject {
   LinkType _type;
 
   public Link(String srcId, String dstId, LinkType type) {
-    super("link-" + srcId + "-" + dstId);
+    super(getId(srcId, dstId));
     _srcId = srcId;
     _dstId = dstId;
     _type = type;
   }
 
   @JsonCreator
-  public Link(@JsonProperty(PROP_DST_ID) String srcId, @JsonProperty(PROP_SRC_ID) String dstId) {
+  public Link(@JsonProperty(PROP_SRC_ID) String srcId, @JsonProperty(PROP_DST_ID) String dstId) {
     this(srcId, dstId, LinkType.UNKNOWN);
   }
 
   @JsonProperty(PROP_DST_ID)
   public String getDstId() {
     return _dstId;
+  }
+
+  public static String getId(String srcId, String dstId) {
+    return "link-" + srcId + "-" + dstId;
   }
 
   @JsonProperty(PROP_SRC_ID)

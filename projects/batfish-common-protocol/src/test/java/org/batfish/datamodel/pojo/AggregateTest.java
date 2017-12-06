@@ -8,57 +8,57 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.DeviceType;
+import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class NodeTest {
+public class AggregateTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
   public void constructorFail() throws IOException {
-    String nodeStr = "{\"nonamefield\" : \"nodeName\"}";
+    String aggStr = "{\"nonamefield\" : \"nodeName\"}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     _thrown.expect(com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
-    mapper.readValue(nodeStr, Node.class);
+    mapper.readValue(aggStr, Aggregate.class);
   }
 
   @Test
   public void constructorBasic() throws IOException {
-    String nodeStr = "{\"name\" : \"nodeName\"}";
+    String aggStr = "{\"name\" : \"test\"}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
-    Node node = mapper.readValue(nodeStr, Node.class);
+    Aggregate aggregate = mapper.readValue(aggStr, Aggregate.class);
 
-    assertThat(node.getId(), equalTo(Node.getId("nodeName")));
-    assertThat(node.getName(), equalTo("nodeName"));
+    assertThat(aggregate.getId(), equalTo(Aggregate.getId("test")));
+    assertThat(aggregate.getName(), equalTo("test"));
   }
 
   @Test
   public void constructorProperties() throws IOException {
-    String nodeStr = "{\"name\" : \"nodeName\", \"properties\" : { \"key\": \"value\"}}";
+    String aggStr = "{\"name\" : \"aggName\", \"properties\" : { \"key\": \"value\"}}";
     BatfishObjectMapper mapper = new BatfishObjectMapper();
-    Node node = mapper.readValue(nodeStr, Node.class);
+    Aggregate node = mapper.readValue(aggStr, Aggregate.class);
 
-    assertThat(node.getId(), equalTo(Node.getId("nodeName")));
-    assertThat(node.getName(), equalTo("nodeName"));
+    assertThat(node.getId(), equalTo(Aggregate.getId("aggName")));
+    assertThat(node.getName(), equalTo("aggName"));
     assertThat(node.getProperties().size(), equalTo(1));
     assertThat(node.getProperties().get("key"), equalTo("value"));
   }
 
   @Test
   public void serialization() {
-    Node node = new Node("testnode", DeviceType.HOST);
+    Aggregate aggregate = new Aggregate("test", AggregateType.REGION);
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");
-    node.setProperties(properties);
+    aggregate.setProperties(properties);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
-    JsonNode jsonNode = mapper.valueToTree(node);
+    JsonNode jsonNode = mapper.valueToTree(aggregate);
 
-    assertThat(jsonNode.get("id").asText(), equalTo(Node.getId("testnode")));
-    assertThat(jsonNode.get("name").asText(), equalTo("testnode"));
-    assertThat(jsonNode.get("type").asText(), equalTo("HOST"));
+    assertThat(jsonNode.get("id").asText(), equalTo(Aggregate.getId("test")));
+    assertThat(jsonNode.get("name").asText(), equalTo("test"));
+    assertThat(jsonNode.get("type").asText(), equalTo("REGION"));
     assertThat(jsonNode.get("properties").get("key").asText(), equalTo("value"));
   }
 }
