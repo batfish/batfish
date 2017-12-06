@@ -353,7 +353,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    * structure named N that is defined differently, this may indicate an error. This question
    * leverages this and similar intuition to find outliers.
    *
-   * @type InferRoles multifile
+   * @type Outliers multifile
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
    *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicies, IkeProposal, IpAccessList,
    *     IpsecPolicy, IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]'
@@ -413,11 +413,6 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_HYPOTHESIS)
     public void setHypothesis(OutliersHypothesis hypothesis) {
       _hypothesis = hypothesis;
@@ -436,12 +431,12 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
   }
 
   @Override
-  protected Answerer createAnswerer(Question question, IBatfish batfish) {
+  protected OutliersAnswerer createAnswerer(Question question, IBatfish batfish) {
     return new OutliersAnswerer(question, batfish);
   }
 
   @Override
-  protected Question createQuestion() {
+  protected OutliersQuestion createQuestion() {
     return new OutliersQuestion();
   }
 }

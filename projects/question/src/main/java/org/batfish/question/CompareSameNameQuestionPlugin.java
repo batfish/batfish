@@ -312,11 +312,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return _singletons;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_MISSING)
     public void setMissing(boolean missing) {
       _missing = missing;

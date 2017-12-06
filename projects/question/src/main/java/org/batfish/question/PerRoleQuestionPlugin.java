@@ -184,11 +184,6 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return _roles;
     }
 
-    @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String regex) {
       _nodeRegex = regex;
@@ -200,7 +195,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_ROLES)
-    public void setRoleRegexes(List<String> roles) {
+    public void setRoles(List<String> roles) {
       _roles = roles;
     }
   }

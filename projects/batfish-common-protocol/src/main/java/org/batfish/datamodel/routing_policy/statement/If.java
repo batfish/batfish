@@ -1,11 +1,16 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
@@ -24,6 +29,22 @@ public class If extends Statement {
   public If() {
     _falseStatements = new ArrayList<>();
     _trueStatements = new ArrayList<>();
+  }
+
+  @Override
+  public Set<String> collectSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
+    for (Statement statement : _falseStatements) {
+      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w));
+    }
+    for (Statement statement : _trueStatements) {
+      childSources.addAll(statement.collectSources(parentSources, routingPolicies, w));
+    }
+    if (_guard != null) {
+      childSources.addAll(_guard.collectSources(parentSources, routingPolicies, w));
+    }
+    return childSources.build();
   }
 
   @Override

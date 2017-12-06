@@ -62,11 +62,6 @@ public class FileTreeQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
-    @Override
     public String prettyPrint() {
       return getName();
     }

@@ -4,14 +4,22 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -19,12 +27,58 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
     "A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes")
 public class RoutingPolicy extends ComparableStructure<String> {
 
+  public static class Builder extends NetworkFactoryBuilder<RoutingPolicy> {
+
+    private String _name;
+
+    private Configuration _owner;
+
+    private List<Statement> _statements;
+
+    public Builder(NetworkFactory networkFactory) {
+      super(networkFactory, RoutingPolicy.class);
+      _statements = Collections.emptyList();
+    }
+
+    @Override
+    public RoutingPolicy build() {
+      String name = _name != null ? _name : generateName();
+      RoutingPolicy routingPolicy = new RoutingPolicy(name, _owner);
+      if (_owner != null) {
+        _owner.getRoutingPolicies().put(name, routingPolicy);
+      }
+      routingPolicy.setStatements(_statements);
+      return routingPolicy;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+
+    public Builder setStatements(List<Statement> statements) {
+      _statements = statements;
+      return this;
+    }
+  }
+
+  public static boolean isGenerated(String s) {
+    return s.startsWith("~");
+  }
+
   /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_STATEMENTS = "statements";
 
   private Configuration _owner;
+
+  private transient Set<String> _sources;
 
   private List<Statement> _statements;
 
@@ -56,6 +110,20 @@ public class RoutingPolicy extends ComparableStructure<String> {
     return result;
   }
 
+  public Set<String> computeSources(
+      Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
+    if (_sources == null) {
+      Set<String> newParentSources = Sets.union(parentSources, ImmutableSet.of(_key));
+      ImmutableSet.Builder<String> childSources = ImmutableSet.<String>builder();
+      childSources.add(_key);
+      for (Statement statement : _statements) {
+        childSources.addAll(statement.collectSources(newParentSources, routingPolicies, w));
+      }
+      _sources = childSources.build();
+    }
+    return _sources;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == this) {
@@ -70,6 +138,11 @@ public class RoutingPolicy extends ComparableStructure<String> {
   @JsonIgnore
   public Configuration getOwner() {
     return _owner;
+  }
+
+  @JsonIgnore
+  public Set<String> getSources() {
+    return _sources;
   }
 
   @JsonProperty(PROP_STATEMENTS)

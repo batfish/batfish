@@ -305,4 +305,9 @@ public class DbAuthorizer implements Authorizer {
       }
     }
   }
+
+  @Override
+  public String toString() {
+    return DbAuthorizer.class.getSimpleName();
+  }
 }

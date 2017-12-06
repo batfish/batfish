@@ -1,0 +1,62 @@
+{
+ "NatGateways": [
+  {
+   "CreateTime": "2017-11-21 02:55:10+00:00", 
+   "NatGatewayAddresses": [
+    {
+     "AllocationId": "eipalloc-52f78c6f", 
+     "NetworkInterfaceId": "eni-dba5f6e8", 
+     "PrivateIp": "10.180.20.7", 
+     "PublicIp": "34.212.129.101"
+    }
+   ], 
+   "NatGatewayId": "nat-08c21704416f06046", 
+   "State": "available", 
+   "SubnetId": "subnet-a9660ce1", 
+   "Tags": [
+    {
+     "Key": "aws:cloudformation:logical-id", 
+     "Value": "NatGateway2"
+    }, 
+    {
+     "Key": "aws:cloudformation:stack-id", 
+     "Value": "arn:aws:cloudformation:us-west-2:118292266645:stack/toast-VPC-1J6BFOAHUS41J/3de9b810-ce67-11e7-b0e9-500c33711061"
+    }, 
+    {
+     "Key": "aws:cloudformation:stack-name", 
+     "Value": "toast-VPC-1J6BFOAHUS41J"
+    }
+   ], 
+   "VpcId": "vpc-50fffd36"
+  }, 
+  {
+   "CreateTime": "2017-11-21 02:55:10+00:00", 
+   "NatGatewayAddresses": [
+    {
+     "AllocationId": "eipalloc-bcf18a81", 
+     "NetworkInterfaceId": "eni-3f245d1f", 
+     "PrivateIp": "10.180.11.194", 
+     "PublicIp": "35.164.14.125"
+    }
+   ], 
+   "NatGatewayId": "nat-09fd8f73171d2d9a3", 
+   "State": "available", 
+   "SubnetId": "subnet-3e7e3458", 
+   "Tags": [
+    {
+     "Key": "aws:cloudformation:logical-id", 
+     "Value": "NatGateway1"
+    }, 
+    {
+     "Key": "aws:cloudformation:stack-id", 
+     "Value": "arn:aws:cloudformation:us-west-2:118292266645:stack/toast-VPC-1J6BFOAHUS41J/3de9b810-ce67-11e7-b0e9-500c33711061"
+    }, 
+    {
+     "Key": "aws:cloudformation:stack-name", 
+     "Value": "toast-VPC-1J6BFOAHUS41J"
+    }
+   ], 
+   "VpcId": "vpc-50fffd36"
+  }
+ ]
+}

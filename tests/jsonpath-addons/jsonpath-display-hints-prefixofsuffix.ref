@@ -23,6 +23,7 @@
                 "'as2border1'"
               ],
               "suffix" : {
+                "configurationFormat" : "CISCO_IOS",
                 "name" : "as2border1",
                 "communityLists" : {
                   "as1_community" : {
@@ -56,9 +57,9 @@
                     "invertMatch" : false
                   }
                 },
-                "configurationFormat" : "CISCO_IOS",
                 "defaultCrossZoneAction" : "ACCEPT",
                 "defaultInboundAction" : "ACCEPT",
+                "deviceType" : "ROUTER",
                 "domainName" : "lab.local",
                 "interfaces" : {
                   "Ethernet0/0" : {
@@ -75,6 +76,7 @@
                     "ospfEnabled" : false,
                     "ospfHelloMultiplier" : 0,
                     "ospfPassive" : false,
+                    "ospfPointToPoint" : false,
                     "proxyArp" : true,
                     "ripEnabled" : false,
                     "ripPassive" : false,
@@ -102,6 +104,7 @@
                     "ospfEnabled" : false,
                     "ospfHelloMultiplier" : 0,
                     "ospfPassive" : false,
+                    "ospfPointToPoint" : false,
                     "outgoingFilter" : "INSIDE_TO_AS1",
                     "prefix" : "10.12.11.2/24",
                     "proxyArp" : true,
@@ -132,6 +135,7 @@
                     "ospfEnabled" : true,
                     "ospfHelloMultiplier" : 0,
                     "ospfPassive" : false,
+                    "ospfPointToPoint" : false,
                     "prefix" : "2.12.11.1/24",
                     "proxyArp" : true,
                     "ripEnabled" : false,
@@ -161,6 +165,7 @@
                     "ospfEnabled" : true,
                     "ospfHelloMultiplier" : 0,
                     "ospfPassive" : false,
+                    "ospfPointToPoint" : false,
                     "prefix" : "2.12.12.1/24",
                     "proxyArp" : true,
                     "ripEnabled" : false,
@@ -190,6 +195,7 @@
                     "ospfEnabled" : true,
                     "ospfHelloMultiplier" : 0,
                     "ospfPassive" : false,
+                    "ospfPointToPoint" : false,
                     "prefix" : "2.1.1.1/32",
                     "proxyArp" : true,
                     "ripEnabled" : false,
@@ -1121,8 +1127,14 @@
                           "dynamic" : false,
                           "ebgpMultihop" : false,
                           "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
+                          "exportPolicySources" : [
+                            "as2_to_as1"
+                          ],
                           "group" : "as1",
                           "importPolicy" : "as1_to_as2",
+                          "importPolicySources" : [
+                            "as1_to_as2"
+                          ],
                           "localAs" : 2,
                           "localIp" : "10.12.11.2",
                           "remoteAs" : 1,

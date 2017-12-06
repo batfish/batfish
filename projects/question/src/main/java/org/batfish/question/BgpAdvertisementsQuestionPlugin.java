@@ -275,7 +275,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
         Set<BgpAdvertisement> externalAdverts =
-            _batfish.processExternalBgpAnnouncements(configurations);
+            _batfish.loadExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 externalAdverts, configurations, nodeRegex, question.getPrefixSpace());
@@ -411,11 +411,6 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_SENT)
     public boolean getSent() {
       return _sent;
-    }
-
-    @Override
-    public boolean getTraffic() {
-      return false;
     }
 
     @Override

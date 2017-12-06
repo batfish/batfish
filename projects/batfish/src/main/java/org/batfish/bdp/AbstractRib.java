@@ -1,10 +1,9 @@
 package org.batfish.bdp;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -359,7 +358,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
         // Last case, preferenceComparison > 0
         /*
          * Better than all pre-existing routes for this prefix, so
-         * replace them with this one
+         * replace them with this one.
          */
         _routes.clear();
         _routes.add(route);
@@ -396,12 +395,12 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
   private RibTree _tree;
 
-  @VisibleForTesting Set<R> _finalRoutes;
+  private Set<R> _allRoutes;
 
   public AbstractRib(VirtualRouter owner) {
     _tree = new RibTree();
     _owner = owner;
-    _finalRoutes = null;
+    _allRoutes = ImmutableSet.of();
   }
 
   final boolean containsRoute(R route) {
@@ -430,18 +429,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
   @Override
   public final Set<R> getRoutes() {
-    if (_finalRoutes != null) {
-      return _finalRoutes;
+    if (_allRoutes == null) {
+      _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
-    return _tree.getRoutes();
-  }
-
-  /**
-   * Freeze the RIB. Prevents addition (merging) of new routes. Also computes and caches the set of
-   * all routes for quick subsequent access.
-   */
-  public void freeze() {
-    _finalRoutes = Collections.unmodifiableSet(getRoutes());
+    return _allRoutes;
   }
 
   @Override
@@ -471,13 +462,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
    * @param route the route to add
    * @return true if the route was added. False if the route already existed or was discarded due to
    *     preference comparisons.
-   * @throws UnmodifiableRibException if the RIB is "frozen" and cannot be modified
    */
   @Override
   public boolean mergeRoute(R route) {
-    if (_finalRoutes != null) {
-      throw new UnmodifiableRibException("Cannot modify frozen RIB");
-    }
+    _allRoutes = null;
     return _tree.mergeRoute(route);
   }
 

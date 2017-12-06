@@ -8,7 +8,7 @@
 
   <groupId>org.batfish</groupId>
   <artifactId>batfish-parent</artifactId>
-  <version>0.32.0</version>
+  <version>0.33.0</version>
 
   <packaging>pom</packaging>
 
@@ -73,6 +73,23 @@
     <slf4j.version>1.7.25</slf4j.version>
     <xstream.version>1.4.7</xstream.version>
   </properties>
+
+
+  <profiles>
+    <profile>
+      <id>fast</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <cpd.skip>true</cpd.skip>
+        <checkstyle.skip>true</checkstyle.skip>
+        <findbugs.skip>true</findbugs.skip>
+        <pmd.skip>true</pmd.skip>
+        <skipTests>true</skipTests>
+      </properties>
+    </profile>
+  </profiles>
 
   <build>
     <pluginManagement>
@@ -456,6 +473,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
         <artifactId>jackson-jaxrs-base</artifactId>
         <version>${jackson.version}</version>
@@ -560,6 +583,18 @@
       <dependency>
         <groupId>io.opentracing</groupId>
         <artifactId>opentracing-api</artifactId>
+        <version>${opentracing.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentracing</groupId>
+        <artifactId>opentracing-mock</artifactId>
+        <version>${opentracing.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.opentracing</groupId>
+        <artifactId>opentracing-noop</artifactId>
         <version>${opentracing.version}</version>
       </dependency>
 

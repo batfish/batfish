@@ -1,12 +1,17 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.opentracing.ActiveSpan;
+import io.opentracing.References;
+import io.opentracing.SpanContext;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
+import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +48,7 @@ import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.codehaus.jettison.json.JSONArray;
@@ -132,7 +138,13 @@ public class WorkMgr extends AbstractCoordinator {
     boolean assigned = false;
 
     Client client = null;
-    try {
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan assignWorkSpan =
+        GlobalTracer.get()
+            .buildSpan("Assign Work")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
       JSONObject task = work.getWorkItem().toTask();
       Path containerDir =
@@ -159,9 +171,11 @@ public class WorkMgr extends AbstractCoordinator {
               _settings.getSslPoolKeystorePassword(),
               _settings.getSslPoolTruststoreFile(),
               _settings.getSslPoolTruststorePassword());
-      if (Main.getSettings().getTracingEnable()) {
+
+      if (GlobalTracer.isRegistered()) {
         clientBuilder.register(ClientTracingFeature.class);
       }
+
       client = clientBuilder.build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -395,8 +409,8 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(testrigDir);
   }
 
-  public void delTestrigQuestion(String containerName, String testrigName, String qName) {
-    Path qDir = getdirTestrigQuestion(containerName, testrigName, qName);
+  public void delQuestion(String containerName, String qName) {
+    Path qDir = getdirContainerQuestion(containerName, qName);
     CommonUtil.deleteDirectory(qDir);
   }
 
@@ -488,14 +502,18 @@ public class WorkMgr extends AbstractCoordinator {
       String questionName,
       boolean pretty)
       throws JsonProcessingException {
-    Path questionDir = getdirTestrigQuestion(containerName, baseTestrig, questionName);
+    Path questionDir = getdirContainerQuestion(containerName, questionName);
     Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
     if (!Files.exists(questionFile)) {
       throw new BatfishException("Question file not found for " + questionName);
     }
-    Path answerDir = questionDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, baseEnv));
+    Path testrigDir = getdirTestrig(containerName, baseTestrig);
+    Path answerDir =
+        testrigDir.resolve(Paths.get(BfConsts.RELPATH_ANSWERS_DIR, questionName, baseEnv));
     if (deltaTestrig != null) {
-      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DIFF_DIR, deltaTestrig, deltaEnv));
+    } else {
+      answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
     }
     String answerFilename =
         pretty ? BfConsts.RELPATH_ANSWER_PRETTY_JSON : BfConsts.RELPATH_ANSWER_JSON;
@@ -640,6 +658,15 @@ public class WorkMgr extends AbstractCoordinator {
     return aDir;
   }
 
+  private Path getdirContainerQuestion(String containerName, String qName) {
+    Path containerDir = getdirContainer(containerName);
+    Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
+    if (!Files.exists(qDir)) {
+      throw new BatfishException("Question '" + qName + "' does not exist");
+    }
+    return qDir;
+  }
+
   private Path getdirEnvironment(String containerName, String testrigName, String envName) {
     Path testrigDir = getdirTestrig(containerName, testrigName);
     Path envDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_ENVIRONMENTS_DIR, envName));
@@ -660,15 +687,6 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Path getdirTestrigs(String containerName) {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
-  }
-
-  private Path getdirTestrigQuestion(String containerName, String testrigName, String qName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    Path qDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
-    if (!Files.exists(qDir)) {
-      throw new BatfishException("Question '" + qName + "' does not exist");
-    }
-    return qDir;
   }
 
   public JSONObject getStatusJson() throws JSONException {
@@ -744,8 +762,10 @@ public class WorkMgr extends AbstractCoordinator {
     return null;
   }
 
-  public String getTestrigQuestion(String containerName, String testrigName, String questionName) {
-    Path questionDir = getdirTestrigQuestion(containerName, testrigName, questionName);
+  public String getQuestion(String containerName, String questionName) {
+    Path containerDir = getdirContainer(containerName, true);
+    Path questionDir =
+        containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, questionName));
     Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
     if (!Files.exists(qFile)) {
       throw new BatfishException("Question file not found for " + questionName);
@@ -776,6 +796,10 @@ public class WorkMgr extends AbstractCoordinator {
     if (!analysesDir.toFile().mkdir()) {
       throw new BatfishException("failed to create directory '" + analysesDir + "'");
     }
+    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    if (!questionsDir.toFile().mkdir()) {
+      throw new BatfishException("failed to create directory '" + questionsDir + "'");
+    }
     return containerName;
   }
 
@@ -796,9 +820,14 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    TestrigMetadata metadata = new TestrigMetadata(Instant.now());
     Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
-    long time = (new java.util.Date()).getTime();
-    CommonUtil.writeFile(metadataPath, "{\n\t\"timestamp\": " + Long.toString(time) + "\n}");
+    try {
+      CommonUtil.writeFile(metadataPath, mapper.writeValueAsString(metadata));
+    } catch (JsonProcessingException e) {
+      _logger.error(e.getMessage());
+    }
 
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
@@ -938,9 +967,9 @@ public class WorkMgr extends AbstractCoordinator {
     return environments;
   }
 
-  public SortedSet<String> listQuestions(String containerName, String testrigName) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    Path questionsDir = testrigDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+  public SortedSet<String> listQuestions(String containerName) {
+    Path containerDir = getdirContainer(containerName);
+    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
       return new TreeSet<>();
     }
@@ -1004,6 +1033,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     boolean success;
     try {
+      workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
@@ -1140,16 +1170,12 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public void uploadQuestion(
-      String containerName,
-      String testrigName,
-      String qName,
-      InputStream fileStream,
-      InputStream paramFileStream) {
-    Path testrigDir = getdirTestrig(containerName, testrigName);
-    Path qDir = testrigDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
+      String containerName, String qName, InputStream fileStream, InputStream paramFileStream) {
+    Path containerDir = getdirContainer(containerName);
+    Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
       throw new BatfishException(
-          "Question: '" + qName + "' already exists for testrig '" + testrigName + "'");
+          "Question: '" + qName + "' already exists in container '" + containerName + "'");
     }
     if (!qDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + qDir + "'");

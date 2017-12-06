@@ -64,11 +64,6 @@ public class FileMapQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public boolean getTraffic() {
-      return false;
-    }
-
-    @Override
     public String prettyPrint() {
       return getName();
     }

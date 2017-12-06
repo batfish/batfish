@@ -7,8 +7,32 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Pair;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 public class RipProcess implements Serializable {
+
+  public static class Builder extends NetworkFactoryBuilder<RipProcess> {
+
+    private Vrf _vrf;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, RipProcess.class);
+    }
+
+    @Override
+    public RipProcess build() {
+      RipProcess ripProcess = new RipProcess();
+      if (_vrf != null) {
+        _vrf.setRipProcess(ripProcess);
+      }
+      return ripProcess;
+    }
+
+    public RipProcess.Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+  }
 
   public static final long DEFAULT_RIP_COST = 1;
 
