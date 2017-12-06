@@ -14,7 +14,8 @@ public class TopologyTest {
 
   @Test
   public void constructor() throws IOException {
-    String str = "{\"testrigName\" : \"testrig\","
+    String str =
+        "{\"testrigName\" : \"testrig\","
             + " \"nodes\" : [{\"name\": \"node\"}], "
             + " \"links\" : [{\"srcId\" : \"src\", \"dstId\" : \"dst\"}],"
             + " \"interfaces\" : [{\"nodeId\": \"node\", \"name\" : \"node\"}],"
@@ -53,5 +54,4 @@ public class TopologyTest {
     assertThat(jsonNode.get("nodes").get(0).get("name").asText(), equalTo("node"));
     assertThat(jsonNode.get("properties").get("key").asText(), equalTo("value"));
   }
-
 }
