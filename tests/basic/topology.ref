@@ -1,4 +1,5 @@
 {
+  "testrigName" : "basic-example",
   "id" : "topology-basic-example",
   "interfaces" : [
     {

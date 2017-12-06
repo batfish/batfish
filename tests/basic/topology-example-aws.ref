@@ -1,4 +1,5 @@
 {
+  "testrigName" : "basic-example-aws",
   "aggregates" : [
     {
       "name" : "subnet-7044ff16",
