@@ -14,13 +14,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpNeighbor;
@@ -43,6 +46,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.RipRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -67,15 +71,18 @@ public class VirtualRouterTest {
 
   private static final String NEIGHBOR_HOST_NAME = "neighbornode";
   private static final int TEST_ADMIN = 100;
+  private static final int TEST_ADMIN_LOWER = 50;
   private static final Long TEST_AREA = 1L;
   private static final int TEST_AS1 = 1;
   private static final int TEST_AS2 = 2;
+  private static final int TEST_AS3 = 3;
   private static final Ip TEST_DEST_IP = new Ip("2.2.2.2");
   private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
   private static final int TEST_METRIC = 30;
   private static final Ip TEST_SRC_IP = new Ip("1.1.1.1");
   private static final Prefix TEST_NETWORK = new Prefix("4.4.4.4/32");
-  private static final Ip TEST_NEXT_HOP_IP = new Ip("1.2.3.4");
+  private static final Ip TEST_NEXT_HOP_IP1 = new Ip("1.2.3.4");
+  private static final Ip TEST_NEXT_HOP_IP2 = new Ip("2.3.4.5");
   private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
 
   private BgpNeighbor.Builder _bgpNeighborBuilder;
@@ -166,14 +173,14 @@ public class VirtualRouterTest {
             .build();
     _bgpNeighborBuilder.setExportPolicy(exportPolicy.getName()).setRemoteAs(TEST_AS2).build();
 
-    OspfInternalRoute.Builder ospfInternalRouteBuilder =
+    _testVirtualRouter._mainRib.mergeRoute(
         new OspfInternalRoute.Builder()
             .setNetwork(TEST_NETWORK)
-            .setAdmin(TEST_ADMIN)
             .setMetric(TEST_METRIC)
             .setArea(TEST_AREA)
-            .setProtocol(RoutingProtocol.OSPF);
-    _testVirtualRouter._mainRib.mergeRoute(ospfInternalRouteBuilder.build());
+            .setAdmin(TEST_ADMIN)
+            .setProtocol(RoutingProtocol.OSPF)
+            .build());
 
     // checking number of bgp advertisements
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
@@ -190,21 +197,19 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void computeBgpAdvertisementsSTOIbgpNeighborEbgpBestPath() {
+  public void computeBgpAdvertisementsSTOIbgpAdvertiseExternal() {
     RoutingPolicy exportPolicy =
         _routingPolicyBuilder.setStatements(ImmutableList.of(_exitAcceptStatement)).build();
     _bgpNeighborBuilder
         .setRemoteAs(TEST_AS1)
         .setExportPolicy(exportPolicy.getName())
         .setAdvertiseExternal(true)
-        .setAdditionalPathSend(true)
-        .setAdditionalPathSelectAll(true)
         .build();
 
     _testVirtualRouter._ebgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP).build());
+        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
 
-    // checking number of bgp advertisements
+    /* checking that the route in EBGP Best Path Rib got advertised */
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
 
     BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
@@ -219,39 +224,52 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void computeBgpAdvertisementsSTOIbgpNeighborBgpMultiPath() {
+  public void computeBgpAdvertisementsSTOIbgpAdditionalPaths() {
     RoutingPolicy exportPolicy =
         _routingPolicyBuilder.setStatements(ImmutableList.of(_exitAcceptStatement)).build();
 
     _bgpNeighborBuilder
         .setRemoteAs(TEST_AS1)
         .setExportPolicy(exportPolicy.getName())
-        .setAdvertiseExternal(true)
         .setAdditionalPathSend(true)
         .setAdditionalPathSelectAll(true)
         .build();
 
     _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP).build());
+        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
+    // adding second similar route in the Multipath rib with a different Next Hop IP
+    _testVirtualRouter._bgpMultipathRib.mergeRoute(
+        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP2).build());
 
-    // checking number of bgp advertisements
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
+    // checking that both the routes in BGP Multipath Rib got advertised
+    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(2));
 
-    BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
+    // checking that both bgp advertisements have the same network and the supplied next hop IPs
+    Set<Ip> nextHopIps = new HashSet<>();
+    _testVirtualRouter
+        ._sentBgpAdvertisements
+        .stream()
+        .forEach(
+            bgpAdvertisement -> {
+              assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+              nextHopIps.add(bgpAdvertisement.getNextHopIp());
+            });
 
-    // checking the attributes of the bgp advertisement
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(TEST_DEST_IP));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(TEST_SRC_IP));
     assertThat(
-        bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.IBGP_SENT));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(TEST_SRC_IP));
+        "Next Hop IPs not valid in BGP advertisements",
+        nextHopIps,
+        containsInAnyOrder(TEST_NEXT_HOP_IP1, TEST_NEXT_HOP_IP2));
   }
 
   @Test
-  public void computeBgpAdvertisementsSTOEbgpNeighbor() {
+  public void computeBgpAdvertisementsSTOEbgpAdvertiseInactive() {
     RoutingPolicy exportPolicy =
-        _routingPolicyBuilder.setStatements(ImmutableList.of(_exitAcceptStatement)).build();
+        _routingPolicyBuilder
+            .setStatements(
+                ImmutableList.of(
+                    new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+                    _exitAcceptStatement))
+            .build();
 
     _bgpNeighborBuilder
         .setRemoteAs(TEST_AS2)
@@ -260,20 +278,33 @@ public class VirtualRouterTest {
         .build();
 
     _testVirtualRouter._bgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder.setReceivedFromRouteReflectorClient(true).build());
+        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).setAsPath(mkAsPath(TEST_AS3)).build());
 
-    // checking number of bgp advertisements
-    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
+    // adding a connected route in main rib
+    _testVirtualRouter._mainRib.mergeRoute(
+        new ConnectedRoute(TEST_NETWORK, Route.UNSET_NEXT_HOP_INTERFACE));
 
-    BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
+    // checking that the inactive BGP route got advertised along with the active OSPF route
+    assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(2));
 
-    // checking the attributes of the bgp advertisement
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(TEST_DEST_IP));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(TEST_SRC_IP));
+    // checking that both bgp advertisements have the same network and correct AS Paths
+    Set<AsPath> asPaths = new HashSet<>();
+    _testVirtualRouter
+        ._sentBgpAdvertisements
+        .stream()
+        .forEach(
+            bgpAdvertisement -> {
+              assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+              asPaths.add(bgpAdvertisement.getAsPath());
+            });
+
+    // next Hop IP for the active OSPF route  will be the neighbor's local IP
     assertThat(
-        bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.EBGP_SENT));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(TEST_SRC_IP));
+        "AS Paths not valid in BGP advertisements",
+        asPaths,
+        equalTo(
+            ImmutableSet.of(
+                new AsPath(mkAsPath(TEST_AS1, TEST_AS3)), new AsPath(mkAsPath(TEST_AS1)))));
   }
 
   @Test
@@ -290,9 +321,9 @@ public class VirtualRouterTest {
         .build();
 
     _testVirtualRouter._ebgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP).build());
+        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
     _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP).build());
+        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
 
     // number of BGP advertisements should be zero given the reject all export policy
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(0));
@@ -314,6 +345,10 @@ public class VirtualRouterTest {
     virtualRouter.initRibs();
     virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
     return virtualRouter;
+  }
+
+  private static List<SortedSet<Integer>> mkAsPath(Integer... explicitAs) {
+    return Arrays.stream(explicitAs).map(ImmutableSortedSet::of).collect(Collectors.toList());
   }
 
   @Test
