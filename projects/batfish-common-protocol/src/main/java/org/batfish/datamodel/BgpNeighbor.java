@@ -28,6 +28,11 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private Integer _localAs;
     private Integer _remoteAs;
     private BgpProcess _bgpProcess;
+    private String _exportPolicy;
+    private Boolean _advertiseExternal;
+    private Boolean _additionalPathSend;
+    private Boolean _additionalPathSelectAll;
+    private Boolean _advertiseInactive;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, BgpNeighbor.class);
@@ -52,6 +57,21 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       }
       if (_bgpProcess != null) {
         _bgpProcess.getNeighbors().put(bgpNeighbor.getPrefix(), bgpNeighbor);
+      }
+      if (_exportPolicy != null) {
+        bgpNeighbor.setExportPolicy(_exportPolicy);
+      }
+      if (_advertiseInactive != null) {
+        bgpNeighbor.setAdvertiseInactive(_advertiseInactive);
+      }
+      if (_advertiseExternal != null) {
+        bgpNeighbor.setAdvertiseExternal(_advertiseExternal);
+      }
+      if (_additionalPathSend != null) {
+        bgpNeighbor.setAdditionalPathsSend(_additionalPathSend);
+      }
+      if (_additionalPathSelectAll != null) {
+        bgpNeighbor.setAdditionalPathsSelectAll(_additionalPathSelectAll);
       }
       return bgpNeighbor;
     }
@@ -83,6 +103,31 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
     public Builder setRemoteAs(Integer remoteAs) {
       _remoteAs = remoteAs;
+      return this;
+    }
+
+    public Builder setExportPolicy(String exportPolicy) {
+      _exportPolicy = exportPolicy;
+      return this;
+    }
+
+    public Builder setAdvertiseExternal(Boolean advertiseExternal) {
+      _advertiseExternal = advertiseExternal;
+      return this;
+    }
+
+    public Builder setAdditionalPathSend(Boolean additionalPathSend) {
+      _additionalPathSend = additionalPathSend;
+      return this;
+    }
+
+    public Builder setAdditionalPathSelectAll(Boolean additionalPathSelectAll) {
+      _additionalPathSelectAll = additionalPathSelectAll;
+      return this;
+    }
+
+    public Builder setAdvertiseInactive(Boolean advertiseInactive) {
+      _advertiseInactive = advertiseInactive;
       return this;
     }
   }
