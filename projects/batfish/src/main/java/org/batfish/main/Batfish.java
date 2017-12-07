@@ -131,11 +131,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
-import org.batfish.datamodel.pojo.Aggregate;
-import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.batfish.datamodel.pojo.Environment;
-import org.batfish.datamodel.pojo.Link;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -972,75 +968,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
     _logger.printElapsedTime();
-  }
-
-  public org.batfish.datamodel.pojo.Topology computePojoTopology(
-      Map<String, Configuration> configurations, Topology topology) {
-
-    org.batfish.datamodel.pojo.Topology pojoTopology =
-        new org.batfish.datamodel.pojo.Topology(_testrigSettings.getName());
-
-    for (String nodeName : topology.getNodeEdges().keySet()) {
-      Configuration configuration = configurations.get(nodeName);
-      if (configuration == null) {
-        throw new BatfishException("Node '" + nodeName + "' not found in configurations");
-      }
-      Node pojoNode = new Node(configuration.getHostname(), configuration.getDeviceType());
-      pojoTopology.getNodes().add(pojoNode);
-
-      // add interfaces and links
-      for (Edge edge : topology.getNodeEdges().get(nodeName)) {
-        org.batfish.datamodel.pojo.Interface pojoInterface =
-            new org.batfish.datamodel.pojo.Interface(
-                pojoNode.getId(), edge.getInterface1().getInterface());
-
-        Link pojoLink =
-            new Link(
-                pojoInterface.getId(),
-                org.batfish.datamodel.pojo.Interface.getId(
-                    Node.getId(edge.getNode2()), edge.getInt2()));
-
-        pojoTopology.getInterfaces().add(pojoInterface);
-        pojoTopology.getLinks().add(pojoLink);
-      }
-
-      // add AWS aggregates
-      if (configuration.getConfigurationFormat() == ConfigurationFormat.AWS_VPC) {
-        Aggregate awsAggregate = pojoTopology.getAggregateById(Aggregate.getId("aws"));
-        if (awsAggregate == null) {
-          awsAggregate = new Aggregate("aws", AggregateType.CLOUD);
-          pojoTopology.getAggregates().add(awsAggregate);
-        }
-        awsAggregate.getContents().add(pojoNode.getId());
-
-        if (configuration.getVendorFamily().getAws().getVpcId() != null) {
-          String vpcId = configuration.getVendorFamily().getAws().getVpcId();
-          Aggregate vpcAggregate = pojoTopology.getAggregateById(Aggregate.getId(vpcId));
-          if (vpcAggregate == null) {
-            vpcAggregate = new Aggregate(vpcId, AggregateType.VNET);
-            pojoTopology.getAggregates().add(vpcAggregate);
-          }
-          vpcAggregate.getContents().add(pojoNode.getId());
-        }
-
-        if (configuration.getVendorFamily().getAws().getSubnetId() != null) {
-          String subnetId = configuration.getVendorFamily().getAws().getSubnetId();
-          Aggregate subnetAggregate = pojoTopology.getAggregateById(Aggregate.getId(subnetId));
-          if (subnetAggregate == null) {
-            subnetAggregate = new Aggregate(subnetId, AggregateType.SUBNET);
-            pojoTopology.getAggregates().add(subnetAggregate);
-          }
-          subnetAggregate.getContents().add(pojoNode.getId());
-        }
-      }
-    }
-
-    // add nodes that were not in Topology (because they have no Edges)
-    for (Configuration configuration : configurations.values()) {
-      Node pojoNode = new Node(configuration.getHostname(), configuration.getDeviceType());
-      pojoTopology.getNodes().add(pojoNode);
-    }
-    return pojoTopology;
   }
 
   @Override
@@ -4153,7 +4080,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
     checkTopology(configurations, topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
-        computePojoTopology(configurations, topology);
+        org.batfish.datamodel.pojo.Topology.create(
+            _testrigSettings.getName(), configurations, topology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(
