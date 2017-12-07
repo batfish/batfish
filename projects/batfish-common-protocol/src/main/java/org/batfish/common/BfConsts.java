@@ -152,6 +152,7 @@ public class BfConsts {
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
+  public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
   public static final String RELPATH_QUERIES_DIR = "queries";
   public static final String RELPATH_QUESTION_FILE = "question.json";
