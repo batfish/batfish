@@ -22,6 +22,7 @@ public abstract class CommunitySetExpr implements Serializable {
   @Override
   public abstract int hashCode();
 
+  /** Return true iff this {@link CommunitySetExpr} matches any community in the given set. */
   public abstract boolean matchSingleCommunity(
       Environment environment, SortedSet<Long> communities);
 }
