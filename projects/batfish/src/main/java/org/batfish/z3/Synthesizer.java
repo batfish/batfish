@@ -6,7 +6,6 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Z3Exception;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -867,7 +866,7 @@ public class Synthesizer {
 
   private final Map<String, Configuration> _configurations;
 
-  private final HashMap<String, Map<String, SortedSet<FibRow>>> _fibs;
+  private final Map<String, Map<String, SortedSet<FibRow>>> _fibs;
 
   private Set<NodeInterfacePair> _flowSinks;
 
