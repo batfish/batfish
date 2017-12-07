@@ -91,13 +91,7 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
   @Override
   public boolean matchSingleCommunity(Environment environment, SortedSet<Long> communities) {
-    for (Long community : communities) {
-      // BAD
-      if (_communities.contains(community)) {
-        return true;
-      }
-    }
-    return false;
+    return _communities.stream().anyMatch(c -> communities.contains(c.community(environment)));
   }
 
   public void setCommunities(List<CommunitySetElem> communities) {
