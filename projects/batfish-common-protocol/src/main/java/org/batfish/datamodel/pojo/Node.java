@@ -2,13 +2,9 @@ package org.batfish.datamodel.pojo;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashSet;
-import java.util.Set;
 import org.batfish.datamodel.DeviceType;
 
 public class Node extends BfObject {
-
-  private Set<Interface> _interfaces;
 
   private final String _name;
 
@@ -19,7 +15,6 @@ public class Node extends BfObject {
     super(getId(name));
     _name = name;
     _type = DeviceType.UNKNOWN;
-    _interfaces = new HashSet<>();
   }
 
   public Node(String name, DeviceType type) {
