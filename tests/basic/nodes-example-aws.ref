@@ -126,7 +126,12 @@
           "roles" : [
             "i-0383fda87c012141d"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -232,7 +237,12 @@
           "roles" : [
             "i-075dc46a9bc347264"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -365,7 +375,12 @@
           "roles" : [
             "i-0837c877110427f2b"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -499,7 +514,12 @@
           "roles" : [
             "i-0b26ec095feb42260"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -622,7 +642,9 @@
           "roles" : [
             "igw-068fee63"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -809,7 +831,9 @@
           "roles" : [
             "igw-9b93ddfc"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -920,7 +944,9 @@
           "roles" : [
             "igw-fac5839d"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2417,7 +2443,12 @@
           "roles" : [
             "subnet-073b8061"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-073b8061",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2568,7 +2599,12 @@
           "roles" : [
             "subnet-1641fa70"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2728,7 +2764,12 @@
           "roles" : [
             "subnet-1f315846"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1f315846",
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2879,7 +2920,12 @@
           "roles" : [
             "subnet-30398256"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-30398256",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3030,7 +3076,12 @@
           "roles" : [
             "subnet-62f14104"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-62f14104",
+              "vpcId" : "vpc-925131f4"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3181,7 +3232,12 @@
           "roles" : [
             "subnet-7044ff16"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-7044ff16",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3332,7 +3388,12 @@
           "roles" : [
             "subnet-8d0cbdeb"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-8d0cbdeb",
+              "vpcId" : "vpc-925131f4"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3492,7 +3553,12 @@
           "roles" : [
             "subnet-9c8adceb"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-9c8adceb",
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3652,7 +3718,12 @@
           "roles" : [
             "subnet-d9cafabc"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-d9cafabc",
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3803,7 +3874,12 @@
           "roles" : [
             "subnet-f73a8191"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-f73a8191",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4061,7 +4137,9 @@
               ]
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4170,7 +4248,11 @@
           "roles" : [
             "vpc-815775e7"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-815775e7"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4266,7 +4348,11 @@
           "roles" : [
             "vpc-925131f4"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-925131f4"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4460,7 +4546,11 @@
           "roles" : [
             "vpc-b390fad5"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4629,7 +4719,11 @@
           "roles" : [
             "vpc-f8fad69d"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
