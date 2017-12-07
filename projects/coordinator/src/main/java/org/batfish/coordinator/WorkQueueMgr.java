@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import java.util.UUID;
 import javax.annotation.Nullable;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
@@ -34,24 +33,24 @@ public class WorkQueueMgr {
 
   public WorkQueueMgr(WorkQueue.Type wqType) {
     switch (wqType) {
-    case  azure:
-      String storageConnectionString =
-          String.format(
-              "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
-              Main.getSettings().getStorageProtocol(),
-              Main.getSettings().getStorageAccountName(),
-              Main.getSettings().getStorageAccountKey());
-      _queueCompletedWork =
-          new AzureQueue(Main.getSettings().getQueueCompletedWork(), storageConnectionString);
-      _queueIncompleteWork =
-          new AzureQueue(Main.getSettings().getQueueIncompleteWork(), storageConnectionString);
-      break;
-    case memory:
-      _queueCompletedWork = new MemoryQueue();
-      _queueIncompleteWork = new MemoryQueue();
-      break;
-    default:
-      throw new BatfishException("Unsupported queue type: " + wqType);
+      case azure:
+        String storageConnectionString =
+            String.format(
+                "DefaultEndpointsProtocol=%s;AccountName=%s;AccountKey=%s",
+                Main.getSettings().getStorageProtocol(),
+                Main.getSettings().getStorageAccountName(),
+                Main.getSettings().getStorageAccountKey());
+        _queueCompletedWork =
+            new AzureQueue(Main.getSettings().getQueueCompletedWork(), storageConnectionString);
+        _queueIncompleteWork =
+            new AzureQueue(Main.getSettings().getQueueIncompleteWork(), storageConnectionString);
+        break;
+      case memory:
+        _queueCompletedWork = new MemoryQueue();
+        _queueIncompleteWork = new MemoryQueue();
+        break;
+      default:
+        throw new BatfishException("Unsupported queue type: " + wqType);
     }
   }
 

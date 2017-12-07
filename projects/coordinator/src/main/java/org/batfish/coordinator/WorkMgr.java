@@ -327,8 +327,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.errorf("exception: %s\n", stackTrace);
     }
