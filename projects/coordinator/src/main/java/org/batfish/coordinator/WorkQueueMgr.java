@@ -82,12 +82,12 @@ public class WorkQueueMgr {
 
   public synchronized QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
     switch (qType) {
-    case COMPLETED:
-      return getMatchingWork(workItem, _queueCompletedWork);
-    case INCOMPLETE:
-      return getMatchingWork(workItem, _queueIncompleteWork);
-    default:
-      throw new BatfishException("Unknown QueueType " + qType);
+      case COMPLETED:
+        return getMatchingWork(workItem, _queueCompletedWork);
+      case INCOMPLETE:
+        return getMatchingWork(workItem, _queueIncompleteWork);
+      default:
+        throw new BatfishException("Unknown QueueType " + qType);
     }
   }
 
