@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -25,7 +26,7 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
   public InlineCommunitySet(Collection<Long> communities) {
     _communities =
-        communities.stream().map(l -> new CommunitySetElem(l)).collect(Collectors.toList());
+        communities.stream().map(CommunitySetElem::new).collect(Collectors.toList());
   }
 
   public InlineCommunitySet(List<CommunitySetElem> communities) {
@@ -51,21 +52,11 @@ public class InlineCommunitySet extends CommunitySetExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof InlineCommunitySet)) {
       return false;
     }
     InlineCommunitySet other = (InlineCommunitySet) obj;
-    if (_communities == null) {
-      if (other._communities != null) {
-        return false;
-      }
-    } else if (!_communities.equals(other._communities)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_communities, other._communities);
   }
 
   public List<CommunitySetElem> getCommunities() {
