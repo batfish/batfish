@@ -229,7 +229,12 @@ public class WorkMgr extends AbstractCoordinator {
 
     // mark the assignment results for both work and worker
     if (assignmentError) {
-      _workQueueMgr.markAssignmentError(work);
+      try {
+        _workQueueMgr.markAssignmentError(work);
+      } catch (Exception e) {
+        String stackTrace = ExceptionUtils.getFullStackTrace(e);
+        _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
+      }
     } else if (assigned) {
       _workQueueMgr.markAssignmentSuccess(work, worker);
     } else {
@@ -320,7 +325,13 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    _workQueueMgr.processTaskCheckResult(work, task);
+    try {
+      _workQueueMgr.processTaskCheckResult(work, task);
+    }
+    catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.errorf("exception: %s\n", stackTrace);
+    }
 
     // if the task ended, send a hint to the pool manager to look up worker
     // status
