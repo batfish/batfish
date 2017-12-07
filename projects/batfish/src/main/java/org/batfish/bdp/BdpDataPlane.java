@@ -215,7 +215,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
       ConnectedRoute cr = (ConnectedRoute) route;
       String outInt = cr.getNextHopInterface();
       FibRow row;
-      if (_flowSinks.contains(outInt)) {
+      if (_flowSinks.contains(new NodeInterfacePair(hostname, outInt))) {
         row = new FibRow(network, outInt, NODE_NONE_NAME, FLOW_SINK_TERMINATION_NAME);
       } else {
         row = new FibRow(network, NULL_INTERFACE_NAME, NODE_NONE_NAME, NULL_INTERFACE_NAME);
