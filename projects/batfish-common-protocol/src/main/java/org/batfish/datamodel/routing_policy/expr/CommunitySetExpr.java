@@ -29,5 +29,4 @@ public abstract class CommunitySetExpr implements Serializable {
 
   @Override
   public abstract int hashCode();
-
 }

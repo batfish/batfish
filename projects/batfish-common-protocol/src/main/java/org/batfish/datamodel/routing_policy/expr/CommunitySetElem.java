@@ -3,7 +3,6 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.Serializable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.routing_policy.Environment;
 
 public class CommunitySetElem implements Serializable {
 
