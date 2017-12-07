@@ -2,8 +2,6 @@ package org.batfish.datamodel.pojo;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashSet;
-import java.util.Set;
 import org.batfish.datamodel.DeviceType;
 
 public class Node extends BfObject {
