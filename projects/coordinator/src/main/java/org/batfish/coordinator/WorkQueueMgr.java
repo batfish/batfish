@@ -8,6 +8,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
+import org.batfish.common.WorkItem;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
@@ -77,6 +78,26 @@ public class WorkQueueMgr {
     }
 
     return jObject;
+  }
+
+  public synchronized QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
+    switch (qType) {
+    case COMPLETED:
+      return getMatchingWork(workItem, _queueCompletedWork);
+    case INCOMPLETE:
+      return getMatchingWork(workItem, _queueIncompleteWork);
+    default:
+      throw new BatfishException("Unknown QueueType " + qType);
+    }
+  }
+
+  private synchronized QueuedWork getMatchingWork(WorkItem workItem, WorkQueue queue) {
+    for (QueuedWork work : queue) {
+      if (work.getWorkItem().matches(workItem)) {
+        return work;
+      }
+    }
+    return null;
   }
 
   public synchronized QueuedWork getWork(UUID workId) {

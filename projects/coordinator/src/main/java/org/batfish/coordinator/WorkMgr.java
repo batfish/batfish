@@ -47,6 +47,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
@@ -771,6 +772,10 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Question file not found for " + questionName);
     }
     return CommonUtil.readFile(qFile);
+  }
+
+  public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
+    return _workQueueMgr.getMatchingWork(workItem, qType);
   }
 
   public QueuedWork getWork(UUID workItemId) {
