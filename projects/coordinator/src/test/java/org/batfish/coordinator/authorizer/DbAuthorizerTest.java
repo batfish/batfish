@@ -41,21 +41,25 @@ public class DbAuthorizerTest {
         String.format("jdbc:sqlite:%s", Paths.get(tmpFolder.getRoot().getAbsolutePath(), DB_NAME));
     Connection conn = DriverManager.getConnection(connString);
     try {
-      conn.prepareStatement(
+      PreparedStatement ps =
+          conn.prepareStatement(
               String.format(
                   "CREATE TABLE %s (`Memberid` int PRIMARY KEY,"
                       + "  `Username` varchar(255) NOT NULL DEFAULT '',"
                       + "  `ApiKey` varchar(64) DEFAULT '', "
                       + "  `Endpoint` varchar(255) DEFAULT 'test.service.intentionet.com')",
-                  TABLE_USERS))
-          .execute();
-      conn.prepareStatement(
+                  TABLE_USERS));
+      ps.execute();
+      ps.close();
+      ps =
+          conn.prepareStatement(
               String.format(
                   "CREATE TABLE %s (`ContainerName` varchar(255) PRIMARY KEY,"
                       + "  `DateCreated` timestamp NULL DEFAULT NULL,"
                       + "  `DateLastAccessed` timestamp NULL DEFAULT NULL)",
-                  TABLE_CONTAINERS))
-          .execute();
+                  TABLE_CONTAINERS));
+      ps.execute();
+      ps.close();
       conn.prepareStatement(
               String.format(
                   "CREATE TABLE %s ("
@@ -66,6 +70,7 @@ public class DbAuthorizerTest {
                       + "  `DateLastAccessed` timestamp NULL DEFAULT NULL)",
                   TABLE_PERMISSIONS))
           .execute();
+      ps.close();
 
       PreparedStatement st =
           conn.prepareStatement(
@@ -77,6 +82,7 @@ public class DbAuthorizerTest {
       st.setString(1, "test_user_2");
       st.setString(2, KEY2);
       st.execute();
+      st.close();
     } finally {
       conn.close();
     }

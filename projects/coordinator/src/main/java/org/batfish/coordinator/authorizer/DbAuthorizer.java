@@ -19,7 +19,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.config.Settings;
 
-/** And {@link Authorizer} backed by an SQL database */
+/** An {@link Authorizer} backed by an SQL database */
 public class DbAuthorizer implements Authorizer {
 
   @VisibleForTesting static final String COLUMN_APIKEY = "ApiKey";
@@ -83,13 +83,12 @@ public class DbAuthorizer implements Authorizer {
     java.sql.Date now = new java.sql.Date(new Date().getTime());
     String insertContainersString =
         String.format(
-            // REPLACE INTO is more compatible with various DBs than ON DUPLICATE KEY UPDATE
             "REPLACE INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
             TABLE_CONTAINERS,
             COLUMN_CONTAINER_NAME,
             COLUMN_DATE_CREATED,
             COLUMN_DATE_LAST_ACCESSED);
-    PreparedStatement insertContainers;
+    PreparedStatement insertContainers = null;
     int numInsertRows;
     try {
       insertContainers = _dbConn.prepareStatement(insertContainersString);
@@ -97,6 +96,7 @@ public class DbAuthorizer implements Authorizer {
       insertContainers.setDate(2, now);
       insertContainers.setDate(3, now);
       numInsertRows = executeUpdate(insertContainers);
+      insertContainers.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not update containers table", e);
     }
@@ -121,6 +121,7 @@ public class DbAuthorizer implements Authorizer {
       insertPermissions.setString(1, apiKey);
       insertPermissions.setString(2, containerName);
       numRows = executeUpdate(insertPermissions);
+      insertPermissions.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not update permissions table", e);
     }
@@ -134,14 +135,13 @@ public class DbAuthorizer implements Authorizer {
   @Nullable
   private synchronized ResultSet executeQuery(PreparedStatement query) {
     int triesLeft = MAX_DB_TRIES;
-    String queryString = query.toString();
     while (triesLeft > 0) {
       triesLeft--;
       try {
-        _logger.debugf("Executing SQL query: %s\n", queryString);
+        _logger.debugf("Executing SQL query: %s\n", query);
         return query.executeQuery();
       } catch (SQLException e) {
-        _logger.errorf("SQLException while executing query '%s': %s", queryString, e.getMessage());
+        _logger.errorf("SQLException while executing query '%s': %s", query, e.getMessage());
         _logger.errorf("Tries left = %d\n", triesLeft);
 
         if (triesLeft > 0) {
@@ -208,24 +208,21 @@ public class DbAuthorizer implements Authorizer {
 
     String selectPermittedContainerString =
         String.format(
-            "SELECT * FROM %s WHERE %s = ? AND %s = ?",
+            "SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ?",
             TABLE_PERMISSIONS, COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
     ResultSet rs;
+    boolean authorized;
     try {
       PreparedStatement ps = _dbConn.prepareStatement(selectPermittedContainerString);
       ps.setString(1, apiKey);
       ps.setString(2, containerName);
       rs = executeQuery(ps);
+      authorized = rs != null && rs.getInt(1) == 1;
+      ps.close();
     } catch (SQLException e) {
-      throw new BatfishException("Could not query permissions table", e);
+      throw new BatfishException("Could not query permissions table successfully", e);
     }
-    boolean authorized;
-    try {
-      // Call next() to support TYPE_FORWARD_ONLY cursors, such as sqlite cursors
-      authorized = rs != null && rs.next();
-    } catch (SQLException e) {
-      throw new BatfishException("Error examining permissions query result set", e);
-    }
+
     if (authorized) {
       insertInCache(_cachePermissions, cacheKey);
 
@@ -240,6 +237,7 @@ public class DbAuthorizer implements Authorizer {
         updatePs.setDate(1, now);
         updatePs.setString(2, containerName);
         executeUpdate(updatePs);
+        updatePs.close();
       } catch (SQLException e) {
         throw new BatfishException("Could not update containers table", e);
       }
@@ -272,23 +270,20 @@ public class DbAuthorizer implements Authorizer {
       return true;
     }
     String selectApiKeyRowString =
-        String.format("SELECT * FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
+        String.format("SELECT COUNT(*) FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
     PreparedStatement ps;
     ResultSet rs;
+    boolean authorized;
     try {
       ps = _dbConn.prepareStatement(selectApiKeyRowString);
       ps.setString(1, apiKey);
       rs = executeQuery(ps);
+      authorized = rs != null && rs.getInt(1) == 1;
+      ps.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not query users table", e);
     }
-    boolean authorized;
-    try {
-      // Call next() to support TYPE_FORWARD_ONLY cursors, such as sqlite cursors
-      authorized = rs != null && rs.next();
-    } catch (SQLException e) {
-      throw new BatfishException("Could not examine the result set of query on users", e);
-    }
+
     if (authorized) {
       insertInCache(_cacheApiKeys, apiKey);
       return true;
