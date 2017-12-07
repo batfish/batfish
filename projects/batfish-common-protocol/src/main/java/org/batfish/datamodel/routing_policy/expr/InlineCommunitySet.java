@@ -1,13 +1,14 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.ArrayList;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -17,34 +18,34 @@ public class InlineCommunitySet extends CommunitySetExpr {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private transient SortedSet<Long> _cachedCommunities;
+  private final Supplier<SortedSet<Long>> _cachedCommunities;
 
   private List<CommunitySetElem> _communities;
 
   @JsonCreator
-  private InlineCommunitySet() {}
+  private InlineCommunitySet() {
+    _cachedCommunities = Suppliers.memoize(this::initCommunities);
+  }
 
   public InlineCommunitySet(Collection<Long> communities) {
-    _communities =
-        communities.stream().map(CommunitySetElem::new).collect(Collectors.toList());
+    this();
+    _communities = communities.stream().map(CommunitySetElem::new).collect(Collectors.toList());
   }
 
   public InlineCommunitySet(List<CommunitySetElem> communities) {
-    _communities = new ArrayList<>();
-    _communities.addAll(communities);
+    this();
+    _communities = ImmutableList.copyOf(communities);
   }
 
   @Override
-  public SortedSet<Long> communities(Environment environment) {
-    if (_cachedCommunities == null) {
-      _cachedCommunities = initCommunities(environment);
-    }
-    return Collections.unmodifiableSortedSet(new TreeSet<>(_cachedCommunities));
+  public SortedSet<Long> allCommunities(Environment environment) {
+    return _cachedCommunities.get();
   }
 
   @Override
-  public SortedSet<Long> communities(Environment environment, SortedSet<Long> communityCandidates) {
-    return CommonUtil.intersection(communities(environment), communityCandidates, TreeSet::new);
+  public SortedSet<Long> communities(
+      Environment environment, Collection<Long> communityCandidates) {
+    return CommonUtil.intersection(allCommunities(environment), communityCandidates, TreeSet::new);
   }
 
   @Override
@@ -71,18 +72,13 @@ public class InlineCommunitySet extends CommunitySetExpr {
     return result;
   }
 
-  private synchronized SortedSet<Long> initCommunities(Environment environment) {
+  private SortedSet<Long> initCommunities() {
     SortedSet<Long> out = new TreeSet<>();
     for (CommunitySetElem elem : _communities) {
-      long c = elem.community(environment);
+      long c = elem.community();
       out.add(c);
     }
     return out;
-  }
-
-  @Override
-  public boolean matchSingleCommunity(Environment environment, SortedSet<Long> communities) {
-    return _communities.stream().anyMatch(c -> communities.contains(c.community(environment)));
   }
 
   public void setCommunities(List<CommunitySetElem> communities) {

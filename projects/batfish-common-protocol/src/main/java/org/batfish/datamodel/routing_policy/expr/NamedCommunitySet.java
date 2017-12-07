@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -23,7 +24,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public SortedSet<Long> communities(Environment environment) {
+  public SortedSet<Long> allCommunities(Environment environment) {
     SortedSet<Long> out = new TreeSet<>();
     CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
     for (CommunityListLine line : cl.getLines()) {
@@ -34,7 +35,8 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public SortedSet<Long> communities(Environment environment, SortedSet<Long> communityCandidates) {
+  public SortedSet<Long> communities(
+      Environment environment, Collection<Long> communityCandidates) {
     SortedSet<Long> matchingCommunities = new TreeSet<>();
     for (Long community : communityCandidates) {
       CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
@@ -77,17 +79,6 @@ public class NamedCommunitySet extends CommunitySetExpr {
     int result = 1;
     result = prime * result + ((_name == null) ? 0 : _name.hashCode());
     return result;
-  }
-
-  @Override
-  public boolean matchSingleCommunity(Environment environment, SortedSet<Long> communities) {
-    CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
-    for (Long community : communities) {
-      if (cl.permits(community)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public void setName(String name) {

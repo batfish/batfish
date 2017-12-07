@@ -639,7 +639,7 @@ public class CommonUtil {
   }
 
   public static <S extends Set<T>, T> S intersection(
-      Set<T> set1, Set<T> set2, Supplier<S> setConstructor) {
+      Set<T> set1, Collection<T> set2, Supplier<S> setConstructor) {
     S intersectionSet = setConstructor.get();
     intersectionSet.addAll(set1);
     intersectionSet.retainAll(set2);

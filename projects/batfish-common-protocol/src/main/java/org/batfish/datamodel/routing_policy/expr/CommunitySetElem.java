@@ -29,7 +29,7 @@ public class CommunitySetElem implements Serializable {
     _suffix = new LiteralCommunitySetElemHalf(suffixInt);
   }
 
-  public long community(Environment environment) {
+  public long community() {
     if (_prefix instanceof LiteralCommunitySetElemHalf
         && _suffix instanceof LiteralCommunitySetElemHalf) {
       LiteralCommunitySetElemHalf prefix = (LiteralCommunitySetElemHalf) _prefix;
