@@ -3,7 +3,9 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
@@ -66,19 +68,14 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_communities == null) ? 0 : _communities.hashCode());
-    return result;
+    return Objects.hash(_communities);
   }
 
   private SortedSet<Long> initCommunities() {
-    SortedSet<Long> out = new TreeSet<>();
-    for (CommunitySetElem elem : _communities) {
-      long c = elem.community();
-      out.add(c);
-    }
-    return out;
+    return _communities
+        .stream()
+        .map(CommunitySetElem::community)
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
   public void setCommunities(List<CommunitySetElem> communities) {
