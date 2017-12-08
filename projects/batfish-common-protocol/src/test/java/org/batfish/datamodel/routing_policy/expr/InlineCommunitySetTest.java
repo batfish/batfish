@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/** Tests of {@link InlineCommunitySet}. */
 @RunWith(JUnit4.class)
 public class InlineCommunitySetTest {
   @Test
@@ -30,7 +31,4 @@ public class InlineCommunitySetTest {
 
     assertFalse(set.matchSingleCommunity(null, ImmutableList.of(4L)));
   }
-
-  @Test
-  public void testNoMatches() {}
 }
