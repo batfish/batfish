@@ -459,7 +459,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
-      @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer) {
+      @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
       _logger.info(
           "WMS:getAnalysisAnswers "
@@ -484,6 +485,25 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
+
+      if (!Strings.isNullOrEmpty(workItemStr)) {
+        WorkItem workItem = WorkItem.fromJsonString(workItemStr);
+        if (!workItem.getContainerName().equals(containerName)
+            || !workItem.getTestrigName().equals(testrigName)) {
+          return failureResponse(
+              "Mismatch in parameters: WorkItem is not for the supplied container or testrig");
+        }
+        QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+        if (work != null) {
+          BatfishObjectMapper mapper = new BatfishObjectMapper();
+          String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
+          return successResponse(
+              new JSONObject()
+                  .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+                  .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+                  .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr));
+        }
+      }
 
       Map<String, String> answers =
           Main.getWorkMgr()
