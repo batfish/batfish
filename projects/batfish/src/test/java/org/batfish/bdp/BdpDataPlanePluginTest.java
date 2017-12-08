@@ -1,9 +1,13 @@
 package org.batfish.bdp;
 
 import static java.util.Collections.singletonList;
+import static org.batfish.bdp.BdpOscillationExceptionMatchers.hasMessage;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
@@ -11,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -31,6 +36,7 @@ import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpProcess;
@@ -384,15 +390,92 @@ public class BdpDataPlanePluginTest {
   }
 
   @Test
-  public void testBgpOscillationRecovery() throws IOException {
+  public void testBgpOscillationPrintingEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(0);
+    settings.setBdpPrintAllIterations(true);
+    settings.setBdpPrintOscillatingIterations(true);
+    settings.setBdpRecordAllIterations(true);
+    _thrown.expect(
+        allOf(
+            ImmutableList.of(
+                isA(BdpOscillationException.class),
+                hasMessage(containsString("Changed routes (iteration 2 ==> 3)")))));
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationPrintingNotEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(0);
+    settings.setBdpMaxRecordedIterations(0);
+    settings.setBdpPrintAllIterations(true);
+    settings.setBdpPrintOscillatingIterations(true);
+    settings.setBdpRecordAllIterations(false);
+    _thrown.expect(
+        allOf(
+            ImmutableList.of(
+                isA(BdpOscillationException.class),
+                hasMessage(containsString("Changed routes (iteration 2 ==> 3)")))));
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationNoPrinting() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(0);
+    settings.setBdpMaxRecordedIterations(0);
+    settings.setBdpPrintAllIterations(false);
+    settings.setBdpPrintOscillatingIterations(false);
+    settings.setBdpRecordAllIterations(false);
+    _thrown.expect(
+        allOf(
+            ImmutableList.of(
+                isA(BdpOscillationException.class),
+                hasMessage(not(containsString("Changed routes (iteration 2 ==> 3)"))))));
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationRecoveryEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(1);
+    settings.setBdpPrintAllIterations(false);
+    settings.setBdpPrintOscillatingIterations(false);
+    settings.setBdpRecordAllIterations(true);
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationRecoveryNotEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(1);
+    settings.setBdpMaxRecordedIterations(0);
+    settings.setBdpPrintAllIterations(false);
+    settings.setBdpPrintOscillatingIterations(false);
+    settings.setBdpRecordAllIterations(false);
+    testBgpOscillationRecovery(settings);
+  }
+
+  private void testBgpOscillationRecovery(TestBdpSettings bdpSettings) throws IOException {
     String testrigName = "bgp-oscillation";
     String[] configurationNames = new String[] {"r1", "r2", "r3"};
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigResource(
             TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
-    batfish.getSettings().setBdpDetail(true);
-    batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(1);
-    batfish.getSettings().setBdpRecordAllIterations(true);
+    Settings settings = batfish.getSettings();
+    settings.setBdpDetail(bdpSettings.getBdpDetail());
+    settings.setBdpMaxOscillationRecoveryAttempts(
+        bdpSettings.getBdpMaxOscillationRecoveryAttempts());
+    settings.setBdpMaxRecordedIterations(bdpSettings.getBdpMaxRecordedIterations());
+    settings.setBdpPrintAllIterations(bdpSettings.getBdpPrintAllIterations());
+    settings.setBdpPrintOscillatingIterations(bdpSettings.getBdpPrintOscillatingIterations());
+    settings.setBdpRecordAllIterations(bdpSettings.getBdpRecordAllIterations());
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
