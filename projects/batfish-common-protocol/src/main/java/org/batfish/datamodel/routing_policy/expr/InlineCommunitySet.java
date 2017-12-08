@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -26,7 +27,10 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
   @JsonCreator
   private InlineCommunitySet() {
-    _cachedCommunities = Suppliers.memoize(this::initCommunities);
+    _cachedCommunities =
+        Suppliers.memoize(
+            (Serializable & com.google.common.base.Supplier<SortedSet<Long>>)
+                this::initCommunities);
   }
 
   public InlineCommunitySet(Collection<Long> communities) {
