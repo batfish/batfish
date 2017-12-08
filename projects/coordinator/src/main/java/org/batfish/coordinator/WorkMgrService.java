@@ -486,6 +486,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
@@ -497,7 +498,6 @@ public class WorkMgrService {
         }
         QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
         if (work != null) {
-          BatfishObjectMapper mapper = new BatfishObjectMapper();
           String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
           response
               .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
@@ -517,7 +517,6 @@ public class WorkMgrService {
                   analysisName,
                   pretty);
 
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
       String answersStr = mapper.writeValueAsString(answers);
 
       return successResponse(response.put(CoordConsts.SVC_KEY_ANSWERS, answersStr));
