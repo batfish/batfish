@@ -149,11 +149,7 @@ public class Route implements Serializable {
             String subnetIfaceName = _target;
             Prefix instanceLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
             Prefix subnetIfacePrefix = instanceLinkPrefix;
-            Interface subnetIface = new Interface(subnetIfaceName, subnetCfgNode);
-            subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
-            subnetCfgNode.getDefaultVrf().getInterfaces().put(subnetIfaceName, subnetIface);
-            subnetIface.setPrefix(subnetIfacePrefix);
-            subnetIface.getAllPrefixes().add(subnetIfacePrefix);
+            Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfacePrefix);
 
             // set up instance interface
             String instanceId = networkInterface.getAttachmentInstanceId();
@@ -163,11 +159,8 @@ public class Route implements Serializable {
             Prefix instanceIfacePrefix =
                 new Prefix(
                     instanceLinkPrefix.getEndAddress(), instanceLinkPrefix.getPrefixLength());
-            Interface instanceIface = new Interface(instanceIfaceName, instanceCfgNode);
-            instanceCfgNode.getInterfaces().put(instanceIfaceName, instanceIface);
-            instanceCfgNode.getDefaultVrf().getInterfaces().put(instanceIfaceName, instanceIface);
-            instanceIface.setPrefix(instanceIfacePrefix);
-            instanceIface.getAllPrefixes().add(instanceIfacePrefix);
+            Interface instanceIface =
+                Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfacePrefix);
             Instance instance = awsVpcConfiguration.getInstances().get(instanceId);
             instanceIface.setIncomingFilter(instance.getInAcl());
             instanceIface.setOutgoingFilter(instance.getOutAcl());
@@ -208,11 +201,7 @@ public class Route implements Serializable {
             // connect
             Prefix peeringLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
             Prefix subnetIfacePrefix = peeringLinkPrefix;
-            Interface subnetIface = new Interface(subnetIfaceName, subnetCfgNode);
-            subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
-            subnetCfgNode.getDefaultVrf().getInterfaces().put(subnetIfaceName, subnetIface);
-            subnetIface.setPrefix(subnetIfacePrefix);
-            subnetIface.getAllPrefixes().add(subnetIfacePrefix);
+            Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfacePrefix);
 
             // set up remote vpc router interface
             Prefix remoteVpcIfacePrefix =

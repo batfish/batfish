@@ -215,27 +215,17 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
-      Interface externalInterface = new Interface(externalInterfaceName, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getInterfaces().put(externalInterfaceName, externalInterface);
-      vpnGatewayCfgNode
-          .getDefaultVrf()
-          .getInterfaces()
-          .put(externalInterfaceName, externalInterface);
-      String vpnInterfaceName = "vpn" + idNum;
-      Interface vpnInterface = new Interface(vpnInterfaceName, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getInterfaces().put(vpnInterfaceName, vpnInterface);
-      vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName, vpnInterface);
-
-      // Set fields within representation structures
-
-      // bind and vpn interfaces
       Prefix externalInterfacePrefix = new Prefix(ipsecTunnel.getVgwOutsideAddress(), 32);
-      externalInterface.setPrefix(externalInterfacePrefix);
-      externalInterface.getAllPrefixes().add(externalInterfacePrefix);
+      Interface externalInterface =
+          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfacePrefix);
+
+      String vpnInterfaceName = "vpn" + idNum;
       Prefix vpnInterfacePrefix =
           new Prefix(ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      vpnInterface.setPrefix(vpnInterfacePrefix);
-      vpnInterface.getAllPrefixes().add(vpnInterfacePrefix);
+      Interface vpnInterface =
+          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfacePrefix);
+
+      // Set fields within representation structures
 
       // ipsec
       ipsecVpn.setBindInterface(vpnInterface);
