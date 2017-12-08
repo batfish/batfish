@@ -33,7 +33,7 @@ public class PrefixSpace implements Serializable {
       // The minimum length of the range may be shorter than the actual prefix length.
       // If so, we need to specially handle all shorter prefixes with a custom address and bitset.
       int minLength = prefixRange.getLengthRange().getStart();
-      int maxLength = Math.min(prefixRange.getLengthRange().getEnd(), prefix.getPrefixLength());
+      int maxLength = Math.min(prefixRange.getLengthRange().getEnd(), prefix.getPrefixLength() - 1);
       for (int currentLength = minLength; currentLength <= maxLength; currentLength++) {
         Prefix currentPrefix = new Prefix(prefix.getAddress(), currentLength).getNetworkPrefix();
         PrefixRange currentPrefixRange = PrefixRange.fromPrefix(currentPrefix);
