@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.BitSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -38,12 +39,9 @@ public class PrefixSpaceTest {
 
   @Test
   public void constructPrefixSpaceTest() {
-    Set<PrefixRange> ranges = new TreeSet<>();
-    PrefixRange range = new PrefixRange("100.0.0.0/32");
-    ranges.add(range);
-    _ps = new PrefixSpace(ranges);
+    _ps = new PrefixSpace(ImmutableSet.of(new PrefixRange("100.0.0.0/32")));
     assertThat(_ps.isEmpty(), equalTo(false));
-    assertThat(_ps.containsPrefixRange(range), equalTo(true));
+    assertThat(_ps.containsPrefixRange(new PrefixRange("100.0.0.0/32")), equalTo(true));
   }
 
   @Test
@@ -83,7 +81,7 @@ public class PrefixSpaceTest {
         equalTo(false));
     assertThat(
         "Prefixes with mismatch in unmasked bits included",
-        _ps.containsPrefix(new Prefix("10.10.11.0/16")),
+        _ps.containsPrefix(new Prefix("10.10.10.255/24")),
         equalTo(true));
   }
 

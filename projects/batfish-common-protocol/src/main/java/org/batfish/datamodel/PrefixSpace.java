@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
+/** Describes a collection of {@link Prefix}es and {@link PrefixRange}s */
 public class PrefixSpace implements Serializable {
 
   private static class BitTrie implements Serializable {
@@ -206,6 +207,11 @@ public class PrefixSpace implements Serializable {
     }
   }
 
+  /**
+   * Adds the given {@link Prefix} to this {@link PrefixSpace}.
+   *
+   * @param prefix Prefix to add
+   */
   public void addPrefix(Prefix prefix) {
     addPrefixRange(PrefixRange.fromPrefix(prefix));
   }
@@ -219,6 +225,11 @@ public class PrefixSpace implements Serializable {
     _trie.addPrefixRange(prefixRange);
   }
 
+  /**
+   * Adds all prefixes in the given {@link PrefixSpace} to this {@link PrefixSpace}.
+   *
+   * @param prefixSpace {@link PrefixSpace} whose prefixes to add
+   */
   public void addSpace(PrefixSpace prefixSpace) {
     _trie.addTrieNodeSpace(prefixSpace._trie._root);
   }
@@ -234,6 +245,12 @@ public class PrefixSpace implements Serializable {
     }
   }
 
+  /**
+   * Returns whether this {@link PrefixSpace} contains the given {@link PrefixRange}.
+   *
+   * @param prefixRange Range of prefixes to check for
+   * @return {@code true} if this {@link PrefixSpace} contains the given range of prefixes
+   */
   public boolean containsPrefixRange(PrefixRange prefixRange) {
     return _trie.containsPrefixRange(prefixRange);
   }
@@ -252,6 +269,11 @@ public class PrefixSpace implements Serializable {
     return getPrefixRanges().equals(((PrefixSpace) obj).getPrefixRanges());
   }
 
+  /**
+   * Returns all {@link PrefixRange}s contained in this {@link PrefixSpace} as a {@code Set}.
+   *
+   * @return A {@code Set} of all {@link PrefixRange}s in this {@link PrefixSpace}
+   */
   @JsonValue
   public Set<PrefixRange> getPrefixRanges() {
     return _trie.getPrefixRanges();
@@ -262,6 +284,13 @@ public class PrefixSpace implements Serializable {
     return getPrefixRanges().hashCode();
   }
 
+  /**
+   * Returns a new {@link PrefixSpace} containing all {@link Prefix}es shared between this {@link
+   * PrefixSpace} and the one given.
+   *
+   * @param intersectSpace {@link PrefixSpace} with which to find intersecting {@link Prefix}es
+   * @return A new {@link PrefixSpace} containing all shared {@link Prefix}es
+   */
   public PrefixSpace intersection(PrefixSpace intersectSpace) {
     PrefixSpace newSpace = new PrefixSpace();
     Set<PrefixRange> intersectRanges = intersectSpace.getPrefixRanges();
@@ -278,6 +307,13 @@ public class PrefixSpace implements Serializable {
     return _trie._root.isEmpty();
   }
 
+  /**
+   * Returns whether the given {@link PrefixSpace} has any {@link Prefix}es in common with this one.
+   *
+   * @param intersectSpace {@link PrefixSpace} in which to check for overlap
+   * @return {@code true} if the given {@link PrefixSpace} has any {@link Prefix}es in common with
+   *     this one
+   */
   public boolean overlaps(PrefixSpace intersectSpace) {
     PrefixSpace intersection = intersection(intersectSpace);
     return !intersection.isEmpty();
@@ -288,6 +324,12 @@ public class PrefixSpace implements Serializable {
     _cache = new ConcurrentHashMap<>();
   }
 
+  /**
+   * Returns a {@code String} listing the {@link PrefixRange}s contained in this {@link
+   * PrefixSpace}.
+   *
+   * @return {@code String} representation of this {@link PrefixSpace}
+   */
   @Override
   public String toString() {
     return getPrefixRanges().toString();
