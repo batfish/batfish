@@ -1,10 +1,11 @@
 package org.batfish.representation.aws_vpcs;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
@@ -139,13 +140,12 @@ public class Instance implements AwsVpcEntity, Serializable {
             "Network interface " + interfaceId + " for instance " + _instanceId + " not found");
       }
 
-      Interface iface = new Interface(interfaceId, cfgNode);
+      ImmutableSortedSet.Builder<Prefix> ifacePrefixesBuilder =
+          new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
 
-      Set<Ip> privateIpAddresses = new TreeSet<>();
-      privateIpAddresses.addAll(netInterface.getIpAddressAssociations().keySet());
       Subnet subnet = awsVpcConfig.getSubnets().get(netInterface.getSubnetId());
       Prefix ifaceSubnet = subnet.getCidrBlock();
-      for (Ip ip : privateIpAddresses) {
+      for (Ip ip : netInterface.getIpAddressAssociations().keySet()) {
         if (!ifaceSubnet.contains(ip)) {
           throw new BatfishException(
               "Instance subnet: " + ifaceSubnet + " does not contain private ip: " + ip);
@@ -155,16 +155,15 @@ public class Instance implements AwsVpcEntity, Serializable {
               "Expected end address: " + ip + " to be used by generated subnet node");
         }
         Prefix prefix = new Prefix(ip, ifaceSubnet.getPrefixLength());
-        iface.getAllPrefixes().add(prefix);
+        ifacePrefixesBuilder.add(prefix);
       }
-      Ip lowestIp = privateIpAddresses.toArray(new Ip[] {})[0];
-      iface.setPrefix(new Prefix(lowestIp, ifaceSubnet.getPrefixLength()));
+      SortedSet<Prefix> ifacePrefixes = ifacePrefixesBuilder.build();
+      Interface iface = Utils.newInterface(interfaceId, cfgNode, ifacePrefixes.first());
+      iface.setAllPrefixes(ifacePrefixes);
 
       // apply ACLs to interface
       iface.setIncomingFilter(inAcl);
       iface.setOutgoingFilter(outAcl);
-      cfgNode.getInterfaces().put(interfaceId, iface);
-      cfgNode.getDefaultVrf().getInterfaces().put(interfaceId, iface);
 
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
