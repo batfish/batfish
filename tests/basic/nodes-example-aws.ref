@@ -126,7 +126,12 @@
           "roles" : [
             "i-0383fda87c012141d"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -232,7 +237,12 @@
           "roles" : [
             "i-075dc46a9bc347264"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -365,7 +375,12 @@
           "roles" : [
             "i-0837c877110427f2b"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -499,7 +514,12 @@
           "roles" : [
             "i-0b26ec095feb42260"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -622,7 +642,9 @@
           "roles" : [
             "igw-068fee63"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -809,7 +831,9 @@
           "roles" : [
             "igw-9b93ddfc"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -920,7 +944,9 @@
           "roles" : [
             "igw-fac5839d"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -968,7 +994,7 @@
           "ikePolicies" : {
             "isakmp-vpn-ba2e34a8-0" : {
               "name" : "isakmp-vpn-ba2e34a8-0",
-              "preSharedKeyHash" : "QMP5tKPP5qk95Y1Eee9c_82.MofNUJQV",
+              "preSharedKeyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
               "proposals" : [
                 "200",
                 "201"
@@ -976,7 +1002,7 @@
             },
             "isakmp-vpn-ba2e34a8-1" : {
               "name" : "isakmp-vpn-ba2e34a8-1",
-              "preSharedKeyHash" : "tYrysT4iT0.CRwQnhiBbng.BahDc7YPq",
+              "preSharedKeyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
               "proposals" : [
                 "200",
                 "201"
@@ -986,6 +1012,7 @@
           "ikeProposals" : {
             "200" : {
               "name" : "200",
+              "authenticationAlgorithm" : "SHA1",
               "authenticationMethod" : "PRE_SHARED_KEYS",
               "diffieHellmanGroup" : "GROUP2",
               "encryptionAlgorithm" : "AES_128_CBC",
@@ -993,6 +1020,7 @@
             },
             "201" : {
               "name" : "201",
+              "authenticationAlgorithm" : "SHA1",
               "authenticationMethod" : "PRE_SHARED_KEYS",
               "diffieHellmanGroup" : "GROUP2",
               "encryptionAlgorithm" : "AES_128_CBC",
@@ -1480,12 +1508,14 @@
             "ipsec-prop-vpn-ba2e34a8-0" : {
               "name" : "ipsec-prop-vpn-ba2e34a8-0",
               "authenticationAlgorithm" : "HMAC_SHA1_96",
-              "encryptionAlgorithm" : "AES_128_CBC"
+              "encryptionAlgorithm" : "AES_128_CBC",
+              "protocol" : "ESP"
             },
             "ipsec-prop-vpn-ba2e34a8-1" : {
               "name" : "ipsec-prop-vpn-ba2e34a8-1",
               "authenticationAlgorithm" : "HMAC_SHA1_96",
-              "encryptionAlgorithm" : "AES_128_CBC"
+              "encryptionAlgorithm" : "AES_128_CBC",
+              "protocol" : "ESP"
             }
           },
           "ipsecVpns" : {
@@ -2417,7 +2447,12 @@
           "roles" : [
             "subnet-073b8061"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-073b8061",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2568,7 +2603,12 @@
           "roles" : [
             "subnet-1641fa70"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2728,7 +2768,12 @@
           "roles" : [
             "subnet-1f315846"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1f315846",
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -2879,7 +2924,12 @@
           "roles" : [
             "subnet-30398256"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-30398256",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3030,7 +3080,12 @@
           "roles" : [
             "subnet-62f14104"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-62f14104",
+              "vpcId" : "vpc-925131f4"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3181,7 +3236,12 @@
           "roles" : [
             "subnet-7044ff16"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-7044ff16",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3332,7 +3392,12 @@
           "roles" : [
             "subnet-8d0cbdeb"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-8d0cbdeb",
+              "vpcId" : "vpc-925131f4"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3492,7 +3557,12 @@
           "roles" : [
             "subnet-9c8adceb"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-9c8adceb",
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3652,7 +3722,12 @@
           "roles" : [
             "subnet-d9cafabc"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-d9cafabc",
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3803,7 +3878,12 @@
           "roles" : [
             "subnet-f73a8191"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-f73a8191",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -3856,14 +3936,14 @@
           "ikePolicies" : {
             "vpn-ba2e34a8-1" : {
               "name" : "vpn-ba2e34a8-1",
-              "preSharedKeyHash" : "4cde66955b03f6812510d51572687cb9",
+              "preSharedKeyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
               "proposals" : [
                 "vpn-ba2e34a8-1"
               ]
             },
             "vpn-ba2e34a8-2" : {
               "name" : "vpn-ba2e34a8-2",
-              "preSharedKeyHash" : "61772c5ecacc18cb3d6c7434251bf619",
+              "preSharedKeyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
               "proposals" : [
                 "vpn-ba2e34a8-2"
               ]
@@ -3888,6 +3968,58 @@
             }
           },
           "interfaces" : {
+            "external1" : {
+              "name" : "external1",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "52.27.166.152/32"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "52.27.166.152/32",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL"
+            },
+            "external2" : {
+              "name" : "external2",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "52.39.121.126/32"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "52.39.121.126/32",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL"
+            },
             "vpc-815775e7" : {
               "name" : "vpc-815775e7",
               "accessVlan" : 0,
@@ -3904,6 +4036,58 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "prefix" : "240.0.0.6/31",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VPN"
+            },
+            "vpn1" : {
+              "name" : "vpn1",
+              "accessVlan" : 0,
+              "active" : false,
+              "allPrefixes" : [
+                "169.254.15.193/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "169.254.15.193/30",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VPN"
+            },
+            "vpn2" : {
+              "name" : "vpn2",
+              "accessVlan" : 0,
+              "active" : false,
+              "allPrefixes" : [
+                "169.254.13.237/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "169.254.13.237/30",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -4061,7 +4245,9 @@
               ]
             }
           },
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : { }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4170,7 +4356,11 @@
           "roles" : [
             "vpc-815775e7"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-815775e7"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4266,7 +4456,11 @@
           "roles" : [
             "vpc-925131f4"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-925131f4"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4460,7 +4654,11 @@
           "roles" : [
             "vpc-b390fad5"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",
@@ -4629,7 +4827,11 @@
           "roles" : [
             "vpc-f8fad69d"
           ],
-          "vendorFamily" : { },
+          "vendorFamily" : {
+            "aws" : {
+              "vpcId" : "vpc-f8fad69d"
+            }
+          },
           "vrfs" : {
             "default" : {
               "name" : "default",

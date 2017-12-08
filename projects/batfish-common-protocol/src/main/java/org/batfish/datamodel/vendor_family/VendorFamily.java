@@ -9,9 +9,15 @@ public class VendorFamily implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private AwsFamily _aws;
+
   private CiscoFamily _cisco;
 
   private JuniperFamily _juniper;
+
+  public AwsFamily getAws() {
+    return _aws;
+  }
 
   public CiscoFamily getCisco() {
     return _cisco;
@@ -19,6 +25,10 @@ public class VendorFamily implements Serializable {
 
   public JuniperFamily getJuniper() {
     return _juniper;
+  }
+
+  public void setAws(AwsFamily aws) {
+    _aws = aws;
   }
 
   public void setCisco(CiscoFamily cisco) {
