@@ -214,6 +214,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         testrigDir.resolve(
             Paths.get(BfConsts.RELPATH_TEST_RIG_DIR, BfConsts.RELPATH_INFERRED_NODE_ROLES_PATH)));
     settings.setTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_TOPOLOGY_PATH));
+    settings.setPojoTopologyPath(testrigDir.resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH));
     if (envName != null) {
       envSettings.setName(envName);
       Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR).resolve(envName);
@@ -4078,6 +4079,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
     checkTopology(configurations, topology);
+    org.batfish.datamodel.pojo.Topology pojoTopology =
+        org.batfish.datamodel.pojo.Topology.create(
+            _testrigSettings.getName(), configurations, topology);
+    serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(
         _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");

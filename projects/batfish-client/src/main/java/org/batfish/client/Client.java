@@ -1359,6 +1359,29 @@ public class Client extends AbstractClient implements IClient {
     return _logger;
   }
 
+  private boolean getObject(
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters,
+      boolean delta) {
+    Command command = delta ? Command.GET_OBJECT_DELTA : Command.GET_OBJECT;
+    if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
+      return false;
+    }
+    if (!isSetTestrig() || !isSetContainer(true) || (delta && !isSetDeltaEnvironment())) {
+      return false;
+    }
+
+    String testrig = delta ? _currDeltaTestrig : _currTestrig;
+    String objectName = parameters.get(0);
+    String tmpPath = _workHelper.getObject(_currContainerName, testrig, objectName);
+    String objectString = CommonUtil.readFile(Paths.get(tmpPath));
+
+    logOutput(outWriter, objectString + "\n");
+
+    return true;
+  }
+
   private boolean getQuestion(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_QUESTION)) {
       return false;
@@ -2374,6 +2397,10 @@ public class Client extends AbstractClient implements IClient {
         return getAnswer(outWriter, options, parameters, true, false);
       case GET_ANSWER_DIFFERENTIAL:
         return getAnswer(outWriter, options, parameters, false, true);
+      case GET_OBJECT:
+        return getObject(outWriter, options, parameters, false);
+      case GET_OBJECT_DELTA:
+        return getObject(outWriter, options, parameters, false);
       case GET_QUESTION:
         return getQuestion(options, parameters);
       case GET_QUESTION_TEMPLATES:

@@ -69,6 +69,49 @@ public class BatfishTestUtils {
     return batfish;
   }
 
+  public static Batfish getBatfishFromTestrigText(TestrigText input, TemporaryFolder tempFolder)
+      throws IOException {
+    SortedMap<String, String> awsText = input.getAwsText();
+    SortedMap<String, String> bgpTablesText = input.getBgpTablesText();
+    SortedMap<String, String> configurationText = input.getConfigurationText();
+    SortedMap<String, String> hostsText = input.getHostsText();
+    SortedMap<String, String> iptablesFilesText = input.getIptablesFilesText();
+    SortedMap<String, String> routingTablesText = input.getRoutingTablesText();
+
+    Settings settings = new Settings(new String[] {});
+    settings.setLogger(new BatfishLogger("debug", false));
+    settings.setDisableUnrecognized(true);
+    settings.setHaltOnConvertError(true);
+    settings.setHaltOnParseError(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    settings.setVerboseParse(true);
+    Path containerDir = tempFolder.newFolder("container").toPath();
+    settings.setContainerDir(containerDir);
+    settings.setTestrig("tempTestrig");
+    settings.setEnvironmentName("tempEnvironment");
+    Batfish.initTestrigSettings(settings);
+    Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
+    settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
+    EnvironmentSettings envSettings = settings.getBaseTestrigSettings().getEnvironmentSettings();
+    envSettings.getEnvironmentBasePath().toFile().mkdirs();
+    writeTemporaryTestrigFiles(
+        configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+    writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR));
+    writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
+    writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
+    writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
+    writeTemporaryTestrigFiles(routingTablesText, envSettings.getEnvironmentRoutingTablesPath());
+    Batfish batfish =
+        new Batfish(
+            settings,
+            makeTestrigCache(),
+            makeDataPlaneCache(),
+            makeEnvBgpCache(),
+            makeEnvRouteCache());
+    return batfish;
+  }
+
   private static Batfish initBatfishFromTestrigText(
       @Nullable SortedMap<String, String> configurationText,
       @Nullable SortedMap<String, String> bgpTablesText,

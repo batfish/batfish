@@ -18,6 +18,7 @@ public class BgpProcess implements Serializable {
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
     private Vrf _vrf;
+    private Ip _routerId;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, BgpProcess.class);
@@ -29,11 +30,19 @@ public class BgpProcess implements Serializable {
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
+      if (_routerId != null) {
+        bgpProcess.setRouterId(_routerId);
+      }
       return bgpProcess;
     }
 
     public BgpProcess.Builder setVrf(Vrf vrf) {
       _vrf = vrf;
+      return this;
+    }
+
+    public BgpProcess.Builder setRouterId(Ip routerId) {
+      _routerId = routerId;
       return this;
     }
   }
