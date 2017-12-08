@@ -486,6 +486,8 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
+      JSONObject response = new JSONObject();
+
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = WorkItem.fromJsonString(workItemStr);
         if (!workItem.getContainerName().equals(containerName)
@@ -497,11 +499,9 @@ public class WorkMgrService {
         if (work != null) {
           BatfishObjectMapper mapper = new BatfishObjectMapper();
           String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
-          return successResponse(
-              new JSONObject()
-                  .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+          response.put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
                   .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
-                  .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr));
+                  .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
         }
       }
 
@@ -519,7 +519,7 @@ public class WorkMgrService {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String answersStr = mapper.writeValueAsString(answers);
 
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWERS, answersStr));
+      return successResponse(response.put(CoordConsts.SVC_KEY_ANSWERS, answersStr));
     } catch (FileExistsException
         | FileNotFoundException
         | IllegalArgumentException
