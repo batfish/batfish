@@ -150,6 +150,7 @@ public class Route implements Serializable {
             Prefix instanceLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
             Prefix subnetIfacePrefix = instanceLinkPrefix;
             Interface subnetIface = new Interface(subnetIfaceName, subnetCfgNode);
+            subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
             subnetCfgNode.getDefaultVrf().getInterfaces().put(subnetIfaceName, subnetIface);
             subnetIface.setPrefix(subnetIfacePrefix);
             subnetIface.getAllPrefixes().add(subnetIfacePrefix);
@@ -163,6 +164,7 @@ public class Route implements Serializable {
                 new Prefix(
                     instanceLinkPrefix.getEndAddress(), instanceLinkPrefix.getPrefixLength());
             Interface instanceIface = new Interface(instanceIfaceName, instanceCfgNode);
+            instanceCfgNode.getInterfaces().put(instanceIfaceName, instanceIface);
             instanceCfgNode.getDefaultVrf().getInterfaces().put(instanceIfaceName, instanceIface);
             instanceIface.setPrefix(instanceIfacePrefix);
             instanceIface.getAllPrefixes().add(instanceIfacePrefix);
@@ -207,6 +209,7 @@ public class Route implements Serializable {
             Prefix peeringLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
             Prefix subnetIfacePrefix = peeringLinkPrefix;
             Interface subnetIface = new Interface(subnetIfaceName, subnetCfgNode);
+            subnetCfgNode.getInterfaces().put(subnetIfaceName, subnetIface);
             subnetCfgNode.getDefaultVrf().getInterfaces().put(subnetIfaceName, subnetIface);
             subnetIface.setPrefix(subnetIfacePrefix);
             subnetIface.getAllPrefixes().add(subnetIfacePrefix);
@@ -215,6 +218,7 @@ public class Route implements Serializable {
             Prefix remoteVpcIfacePrefix =
                 new Prefix(peeringLinkPrefix.getEndAddress(), peeringLinkPrefix.getPrefixLength());
             Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
+            remoteVpcCfgNode.getInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode
                 .getDefaultVrf()
                 .getInterfaces()

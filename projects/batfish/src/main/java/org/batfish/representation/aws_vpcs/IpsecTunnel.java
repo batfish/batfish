@@ -138,7 +138,7 @@ public class IpsecTunnel implements Serializable {
     _ikePerfectForwardSecrecy = getText(ikeElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY);
     _ikeMode = getText(ikeElement, AwsVpcEntity.XML_KEY_MODE);
     _ikePreSharedKeyHash =
-        CommonUtil.md5Digest(
+        CommonUtil.sha256Digest(
             getText(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY) + CommonUtil.salt());
 
     Element ipsecElement =

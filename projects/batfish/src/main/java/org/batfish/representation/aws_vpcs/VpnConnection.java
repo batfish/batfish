@@ -216,12 +216,14 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
       Interface externalInterface = new Interface(externalInterfaceName, vpnGatewayCfgNode);
+      vpnGatewayCfgNode.getInterfaces().put(externalInterfaceName, externalInterface);
       vpnGatewayCfgNode
           .getDefaultVrf()
           .getInterfaces()
           .put(externalInterfaceName, externalInterface);
       String vpnInterfaceName = "vpn" + idNum;
       Interface vpnInterface = new Interface(vpnInterfaceName, vpnGatewayCfgNode);
+      vpnGatewayCfgNode.getInterfaces().put(vpnInterfaceName, vpnInterface);
       vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName, vpnInterface);
 
       // Set fields within representation structures
