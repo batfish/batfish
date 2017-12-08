@@ -41,11 +41,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     @Override
     public BgpNeighbor build() {
       BgpNeighbor bgpNeighbor;
-      if (_owner != null && _peerIpAddress != null) {
-        bgpNeighbor = new BgpNeighbor(_peerIpAddress, _owner);
-      } else {
-        bgpNeighbor = new BgpNeighbor();
-      }
+      Ip peerIpAddress = _peerIpAddress != null ? _peerIpAddress : new Ip(generateLong());
+      bgpNeighbor = new BgpNeighbor(peerIpAddress, _owner);
       if (_localIp != null) {
         bgpNeighbor.setLocalIp(_localIp);
       }
