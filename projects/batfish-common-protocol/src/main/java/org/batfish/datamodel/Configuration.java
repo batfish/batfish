@@ -40,6 +40,10 @@ public final class Configuration extends ComparableStructure<String> {
 
     private String _hostname;
 
+    private LineAction _defaultCrossZoneAction;
+
+    private LineAction _defaultInboundAction;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Configuration.class);
     }
@@ -48,6 +52,12 @@ public final class Configuration extends ComparableStructure<String> {
     public Configuration build() {
       String name = _hostname != null ? _hostname : generateName();
       Configuration configuration = new Configuration(name, _configurationFormat);
+      if (_defaultCrossZoneAction != null) {
+        configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
+      }
+      if (_defaultInboundAction != null) {
+        configuration.setDefaultInboundAction(_defaultInboundAction);
+      }
       return configuration;
     }
 
@@ -58,6 +68,16 @@ public final class Configuration extends ComparableStructure<String> {
 
     public Builder setHostname(String hostname) {
       _hostname = hostname;
+      return this;
+    }
+
+    public Builder setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
+      _defaultCrossZoneAction = defaultCrossZoneAction;
+      return this;
+    }
+
+    public Builder setDefaultInboundAction(LineAction defaultInboundAction) {
+      _defaultInboundAction = defaultInboundAction;
       return this;
     }
   }
