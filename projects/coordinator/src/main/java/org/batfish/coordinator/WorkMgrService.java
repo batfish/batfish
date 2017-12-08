@@ -499,9 +499,10 @@ public class WorkMgrService {
         if (work != null) {
           BatfishObjectMapper mapper = new BatfishObjectMapper();
           String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
-          response.put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
-                  .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
-                  .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
+          response
+              .put(CoordConsts.SVC_KEY_WORKID, work.getWorkItem().getId())
+              .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
+              .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr);
         }
       }
 
