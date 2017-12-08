@@ -118,6 +118,19 @@ public class WorkItem {
   }
 
   /**
+   * The supplied workItem is a match if it has the same container, testrig, and request parameters
+   *
+   * @param workItem The workItem that should be matched
+   * @return {@link boolean} that indicates whether the supplied workItem is a match
+   */
+  public boolean matches(WorkItem workItem) {
+    return (workItem != null
+        && workItem._containerName == _containerName
+        && workItem._testrigName == _testrigName
+        && workItem._requestParams.equals(_requestParams));
+  }
+
+  /**
    * Takes an {@link ActiveSpan} and attaches it to the {@link WorkItem} which can be fetched later
    * using {@link WorkItem#getSourceSpan()}
    */

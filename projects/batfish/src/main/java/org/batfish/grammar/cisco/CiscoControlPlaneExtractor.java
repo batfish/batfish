@@ -43,6 +43,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisMetricType;
@@ -1148,6 +1149,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     IpsecProposal proposal = _currentIpsecTransformSet.getProposal();
     proposal.setEncryptionAlgorithm(toEncryptionAlgorithm(ctx.ipsec_encryption()));
     proposal.setAuthenticationAlgorithm(toIpsecAuthenticationAlgorithm(ctx.ipsec_authentication()));
+    proposal.setProtocol(toProtocol(ctx.ipsec_authentication()));
+  }
+
+  private IpsecProtocol toProtocol(Ipsec_authenticationContext ctx) {
+    if (ctx.ESP_MD5_HMAC() != null || ctx.ESP_SHA256_HMAC() != null || ctx.ESP_SHA_HMAC() != null) {
+      return IpsecProtocol.ESP;
+    } else {
+      throw convError(IpsecProtocol.class, ctx);
+    }
   }
 
   @Override
@@ -1193,6 +1203,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("IsakmpPolicy should be null!");
     }
     _currentIsakmpPolicy = new IsakmpPolicy(ctx.name.getText(), ctx.getStart().getLine());
+    _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
   }
 
   @Override
@@ -1324,7 +1335,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentKeyring == null) {
       throw new BatfishException("Keyrin shouldn't be null!");
     }
-    _currentKeyring.setKey(ctx.variable_permissive().getText());
+    _currentKeyring.setKey(
+        CommonUtil.sha256Digest(ctx.variable_permissive().getText() + CommonUtil.salt()));
     _currentKeyring.setRemoteAddress(toIp(ctx.IP_ADDRESS()));
   }
 
