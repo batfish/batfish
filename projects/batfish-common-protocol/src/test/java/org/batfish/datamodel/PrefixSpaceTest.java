@@ -172,7 +172,8 @@ public class PrefixSpaceTest {
         "empty spaces don't intersect", this.ps.intersection(other).isEmpty(), equalTo(true));
     assertThat("no overlap for empty spaces", this.ps.overlaps(other), equalTo(false));
     ps.addPrefixRange(new PrefixRange("10.10.10.0/20:18-21"));
-    assertThat("no intersection for one empty", this.ps.intersection(other).isEmpty(), equalTo(true));
+    assertThat(
+        "no intersection for one empty", this.ps.intersection(other).isEmpty(), equalTo(true));
     assertThat("no overlap for one empty", this.ps.overlaps(other), equalTo(false));
     other.addPrefixRange(new PrefixRange("10.10.10.0/16:14-16"));
     assertThat("no intersection", this.ps.intersection(other).isEmpty(), equalTo(true));
