@@ -971,9 +971,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Topology computeTopology(Map<String, Configuration> configurations) {
+  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
-    Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
+    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     if (blacklistEdges != null) {
       SortedSet<Edge> edges = topology.getEdges();
@@ -996,7 +996,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return prunedTopology;
   }
 
-  private Topology computeTopology(Path testRigPath, Map<String, Configuration> configurations) {
+  private Topology computeTestrigTopology(
+      Path testRigPath, Map<String, Configuration> configurations) {
     Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
     Topology topology;
     // Get generated facts from topology file
@@ -2984,7 +2985,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    Topology diffTopology = computeTopology(diffConfigurations);
+    Topology diffTopology = computeEnvironmentTopology(diffConfigurations);
     SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -3012,7 +3013,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    Topology baseTopology = computeTopology(baseConfigurations);
+    Topology baseTopology = computeEnvironmentTopology(baseConfigurations);
     SortedSet<Edge> baseEdges = baseTopology.getEdges();
     SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
@@ -4019,13 +4020,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
-    serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
-    checkTopology(configurations, topology);
+    Topology testrigTopology =
+        computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");
+    checkTopology(configurations, testrigTopology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
-            _testrigSettings.getName(), configurations, topology);
+            _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
+    Topology envTopology = computeEnvironmentTopology(configurations, testrigTopology);
+    serializeAsJson(
+        _testrigSettings
+            .getEnvironmentSettings()
+            .getEnvPath()
+            .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE),
+        envTopology,
+        "environment topology");
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(
         _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
