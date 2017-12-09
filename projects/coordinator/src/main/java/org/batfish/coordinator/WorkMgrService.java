@@ -1320,6 +1320,11 @@ public class WorkMgrService {
 
       checkContainerAccessibility(apiKey, workItem.getContainerName());
 
+      QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
+      if (work != null) {
+        return failureResponse(new JSONObject().put("Duplicate workId", work.getId()));
+      }
+
       boolean result = Main.getWorkMgr().queueWork(workItem);
 
       return successResponse(new JSONObject().put("result", result));
