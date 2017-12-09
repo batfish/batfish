@@ -93,12 +93,15 @@ public class WorkMgr extends AbstractCoordinator {
 
   private final Settings _settings;
 
+  private TestrigMetadataMgr _testrigMetadataMgr;
+
   private WorkQueueMgr _workQueueMgr;
 
   public WorkMgr(Settings settings, BatfishLogger logger) {
     super(false);
     _settings = settings;
     _logger = logger;
+    _testrigMetadataMgr = new TestrigMetadataMgr();
     _workQueueMgr = new WorkQueueMgr();
     loadPlugins();
   }
@@ -834,12 +837,9 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
     TestrigMetadata metadata = new TestrigMetadata(Instant.now());
-    Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
     try {
-      CommonUtil.writeFile(metadataPath, mapper.writeValueAsString(metadata));
+      _testrigMetadataMgr.initializeMetadata(metadata, testrigDir);
     } catch (JsonProcessingException e) {
       _logger.error(e.getMessage());
     }
