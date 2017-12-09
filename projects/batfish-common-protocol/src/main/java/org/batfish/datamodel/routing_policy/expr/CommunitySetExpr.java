@@ -2,7 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -17,10 +17,10 @@ public abstract class CommunitySetExpr implements Serializable {
 
   /** Returns the subset of the given communities that match this {@link CommunitySetExpr}. */
   public abstract SortedSet<Long> communities(
-      Environment environment, Collection<Long> communityCandidates);
+      Environment environment, Set<Long> communityCandidates);
 
   /** Return true iff this {@link CommunitySetExpr} matches any community in the given set. */
-  public final boolean matchSingleCommunity(Environment environment, Collection<Long> communities) {
+  public final boolean matchSingleCommunity(Environment environment, Set<Long> communities) {
     return !this.communities(environment, communities).isEmpty();
   }
 

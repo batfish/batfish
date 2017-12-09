@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -25,10 +26,10 @@ public class InlineCommunitySetTest {
   public void testMatchSingleCommunity() {
     InlineCommunitySet set = new InlineCommunitySet(ImmutableList.of(1L, 2L, 3L));
 
-    assertTrue(set.matchSingleCommunity(null, ImmutableList.of(2L)));
-    assertTrue(set.matchSingleCommunity(null, ImmutableList.of(1L, 2L, 3L)));
-    assertTrue(set.matchSingleCommunity(null, ImmutableList.of(4L, 1L)));
+    assertTrue(set.matchSingleCommunity(null, Sets.newHashSet(2L)));
+    assertTrue(set.matchSingleCommunity(null, Sets.newHashSet(1L, 2L, 3L)));
+    assertTrue(set.matchSingleCommunity(null, Sets.newHashSet(4L, 1L)));
 
-    assertFalse(set.matchSingleCommunity(null, ImmutableList.of(4L)));
+    assertFalse(set.matchSingleCommunity(null, Sets.newHashSet(4L)));
   }
 }

@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class InlineCommunitySet extends CommunitySetExpr {
@@ -49,9 +49,9 @@ public class InlineCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public SortedSet<Long> communities(
-      Environment environment, Collection<Long> communityCandidates) {
-    return CommonUtil.intersection(allCommunities(environment), communityCandidates, TreeSet::new);
+  public SortedSet<Long> communities(Environment environment, Set<Long> communityCandidates) {
+    return ImmutableSortedSet.copyOf(
+        Sets.intersection(allCommunities(environment), communityCandidates));
   }
 
   @Override
