@@ -4028,7 +4028,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    Topology envTopology = computeEnvironmentTopology(configurations, testrigTopology);
+    Topology envTopology = computeEnvironmentTopology(configurations);
     serializeAsJson(
         _testrigSettings
             .getEnvironmentSettings()
