@@ -4088,34 +4088,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (objectsByPath.isEmpty()) {
       return;
     }
-    BatfishLogger logger = getLogger();
-    Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+
     int size = objectsByPath.size();
     String className = objectsByPath.values().iterator().next().getClass().getName();
-    AtomicInteger serializeCompleted = newBatch("Serializing '" + className + "' instances", size);
+    AtomicInteger serializeCompleted =
+        newBatch(String.format("Serializing '%s' instances to disk", className), size);
     objectsByPath
-        .keySet()
+        .entrySet()
         .parallelStream()
         .forEach(
-            outputPath -> {
-              S object = objectsByPath.get(outputPath);
-              byte[] gzipData = toGzipData(object);
-              dataByPath.put(outputPath, gzipData);
+            entry -> {
+              Path outputPath = entry.getKey();
+              S object = entry.getValue();
+              serializeObject(object, outputPath);
               serializeCompleted.incrementAndGet();
             });
-    AtomicInteger writeCompleted =
-        newBatch("Packing and writing '" + className + "' instances to disk", size);
-    dataByPath.forEach(
-        (outputPath, data) -> {
-          logger.debug("Writing: \"" + outputPath + "\"...");
-          try {
-            Files.write(outputPath, data);
-          } catch (IOException e) {
-            throw new BatfishException("Failed to write: '" + outputPath + "'");
-          }
-          logger.debug("OK\n");
-          writeCompleted.incrementAndGet();
-        });
   }
 
   Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
