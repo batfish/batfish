@@ -58,7 +58,13 @@ public class BatfishTestUtils {
       settings.setEnvironmentName("tempEnvironment");
       Batfish.initTestrigSettings(settings);
       settings.getBaseTestrigSettings().getSerializeIndependentPath().toFile().mkdirs();
-      settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
+      settings
+          .getBaseTestrigSettings()
+          .getEnvironmentSettings()
+          .getEnvPath()
+          .resolve(BfConsts.RELPATH_ENV_DIR)
+          .toFile()
+          .mkdirs();
       testrigs.put(settings.getBaseTestrigSettings(), configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
@@ -136,7 +142,7 @@ public class BatfishTestUtils {
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     EnvironmentSettings envSettings = settings.getBaseTestrigSettings().getEnvironmentSettings();
-    envSettings.getEnvironmentBasePath().toFile().mkdirs();
+    envSettings.getEnvironmentBasePath().resolve(BfConsts.RELPATH_ENV_DIR).toFile().mkdirs();
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
