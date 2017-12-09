@@ -23,7 +23,7 @@ import org.junit.rules.TemporaryFolder;
 public class DbAuthorizerTest {
   /*
    *  Not using in-memory databases each new connection creates a brand new database.
-   *  Instead, using slightly more presisten DB inside a temporary folder.
+   *  Instead, using slightly more persistent DB inside a temporary folder.
    */
   @Rule public TemporaryFolder tmpFolder = new TemporaryFolder();
   private static final String DB_NAME = "authorizer_test.sqlite";

@@ -88,15 +88,12 @@ public class DbAuthorizer implements Authorizer {
             COLUMN_CONTAINER_NAME,
             COLUMN_DATE_CREATED,
             COLUMN_DATE_LAST_ACCESSED);
-    PreparedStatement insertContainers = null;
     int numInsertRows;
-    try {
-      insertContainers = _dbConn.prepareStatement(insertContainersString);
+    try (PreparedStatement insertContainers = _dbConn.prepareStatement(insertContainersString)) {
       insertContainers.setString(1, containerName);
       insertContainers.setDate(2, now);
       insertContainers.setDate(3, now);
       numInsertRows = executeUpdate(insertContainers);
-      insertContainers.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not update containers table", e);
     }
@@ -116,12 +113,10 @@ public class DbAuthorizer implements Authorizer {
         String.format(
             "INSERT INTO %s (%s, %s) VALUES (?, ?)",
             TABLE_PERMISSIONS, COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
-    try {
-      PreparedStatement insertPermissions = _dbConn.prepareStatement(insertPermissionsString);
+    try (PreparedStatement insertPermissions = _dbConn.prepareStatement(insertPermissionsString)) {
       insertPermissions.setString(1, apiKey);
       insertPermissions.setString(2, containerName);
       numRows = executeUpdate(insertPermissions);
-      insertPermissions.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not update permissions table", e);
     }
@@ -212,13 +207,11 @@ public class DbAuthorizer implements Authorizer {
             TABLE_PERMISSIONS, COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
     ResultSet rs;
     boolean authorized;
-    try {
-      PreparedStatement ps = _dbConn.prepareStatement(selectPermittedContainerString);
+    try (PreparedStatement ps = _dbConn.prepareStatement(selectPermittedContainerString)) {
       ps.setString(1, apiKey);
       ps.setString(2, containerName);
       rs = executeQuery(ps);
       authorized = rs != null && rs.getInt(1) == 1;
-      ps.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not query permissions table successfully", e);
     }
@@ -232,12 +225,11 @@ public class DbAuthorizer implements Authorizer {
           String.format(
               "UPDATE %s SET %s=? WHERE %s=?",
               TABLE_CONTAINERS, COLUMN_DATE_LAST_ACCESSED, COLUMN_CONTAINER_NAME);
-      try {
-        PreparedStatement updatePs = _dbConn.prepareStatement(updatePsString);
+      try (PreparedStatement updatePs = _dbConn.prepareStatement(updatePsString)) {
+
         updatePs.setDate(1, now);
         updatePs.setString(2, containerName);
         executeUpdate(updatePs);
-        updatePs.close();
       } catch (SQLException e) {
         throw new BatfishException("Could not update containers table", e);
       }
@@ -271,15 +263,12 @@ public class DbAuthorizer implements Authorizer {
     }
     String selectApiKeyRowString =
         String.format("SELECT COUNT(*) FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
-    PreparedStatement ps;
     ResultSet rs;
     boolean authorized;
-    try {
-      ps = _dbConn.prepareStatement(selectApiKeyRowString);
+    try (PreparedStatement ps = _dbConn.prepareStatement(selectApiKeyRowString)) {
       ps.setString(1, apiKey);
       rs = executeQuery(ps);
       authorized = rs != null && rs.getInt(1) == 1;
-      ps.close();
     } catch (SQLException e) {
       throw new BatfishException("Could not query users table", e);
     }
@@ -301,6 +290,7 @@ public class DbAuthorizer implements Authorizer {
         // Gracefully close previous connection if it exists (but could be invalid)
         if (_dbConn != null) {
           _dbConn.close();
+          _dbConn = null;
         }
 
         // Load a specific driver class, if one was specified
