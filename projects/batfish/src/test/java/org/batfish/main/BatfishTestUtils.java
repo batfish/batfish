@@ -94,7 +94,7 @@ public class BatfishTestUtils {
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     EnvironmentSettings envSettings = settings.getBaseTestrigSettings().getEnvironmentSettings();
-    envSettings.getEnvironmentBasePath().toFile().mkdirs();
+    envSettings.getEnvironmentBasePath().resolve(BfConsts.RELPATH_ENV_DIR).toFile().mkdirs();
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
     writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR));
