@@ -4263,6 +4263,13 @@
                   },
                   "trueStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -4300,6 +4307,13 @@
                   },
                   "trueStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -4320,6 +4334,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "169.254.13.238/32" : {
@@ -4367,6 +4382,7 @@
                     "vrf" : "default"
                   }
                 },
+                "routerId" : "169.254.15.193",
                 "tieBreaker" : "ARRIVAL_ORDER"
               },
               "interfaces" : [
