@@ -55,7 +55,7 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
       _end = i;
     } else {
       throw new BatfishException(
-          "Cannot creat SubRange from input object of type: " + o.getClass().getCanonicalName());
+          "Cannot create SubRange from input object of type: " + o.getClass().getCanonicalName());
     }
   }
 
