@@ -230,7 +230,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
           }
         }
       }
-      Topology topology = _batfish.computeTopology(configurations);
+      Topology topology = _batfish.computeEnvironmentTopology(configurations);
       _batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
       for (Configuration co : configurations.values()) {
         String hostname = co.getHostname();
