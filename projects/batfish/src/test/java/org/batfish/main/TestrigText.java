@@ -49,10 +49,13 @@ public class TestrigText {
         }
         return filenameList
             .stream()
-            .map(filename -> String.format("%s/%s/%s", testrigResourcePrefix, subfolder, filename))
             .collect(
                 ImmutableMap.toImmutableMap(
-                    Function.identity(), path -> CommonUtil.readResource(path)));
+                    Function.identity(),
+                    filename ->
+                        CommonUtil.readResource(
+                            String.format(
+                                "%s/%s/%s", testrigResourcePrefix, subfolder, filename))));
       } else {
         return Collections.emptyMap();
       }
