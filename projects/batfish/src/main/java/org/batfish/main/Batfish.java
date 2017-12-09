@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -3838,13 +3837,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void serializeAsJson(Path outputPath, Object object, String objectName) {
-    String str;
     try {
-      str = new BatfishObjectMapper().writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
+    } catch (IOException e) {
       throw new BatfishException("Could not serialize " + objectName + " ", e);
     }
-    CommonUtil.writeFile(outputPath, str);
   }
 
   private Answer serializeAwsVpcConfigs(Path testRigPath, Path outputPath) {
