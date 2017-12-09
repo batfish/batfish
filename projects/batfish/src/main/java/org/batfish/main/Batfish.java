@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -971,9 +970,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public Topology computeTopology(Map<String, Configuration> configurations) {
+  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
-    Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
+    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     if (blacklistEdges != null) {
       SortedSet<Edge> edges = topology.getEdges();
@@ -996,7 +995,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return prunedTopology;
   }
 
-  private Topology computeTopology(Path testRigPath, Map<String, Configuration> configurations) {
+  private Topology computeTestrigTopology(
+      Path testRigPath, Map<String, Configuration> configurations) {
     Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
     Topology topology;
     // Get generated facts from topology file
@@ -2637,109 +2637,52 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Driver.newBatch(_settings, description, jobs);
   }
 
-  void outputAnswer(Answer answer) {
+  /**
+   * Returns a {@link Pair} of strings that respectively represent the structured and pretty
+   * answers.
+   */
+  private static Pair<String, String> getAnswerStrings(Answer answer) throws IOException {
     ObjectMapper mapper = new BatfishObjectMapper();
-    try {
-      Answer structuredAnswer = answer;
-      Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
-      StringBuilder structuredAnswerSb = new StringBuilder();
-      String structuredAnswerRawString = mapper.writeValueAsString(structuredAnswer);
-      structuredAnswerSb.append(structuredAnswerRawString);
-      structuredAnswerSb.append("\n");
-      String structuredAnswerString = structuredAnswerSb.toString();
-      StringBuilder prettyAnswerSb = new StringBuilder();
-      String prettyAnswerRawString = mapper.writeValueAsString(prettyAnswer);
-      prettyAnswerSb.append(prettyAnswerRawString);
-      prettyAnswerSb.append("\n");
-      String answerString;
-      String prettyAnswerString = prettyAnswerSb.toString();
-      if (_settings.prettyPrintAnswer()) {
-        answerString = prettyAnswerString;
-      } else {
-        answerString = structuredAnswerString;
-      }
-      _logger.debug(answerString);
-      writeJsonAnswer(structuredAnswerString, prettyAnswerString);
-    } catch (Exception e) {
-      BatfishException be = new BatfishException("Error in sending answer", e);
-      try {
-        Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
-        failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        Answer structuredAnswer = failureAnswer;
-        Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
-        StringBuilder structuredAnswerSb = new StringBuilder();
-        String structuredAnswerRawString = mapper.writeValueAsString(structuredAnswer);
-        structuredAnswerSb.append(structuredAnswerRawString);
-        structuredAnswerSb.append("\n");
-        String structuredAnswerString = structuredAnswerSb.toString();
-        StringBuilder prettyAnswerSb = new StringBuilder();
-        String prettyAnswerRawString = mapper.writeValueAsString(prettyAnswer);
-        prettyAnswerSb.append(prettyAnswerRawString);
-        prettyAnswerSb.append("\n");
-        String answerString;
-        String prettyAnswerString = prettyAnswerSb.toString();
-        if (_settings.prettyPrintAnswer()) {
-          answerString = prettyAnswerString;
-        } else {
-          answerString = structuredAnswerString;
-        }
-        _logger.error(answerString);
-        writeJsonAnswer(structuredAnswerString, prettyAnswerString);
-      } catch (Exception e1) {
-        _logger.errorf("Could not serialize failure answer. %s", ExceptionUtils.getStackTrace(e1));
-      }
-      throw be;
-    }
+
+    String answerString = mapper.writeValueAsString(answer) + '\n';
+
+    Answer prettyAnswer = answer.prettyPrintAnswer();
+    String prettyAnswerString = mapper.writeValueAsString(prettyAnswer) + '\n';
+
+    return new Pair<>(answerString, prettyAnswerString);
+  }
+
+  private void outputAnswer(Answer answer) {
+    outputAnswer(answer, /* log */ false);
   }
 
   void outputAnswerWithLog(Answer answer) {
-    ObjectMapper mapper = new BatfishObjectMapper();
+    outputAnswer(answer, /* log */ true);
+  }
+
+  private void outputAnswer(Answer answer, boolean writeLog) {
     try {
-      Answer structuredAnswer = answer;
-      Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
-      StringBuilder structuredAnswerSb = new StringBuilder();
-      String structuredAnswerRawString = mapper.writeValueAsString(structuredAnswer);
-      structuredAnswerSb.append(structuredAnswerRawString);
-      structuredAnswerSb.append("\n");
-      String structuredAnswerString = structuredAnswerSb.toString();
-      StringBuilder prettyAnswerSb = new StringBuilder();
-      String prettyAnswerRawString = mapper.writeValueAsString(prettyAnswer);
-      prettyAnswerSb.append(prettyAnswerRawString);
-      prettyAnswerSb.append("\n");
-      String answerString;
-      String prettyAnswerString = prettyAnswerSb.toString();
-      if (_settings.prettyPrintAnswer()) {
-        answerString = prettyAnswerString;
-      } else {
-        answerString = structuredAnswerString;
-      }
+      Pair<String, String> answerStrings = getAnswerStrings(answer);
+      String structuredAnswerString = answerStrings.getFirst();
+      String prettyAnswerString = answerStrings.getSecond();
+      String answerString =
+          _settings.prettyPrintAnswer() ? prettyAnswerString : structuredAnswerString;
       _logger.debug(answerString);
-      writeJsonAnswerWithLog(answerString, structuredAnswerString, prettyAnswerString);
+      @Nullable String logString = writeLog ? answerString : null;
+      writeJsonAnswerWithLog(logString, structuredAnswerString, prettyAnswerString);
     } catch (Exception e) {
       BatfishException be = new BatfishException("Error in sending answer", e);
       try {
         Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        Answer structuredAnswer = failureAnswer;
-        Answer prettyAnswer = structuredAnswer.prettyPrintAnswer();
-        StringBuilder structuredAnswerSb = new StringBuilder();
-        String structuredAnswerRawString = mapper.writeValueAsString(structuredAnswer);
-        structuredAnswerSb.append(structuredAnswerRawString);
-        structuredAnswerSb.append("\n");
-        String structuredAnswerString = structuredAnswerSb.toString();
-        StringBuilder prettyAnswerSb = new StringBuilder();
-        String prettyAnswerRawString = mapper.writeValueAsString(prettyAnswer);
-        prettyAnswerSb.append(prettyAnswerRawString);
-        prettyAnswerSb.append("\n");
-        String answerString;
-        String prettyAnswerString = prettyAnswerSb.toString();
-        if (_settings.prettyPrintAnswer()) {
-          answerString = prettyAnswerString;
-        } else {
-          answerString = structuredAnswerString;
-        }
+        Pair<String, String> answerStrings = getAnswerStrings(failureAnswer);
+        String structuredAnswerString = answerStrings.getFirst();
+        String prettyAnswerString = answerStrings.getSecond();
+        String answerString =
+            _settings.prettyPrintAnswer() ? prettyAnswerString : structuredAnswerString;
         _logger.error(answerString);
-        writeJsonAnswerWithLog(answerString, structuredAnswerString, prettyAnswerString);
+        @Nullable String logString = writeLog ? answerString : null;
+        writeJsonAnswerWithLog(logString, structuredAnswerString, prettyAnswerString);
       } catch (Exception e1) {
         _logger.errorf("Could not serialize failure answer. %s", ExceptionUtils.getStackTrace(e1));
       }
@@ -3041,7 +2984,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    Topology diffTopology = computeTopology(diffConfigurations);
+    Topology diffTopology = computeEnvironmentTopology(diffConfigurations);
     SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -3069,7 +3012,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    Topology baseTopology = computeTopology(baseConfigurations);
+    Topology baseTopology = computeEnvironmentTopology(baseConfigurations);
     SortedSet<Edge> baseEdges = baseTopology.getEdges();
     SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
@@ -3895,13 +3838,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void serializeAsJson(Path outputPath, Object object, String objectName) {
-    String str;
     try {
-      str = new BatfishObjectMapper().writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
+    } catch (IOException e) {
       throw new BatfishException("Could not serialize " + objectName + " ", e);
     }
-    CommonUtil.writeFile(outputPath, str);
   }
 
   private Answer serializeAwsVpcConfigs(Path testRigPath, Path outputPath) {
@@ -4076,13 +4017,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    Topology topology = computeTopology(_testrigSettings.getTestRigPath(), configurations);
-    serializeAsJson(_testrigSettings.getTopologyPath(), topology, "testrig topology");
-    checkTopology(configurations, topology);
+    Topology testrigTopology =
+        computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");
+    checkTopology(configurations, testrigTopology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
-            _testrigSettings.getName(), configurations, topology);
+            _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
+    Topology envTopology = computeEnvironmentTopology(configurations);
+    serializeAsJson(
+        _testrigSettings
+            .getEnvironmentSettings()
+            .getEnvPath()
+            .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE),
+        envTopology,
+        "environment topology");
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(
         _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
@@ -4145,34 +4095,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (objectsByPath.isEmpty()) {
       return;
     }
-    BatfishLogger logger = getLogger();
-    Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+
     int size = objectsByPath.size();
     String className = objectsByPath.values().iterator().next().getClass().getName();
-    AtomicInteger serializeCompleted = newBatch("Serializing '" + className + "' instances", size);
+    AtomicInteger serializeCompleted =
+        newBatch(String.format("Serializing '%s' instances to disk", className), size);
     objectsByPath
-        .keySet()
+        .entrySet()
         .parallelStream()
         .forEach(
-            outputPath -> {
-              S object = objectsByPath.get(outputPath);
-              byte[] gzipData = toGzipData(object);
-              dataByPath.put(outputPath, gzipData);
+            entry -> {
+              Path outputPath = entry.getKey();
+              S object = entry.getValue();
+              serializeObject(object, outputPath);
               serializeCompleted.incrementAndGet();
             });
-    AtomicInteger writeCompleted =
-        newBatch("Packing and writing '" + className + "' instances to disk", size);
-    dataByPath.forEach(
-        (outputPath, data) -> {
-          logger.debug("Writing: \"" + outputPath + "\"...");
-          try {
-            Files.write(outputPath, data);
-          } catch (IOException e) {
-            throw new BatfishException("Failed to write: '" + outputPath + "'");
-          }
-          logger.debug("OK\n");
-          writeCompleted.incrementAndGet();
-        });
   }
 
   Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
@@ -4510,11 +4447,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void writeJsonAnswerWithLog(
-      String answerString, String structuredAnswerString, String prettyAnswerString) {
+      @Nullable String logString, String structuredAnswerString, String prettyAnswerString) {
     // Write log of WorkItem task to the configured path for logs
     Path jsonPath = _settings.getAnswerJsonPath();
-    if (jsonPath != null) {
-      CommonUtil.writeFile(jsonPath, answerString);
+    if (jsonPath != null && logString != null) {
+      CommonUtil.writeFile(jsonPath, logString);
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
     writeJsonAnswer(structuredAnswerString, prettyAnswerString);

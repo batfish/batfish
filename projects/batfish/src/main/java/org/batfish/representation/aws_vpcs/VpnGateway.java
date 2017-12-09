@@ -46,11 +46,8 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
     for (String vpcId : _attachmentVpcIds) {
 
       String vgwIfaceName = vpcId;
-      Interface vgwIface = new Interface(vgwIfaceName, cfgNode);
       Prefix vgwIfacePrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
-      vgwIface.setPrefix(vgwIfacePrefix);
-      cfgNode.getInterfaces().put(vgwIfaceName, vgwIface);
-      cfgNode.getDefaultVrf().getInterfaces().put(vgwIfaceName, vgwIface);
+      Utils.newInterface(vgwIfaceName, cfgNode, vgwIfacePrefix);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);

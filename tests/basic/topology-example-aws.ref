@@ -73,6 +73,7 @@
         "node-i-0837c877110427f2b",
         "node-subnet-8d0cbdeb",
         "node-igw-fac5839d",
+        "node-vgw-81fd279f",
         "node-subnet-f73a8191",
         "node-vpc-925131f4"
       ],
@@ -154,6 +155,12 @@
   "id" : "topology-basic-example-aws",
   "interfaces" : [
     {
+      "name" : "igw-068fee63",
+      "nodeId" : "node-vpc-f8fad69d",
+      "id" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "subnet-1641fa70",
       "nodeId" : "node-i-075dc46a9bc347264",
       "id" : "interface-node-i-075dc46a9bc347264-subnet-1641fa70",
@@ -208,15 +215,33 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "igw-fac5839d",
+      "nodeId" : "node-igw-fac5839d",
+      "id" : "interface-node-igw-fac5839d-igw-fac5839d",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "subnet-1f315846",
       "nodeId" : "node-vpc-f8fad69d",
       "id" : "interface-node-vpc-f8fad69d-subnet-1f315846",
       "type" : "UNKNOWN"
     },
     {
+      "name" : "vpc-f8fad69d",
+      "nodeId" : "node-igw-068fee63",
+      "id" : "interface-node-igw-068fee63-vpc-f8fad69d",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "vpc-925131f4",
       "nodeId" : "node-subnet-62f14104",
       "id" : "interface-node-subnet-62f14104-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "igw-9b93ddfc",
+      "nodeId" : "node-igw-9b93ddfc",
+      "id" : "interface-node-igw-9b93ddfc-igw-9b93ddfc",
       "type" : "UNKNOWN"
     },
     {
@@ -424,9 +449,33 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "vpn1",
+      "nodeId" : "node-vgw-81fd279f",
+      "id" : "interface-node-vgw-81fd279f-vpn1",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "vpn1",
+      "nodeId" : "node-lhr-border-02",
+      "id" : "interface-node-lhr-border-02-vpn1",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "vpn2",
+      "nodeId" : "node-vgw-81fd279f",
+      "id" : "interface-node-vgw-81fd279f-vpn2",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "subnet-9c8adceb",
       "nodeId" : "node-vpc-f8fad69d",
       "id" : "interface-node-vpc-f8fad69d-subnet-9c8adceb",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "vpn2",
+      "nodeId" : "node-lhr-border-02",
+      "id" : "interface-node-lhr-border-02-vpn2",
       "type" : "UNKNOWN"
     },
     {
@@ -481,6 +530,18 @@
       "name" : "subnet-f73a8191",
       "nodeId" : "node-vpc-b390fad5",
       "id" : "interface-node-vpc-b390fad5-subnet-f73a8191",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "Tunnel1",
+      "nodeId" : "node-lhr-border-02",
+      "id" : "interface-node-lhr-border-02-Tunnel1",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "Tunnel2",
+      "nodeId" : "node-lhr-border-02",
+      "id" : "interface-node-lhr-border-02-Tunnel2",
       "type" : "UNKNOWN"
     },
     {
@@ -553,6 +614,12 @@
       "name" : "eni-8c7753a2",
       "nodeId" : "node-i-0837c877110427f2b",
       "id" : "interface-node-i-0837c877110427f2b-eni-8c7753a2",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-vpc-b390fad5",
+      "id" : "interface-node-vpc-b390fad5-vpc-b390fad5",
       "type" : "UNKNOWN"
     },
     {
@@ -670,9 +737,21 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "vpc-b390fad5",
+      "nodeId" : "node-igw-9b93ddfc",
+      "id" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "vpc-f8fad69d",
       "nodeId" : "node-subnet-d9cafabc",
       "id" : "interface-node-subnet-d9cafabc-vpc-f8fad69d",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "vpc-f8fad69d",
+      "nodeId" : "node-vpc-f8fad69d",
+      "id" : "interface-node-vpc-f8fad69d-vpc-f8fad69d",
       "type" : "UNKNOWN"
     },
     {
@@ -733,6 +812,18 @@
       "name" : "vpc-925131f4",
       "nodeId" : "node-vpc-925131f4",
       "id" : "interface-node-vpc-925131f4-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "vpc-925131f4",
+      "nodeId" : "node-vpc-925131f4",
+      "id" : "interface-node-vpc-925131f4-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "igw-068fee63",
+      "nodeId" : "node-igw-068fee63",
+      "id" : "interface-node-igw-068fee63-igw-068fee63",
       "type" : "UNKNOWN"
     },
     {
@@ -844,12 +935,30 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "Tunnel2",
+      "nodeId" : "node-vgw-81fd279f",
+      "id" : "interface-node-vgw-81fd279f-Tunnel2",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "eni-8c7753a2",
       "nodeId" : "node-i-0b26ec095feb42260",
       "id" : "interface-node-i-0b26ec095feb42260-eni-8c7753a2",
       "type" : "UNKNOWN"
     },
     {
+      "name" : "vpc-925131f4",
+      "nodeId" : "node-igw-fac5839d",
+      "id" : "interface-node-igw-fac5839d-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "Tunnel1",
+      "nodeId" : "node-vgw-81fd279f",
+      "id" : "interface-node-vgw-81fd279f-Tunnel1",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "subnet-8d0cbdeb",
       "nodeId" : "node-subnet-8d0cbdeb",
       "id" : "interface-node-subnet-8d0cbdeb-subnet-8d0cbdeb",
@@ -859,6 +968,12 @@
       "name" : "subnet-8d0cbdeb",
       "nodeId" : "node-subnet-8d0cbdeb",
       "id" : "interface-node-subnet-8d0cbdeb-subnet-8d0cbdeb",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "igw-fac5839d",
+      "nodeId" : "node-vpc-925131f4",
+      "id" : "interface-node-vpc-925131f4-igw-fac5839d",
       "type" : "UNKNOWN"
     },
     {
@@ -895,6 +1010,12 @@
       "name" : "igw-9b93ddfc",
       "nodeId" : "node-subnet-7044ff16",
       "id" : "interface-node-subnet-7044ff16-igw-9b93ddfc",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "igw-9b93ddfc",
+      "nodeId" : "node-vpc-b390fad5",
+      "id" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
       "type" : "UNKNOWN"
     },
     {
@@ -1032,6 +1153,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-lhr-border-02-Tunnel2",
+      "srcId" : "interface-node-lhr-border-02-vpn2",
+      "id" : "link-interface-node-lhr-border-02-vpn2-interface-node-lhr-border-02-Tunnel2",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-i-075dc46a9bc347264-eni-d2b094fc",
       "srcId" : "interface-node-i-075dc46a9bc347264-subnet-1641fa70",
       "id" : "link-interface-node-i-075dc46a9bc347264-subnet-1641fa70-interface-node-i-075dc46a9bc347264-eni-d2b094fc",
@@ -1053,6 +1180,12 @@
       "dstId" : "interface-node-i-075dc46a9bc347264-eni-d2b094fc",
       "srcId" : "interface-node-i-0383fda87c012141d-eni-8c7753a2",
       "id" : "link-interface-node-i-0383fda87c012141d-eni-8c7753a2-interface-node-i-075dc46a9bc347264-eni-d2b094fc",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-igw-068fee63-vpc-f8fad69d",
+      "srcId" : "interface-node-igw-068fee63-igw-068fee63",
+      "id" : "link-interface-node-igw-068fee63-igw-068fee63-interface-node-igw-068fee63-vpc-f8fad69d",
       "type" : "UNKNOWN"
     },
     {
@@ -1134,6 +1267,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-vgw-81fd279f-vpn1",
+      "srcId" : "interface-node-vgw-81fd279f-Tunnel1",
+      "id" : "link-interface-node-vgw-81fd279f-Tunnel1-interface-node-vgw-81fd279f-vpn1",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-i-0837c877110427f2b-eni-6b705445",
       "srcId" : "interface-node-i-0383fda87c012141d-eni-8c7753a2",
       "id" : "link-interface-node-i-0383fda87c012141d-eni-8c7753a2-interface-node-i-0837c877110427f2b-eni-6b705445",
@@ -1149,6 +1288,12 @@
       "dstId" : "interface-node-igw-fac5839d-subnet-8d0cbdeb",
       "srcId" : "interface-node-igw-fac5839d-igw-fac5839d",
       "id" : "link-interface-node-igw-fac5839d-igw-fac5839d-interface-node-igw-fac5839d-subnet-8d0cbdeb",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-lhr-border-02-Tunnel1",
+      "srcId" : "interface-node-vgw-81fd279f-vpn1",
+      "id" : "link-interface-node-vgw-81fd279f-vpn1-interface-node-lhr-border-02-Tunnel1",
       "type" : "UNKNOWN"
     },
     {
@@ -1209,6 +1354,12 @@
       "dstId" : "interface-node-subnet-8d0cbdeb-igw-fac5839d",
       "srcId" : "interface-node-subnet-8d0cbdeb-subnet-8d0cbdeb",
       "id" : "link-interface-node-subnet-8d0cbdeb-subnet-8d0cbdeb-interface-node-subnet-8d0cbdeb-igw-fac5839d",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
+      "srcId" : "interface-node-vpc-b390fad5-vpc-b390fad5",
+      "id" : "link-interface-node-vpc-b390fad5-vpc-b390fad5-interface-node-vpc-b390fad5-igw-9b93ddfc",
       "type" : "UNKNOWN"
     },
     {
@@ -1332,6 +1483,18 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
+      "srcId" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "id" : "link-interface-node-igw-9b93ddfc-vpc-b390fad5-interface-node-vpc-b390fad5-igw-9b93ddfc",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-igw-fac5839d-vpc-925131f4",
+      "srcId" : "interface-node-igw-fac5839d-igw-fac5839d",
+      "id" : "link-interface-node-igw-fac5839d-igw-fac5839d-interface-node-igw-fac5839d-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-i-0b26ec095feb42260-eni-707e5a5e",
       "srcId" : "interface-node-i-0b26ec095feb42260-subnet-1641fa70",
       "id" : "link-interface-node-i-0b26ec095feb42260-subnet-1641fa70-interface-node-i-0b26ec095feb42260-eni-707e5a5e",
@@ -1347,6 +1510,12 @@
       "dstId" : "interface-node-subnet-f73a8191-igw-9b93ddfc",
       "srcId" : "interface-node-subnet-f73a8191-subnet-f73a8191",
       "id" : "link-interface-node-subnet-f73a8191-subnet-f73a8191-interface-node-subnet-f73a8191-igw-9b93ddfc",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vgw-81fd279f-vpn2",
+      "srcId" : "interface-node-vgw-81fd279f-Tunnel2",
+      "id" : "link-interface-node-vgw-81fd279f-Tunnel2-interface-node-vgw-81fd279f-vpn2",
       "type" : "UNKNOWN"
     },
     {
@@ -1470,6 +1639,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "srcId" : "interface-node-igw-9b93ddfc-igw-9b93ddfc",
+      "id" : "link-interface-node-igw-9b93ddfc-igw-9b93ddfc-interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-vpc-b390fad5-subnet-7044ff16",
       "srcId" : "interface-node-vpc-b390fad5-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-7044ff16",
@@ -1491,6 +1666,18 @@
       "dstId" : "interface-node-subnet-f73a8191-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-f73a8191",
       "id" : "link-interface-node-vpc-b390fad5-subnet-f73a8191-interface-node-subnet-f73a8191-vpc-b390fad5",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-igw-fac5839d-vpc-925131f4",
+      "srcId" : "interface-node-vpc-925131f4-igw-fac5839d",
+      "id" : "link-interface-node-vpc-925131f4-igw-fac5839d-interface-node-igw-fac5839d-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-lhr-border-02-Tunnel2",
+      "srcId" : "interface-node-vgw-81fd279f-vpn2",
+      "id" : "link-interface-node-vgw-81fd279f-vpn2-interface-node-lhr-border-02-Tunnel2",
       "type" : "UNKNOWN"
     },
     {
@@ -1548,6 +1735,24 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-lhr-border-02-Tunnel1",
+      "srcId" : "interface-node-lhr-border-02-vpn1",
+      "id" : "link-interface-node-lhr-border-02-vpn1-interface-node-lhr-border-02-Tunnel1",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "srcId" : "interface-node-vpc-b390fad5-igw-9b93ddfc",
+      "id" : "link-interface-node-vpc-b390fad5-igw-9b93ddfc-interface-node-igw-9b93ddfc-vpc-b390fad5",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "srcId" : "interface-node-igw-068fee63-vpc-f8fad69d",
+      "id" : "link-interface-node-igw-068fee63-vpc-f8fad69d-interface-node-vpc-f8fad69d-igw-068fee63",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-i-0b26ec095feb42260-eni-707e5a5e",
       "srcId" : "interface-node-i-0383fda87c012141d-eni-8c7753a2",
       "id" : "link-interface-node-i-0383fda87c012141d-eni-8c7753a2-interface-node-i-0b26ec095feb42260-eni-707e5a5e",
@@ -1572,9 +1777,27 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-igw-068fee63-vpc-f8fad69d",
+      "srcId" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "id" : "link-interface-node-vpc-f8fad69d-igw-068fee63-interface-node-igw-068fee63-vpc-f8fad69d",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vgw-81fd279f-vpn2",
+      "srcId" : "interface-node-lhr-border-02-Tunnel2",
+      "id" : "link-interface-node-lhr-border-02-Tunnel2-interface-node-vgw-81fd279f-vpn2",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-vpc-b390fad5-subnet-30398256",
       "srcId" : "interface-node-subnet-30398256-vpc-b390fad5",
       "id" : "link-interface-node-subnet-30398256-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-30398256",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vgw-81fd279f-vpn1",
+      "srcId" : "interface-node-lhr-border-02-Tunnel1",
+      "id" : "link-interface-node-lhr-border-02-Tunnel1-interface-node-vgw-81fd279f-vpn1",
       "type" : "UNKNOWN"
     },
     {
@@ -1599,6 +1822,12 @@
       "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "srcId" : "interface-node-subnet-1641fa70-eni-8c7753a2",
       "id" : "link-interface-node-subnet-1641fa70-eni-8c7753a2-interface-node-subnet-1641fa70-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vpc-925131f4-igw-fac5839d",
+      "srcId" : "interface-node-vpc-925131f4-vpc-925131f4",
+      "id" : "link-interface-node-vpc-925131f4-vpc-925131f4-interface-node-vpc-925131f4-igw-fac5839d",
       "type" : "UNKNOWN"
     },
     {
@@ -1641,6 +1870,12 @@
       "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "srcId" : "interface-node-i-0383fda87c012141d-eni-8c7753a2",
       "id" : "link-interface-node-i-0383fda87c012141d-eni-8c7753a2-interface-node-subnet-1641fa70-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vpc-925131f4-igw-fac5839d",
+      "srcId" : "interface-node-igw-fac5839d-vpc-925131f4",
+      "id" : "link-interface-node-igw-fac5839d-vpc-925131f4-interface-node-vpc-925131f4-igw-fac5839d",
       "type" : "UNKNOWN"
     },
     {
@@ -1743,6 +1978,12 @@
       "dstId" : "interface-node-subnet-30398256-igw-9b93ddfc",
       "srcId" : "interface-node-subnet-30398256-subnet-30398256",
       "id" : "link-interface-node-subnet-30398256-subnet-30398256-interface-node-subnet-30398256-igw-9b93ddfc",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "srcId" : "interface-node-vpc-f8fad69d-vpc-f8fad69d",
+      "id" : "link-interface-node-vpc-f8fad69d-vpc-f8fad69d-interface-node-vpc-f8fad69d-igw-068fee63",
       "type" : "UNKNOWN"
     },
     {
@@ -1940,6 +2181,11 @@
       "type" : "ROUTER"
     },
     {
+      "name" : "lhr-border-02",
+      "id" : "node-lhr-border-02",
+      "type" : "ROUTER"
+    },
+    {
       "name" : "vpc-f8fad69d",
       "id" : "node-vpc-f8fad69d",
       "type" : "SWITCH"
@@ -1983,6 +2229,11 @@
       "name" : "igw-fac5839d",
       "id" : "node-igw-fac5839d",
       "type" : "SWITCH"
+    },
+    {
+      "name" : "vgw-81fd279f",
+      "id" : "node-vgw-81fd279f",
+      "type" : "ROUTER"
     },
     {
       "name" : "igw-fac5839d",

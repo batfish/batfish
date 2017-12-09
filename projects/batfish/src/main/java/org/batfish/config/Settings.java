@@ -1134,7 +1134,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
-    setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
+    setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);

@@ -4354,7 +4354,8 @@
             "ESP-3DES-MD5" : {
               "name" : "ESP-3DES-MD5",
               "authenticationAlgorithm" : "HMAC_MD5_96",
-              "encryptionAlgorithm" : "THREEDES_CBC"
+              "encryptionAlgorithm" : "THREEDES_CBC",
+              "protocol" : "ESP"
             }
           },
           "vendorFamily" : {

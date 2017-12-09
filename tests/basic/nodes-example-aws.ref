@@ -36,7 +36,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "eni-8c7753a2" : {
               "name" : "eni-8c7753a2",
@@ -64,7 +65,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -175,7 +177,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -285,7 +288,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "eni-a50c2b8b" : {
               "name" : "eni-a50c2b8b",
@@ -313,7 +317,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -424,7 +429,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "eni-707e5a5e" : {
               "name" : "eni-707e5a5e",
@@ -452,7 +458,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -561,7 +568,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-9c8adceb" : {
               "name" : "subnet-9c8adceb",
@@ -587,7 +595,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-d9cafabc" : {
               "name" : "subnet-d9cafabc",
@@ -613,12 +622,16 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.2/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -636,7 +649,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -698,7 +712,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1641fa70" : {
               "name" : "subnet-1641fa70",
@@ -724,7 +739,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-30398256" : {
               "name" : "subnet-30398256",
@@ -750,7 +766,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-7044ff16" : {
               "name" : "subnet-7044ff16",
@@ -776,7 +793,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-f73a8191" : {
               "name" : "subnet-f73a8191",
@@ -802,12 +820,16 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.4/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -825,7 +847,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -889,7 +912,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-8d0cbdeb" : {
               "name" : "subnet-8d0cbdeb",
@@ -915,12 +939,16 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-925131f4" : {
               "name" : "vpc-925131f4",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.0/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -938,7 +966,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -994,7 +1023,7 @@
           "ikePolicies" : {
             "isakmp-vpn-ba2e34a8-0" : {
               "name" : "isakmp-vpn-ba2e34a8-0",
-              "preSharedKeyHash" : "QMP5tKPP5qk95Y1Eee9c_82.MofNUJQV",
+              "preSharedKeyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
               "proposals" : [
                 "200",
                 "201"
@@ -1002,7 +1031,7 @@
             },
             "isakmp-vpn-ba2e34a8-1" : {
               "name" : "isakmp-vpn-ba2e34a8-1",
-              "preSharedKeyHash" : "tYrysT4iT0.CRwQnhiBbng.BahDc7YPq",
+              "preSharedKeyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
               "proposals" : [
                 "200",
                 "201"
@@ -1012,6 +1041,7 @@
           "ikeProposals" : {
             "200" : {
               "name" : "200",
+              "authenticationAlgorithm" : "SHA1",
               "authenticationMethod" : "PRE_SHARED_KEYS",
               "diffieHellmanGroup" : "GROUP2",
               "encryptionAlgorithm" : "AES_128_CBC",
@@ -1019,6 +1049,7 @@
             },
             "201" : {
               "name" : "201",
+              "authenticationAlgorithm" : "SHA1",
               "authenticationMethod" : "PRE_SHARED_KEYS",
               "diffieHellmanGroup" : "GROUP2",
               "encryptionAlgorithm" : "AES_128_CBC",
@@ -1506,12 +1537,14 @@
             "ipsec-prop-vpn-ba2e34a8-0" : {
               "name" : "ipsec-prop-vpn-ba2e34a8-0",
               "authenticationAlgorithm" : "HMAC_SHA1_96",
-              "encryptionAlgorithm" : "AES_128_CBC"
+              "encryptionAlgorithm" : "AES_128_CBC",
+              "protocol" : "ESP"
             },
             "ipsec-prop-vpn-ba2e34a8-1" : {
               "name" : "ipsec-prop-vpn-ba2e34a8-1",
               "authenticationAlgorithm" : "HMAC_SHA1_96",
-              "encryptionAlgorithm" : "AES_128_CBC"
+              "encryptionAlgorithm" : "AES_128_CBC",
+              "protocol" : "ESP"
             }
           },
           "ipsecVpns" : {
@@ -2355,7 +2388,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-073b8061" : {
               "name" : "subnet-073b8061",
@@ -2381,7 +2415,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
@@ -2409,7 +2444,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2511,7 +2547,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1641fa70" : {
               "name" : "subnet-1641fa70",
@@ -2537,7 +2574,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
@@ -2565,7 +2603,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2667,7 +2706,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1f315846" : {
               "name" : "subnet-1f315846",
@@ -2693,7 +2733,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
@@ -2721,7 +2762,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2832,7 +2874,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-30398256" : {
               "name" : "subnet-30398256",
@@ -2858,7 +2901,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
@@ -2886,7 +2930,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2988,7 +3033,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-62f14104" : {
               "name" : "subnet-62f14104",
@@ -3014,7 +3060,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-925131f4" : {
               "name" : "vpc-925131f4",
@@ -3042,7 +3089,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3144,7 +3192,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-7044ff16" : {
               "name" : "subnet-7044ff16",
@@ -3170,7 +3219,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
@@ -3198,7 +3248,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3300,7 +3351,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-8d0cbdeb" : {
               "name" : "subnet-8d0cbdeb",
@@ -3326,7 +3378,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-925131f4" : {
               "name" : "vpc-925131f4",
@@ -3354,7 +3407,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3456,7 +3510,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-9c8adceb" : {
               "name" : "subnet-9c8adceb",
@@ -3482,7 +3537,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
@@ -3510,7 +3566,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3621,7 +3678,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-d9cafabc" : {
               "name" : "subnet-d9cafabc",
@@ -3647,7 +3705,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
@@ -3675,7 +3734,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3786,7 +3846,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-f73a8191" : {
               "name" : "subnet-f73a8191",
@@ -3812,7 +3873,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
@@ -3840,7 +3902,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3932,14 +3995,14 @@
           "ikePolicies" : {
             "vpn-ba2e34a8-1" : {
               "name" : "vpn-ba2e34a8-1",
-              "preSharedKeyHash" : "4cde66955b03f6812510d51572687cb9",
+              "preSharedKeyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
               "proposals" : [
                 "vpn-ba2e34a8-1"
               ]
             },
             "vpn-ba2e34a8-2" : {
               "name" : "vpn-ba2e34a8-2",
-              "preSharedKeyHash" : "61772c5ecacc18cb3d6c7434251bf619",
+              "preSharedKeyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
               "proposals" : [
                 "vpn-ba2e34a8-2"
               ]
@@ -3964,10 +4027,67 @@
             }
           },
           "interfaces" : {
+            "external1" : {
+              "name" : "external1",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "52.27.166.152/32"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "52.27.166.152/32",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "external2" : {
+              "name" : "external2",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "52.39.121.126/32"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "52.39.121.126/32",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
             "vpc-815775e7" : {
               "name" : "vpc-815775e7",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.6/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -3985,7 +4105,62 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
+            },
+            "vpn1" : {
+              "name" : "vpn1",
+              "accessVlan" : 0,
+              "active" : false,
+              "allPrefixes" : [
+                "169.254.15.193/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "169.254.15.193/30",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VPN",
+              "vrf" : "default"
+            },
+            "vpn2" : {
+              "name" : "vpn2",
+              "accessVlan" : 0,
+              "active" : false,
+              "allPrefixes" : [
+                "169.254.13.237/30"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "169.254.13.237/30",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipsecPolicies" : {
@@ -4088,6 +4263,13 @@
                   },
                   "trueStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -4125,6 +4307,13 @@
                   },
                   "trueStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -4145,6 +4334,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "169.254.13.238/32" : {
@@ -4192,6 +4382,7 @@
                     "vrf" : "default"
                   }
                 },
+                "routerId" : "169.254.15.193",
                 "tieBreaker" : "ARRIVAL_ORDER"
               },
               "interfaces" : [
@@ -4273,6 +4464,9 @@
               "name" : "igw-fac5839d",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.1/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4290,7 +4484,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-62f14104" : {
               "name" : "subnet-62f14104",
@@ -4316,7 +4511,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-8d0cbdeb" : {
               "name" : "subnet-8d0cbdeb",
@@ -4342,7 +4538,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -4393,6 +4590,9 @@
               "name" : "igw-9b93ddfc",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.5/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4410,7 +4610,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-073b8061" : {
               "name" : "subnet-073b8061",
@@ -4436,7 +4637,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1641fa70" : {
               "name" : "subnet-1641fa70",
@@ -4462,7 +4664,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-30398256" : {
               "name" : "subnet-30398256",
@@ -4488,7 +4691,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-7044ff16" : {
               "name" : "subnet-7044ff16",
@@ -4514,7 +4718,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-f73a8191" : {
               "name" : "subnet-f73a8191",
@@ -4540,7 +4745,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -4618,6 +4824,9 @@
               "name" : "igw-068fee63",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.3/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4635,7 +4844,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1f315846" : {
               "name" : "subnet-1f315846",
@@ -4661,7 +4871,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-9c8adceb" : {
               "name" : "subnet-9c8adceb",
@@ -4687,7 +4898,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-d9cafabc" : {
               "name" : "subnet-d9cafabc",
@@ -4713,7 +4925,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "roles" : [

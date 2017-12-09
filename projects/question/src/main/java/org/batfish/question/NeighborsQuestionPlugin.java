@@ -763,7 +763,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private void initTopology(Map<String, Configuration> configurations) {
       if (_topology == null) {
-        _topology = _batfish.computeTopology(configurations);
+        _topology = _batfish.computeEnvironmentTopology(configurations);
       }
     }
 

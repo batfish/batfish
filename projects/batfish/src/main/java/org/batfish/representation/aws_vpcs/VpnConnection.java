@@ -27,6 +27,8 @@ import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -36,10 +38,12 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.codehaus.jettison.json.JSONArray;
@@ -215,25 +219,17 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
-      Interface externalInterface = new Interface(externalInterfaceName, vpnGatewayCfgNode);
-      vpnGatewayCfgNode
-          .getDefaultVrf()
-          .getInterfaces()
-          .put(externalInterfaceName, externalInterface);
-      String vpnInterfaceName = "vpn" + idNum;
-      Interface vpnInterface = new Interface(vpnInterfaceName, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName, vpnInterface);
-
-      // Set fields within representation structures
-
-      // bind and vpn interfaces
       Prefix externalInterfacePrefix = new Prefix(ipsecTunnel.getVgwOutsideAddress(), 32);
-      externalInterface.setPrefix(externalInterfacePrefix);
-      externalInterface.getAllPrefixes().add(externalInterfacePrefix);
+      Interface externalInterface =
+          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfacePrefix);
+
+      String vpnInterfaceName = "vpn" + idNum;
       Prefix vpnInterfacePrefix =
           new Prefix(ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      vpnInterface.setPrefix(vpnInterfacePrefix);
-      vpnInterface.getAllPrefixes().add(vpnInterfacePrefix);
+      Interface vpnInterface =
+          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfacePrefix);
+
+      // Set fields within representation structures
 
       // ipsec
       ipsecVpn.setBindInterface(vpnInterface);
@@ -265,6 +261,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
         if (proc == null) {
           proc = new BgpProcess();
+          proc.setRouterId(ipsecTunnel.getVgwInsideAddress());
+          proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
         BgpNeighbor cgBgpNeighbor =
@@ -299,6 +297,9 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         List<Statement> statements = originationRoutingPolicy.getStatements();
         statements.add(originationIf);
         statements.add(Statements.ExitReject.toStaticStatement());
+        originationIf
+            .getTrueStatements()
+            .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
         originationIf.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
         RouteFilterList originationRouteFilter = new RouteFilterList(originationPolicyName);
         vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName, originationRouteFilter);
