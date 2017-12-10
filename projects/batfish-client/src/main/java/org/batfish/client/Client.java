@@ -1789,7 +1789,7 @@ public class Client extends AbstractClient implements IClient {
     if (!autoAnalyze) {
       _logger.output("Parsing now.\n");
       WorkItem wItemParse =
-          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
+          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
 
       if (!execute(wItemParse, outWriter)) {
         unsetTestrig(delta);
@@ -2556,7 +2556,7 @@ public class Client extends AbstractClient implements IClient {
       testrig = _currDeltaTestrig;
     }
 
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig, delta);
+    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
 
     if (!execute(wItemParse, outWriter)) {
       return false;

@@ -93,15 +93,12 @@ public class WorkMgr extends AbstractCoordinator {
 
   private final Settings _settings;
 
-  private TestrigMetadataMgr _testrigMetadataMgr;
-
   private WorkQueueMgr _workQueueMgr;
 
   public WorkMgr(Settings settings, BatfishLogger logger) {
     super(false);
     _settings = settings;
     _logger = logger;
-    _testrigMetadataMgr = new TestrigMetadataMgr();
     _workQueueMgr = new WorkQueueMgr();
     loadPlugins();
   }
@@ -690,7 +687,7 @@ public class WorkMgr extends AbstractCoordinator {
     return envDir;
   }
 
-  private Path getdirTestrig(String containerName, String testrigName) {
+  public Path getdirTestrig(String containerName, String testrigName) {
     Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
     if (!Files.exists(testrigDir)) {
       throw new BatfishException("Testrig '" + testrigName + "' does not exist");
@@ -839,9 +836,10 @@ public class WorkMgr extends AbstractCoordinator {
 
     TestrigMetadata metadata = new TestrigMetadata(Instant.now());
     try {
-      _testrigMetadataMgr.initializeMetadata(metadata, testrigDir);
+      TestrigMetadataMgr.writeMetadata(
+          metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
     } catch (JsonProcessingException e) {
-      _logger.error(e.getMessage());
+      throw new BatfishException("Could not testrigMetadata", e);
     }
 
     Path srcSubdir = srcDirEntries.iterator().next();
@@ -872,7 +870,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (autoAnalyze) {
       List<WorkItem> autoWorkQueue = new LinkedList<>();
 
-      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName, false);
+      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
       autoWorkQueue.add(parseWork);
 
       Set<String> analysisNames = listAnalyses(containerName);
@@ -1177,6 +1175,12 @@ public class WorkMgr extends AbstractCoordinator {
     for (Path subdirFile : subFileList) {
       Path target = dstDir.resolve(subdirFile.getFileName());
       CommonUtil.moveByCopy(subdirFile, target);
+    }
+
+    try {
+      TestrigMetadataMgr.initializeEnvironment(containerName, testrigName, newEnvName);
+    } catch (IOException e) {
+      throw new BatfishException("Could not initialize environmentMetadata", e);
     }
 
     // delete the empty directory and the zip file

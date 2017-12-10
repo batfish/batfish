@@ -2,31 +2,46 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import org.batfish.common.BfConsts;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 
 public class TestrigMetadata {
 
-  public enum ProcessingStatus {
-    NONE,
-    PARSING,
-    PARSED,
-    PARSING_FAIL,
-    DATAPLANING,
-    DATAPLANED,
-    DATAPLANING_FAIL
-  }
-
   private static final String PROP_CREATIONTIMESTAMP = "creationTimestamp";
-  private static final String PROP_PROCESSING_STATUS = "processingStatus";
+  private static final String PROP_ENVIRONMENTS = "environments";
 
   private Instant _creationTimestamp;
 
-  private ProcessingStatus _processingStatus;
+  private Map<String, EnvironmentMetadata> _environments;
 
   @JsonCreator
-  public TestrigMetadata(@JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp) {
+  public TestrigMetadata(
+      @JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp,
+      @JsonProperty(PROP_ENVIRONMENTS) Map<String, EnvironmentMetadata> environments) {
     this._creationTimestamp = creationTimestamp;
-    _processingStatus = ProcessingStatus.NONE;
+    _environments = environments;
+  }
+
+  public TestrigMetadata(
+      @JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp) {
+    this._creationTimestamp = creationTimestamp;
+    _environments = new HashMap<>();
+    initializeEnvironment(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+  }
+
+  public void initializeEnvironment(String environment) {
+    _environments.put(environment, new EnvironmentMetadata(ProcessingStatus.UNINITIALIZED));
+  }
+
+  public static TestrigMetadata fromJsonStr(String jsonStr) throws IOException {
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    return mapper.readValue(jsonStr, TestrigMetadata.class);
   }
 
   @JsonProperty(PROP_CREATIONTIMESTAMP)
@@ -34,13 +49,13 @@ public class TestrigMetadata {
     return _creationTimestamp;
   }
 
-  @JsonProperty(PROP_PROCESSING_STATUS)
-  public ProcessingStatus getProcessingStatus() {
-    return _processingStatus;
+  @JsonProperty(PROP_ENVIRONMENTS)
+  public Map<String, EnvironmentMetadata> getEnvironments() {
+    return _environments;
   }
 
-  @JsonProperty(PROP_PROCESSING_STATUS)
-  public void setProcessingStatus(ProcessingStatus status) {
-    _processingStatus = status;
+  public String toJsonString() throws JsonProcessingException {
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    return mapper.writeValueAsString(this);
   }
 }

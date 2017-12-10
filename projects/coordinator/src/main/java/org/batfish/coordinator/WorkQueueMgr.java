@@ -7,11 +7,14 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
+import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
+import org.batfish.datamodel.TestrigMetadata;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import scala.Tuple4;
 
 // the design of this WorkQueueMgr is such that all synchronization sits here
 // individual queues do not need to be synchronized
@@ -211,13 +214,21 @@ public class WorkQueueMgr {
   }
 
   public synchronized boolean queueUnassignedWork(QueuedWork work) throws Exception {
-
     QueuedWork previouslyQueuedWork = getWork(work.getId());
-
     if (previouslyQueuedWork != null) {
       throw new BatfishException("Duplicate work item");
     }
-
+    WorkItem wItem = work.getWorkItem();
+    Tuple4<String, String, String, String> settings =
+        WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+    if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+      // nothing blocks parsing workItem
+      return _queueIncompleteWork.enque(work);
+    } else if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+      // check if the testrig is initialized
+      TestrigMetadata trMetadata =
+          TestrigMetadataMgr.readMetadata(wItem.getContainerName(), settings._1());
+    }
     return _queueIncompleteWork.enque(work);
   }
 }

@@ -1,7 +1,9 @@
 package org.batfish.common.util;
 
+import java.util.Map;
 import org.batfish.common.BfConsts;
 import org.batfish.common.WorkItem;
+import scala.Tuple4;
 
 public class WorkItemBuilder {
 
@@ -62,16 +64,12 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemParse(
-      String containerName, String testrigName, boolean doDelta) {
+  public static WorkItem getWorkItemParse(String containerName, String testrigName) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, "");
     wItem.addRequestParam(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, "");
     wItem.addRequestParam(BfConsts.COMMAND_INIT_INFO, "");
     wItem.addRequestParam(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, "");
-    if (doDelta) {
-      wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-    }
     return wItem;
   }
 
@@ -109,5 +107,61 @@ public class WorkItemBuilder {
     wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
     wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
     return wItem;
+  }
+
+  public static boolean isAnswerWorkItem(WorkItem workItem) {
+    return workItem.getRequestParams().containsKey(BfConsts.COMMAND_ANSWER);
+  }
+
+  public static boolean isDataplaningWorkItem(WorkItem workItem) {
+    return workItem.getRequestParams().containsKey(BfConsts.COMMAND_DUMP_DP);
+  }
+
+  public static boolean isDataplaningWorkItem(
+      WorkItem workItem, String container, String testrig, String envName) {
+    Map<String, String> reqParams = workItem.getRequestParams();
+    return (isMyWorkItem(workItem, container, testrig, envName) && isDataplaningWorkItem(workItem));
+  }
+
+  public static boolean isMyWorkItem(
+      WorkItem workItem, String container, String testrig, String envName) {
+    return (workItem.getContainerName().equals(container)
+        && workItem.getTestrigName().equals(testrig)
+        && getBaseAndDeltaSettings(workItem)._2().equals(envName));
+  }
+
+  public static boolean isParsingWorkItem(WorkItem workItem) {
+    return (workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC)
+        || workItem.getRequestParams().containsKey(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT));
+  }
+
+  public static boolean isParsingWorkItem(
+      WorkItem workItem, String container, String testrig, String envName) {
+    return (isMyWorkItem(workItem, container, testrig, envName) && isParsingWorkItem(workItem));
+  }
+
+  public static Tuple4<String, String, String, String> getBaseAndDeltaSettings(WorkItem workItem) {
+    Map<String, String> reqParams = workItem.getRequestParams();
+
+    // this logic mimics what happens in initTestrigSettings in Batfish.java
+    String testrig = workItem.getTestrigName();
+    String envName =
+        reqParams.containsKey(BfConsts.ARG_ENVIRONMENT_NAME)
+            ? reqParams.get(BfConsts.ARG_ENVIRONMENT_NAME)
+            : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
+    String deltaTestrig = reqParams.get(BfConsts.ARG_DELTA_TESTRIG);
+    String deltaEnvName = reqParams.get(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
+    if (deltaTestrig != null && deltaEnvName == null) {
+      deltaEnvName = envName;
+    } else if (deltaTestrig == null && deltaEnvName != null) {
+      deltaTestrig = testrig;
+    }
+    if (!reqParams.containsKey(BfConsts.ARG_DIFF_ACTIVE)
+        || reqParams.get(BfConsts.ARG_DIFF_ACTIVE).toLowerCase().equals("false")) {
+      testrig = deltaTestrig;
+      envName = deltaEnvName;
+    }
+
+    return new Tuple4(testrig, envName, deltaTestrig, deltaEnvName);
   }
 }

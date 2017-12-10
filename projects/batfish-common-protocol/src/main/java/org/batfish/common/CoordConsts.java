@@ -9,6 +9,7 @@ public class CoordConsts {
   public enum WorkStatusCode {
     ASSIGNED,
     ASSIGNMENTERROR,
+    BLOCKED,
     CHECKINGSTATUS,
     TERMINATEDABNORMALLY,
     TERMINATEDNORMALLY,
