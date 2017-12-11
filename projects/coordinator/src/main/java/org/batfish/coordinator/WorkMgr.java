@@ -706,6 +706,19 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
+  // this function should build on others but some overrides are getting in the way
+  // TODO: cleanup later
+  public static Path getpathContainerQuestion(String container, String questionName) {
+    return Main.getSettings()
+        .getContainersLocation()
+        .resolve(container)
+        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+        .resolve(questionName)
+        .resolve(BfConsts.RELPATH_QUESTION_FILE);
+  }
+
+  // this function should build on others but some overrides are getting in the way
+  // TODO: cleanup later
   public static Path getpathTestrigMetadata(String container, String testrig) {
     return Main.getSettings()
         .getContainersLocation()

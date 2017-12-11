@@ -187,4 +187,12 @@ public class WorkItemBuilder {
   public static String getDeltaTestrig(Pair<Pair<String, String>, Pair<String, String>> settings) {
     return settings.getSecond().getFirst();
   }
+
+  public static String getAnalysisName(WorkItem workItem) {
+    return workItem.getRequestParams().get(BfConsts.ARG_ANALYSIS_NAME);
+  }
+
+  public static String getQuestionName(WorkItem workItem) {
+    return workItem.getRequestParams().get(BfConsts.ARG_QUESTION_NAME);
+  }
 }

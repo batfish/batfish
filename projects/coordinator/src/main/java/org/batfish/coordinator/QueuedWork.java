@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.UUID;
 import org.batfish.common.BatfishException;
@@ -66,14 +68,21 @@ public class QueuedWork {
       }
       _details.workType = WorkType.DATAPLANING;
     }
-    if (WorkItemBuilder.isAnsweringWorkItem(workItem)
-        || WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
+    if (WorkItemBuilder.isAnsweringWorkItem(workItem)) {
       if (_details.workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWERING from other work.");
       }
       _details.workType = WorkType.ANSWERING;
 
-      //TODO: question type classification
+      String qName = WorkItemBuilder.getQuestionName(workItem);
+      if (qName == null) {
+        throw new BatfishException("Question name not provided for ANSWER work");
+      }
+      Path qFile = WorkMgr.getpathContainerQuestion(workItem.getContainerName(), qName);
+      if (Files.exists(qFile)) {
+        throw new BatfishException(("Question file does not exist for " + qName));
+      }
+
     }
   }
 
