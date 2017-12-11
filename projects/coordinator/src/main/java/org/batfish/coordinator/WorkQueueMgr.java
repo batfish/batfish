@@ -207,40 +207,42 @@ public class WorkQueueMgr {
         break;
       case TerminatedNormally:
       case TerminatedAbnormally:
-        // move the work to completed queue
-        _queueIncompleteWork.delete(work);
-        _queueCompletedWork.enque(work);
-        work.setStatus(
-            (task.getStatus() == TaskStatus.TerminatedNormally)
-                ? WorkStatusCode.TERMINATEDNORMALLY
-                : WorkStatusCode.TERMINATEDABNORMALLY);
-        work.recordTaskCheckResult(task);
-        WorkItem wItem = work.getWorkItem();
-        // update testrig metadata
-        if (WorkItemBuilder.isParsingWorkItem(wItem)
-            || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-          Pair<Pair<String, String>, Pair<String, String>> settings =
-              WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-          String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
-          String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
-          TestrigMetadata trMetadata =
-              TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
-          EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
-          if (WorkItemBuilder.isParsingWorkItem(wItem)) {
-            ProcessingStatus status =
-                (task.getStatus() == TaskStatus.TerminatedNormally)
-                    ? ProcessingStatus.PARSED
-                    : ProcessingStatus.PARSING_FAIL;
-            envMetadata.updateStatus(status);
-            TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
-          }
-          if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-            ProcessingStatus status =
-                (task.getStatus() == TaskStatus.TerminatedNormally)
-                    ? ProcessingStatus.DATAPLANED
-                    : ProcessingStatus.DATAPLANING_FAIL;
-            envMetadata.updateStatus(status);
-            TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+        {
+          // move the work to completed queue
+          _queueIncompleteWork.delete(work);
+          _queueCompletedWork.enque(work);
+          work.setStatus(
+              (task.getStatus() == TaskStatus.TerminatedNormally)
+                  ? WorkStatusCode.TERMINATEDNORMALLY
+                  : WorkStatusCode.TERMINATEDABNORMALLY);
+          work.recordTaskCheckResult(task);
+          WorkItem wItem = work.getWorkItem();
+          // update testrig metadata
+          if (WorkItemBuilder.isParsingWorkItem(wItem)
+              || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+            Pair<Pair<String, String>, Pair<String, String>> settings =
+                WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+            String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
+            String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
+            TestrigMetadata trMetadata =
+                TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
+            EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
+            if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+              ProcessingStatus status =
+                  (task.getStatus() == TaskStatus.TerminatedNormally)
+                      ? ProcessingStatus.PARSED
+                      : ProcessingStatus.PARSING_FAIL;
+              envMetadata.updateStatus(status);
+              TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+            }
+            if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+              ProcessingStatus status =
+                  (task.getStatus() == TaskStatus.TerminatedNormally)
+                      ? ProcessingStatus.DATAPLANED
+                      : ProcessingStatus.DATAPLANING_FAIL;
+              envMetadata.updateStatus(status);
+              TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+            }
           }
         }
         break;
@@ -250,14 +252,48 @@ public class WorkQueueMgr {
         work.clearAssignment();
         break;
       case UnreachableOrBadResponse:
-        if (work.getLastTaskCheckResult().getStatus() == TaskStatus.UnreachableOrBadResponse) {
-          // if we saw the same thing last time around, free the task to be
-          // scheduled elsewhere
-          work.setStatus(WorkStatusCode.UNASSIGNED);
-          work.clearAssignment();
-        } else {
-          work.setStatus(WorkStatusCode.ASSIGNED);
-          work.recordTaskCheckResult(task);
+        {
+          if (work.getLastTaskCheckResult().getStatus() == TaskStatus.UnreachableOrBadResponse) {
+            // if we saw the same thing last time around, free the task to be scheduled elsewhere
+            work.setStatus(WorkStatusCode.UNASSIGNED);
+            work.clearAssignment();
+            work.recordTaskCheckResult(task);
+            // update testrig metadata
+            WorkItem wItem = work.getWorkItem();
+            if (WorkItemBuilder.isParsingWorkItem(wItem)
+                || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+              Pair<Pair<String, String>, Pair<String, String>> settings =
+                  WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+              String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
+              String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
+              TestrigMetadata trMetadata =
+                  TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
+              EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
+              if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+                if (envMetadata.getProcessingStatus() != ProcessingStatus.PARSING) {
+                  throw new BatfishException(
+                      "Unexpected status when parsing work failed: "
+                          + envMetadata.getProcessingStatus());
+                }
+                ProcessingStatus status = ProcessingStatus.UNINITIALIZED;
+                envMetadata.updateStatus(status);
+                TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+              }
+              if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+                if (envMetadata.getProcessingStatus() != ProcessingStatus.DATAPLANING) {
+                  throw new BatfishException(
+                      "Unexpected status when dataplaning work failed: "
+                          + envMetadata.getProcessingStatus());
+                }
+                ProcessingStatus status = ProcessingStatus.PARSED;
+                envMetadata.updateStatus(status);
+                TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+              }
+            }
+          } else {
+            work.setStatus(WorkStatusCode.ASSIGNED);
+            work.recordTaskCheckResult(task);
+          }
         }
         break;
       default:
