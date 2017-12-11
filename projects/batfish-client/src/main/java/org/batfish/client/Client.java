@@ -1970,8 +1970,19 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean listTestrigs(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_TESTRIGS)) {
+    if (!isValidArgument(options, parameters, 1, 0, 0, Command.LIST_TESTRIGS)) {
       return false;
+    }
+
+    boolean showMetadata = true;
+    if (options.size() == 1) {
+      if (options.get(0).equals("-nometadata")) {
+        showMetadata = false;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.LIST_TESTRIGS);
+        return false;
+      }
     }
 
     JSONArray testrigArray = _workHelper.listTestrigs(_currContainerName);
@@ -1981,8 +1992,10 @@ public class Client extends AbstractClient implements IClient {
           JSONObject jObjTestrig = testrigArray.getJSONObject(index);
           String name = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_NAME);
           String info = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_INFO);
-          String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
-          logOutput(outWriter, String.format("Testrig: %s\n%s\n%s\n", name, info, metadata));
+          logOutput(outWriter, String.format("Testrig: %s\n%s\n", name, info));
+          if (showMetadata) {
+            String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
+          }
         } catch (JSONException e) {
           throw new BatfishException("Unexpected packaging of testrig data", e);
         }

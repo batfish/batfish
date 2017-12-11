@@ -249,7 +249,9 @@ public enum Command {
         new Pair<>("", "List the environments under current container and testrig"));
     descs.put(
         LIST_QUESTIONS, new Pair<>("", "List the questions under current container and testrig"));
-    descs.put(LIST_TESTRIGS, new Pair<>("", "List the testrigs within the current container"));
+    descs.put(
+        LIST_TESTRIGS,
+        new Pair<>("[-nometadata]", "List the testrigs within the current container"));
     descs.put(
         LOAD_QUESTIONS,
         new Pair<>(
