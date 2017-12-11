@@ -156,8 +156,8 @@ public class WorkItemBuilder {
     } else if (deltaTestrig == null && deltaEnvName != null) {
       deltaTestrig = testrig;
     }
-    if (!reqParams.containsKey(BfConsts.ARG_DIFF_ACTIVE)
-        || reqParams.get(BfConsts.ARG_DIFF_ACTIVE).toLowerCase().equals("false")) {
+    if (reqParams.containsKey(BfConsts.ARG_DIFF_ACTIVE)
+        && ! reqParams.get(BfConsts.ARG_DIFF_ACTIVE).toLowerCase().equals("false")) {
       testrig = deltaTestrig;
       envName = deltaEnvName;
     }

@@ -7,41 +7,37 @@ package org.batfish.coordinator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.nio.file.Path;
-import org.batfish.common.BfConsts;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.TestrigMetadata;
 
 public class TestrigMetadataMgr {
 
-  public static Path getMetadataPath(String container, String testrig) {
-    return Main.getSettings()
-        .getContainersLocation()
-        .resolve(container)
-        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
-        .resolve(testrig)
-        .resolve(BfConsts.RELPATH_METADATA_FILE);
+  public static void writeMetadata(TestrigMetadata metadata, String container, String testrig)
+      throws JsonProcessingException {
+    writeMetadata(metadata, WorkMgr.getpathTestrigMetadata(container, testrig));
   }
 
   public static synchronized void writeMetadata(TestrigMetadata metadata, Path metadataPath)
       throws JsonProcessingException {
-    CommonUtil.writeFile(metadataPath, metadata.toJsonString());
+    CommonUtil.writeFile(metadataPath, new BatfishObjectMapper().writeValueAsString(metadata));
   }
 
   public static synchronized void initializeEnvironment(
       String container, String testrig, String envName) throws IOException {
-    Path metadataPath = getMetadataPath(container, testrig);
+    Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);
     TestrigMetadata metadata = readMetadata(metadataPath);
     metadata.initializeEnvironment(envName);
     writeMetadata(metadata, metadataPath);
   }
 
+  public static TestrigMetadata readMetadata(String container, String testrig) throws IOException {
+    return readMetadata(WorkMgr.getpathTestrigMetadata(container, testrig));
+  }
+
   // reading does not need to be synchronized
   public static TestrigMetadata readMetadata(Path metadataPath) throws IOException {
     String jsonStr = CommonUtil.readFile(metadataPath);
-    return TestrigMetadata.fromJsonStr(jsonStr);
-  }
-
-  public static TestrigMetadata readMetadata(String container, String testrig) throws IOException {
-    return readMetadata(getMetadataPath(container, testrig));
+    return new BatfishObjectMapper().readValue(jsonStr, TestrigMetadata.class);
   }
 }

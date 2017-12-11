@@ -25,7 +25,7 @@ public class TestrigMetadataTest {
         jsonNode
             .get("environments")
             .get(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME)
-            .get("processingStatus")
+            .get("currentStatus")
             .asText(),
         equalTo(ProcessingStatus.UNINITIALIZED.toString()));
   }

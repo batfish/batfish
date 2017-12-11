@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import java.io.IOException;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -11,6 +12,8 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.queues.AzureQueue;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
+import org.batfish.datamodel.EnvironmentMetadata;
+import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 import org.batfish.datamodel.TestrigMetadata;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -165,8 +168,29 @@ public class WorkQueueMgr {
     work.setStatus(WorkStatusCode.UNASSIGNED);
   }
 
-  public synchronized void markAssignmentSuccess(QueuedWork work, String assignedWorker) {
+  public synchronized void markAssignmentSuccess(QueuedWork work, String assignedWorker)
+      throws IOException {
     work.setAssignment(assignedWorker);
+    // update testrig metadata
+    WorkItem wItem = work.getWorkItem();
+    if (WorkItemBuilder.isParsingWorkItem(wItem) || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+      Tuple4<String, String, String, String> tuple = WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+      String baseTestrig = tuple._1();
+      String baseEnv = tuple._2();
+      TestrigMetadata trMetadata =
+          TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
+      EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
+      if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+        ProcessingStatus status = ProcessingStatus.PARSING;
+        envMetadata.updateStatus(status);
+        TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+      }
+      if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+        ProcessingStatus status = ProcessingStatus.DATAPLANING;
+        envMetadata.updateStatus(status);
+        TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+      }
+    }
   }
 
   public synchronized void processTaskCheckResult(QueuedWork work, Task task) throws Exception {
@@ -190,6 +214,34 @@ public class WorkQueueMgr {
                 ? WorkStatusCode.TERMINATEDNORMALLY
                 : WorkStatusCode.TERMINATEDABNORMALLY);
         work.recordTaskCheckResult(task);
+        WorkItem wItem = work.getWorkItem();
+        // update testrig metadata
+        if (WorkItemBuilder.isParsingWorkItem(wItem)
+            || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+          Tuple4<String, String, String, String> tuple =
+              WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+          String baseTestrig = tuple._1();
+          String baseEnv = tuple._2();
+          TestrigMetadata trMetadata =
+              TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
+          EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
+          if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+            ProcessingStatus status =
+                (task.getStatus() == TaskStatus.TerminatedNormally)
+                    ? ProcessingStatus.PARSED
+                    : ProcessingStatus.PARSING_FAIL;
+            envMetadata.updateStatus(status);
+            TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+          }
+          if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+            ProcessingStatus status =
+                (task.getStatus() == TaskStatus.TerminatedNormally)
+                    ? ProcessingStatus.DATAPLANED
+                    : ProcessingStatus.DATAPLANING_FAIL;
+            envMetadata.updateStatus(status);
+            TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+          }
+        }
         break;
       case Unknown:
         // we mark this unassigned, so we try to schedule it again
@@ -218,17 +270,86 @@ public class WorkQueueMgr {
     if (previouslyQueuedWork != null) {
       throw new BatfishException("Duplicate work item");
     }
-    WorkItem wItem = work.getWorkItem();
-    Tuple4<String, String, String, String> settings =
-        WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-    if (WorkItemBuilder.isParsingWorkItem(wItem)) {
-      // nothing blocks parsing workItem
-      return _queueIncompleteWork.enque(work);
-    } else if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-      // check if the testrig is initialized
-      TestrigMetadata trMetadata =
-          TestrigMetadataMgr.readMetadata(wItem.getContainerName(), settings._1());
-    }
     return _queueIncompleteWork.enque(work);
+
+    //    WorkItem wItem = work.getWorkItem();
+    //    Tuple4<String, String, String, String> settings =
+    //        WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+    //    String baseTestrig = settings._1();
+    //    String baseEnv = settings._2();
+    //    String deltaTestrig = settings._3();
+    //    String deltaEnv = settings._4();
+    //    TestrigMetadata trMetadata =
+    //        TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
+    //    EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
+    //
+    //    if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+    //      return queueParsingWork(work, baseTestrig, baseEnv, envMetadata);
+    //    } else if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+    //      return queueDataplaningWork(work, baseTestrig, baseEnv, envMetadata);
+    //    } else if (WorkItemBuilder.isNonDataplaneDependentWork()) {
+    //      if (WorkItemBuilder.isDifferentialWork()) {
+    //
+    //      } else {
+    //        return queueNonDataplaneDependentWork(work, baseTestrig, baseEnv, envMetadata);
+    //      }
+    //    } else if (WorkItemBuilder.isDataplaneDependentWork()) {
+    //      return queueDataplaneDependentWork(work, baseTestrig, baseEnv, envMetadata);
+    //    } else {
+    //      return _queueIncompleteWork.enque(work);
+    //    }
   }
+
+  //  private boolean queueDataplaningWork(
+  //      QueuedWork work, String baseTestrig, String baseEnv, EnvironmentMetadata metadata) {
+  //    switch (metadata.getProcessingStatus()) {
+  //      case UNINITIALIZED:
+  //        // TODO: is there parsing work?
+  //      case PARSING:
+  //        // TODO: find the parsing work
+  //        work.setStatus(WorkStatusCode.BLOCKED);
+  //        return _queueIncompleteWork.enque(work);
+  //      case PARSED:
+  //        return _queueIncompleteWork.enque(work);
+  //      case PARSING_FAIL:
+  //        // TODO: what to do here?
+  //      case DATAPLANING:
+  //        // do not requeue?
+  //
+  //      case DATAPLANED:
+  //        // queue
+  //
+  //      case DATAPLANING_FAIL:
+  //        // queue
+  //
+  //      default:
+  //        throw new BatfishException(
+  //            "Unknown environment processingStatus: " + metadata.getProcessingStatus());
+  //    }
+  //  }
+  //
+  //  private synchronized boolean queueParsingWork(
+  //      QueuedWork work, String baseTestrig, String baseEnv, EnvironmentMetadata metadata) {
+  //
+  //    switch (metadata.getProcessingStatus()) {
+  //      case UNINITIALIZED:
+  //        // is there another parsing work?
+  //        return _queueIncompleteWork.enque(work);
+  //      case PARSING:
+  //
+  //      case PARSED:
+  //
+  //      case PARSING_FAIL:
+  //
+  //      case DATAPLANING:
+  //
+  //      case DATAPLANED:
+  //
+  //      case DATAPLANING_FAIL:
+  //
+  //      default:
+  //        throw new BatfishException(
+  //            "Unknown environment processingStatus: " + metadata.getProcessingStatus());
+  //    }
+  //  }
 }

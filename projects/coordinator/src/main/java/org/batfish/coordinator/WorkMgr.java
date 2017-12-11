@@ -236,7 +236,13 @@ public class WorkMgr extends AbstractCoordinator {
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
-      _workQueueMgr.markAssignmentSuccess(work, worker);
+      try {
+        _workQueueMgr.markAssignmentSuccess(work, worker);
+      } catch (Exception e) {
+        String stackTrace = ExceptionUtils.getFullStackTrace(e);
+        _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
+      }
+
     } else {
       _workQueueMgr.markAssignmentFailure(work);
     }
@@ -700,6 +706,15 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
+  public static Path getpathTestrigMetadata(String container, String testrig) {
+    return Main.getSettings()
+        .getContainersLocation()
+        .resolve(container)
+        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(testrig)
+        .resolve(BfConsts.RELPATH_METADATA_FILE);
+  }
+
   public JSONObject getStatusJson() throws JSONException {
     return _workQueueMgr.getStatusJson();
   }
@@ -743,6 +758,11 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     return retStringBuilder.toString();
+  }
+
+  public TestrigMetadata getTestrigMetadata(String containerName, String testrigName)
+      throws IOException {
+    return TestrigMetadataMgr.readMetadata(getpathTestrigMetadata(containerName, testrigName));
   }
 
   @Nullable

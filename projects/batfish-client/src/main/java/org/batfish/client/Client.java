@@ -1975,11 +1975,18 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
 
-    Map<String, String> testrigs = _workHelper.listTestrigs(_currContainerName);
-    if (testrigs != null) {
-      for (String testrigName : testrigs.keySet()) {
-        logOutput(
-            outWriter, String.format("Testrig: %s\n%s\n", testrigName, testrigs.get(testrigName)));
+    JSONArray testrigArray = _workHelper.listTestrigs(_currContainerName);
+    if (testrigArray != null) {
+      for (int index = 0; index < testrigArray.length(); index++) {
+        try {
+          JSONObject jObjTestrig = testrigArray.getJSONObject(index);
+          String name = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_NAME);
+          String info = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_INFO);
+          String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
+          logOutput(outWriter, String.format("Testrig: %s\n%s\n%s\n", name, info, metadata));
+        } catch (JSONException e) {
+          throw new BatfishException("Unexpected packaging of testrig data", e);
+        }
       }
     }
     return true;

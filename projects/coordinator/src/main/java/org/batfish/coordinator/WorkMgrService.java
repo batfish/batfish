@@ -35,6 +35,7 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.TestrigMetadata;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -1215,11 +1216,15 @@ public class WorkMgrService {
 
       for (String testrig : testrigList) {
         String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
+        TestrigMetadata trMetadata = Main.getWorkMgr().getTestrigMetadata(containerName, testrig);
 
         JSONObject jObject =
             new JSONObject()
                 .put(CoordConsts.SVC_KEY_TESTRIG_NAME, testrig)
-                .put(CoordConsts.SVC_KEY_TESTRIG_INFO, testrigInfo);
+                .put(CoordConsts.SVC_KEY_TESTRIG_INFO, testrigInfo)
+                .put(
+                    CoordConsts.SVC_KEY_TESTRIG_METADATA,
+                    new BatfishObjectMapper().writeValueAsString(trMetadata));
 
         retArray.put(jObject);
       }
