@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -892,16 +893,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       popEnvironment();
     }
     SortedSet<String> blacklistNodes = getNodeBlacklist();
-    if (blacklistNodes != null && differentialContext) {
+    if (differentialContext) {
       flowSinks.removeIf(
           nodeInterfacePair -> blacklistNodes.contains(nodeInterfacePair.getHostname()));
     }
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    if (blacklistInterfaces != null) {
-      for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-        if (differentialContext) {
-          flowSinks.remove(blacklistInterface);
-        }
+    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
+      if (differentialContext) {
+        flowSinks.remove(blacklistInterface);
       }
     }
     if (!differentialContext) {
@@ -974,21 +973,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    if (blacklistEdges != null) {
-      SortedSet<Edge> edges = topology.getEdges();
-      edges.removeAll(blacklistEdges);
-    }
+    SortedSet<Edge> edges = topology.getEdges();
+    edges.removeAll(blacklistEdges);
     SortedSet<String> blacklistNodes = getNodeBlacklist();
-    if (blacklistNodes != null) {
-      for (String blacklistNode : blacklistNodes) {
-        topology.removeNode(blacklistNode);
-      }
+    for (String blacklistNode : blacklistNodes) {
+      topology.removeNode(blacklistNode);
     }
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    if (blacklistInterfaces != null) {
-      for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-        topology.removeInterface(blacklistInterface);
-      }
+    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
+      topology.removeInterface(blacklistInterface);
     }
     Topology prunedTopology = new Topology(topology.getEdges());
     _logger.printElapsedTime();
@@ -1616,8 +1609,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return DIFFERENTIAL_FLOW_TAG;
   }
 
-  public SortedSet<Edge> getEdgeBlacklist() {
-    SortedSet<Edge> blacklistEdges = null;
+  @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    SortedSet<Edge> blacklistEdges = Collections.emptySortedSet();
     Path edgeBlacklistPath = _testrigSettings.getEnvironmentSettings().getEdgeBlacklistPath();
     if (edgeBlacklistPath != null && Files.exists(edgeBlacklistPath)) {
       blacklistEdges = parseEdgeBlacklist(edgeBlacklistPath);
@@ -1721,8 +1715,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowHistory;
   }
 
-  public SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
-    SortedSet<NodeInterfacePair> blacklistInterfaces = null;
+  @Nonnull
+  private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+    SortedSet<NodeInterfacePair> blacklistInterfaces = Collections.emptySortedSet();
     Path interfaceBlacklistPath =
         _testrigSettings.getEnvironmentSettings().getInterfaceBlacklistPath();
     if (interfaceBlacklistPath != null && Files.exists(interfaceBlacklistPath)) {
@@ -1736,8 +1731,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _logger;
   }
 
-  public SortedSet<String> getNodeBlacklist() {
-    SortedSet<String> blacklistNodes = null;
+  @Nonnull
+  private SortedSet<String> getNodeBlacklist() {
+    SortedSet<String> blacklistNodes = Collections.emptySortedSet();
     Path nodeBlacklistPath = _testrigSettings.getEnvironmentSettings().getNodeBlacklistPath();
     if (nodeBlacklistPath != null && Files.exists(nodeBlacklistPath)) {
       blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
@@ -3283,55 +3279,74 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _dataPlanePlugin.processFlows(flows);
   }
 
+  /**
+   * Helper function to disable a blacklisted interface and update the given {@link
+   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
+   */
+  private static void blacklistInterface(
+      Map<String, Configuration> configurations,
+      ValidateEnvironmentAnswerElement veae,
+      NodeInterfacePair iface) {
+    String hostname = iface.getHostname();
+    String ifaceName = iface.getInterface();
+    @Nullable Configuration node = configurations.get(hostname);
+    if (node == null) {
+      veae.setValid(false);
+      veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
+      return;
+    }
+
+    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
+    if (nodeIface == null) {
+      veae.setValid(false);
+      veae.getUndefinedInterfaceBlacklistInterfaces()
+          .computeIfAbsent(hostname, k -> new TreeSet<>())
+          .add(ifaceName);
+      return;
+    }
+
+    nodeIface.setActive(false);
+    nodeIface.setBlacklisted(true);
+  }
+
+  private void processEdgeBlacklist(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+    Set<Edge> blacklistEdges = getEdgeBlacklist();
+    for (Edge e : blacklistEdges) {
+      blacklistInterface(configurations, veae, e.getInterface1());
+      blacklistInterface(configurations, veae, e.getInterface2());
+    }
+  }
+
   private void processInterfaceBlacklist(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    if (blacklistInterfaces != null) {
-      for (NodeInterfacePair p : blacklistInterfaces) {
-        String hostname = p.getHostname();
-        String ifaceName = p.getInterface();
-        Configuration node = configurations.get(hostname);
-        if (node == null) {
-          veae.setValid(false);
-          veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
-        } else {
-          Interface iface = node.getInterfaces().get(ifaceName);
-          if (iface == null) {
-            veae.setValid(false);
-            veae.getUndefinedInterfaceBlacklistInterfaces()
-                .computeIfAbsent(hostname, k -> new TreeSet<>())
-                .add(ifaceName);
-          } else {
-            iface.setActive(false);
-            iface.setBlacklisted(true);
-          }
-        }
-      }
+    for (NodeInterfacePair p : blacklistInterfaces) {
+      blacklistInterface(configurations, veae, p);
     }
   }
 
   private void processNodeBlacklist(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     SortedSet<String> blacklistNodes = getNodeBlacklist();
-    if (blacklistNodes != null) {
-      for (String hostname : blacklistNodes) {
-        Configuration node = configurations.get(hostname);
-        if (node != null) {
-          for (Interface iface : node.getInterfaces().values()) {
-            iface.setActive(false);
-            iface.setBlacklisted(true);
-          }
-        } else {
-          veae.setValid(false);
-          veae.getUndefinedNodeBlacklistNodes().add(hostname);
+    for (String hostname : blacklistNodes) {
+      Configuration node = configurations.get(hostname);
+      if (node != null) {
+        for (Interface iface : node.getInterfaces().values()) {
+          iface.setActive(false);
+          iface.setBlacklisted(true);
         }
+      } else {
+        veae.setValid(false);
+        veae.getUndefinedNodeBlacklistNodes().add(hostname);
       }
     }
   }
 
-  /* Set the roles of each configuration.  Use an explicitly provided NodeRoleSpecifier
-    if one exists; otherwise use the results of our node-role inference.
-  */
+  /**
+   * Set the roles of each configuration. Use an explicitly provided {@link NodeRoleSpecifier} if
+   * one exists; otherwise use the results of our node-role inference.
+   */
   private void processNodeRoles(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
@@ -3637,20 +3652,50 @@ public class Batfish extends PluginConsumer implements IBatfish {
     computeDataPlane(false);
   }
 
+  /**
+   * Applies the current environment to the specified configurations and updates the given {@link
+   * ValidateEnvironmentAnswerElement}. Applying the environment includes:
+   *
+   * <ul>
+   *   <li>Applying node and interface blacklists.
+   *   <li>Applying node and interface blacklists.
+   * </ul>
+   */
+  private void updateBlacklistedAndInactiveConfigs(
+      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+    processNodeBlacklist(configurations, veae);
+    processInterfaceBlacklist(configurations, veae);
+    processEdgeBlacklist(configurations, veae);
+    disableUnusableVlanInterfaces(configurations);
+    disableUnusableVpnInterfaces(configurations);
+  }
+
+  /**
+   * Ensures that the current configurations for the current testrig+environment are up to date.
+   * Among other things, this includes:
+   *
+   * <ul>
+   *   <li>Invalidating cached configs if the in-memory copy has been changed by question
+   *       processing.
+   *   <li>Re-loading configurations from disk, including re-parsing if the configs were parsed on a
+   *       previous version of Batfish.
+   *   <li>Re-applying the environment to the configs, to ensure that blacklists are honored.
+   * </ul>
+   */
   private void repairEnvironment() {
     if (!_monotonicCache) {
       _cachedConfigurations.invalidate(_testrigSettings);
     }
     SortedMap<String, Configuration> configurations = loadConfigurationsWithoutValidation();
+    processDeltaConfigurations(configurations);
+
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     veae.setVersion(Version.getVersion());
     veae.setValid(true);
-    processDeltaConfigurations(configurations);
-    processNodeBlacklist(configurations, veae);
+
+    updateBlacklistedAndInactiveConfigs(configurations, veae);
     processNodeRoles(configurations, veae);
-    processInterfaceBlacklist(configurations, veae);
-    disableUnusableVlanInterfaces(configurations);
-    disableUnusableVpnInterfaces(configurations);
+
     serializeObject(
         veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
   }
@@ -4025,16 +4070,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    Topology envTopology = computeEnvironmentTopology(configurations);
-    serializeAsJson(
-        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
-        envTopology,
-        "environment topology");
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
     serializeAsJson(
         _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
+
+    ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
+    veae.setValid(true);
+    veae.setVersion(Version.getVersion());
+    updateBlacklistedAndInactiveConfigs(configurations, veae);
+    Topology envTopology = computeEnvironmentTopology(configurations);
+    serializeAsJson(
+        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
+        envTopology,
+        "environment topology");
+
     return answer;
   }
 
