@@ -2,8 +2,8 @@ package org.batfish.common.util;
 
 import java.util.Map;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
-import scala.Tuple4;
 
 public class WorkItemBuilder {
 
@@ -127,7 +127,7 @@ public class WorkItemBuilder {
       WorkItem workItem, String container, String testrig, String envName) {
     return (workItem.getContainerName().equals(container)
         && workItem.getTestrigName().equals(testrig)
-        && getBaseAndDeltaSettings(workItem)._2().equals(envName));
+        && getBaseEnvironment(getBaseAndDeltaSettings(workItem)).equals(envName));
   }
 
   public static boolean isParsingWorkItem(WorkItem workItem) {
@@ -140,7 +140,8 @@ public class WorkItemBuilder {
     return (isMyWorkItem(workItem, container, testrig, envName) && isParsingWorkItem(workItem));
   }
 
-  public static Tuple4<String, String, String, String> getBaseAndDeltaSettings(WorkItem workItem) {
+  public static Pair<Pair<String, String>, Pair<String, String>> getBaseAndDeltaSettings(
+      WorkItem workItem) {
     Map<String, String> reqParams = workItem.getRequestParams();
 
     // this logic mimics what happens in initTestrigSettings in Batfish.java
@@ -162,6 +163,24 @@ public class WorkItemBuilder {
       envName = deltaEnvName;
     }
 
-    return new Tuple4(testrig, envName, deltaTestrig, deltaEnvName);
+    return new Pair<>(new Pair<>(testrig, envName), new Pair<>(deltaTestrig, deltaEnvName));
+  }
+
+  public static String getBaseEnvironment(
+      Pair<Pair<String, String>, Pair<String, String>> settings) {
+    return settings.getFirst().getSecond();
+  }
+
+  public static String getBaseTestrig(Pair<Pair<String, String>, Pair<String, String>> settings) {
+    return settings.getFirst().getFirst();
+  }
+
+  public static String getDeltaEnvironment(
+      Pair<Pair<String, String>, Pair<String, String>> settings) {
+    return settings.getSecond().getSecond();
+  }
+
+  public static String getDeltaTestrig(Pair<Pair<String, String>, Pair<String, String>> settings) {
+    return settings.getSecond().getFirst();
   }
 }

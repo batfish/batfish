@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.WorkItemBuilder;
@@ -17,7 +18,6 @@ import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 import org.batfish.datamodel.TestrigMetadata;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import scala.Tuple4;
 
 // the design of this WorkQueueMgr is such that all synchronization sits here
 // individual queues do not need to be synchronized
@@ -174,9 +174,10 @@ public class WorkQueueMgr {
     // update testrig metadata
     WorkItem wItem = work.getWorkItem();
     if (WorkItemBuilder.isParsingWorkItem(wItem) || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-      Tuple4<String, String, String, String> tuple = WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-      String baseTestrig = tuple._1();
-      String baseEnv = tuple._2();
+      Pair<Pair<String, String>, Pair<String, String>> settings =
+          WorkItemBuilder.getBaseAndDeltaSettings(wItem);
+      String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
+      String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
       TestrigMetadata trMetadata =
           TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
       EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
@@ -218,10 +219,10 @@ public class WorkQueueMgr {
         // update testrig metadata
         if (WorkItemBuilder.isParsingWorkItem(wItem)
             || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-          Tuple4<String, String, String, String> tuple =
+          Pair<Pair<String, String>, Pair<String, String>> settings =
               WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-          String baseTestrig = tuple._1();
-          String baseEnv = tuple._2();
+          String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
+          String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
           TestrigMetadata trMetadata =
               TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
           EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
@@ -272,6 +273,7 @@ public class WorkQueueMgr {
     }
     return _queueIncompleteWork.enque(work);
 
+    //  prep for multi-worker support
     //    WorkItem wItem = work.getWorkItem();
     //    Tuple4<String, String, String, String> settings =
     //        WorkItemBuilder.getBaseAndDeltaSettings(wItem);
@@ -300,6 +302,7 @@ public class WorkQueueMgr {
     //    }
   }
 
+  //  prep for multi-worker support
   //  private boolean queueDataplaningWork(
   //      QueuedWork work, String baseTestrig, String baseEnv, EnvironmentMetadata metadata) {
   //    switch (metadata.getProcessingStatus()) {
