@@ -51,5 +51,4 @@ public class EnvironmentMetadata {
     _currentStatus = status;
     _statusHistory.add("Status changed to " + status + " at " + Instant.now());
   }
-
 }

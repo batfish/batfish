@@ -1788,8 +1788,7 @@ public class Client extends AbstractClient implements IClient {
 
     if (!autoAnalyze) {
       _logger.output("Parsing now.\n");
-      WorkItem wItemParse =
-          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
+      WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
 
       if (!execute(wItemParse, outWriter)) {
         unsetTestrig(delta);

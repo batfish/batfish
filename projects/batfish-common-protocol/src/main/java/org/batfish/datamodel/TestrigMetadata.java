@@ -46,5 +46,4 @@ public class TestrigMetadata {
   public Map<String, EnvironmentMetadata> getEnvironments() {
     return _environments;
   }
-
 }
