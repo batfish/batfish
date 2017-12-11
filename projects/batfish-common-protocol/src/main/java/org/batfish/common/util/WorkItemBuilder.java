@@ -109,7 +109,11 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static boolean isAnswerWorkItem(WorkItem workItem) {
+  public static boolean isAnalyzingWorkItem(WorkItem workItem) {
+    return workItem.getRequestParams().containsKey(BfConsts.COMMAND_ANALYZE);
+  }
+
+  public static boolean isAnsweringWorkItem(WorkItem workItem) {
     return workItem.getRequestParams().containsKey(BfConsts.COMMAND_ANSWER);
   }
 

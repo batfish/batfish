@@ -1053,14 +1053,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean queueWork(WorkItem workItem) {
-    Path testrigDir =
-        Main.getSettings()
-            .getContainersLocation()
-            .resolve(
-                Paths.get(
-                    workItem.getContainerName(),
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    workItem.getTestrigName()));
+    Path testrigDir = getdirTestrig(workItem.getContainerName(), workItem.getTestrigName());
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
       throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
     }
@@ -1071,8 +1064,7 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
     }
-    // as an optimization trigger AssignWork to see if we can schedule this
-    // (or another) work
+    // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
       Thread thread =
           new Thread() {
