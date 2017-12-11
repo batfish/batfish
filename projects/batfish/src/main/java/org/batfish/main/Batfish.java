@@ -4027,10 +4027,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     Topology envTopology = computeEnvironmentTopology(configurations);
     serializeAsJson(
-        _testrigSettings
-            .getEnvironmentSettings()
-            .getEnvPath()
-            .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE),
+        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
         "environment topology");
     NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
