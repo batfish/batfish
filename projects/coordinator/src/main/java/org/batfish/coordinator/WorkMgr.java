@@ -39,6 +39,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
@@ -47,11 +48,13 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -346,6 +349,75 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  private WorkDetails computeWorkDetails(WorkItem workItem) {
+    WorkDetails details = new WorkDetails();
+    Pair<Pair<String, String>, Pair<String, String>> settings =
+        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
+    details.baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
+    details.baseEnvironment = WorkItemBuilder.getBaseEnvironment(settings);
+    details.deltaTestrig = WorkItemBuilder.getDeltaTestrig(settings);
+    details.deltaEnvironment = WorkItemBuilder.getDeltaEnvironment(settings);
+
+    details.workType = WorkType.UNKNOWN;
+
+    if (WorkItemBuilder.isParsingWorkItem(workItem)) {
+      details.workType = WorkType.PARSING;
+    }
+
+    if (WorkItemBuilder.isDataplaningWorkItem(workItem)) {
+      if (details.workType != WorkType.UNKNOWN) {
+        throw new BatfishException("Cannot do composite work. Separate PARSING and DATAPLANING.");
+      }
+      details.workType = WorkType.DATAPLANING;
+    }
+
+    if (WorkItemBuilder.isAnsweringWorkItem(workItem)) {
+      if (details.workType != WorkType.UNKNOWN) {
+        throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
+      }
+      details.workType = WorkType.ANSWERING;
+
+      String qName = WorkItemBuilder.getQuestionName(workItem);
+      if (qName == null) {
+        throw new BatfishException("Question name not provided for ANSWER work");
+      }
+      Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
+      if (Files.exists(qFile)) {
+        throw new BatfishException(("Question file does not exist for " + qName));
+      }
+      Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
+      details.isDifferential = question.getDifferential();
+      details.isDataplaneDependent = question.getDataPlane();
+    }
+
+    if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
+      if (details.workType != WorkType.UNKNOWN) {
+        throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
+      }
+      details.workType = WorkType.ANSWERING;
+
+      String aName = WorkItemBuilder.getAnalysisName(workItem);
+      if (aName == null) {
+        throw new BatfishException("Analysis name not provided for ANALYZE work");
+      }
+      details.isDifferential = false;
+      details.isDataplaneDependent = false;
+      Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
+      for (String qName : qNames) {
+        Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
+        Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
+        if (question.getDifferential()) {
+          details.isDifferential = true;
+        }
+        if (question.getDataPlane()) {
+          details.isDataplaneDependent = true;
+        }
+      }
+    }
+
+    return details;
+  }
+
   /**
    * Create, update, or truncate an analysis with provided questions or and/or question names
    *
@@ -502,8 +574,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getAnalysisQuestion(
       String containerName, String analysisName, String questionName) {
-    Path questionDir = getdirAnalysisQuestion(containerName, analysisName, questionName);
-    Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+    Path qFile = getpathAnalysisQuestion(containerName, analysisName, questionName);
     if (!Files.exists(qFile)) {
       throw new BatfishException("Question file not found for " + questionName);
     }
@@ -656,7 +727,7 @@ public class WorkMgr extends AbstractCoordinator {
     return containers;
   }
 
-  private Path getdirContainer(String containerName, boolean errIfNotEixst) {
+  private static Path getdirContainer(String containerName, boolean errIfNotEixst) {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     if (errIfNotEixst && !Files.exists(containerDir)) {
@@ -706,15 +777,15 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
-  // this function should build on others but some overrides are getting in the way
-  // TODO: cleanup later
-  public static Path getpathContainerQuestion(String container, String questionName) {
-    return Main.getSettings()
-        .getContainersLocation()
-        .resolve(container)
-        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
-        .resolve(questionName)
-        .resolve(BfConsts.RELPATH_QUESTION_FILE);
+  public Path getpathAnalysisQuestion(
+      String containerName, String analysisName, String questionName) {
+    Path questionDir = getdirAnalysisQuestion(containerName, analysisName, questionName);
+    return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+  }
+
+  public Path getpathContainerQuestion(String containerName, String questionName) {
+    Path questionDir = getdirContainerQuestion(containerName, questionName);
+    return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
   }
 
   // this function should build on others but some overrides are getting in the way
@@ -1073,7 +1144,8 @@ public class WorkMgr extends AbstractCoordinator {
     boolean success;
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
-      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
+      WorkDetails workDetails = computeWorkDetails(workItem);
+      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
     }

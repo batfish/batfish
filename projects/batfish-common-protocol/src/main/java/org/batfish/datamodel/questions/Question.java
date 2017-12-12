@@ -313,7 +313,20 @@ public abstract class Question implements IQuestion {
     }
   }
 
-  public static String preprocessQuestion(String rawQuestionText) {
+  public static Question parseQuestion(Path questionPath, ClassLoader classLoader) {
+    String rawQuestionText = CommonUtil.readFile(questionPath);
+    String questionText = Question.preprocessQuestion(rawQuestionText);
+    try {
+      ObjectMapper mapper =
+          (classLoader == null) ? new BatfishObjectMapper() : new BatfishObjectMapper(classLoader);
+      Question question = mapper.readValue(questionText, Question.class);
+      return question;
+    } catch (IOException e) {
+      throw new BatfishException("Could not parse JSON question", e);
+    }
+  }
+
+  private static String preprocessQuestion(String rawQuestionText) {
     try {
       JSONObject jobj = new JSONObject(rawQuestionText);
       if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {

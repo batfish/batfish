@@ -1,7 +1,6 @@
 package org.batfish.main;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableSet;
@@ -132,8 +131,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.Question.InstanceData;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -528,7 +525,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // return right away if we cannot parse the question successfully
     try {
-      question = parseQuestion();
+      question = Question.parseQuestion(_settings.getQuestionPath(), getCurrentClassLoader());
     } catch (Exception e) {
       Answer answer = new Answer();
       BatfishException exception = new BatfishException("Could not parse question", e);
@@ -2866,21 +2863,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Failed to parse node roles", e);
     }
     return specifier;
-  }
-
-  private Question parseQuestion() {
-    Path questionPath = _settings.getQuestionPath();
-    _logger.info("Reading question file: \"" + questionPath + "\"...");
-    String rawQuestionText = CommonUtil.readFile(questionPath);
-    _logger.info("OK\n");
-    String questionText = Question.preprocessQuestion(rawQuestionText);
-    try {
-      ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
-      Question question = mapper.readValue(questionText, Question.class);
-      return question;
-    } catch (IOException e) {
-      throw new BatfishException("Could not parse JSON question", e);
-    }
   }
 
   public Topology parseTopology(Path topologyFilePath) {

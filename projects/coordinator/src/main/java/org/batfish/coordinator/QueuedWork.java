@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
@@ -9,26 +11,12 @@ import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
+import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
+import org.batfish.datamodel.questions.Question;
 
 public class QueuedWork {
-
-  public enum WorkType {
-    PARSING,
-    DATAPLANING,
-    ANSWERING, // includes analyzing
-    UNKNOWN
-  }
-
-  public class Details {
-    public String baseTestrig;
-    public String baseEnvironment;
-    public String deltaTestrig;
-    public String deltaEnvironment;
-    public WorkType workType;
-    public boolean isDataplaneDependent;
-    public boolean isDifferential;
-  }
 
   String _assignedWorker;
 
@@ -38,52 +26,18 @@ public class QueuedWork {
   Date _dateLastTaskCheckedStatus;
   Date _dateTerminated;
 
-  Details _details;
+  WorkDetails _details;
 
   Task _lastTaskCheckResult;
   WorkStatusCode _status;
 
   WorkItem _workItem;
 
-  public QueuedWork(WorkItem workItem) {
+  public QueuedWork(WorkItem workItem, WorkDetails details) {
     _workItem = workItem;
     _status = WorkStatusCode.UNASSIGNED;
     _dateCreated = new Date();
-
-    _details = new Details();
-    Pair<Pair<String, String>, Pair<String, String>> settings =
-        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
-    _details.baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
-    _details.baseEnvironment = WorkItemBuilder.getBaseEnvironment(settings);
-    _details.deltaTestrig = WorkItemBuilder.getDeltaTestrig(settings);
-    _details.deltaEnvironment = WorkItemBuilder.getDeltaEnvironment(settings);
-
-    _details.workType = WorkType.UNKNOWN;
-    if (WorkItemBuilder.isParsingWorkItem(workItem)) {
-      _details.workType = WorkType.PARSING;
-    }
-    if (WorkItemBuilder.isDataplaningWorkItem(workItem)) {
-      if (_details.workType != WorkType.UNKNOWN) {
-        throw new BatfishException("Cannot do composite work. Separate PARSING and DATAPLANING.");
-      }
-      _details.workType = WorkType.DATAPLANING;
-    }
-    if (WorkItemBuilder.isAnsweringWorkItem(workItem)) {
-      if (_details.workType != WorkType.UNKNOWN) {
-        throw new BatfishException("Cannot do composite work. Separate ANSWERING from other work.");
-      }
-      _details.workType = WorkType.ANSWERING;
-
-      String qName = WorkItemBuilder.getQuestionName(workItem);
-      if (qName == null) {
-        throw new BatfishException("Question name not provided for ANSWER work");
-      }
-      Path qFile = WorkMgr.getpathContainerQuestion(workItem.getContainerName(), qName);
-      if (Files.exists(qFile)) {
-        throw new BatfishException(("Question file does not exist for " + qName));
-      }
-
-    }
+    _details = details;
   }
 
   public void clearAssignment() {
@@ -98,7 +52,7 @@ public class QueuedWork {
     return _assignedWorker;
   }
 
-  public Details getDetails() {
+  public WorkDetails getDetails() {
     return _details;
   }
 

@@ -21,8 +21,8 @@ public class WorkQueueMgrTest {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
     WorkItem wItem1 = new WorkItem("container", "testrig");
     wItem1.addRequestParam("key1", "value1");
-    QueuedWork work1 = new QueuedWork(wItem1);
-    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"));
+    QueuedWork work1 = new QueuedWork(wItem1, new WorkDetails());
+    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"), new WorkDetails());
     workQueueMgr.queueUnassignedWork(work1);
     workQueueMgr.queueUnassignedWork(work2);
 
@@ -40,8 +40,8 @@ public class WorkQueueMgrTest {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
     WorkItem wItem1 = new WorkItem("container", "testrig");
     wItem1.addRequestParam("key1", "value1");
-    QueuedWork work1 = new QueuedWork(wItem1);
-    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"));
+    QueuedWork work1 = new QueuedWork(wItem1, new WorkDetails());
+    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"), new WorkDetails());
     workQueueMgr.queueUnassignedWork(work1);
     workQueueMgr.queueUnassignedWork(work2);
 
@@ -57,10 +57,10 @@ public class WorkQueueMgrTest {
   @Test
   public void queueUnassignedWork() throws Exception {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
-    QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"));
+    QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"), new WorkDetails());
     workQueueMgr.queueUnassignedWork(work1);
     assertThat(workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
-    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"));
+    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"), new WorkDetails());
     workQueueMgr.queueUnassignedWork(work2);
     assertThat(workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(2L));
   }
@@ -68,7 +68,7 @@ public class WorkQueueMgrTest {
   @Test
   public void queueUnassignedWorkDuplicate() throws Exception {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
-    QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"));
+    QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"), new WorkDetails());
     workQueueMgr.queueUnassignedWork(work1);
 
     _thrown.expect(BatfishException.class);

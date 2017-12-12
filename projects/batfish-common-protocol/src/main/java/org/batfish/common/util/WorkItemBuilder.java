@@ -121,27 +121,9 @@ public class WorkItemBuilder {
     return workItem.getRequestParams().containsKey(BfConsts.COMMAND_DUMP_DP);
   }
 
-  public static boolean isDataplaningWorkItem(
-      WorkItem workItem, String container, String testrig, String envName) {
-    Map<String, String> reqParams = workItem.getRequestParams();
-    return (isMyWorkItem(workItem, container, testrig, envName) && isDataplaningWorkItem(workItem));
-  }
-
-  public static boolean isMyWorkItem(
-      WorkItem workItem, String container, String testrig, String envName) {
-    return (workItem.getContainerName().equals(container)
-        && workItem.getTestrigName().equals(testrig)
-        && getBaseEnvironment(getBaseAndDeltaSettings(workItem)).equals(envName));
-  }
-
   public static boolean isParsingWorkItem(WorkItem workItem) {
     return (workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC)
         || workItem.getRequestParams().containsKey(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT));
-  }
-
-  public static boolean isParsingWorkItem(
-      WorkItem workItem, String container, String testrig, String envName) {
-    return (isMyWorkItem(workItem, container, testrig, envName) && isParsingWorkItem(workItem));
   }
 
   public static Pair<Pair<String, String>, Pair<String, String>> getBaseAndDeltaSettings(
