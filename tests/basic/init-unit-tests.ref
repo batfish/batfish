@@ -472,7 +472,7 @@
         "vrf_context" : "PASSED",
         "vxlan" : "PASSED"
       },
-      "version" : "0.33.1",
+      "version" : "0.33.2",
       "warnings" : {
         "bgp_address_family" : {
           "Red flags" : {
@@ -1912,7 +1912,7 @@
           }
         }
       },
-      "version" : "0.33.1",
+      "version" : "0.33.2",
       "warnings" : {
         "address_family" : {
           "Red flags" : {
