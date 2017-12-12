@@ -10,6 +10,10 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
+/**
+ * Handles the "route-map match community-list" command, which matches when at least one of the
+ * named lists matches at least one community in the advertisement.
+ */
 public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
   private static final long serialVersionUID = 1L;
