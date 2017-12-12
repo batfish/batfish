@@ -8,7 +8,7 @@
           "name" : "i-0383fda87c012141d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-4b466165" : {
               "name" : "eni-4b466165",
@@ -149,7 +149,7 @@
           "name" : "i-075dc46a9bc347264",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-d2b094fc" : {
               "name" : "eni-d2b094fc",
@@ -260,7 +260,7 @@
           "name" : "i-0837c877110427f2b",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-6b705445" : {
               "name" : "eni-6b705445",
@@ -401,7 +401,7 @@
           "name" : "i-0b26ec095feb42260",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-297b5c07" : {
               "name" : "eni-297b5c07",

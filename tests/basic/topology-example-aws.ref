@@ -1732,7 +1732,7 @@
     {
       "name" : "i-0b26ec095feb42260",
       "id" : "node-i-0b26ec095feb42260",
-      "type" : "SWITCH"
+      "type" : "HOST"
     },
     {
       "name" : "vpc-815775e7",
@@ -1762,7 +1762,7 @@
     {
       "name" : "i-0383fda87c012141d",
       "id" : "node-i-0383fda87c012141d",
-      "type" : "SWITCH"
+      "type" : "HOST"
     },
     {
       "name" : "lhr-border-02",
@@ -1772,7 +1772,7 @@
     {
       "name" : "i-075dc46a9bc347264",
       "id" : "node-i-075dc46a9bc347264",
-      "type" : "SWITCH"
+      "type" : "HOST"
     },
     {
       "name" : "subnet-1f315846",
@@ -1812,7 +1812,7 @@
     {
       "name" : "i-0837c877110427f2b",
       "id" : "node-i-0837c877110427f2b",
-      "type" : "SWITCH"
+      "type" : "HOST"
     },
     {
       "name" : "subnet-8d0cbdeb",
