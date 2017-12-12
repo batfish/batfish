@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
@@ -169,12 +170,12 @@ public class RoutingPolicy extends ComparableStructure<String> {
   }
 
   public RoutingPolicy simplify() {
-    List<Statement> simpleStatements = new ArrayList<>();
+    ImmutableList.Builder<Statement> simpleStatements = ImmutableList.builder();
     for (Statement statement : _statements) {
       simpleStatements.addAll(statement.simplify());
     }
     RoutingPolicy simple = new RoutingPolicy(_key, _owner);
-    simple.setStatements(simpleStatements);
+    simple.setStatements(simpleStatements.build());
     return simple;
   }
 }
