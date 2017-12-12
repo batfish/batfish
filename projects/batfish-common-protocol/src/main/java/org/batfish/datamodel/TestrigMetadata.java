@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import org.batfish.common.BfConsts;
 import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 
 public class TestrigMetadata {

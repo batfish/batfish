@@ -164,7 +164,8 @@ public class WorkQueueMgr {
         WorkItem newWItem =
             WorkItemBuilder.getWorkItemGenerateDataPlane(
                 wItem.getContainerName(), testrig, environment);
-        WorkDetails details = new WorkDetails(testrig, environment, null, null, false, WorkType.DATAPLANING);
+        WorkDetails details =
+            new WorkDetails(testrig, environment, null, null, false, WorkType.DATAPLANING);
         QueuedWork newWork = new QueuedWork(newWItem, details);
         boolean queued = queueUnassignedWork(newWork);
         if (!queued) {

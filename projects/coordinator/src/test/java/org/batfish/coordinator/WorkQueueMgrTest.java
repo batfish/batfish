@@ -4,7 +4,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import org.batfish.common.BatfishException;
@@ -27,8 +26,8 @@ public class WorkQueueMgrTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private void initTestrigMetadata(String testrig, String environment,
-      ProcessingStatus status) throws JsonProcessingException {
+  private void initTestrigMetadata(String testrig, String environment, ProcessingStatus status)
+      throws JsonProcessingException {
     Path metadataPath = WorkMgr.getpathTestrigMetadata("container", testrig);
     metadataPath.getParent().toFile().mkdirs();
     TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
@@ -36,7 +35,7 @@ public class WorkQueueMgrTest {
     envMetadata.updateStatus(status);
     TestrigMetadataMgr.writeMetadata(trMetadata, metadataPath);
   }
-  
+
   @Test
   public void qetMatchingWorkAbsent() throws Exception {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory, new BatfishLogger("debug", false));
