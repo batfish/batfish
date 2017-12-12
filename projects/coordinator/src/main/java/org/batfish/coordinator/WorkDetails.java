@@ -5,7 +5,8 @@ public class WorkDetails {
   public enum WorkType {
     PARSING,
     DATAPLANING,
-    ANSWERING, // includes analyzing
+    DATAPLANE_INDEPENDENT_ANSWERING, // includes analyzing
+    DATAPLANE_DEPENDENT_ANSWERING,   // includes analyzing
     UNKNOWN
   }
 
@@ -13,11 +14,6 @@ public class WorkDetails {
   public String baseEnvironment;
   public String deltaTestrig;
   public String deltaEnvironment;
-  public WorkType workType;
-  public boolean isDataplaneDependent;
-  public boolean isDifferential;
-
-  public WorkDetails() {
-    workType = WorkType.UNKNOWN;
-  }
+  public boolean isDifferential = false;
+  public WorkType workType = WorkType.UNKNOWN;
 }

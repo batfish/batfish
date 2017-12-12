@@ -1,8 +1,6 @@
 package org.batfish.coordinator;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -69,8 +67,11 @@ public class WorkQueueMgr {
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork currentParsingWork =
-        getIncompleteParsingWork(
-            wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
+        getIncompleteWorkType(
+            wItem.getContainerName(),
+            wDetails.baseTestrig,
+            wDetails.baseEnvironment,
+            WorkType.PARSING);
 
     TestrigMetadata trMetadata =
         TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
@@ -115,10 +116,10 @@ public class WorkQueueMgr {
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
 
     QueuedWork parsingWork =
-        getIncompleteParsingWork(wItem.getContainerName(), testrig, environment);
+        getIncompleteWorkType(wItem.getContainerName(), testrig, environment, WorkType.PARSING);
 
     QueuedWork dataplaningWork =
-        getIncompleteDataplaningWork(wItem.getContainerName(), testrig, environment);
+        getIncompleteWorkType(wItem.getContainerName(), testrig, environment, WorkType.DATAPLANING);
 
     switch (envMetadata.getProcessingStatus()) {
       case UNINITIALIZED:
@@ -146,7 +147,6 @@ public class WorkQueueMgr {
         details.baseTestrig = testrig;
         details.baseEnvironment = environment;
         details.isDifferential = false;
-        details.isDataplaneDependent = false;
         details.workType = WorkType.DATAPLANING;
         QueuedWork newWork = new QueuedWork(newWItem, details);
         boolean queued = queueUnassignedWork(newWork);
@@ -194,7 +194,7 @@ public class WorkQueueMgr {
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
 
     QueuedWork parsingWork =
-        getIncompleteParsingWork(wItem.getContainerName(), testrig, environment);
+        getIncompleteWorkType(wItem.getContainerName(), testrig, environment, WorkType.PARSING);
 
     switch (envMetadata.getProcessingStatus()) {
       case UNINITIALIZED:
@@ -229,54 +229,24 @@ public class WorkQueueMgr {
     }
   }
 
-  private synchronized QueuedWork getIncompleteDataplaningWork(
-      String container, String testrig, String environment) {
+  private synchronized QueuedWork getIncompleteWorkType(
+      String container, String testrig, String environment, WorkType wType) {
     for (QueuedWork work : _queueIncompleteWork) {
       WorkDetails wDetails = work.getDetails();
       if (container.equals(work.getWorkItem().getContainerName())
-          && testrig.equals(wDetails.baseTestrig)
-          && environment.equals(wDetails.baseEnvironment)
-          && wDetails.workType == WorkType.DATAPLANING) {
-        return work;
-      }
-    }
-    return null;
-  }
-
-  private synchronized QueuedWork getIncompleteParsingWork(
-      String container, String testrig, String environment) {
-    for (QueuedWork work : _queueIncompleteWork) {
-      WorkDetails wDetails = work.getDetails();
-      if (container.equals(work.getWorkItem().getContainerName())
-          && testrig.equals(wDetails.baseTestrig)
-          && environment.equals(wDetails.baseEnvironment)
-          && wDetails.workType == WorkType.PARSING) {
-        return work;
-      }
-    }
-    return null;
-  }
-
-  private synchronized List<QueuedWork> getIncompleteDataplaneDependentWorks(
-      String container, String testrig, String environment) {
-    List<QueuedWork> retList = new LinkedList<>();
-    for (QueuedWork work : _queueIncompleteWork) {
-      WorkDetails wDetails = work.getDetails();
-      if (container.equals(work.getWorkItem().getContainerName())
-          && work.getDetails().isDataplaneDependent
           && ((testrig.equals(wDetails.baseTestrig) && environment.equals(wDetails.baseEnvironment))
               || (wDetails.isDifferential
                   && testrig.equals(wDetails.deltaTestrig)
-                  && environment.equals(wDetails.deltaEnvironment)))) {
-        retList.add(work);
+                  && environment.equals(wDetails.deltaEnvironment)))
+          && wDetails.workType == wType) {
+        return work;
       }
     }
-    return retList;
+    return null;
   }
 
-  private synchronized List<QueuedWork> getIncompleteWorks(
+  private synchronized QueuedWork getIncompleteWork(
       String container, String testrig, String environment) {
-    List<QueuedWork> retList = new LinkedList<>();
     for (QueuedWork work : _queueIncompleteWork) {
       WorkDetails wDetails = work.getDetails();
       if (container.equals(work.getWorkItem().getContainerName())
@@ -284,10 +254,10 @@ public class WorkQueueMgr {
               || (wDetails.isDifferential
                   && testrig.equals(wDetails.deltaTestrig)
                   && environment.equals(wDetails.deltaEnvironment)))) {
-        retList.add(work);
+        return work;
       }
     }
-    return retList;
+    return null;
   }
 
   public synchronized long getLength(QueueType qType) {
@@ -545,12 +515,10 @@ public class WorkQueueMgr {
         return queueParsingWork(work);
       case DATAPLANING:
         return queueDataplaningWork(work);
-      case ANSWERING:
-        if (wDetails.isDataplaneDependent) {
-          return queueDataplaneDependentWork(work);
-        } else {
-          return queueDataplaneIndependentWork(work);
-        }
+      case DATAPLANE_DEPENDENT_ANSWERING:
+        return queueDataplaneDependentWork(work);
+      case DATAPLANE_INDEPENDENT_ANSWERING:
+        return queueDataplaneIndependentWork(work);
       case UNKNOWN:
         return _queueIncompleteWork.enque(work);
       default:
@@ -612,17 +580,23 @@ public class WorkQueueMgr {
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork currentDataplaningWork =
-        getIncompleteDataplaningWork(
-            wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
+        getIncompleteWorkType(
+            wItem.getContainerName(),
+            wDetails.baseTestrig,
+            wDetails.baseEnvironment,
+            WorkType.DATAPLANING);
     if (currentDataplaningWork != null) {
       throw new BatfishException("Dataplaning is already in queue/progress");
     }
 
     // see comment in queueParsingWork for justification
-    List<QueuedWork> workList =
-        getIncompleteDataplaneDependentWorks(
-            wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
-    if (workList.size() != 0) {
+    QueuedWork ddWork =
+        getIncompleteWorkType(
+            wItem.getContainerName(),
+            wDetails.baseTestrig,
+            wDetails.baseEnvironment,
+            WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+    if (ddWork != null) {
       throw new BatfishException("Cannot queue dataplaning work while other dependent work exists");
     }
 
@@ -644,10 +618,9 @@ public class WorkQueueMgr {
     // parsing work cannot proceeed in parallel because it may overwrite files used by others
     // instead of rejecting, we could have queued it as BLOCKED but we risk cycles of BLOCKED work
     // this should not be a common case anyway, so we aren't losing much by rejecting it
-    List<QueuedWork> workList =
-        getIncompleteWorks(
-            wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
-    if (workList.size() != 0) {
+    QueuedWork incompleteWork =
+        getIncompleteWork(wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
+    if (incompleteWork != null) {
       throw new BatfishException("Cannot queue parsing work while other work is incomplete");
     }
 

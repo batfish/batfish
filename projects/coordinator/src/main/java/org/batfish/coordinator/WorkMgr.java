@@ -375,34 +375,30 @@ public class WorkMgr extends AbstractCoordinator {
       if (details.workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
-      details.workType = WorkType.ANSWERING;
-
       String qName = WorkItemBuilder.getQuestionName(workItem);
       if (qName == null) {
         throw new BatfishException("Question name not provided for ANSWER work");
       }
       Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
-      if (Files.exists(qFile)) {
-        throw new BatfishException(("Question file does not exist for " + qName));
-      }
       Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
       details.isDifferential = question.getDifferential();
-      details.isDataplaneDependent = question.getDataPlane();
+      details.workType =
+          question.getDataPlane()
+              ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
+              : WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
     }
 
     if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
       if (details.workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
       }
-      details.workType = WorkType.ANSWERING;
-
       String aName = WorkItemBuilder.getAnalysisName(workItem);
       if (aName == null) {
         throw new BatfishException("Analysis name not provided for ANALYZE work");
       }
-      details.isDifferential = false;
-      details.isDataplaneDependent = false;
       Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
+      details.isDifferential = false;
+      details.workType = WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
         Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
         Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
@@ -410,7 +406,7 @@ public class WorkMgr extends AbstractCoordinator {
           details.isDifferential = true;
         }
         if (question.getDataPlane()) {
-          details.isDataplaneDependent = true;
+          details.workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
         }
       }
     }
