@@ -3314,15 +3314,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     nodeIface.setBlacklisted(true);
   }
 
-  private void processEdgeBlacklist(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-    Set<Edge> blacklistEdges = getEdgeBlacklist();
-    for (Edge e : blacklistEdges) {
-      blacklistInterface(configurations, veae, e.getInterface1());
-      blacklistInterface(configurations, veae, e.getInterface2());
-    }
-  }
-
   private void processInterfaceBlacklist(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
@@ -3676,7 +3667,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     processNodeBlacklist(configurations, veae);
     processInterfaceBlacklist(configurations, veae);
-    processEdgeBlacklist(configurations, veae);
+    // We do not process the edge blacklist here. Instead, we rely on these edges being explicitly
+    // deleted from the Topology (aka list of edges) that is used along with configurations in
+    // answering questions.
     disableUnusableVlanInterfaces(configurations);
     disableUnusableVpnInterfaces(configurations);
   }
