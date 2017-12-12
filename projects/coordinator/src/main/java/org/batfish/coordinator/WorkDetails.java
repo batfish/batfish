@@ -14,8 +14,27 @@ public class WorkDetails {
   public String baseEnvironment;
   public String deltaTestrig;
   public String deltaEnvironment;
-  public boolean isDifferential = false;
-  public WorkType workType = WorkType.UNKNOWN;
+  public boolean isDifferential;
+  public WorkType workType;
+
+  public WorkDetails() {
+    workType = WorkType.UNKNOWN;
+  }
+
+  public WorkDetails(
+      String baseTestrig,
+      String baseEnvironment,
+      String deltaTestrig,
+      String deltaEnvironment,
+      boolean isDifferential,
+      WorkType workType) {
+    this.baseTestrig = baseTestrig;
+    this.baseEnvironment = baseEnvironment;
+    this.deltaTestrig = deltaTestrig;
+    this.deltaEnvironment = deltaEnvironment;
+    this.isDifferential = isDifferential;
+    this.workType = workType;
+  }
 
   public boolean isOverlappingInput(WorkDetails o) {
 

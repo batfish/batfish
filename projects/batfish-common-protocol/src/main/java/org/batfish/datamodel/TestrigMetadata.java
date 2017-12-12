@@ -26,10 +26,10 @@ public class TestrigMetadata {
     _environments = environments;
   }
 
-  public TestrigMetadata(@JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp) {
+  public TestrigMetadata(Instant creationTimestamp, String environment) {
     _creationTimestamp = creationTimestamp;
     _environments = new HashMap<>();
-    initializeEnvironment(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
+    initializeEnvironment(environment);
   }
 
   public void initializeEnvironment(String environment) {

@@ -350,15 +350,16 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private WorkDetails computeWorkDetails(WorkItem workItem) {
-    WorkDetails details = new WorkDetails();
     Pair<Pair<String, String>, Pair<String, String>> settings =
         WorkItemBuilder.getBaseAndDeltaSettings(workItem);
-    details.baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
-    details.baseEnvironment = WorkItemBuilder.getBaseEnvironment(settings);
-    details.deltaTestrig = WorkItemBuilder.getDeltaTestrig(settings);
-    details.deltaEnvironment = WorkItemBuilder.getDeltaEnvironment(settings);
-
-    details.workType = WorkType.UNKNOWN;
+    WorkDetails details =
+        new WorkDetails(
+            WorkItemBuilder.getBaseTestrig(settings),
+            WorkItemBuilder.getBaseEnvironment(settings),
+            WorkItemBuilder.getDeltaTestrig(settings),
+            WorkItemBuilder.getDeltaEnvironment(settings),
+            false,
+            WorkType.UNKNOWN);
 
     if (WorkItemBuilder.isParsingWorkItem(workItem)) {
       details.workType = WorkType.PARSING;
@@ -934,7 +935,8 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    TestrigMetadata metadata = new TestrigMetadata(Instant.now());
+    TestrigMetadata metadata =
+        new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     try {
       TestrigMetadataMgr.writeMetadata(
           metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
