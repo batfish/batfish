@@ -30,7 +30,7 @@ public class InlineCommunitySet extends CommunitySetExpr {
     _cachedCommunities =
         Suppliers.memoize(
             (Serializable & com.google.common.base.Supplier<SortedSet<Long>>)
-                this::initCommunities);
+                () -> initCommunities());
   }
 
   public InlineCommunitySet(Collection<Long> communities) {
