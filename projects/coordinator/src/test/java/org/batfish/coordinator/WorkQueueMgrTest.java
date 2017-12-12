@@ -55,7 +55,7 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void queueUnassignedWork() throws Exception {
+  public void queueUnassignedWorkUnknown() throws Exception {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
     QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"), new WorkDetails());
     workQueueMgr.queueUnassignedWork(work1);

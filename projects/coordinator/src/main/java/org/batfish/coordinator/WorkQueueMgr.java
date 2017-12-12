@@ -77,32 +77,32 @@ public class WorkQueueMgr {
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(wDetails.baseEnvironment);
 
     switch (envMetadata.getProcessingStatus()) {
-    case UNINITIALIZED:
-      if (currentParsingWork == null) {
-        throw new BatfishException("Cannot compute dataplane without parsing");
-      }
-      return currentParsingWork;
-    case PARSING:
-      if (currentParsingWork == null) {
-        throw new BatfishException("Testrig is PARSING but no parsing work found");
-      }
-      return currentParsingWork;
-    case PARSED:
-      return currentParsingWork;
-    case PARSING_FAIL:
-      if (currentParsingWork == null) {
-        throw new BatfishException("Testrig is PARSING_FAIL and no other parsing work found");
-      }
-      return currentParsingWork;
-    case DATAPLANING:
-      // we get here only when currentDataplaningWork is null; by virtue of the calling context
-      throw new BatfishException("Testrig status is DATAPLANING but no dataplane work found");
-    case DATAPLANED:
-    case DATAPLANING_FAIL:
-      return null;
-    default:
-      throw new BatfishException(
-          "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
+      case UNINITIALIZED:
+        if (currentParsingWork == null) {
+          throw new BatfishException("Cannot compute dataplane without parsing");
+        }
+        return currentParsingWork;
+      case PARSING:
+        if (currentParsingWork == null) {
+          throw new BatfishException("Testrig is PARSING but no parsing work found");
+        }
+        return currentParsingWork;
+      case PARSED:
+        return currentParsingWork;
+      case PARSING_FAIL:
+        if (currentParsingWork == null) {
+          throw new BatfishException("Testrig is PARSING_FAIL and no other parsing work found");
+        }
+        return currentParsingWork;
+      case DATAPLANING:
+        // we get here only when currentDataplaningWork is null; by virtue of the calling context
+        throw new BatfishException("Testrig status is DATAPLANING but no dataplane work found");
+      case DATAPLANED:
+      case DATAPLANING_FAIL:
+        return null;
+      default:
+        throw new BatfishException(
+            "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
     }
   }
 
@@ -121,67 +121,67 @@ public class WorkQueueMgr {
         getIncompleteDataplaningWork(wItem.getContainerName(), testrig, environment);
 
     switch (envMetadata.getProcessingStatus()) {
-    case UNINITIALIZED:
-      if (parsingWork == null) {
-        throw new BatfishException("Cannot answer/analyze without parsing " + testrig);
-      }
-      return parsingWork;
-    case PARSING:
-      if (parsingWork == null) {
-        throw new BatfishException("Status is PARSING but no parsing work found for " + testrig);
-      }
-      return parsingWork;
-    case PARSED:
-      if (parsingWork != null) {
+      case UNINITIALIZED:
+        if (parsingWork == null) {
+          throw new BatfishException("Cannot answer/analyze without parsing " + testrig);
+        }
         return parsingWork;
-      }
-      if (dataplaningWork != null) {
-        return dataplaningWork;
-      }
-      // generate dataplane work
-      WorkItem newWItem =
-          WorkItemBuilder.getWorkItemGenerateDataPlane(
-              wItem.getContainerName(), testrig, environment);
-      WorkDetails details = new WorkDetails();
-      details.baseTestrig = testrig;
-      details.baseEnvironment = environment;
-      details.isDifferential = false;
-      details.isDataplaneDependent = false;
-      details.workType = WorkType.DATAPLANING;
-      QueuedWork newWork = new QueuedWork(newWItem, details);
-      boolean queued = queueUnassignedWork(newWork);
-      if (!queued) {
-        throw new BatfishException("Failed to queue new dataplane work");
-      }
-      return newWork;
-    case PARSING_FAIL:
-      if (parsingWork == null) {
-        throw new BatfishException(
-            "Status is PARSING_FAIL and no parsing work found for " + testrig);
-      }
-      return parsingWork;
-    case DATAPLANING:
-      if (dataplaningWork == null) {
-        throw new BatfishException("Status is DATAPLANING but no such work found for " + testrig);
-      }
-      return dataplaningWork;
-    case DATAPLANED:
-      if (parsingWork != null) {
+      case PARSING:
+        if (parsingWork == null) {
+          throw new BatfishException("Status is PARSING but no parsing work found for " + testrig);
+        }
         return parsingWork;
-      }
-      if (dataplaningWork != null) {
+      case PARSED:
+        if (parsingWork != null) {
+          return parsingWork;
+        }
+        if (dataplaningWork != null) {
+          return dataplaningWork;
+        }
+        // generate dataplane work
+        WorkItem newWItem =
+            WorkItemBuilder.getWorkItemGenerateDataPlane(
+                wItem.getContainerName(), testrig, environment);
+        WorkDetails details = new WorkDetails();
+        details.baseTestrig = testrig;
+        details.baseEnvironment = environment;
+        details.isDifferential = false;
+        details.isDataplaneDependent = false;
+        details.workType = WorkType.DATAPLANING;
+        QueuedWork newWork = new QueuedWork(newWItem, details);
+        boolean queued = queueUnassignedWork(newWork);
+        if (!queued) {
+          throw new BatfishException("Failed to queue new dataplane work");
+        }
+        return newWork;
+      case PARSING_FAIL:
+        if (parsingWork == null) {
+          throw new BatfishException(
+              "Status is PARSING_FAIL and no parsing work found for " + testrig);
+        }
+        return parsingWork;
+      case DATAPLANING:
+        if (dataplaningWork == null) {
+          throw new BatfishException("Status is DATAPLANING but no such work found for " + testrig);
+        }
         return dataplaningWork;
-      }
-      return null;
-    case DATAPLANING_FAIL:
-      if (dataplaningWork == null) {
+      case DATAPLANED:
+        if (parsingWork != null) {
+          return parsingWork;
+        }
+        if (dataplaningWork != null) {
+          return dataplaningWork;
+        }
+        return null;
+      case DATAPLANING_FAIL:
+        if (dataplaningWork == null) {
+          throw new BatfishException(
+              "Status is DATAPLAINING_FAIL. Rejecting more dataplaneDependent work");
+        }
+        return dataplaningWork;
+      default:
         throw new BatfishException(
-            "Status is DATAPLAINING_FAIL. No other Dataplaning work. Rejecting more dataplaneDependent work");
-      }
-      return dataplaningWork;
-    default:
-      throw new BatfishException(
-          "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
+            "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
     }
   }
 
@@ -197,35 +197,35 @@ public class WorkQueueMgr {
         getIncompleteParsingWork(wItem.getContainerName(), testrig, environment);
 
     switch (envMetadata.getProcessingStatus()) {
-    case UNINITIALIZED:
-      if (parsingWork == null) {
-        throw new BatfishException("Cannot answer/analyze without parsing " + testrig);
-      }
-      return parsingWork;
-    case PARSING:
-      if (parsingWork == null) {
-        throw new BatfishException("Status is PARSING but no parsing work found for " + testrig);
-      }
-      return parsingWork;
-    case PARSED:
-      if (parsingWork == null) {
-        return null;
-      } else {
+      case UNINITIALIZED:
+        if (parsingWork == null) {
+          throw new BatfishException("Cannot answer/analyze without parsing " + testrig);
+        }
         return parsingWork;
-      }
-    case PARSING_FAIL:
-      if (parsingWork == null) {
+      case PARSING:
+        if (parsingWork == null) {
+          throw new BatfishException("Status is PARSING but no parsing work found for " + testrig);
+        }
+        return parsingWork;
+      case PARSED:
+        if (parsingWork == null) {
+          return null;
+        } else {
+          return parsingWork;
+        }
+      case PARSING_FAIL:
+        if (parsingWork == null) {
+          throw new BatfishException(
+              "Status is PARSING_FAIL and no other parsing work found for " + testrig);
+        }
+        return parsingWork;
+      case DATAPLANING:
+      case DATAPLANED:
+      case DATAPLANING_FAIL:
+        return null;
+      default:
         throw new BatfishException(
-            "Status is PARSING_FAIL and no other parsing work found for " + testrig);
-      }
-      return parsingWork;
-    case DATAPLANING:
-    case DATAPLANED:
-    case DATAPLANING_FAIL:
-      return null;
-    default:
-      throw new BatfishException(
-          "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
+            "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
     }
   }
 
@@ -265,9 +265,9 @@ public class WorkQueueMgr {
       if (container.equals(work.getWorkItem().getContainerName())
           && work.getDetails().isDataplaneDependent
           && ((testrig.equals(wDetails.baseTestrig) && environment.equals(wDetails.baseEnvironment))
-          || (wDetails.isDifferential
-          && testrig.equals(wDetails.deltaTestrig)
-          && environment.equals(wDetails.deltaEnvironment)))) {
+              || (wDetails.isDifferential
+                  && testrig.equals(wDetails.deltaTestrig)
+                  && environment.equals(wDetails.deltaEnvironment)))) {
         retList.add(work);
       }
     }
@@ -281,9 +281,9 @@ public class WorkQueueMgr {
       WorkDetails wDetails = work.getDetails();
       if (container.equals(work.getWorkItem().getContainerName())
           && ((testrig.equals(wDetails.baseTestrig) && environment.equals(wDetails.baseEnvironment))
-          || (wDetails.isDifferential
-          && testrig.equals(wDetails.deltaTestrig)
-          && environment.equals(wDetails.deltaEnvironment)))) {
+              || (wDetails.isDifferential
+                  && testrig.equals(wDetails.deltaTestrig)
+                  && environment.equals(wDetails.deltaEnvironment)))) {
         retList.add(work);
       }
     }
@@ -559,7 +559,6 @@ public class WorkQueueMgr {
   }
 
   private boolean queueDataplaneDependentWork(QueuedWork work) throws Exception {
-    WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork baseBlocker =
@@ -569,7 +568,8 @@ public class WorkQueueMgr {
       return _queueIncompleteWork.enque(work);
     } else if (wDetails.isDifferential) {
       QueuedWork deltaBlocker =
-          getBlockerForDataplaneDependentWork(work, wDetails.deltaTestrig, wDetails.deltaEnvironment);
+          getBlockerForDataplaneDependentWork(
+              work, wDetails.deltaTestrig, wDetails.deltaEnvironment);
       if (deltaBlocker != null) {
         work.setStatus(WorkStatusCode.BLOCKED);
         return _queueIncompleteWork.enque(work);
@@ -583,8 +583,6 @@ public class WorkQueueMgr {
   }
 
   private boolean queueDataplaneIndependentWork(QueuedWork work) throws Exception {
-
-    WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork baseBlocker =

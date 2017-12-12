@@ -1,20 +1,10 @@
 package org.batfish.coordinator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Date;
 import java.util.UUID;
-import org.batfish.common.BatfishException;
 import org.batfish.common.CoordConsts.WorkStatusCode;
-import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.WorkItemBuilder;
-import org.batfish.datamodel.questions.Question;
 
 public class QueuedWork {
 
