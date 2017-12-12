@@ -1,5 +1,6 @@
 package org.batfish.symbolic.bdd;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -51,13 +52,19 @@ public class BDDRoute {
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
 
-    factory = JFactory.init(100000, 10000);
-    factory.disableReorder();
-    // Disables printing
-    // factory.registerGCCallback(handler, m);
-    // factory.registerResizeCallback(handler, m);
-    // factory.registerReorderCallback(handler, m);
-    pairing = factory.makePair();
+    CallbackHandler handler = new CallbackHandler();
+    try {
+      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
+      factory = JFactory.init(100000, 10000);
+      factory.disableReorder();
+      // Disables printing
+      factory.registerGCCallback(handler, m);
+      // factory.registerResizeCallback(handler, m);
+      // factory.registerReorderCallback(handler, m);
+      pairing = factory.makePair();
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
   }
 
   private BDDInteger _adminDist;
