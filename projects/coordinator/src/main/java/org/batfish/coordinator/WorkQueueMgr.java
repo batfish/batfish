@@ -1,12 +1,17 @@
 package org.batfish.coordinator;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CoordConsts.WorkStatusCode;
-import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.WorkItemBuilder;
@@ -30,15 +35,21 @@ public class WorkQueueMgr {
     INCOMPLETE
   }
 
+  private Set<UUID> _blockingWork;
+
+  private BatfishLogger _logger;
+
   private WorkQueue _queueCompletedWork;
 
   private WorkQueue _queueIncompleteWork;
 
-  public WorkQueueMgr() {
-    this(Main.getSettings().getQueueType());
+  public WorkQueueMgr(BatfishLogger logger) {
+    this(Main.getSettings().getQueueType(), logger);
   }
 
-  public WorkQueueMgr(WorkQueue.Type wqType) {
+  public WorkQueueMgr(WorkQueue.Type wqType, BatfishLogger logger) {
+    _blockingWork = new HashSet<>();
+    _logger = logger;
     switch (wqType) {
       case azure:
         String storageConnectionString =
@@ -79,38 +90,45 @@ public class WorkQueueMgr {
 
     switch (envMetadata.getProcessingStatus()) {
       case UNINITIALIZED:
-        if (currentParsingWork == null) {
-          throw new BatfishException("Cannot compute dataplane without parsing");
-        }
-        return currentParsingWork;
+      case PARSING_FAIL:
       case PARSING:
         if (currentParsingWork == null) {
-          throw new BatfishException("Testrig is PARSING but no parsing work found");
+          throw new BatfishException(
+              String.format(
+                  "Cannot queue dataplane work for %s / %s: "
+                      + "Status is %s but no incomplete parsing work exists",
+                  wDetails.baseTestrig,
+                  wDetails.baseEnvironment,
+                  envMetadata.getProcessingStatus()));
         }
         return currentParsingWork;
       case PARSED:
         return currentParsingWork;
-      case PARSING_FAIL:
-        if (currentParsingWork == null) {
-          throw new BatfishException("Testrig is PARSING_FAIL and no other parsing work found");
-        }
-        return currentParsingWork;
       case DATAPLANING:
         // we get here only when currentDataplaningWork is null; by virtue of the calling context
-        throw new BatfishException("Testrig status is DATAPLANING but no dataplane work found");
+        throw new BatfishException(
+            String.format(
+                "Cannot queue dataplane work for %s / %s: "
+                    + "Status is %s but no incomplete dataplaning work exists",
+                wDetails.baseTestrig, wDetails.baseEnvironment, envMetadata.getProcessingStatus()));
       case DATAPLANED:
       case DATAPLANING_FAIL:
         return null;
       default:
         throw new BatfishException(
-            "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
+            "Unknown testrig processingStatus: " + envMetadata.getProcessingStatus());
     }
   }
 
+  /**
+   * This function has a side effect It will inject a dataplane generation work in the queue if none
+   * exists
+   */
   private QueuedWork getBlockerForDataplaneDependentWork(
       QueuedWork work, String testrig, String environment) throws Exception {
 
     WorkItem wItem = work.getWorkItem();
+    WorkDetails wDetails = work.getDetails();
 
     TestrigMetadata trMetadata = TestrigMetadataMgr.readMetadata(wItem.getContainerName(), testrig);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
@@ -123,13 +141,16 @@ public class WorkQueueMgr {
 
     switch (envMetadata.getProcessingStatus()) {
       case UNINITIALIZED:
-        if (parsingWork == null) {
-          throw new BatfishException("Cannot answer/analyze without parsing " + testrig);
-        }
-        return parsingWork;
+      case PARSING_FAIL:
       case PARSING:
         if (parsingWork == null) {
-          throw new BatfishException("Status is PARSING but no parsing work found for " + testrig);
+          throw new BatfishException(
+              String.format(
+                  "Cannot queue dataplane dependent work for %s / %s: "
+                      + "Status is %s but no incomplete parsing work exists",
+                  wDetails.baseTestrig,
+                  wDetails.baseEnvironment,
+                  envMetadata.getProcessingStatus()));
         }
         return parsingWork;
       case PARSED:
@@ -151,18 +172,19 @@ public class WorkQueueMgr {
         QueuedWork newWork = new QueuedWork(newWItem, details);
         boolean queued = queueUnassignedWork(newWork);
         if (!queued) {
-          throw new BatfishException("Failed to queue new dataplane work");
+          throw new BatfishException("Failed to auto-queue dataplane work");
         }
         return newWork;
-      case PARSING_FAIL:
-        if (parsingWork == null) {
-          throw new BatfishException(
-              "Status is PARSING_FAIL and no parsing work found for " + testrig);
-        }
-        return parsingWork;
+      case DATAPLANING_FAIL:
       case DATAPLANING:
         if (dataplaningWork == null) {
-          throw new BatfishException("Status is DATAPLANING but no such work found for " + testrig);
+          throw new BatfishException(
+              String.format(
+                  "Cannot queue dataplane dependent work for %s / %s: "
+                      + "Status is %s but no incomplete dataplaning work exists",
+                  wDetails.baseTestrig,
+                  wDetails.baseEnvironment,
+                  envMetadata.getProcessingStatus()));
         }
         return dataplaningWork;
       case DATAPLANED:
@@ -173,12 +195,6 @@ public class WorkQueueMgr {
           return dataplaningWork;
         }
         return null;
-      case DATAPLANING_FAIL:
-        if (dataplaningWork == null) {
-          throw new BatfishException(
-              "Status is DATAPLAINING_FAIL. Rejecting more dataplaneDependent work");
-        }
-        return dataplaningWork;
       default:
         throw new BatfishException(
             "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
@@ -189,6 +205,7 @@ public class WorkQueueMgr {
       QueuedWork work, String testrig, String environment) throws IOException {
 
     WorkItem wItem = work.getWorkItem();
+    WorkDetails wDetails = work.getDetails();
 
     TestrigMetadata trMetadata = TestrigMetadataMgr.readMetadata(wItem.getContainerName(), testrig);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
@@ -198,26 +215,19 @@ public class WorkQueueMgr {
 
     switch (envMetadata.getProcessingStatus()) {
       case UNINITIALIZED:
-        if (parsingWork == null) {
-          throw new BatfishException("Cannot answer/analyze without parsing " + testrig);
-        }
-        return parsingWork;
       case PARSING:
-        if (parsingWork == null) {
-          throw new BatfishException("Status is PARSING but no parsing work found for " + testrig);
-        }
-        return parsingWork;
-      case PARSED:
-        if (parsingWork == null) {
-          return null;
-        } else {
-          return parsingWork;
-        }
       case PARSING_FAIL:
         if (parsingWork == null) {
           throw new BatfishException(
-              "Status is PARSING_FAIL and no other parsing work found for " + testrig);
+              String.format(
+                  "Cannot queue dataplane independent work for %s / %s: "
+                      + "Status is %s but no incomplete parsing exists",
+                  wDetails.baseTestrig,
+                  wDetails.baseEnvironment,
+                  envMetadata.getProcessingStatus()));
         }
+        return parsingWork;
+      case PARSED:
         return parsingWork;
       case DATAPLANING:
       case DATAPLANED:
@@ -225,7 +235,7 @@ public class WorkQueueMgr {
         return null;
       default:
         throw new BatfishException(
-            "Unknown environment processingStatus: " + envMetadata.getProcessingStatus());
+            "Unknown testrig processingStatus: " + envMetadata.getProcessingStatus());
     }
   }
 
@@ -371,26 +381,20 @@ public class WorkQueueMgr {
   public synchronized void markAssignmentSuccess(QueuedWork work, String assignedWorker)
       throws IOException {
     work.setAssignment(assignedWorker);
+
     // update testrig metadata
     WorkItem wItem = work.getWorkItem();
-    if (WorkItemBuilder.isParsingWorkItem(wItem) || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-      Pair<Pair<String, String>, Pair<String, String>> settings =
-          WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-      String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
-      String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
+    WorkDetails wDetails = work.getDetails();
+    if (wDetails.workType == WorkType.PARSING || wDetails.workType == WorkType.DATAPLANING) {
       TestrigMetadata trMetadata =
-          TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
-      EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
-      if (WorkItemBuilder.isParsingWorkItem(wItem)) {
-        ProcessingStatus status = ProcessingStatus.PARSING;
-        envMetadata.updateStatus(status);
-        TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
-      }
-      if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-        ProcessingStatus status = ProcessingStatus.DATAPLANING;
-        envMetadata.updateStatus(status);
-        TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
-      }
+          TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
+      EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(wDetails.baseEnvironment);
+      ProcessingStatus status =
+          (wDetails.workType == WorkType.PARSING)
+              ? ProcessingStatus.PARSING
+              : ProcessingStatus.DATAPLANING;
+      envMetadata.updateStatus(status);
+      TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), wDetails.baseTestrig);
     }
   }
 
@@ -416,32 +420,58 @@ public class WorkQueueMgr {
                   ? WorkStatusCode.TERMINATEDNORMALLY
                   : WorkStatusCode.TERMINATEDABNORMALLY);
           work.recordTaskCheckResult(task);
-          WorkItem wItem = work.getWorkItem();
+
           // update testrig metadata
-          if (WorkItemBuilder.isParsingWorkItem(wItem)
-              || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-            Pair<Pair<String, String>, Pair<String, String>> settings =
-                WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-            String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
-            String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
+          WorkItem wItem = work.getWorkItem();
+          WorkDetails wDetails = work.getDetails();
+          if (wDetails.workType == WorkType.PARSING || wDetails.workType == WorkType.DATAPLANING) {
             TestrigMetadata trMetadata =
-                TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
-            EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
-            if (WorkItemBuilder.isParsingWorkItem(wItem)) {
-              ProcessingStatus status =
+                TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
+            EnvironmentMetadata envMetadata =
+                trMetadata.getEnvironments().get(wDetails.baseEnvironment);
+
+            ProcessingStatus status;
+            if (wDetails.workType == WorkType.PARSING) {
+              status =
                   (task.getStatus() == TaskStatus.TerminatedNormally)
                       ? ProcessingStatus.PARSED
                       : ProcessingStatus.PARSING_FAIL;
-              envMetadata.updateStatus(status);
-              TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
-            }
-            if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-              ProcessingStatus status =
+            } else {
+              status =
                   (task.getStatus() == TaskStatus.TerminatedNormally)
                       ? ProcessingStatus.DATAPLANED
                       : ProcessingStatus.DATAPLANING_FAIL;
-              envMetadata.updateStatus(status);
-              TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+            }
+            envMetadata.updateStatus(status);
+            TestrigMetadataMgr.writeMetadata(
+                trMetadata, wItem.getContainerName(), wDetails.baseTestrig);
+          }
+
+          // check if we unblocked anything
+          if (_blockingWork.contains(wItem.getId())) {
+            List<QueuedWork> requeueWorks = new LinkedList<>();
+            for (QueuedWork incompleteWork : _queueIncompleteWork) {
+              if (incompleteWork.getStatus() == WorkStatusCode.BLOCKED
+                  && wDetails.isOverlappingInput(incompleteWork.getDetails())) {
+                requeueWorks.add(incompleteWork);
+              }
+            }
+            for (QueuedWork requeueWork : requeueWorks) {
+              _queueIncompleteWork.delete(requeueWork);
+              requeueWork.setStatus(WorkStatusCode.UNASSIGNED);
+              try {
+                boolean queued = queueUnassignedWork(requeueWork);
+                if (!queued) {
+                  throw new BatfishException(
+                      "Failed to requeue previously blocked work " + requeueWork.getId());
+                }
+              } catch (Exception e) {
+                String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                _logger.errorf("exception: %s\n", stackTrace);
+                // put this work on the completed queue in case people are checking its status
+                _queueCompletedWork.enque(requeueWork);
+                requeueWork.setStatus(WorkStatusCode.TERMINATEDABNORMALLY);
+              }
             }
           }
         }
@@ -458,37 +488,36 @@ public class WorkQueueMgr {
             work.setStatus(WorkStatusCode.UNASSIGNED);
             work.clearAssignment();
             work.recordTaskCheckResult(task);
+
             // update testrig metadata
             WorkItem wItem = work.getWorkItem();
-            if (WorkItemBuilder.isParsingWorkItem(wItem)
-                || WorkItemBuilder.isDataplaningWorkItem(wItem)) {
-              Pair<Pair<String, String>, Pair<String, String>> settings =
-                  WorkItemBuilder.getBaseAndDeltaSettings(wItem);
-              String baseTestrig = WorkItemBuilder.getBaseTestrig(settings);
-              String baseEnv = WorkItemBuilder.getBaseEnvironment(settings);
+            WorkDetails wDetails = work.getDetails();
+            if (wDetails.workType == WorkType.PARSING
+                || wDetails.workType == WorkType.DATAPLANING) {
               TestrigMetadata trMetadata =
-                  TestrigMetadataMgr.readMetadata(wItem.getContainerName(), baseTestrig);
-              EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(baseEnv);
-              if (WorkItemBuilder.isParsingWorkItem(wItem)) {
+                  TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
+              EnvironmentMetadata envMetadata =
+                  trMetadata.getEnvironments().get(wDetails.baseEnvironment);
+              ProcessingStatus status;
+              if (wDetails.workType == WorkType.PARSING) {
                 if (envMetadata.getProcessingStatus() != ProcessingStatus.PARSING) {
-                  throw new BatfishException(
-                      "Unexpected status when parsing work failed: "
-                          + envMetadata.getProcessingStatus());
+                  _logger.errorf(
+                      "Unexpected status %s when parsing work failed for %s",
+                      envMetadata.getProcessingStatus(), wDetails.baseTestrig);
                 }
-                ProcessingStatus status = ProcessingStatus.UNINITIALIZED;
-                envMetadata.updateStatus(status);
-                TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
-              }
-              if (WorkItemBuilder.isDataplaningWorkItem(wItem)) {
+                status = ProcessingStatus.UNINITIALIZED;
+              } else {
                 if (envMetadata.getProcessingStatus() != ProcessingStatus.DATAPLANING) {
-                  throw new BatfishException(
-                      "Unexpected status when dataplaning work failed: "
-                          + envMetadata.getProcessingStatus());
+                  _logger.errorf(
+                      "Unexpected status %s when dataplaning work failed for %s"
+                          + envMetadata.getProcessingStatus(),
+                      wDetails.baseTestrig);
                 }
-                ProcessingStatus status = ProcessingStatus.PARSED;
-                envMetadata.updateStatus(status);
-                TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), baseTestrig);
+                status = ProcessingStatus.PARSED;
               }
+              envMetadata.updateStatus(status);
+              TestrigMetadataMgr.writeMetadata(
+                  trMetadata, wItem.getContainerName(), wDetails.baseTestrig);
             }
           } else {
             work.setStatus(WorkStatusCode.ASSIGNED);
@@ -508,9 +537,7 @@ public class WorkQueueMgr {
       throw new BatfishException("Duplicate work item");
     }
 
-    WorkDetails wDetails = work.getDetails();
-
-    switch (wDetails.workType) {
+    switch (work.getDetails().workType) {
       case PARSING:
         return queueParsingWork(work);
       case DATAPLANING:
@@ -522,7 +549,16 @@ public class WorkQueueMgr {
       case UNKNOWN:
         return _queueIncompleteWork.enque(work);
       default:
-        throw new BatfishException("Unknown WorkType " + wDetails.workType);
+        throw new BatfishException("Unknown WorkType " + work.getDetails().workType);
+    }
+  }
+
+  private boolean conditionalThrow(String message, boolean background) {
+    _logger.errorf(message);
+    if (background) {
+      return false;
+    } else {
+      throw new BatfishException(message);
     }
   }
 
@@ -532,6 +568,7 @@ public class WorkQueueMgr {
     QueuedWork baseBlocker =
         getBlockerForDataplaneDependentWork(work, wDetails.baseTestrig, wDetails.baseEnvironment);
     if (baseBlocker != null) {
+      _blockingWork.add(baseBlocker.getId());
       work.setStatus(WorkStatusCode.BLOCKED);
       return _queueIncompleteWork.enque(work);
     } else if (wDetails.isDifferential) {
@@ -539,6 +576,7 @@ public class WorkQueueMgr {
           getBlockerForDataplaneDependentWork(
               work, wDetails.deltaTestrig, wDetails.deltaEnvironment);
       if (deltaBlocker != null) {
+        _blockingWork.add(deltaBlocker.getId());
         work.setStatus(WorkStatusCode.BLOCKED);
         return _queueIncompleteWork.enque(work);
       } else {
@@ -556,6 +594,7 @@ public class WorkQueueMgr {
     QueuedWork baseBlocker =
         getBlockerForDataplaneIndependentWork(work, wDetails.baseTestrig, wDetails.baseEnvironment);
     if (baseBlocker != null) {
+      _blockingWork.add(baseBlocker.getId());
       work.setStatus(WorkStatusCode.BLOCKED);
       return _queueIncompleteWork.enque(work);
     } else if (wDetails.isDifferential) {
@@ -563,6 +602,7 @@ public class WorkQueueMgr {
           getBlockerForDataplaneIndependentWork(
               work, wDetails.deltaTestrig, wDetails.deltaEnvironment);
       if (deltaBlocker != null) {
+        _blockingWork.add(deltaBlocker.getId());
         work.setStatus(WorkStatusCode.BLOCKED);
         return _queueIncompleteWork.enque(work);
       } else {
@@ -604,6 +644,7 @@ public class WorkQueueMgr {
     if (blocker == null) {
       return _queueIncompleteWork.enque(work);
     } else {
+      _blockingWork.add(blocker.getId());
       work.setStatus(WorkStatusCode.BLOCKED);
       return _queueIncompleteWork.enque(work);
     }
@@ -614,8 +655,8 @@ public class WorkQueueMgr {
     WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
-    // if incomplete work for this testrig exists, lets just reject this parsing work
-    // parsing work cannot proceeed in parallel because it may overwrite files used by others
+    // if incomplete work for this testrig exists, lets just reject this parsing work.
+    // parsing work cannot proceeed in parallel because it may overwrite files used by others.
     // instead of rejecting, we could have queued it as BLOCKED but we risk cycles of BLOCKED work
     // this should not be a common case anyway, so we aren't losing much by rejecting it
     QueuedWork incompleteWork =

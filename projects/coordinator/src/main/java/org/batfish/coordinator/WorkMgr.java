@@ -102,7 +102,7 @@ public class WorkMgr extends AbstractCoordinator {
     super(false);
     _settings = settings;
     _logger = logger;
-    _workQueueMgr = new WorkQueueMgr();
+    _workQueueMgr = new WorkQueueMgr(logger);
     loadPlugins();
   }
 
