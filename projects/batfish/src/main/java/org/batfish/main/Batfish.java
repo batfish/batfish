@@ -2601,7 +2601,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(HeaderSpace headerSpace) {
+  public AnswerElement multipath(HeaderSpace headerSpace, String ingressNodeRegex) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -2612,8 +2612,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = null;
     Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
     List<NodJob> jobs = new ArrayList<>();
+    Pattern ingressPattern = Pattern.compile(ingressNodeRegex);
     configurations.forEach(
         (node, configuration) -> {
+          if (!ingressPattern.matcher(node).matches()) {
+            // Skip nodes that don't match the ingress node regex.
+            return;
+          }
           for (String vrf : configuration.getVrfs().keySet()) {
             MultipathInconsistencyQuerySynthesizer query =
                 new MultipathInconsistencyQuerySynthesizer(node, vrf, headerSpace);
@@ -3513,7 +3518,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement reducedReachability(HeaderSpace headerSpace) {
+  public AnswerElement reducedReachability(HeaderSpace headerSpace, String ingressNodeRegex) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -3556,8 +3561,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     List<CompositeNodJob> jobs = new ArrayList<>();
 
+    Pattern ingressPattern = Pattern.compile(ingressNodeRegex);
+
     // generate base reachability and diff blackhole and blacklist queries
     for (String node : commonNodes) {
+      if (!ingressPattern.matcher(node).matches()) {
+        // Skip nodes that don't match the ingress node regex.
+        continue;
+      }
       for (String vrf : baseConfigurations.get(node).getVrfs().keySet()) {
         Map<String, Set<String>> nodeVrfs = new TreeMap<>();
         nodeVrfs.put(node, Collections.singleton(vrf));

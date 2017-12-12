@@ -113,7 +113,7 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(HeaderSpace headerSpace);
+  AnswerElement multipath(HeaderSpace headerSpace, String ingressNodeRegex);
 
   AtomicInteger newBatch(String description, int jobs);
 
@@ -134,7 +134,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(HeaderSpace headerSpace);
+  AnswerElement reducedReachability(HeaderSpace headerSpace, String ingressNodeRegex);
 
   void registerAnswerer(
       String questionName,
