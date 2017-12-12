@@ -69,7 +69,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(question.getHeaderSpace());
+      return _batfish.multipath(question.getHeaderSpace(), question.getIngressNodeRegex());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
@@ -77,7 +77,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
-      return _batfish.reducedReachability(question.getHeaderSpace());
+      return _batfish.reducedReachability(
+          question.getHeaderSpace(), question.getIngressNodeRegex());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {

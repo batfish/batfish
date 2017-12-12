@@ -14,7 +14,7 @@ public abstract class BfObject {
 
   @Override
   public boolean equals(Object o) {
-    return (o != null && o.getClass() == this.getClass() && ((BfObject) o).getId() == _id);
+    return (o != null && o.getClass() == this.getClass() && _id.equals(((BfObject) o).getId()));
   }
 
   public String getId() {
