@@ -18,7 +18,11 @@ public class WorkDetails {
   public WorkType workType;
 
   public WorkDetails() {
-    workType = WorkType.UNKNOWN;
+    this(null, null, null, null, false, WorkType.UNKNOWN);
+  }
+
+  public WorkDetails(String baseTestrig, String baseEnvironment, WorkType workType) {
+    this(baseTestrig, baseEnvironment, null, null, false, workType);
   }
 
   public WorkDetails(
