@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import java.util.Map;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
 import org.batfish.common.WorkItem;
@@ -130,7 +131,6 @@ public class WorkItemBuilder {
       WorkItem workItem) {
     Map<String, String> reqParams = workItem.getRequestParams();
 
-    // this logic mimics what happens in initTestrigSettings in Batfish.java
     String testrig = workItem.getTestrigName();
     String envName =
         reqParams.containsKey(BfConsts.ARG_ENVIRONMENT_NAME)
@@ -138,13 +138,17 @@ public class WorkItemBuilder {
             : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
     String deltaTestrig = reqParams.get(BfConsts.ARG_DELTA_TESTRIG);
     String deltaEnvName = reqParams.get(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
-    if (deltaTestrig != null && deltaEnvName == null) {
-      deltaEnvName = envName;
-    } else if (deltaTestrig == null && deltaEnvName != null) {
+    if (deltaEnvName != null && deltaTestrig == null) {
       deltaTestrig = testrig;
+    }
+    if (deltaTestrig != null && deltaEnvName == null) {
+      throw new BatfishException("deltaEnv not specified for deltaTestrig " + deltaTestrig);
     }
     if (reqParams.containsKey(BfConsts.ARG_DIFF_ACTIVE)
         && !reqParams.get(BfConsts.ARG_DIFF_ACTIVE).toLowerCase().equals("false")) {
+      if (deltaTestrig == null) {
+        throw new BatfishException("delta settings not specified when diff_active is on");
+      }
       testrig = deltaTestrig;
       envName = deltaEnvName;
     }
