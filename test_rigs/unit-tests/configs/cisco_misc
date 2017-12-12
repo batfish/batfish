@@ -150,6 +150,7 @@ memory reserve critical 8192
 mirror location 0/RSP0/CPU0 disk0:disk1:
 no monitor-interface service-module
 no mpls strip
+no timeout
 name 1.2.3.4 hello
 nv
  satellite 100
@@ -230,6 +231,16 @@ tap aggregation
 tftp-server disk0:abcdefg.bin
 time-range ACCTIME-247
  periodic daily 0:00 to 23:59
+timeout xlate 3:00:00
+timeout pat-xlate 0:00:30
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02
+timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
+timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
+timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
+timeout tcp-proxy-reassembly 0:01:00
+timeout floating-conn 0:00:00
+timeout conn-holddown 0:00:15
+timeout igp stale-route 0:01:10
 tls-proxy ASA-tls-proxy
  server trust-point _internal_PP_ctl_phoneproxy_file
 transceiver qsfp default-mode 4x10G
@@ -263,5 +274,6 @@ xdr multicast-group internal issu-slots-split
 xdr multicast-group mode individual
 xml agent tty
 !
+Cryptochecksum:8a138d9f7c12c6cb1180f831d7a5bc9f
 end
 !
