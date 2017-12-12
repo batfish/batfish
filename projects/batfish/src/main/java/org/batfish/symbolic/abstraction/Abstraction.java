@@ -120,10 +120,8 @@ public class Abstraction {
     for (Prefix pfx : notDstIps) {
       catchAll.getNotDstIps().add(new IpWildcard(pfx));
     }
-    for (Entry<Set<String>, List<Prefix>> entry : destinationMap.entrySet()) {
-      List<Prefix> prefixes = entry.getValue();
+    for (List<Prefix> prefixes : destinationMap.values()) {
       for (Prefix pfx : prefixes) {
-        // System.out.println("Check for: " + devices + " --> " + prefixes);
         catchAll.getNotDstIps().add(new IpWildcard(pfx));
       }
     }
