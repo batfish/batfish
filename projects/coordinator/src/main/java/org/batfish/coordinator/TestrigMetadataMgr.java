@@ -9,18 +9,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.EnvironmentMetadata;
+import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 import org.batfish.datamodel.TestrigMetadata;
 
 public class TestrigMetadataMgr {
 
-  public static void writeMetadata(TestrigMetadata metadata, String container, String testrig)
-      throws JsonProcessingException {
-    writeMetadata(metadata, WorkMgr.getpathTestrigMetadata(container, testrig));
-  }
-
-  public static synchronized void writeMetadata(TestrigMetadata metadata, Path metadataPath)
-      throws JsonProcessingException {
-    CommonUtil.writeFile(metadataPath, new BatfishObjectMapper().writeValueAsString(metadata));
+  public static EnvironmentMetadata getEnvironmentMetadata(
+      String container, String testrig, String envName) throws IOException {
+    TestrigMetadata trMetadata = readMetadata(container, testrig);
+    return trMetadata.getEnvironments().get(envName);
   }
 
   public static synchronized void initializeEnvironment(
@@ -35,9 +33,28 @@ public class TestrigMetadataMgr {
     return readMetadata(WorkMgr.getpathTestrigMetadata(container, testrig));
   }
 
-  // reading does not need to be synchronized
   public static TestrigMetadata readMetadata(Path metadataPath) throws IOException {
     String jsonStr = CommonUtil.readFile(metadataPath);
     return new BatfishObjectMapper().readValue(jsonStr, TestrigMetadata.class);
+  }
+
+  public static void writeMetadata(TestrigMetadata metadata, String container, String testrig)
+      throws JsonProcessingException {
+    writeMetadata(metadata, WorkMgr.getpathTestrigMetadata(container, testrig));
+  }
+
+  public static synchronized void writeMetadata(TestrigMetadata metadata, Path metadataPath)
+      throws JsonProcessingException {
+    CommonUtil.writeFile(metadataPath, new BatfishObjectMapper().writeValueAsString(metadata));
+  }
+
+  public static synchronized void updateEnvironmentStatus(
+      String container, String testrig, String envName, ProcessingStatus status)
+      throws IOException {
+    Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);
+    TestrigMetadata trMetadata = readMetadata(metadataPath);
+    EnvironmentMetadata environmentMetadata = trMetadata.getEnvironments().get(envName);
+    environmentMetadata.updateStatus(status);
+    writeMetadata(trMetadata, metadataPath);
   }
 }

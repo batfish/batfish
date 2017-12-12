@@ -21,7 +21,6 @@ import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
 import org.batfish.datamodel.EnvironmentMetadata;
 import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
-import org.batfish.datamodel.TestrigMetadata;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -84,9 +83,9 @@ public class WorkQueueMgr {
             wDetails.baseEnvironment,
             WorkType.PARSING);
 
-    TestrigMetadata trMetadata =
-        TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
-    EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(wDetails.baseEnvironment);
+    EnvironmentMetadata envMetadata =
+        TestrigMetadataMgr.getEnvironmentMetadata(
+            wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
 
     switch (envMetadata.getProcessingStatus()) {
       case UNINITIALIZED:
@@ -130,8 +129,8 @@ public class WorkQueueMgr {
     WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
-    TestrigMetadata trMetadata = TestrigMetadataMgr.readMetadata(wItem.getContainerName(), testrig);
-    EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
+    EnvironmentMetadata envMetadata =
+        TestrigMetadataMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
 
     QueuedWork parsingWork =
         getIncompleteWorkType(wItem.getContainerName(), testrig, environment, WorkType.PARSING);
@@ -204,8 +203,8 @@ public class WorkQueueMgr {
     WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
-    TestrigMetadata trMetadata = TestrigMetadataMgr.readMetadata(wItem.getContainerName(), testrig);
-    EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
+    EnvironmentMetadata envMetadata =
+        TestrigMetadataMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
 
     QueuedWork parsingWork =
         getIncompleteWorkType(wItem.getContainerName(), testrig, environment, WorkType.PARSING);
@@ -365,7 +364,6 @@ public class WorkQueueMgr {
 
   // when assignment attempt ends in error, we do not try to reassign
   public synchronized void markAssignmentError(QueuedWork work) throws Exception {
-    // move the work to completed queue
     _queueIncompleteWork.delete(work);
     _queueCompletedWork.enque(work);
     work.setStatus(WorkStatusCode.ASSIGNMENTERROR);
@@ -382,16 +380,18 @@ public class WorkQueueMgr {
     // update testrig metadata
     WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
-    if (wDetails.workType == WorkType.PARSING || wDetails.workType == WorkType.DATAPLANING) {
-      TestrigMetadata trMetadata =
-          TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
-      EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(wDetails.baseEnvironment);
-      ProcessingStatus status =
-          (wDetails.workType == WorkType.PARSING)
-              ? ProcessingStatus.PARSING
-              : ProcessingStatus.DATAPLANING;
-      envMetadata.updateStatus(status);
-      TestrigMetadataMgr.writeMetadata(trMetadata, wItem.getContainerName(), wDetails.baseTestrig);
+    if (wDetails.workType == WorkType.PARSING) {
+      TestrigMetadataMgr.updateEnvironmentStatus(
+          wItem.getContainerName(),
+          wDetails.baseTestrig,
+          wDetails.baseEnvironment,
+          ProcessingStatus.PARSING);
+    } else if (wDetails.workType == WorkType.DATAPLANING) {
+      TestrigMetadataMgr.updateEnvironmentStatus(
+          wItem.getContainerName(),
+          wDetails.baseTestrig,
+          wDetails.baseEnvironment,
+          ProcessingStatus.DATAPLANING);
     }
   }
 
@@ -421,27 +421,20 @@ public class WorkQueueMgr {
           // update testrig metadata
           WorkItem wItem = work.getWorkItem();
           WorkDetails wDetails = work.getDetails();
-          if (wDetails.workType == WorkType.PARSING || wDetails.workType == WorkType.DATAPLANING) {
-            TestrigMetadata trMetadata =
-                TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
-            EnvironmentMetadata envMetadata =
-                trMetadata.getEnvironments().get(wDetails.baseEnvironment);
-
-            ProcessingStatus status;
-            if (wDetails.workType == WorkType.PARSING) {
-              status =
-                  (task.getStatus() == TaskStatus.TerminatedNormally)
-                      ? ProcessingStatus.PARSED
-                      : ProcessingStatus.PARSING_FAIL;
-            } else {
-              status =
-                  (task.getStatus() == TaskStatus.TerminatedNormally)
-                      ? ProcessingStatus.DATAPLANED
-                      : ProcessingStatus.DATAPLANING_FAIL;
-            }
-            envMetadata.updateStatus(status);
-            TestrigMetadataMgr.writeMetadata(
-                trMetadata, wItem.getContainerName(), wDetails.baseTestrig);
+          if (wDetails.workType == WorkType.PARSING) {
+            ProcessingStatus status =
+                (task.getStatus() == TaskStatus.TerminatedNormally)
+                    ? ProcessingStatus.PARSED
+                    : ProcessingStatus.PARSING_FAIL;
+            TestrigMetadataMgr.updateEnvironmentStatus(
+                wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment, status);
+          } else if (wDetails.workType == WorkType.DATAPLANING) {
+            ProcessingStatus status =
+                (task.getStatus() == TaskStatus.TerminatedNormally)
+                    ? ProcessingStatus.DATAPLANED
+                    : ProcessingStatus.DATAPLANING_FAIL;
+            TestrigMetadataMgr.updateEnvironmentStatus(
+                wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment, status);
           }
 
           // check if we unblocked anything
@@ -491,30 +484,38 @@ public class WorkQueueMgr {
             WorkDetails wDetails = work.getDetails();
             if (wDetails.workType == WorkType.PARSING
                 || wDetails.workType == WorkType.DATAPLANING) {
-              TestrigMetadata trMetadata =
-                  TestrigMetadataMgr.readMetadata(wItem.getContainerName(), wDetails.baseTestrig);
               EnvironmentMetadata envMetadata =
-                  trMetadata.getEnvironments().get(wDetails.baseEnvironment);
-              ProcessingStatus status;
+                  TestrigMetadataMgr.getEnvironmentMetadata(
+                      wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnvironment);
               if (wDetails.workType == WorkType.PARSING) {
                 if (envMetadata.getProcessingStatus() != ProcessingStatus.PARSING) {
                   _logger.errorf(
-                      "Unexpected status %s when parsing work failed for %s",
-                      envMetadata.getProcessingStatus(), wDetails.baseTestrig);
+                      "Unexpected status %s when parsing failed for %s / %s",
+                      envMetadata.getProcessingStatus(),
+                      wDetails.baseTestrig,
+                      wDetails.baseEnvironment);
+                } else {
+                  TestrigMetadataMgr.updateEnvironmentStatus(
+                      wItem.getContainerName(),
+                      wDetails.baseTestrig,
+                      wDetails.baseEnvironment,
+                      ProcessingStatus.UNINITIALIZED);
                 }
-                status = ProcessingStatus.UNINITIALIZED;
-              } else {
+              } else { // wDetails.workType == WorkType.DATAPLANING
                 if (envMetadata.getProcessingStatus() != ProcessingStatus.DATAPLANING) {
                   _logger.errorf(
-                      "Unexpected status %s when dataplaning work failed for %s"
-                          + envMetadata.getProcessingStatus(),
-                      wDetails.baseTestrig);
+                      "Unexpected status %s when dataplaning failed for %s / %s",
+                      envMetadata.getProcessingStatus(),
+                      wDetails.baseTestrig,
+                      wDetails.baseEnvironment);
+                } else {
+                  TestrigMetadataMgr.updateEnvironmentStatus(
+                      wItem.getContainerName(),
+                      wDetails.baseTestrig,
+                      wDetails.baseEnvironment,
+                      ProcessingStatus.PARSED);
                 }
-                status = ProcessingStatus.PARSED;
               }
-              envMetadata.updateStatus(status);
-              TestrigMetadataMgr.writeMetadata(
-                  trMetadata, wItem.getContainerName(), wDetails.baseTestrig);
             }
           } else {
             work.setStatus(WorkStatusCode.ASSIGNED);
@@ -528,35 +529,10 @@ public class WorkQueueMgr {
     }
   }
 
-  public synchronized boolean queueUnassignedWork(QueuedWork work) throws Exception {
-    QueuedWork previouslyQueuedWork = getWork(work.getId());
-    if (previouslyQueuedWork != null) {
-      throw new BatfishException("Duplicate work item");
-    }
-
-    switch (work.getDetails().workType) {
-      case PARSING:
-        return queueParsingWork(work);
-      case DATAPLANING:
-        return queueDataplaningWork(work);
-      case DATAPLANE_DEPENDENT_ANSWERING:
-        return queueDataplaneDependentWork(work);
-      case DATAPLANE_INDEPENDENT_ANSWERING:
-        return queueDataplaneIndependentWork(work);
-      case UNKNOWN:
-        return _queueIncompleteWork.enque(work);
-      default:
-        throw new BatfishException("Unknown WorkType " + work.getDetails().workType);
-    }
-  }
-
-  private boolean conditionalThrow(String message, boolean background) {
-    _logger.errorf(message);
-    if (background) {
-      return false;
-    } else {
-      throw new BatfishException(message);
-    }
+  private boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) throws Exception {
+    _blockingWork.add(blocker.getId());
+    work.setStatus(WorkStatusCode.BLOCKED);
+    return _queueIncompleteWork.enque(work);
   }
 
   private boolean queueDataplaneDependentWork(QueuedWork work) throws Exception {
@@ -565,17 +541,13 @@ public class WorkQueueMgr {
     QueuedWork baseBlocker =
         getBlockerForDataplaneDependentWork(work, wDetails.baseTestrig, wDetails.baseEnvironment);
     if (baseBlocker != null) {
-      _blockingWork.add(baseBlocker.getId());
-      work.setStatus(WorkStatusCode.BLOCKED);
-      return _queueIncompleteWork.enque(work);
+      return queueBlockedWork(work, baseBlocker);
     } else if (wDetails.isDifferential) {
       QueuedWork deltaBlocker =
           getBlockerForDataplaneDependentWork(
               work, wDetails.deltaTestrig, wDetails.deltaEnvironment);
       if (deltaBlocker != null) {
-        _blockingWork.add(deltaBlocker.getId());
-        work.setStatus(WorkStatusCode.BLOCKED);
-        return _queueIncompleteWork.enque(work);
+        return queueBlockedWork(work, deltaBlocker);
       } else {
         return _queueIncompleteWork.enque(work);
       }
@@ -591,17 +563,13 @@ public class WorkQueueMgr {
     QueuedWork baseBlocker =
         getBlockerForDataplaneIndependentWork(work, wDetails.baseTestrig, wDetails.baseEnvironment);
     if (baseBlocker != null) {
-      _blockingWork.add(baseBlocker.getId());
-      work.setStatus(WorkStatusCode.BLOCKED);
-      return _queueIncompleteWork.enque(work);
+      return queueBlockedWork(work, baseBlocker);
     } else if (wDetails.isDifferential) {
       QueuedWork deltaBlocker =
           getBlockerForDataplaneIndependentWork(
               work, wDetails.deltaTestrig, wDetails.deltaEnvironment);
       if (deltaBlocker != null) {
-        _blockingWork.add(deltaBlocker.getId());
-        work.setStatus(WorkStatusCode.BLOCKED);
-        return _queueIncompleteWork.enque(work);
+        return queueBlockedWork(work, deltaBlocker);
       } else {
         return _queueIncompleteWork.enque(work);
       }
@@ -641,9 +609,7 @@ public class WorkQueueMgr {
     if (blocker == null) {
       return _queueIncompleteWork.enque(work);
     } else {
-      _blockingWork.add(blocker.getId());
-      work.setStatus(WorkStatusCode.BLOCKED);
-      return _queueIncompleteWork.enque(work);
+      return queueBlockedWork(work, blocker);
     }
   }
 
@@ -663,5 +629,27 @@ public class WorkQueueMgr {
     }
 
     return _queueIncompleteWork.enque(work);
+  }
+
+  public synchronized boolean queueUnassignedWork(QueuedWork work) throws Exception {
+    QueuedWork previouslyQueuedWork = getWork(work.getId());
+    if (previouslyQueuedWork != null) {
+      throw new BatfishException("Duplicate work item");
+    }
+
+    switch (work.getDetails().workType) {
+      case PARSING:
+        return queueParsingWork(work);
+      case DATAPLANING:
+        return queueDataplaningWork(work);
+      case DATAPLANE_DEPENDENT_ANSWERING:
+        return queueDataplaneDependentWork(work);
+      case DATAPLANE_INDEPENDENT_ANSWERING:
+        return queueDataplaneIndependentWork(work);
+      case UNKNOWN:
+        return _queueIncompleteWork.enque(work);
+      default:
+        throw new BatfishException("Unknown WorkType " + work.getDetails().workType);
+    }
   }
 }
