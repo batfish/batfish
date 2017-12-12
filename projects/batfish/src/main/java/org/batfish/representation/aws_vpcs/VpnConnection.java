@@ -244,6 +244,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       // ike
       ikeGateway.setExternalInterface(externalInterface);
       ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
+      ikeGateway.setLocalAddress(externalInterface.getPrefix().getAddress());
       if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
         ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
         ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);

@@ -1,0 +1,27 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "10.100.0.0/16", 
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-222ecd49", 
+     "CidrBlock": "10.100.0.0/16", 
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ], 
+   "DhcpOptionsId": "dopt-5870b93d", 
+   "InstanceTenancy": "default", 
+   "IsDefault": false, 
+   "State": "available", 
+   "Tags": [
+    {
+     "Key": "Name", 
+     "Value": "GNS3-BGP-Test"
+    }
+   ], 
+   "VpcId": "vpc-815775e7"
+  }
+ ]
+}
