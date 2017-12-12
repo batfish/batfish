@@ -28,7 +28,7 @@ import org.junit.rules.ExpectedException;
 /** Tests for {@link WorkQueueMgr}. */
 public class WorkQueueMgrTest {
 
-  private final String CONTAINER = "container";
+  private static final String CONTAINER = "container";
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
