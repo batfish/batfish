@@ -22,12 +22,12 @@ public class TestrigMetadata {
   public TestrigMetadata(
       @JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp,
       @JsonProperty(PROP_ENVIRONMENTS) Map<String, EnvironmentMetadata> environments) {
-    this._creationTimestamp = creationTimestamp;
+    _creationTimestamp = creationTimestamp;
     _environments = environments;
   }
 
   public TestrigMetadata(@JsonProperty(PROP_CREATIONTIMESTAMP) Instant creationTimestamp) {
-    this._creationTimestamp = creationTimestamp;
+    _creationTimestamp = creationTimestamp;
     _environments = new HashMap<>();
     initializeEnvironment(BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
   }

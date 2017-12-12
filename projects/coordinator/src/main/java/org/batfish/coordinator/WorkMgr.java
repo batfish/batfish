@@ -859,7 +859,7 @@ public class WorkMgr extends AbstractCoordinator {
       TestrigMetadataMgr.writeMetadata(
           metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
     } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not testrigMetadata", e);
+      throw new BatfishException("Could not write testrigMetadata", e);
     }
 
     Path srcSubdir = srcDirEntries.iterator().next();
