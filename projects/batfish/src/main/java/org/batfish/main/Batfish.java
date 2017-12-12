@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -3878,13 +3877,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void serializeAsJson(Path outputPath, Object object, String objectName) {
-    String str;
     try {
-      str = new BatfishObjectMapper().writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
+    } catch (IOException e) {
       throw new BatfishException("Could not serialize " + objectName + " ", e);
     }
-    CommonUtil.writeFile(outputPath, str);
   }
 
   private Answer serializeAwsVpcConfigs(Path testRigPath, Path outputPath) {
@@ -4124,34 +4121,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (objectsByPath.isEmpty()) {
       return;
     }
-    BatfishLogger logger = getLogger();
-    Map<Path, byte[]> dataByPath = new ConcurrentHashMap<>();
+
     int size = objectsByPath.size();
     String className = objectsByPath.values().iterator().next().getClass().getName();
-    AtomicInteger serializeCompleted = newBatch("Serializing '" + className + "' instances", size);
+    AtomicInteger serializeCompleted =
+        newBatch(String.format("Serializing '%s' instances to disk", className), size);
     objectsByPath
-        .keySet()
+        .entrySet()
         .parallelStream()
         .forEach(
-            outputPath -> {
-              S object = objectsByPath.get(outputPath);
-              byte[] gzipData = toGzipData(object);
-              dataByPath.put(outputPath, gzipData);
+            entry -> {
+              Path outputPath = entry.getKey();
+              S object = entry.getValue();
+              serializeObject(object, outputPath);
               serializeCompleted.incrementAndGet();
             });
-    AtomicInteger writeCompleted =
-        newBatch("Packing and writing '" + className + "' instances to disk", size);
-    dataByPath.forEach(
-        (outputPath, data) -> {
-          logger.debug("Writing: \"" + outputPath + "\"...");
-          try {
-            Files.write(outputPath, data);
-          } catch (IOException e) {
-            throw new BatfishException("Failed to write: '" + outputPath + "'");
-          }
-          logger.debug("OK\n");
-          writeCompleted.incrementAndGet();
-        });
   }
 
   Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {

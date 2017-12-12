@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,10 @@ public class Conjunction extends BooleanExpr {
 
   @Override
   public BooleanExpr simplify() {
-    List<BooleanExpr> simpleConjuncts = new ArrayList<>();
+    if (_simplified != null) {
+      return _simplified;
+    }
+    ImmutableList.Builder<BooleanExpr> simpleConjunctsBuilder = ImmutableList.builder();
     boolean atLeastOneFalse = false;
     boolean atLeastOneComplex = false;
     for (BooleanExpr conjunct : _conjuncts) {
@@ -95,25 +99,29 @@ public class Conjunction extends BooleanExpr {
       if (simpleConjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
         atLeastOneFalse = true;
         if (!atLeastOneComplex) {
-          return BooleanExprs.False.toStaticBooleanExpr();
+          _simplified = BooleanExprs.False.toStaticBooleanExpr();
+          return _simplified;
         } else if (!atLeastOneFalse) {
-          simpleConjuncts.add(simpleConjunct);
+          simpleConjunctsBuilder.add(simpleConjunct);
         }
       } else if (!simpleConjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
         atLeastOneComplex = true;
-        simpleConjuncts.add(simpleConjunct);
+        simpleConjunctsBuilder.add(simpleConjunct);
       }
     }
+    List<BooleanExpr> simpleConjuncts = simpleConjunctsBuilder.build();
     if (simpleConjuncts.isEmpty()) {
-      return BooleanExprs.True.toStaticBooleanExpr();
+      _simplified = BooleanExprs.True.toStaticBooleanExpr();
     } else if (simpleConjuncts.size() == 1) {
-      return simpleConjuncts.get(0);
+      _simplified = simpleConjuncts.get(0);
     } else {
       Conjunction simple = new Conjunction();
       simple.setConjuncts(simpleConjuncts);
       simple.setComment(getComment());
-      return simple;
+      _simplified = simple;
+      simple._simplified = _simplified;
     }
+    return _simplified;
   }
 
   @Override
