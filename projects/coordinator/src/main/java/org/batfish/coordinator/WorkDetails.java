@@ -6,7 +6,7 @@ public class WorkDetails {
     PARSING,
     DATAPLANING,
     DATAPLANE_INDEPENDENT_ANSWERING, // includes analyzing
-    DATAPLANE_DEPENDENT_ANSWERING,   // includes analyzing
+    DATAPLANE_DEPENDENT_ANSWERING, // includes analyzing
     UNKNOWN
   }
 
