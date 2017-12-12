@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +88,10 @@ public class Disjunction extends BooleanExpr {
 
   @Override
   public BooleanExpr simplify() {
-    List<BooleanExpr> simpleDisjuncts = new ArrayList<>();
+    if (_simplified != null) {
+      return _simplified;
+    }
+    ImmutableList.Builder<BooleanExpr> simpleDisjunctsBuilder = ImmutableList.builder();
     boolean atLeastOneTrue = false;
     boolean atLeastOneComplex = false;
     for (BooleanExpr disjunct : _disjuncts) {
@@ -95,26 +99,29 @@ public class Disjunction extends BooleanExpr {
       if (simpleDisjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
         atLeastOneTrue = true;
         if (!atLeastOneComplex) {
-          return BooleanExprs.True.toStaticBooleanExpr();
+          _simplified = BooleanExprs.True.toStaticBooleanExpr();
+          return _simplified;
         } else if (!atLeastOneTrue) {
-          simpleDisjuncts.add(simpleDisjunct);
+          simpleDisjunctsBuilder.add(simpleDisjunct);
         }
       } else if (!simpleDisjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
         atLeastOneComplex = true;
-        simpleDisjuncts.add(simpleDisjunct);
+        simpleDisjunctsBuilder.add(simpleDisjunct);
       }
     }
-
+    List<BooleanExpr> simpleDisjuncts = simpleDisjunctsBuilder.build();
     if (simpleDisjuncts.isEmpty()) {
-      return BooleanExprs.False.toStaticBooleanExpr();
+      _simplified = BooleanExprs.False.toStaticBooleanExpr();
     } else if (simpleDisjuncts.size() == 1) {
-      return simpleDisjuncts.get(0);
+      _simplified = simpleDisjuncts.get(0);
     } else {
       Disjunction simple = new Disjunction();
       simple.setDisjuncts(simpleDisjuncts);
       simple.setComment(getComment());
-      return simple;
+      _simplified = simple;
+      simple._simplified = _simplified;
     }
+    return _simplified;
   }
 
   @Override

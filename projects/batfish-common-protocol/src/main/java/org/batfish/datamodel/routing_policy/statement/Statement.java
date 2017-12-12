@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,8 @@ public abstract class Statement implements Serializable {
 
   private String _comment;
 
+  protected transient List<Statement> _simplified;
+
   /**
    * Get all the routing-policies referenced by this statement.
    *
@@ -75,7 +78,10 @@ public abstract class Statement implements Serializable {
   }
 
   public List<Statement> simplify() {
-    return Collections.singletonList(this);
+    if (_simplified == null) {
+      _simplified = ImmutableList.of(this);
+    }
+    return _simplified;
   }
 
   @Override
