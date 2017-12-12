@@ -14,7 +14,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -422,10 +421,9 @@ public class BdpDataPlanePluginTest {
      */
     _thrown.expect(
         allOf(
-            ImmutableList.of(
-                isA(BdpOscillationException.class),
-                BdpOscillationExceptionMatchers.hasMessage(
-                    containsString("Changed routes (iteration 2 ==> 3)")))));
+            isA(BdpOscillationException.class),
+            BdpOscillationExceptionMatchers.hasMessage(
+                containsString("Changed routes (iteration 2 ==> 3)"))));
     /*
      *  Assertions in test function below are not reached. In this test we only care about a proper
      *  exception being thrown during data plane computation.
@@ -450,10 +448,9 @@ public class BdpDataPlanePluginTest {
      */
     _thrown.expect(
         allOf(
-            ImmutableList.of(
-                isA(BdpOscillationException.class),
-                BdpOscillationExceptionMatchers.hasMessage(
-                    containsString("Changed routes (iteration 2 ==> 3)")))));
+            isA(BdpOscillationException.class),
+            BdpOscillationExceptionMatchers.hasMessage(
+                containsString("Changed routes (iteration 2 ==> 3)"))));
     /*
      *  Assertions in test function below are not reached. In this test we only care about a proper
      *  exception being thrown during data plane computation.
@@ -477,10 +474,9 @@ public class BdpDataPlanePluginTest {
      */
     _thrown.expect(
         allOf(
-            ImmutableList.of(
-                isA(BdpOscillationException.class),
-                BdpOscillationExceptionMatchers.hasMessage(
-                    not(containsString("Changed routes (iteration 2 ==> 3)"))))));
+            isA(BdpOscillationException.class),
+            BdpOscillationExceptionMatchers.hasMessage(
+                not(containsString("Changed routes (iteration 2 ==> 3)")))));
     /*
      *  Assertions in test function are not reached. In this test we only care about a proper
      *  exception being thrown during data plane computation.
