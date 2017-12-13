@@ -6972,22 +6972,8 @@
               "name" : "beeble",
               "statements" : [
                 {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                  "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                    "value" : 0
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                  "localPreference" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                    "value" : 100
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnTrue"
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~beeble~5~"
                 }
               ]
             },
@@ -7049,6 +7035,38 @@
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                   "type" : "ReturnTrue"
+                }
+              ]
+            },
+            "~RMCLAUSE~beeble~10~" : {
+              "name" : "~RMCLAUSE~beeble~10~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 0
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 100
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            },
+            "~RMCLAUSE~beeble~5~" : {
+              "name" : "~RMCLAUSE~beeble~5~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~beeble~10~"
                 }
               ]
             }
