@@ -269,11 +269,11 @@
           ]
         }
       },
-      "version" : "0.33.2"
+      "version" : "0.33.3"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.33.2"
+      "version" : "0.33.3"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
