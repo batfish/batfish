@@ -1,0 +1,117 @@
+!
+hostname nxos_route_map_continue
+!
+feature privilege
+!
+route-map foobar deny 10
+  match local-preference 10 
+route-map foobar deny 20
+  match local-preference 20
+route-map foobar permit 30
+  match local-preference 30
+  continue 50
+route-map foobar deny 40
+route-map foobar permit 50
+  continue 60
+  set community 1:2 3:4 additive 
+route-map foobar permit 60
+  match local-preference 60
+  continue 70
+  set local-preference 150
+  set community 5:6 7:8 additive 
+route-map foobar permit 70
+  match local-preference 70
+  continue 80
+  set local-preference 200
+  set community 9:10 11:12 additive 
+route-map foobar permit 80
+  match local-preference 80
+  continue 90
+  set local-preference 250
+  set community 11:12 13:14 additive 
+route-map foobar permit 90
+  match local-preference 90
+  continue 100
+  set local-preference 300
+  set community 15:16 17:18 additive 
+route-map foobar permit 100
+  match local-preference 100
+  continue 120
+route-map foobar permit 110
+  continue 120
+  set local-preference 100
+route-map foobar permit 120
+  match local-preference 120
+  continue 130
+  set local-preference 5
+route-map foobar permit 130
+  match local-preference 130
+  continue 140
+  set local-preference 50
+route-map foobar permit 140
+  match local-preference 140
+  continue 150
+  set local-preference 100
+route-map foobar permit 150
+  match local-preference 150
+  continue 160
+  set local-preference 150
+route-map foobar permit 160
+  match local-preference 160
+  continue 170
+  set local-preference 200
+route-map foobar permit 170
+  match local-preference 170
+  continue 180
+  set local-preference 250
+route-map foobar permit 180
+  match local-preference 180
+  continue 190
+  set local-preference 300
+route-map foobar permit 190
+  match local-preference 190
+  continue 200
+  set local-preference 350
+route-map foobar permit 200
+  match local-preference 200
+  continue 210
+  set local-preference 500
+route-map foobar permit 210
+  match local-preference 210
+  continue 220
+  set local-preference 1000
+route-map foobar permit 220
+  match local-preference 220
+  continue 240
+route-map foobar deny 230
+route-map foobar permit 240
+  match local-preference 240
+  continue 250
+  set community 20:21 additive 
+route-map foobar permit 250
+  match local-preference 250
+  continue 260
+  set community 22:23 additive 
+route-map foobar permit 260
+  match local-preference 260
+  continue 270
+  set community 24:25 additive 
+route-map foobar permit 270
+  match local-preference 270
+  continue 280
+  set community 26:27 additive 
+route-map foobar permit 280
+  match local-preference 280
+  continue 290
+  set community 28:29 additive 
+route-map foobar permit 290
+  match local-preference 290
+  continue 300
+  set community 30:31 additive 
+route-map foobar permit 300
+  continue 310
+  set as-path prepend 65000 65000 65000 65000 65000 65000 65000
+route-map foobar permit 310
+!
+!
+
