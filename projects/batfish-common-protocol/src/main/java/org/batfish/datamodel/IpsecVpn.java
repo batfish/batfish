@@ -175,7 +175,9 @@ public final class IpsecVpn extends ComparableStructure<String> {
   }
 
   public void initCandidateRemoteVpns() {
-    _candidateRemoteIpsecVpns = new TreeSet<>();
+    if (_candidateRemoteIpsecVpns == null) {
+      _candidateRemoteIpsecVpns = new TreeSet<>();
+    }
   }
 
   public void resolveReferences(Configuration owner) {

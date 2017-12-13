@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -484,6 +485,7 @@ public final class Interface extends ComparableStructure<String> {
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
     _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
+    _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
 
