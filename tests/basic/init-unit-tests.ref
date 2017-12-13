@@ -207,6 +207,7 @@
         "nxos_bgp" : "nxos_bgp",
         "nxos_interface" : "nxos_interface",
         "nxos_misc" : "nxos_misc",
+        "nxos_route_map_continue" : "nxos_route_map_continue",
         "nxos_system" : "nxos_system",
         "openflow" : "openflow",
         "peer_template" : "peer_template",
@@ -442,6 +443,7 @@
         "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "peer_template" : "PASSED",
@@ -1862,6 +1864,13 @@
             ]
           }
         },
+        "nxos_route_map_continue" : {
+          "route-map" : {
+            "foobar" : [
+              6
+            ]
+          }
+        },
         "preSet" : {
           "ipv4 prefix-list" : {
             "default_route" : [
@@ -2237,6 +2246,7 @@
         "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
         "peer_template" : "PASSED",

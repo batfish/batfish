@@ -1,0 +1,117 @@
+!
+hostname nxos_route_map_continue
+!
+feature privilege
+!
+route-map foobar deny 10
+  match tag 10 
+route-map foobar deny 20
+  match tag 20
+route-map foobar permit 30
+  match tag 30
+  continue 50
+route-map foobar deny 40
+route-map foobar permit 50
+  continue 60
+  set community 1:2 3:4 additive 
+route-map foobar permit 60
+  match tag 60
+  continue 70
+  set local-preference 150
+  set community 5:6 7:8 additive 
+route-map foobar permit 70
+  match tag 70
+  continue 80
+  set local-preference 200
+  set community 9:10 11:12 additive 
+route-map foobar permit 80
+  match tag 80
+  continue 90
+  set local-preference 250
+  set community 11:12 13:14 additive 
+route-map foobar permit 90
+  match tag 90
+  continue 100
+  set local-preference 300
+  set community 15:16 17:18 additive 
+route-map foobar permit 100
+  match tag 100
+  continue 120
+route-map foobar permit 110
+  continue 120
+  set local-preference 100
+route-map foobar permit 120
+  match tag 120
+  continue 130
+  set local-preference 5
+route-map foobar permit 130
+  match tag 130
+  continue 140
+  set local-preference 50
+route-map foobar permit 140
+  match tag 140
+  continue 150
+  set local-preference 100
+route-map foobar permit 150
+  match tag 150
+  continue 160
+  set local-preference 150
+route-map foobar permit 160
+  match tag 160
+  continue 170
+  set local-preference 200
+route-map foobar permit 170
+  match tag 170
+  continue 180
+  set local-preference 250
+route-map foobar permit 180
+  match tag 180
+  continue 190
+  set local-preference 300
+route-map foobar permit 190
+  match tag 190
+  continue 200
+  set local-preference 350
+route-map foobar permit 200
+  match tag 200
+  continue 210
+  set local-preference 500
+route-map foobar permit 210
+  match tag 210
+  continue 220
+  set local-preference 1000
+route-map foobar permit 220
+  match tag 220
+  continue 240
+route-map foobar deny 230
+route-map foobar permit 240
+  match tag 240
+  continue 250
+  set community 20:21 additive 
+route-map foobar permit 250
+  match tag 250
+  continue 260
+  set community 22:23 additive 
+route-map foobar permit 260
+  match tag 260
+  continue 270
+  set community 24:25 additive 
+route-map foobar permit 270
+  match tag 270
+  continue 280
+  set community 26:27 additive 
+route-map foobar permit 280
+  match tag 280
+  continue 290
+  set community 28:29 additive 
+route-map foobar permit 290
+  match tag 290
+  continue 300
+  set community 30:31 additive 
+route-map foobar permit 300
+  continue 310
+  set as-path prepend 65000 65000 65000 65000 65000 65000 65000
+route-map foobar permit 310
+!
+!
+
