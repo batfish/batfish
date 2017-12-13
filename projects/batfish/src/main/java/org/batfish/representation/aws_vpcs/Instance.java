@@ -3,8 +3,10 @@ package org.batfish.representation.aws_vpcs;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -34,6 +36,8 @@ public class Instance implements AwsVpcEntity, Serializable {
 
   private final String _subnetId;
 
+  private final Map<String, String> _tags;
+
   private final String _vpcId;
 
   public Instance(JSONObject jObj, BatfishLogger logger) throws JSONException {
@@ -50,6 +54,13 @@ public class Instance implements AwsVpcEntity, Serializable {
 
     JSONArray networkInterfaces = jObj.getJSONArray(JSON_KEY_NETWORK_INTERFACES);
     initNetworkInterfaces(networkInterfaces, logger);
+
+    _tags = new HashMap<>();
+    JSONArray tagArray = jObj.getJSONArray(JSON_KEY_TAGS);
+    for (int index = 0; index < tagArray.length(); index++) {
+      JSONObject childObject = tagArray.getJSONObject(index);
+      _tags.put(childObject.getString("Key"), childObject.getString("Value"));
+    }
 
     // check if the public and private ip addresses are associated with an
     // interface
@@ -108,7 +119,8 @@ public class Instance implements AwsVpcEntity, Serializable {
   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfig) {
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
-    Configuration cfgNode = Utils.newAwsConfiguration(_instanceId);
+    String name = _tags.getOrDefault("Name", _instanceId);
+    Configuration cfgNode = Utils.newAwsConfiguration(name);
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
