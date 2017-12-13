@@ -3374,6 +3374,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       RoutingPolicy clausePolicy = new RoutingPolicy(clausePolicyName, c);
       c.getRoutingPolicies().put(clausePolicyName, clausePolicy);
       If ifStatement = new If();
+      clausePolicy.getStatements().add(ifStatement);
       clauses.put(clauseNumber, clausePolicy);
       ifStatement.setComment(clausePolicyName);
       ifStatement.setGuard(conj);
