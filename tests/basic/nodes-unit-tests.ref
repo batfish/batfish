@@ -13297,7 +13297,6 @@
           "name" : "nxos_route_map_continue",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
           "routingPolicies" : {
             "foobar" : {
               "name" : "foobar",
