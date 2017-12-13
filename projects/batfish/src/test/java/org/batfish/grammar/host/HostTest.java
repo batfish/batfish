@@ -80,10 +80,19 @@ public class HostTest {
     Map<String, Configuration> configurations = testNatIpsecVpnsHelper("host1-not-shared.json");
 
     /*
-     * NAT settings on host1 (not-shared version) should result in Tunnel1 on cisco_host being down
+     * NAT settings on host1 (not-shared version) should result in tunnel interfaces being down
      */
     assertThat(
         configurations.get("cisco_host").getInterfaces().get("Tunnel1"),
+        not(InterfaceMatchers.isActive()));
+    assertThat(
+        configurations.get("cisco_host").getInterfaces().get("Tunnel2"),
+        not(InterfaceMatchers.isActive()));
+    assertThat(
+        configurations.get("vgw-81fd279f").getInterfaces().get("vpn1"),
+        not(InterfaceMatchers.isActive()));
+    assertThat(
+        configurations.get("vgw-81fd279f").getInterfaces().get("vpn2"),
         not(InterfaceMatchers.isActive()));
   }
 
@@ -92,10 +101,19 @@ public class HostTest {
     Map<String, Configuration> configurations = testNatIpsecVpnsHelper("host1-shared.json");
 
     /*
-     * NAT settings on host1 (shared version) should result in Tunnel1 on cisco_host being up
+     * NAT settings on host1 (shared version) should result in tunnel interfaces being up
      */
     assertThat(
         configurations.get("cisco_host").getInterfaces().get("Tunnel1"),
+        InterfaceMatchers.isActive());
+    assertThat(
+        configurations.get("cisco_host").getInterfaces().get("Tunnel2"),
+        InterfaceMatchers.isActive());
+    assertThat(
+        configurations.get("vgw-81fd279f").getInterfaces().get("vpn1"),
+        InterfaceMatchers.isActive());
+    assertThat(
+        configurations.get("vgw-81fd279f").getInterfaces().get("vpn2"),
         InterfaceMatchers.isActive());
   }
 }

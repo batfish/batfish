@@ -2184,12 +2184,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Set<IpsecVpn> reciprocalVpns = externalAddresses.get(reciprocalRemoteAddress);
           IpSpace privateIpsBehindReciprocalRemoteAddress =
               privateIpsByPublicIp.get(reciprocalRemoteAddress);
-          if (reciprocalVpns == null
-              && privateIpsBehindReciprocalRemoteAddress != null
-              && privateIpsBehindReciprocalRemoteAddress.contains(localAddress)) {
-            reciprocalVpns = externalAddresses.get(localAddress);
-          }
-          if (reciprocalVpns != null && reciprocalVpns.contains(ipsecVpn)) {
+          if (reciprocalVpns == null) {
+            if (privateIpsBehindReciprocalRemoteAddress != null
+                && privateIpsBehindReciprocalRemoteAddress.contains(localAddress)) {
+              reciprocalVpns = externalAddresses.get(localAddress);
+              ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
+              ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
+              remoteIpsecVpnCandidate.initCandidateRemoteVpns();
+              remoteIpsecVpnCandidate.setRemoteIpsecVpn(ipsecVpn);
+              remoteIpsecVpnCandidate.getCandidateRemoteIpsecVpns().add(ipsecVpn);
+            }
+          } else if (reciprocalVpns.contains(ipsecVpn)) {
             ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
             ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
           }
