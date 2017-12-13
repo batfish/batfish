@@ -3,7 +3,9 @@ package org.batfish.representation.aws_vpcs;
 import java.io.Serializable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -52,6 +54,14 @@ public class Vpc implements AwsVpcEntity, Serializable {
   public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpcId);
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode
+        .getDefaultVrf()
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(_cidrBlock)
+                .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+                .build());
 
     // we only create a node here
     // interfaces are added to this node as we traverse subnets and
