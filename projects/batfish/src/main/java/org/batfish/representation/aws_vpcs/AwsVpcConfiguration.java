@@ -7,6 +7,7 @@ import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -271,6 +272,7 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
     for (Instance instance : _instances.values()) {
       Configuration cfgNode = instance.toConfigurationNode(this);
+      cfgNode.setDeviceType(DeviceType.HOST);
       _configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
