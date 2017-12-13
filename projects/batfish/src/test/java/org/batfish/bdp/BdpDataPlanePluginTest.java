@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -62,6 +63,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
@@ -394,10 +396,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testBgpOscillation() throws IOException {
     String testrigName = "bgp-oscillation";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(0);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
@@ -522,10 +528,14 @@ public class BdpDataPlanePluginTest {
 
   private void testBgpOscillationRecovery(TestBdpSettings bdpSettings) throws IOException {
     String testrigName = "bgp-oscillation";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     Settings settings = batfish.getSettings();
     settings.setBdpDetail(bdpSettings.getBdpDetail());
     settings.setBdpMaxOscillationRecoveryAttempts(
@@ -641,10 +651,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testEbgpAcceptSameNeighborID() throws IOException {
     String testrigName = "ebgp-accept-routerid-match";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -738,10 +752,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testIbgpRejectOwnAs() throws IOException {
     String testrigName = "ibgp-reject-own-as";
-    String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2a", "r2b");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -771,10 +789,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testIbgpRejectSameNeighborID() throws IOException {
     String testrigName = "ibgp-reject-routerid-match";
-    String[] configurationNames = new String[] {"r1", "r2", "r3", "r4"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -796,17 +818,16 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testIosRtStaticMatchesBdp() throws IOException {
-    String testrigName = "ios-rt-static-ad";
-    String[] configurationNames = new String[] {"r1"};
-    String[] routingTableNames = new String[] {"r1"};
+    String testrigResourcePrefix = TESTRIGS_PREFIX + "ios-rt-static-ad";
+    List<String> configurationNames = ImmutableList.of("r1");
+    List<String> routingTableNames = ImmutableList.of("r1");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName,
-            configurationNames,
-            null,
-            null,
-            null,
-            routingTableNames,
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .setRoutingTablesText(testrigResourcePrefix, routingTableNames)
+                .build(),
             _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);

@@ -11,6 +11,7 @@ import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.File;
 import java.io.IOException;
@@ -117,11 +118,11 @@ public class BatfishTest {
     }
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            configurationsText,
-            Collections.emptySortedMap(),
-            hostsText,
-            iptablesFilesText,
-            Collections.emptySortedMap(),
+            TestrigText.builder()
+                .setConfigurationText(configurationsText)
+                .setHostsText(hostsText)
+                .setIptablesFilesText(iptablesFilesText)
+                .build(),
             _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     assertThat(
@@ -131,21 +132,15 @@ public class BatfishTest {
 
   @Test
   public void testMultipleBestVrrpCandidates() throws IOException {
-    SortedMap<String, String> configurationsText = new TreeMap<>();
-    String[] configurationNames = new String[] {"r1", "r2"};
+    String testrigResourcePrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best";
+    List<String> configurationNames = ImmutableList.of("r1", "r2");
+
     Ip vrrpAddress = new Ip("1.0.0.10");
-    String testConfigsPrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best/configs/";
-    for (String configurationName : configurationNames) {
-      String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);
-      configurationsText.put(configurationName, configurationText);
-    }
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            configurationsText,
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .build(),
             _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
@@ -359,12 +354,7 @@ public class BatfishTest {
     SortedMap<String, String> configMap = ImmutableSortedMap.of("host1", configurationText);
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            configMap,
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            _folder);
+            TestrigText.builder().setConfigurationText(configMap).build(), _folder);
     SortedMap<String, Configuration> configs = batfish.loadConfigurations();
 
     // Assert that the config parsed successfully
