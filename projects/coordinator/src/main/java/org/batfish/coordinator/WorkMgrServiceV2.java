@@ -15,6 +15,7 @@ import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.ContainerResource;
 
 /**
@@ -31,7 +32,7 @@ public class WorkMgrServiceV2 {
   private BatfishLogger _logger = Main.getLogger();
 
   @DefaultValue(CoordConsts.DEFAULT_API_KEY)
-  @HeaderParam(CoordConsts.SVC_KEY_API_KEY)
+  @HeaderParam(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY)
   private String _apiKey;
 
   /** Information on the URI of a request, injected by the server framework at runtime. */
