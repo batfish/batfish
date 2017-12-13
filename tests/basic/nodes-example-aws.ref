@@ -3,9 +3,117 @@
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
       "nodes" : {
-        "i-0383fda87c012141d" : {
+        "CVP Server Test" : {
           "configurationFormat" : "AWS_VPC",
-          "name" : "i-0383fda87c012141d",
+          "name" : "CVP Server Test",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "HOST",
+          "interfaces" : {
+            "eni-d2b094fc" : {
+              "name" : "eni-d2b094fc",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.1.25/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "outgoingFilter" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "prefix" : "192.168.1.25/24",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "ipAccessLists" : {
+            "~SECURITY_GROUP_EGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false
+                }
+              ]
+            },
+            "~SECURITY_GROUP_INGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "negate" : false,
+                  "srcIps" : [
+                    "192.168.0.0/16"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstPorts" : [
+                    "22-22"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0",
+                    "38.140.26.4",
+                    "38.140.26.5",
+                    "38.140.26.6",
+                    "38.140.26.7"
+                  ],
+                  "srcPorts" : [
+                    "22-22"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "ipProtocols" : [
+                    "ICMP"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "38.140.26.0/24"
+                  ]
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "eni-d2b094fc"
+              ]
+            }
+          }
+        },
+        "border_01" : {
+          "configurationFormat" : "AWS_VPC",
+          "name" : "border_01",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "HOST",
@@ -125,9 +233,6 @@
               ]
             }
           },
-          "roles" : [
-            "i-0383fda87c012141d"
-          ],
           "vendorFamily" : {
             "aws" : {
               "subnetId" : "subnet-1641fa70",
@@ -144,120 +249,9 @@
             }
           }
         },
-        "i-075dc46a9bc347264" : {
+        "border_02" : {
           "configurationFormat" : "AWS_VPC",
-          "name" : "i-075dc46a9bc347264",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "HOST",
-          "interfaces" : {
-            "eni-d2b094fc" : {
-              "name" : "eni-d2b094fc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "192.168.1.25/24"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "~SECURITY_GROUP_EGRESS_ACL~",
-              "prefix" : "192.168.1.25/24",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL",
-              "vrf" : "default"
-            }
-          },
-          "ipAccessLists" : {
-            "~SECURITY_GROUP_EGRESS_ACL~" : {
-              "name" : "~SECURITY_GROUP_EGRESS_ACL~",
-              "lines" : [
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "negate" : false
-                }
-              ]
-            },
-            "~SECURITY_GROUP_INGRESS_ACL~" : {
-              "name" : "~SECURITY_GROUP_INGRESS_ACL~",
-              "lines" : [
-                {
-                  "action" : "ACCEPT",
-                  "negate" : false,
-                  "srcIps" : [
-                    "192.168.0.0/16"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstPorts" : [
-                    "22-22"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0",
-                    "38.140.26.4",
-                    "38.140.26.5",
-                    "38.140.26.6",
-                    "38.140.26.7"
-                  ],
-                  "srcPorts" : [
-                    "22-22"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "ipProtocols" : [
-                    "ICMP"
-                  ],
-                  "negate" : false,
-                  "srcIps" : [
-                    "38.140.26.0/24"
-                  ]
-                }
-              ]
-            }
-          },
-          "roles" : [
-            "i-075dc46a9bc347264"
-          ],
-          "vendorFamily" : {
-            "aws" : {
-              "subnetId" : "subnet-1641fa70",
-              "vpcId" : "vpc-b390fad5"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default",
-              "interfaces" : [
-                "eni-d2b094fc"
-              ]
-            }
-          }
-        },
-        "i-0837c877110427f2b" : {
-          "configurationFormat" : "AWS_VPC",
-          "name" : "i-0837c877110427f2b",
+          "name" : "border_02",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "HOST",
@@ -377,9 +371,6 @@
               ]
             }
           },
-          "roles" : [
-            "i-0837c877110427f2b"
-          ],
           "vendorFamily" : {
             "aws" : {
               "subnetId" : "subnet-1641fa70",
@@ -396,9 +387,9 @@
             }
           }
         },
-        "i-0b26ec095feb42260" : {
+        "core_01" : {
           "configurationFormat" : "AWS_VPC",
-          "name" : "i-0b26ec095feb42260",
+          "name" : "core_01",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "HOST",
@@ -518,9 +509,6 @@
               ]
             }
           },
-          "roles" : [
-            "i-0b26ec095feb42260"
-          ],
           "vendorFamily" : {
             "aws" : {
               "subnetId" : "subnet-1641fa70",
@@ -654,7 +642,7 @@
             }
           },
           "roles" : [
-            "igw-068fee63"
+            "igw"
           ],
           "vendorFamily" : {
             "aws" : { }
@@ -852,7 +840,7 @@
             }
           },
           "roles" : [
-            "igw-9b93ddfc"
+            "igw"
           ],
           "vendorFamily" : {
             "aws" : { }
@@ -971,7 +959,7 @@
             }
           },
           "roles" : [
-            "igw-fac5839d"
+            "igw"
           ],
           "vendorFamily" : {
             "aws" : { }
@@ -2477,7 +2465,7 @@
             }
           },
           "roles" : [
-            "subnet-073b8061"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -2636,7 +2624,7 @@
             }
           },
           "roles" : [
-            "subnet-1641fa70"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -2804,7 +2792,7 @@
             }
           },
           "roles" : [
-            "subnet-1f315846"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -2963,7 +2951,7 @@
             }
           },
           "roles" : [
-            "subnet-30398256"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -3122,7 +3110,7 @@
             }
           },
           "roles" : [
-            "subnet-62f14104"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -3281,7 +3269,7 @@
             }
           },
           "roles" : [
-            "subnet-7044ff16"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -3440,7 +3428,7 @@
             }
           },
           "roles" : [
-            "subnet-8d0cbdeb"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -3608,7 +3596,7 @@
             }
           },
           "roles" : [
-            "subnet-9c8adceb"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -3776,7 +3764,7 @@
             }
           },
           "roles" : [
-            "subnet-d9cafabc"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -3935,7 +3923,7 @@
             }
           },
           "roles" : [
-            "subnet-f73a8191"
+            "subnet"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -4212,7 +4200,7 @@
             }
           },
           "roles" : [
-            "vgw-81fd279f"
+            "vgw"
           ],
           "routeFilterLists" : {
             "vpn-ba2e34a8-1_origination" : {
@@ -4437,7 +4425,7 @@
             }
           },
           "roles" : [
-            "vpc-815775e7"
+            "vpc"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -4543,7 +4531,7 @@
             }
           },
           "roles" : [
-            "vpc-925131f4"
+            "vpc"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -4750,7 +4738,7 @@
             }
           },
           "roles" : [
-            "vpc-b390fad5"
+            "vpc"
           ],
           "vendorFamily" : {
             "aws" : {
@@ -4930,7 +4918,7 @@
             }
           },
           "roles" : [
-            "vpc-f8fad69d"
+            "vpc"
           ],
           "vendorFamily" : {
             "aws" : {
