@@ -2099,7 +2099,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .stream()
               .map(IpWildcard::new)
               .collect(ImmutableSet.toImmutableSet());
-      IpSpace ipSpace = new IpSpace(blacklist, whitelist);
+      IpSpace ipSpace = IpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces
           .stream()
           .flatMap(i -> i.getSourceNats().stream())
@@ -2182,9 +2182,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           }
           Ip reciprocalRemoteAddress = remoteAddresses.get(remoteIpsecVpnCandidate);
           Set<IpsecVpn> reciprocalVpns = externalAddresses.get(reciprocalRemoteAddress);
-          IpSpace privateIpsBehindReciprocalRemoteAddress =
-              privateIpsByPublicIp.get(reciprocalRemoteAddress);
           if (reciprocalVpns == null) {
+            IpSpace privateIpsBehindReciprocalRemoteAddress =
+                privateIpsByPublicIp.get(reciprocalRemoteAddress);
             if (privateIpsBehindReciprocalRemoteAddress != null
                 && privateIpsBehindReciprocalRemoteAddress.contains(localAddress)) {
               reciprocalVpns = externalAddresses.get(localAddress);
