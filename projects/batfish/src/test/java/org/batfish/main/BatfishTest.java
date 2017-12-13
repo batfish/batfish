@@ -94,15 +94,15 @@ public class BatfishTest {
   public void testOverlayIptables() throws IOException {
     SortedMap<String, String> configurationsText = new TreeMap<>();
     String[] configurationNames = new String[] {"host1.cfg"};
-    String testConfigsPrefix = "org/batfish/grammar/hosts/testrigs/router-iptables/configs/";
+    String testConfigsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/configs/";
 
     SortedMap<String, String> hostsText = new TreeMap<>();
     String[] hostNames = new String[] {"host1.json"};
-    String testHostsPrefix = "org/batfish/grammar/hosts/testrigs/router-iptables/hosts/";
+    String testHostsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/hosts/";
 
     SortedMap<String, String> iptablesFilesText = new TreeMap<>();
     String[] iptablesNames = new String[] {"host1.iptables"};
-    String testIptablesPrefix = "org/batfish/grammar/hosts/testrigs/router-iptables/iptables/";
+    String testIptablesPrefix = "org/batfish/grammar/host/testrigs/router-iptables/iptables/";
 
     for (String configurationName : configurationNames) {
       String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);

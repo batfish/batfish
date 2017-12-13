@@ -2236,21 +2236,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setOutgoingFilter(outgoingFilter);
     }
-    if (!CommonUtil.isNullOrEmpty(iface.getSourceNats())) {
-      List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
-
-      if (newIface.getSourceNats() == null) {
-        newIface.setSourceNats(new ArrayList<>(origSourceNats.size()));
-      }
-
+    List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
+    if (origSourceNats != null) {
       // Process each of the CiscoSourceNats:
       //   1) Collect references to ACLs and NAT pools.
       //   2) For valid CiscoSourceNat rules, add them to the newIface source NATs list.
-      origSourceNats
-          .stream()
-          .map(nat -> processSourceNat(nat, iface, ipAccessLists))
-          .filter(Objects::nonNull)
-          .forEach(newIface.getSourceNats()::add);
+      newIface.setSourceNats(
+          origSourceNats
+              .stream()
+              .map(nat -> processSourceNat(nat, iface, ipAccessLists))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList()));
     }
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
