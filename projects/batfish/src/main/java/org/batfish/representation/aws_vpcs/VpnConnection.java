@@ -286,8 +286,6 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         }
         String vpcId = attachmentVpcIds.get(0);
         Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-        Prefix outgoingPrefix = vpc.getCidrBlock();
-        int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
         String originationPolicyName = vpnId + "_origination";
         RoutingPolicy originationRoutingPolicy =
             new RoutingPolicy(originationPolicyName, vpnGatewayCfgNode);
@@ -303,12 +301,16 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         originationIf.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
         RouteFilterList originationRouteFilter = new RouteFilterList(originationPolicyName);
         vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName, originationRouteFilter);
-        RouteFilterLine matchOutgoingPrefix =
-            new RouteFilterLine(
-                LineAction.ACCEPT,
-                outgoingPrefix,
-                new SubRange(outgoingPrefixLength, outgoingPrefixLength));
-        originationRouteFilter.addLine(matchOutgoingPrefix);
+        vpc.getCidrBlockAssociations()
+            .forEach(
+                prefix -> {
+                  RouteFilterLine matchOutgoingPrefix =
+                      new RouteFilterLine(
+                          LineAction.ACCEPT,
+                          prefix,
+                          new SubRange(prefix.getPrefixLength(), prefix.getPrefixLength()));
+                  originationRouteFilter.addLine(matchOutgoingPrefix);
+                });
         Conjunction conj = new Conjunction();
         originationIf.setGuard(conj);
         conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
