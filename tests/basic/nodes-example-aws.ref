@@ -3971,13 +3971,15 @@
               "name" : "vpn-ba2e34a8-1",
               "address" : "147.75.69.27",
               "externalInterface" : "external1",
-              "ikePolicy" : "vpn-ba2e34a8-1"
+              "ikePolicy" : "vpn-ba2e34a8-1",
+              "localAddress" : "52.27.166.152"
             },
             "vpn-ba2e34a8-2" : {
               "name" : "vpn-ba2e34a8-2",
               "address" : "147.75.69.27",
               "externalInterface" : "external2",
-              "ikePolicy" : "vpn-ba2e34a8-2"
+              "ikePolicy" : "vpn-ba2e34a8-2",
+              "localAddress" : "52.39.121.126"
             }
           },
           "ikePolicies" : {
