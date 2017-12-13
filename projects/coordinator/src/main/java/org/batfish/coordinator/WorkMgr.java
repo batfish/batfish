@@ -236,7 +236,13 @@ public class WorkMgr extends AbstractCoordinator {
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
-      _workQueueMgr.markAssignmentSuccess(work, worker);
+      try {
+        _workQueueMgr.markAssignmentSuccess(work, worker);
+      } catch (Exception e) {
+        String stackTrace = ExceptionUtils.getFullStackTrace(e);
+        _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
+      }
+
     } else {
       _workQueueMgr.markAssignmentFailure(work);
     }
@@ -687,7 +693,7 @@ public class WorkMgr extends AbstractCoordinator {
     return envDir;
   }
 
-  private Path getdirTestrig(String containerName, String testrigName) {
+  public Path getdirTestrig(String containerName, String testrigName) {
     Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
     if (!Files.exists(testrigDir)) {
       throw new BatfishException("Testrig '" + testrigName + "' does not exist");
@@ -698,6 +704,15 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Path getdirTestrigs(String containerName) {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+  }
+
+  public static Path getpathTestrigMetadata(String container, String testrig) {
+    return Main.getSettings()
+        .getContainersLocation()
+        .resolve(container)
+        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(testrig)
+        .resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
   public JSONObject getStatusJson() throws JSONException {
@@ -743,6 +758,11 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     return retStringBuilder.toString();
+  }
+
+  public TestrigMetadata getTestrigMetadata(String containerName, String testrigName)
+      throws IOException {
+    return TestrigMetadataMgr.readMetadata(getpathTestrigMetadata(containerName, testrigName));
   }
 
   @Nullable
@@ -834,14 +854,12 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
     TestrigMetadata metadata = new TestrigMetadata(Instant.now());
-    Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
     try {
-      CommonUtil.writeFile(metadataPath, mapper.writeValueAsString(metadata));
+      TestrigMetadataMgr.writeMetadata(
+          metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
     } catch (JsonProcessingException e) {
-      _logger.error(e.getMessage());
+      throw new BatfishException("Could not write testrigMetadata", e);
     }
 
     Path srcSubdir = srcDirEntries.iterator().next();
@@ -872,7 +890,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (autoAnalyze) {
       List<WorkItem> autoWorkQueue = new LinkedList<>();
 
-      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName, false);
+      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
       autoWorkQueue.add(parseWork);
 
       Set<String> analysisNames = listAnalyses(containerName);
@@ -1177,6 +1195,12 @@ public class WorkMgr extends AbstractCoordinator {
     for (Path subdirFile : subFileList) {
       Path target = dstDir.resolve(subdirFile.getFileName());
       CommonUtil.moveByCopy(subdirFile, target);
+    }
+
+    try {
+      TestrigMetadataMgr.initializeEnvironment(containerName, testrigName, newEnvName);
+    } catch (IOException e) {
+      throw new BatfishException("Could not initialize environmentMetadata", e);
     }
 
     // delete the empty directory and the zip file

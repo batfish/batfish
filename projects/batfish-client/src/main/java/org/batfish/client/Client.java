@@ -1788,8 +1788,7 @@ public class Client extends AbstractClient implements IClient {
 
     if (!autoAnalyze) {
       _logger.output("Parsing now.\n");
-      WorkItem wItemParse =
-          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
+      WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
 
       if (!execute(wItemParse, outWriter)) {
         unsetTestrig(delta);
@@ -1971,15 +1970,35 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean listTestrigs(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_TESTRIGS)) {
+    if (!isValidArgument(options, parameters, 1, 0, 0, Command.LIST_TESTRIGS)) {
       return false;
     }
 
-    Map<String, String> testrigs = _workHelper.listTestrigs(_currContainerName);
-    if (testrigs != null) {
-      for (String testrigName : testrigs.keySet()) {
-        logOutput(
-            outWriter, String.format("Testrig: %s\n%s\n", testrigName, testrigs.get(testrigName)));
+    boolean showMetadata = true;
+    if (options.size() == 1) {
+      if (options.get(0).equals("-nometadata")) {
+        showMetadata = false;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.LIST_TESTRIGS);
+        return false;
+      }
+    }
+
+    JSONArray testrigArray = _workHelper.listTestrigs(_currContainerName);
+    if (testrigArray != null) {
+      for (int index = 0; index < testrigArray.length(); index++) {
+        try {
+          JSONObject jObjTestrig = testrigArray.getJSONObject(index);
+          String name = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_NAME);
+          String info = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_INFO);
+          logOutput(outWriter, String.format("Testrig: %s\n%s\n", name, info));
+          if (showMetadata) {
+            String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
+          }
+        } catch (JSONException e) {
+          throw new BatfishException("Unexpected packaging of testrig data", e);
+        }
       }
     }
     return true;
@@ -2556,7 +2575,7 @@ public class Client extends AbstractClient implements IClient {
       testrig = _currDeltaTestrig;
     }
 
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig, delta);
+    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
 
     if (!execute(wItemParse, outWriter)) {
       return false;
