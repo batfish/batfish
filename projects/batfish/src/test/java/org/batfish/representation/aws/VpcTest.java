@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.common.util.CommonUtil;
@@ -23,9 +25,11 @@ public class VpcTest {
 
     Vpc vpc = new Vpc(vpcArray.getJSONObject(0), null);
 
-    assertThat(vpc.getCidrBlock(), equalTo(new Prefix("10.100.0.0/16")));
-    assertThat(vpc.getCidrBlockAssociations().size(), equalTo(2));
-    assertThat(vpc.getCidrBlockAssociations().contains(new Prefix("10.100.0.0/16")), equalTo(true));
-    assertThat(vpc.getCidrBlockAssociations().contains(new Prefix("10.200.0.0/16")), equalTo(true));
+    Prefix p1 = new Prefix("10.100.0.0/16");
+    Prefix p2 = new Prefix("10.200.0.0/16");
+    assertThat(vpc.getCidrBlock(), equalTo(p1));
+    assertThat(vpc.getCidrBlockAssociations(), hasSize(2));
+    assertThat(vpc.getCidrBlockAssociations(), hasItem(p1));
+    assertThat(vpc.getCidrBlockAssociations(), hasItem(p2));
   }
 }
