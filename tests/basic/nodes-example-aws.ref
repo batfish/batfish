@@ -107,6 +107,16 @@
               "name" : "default",
               "interfaces" : [
                 "eni-d2b094fc"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                }
               ]
             }
           }
@@ -245,6 +255,24 @@
               "interfaces" : [
                 "eni-4b466165",
                 "eni-8c7753a2"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.17",
+                  "tag" : -1
+                }
               ]
             }
           }
@@ -383,6 +411,24 @@
               "interfaces" : [
                 "eni-6b705445",
                 "eni-a50c2b8b"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.49",
+                  "tag" : -1
+                }
               ]
             }
           }
@@ -521,6 +567,24 @@
               "interfaces" : [
                 "eni-297b5c07",
                 "eni-707e5a5e"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.17",
+                  "tag" : -1
+                }
               ]
             }
           }
@@ -2075,7 +2139,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.31/28"
+                "192.168.2.17/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2088,7 +2152,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.31/28",
+              "prefix" : "192.168.2.17/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2196,7 +2260,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.1.255/24"
+                "192.168.1.1/24"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2209,7 +2273,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.1.255/24",
+              "prefix" : "192.168.1.1/24",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2317,7 +2381,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "172.31.15.255/20"
+                "172.31.0.1/20"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2330,7 +2394,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "172.31.15.255/20",
+              "prefix" : "172.31.0.1/20",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2447,7 +2511,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.47/28"
+                "192.168.2.33/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2460,7 +2524,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.47/28",
+              "prefix" : "192.168.2.33/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2568,7 +2632,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "10.0.0.255/24"
+                "10.0.0.1/24"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2581,7 +2645,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "10.0.0.255/24",
+              "prefix" : "10.0.0.1/24",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2689,7 +2753,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.15/28"
+                "192.168.2.1/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2702,7 +2766,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.15/28",
+              "prefix" : "192.168.2.1/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2810,7 +2874,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "10.0.1.255/24"
+                "10.0.1.1/24"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2823,7 +2887,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "10.0.1.255/24",
+              "prefix" : "10.0.1.1/24",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -2931,7 +2995,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "172.31.47.255/20"
+                "172.31.32.1/20"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2944,7 +3008,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "172.31.47.255/20",
+              "prefix" : "172.31.32.1/20",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -3061,7 +3125,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "172.31.31.255/20"
+                "172.31.16.1/20"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3074,7 +3138,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "172.31.31.255/20",
+              "prefix" : "172.31.16.1/20",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
@@ -3191,7 +3255,7 @@
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.63/28"
+                "192.168.2.49/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3204,7 +3268,7 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.63/28",
+              "prefix" : "192.168.2.49/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
