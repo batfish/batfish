@@ -20,7 +20,7 @@ public class BfConsts {
   public static final String ABSPATH_CONFIG_FILE_NAME_ALLINONE =
       "/org/batfish/allinone/config/allinone.properties";
   public static final String ABSPATH_CONFIG_FILE_NAME_BATFISH =
-      "/org/batfish/  config/batfish.properties";
+      "/org/batfish/config/batfish.properties";
   public static final String ABSPATH_CONFIG_FILE_NAME_CLIENT =
       "/org/batfish/client/config/client.properties";
   public static final String ABSPATH_CONFIG_FILE_NAME_COORDINATOR =
