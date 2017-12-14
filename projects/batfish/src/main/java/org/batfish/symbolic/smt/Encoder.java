@@ -602,13 +602,11 @@ public class Encoder {
             BoolExpr e = entry3.getValue();
             String c = valuation.get(e);
             // TODO: what about OTHER type?
-            if ("true".equals(c)) {
-              if (displayCommunity(cvar)) {
-                String s = cvar.getValue();
-                String t = slice.getNamedCommunities().get(cvar.getValue());
-                s = (t == null ? s : t);
-                recordMap.put("community " + s, "");
-              }
+            if ("true".equals(c) && displayCommunity(cvar)) {
+              String s = cvar.getValue();
+              String t = slice.getNamedCommunities().get(cvar.getValue());
+              s = (t == null ? s : t);
+              recordMap.put("community " + s, "");
             }
           }
         }

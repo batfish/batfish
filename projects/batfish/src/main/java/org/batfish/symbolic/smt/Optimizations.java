@@ -446,37 +446,39 @@ class Optimizations {
               for (Protocol proto : getProtocols().get(router)) {
 
                 List<GraphEdge> edges = new ArrayList<>();
-                if (Optimizations.ENABLE_IMPORT_EXPORT_MERGE_OPTIMIZATION) {
+                if (Optimizations.ENABLE_IMPORT_EXPORT_MERGE_OPTIMIZATION
+                    && !proto.isConnected()
+                    && !proto.isStatic()
+                    && !proto.isOspf()) {
 
-                  if (!proto.isConnected() && !proto.isStatic() && !proto.isOspf()) {
+                  for (GraphEdge ge : _encoderSlice.getGraph().getEdgeMap().get(router)) {
 
-                    for (GraphEdge ge : _encoderSlice.getGraph().getEdgeMap().get(router)) {
+                    // Don't merge when an abstract edge is used.
+                    boolean safeMergeEdge =
+                        _encoderSlice.getGraph().isEdgeUsed(conf, proto, ge) && !ge.isAbstract();
 
-                      // Don't merge when an abstract edge is used.
-                      boolean safeMergeEdge =
-                          _encoderSlice.getGraph().isEdgeUsed(conf, proto, ge) && !ge.isAbstract();
+                    // Don't merge when bgp internal/external can differ
+                    boolean sameInternal =
+                        (ge.getPeer() == null)
+                            || (_needBgpInternal.contains(router)
+                                == _needBgpInternal.contains(ge.getPeer()));
 
-                      // Don't merge when bgp internal/external can differ
-                      boolean sameInternal =
-                          (ge.getPeer() == null)
-                              || (_needBgpInternal.contains(router)
-                                  == _needBgpInternal.contains(ge.getPeer()));
+                    // Check if there are any local modifications on import
+                    boolean isPure = true;
+                    RoutingPolicy pol =
+                        _encoderSlice.getGraph().findImportRoutingPolicy(router, proto, ge);
+                    if (pol != null) {
+                      isPure = false;
+                    }
 
-                      // Check if there are any local modifications on import
-                      boolean isPure = true;
-                      RoutingPolicy pol =
-                          _encoderSlice.getGraph().findImportRoutingPolicy(router, proto, ge);
-                      if (pol != null) {
-                        isPure = false;
-                      }
+                    boolean noFailures = _encoderSlice.getEncoder().getFailures() == 0;
 
-                      boolean noFailures = _encoderSlice.getEncoder().getFailures() == 0;
-
-                      if (safeMergeEdge && sameInternal && isPure && noFailures) {
-                        if (hasExportVariables(ge, proto)) {
-                          edges.add(ge);
-                        }
-                      }
+                    if (safeMergeEdge
+                        && sameInternal
+                        && isPure
+                        && noFailures
+                        && hasExportVariables(ge, proto)) {
+                      edges.add(ge);
                     }
                   }
                 }

@@ -826,17 +826,15 @@ class TransferBDD {
 
       // We explicity ignore originated networks
       // TODO: not quite right -- need network origination context
-      if (_ignoreNetwork) {
-        if (ranges.size() == 1) {
-          for (PrefixRange r : ranges) {
-            int start = r.getLengthRange().getStart();
-            int end = r.getLengthRange().getEnd();
-            Prefix pfx = r.getPrefix();
-            if (start == end && start == pfx.getPrefixLength()) {
-              Set<Prefix> origin = Graph.getOriginatedNetworks(_conf, Protocol.BGP);
-              if (origin.contains(pfx)) {
-                return factory.zero();
-              }
+      if (_ignoreNetwork && ranges.size() == 1) {
+        for (PrefixRange r : ranges) {
+          int start = r.getLengthRange().getStart();
+          int end = r.getLengthRange().getEnd();
+          Prefix pfx = r.getPrefix();
+          if (start == end && start == pfx.getPrefixLength()) {
+            Set<Prefix> origin = Graph.getOriginatedNetworks(_conf, Protocol.BGP);
+            if (origin.contains(pfx)) {
+              return factory.zero();
             }
           }
         }
