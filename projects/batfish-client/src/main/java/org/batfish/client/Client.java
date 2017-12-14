@@ -1995,6 +1995,7 @@ public class Client extends AbstractClient implements IClient {
           logOutput(outWriter, String.format("Testrig: %s\n%s\n", name, info));
           if (showMetadata) {
             String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
+            logOutput(outWriter, String.format("TestrigMetadata: %s\n", metadata));
           }
         } catch (JSONException e) {
           throw new BatfishException("Unexpected packaging of testrig data", e);
