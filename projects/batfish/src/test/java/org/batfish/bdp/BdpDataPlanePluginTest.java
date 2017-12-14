@@ -1,9 +1,12 @@
 package org.batfish.bdp;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
@@ -11,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -31,6 +35,7 @@ import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpProcess;
@@ -58,6 +63,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,6 +73,24 @@ import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link BdpDataPlanePlugin}. */
 public class BdpDataPlanePluginTest {
+
+  private static class BdpOscillationExceptionMatchers {
+    private static class HasMessage extends FeatureMatcher<BdpOscillationException, String> {
+
+      public HasMessage(Matcher<? super String> subMatcher) {
+        super(subMatcher, "message", "message");
+      }
+
+      @Override
+      protected String featureValueOf(BdpOscillationException actual) {
+        return actual.getMessage();
+      }
+    }
+
+    public static HasMessage hasMessage(Matcher<? super String> subMatcher) {
+      return new HasMessage(subMatcher);
+    }
+  }
 
   private static String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
 
@@ -371,10 +396,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testBgpOscillation() throws IOException {
     String testrigName = "bgp-oscillation";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(0);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
@@ -384,18 +413,146 @@ public class BdpDataPlanePluginTest {
   }
 
   @Test
-  public void testBgpOscillationRecovery() throws IOException {
+  public void testBgpOscillationPrintingEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(0);
+    settings.setBdpPrintAllIterations(true);
+    settings.setBdpPrintOscillatingIterations(true);
+    settings.setBdpRecordAllIterations(true);
+
+    /*
+     * Data plane computation should fail due to oscillation. Detailed information about the
+     * oscillation should appear in the thrown exception.
+     */
+    _thrown.expect(
+        allOf(
+            isA(BdpOscillationException.class),
+            BdpOscillationExceptionMatchers.hasMessage(
+                containsString("Changed routes (iteration 2 ==> 3)"))));
+    /*
+     *  Assertions in test function below are not reached. In this test we only care about a proper
+     *  exception being thrown during data plane computation.
+     */
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationPrintingNotEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(0);
+    settings.setBdpMaxRecordedIterations(0);
+    settings.setBdpPrintAllIterations(true);
+    settings.setBdpPrintOscillatingIterations(true);
+    settings.setBdpRecordAllIterations(false);
+
+    /*
+     * Data plane computation should fail due to oscillation. Despite not recording enough info for
+     * proper debugging initially, detailed information about the oscillation should still appear
+     * in the thrown exception.
+     */
+    _thrown.expect(
+        allOf(
+            isA(BdpOscillationException.class),
+            BdpOscillationExceptionMatchers.hasMessage(
+                containsString("Changed routes (iteration 2 ==> 3)"))));
+    /*
+     *  Assertions in test function below are not reached. In this test we only care about a proper
+     *  exception being thrown during data plane computation.
+     */
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationNoPrinting() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(0);
+    settings.setBdpMaxRecordedIterations(0);
+    settings.setBdpPrintAllIterations(false);
+    settings.setBdpPrintOscillatingIterations(false);
+    settings.setBdpRecordAllIterations(false);
+
+    /*
+     * Data plane computation should fail due to oscillation. Since printing is off, we should not
+     * see detailed information about the oscillation.
+     */
+    _thrown.expect(
+        allOf(
+            isA(BdpOscillationException.class),
+            BdpOscillationExceptionMatchers.hasMessage(
+                not(containsString("Changed routes (iteration 2 ==> 3)")))));
+    /*
+     *  Assertions in test function are not reached. In this test we only care about a proper
+     *  exception being thrown during data plane computation.
+     */
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationRecoveryEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(1);
+    settings.setBdpPrintAllIterations(false);
+    settings.setBdpPrintOscillatingIterations(false);
+    settings.setBdpRecordAllIterations(true);
+
+    /*
+     * Data plane computation should succeed despite oscillation, since we have enabled recovery.
+     * Assertions about proper data plane computation results are made in the below helper
+     * function.
+     */
+    testBgpOscillationRecovery(settings);
+  }
+
+  @Test
+  public void testBgpOscillationRecoveryNotEnoughInfo() throws IOException {
+    TestBdpSettings settings = new TestBdpSettings();
+    settings.setBdpDetail(true);
+    settings.setBdpMaxOscillationRecoveryAttempts(1);
+    settings.setBdpMaxRecordedIterations(0);
+    settings.setBdpPrintAllIterations(false);
+    settings.setBdpPrintOscillatingIterations(false);
+    settings.setBdpRecordAllIterations(false);
+
+    /*
+     * Data plane computation should succeed despite oscillation, since we have enabled recovery.
+     * We do not initially record enough information to perform recovery. Success of assertions
+     * contained in below helper function implies correct behavior of functionality to alter
+     * recording settings and rerun with enough information to perform recovery.
+     */
+    testBgpOscillationRecovery(settings);
+  }
+
+  private void testBgpOscillationRecovery(TestBdpSettings bdpSettings) throws IOException {
     String testrigName = "bgp-oscillation";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
-    batfish.getSettings().setBdpDetail(true);
-    batfish.getSettings().setBdpMaxOscillationRecoveryAttempts(1);
-    batfish.getSettings().setBdpRecordAllIterations(true);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Settings settings = batfish.getSettings();
+    settings.setBdpDetail(bdpSettings.getBdpDetail());
+    settings.setBdpMaxOscillationRecoveryAttempts(
+        bdpSettings.getBdpMaxOscillationRecoveryAttempts());
+    settings.setBdpMaxRecordedIterations(bdpSettings.getBdpMaxRecordedIterations());
+    settings.setBdpPrintAllIterations(bdpSettings.getBdpPrintAllIterations());
+    settings.setBdpPrintOscillatingIterations(bdpSettings.getBdpPrintOscillatingIterations());
+    settings.setBdpRecordAllIterations(bdpSettings.getBdpRecordAllIterations());
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
+
+    /*
+     * Data plane computation succeeds iff recovery is enabled. If disabled, an exception is thrown
+     * and should be expected by caller.
+     */
     dataPlanePlugin.computeDataPlane(false);
+
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes();
     Prefix bgpPrefix = new Prefix("1.1.1.1/32");
@@ -421,6 +578,9 @@ public class BdpDataPlanePluginTest {
     boolean r2AsNextHop = r3NextHop.equals("r2");
     boolean r3AsNextHop = r2NextHop.equals("r3");
 
+    /*
+     * Data plane computation should succeed as follows if recovery is enabled.
+     */
     assertThat(r2MatchingRoutes.count(), equalTo(1L));
     assertThat(r3MatchingRoutes.count(), equalTo(1L));
     assertThat(routesWithR1AsNextHop, equalTo(1));
@@ -491,10 +651,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testEbgpAcceptSameNeighborID() throws IOException {
     String testrigName = "ebgp-accept-routerid-match";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -588,10 +752,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testIbgpRejectOwnAs() throws IOException {
     String testrigName = "ibgp-reject-own-as";
-    String[] configurationNames = new String[] {"r1", "r2a", "r2b"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2a", "r2b");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -621,10 +789,14 @@ public class BdpDataPlanePluginTest {
   @Test
   public void testIbgpRejectSameNeighborID() throws IOException {
     String testrigName = "ibgp-reject-routerid-match";
-    String[] configurationNames = new String[] {"r1", "r2", "r3", "r4"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     dataPlanePlugin.computeDataPlane(false);
@@ -646,17 +818,16 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testIosRtStaticMatchesBdp() throws IOException {
-    String testrigName = "ios-rt-static-ad";
-    String[] configurationNames = new String[] {"r1"};
-    String[] routingTableNames = new String[] {"r1"};
+    String testrigResourcePrefix = TESTRIGS_PREFIX + "ios-rt-static-ad";
+    List<String> configurationNames = ImmutableList.of("r1");
+    List<String> routingTableNames = ImmutableList.of("r1");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName,
-            configurationNames,
-            null,
-            null,
-            null,
-            routingTableNames,
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .setRoutingTablesText(testrigResourcePrefix, routingTableNames)
+                .build(),
             _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);

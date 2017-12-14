@@ -46,11 +46,8 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
     for (String vpcId : _attachmentVpcIds) {
 
       String vgwIfaceName = vpcId;
-      Interface vgwIface = new Interface(vgwIfaceName, cfgNode);
       Prefix vgwIfacePrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
-      vgwIface.setPrefix(vgwIfacePrefix);
-      cfgNode.getInterfaces().put(vgwIfaceName, vgwIface);
-      cfgNode.getDefaultVrf().getInterfaces().put(vgwIfaceName, vgwIface);
+      Utils.newInterface(vgwIfaceName, cfgNode, vgwIfacePrefix);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);
@@ -59,22 +56,25 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
       Ip vpcIfaceIp = vgwIfacePrefix.getEndAddress();
       Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp, vgwIfacePrefix.getPrefixLength());
       vpcIface.setPrefix(vpcIfacePrefix);
-      vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
-      vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName, vpcIface);
+      Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfacePrefix);
 
       // associate this gateway with the vpc
       awsVpcConfiguration.getVpcs().get(vpcId).setVpnGatewayId(_vpnGatewayId);
 
       // add a route on the gateway to the vpc
       Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-      StaticRoute vgwVpcRoute =
-          StaticRoute.builder()
-              .setNetwork(vpc.getCidrBlock())
-              .setNextHopIp(vpcIfaceIp)
-              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-              .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
-              .build();
-      cfgNode.getDefaultVrf().getStaticRoutes().add(vgwVpcRoute);
+      vpc.getCidrBlockAssociations()
+          .forEach(
+              prefix -> {
+                StaticRoute vgwVpcRoute =
+                    StaticRoute.builder()
+                        .setNetwork(prefix)
+                        .setNextHopIp(vpcIfaceIp)
+                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                        .build();
+                cfgNode.getDefaultVrf().getStaticRoutes().add(vgwVpcRoute);
+              });
     }
 
     return cfgNode;

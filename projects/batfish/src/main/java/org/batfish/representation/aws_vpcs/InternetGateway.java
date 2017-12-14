@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -42,35 +41,33 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
     for (String vpcId : _attachmentVpcIds) {
 
       String igwIfaceName = vpcId;
-      Interface igwIface = new Interface(igwIfaceName, cfgNode);
       Prefix igwIfacePrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
-      igwIface.setPrefix(igwIfacePrefix);
-      cfgNode.getInterfaces().put(igwIfaceName, igwIface);
-      cfgNode.getDefaultVrf().getInterfaces().put(igwIfaceName, igwIface);
+      Utils.newInterface(igwIfaceName, cfgNode, igwIfacePrefix);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);
       String vpcIfaceName = _internetGatewayId;
-      Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
       Ip vpcIfaceIp = igwIfacePrefix.getEndAddress();
       Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp, igwIfacePrefix.getPrefixLength());
-      vpcIface.setPrefix(vpcIfacePrefix);
-      vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
-      vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName, vpcIface);
+      Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfacePrefix);
 
       // associate this gateway with the vpc
       awsVpcConfiguration.getVpcs().get(vpcId).setInternetGatewayId(_internetGatewayId);
 
       // add a route on the gateway to the vpc
       Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-      StaticRoute igwVpcRoute =
-          StaticRoute.builder()
-              .setNetwork(vpc.getCidrBlock())
-              .setNextHopIp(vpcIfaceIp)
-              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-              .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
-              .build();
-      cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
+      vpc.getCidrBlockAssociations()
+          .forEach(
+              prefix -> {
+                StaticRoute igwVpcRoute =
+                    StaticRoute.builder()
+                        .setNetwork(prefix)
+                        .setNextHopIp(vpcIfaceIp)
+                        .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                        .build();
+                cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
+              });
     }
 
     return cfgNode;

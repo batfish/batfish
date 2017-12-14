@@ -1,5 +1,6 @@
 package org.batfish.representation.aws_vpcs;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -21,12 +22,15 @@ import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -36,10 +40,14 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.codehaus.jettison.json.JSONArray;
@@ -215,27 +223,17 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
-      Interface externalInterface = new Interface(externalInterfaceName, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getInterfaces().put(externalInterfaceName, externalInterface);
-      vpnGatewayCfgNode
-          .getDefaultVrf()
-          .getInterfaces()
-          .put(externalInterfaceName, externalInterface);
-      String vpnInterfaceName = "vpn" + idNum;
-      Interface vpnInterface = new Interface(vpnInterfaceName, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getInterfaces().put(vpnInterfaceName, vpnInterface);
-      vpnGatewayCfgNode.getDefaultVrf().getInterfaces().put(vpnInterfaceName, vpnInterface);
-
-      // Set fields within representation structures
-
-      // bind and vpn interfaces
       Prefix externalInterfacePrefix = new Prefix(ipsecTunnel.getVgwOutsideAddress(), 32);
-      externalInterface.setPrefix(externalInterfacePrefix);
-      externalInterface.getAllPrefixes().add(externalInterfacePrefix);
+      Interface externalInterface =
+          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfacePrefix);
+
+      String vpnInterfaceName = "vpn" + idNum;
       Prefix vpnInterfacePrefix =
           new Prefix(ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      vpnInterface.setPrefix(vpnInterfacePrefix);
-      vpnInterface.getAllPrefixes().add(vpnInterfacePrefix);
+      Interface vpnInterface =
+          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfacePrefix);
+
+      // Set fields within representation structures
 
       // ipsec
       ipsecVpn.setBindInterface(vpnInterface);
@@ -250,6 +248,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       // ike
       ikeGateway.setExternalInterface(externalInterface);
       ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
+      ikeGateway.setLocalAddress(externalInterface.getPrefix().getAddress());
       if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
         ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
         ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
@@ -267,6 +266,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         BgpProcess proc = vpnGatewayCfgNode.getDefaultVrf().getBgpProcess();
         if (proc == null) {
           proc = new BgpProcess();
+          proc.setRouterId(ipsecTunnel.getVgwInsideAddress());
+          proc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
         BgpNeighbor cgBgpNeighbor =
@@ -278,6 +279,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         cgBgpNeighbor.setLocalIp(ipsecTunnel.getVgwInsideAddress());
         cgBgpNeighbor.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
         cgBgpNeighbor.setSendCommunity(false);
+
         VpnGateway vpnGateway = awsVpcConfiguration.getVpnGateways().get(_vpnGatewayId);
         List<String> attachmentVpcIds = vpnGateway.getAttachmentVpcIds();
         if (attachmentVpcIds.size() != 1) {
@@ -289,9 +291,66 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                   + "\" is linked to multiple VPCs");
         }
         String vpcId = attachmentVpcIds.get(0);
+
+        // iBGP connection to VPC
+        Configuration vpcNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);
+        Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getPrefix().getAddress();
+        Ip vgwToVpcIfaceAddress =
+            vpnGatewayCfgNode.getInterfaces().get(vpcId).getPrefix().getAddress();
+        BgpNeighbor vgwToVpcBgpNeighbor = new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode);
+        proc.getNeighbors().put(vgwToVpcBgpNeighbor.getPrefix(), vgwToVpcBgpNeighbor);
+        vgwToVpcBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
+        vgwToVpcBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());
+        vgwToVpcBgpNeighbor.setLocalIp(vgwToVpcIfaceAddress);
+        vgwToVpcBgpNeighbor.setRemoteAs(ipsecTunnel.getVgwBgpAsn());
+        vgwToVpcBgpNeighbor.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
+        vgwToVpcBgpNeighbor.setSendCommunity(true);
+
+        // iBGP connection from VPC
+        BgpNeighbor vpcToVgwBgpNeighbor = new BgpNeighbor(vgwToVpcIfaceAddress, vpcNode);
+        BgpProcess vpcProc = new BgpProcess();
+        vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
+        vpcProc.setMultipathEquivalentAsPathMatchMode(
+            MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        vpcProc.setRouterId(vpcIfaceAddress);
+        vpcProc.getNeighbors().put(vpcToVgwBgpNeighbor.getPrefix(), vpcToVgwBgpNeighbor);
+        vpcToVgwBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
+        vpcToVgwBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());
+        vpcToVgwBgpNeighbor.setLocalIp(vpcIfaceAddress);
+        vpcToVgwBgpNeighbor.setRemoteAs(ipsecTunnel.getVgwBgpAsn());
+        vpcToVgwBgpNeighbor.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
+        vpcToVgwBgpNeighbor.setSendCommunity(true);
+
+        String rpRejectAllName = "~REJECT_ALL~";
+
+        String rpAcceptAllEbgpAndSetNextHopSelfName = "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~";
+        If acceptIffEbgp = new If();
+        acceptIffEbgp.setGuard(new MatchProtocol(RoutingProtocol.BGP));
+        acceptIffEbgp.setTrueStatements(
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+        acceptIffEbgp.setFalseStatements(
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+
+        RoutingPolicy vgwRpAcceptAllBgp =
+            new RoutingPolicy(rpAcceptAllEbgpAndSetNextHopSelfName, vpnGatewayCfgNode);
+        vpnGatewayCfgNode.getRoutingPolicies().put(vgwRpAcceptAllBgp.getName(), vgwRpAcceptAllBgp);
+        vgwRpAcceptAllBgp.setStatements(
+            ImmutableList.of(new SetNextHop(new SelfNextHop(), false), acceptIffEbgp));
+        vgwToVpcBgpNeighbor.setExportPolicy(rpAcceptAllEbgpAndSetNextHopSelfName);
+        RoutingPolicy vgwRpRejectAll = new RoutingPolicy(rpRejectAllName, vpnGatewayCfgNode);
+        vpnGatewayCfgNode.getRoutingPolicies().put(rpRejectAllName, vgwRpRejectAll);
+        vgwToVpcBgpNeighbor.setImportPolicy(rpRejectAllName);
+
+        String rpAcceptAllName = "~ACCEPT_ALL~";
+        RoutingPolicy vpcRpAcceptAll = new RoutingPolicy(rpAcceptAllName, vpcNode);
+        vpcNode.getRoutingPolicies().put(rpAcceptAllName, vpcRpAcceptAll);
+        vpcRpAcceptAll.setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+        vpcToVgwBgpNeighbor.setImportPolicy(rpAcceptAllName);
+        RoutingPolicy vpcRpRejectAll = new RoutingPolicy(rpRejectAllName, vpcNode);
+        vpcNode.getRoutingPolicies().put(rpRejectAllName, vpcRpRejectAll);
+        vpcToVgwBgpNeighbor.setExportPolicy(rpRejectAllName);
+
         Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
-        Prefix outgoingPrefix = vpc.getCidrBlock();
-        int outgoingPrefixLength = outgoingPrefix.getPrefixLength();
         String originationPolicyName = vpnId + "_origination";
         RoutingPolicy originationRoutingPolicy =
             new RoutingPolicy(originationPolicyName, vpnGatewayCfgNode);
@@ -301,15 +360,22 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         List<Statement> statements = originationRoutingPolicy.getStatements();
         statements.add(originationIf);
         statements.add(Statements.ExitReject.toStaticStatement());
+        originationIf
+            .getTrueStatements()
+            .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
         originationIf.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
         RouteFilterList originationRouteFilter = new RouteFilterList(originationPolicyName);
         vpnGatewayCfgNode.getRouteFilterLists().put(originationPolicyName, originationRouteFilter);
-        RouteFilterLine matchOutgoingPrefix =
-            new RouteFilterLine(
-                LineAction.ACCEPT,
-                outgoingPrefix,
-                new SubRange(outgoingPrefixLength, outgoingPrefixLength));
-        originationRouteFilter.addLine(matchOutgoingPrefix);
+        vpc.getCidrBlockAssociations()
+            .forEach(
+                prefix -> {
+                  RouteFilterLine matchOutgoingPrefix =
+                      new RouteFilterLine(
+                          LineAction.ACCEPT,
+                          prefix,
+                          new SubRange(prefix.getPrefixLength(), prefix.getPrefixLength()));
+                  originationRouteFilter.addLine(matchOutgoingPrefix);
+                });
         Conjunction conj = new Conjunction();
         originationIf.setGuard(conj);
         conj.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
@@ -326,7 +392,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                 .setNetwork(staticRoutePrefix)
                 .setNextHopIp(ipsecTunnel.getCgwInsideAddress())
                 .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                 .build();
 
         vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);

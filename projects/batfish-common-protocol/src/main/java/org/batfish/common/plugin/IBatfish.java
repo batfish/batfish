@@ -53,7 +53,7 @@ public interface IBatfish extends IPluginConsumer {
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
-  Topology computeTopology(Map<String, Configuration> configurations);
+  Topology computeEnvironmentTopology(Map<String, Configuration> configurations);
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
@@ -113,7 +113,7 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(HeaderSpace headerSpace);
+  AnswerElement multipath(HeaderSpace headerSpace, String ingressNodeRegex);
 
   AtomicInteger newBatch(String description, int jobs);
 
@@ -134,7 +134,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(HeaderSpace headerSpace);
+  AnswerElement reducedReachability(HeaderSpace headerSpace, String ingressNodeRegex);
 
   void registerAnswerer(
       String questionName,

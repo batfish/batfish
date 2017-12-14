@@ -21,6 +21,8 @@ public abstract class BooleanExpr implements Serializable {
 
   private static final String PROP_COMMENT = "comment";
 
+  protected transient BooleanExpr _simplified;
+
   private String _comment;
 
   /**

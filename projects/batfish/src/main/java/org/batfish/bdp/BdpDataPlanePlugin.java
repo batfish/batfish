@@ -40,7 +40,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     BdpAnswerElement ae = new BdpAnswerElement();
     answer.addAnswerElement(ae);
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Topology topology = _batfish.computeTopology(configurations);
+    Topology topology = _batfish.computeEnvironmentTopology(configurations);
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     Set<NodeInterfacePair> flowSinks =
         _batfish.computeFlowSinks(configurations, differentialContext, topology);

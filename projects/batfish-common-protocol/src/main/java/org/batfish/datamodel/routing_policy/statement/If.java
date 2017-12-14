@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,28 +139,35 @@ public class If extends Statement {
 
   @Override
   public List<Statement> simplify() {
-    List<Statement> simpleTrueStatements = new ArrayList<>();
-    List<Statement> simpleFalseStatements = new ArrayList<>();
+    if (_simplified != null) {
+      return _simplified;
+    }
+    ImmutableList.Builder<Statement> simpleTrueStatementsBuilder = ImmutableList.builder();
+    ImmutableList.Builder<Statement> simpleFalseStatementsBuilder = ImmutableList.builder();
     BooleanExpr simpleGuard = _guard.simplify();
     for (Statement trueStatement : _trueStatements) {
-      simpleTrueStatements.addAll(trueStatement.simplify());
+      simpleTrueStatementsBuilder.addAll(trueStatement.simplify());
     }
+    List<Statement> simpleTrueStatements = simpleTrueStatementsBuilder.build();
     for (Statement falseStatement : _falseStatements) {
-      simpleFalseStatements.addAll(falseStatement.simplify());
+      simpleFalseStatementsBuilder.addAll(falseStatement.simplify());
     }
+    List<Statement> simpleFalseStatements = simpleFalseStatementsBuilder.build();
     if (simpleGuard.equals(BooleanExprs.True.toStaticBooleanExpr())) {
-      return simpleTrueStatements;
+      _simplified = simpleTrueStatements;
     } else if (simpleGuard.equals(BooleanExprs.False.toStaticBooleanExpr())) {
-      return simpleFalseStatements;
+      _simplified = simpleFalseStatements;
     } else if (simpleTrueStatements.size() == 0 && simpleFalseStatements.size() == 0) {
-      return Collections.<Statement>emptyList();
+      _simplified = Collections.emptyList();
     } else {
       If simple = new If();
       simple.setGuard(simpleGuard);
       simple.setTrueStatements(simpleTrueStatements);
       simple.setFalseStatements(simpleFalseStatements);
       simple.setComment(getComment());
-      return Collections.singletonList(simple);
+      _simplified = ImmutableList.of(simple);
+      simple._simplified = _simplified;
     }
+    return _simplified;
   }
 }

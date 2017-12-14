@@ -174,7 +174,7 @@ public class Main {
         _authorizer = FileAuthorizer.createFromSettings(settings);
         break;
       case database:
-        _authorizer = new DbAuthorizer();
+        _authorizer = DbAuthorizer.createFromSettings(settings);
         break;
       default:
         System.err.print(

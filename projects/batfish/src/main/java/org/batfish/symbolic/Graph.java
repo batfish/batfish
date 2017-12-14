@@ -278,7 +278,7 @@ public class Graph {
    * create the opposite edge mapping.
    */
   private void initGraph() {
-    Topology topology = _batfish.computeTopology(_configurations);
+    Topology topology = _batfish.computeEnvironmentTopology(_configurations);
     Map<NodeInterfacePair, Interface> ifaceMap = new HashMap<>();
     Map<String, Set<NodeInterfacePair>> routerIfaceMap = new HashMap<>();
 
@@ -719,10 +719,8 @@ public class Graph {
       sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        if (peer != null) {
-          if (maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
-            todo.add(peer);
-          }
+        if (peer != null && maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
+          todo.add(peer);
         }
       }
     }
@@ -790,10 +788,8 @@ public class Graph {
               list.add(c2);
             }
           }
-          if (c2.getType() == CommunityVar.Type.OTHER) {
-            if (c1.getValue().equals(c2.getValue())) {
-              list.add(c2);
-            }
+          if (c2.getType() == CommunityVar.Type.OTHER && c1.getValue().equals(c2.getValue())) {
+            list.add(c2);
           }
         }
       }

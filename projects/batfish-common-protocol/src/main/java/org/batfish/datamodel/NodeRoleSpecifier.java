@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -81,9 +82,12 @@ public class NodeRoleSpecifier {
 
   // return a map from each role name to the set of nodes that play that role
   public SortedMap<String, SortedSet<String>> createRoleNodesMap(Set<String> allNodes) {
+    // Make a deep copy of _roleMap so that updating roleNodesMap does not mutate _roleMap.
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
+    for (Map.Entry<String, SortedSet<String>> entry : _roleMap.entrySet()) {
+      roleNodesMap.put(entry.getKey(), new TreeSet<>(entry.getValue()));
+    }
 
-    roleNodesMap.putAll(_roleMap);
     addToRoleNodesMap(roleNodesMap, allNodes);
 
     return roleNodesMap;

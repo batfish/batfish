@@ -237,10 +237,8 @@ public class SymbolicRoute {
       Set<CommunityVar> allComms = slice.getAllCommunities();
       for (CommunityVar cvar : allComms) {
         // TODO: if neighbor doesn't need regex match, then don't keep it on export
-        if (cvar.getType() == Type.REGEX) {
-          if (!_isExport) {
-            continue;
-          }
+        if (cvar.getType() == Type.REGEX && !_isExport) {
+          continue;
         }
         String s = cvar.getValue();
         if (cvar.getType() == CommunityVar.Type.OTHER) {
