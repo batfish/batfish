@@ -13,6 +13,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_AVAILABILITY_ZONES = "AvailabilityZones";
   String JSON_KEY_BGP_ASN = "BgpAsn";
   String JSON_KEY_CIDR_BLOCK = "CidrBlock";
+  String JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET = "CidrBlockAssociationSet";
   String JSON_KEY_CIDR_IP = "CidrIp";
   String JSON_KEY_CODE = "Code";
   String JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION = "CustomerGatewayConfiguration";
