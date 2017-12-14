@@ -2442,10 +2442,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2455,10 +2457,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2601,10 +2605,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2614,10 +2620,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2760,10 +2768,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2779,6 +2789,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW",
                   "negate" : false,
                   "srcIps" : [
                     "162.243.144.192"
@@ -2786,6 +2797,7 @@
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2928,10 +2940,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -2941,10 +2955,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3087,10 +3103,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3100,10 +3118,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3246,10 +3266,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3259,10 +3281,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3405,10 +3429,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3418,10 +3444,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3564,10 +3592,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3583,6 +3613,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW",
                   "negate" : false,
                   "srcIps" : [
                     "162.243.144.192"
@@ -3590,6 +3621,7 @@
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3732,10 +3764,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3751,6 +3785,7 @@
                   "ipProtocols" : [
                     "TCP"
                   ],
+                  "name" : "100 TCP [3306,3306] 162.243.144.192/32 ALLOW",
                   "negate" : false,
                   "srcIps" : [
                     "162.243.144.192"
@@ -3758,6 +3793,7 @@
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3900,10 +3936,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
@@ -3913,10 +3951,12 @@
               "lines" : [
                 {
                   "action" : "ACCEPT",
+                  "name" : "100 ALL ALL 0.0.0.0/0 ALLOW",
                   "negate" : false
                 },
                 {
                   "action" : "REJECT",
+                  "name" : "* ALL ALL 0.0.0.0/0 DENY",
                   "negate" : false
                 }
               ]
