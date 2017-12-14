@@ -10,49 +10,49 @@ public class WorkDetails {
     UNKNOWN
   }
 
-  public String baseTestrig;
-  public String baseEnvironment;
-  public String deltaTestrig;
-  public String deltaEnvironment;
-  public boolean isDifferential;
-  public WorkType workType;
+  public final String baseTestrig;
+  public final String baseEnv;
+  public final String deltaTestrig;
+  public final String deltaEnv;
+  public final boolean isDifferential;
+  public final WorkType workType;
 
   public WorkDetails() {
     this(null, null, null, null, false, WorkType.UNKNOWN);
   }
 
-  public WorkDetails(String baseTestrig, String baseEnvironment, WorkType workType) {
-    this(baseTestrig, baseEnvironment, null, null, false, workType);
+  public WorkDetails(String baseTestrig, String baseEnv, WorkType workType) {
+    this(baseTestrig, baseEnv, null, null, false, workType);
   }
 
   public WorkDetails(
       String baseTestrig,
-      String baseEnvironment,
+      String baseEnv,
       String deltaTestrig,
-      String deltaEnvironment,
+      String deltaEnv,
       boolean isDifferential,
       WorkType workType) {
     this.baseTestrig = baseTestrig;
-    this.baseEnvironment = baseEnvironment;
+    this.baseEnv = baseEnv;
     this.deltaTestrig = deltaTestrig;
-    this.deltaEnvironment = deltaEnvironment;
+    this.deltaEnv = deltaEnv;
     this.isDifferential = isDifferential;
     this.workType = workType;
   }
 
   public boolean isOverlappingInput(WorkDetails o) {
 
-    if (baseTestrig.equals(o.baseTestrig) && baseEnvironment.equals(o.baseEnvironment)) {
+    if (baseTestrig.equals(o.baseTestrig) && baseEnv.equals(o.baseEnv)) {
       return true;
     }
-    if (baseTestrig.equals(o.deltaTestrig) && baseEnvironment.equals(o.deltaEnvironment)) {
+    if (baseTestrig.equals(o.deltaTestrig) && baseEnv.equals(o.deltaEnv)) {
       return true;
     }
     if (isDifferential) {
-      if (deltaTestrig.equals(o.baseTestrig) && deltaEnvironment.equals(o.baseEnvironment)) {
+      if (deltaTestrig.equals(o.baseTestrig) && deltaEnv.equals(o.baseEnv)) {
         return true;
       }
-      if (deltaTestrig.equals(o.deltaTestrig) && deltaEnvironment.equals(o.deltaEnvironment)) {
+      if (deltaTestrig.equals(o.deltaTestrig) && deltaEnv.equals(o.deltaEnv)) {
         return true;
       }
     }

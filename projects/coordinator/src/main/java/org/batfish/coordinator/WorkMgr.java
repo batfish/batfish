@@ -350,30 +350,23 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private WorkDetails computeWorkDetails(WorkItem workItem) {
-    Pair<Pair<String, String>, Pair<String, String>> settings =
-        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
-    WorkDetails details =
-        new WorkDetails(
-            WorkItemBuilder.getBaseTestrig(settings),
-            WorkItemBuilder.getBaseEnvironment(settings),
-            WorkItemBuilder.getDeltaTestrig(settings),
-            WorkItemBuilder.getDeltaEnvironment(settings),
-            false,
-            WorkType.UNKNOWN);
+
+    boolean isDifferential = false;
+    WorkType workType = WorkType.UNKNOWN;
 
     if (WorkItemBuilder.isParsingWorkItem(workItem)) {
-      details.workType = WorkType.PARSING;
+      workType = WorkType.PARSING;
     }
 
     if (WorkItemBuilder.isDataplaningWorkItem(workItem)) {
-      if (details.workType != WorkType.UNKNOWN) {
+      if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate PARSING and DATAPLANING.");
       }
-      details.workType = WorkType.DATAPLANING;
+      workType = WorkType.DATAPLANING;
     }
 
     if (WorkItemBuilder.isAnsweringWorkItem(workItem)) {
-      if (details.workType != WorkType.UNKNOWN) {
+      if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
       String qName = WorkItemBuilder.getQuestionName(workItem);
@@ -382,15 +375,15 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
       Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
-      details.isDifferential = question.getDifferential();
-      details.workType =
+      isDifferential = question.getDifferential();
+      workType =
           question.getDataPlane()
               ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
               : WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
     }
 
     if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
-      if (details.workType != WorkType.UNKNOWN) {
+      if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
       }
       String aName = WorkItemBuilder.getAnalysisName(workItem);
@@ -398,19 +391,29 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Analysis name not provided for ANALYZE work");
       }
       Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
-      details.isDifferential = false;
-      details.workType = WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+      workType = WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
         Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
         Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
         if (question.getDifferential()) {
-          details.isDifferential = true;
+          isDifferential = true;
         }
         if (question.getDataPlane()) {
-          details.workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
+          workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
         }
       }
     }
+
+    Pair<Pair<String, String>, Pair<String, String>> settings =
+        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
+    WorkDetails details =
+        new WorkDetails(
+            WorkItemBuilder.getBaseTestrig(settings),
+            WorkItemBuilder.getBaseEnvironment(settings),
+            WorkItemBuilder.getDeltaTestrig(settings),
+            WorkItemBuilder.getDeltaEnvironment(settings),
+            isDifferential,
+            workType);
 
     return details;
   }
