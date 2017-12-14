@@ -122,7 +122,6 @@ public class WorkQueueMgr {
       QueuedWork work, String testrig, String environment) throws Exception {
 
     WorkItem wItem = work.getWorkItem();
-    WorkDetails wDetails = work.getDetails();
 
     EnvironmentMetadata envMetadata =
         TestrigMetadataMgr.getEnvironmentMetadata(wItem.getContainerName(), testrig, environment);
