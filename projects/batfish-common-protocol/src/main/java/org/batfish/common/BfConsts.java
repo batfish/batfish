@@ -158,7 +158,6 @@ public class BfConsts {
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-  public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
   public static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   public static final String SUFFIX_LOG_FILE = ".log";
