@@ -189,10 +189,8 @@ class CounterExample {
           for (Entry<CommunityVar, BoolExpr> entry2 : r.getCommunities().entrySet()) {
             CommunityVar cvar = entry2.getKey();
             BoolExpr expr = entry2.getValue();
-            if (cvar.getType() == Type.EXACT) {
-              if (boolVal(expr)) {
-                communities.add(cvar.asLong());
-              }
+            if (cvar.getType() == Type.EXACT && boolVal(expr)) {
+              communities.add(cvar.asLong());
             }
           }
 

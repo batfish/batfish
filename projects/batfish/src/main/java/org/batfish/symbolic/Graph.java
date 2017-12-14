@@ -719,10 +719,8 @@ public class Graph {
       sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        if (peer != null) {
-          if (maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
-            todo.add(peer);
-          }
+        if (peer != null && maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
+          todo.add(peer);
         }
       }
     }
@@ -790,10 +788,8 @@ public class Graph {
               list.add(c2);
             }
           }
-          if (c2.getType() == CommunityVar.Type.OTHER) {
-            if (c1.getValue().equals(c2.getValue())) {
-              list.add(c2);
-            }
+          if (c2.getType() == CommunityVar.Type.OTHER && c1.getValue().equals(c2.getValue())) {
+            list.add(c2);
           }
         }
       }

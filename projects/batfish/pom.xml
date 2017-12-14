@@ -118,7 +118,7 @@
             <id>check</id>
             <goals><goal>check</goal></goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+               <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 

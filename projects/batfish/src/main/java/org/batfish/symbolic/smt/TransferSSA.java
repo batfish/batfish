@@ -797,16 +797,14 @@ class TransferSSA {
         cid = _enc.safeEqEnum(_current.getClientId(), p.getData().getClientId());
       }
     }
-    if (!_isExport && _proto.isBgp()) {
-      if (p.getData().getClientId() != null) {
-        BoolExpr fromExternal = p.getData().getClientId().checkIfValue(0);
-        BoolExpr edgeIsInternal = _enc.mkBool(!isClient && !isNonClient);
-        BoolExpr copyOver = _enc.safeEqEnum(_current.getClientId(), p.getData().getClientId());
-        Integer x = _enc.getGraph().getOriginatorId().get(_graphEdge.getRouter());
-        SymbolicOriginatorId soid = _current.getClientId();
-        BoolExpr setNewValue = (x == null ? soid.checkIfValue(0) : soid.checkIfValue(x));
-        cid = _enc.mkIf(_enc.mkAnd(fromExternal, edgeIsInternal), setNewValue, copyOver);
-      }
+    if (!_isExport && _proto.isBgp() && p.getData().getClientId() != null) {
+      BoolExpr fromExternal = p.getData().getClientId().checkIfValue(0);
+      BoolExpr edgeIsInternal = _enc.mkBool(!isClient && !isNonClient);
+      BoolExpr copyOver = _enc.safeEqEnum(_current.getClientId(), p.getData().getClientId());
+      Integer x = _enc.getGraph().getOriginatorId().get(_graphEdge.getRouter());
+      SymbolicOriginatorId soid = _current.getClientId();
+      BoolExpr setNewValue = (x == null ? soid.checkIfValue(0) : soid.checkIfValue(x));
+      cid = _enc.mkIf(_enc.mkAnd(fromExternal, edgeIsInternal), setNewValue, copyOver);
     }
 
     BoolExpr updates =
