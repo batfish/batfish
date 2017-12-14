@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -18,6 +19,9 @@ import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.CoordConstsV2;
+import org.batfish.coordinator.authorizer.Authorizer;
+import org.batfish.coordinator.authorizer.MapAuthorizer;
 import org.batfish.coordinator.config.Settings;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -103,5 +107,44 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   public void deleteNonExistingContainer() {
     Response response = getContainersTarget().path("nonExistingContainer").request().delete();
     assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  /** Test that the ApiKey is extracted from the correct header */
+  @Test
+  public void correctApiKeyHeader() {
+    // Set up by making a call to authorize container
+    String containerName = "someContainer";
+    String myKey = "ApiKey";
+    Authorizer auth = new MapAuthorizer();
+    Main.setAuthorizer(auth);
+    auth.authorizeContainer(myKey, containerName);
+    Main.getWorkMgr().initContainer(containerName, null);
+
+    // Test that subsequent calls return 200 with correct API key
+    Response resp =
+        getContainersTarget()
+            .path(containerName)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, myKey)
+            .get();
+    assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
+
+    // Test that subsequent calls return 200 with correct API key
+    resp =
+        getContainersTarget()
+            .path(containerName)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "wrongKey")
+            .get();
+    assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
+
+    // And ensure that right key, but in the wrong (old) header field does not work either
+    resp =
+        getContainersTarget()
+            .path(containerName)
+            .request()
+            .header(CoordConsts.SVC_KEY_API_KEY, myKey)
+            .get();
+    assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
   }
 }
