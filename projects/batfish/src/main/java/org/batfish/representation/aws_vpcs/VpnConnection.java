@@ -331,7 +331,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         acceptIffEbgp.setFalseStatements(
             ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
-        RoutingPolicy vgwRpAcceptAllBgp = new RoutingPolicy(rpAcceptAllEbgpAndSetNextHopSelfName, vpnGatewayCfgNode);
+        RoutingPolicy vgwRpAcceptAllBgp =
+            new RoutingPolicy(rpAcceptAllEbgpAndSetNextHopSelfName, vpnGatewayCfgNode);
         vpnGatewayCfgNode.getRoutingPolicies().put(vgwRpAcceptAllBgp.getName(), vgwRpAcceptAllBgp);
         vgwRpAcceptAllBgp.setStatements(
             ImmutableList.of(new SetNextHop(new SelfNextHop(), false), acceptIffEbgp));
