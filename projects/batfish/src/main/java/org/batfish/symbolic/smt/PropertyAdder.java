@@ -366,16 +366,14 @@ class PropertyAdder {
       BoolExpr accNone = ctx.mkTrue();
       BoolExpr accSome = ctx.mkFalse();
       for (GraphEdge edge : edges) {
-        if (!edge.isAbstract()) {
-          if (edge.getPeer() != null) {
-            BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
-            assert (dataFwd != null);
-            ArithExpr peerLen = lenVars.get(edge.getPeer());
-            accNone = ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(peerLen, zero), ctx.mkNot(dataFwd)));
-            ArithExpr newVal = ctx.mkAdd(peerLen, one);
-            BoolExpr fwd = ctx.mkAnd(ctx.mkGe(peerLen, zero), dataFwd, ctx.mkEq(length, newVal));
-            accSome = ctx.mkOr(accSome, fwd);
-          }
+        if (!edge.isAbstract() && edge.getPeer() != null) {
+          BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
+          assert (dataFwd != null);
+          ArithExpr peerLen = lenVars.get(edge.getPeer());
+          accNone = ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(peerLen, zero), ctx.mkNot(dataFwd)));
+          ArithExpr newVal = ctx.mkAdd(peerLen, one);
+          BoolExpr fwd = ctx.mkAnd(ctx.mkGe(peerLen, zero), dataFwd, ctx.mkEq(length, newVal));
+          accSome = ctx.mkOr(accSome, fwd);
         }
       }
 
