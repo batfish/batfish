@@ -56,7 +56,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
         return "";
       }
 
-      StringBuilder sb = new StringBuilder("Results for outliers\n");
+      StringBuilder sb = new StringBuilder("Results for per-role outliers\n");
 
       for (OutlierSet<?> outlier : _serverOutliers) {
         sb.append("  Hypothesis: every node should have the following set of ");
