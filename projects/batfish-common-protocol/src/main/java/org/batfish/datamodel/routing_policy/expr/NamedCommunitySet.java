@@ -38,7 +38,6 @@ public class NamedCommunitySet extends CommunitySetExpr {
 
   @Override
   public SortedSet<Long> communities(Environment environment, Set<Long> communityCandidates) {
-    SortedSet<Long> matchingCommunities = new TreeSet<>();
     CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
     return communityCandidates
         .stream()
