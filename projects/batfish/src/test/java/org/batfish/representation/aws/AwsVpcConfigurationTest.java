@@ -1,14 +1,14 @@
-package org.batfish.grammar.aws;
+package org.batfish.representation.aws;
 
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.SortedSet;
+import java.util.List;
 import org.batfish.common.BfConsts;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -21,7 +21,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class AwsVpcConfigurationTest {
 
-  private static String TESTRIG_PREFIX = "org/batfish/grammar/aws/testrigs/";
+  private static String TESTRIG_PREFIX = "org/batfish/representation/aws/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -30,7 +30,7 @@ public class AwsVpcConfigurationTest {
   @Test
   public void testVpcPeeringConnections() throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "vpc_peering_connections";
-    SortedSet<String> awsFilenames = ImmutableSortedSet.of("VpcPeeringConnections.json");
+    List<String> awsFilenames = ImmutableList.of("VpcPeeringConnections.json");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(

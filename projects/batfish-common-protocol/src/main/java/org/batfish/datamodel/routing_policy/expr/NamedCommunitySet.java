@@ -1,7 +1,10 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.CommunityList;
@@ -23,7 +26,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public SortedSet<Long> communities(Environment environment) {
+  public SortedSet<Long> allCommunities(Environment environment) {
     SortedSet<Long> out = new TreeSet<>();
     CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
     for (CommunityListLine line : cl.getLines()) {
@@ -34,15 +37,12 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public SortedSet<Long> communities(Environment environment, SortedSet<Long> communityCandidates) {
-    SortedSet<Long> matchingCommunities = new TreeSet<>();
-    for (Long community : communityCandidates) {
-      CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
-      if (cl.permits(community)) {
-        matchingCommunities.add(community);
-      }
-    }
-    return Collections.unmodifiableSortedSet(matchingCommunities);
+  public SortedSet<Long> communities(Environment environment, Set<Long> communityCandidates) {
+    CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
+    return communityCandidates
+        .stream()
+        .filter(cl::permits)
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
   @Override
@@ -77,17 +77,6 @@ public class NamedCommunitySet extends CommunitySetExpr {
     int result = 1;
     result = prime * result + ((_name == null) ? 0 : _name.hashCode());
     return result;
-  }
-
-  @Override
-  public boolean matchSingleCommunity(Environment environment, SortedSet<Long> communities) {
-    CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
-    for (Long community : communities) {
-      if (cl.permits(community)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public void setName(String name) {

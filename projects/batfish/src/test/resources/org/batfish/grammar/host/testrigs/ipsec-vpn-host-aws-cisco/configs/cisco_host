@@ -1,0 +1,157 @@
+!
+hostname cisco_host
+!
+crypto keyring keyring-vpn-1111111  
+  local-address 172.16.1.2
+  pre-shared-key address 5.6.7.8 key abcdefghijklmnop
+crypto keyring keyring-vpn-222222  
+  local-address 172.16.1.2
+  pre-shared-key address 1.2.3.4 key abcdefghijklmnop
+!
+crypto isakmp policy 200
+ encr aes
+ authentication pre-share
+ group 2
+ lifetime 28800
+!         
+crypto isakmp policy 201
+ encr aes
+ authentication pre-share
+ group 2
+ lifetime 28800
+crypto isakmp keepalive 10 10
+crypto isakmp profile isakmp-vpn-222222
+   keyring keyring-vpn-222222
+   match identity address 1.2.3.4 255.255.255.255 
+   local-address 172.16.1.2
+crypto isakmp profile isakmp-vpn-1111111
+   keyring keyring-vpn-1111111
+   match identity address 5.6.7.8 255.255.255.255 
+   local-address 172.16.1.2
+!
+crypto ipsec security-association replay window-size 128
+!
+crypto ipsec transform-set ipsec-prop-vpn-222222 esp-aes esp-sha-hmac 
+ mode tunnel
+crypto ipsec transform-set ipsec-prop-vpn-1111111 esp-aes esp-sha-hmac 
+ mode tunnel
+crypto ipsec df-bit clear
+!         
+!
+crypto ipsec profile ipsec-vpn-222222
+ set transform-set ipsec-prop-vpn-222222 
+ set pfs group2
+!
+crypto ipsec profile ipsec-vpn-1111111
+ set transform-set ipsec-prop-vpn-1111111 
+ set pfs group2
+!
+!
+interface Loopback0
+ ip address 10.10.255.8 255.255.255.255
+!
+interface Tunnel1
+ ip address 169.254.15.194 255.255.255.252
+ ip tcp adjust-mss 1379
+ tunnel source 172.16.1.2
+ tunnel mode ipsec ipv4
+ tunnel destination 1.2.3.4
+ tunnel protection ipsec profile ipsec-vpn-222222
+!
+interface Tunnel2
+ ip address 169.254.13.238 255.255.255.252
+ ip tcp adjust-mss 1379
+ tunnel source 172.16.1.2
+ tunnel mode ipsec ipv4
+ tunnel destination 5.6.7.8
+ tunnel protection ipsec profile ipsec-vpn-1111111
+!
+interface GigabitEthernet0/0
+ ip address 192.168.60.37 255.255.255.0
+!         
+interface Ethernet1/0
+ ip address 10.10.10.38 255.255.255.252
+ ip ospf network point-to-point
+!
+interface Ethernet1/1
+ ip address 10.10.10.46 255.255.255.252
+ ip ospf network point-to-point
+!
+interface GigabitEthernet2/0
+ description Border Interface
+ ip address 172.16.1.2 255.255.255.252
+!
+router ospf 1
+ router-id 10.10.255.8
+ passive-interface Ethernet1/2
+ passive-interface Loopback0
+ passive-interface Tunnel1
+ passive-interface Tunnel2
+ network 10.10.10.0 0.0.0.255 area 0
+ network 10.10.255.0 0.0.0.255 area 0
+!
+router bgp 65301
+ bgp router-id 10.10.255.8
+ bgp log-neighbor-changes
+ bgp bestpath compare-routerid
+ neighbor FW peer-group
+ neighbor 10.10.10.37 remote-as 65201
+ neighbor 10.10.10.37 peer-group FW
+ neighbor 10.10.10.45 remote-as 65202
+ neighbor 10.10.10.45 peer-group FW
+ neighbor 10.10.30.2 remote-as 65331
+ neighbor 10.10.255.7 remote-as 65301
+ neighbor 10.10.255.7 shutdown
+ neighbor 10.10.255.7 update-source Loopback0
+ neighbor 169.254.13.237 remote-as 65401
+ neighbor 169.254.13.237 timers 10 30 30
+ neighbor 169.254.15.193 remote-as 65401
+ neighbor 169.254.15.193 timers 10 30 30
+ !
+ address-family ipv4
+  network 10.10.0.0 mask 255.255.0.0
+  neighbor 10.10.10.37 activate
+  neighbor 10.10.10.37 route-map SET_LOCAL_PREF in
+  neighbor 10.10.10.45 activate
+  neighbor 10.10.30.2 activate
+  neighbor 10.10.30.2 route-map PROTECT_LOOPBACK in
+  neighbor 10.10.255.7 activate
+  neighbor 10.10.255.7 next-hop-self
+  neighbor 169.254.13.237 activate
+  neighbor 169.254.13.237 default-originate
+  neighbor 169.254.13.237 soft-reconfiguration inbound
+  neighbor 169.254.13.237 route-map PROTECT_LOOPBACK in
+  neighbor 169.254.15.193 activate
+  neighbor 169.254.15.193 default-originate
+  neighbor 169.254.15.193 soft-reconfiguration inbound
+  neighbor 169.254.15.193 route-map PROTECT_LOOPBACK in
+ exit-address-family
+!
+ip route 8.8.0.0 255.255.0.0 4.4.4.26
+ip route 10.10.0.0 255.255.0.0 Null0
+ip route 52.0.0.0 255.0.0.0 4.4.4.26
+!
+ip access-list extended LIMIT_PEER
+ permit ip 10.1.30.0 0.0.0.255 any
+ permit ip host 10.10.30.2 host 10.10.30.1
+ip access-list extended MATCH_ALL_BGP
+ permit ip any any
+!
+!
+ip prefix-list PROTECT_LOOPBACK seq 5 deny 10.10.255.0/28 le 32
+ip prefix-list PROTECT_LOOPBACK seq 10 permit 0.0.0.0/0 le 32
+access-list 1 permit 192.168.60.0 0.0.0.255
+access-list 2001 permit icmp 10.100.0.0 0.0.255.255 any
+access-list 2001 permit icmp any 10.100.0.0 0.0.255.255
+!
+route-map PROTECT_LOOPBACK permit 10
+ match ip address prefix-list PROTECT_LOOPBACK
+!
+route-map SET_LOCAL_PREF permit 10
+ set local-preference 50
+!
+route-map SET_LOCAL_PREF permit 20
+ match ip address MATCH_ALL_BGP
+!
+!
+

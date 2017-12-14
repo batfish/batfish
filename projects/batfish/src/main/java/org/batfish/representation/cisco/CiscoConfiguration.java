@@ -94,6 +94,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -1081,7 +1082,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
    * @param maps A list of maps to check for the structure to be updated. Each map could be null.
    *     There must be at least one element. The structure may exist in more than one map.
    */
-  private final void markStructure(
+  private void markStructure(
       CiscoStructureType type,
       CiscoStructureUsage usage,
       List<Map<String, ? extends ReferenceCountedStructure>> maps) {
@@ -1114,7 +1115,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private final void markStructure(
+  private void markStructure(
       CiscoStructureType type,
       CiscoStructureUsage usage,
       Map<String, ? extends ReferenceCountedStructure> map) {
@@ -2235,21 +2236,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setOutgoingFilter(outgoingFilter);
     }
-    if (!CommonUtil.isNullOrEmpty(iface.getSourceNats())) {
-      List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
-
-      if (newIface.getSourceNats() == null) {
-        newIface.setSourceNats(new ArrayList<>(origSourceNats.size()));
-      }
-
+    List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
+    if (origSourceNats != null) {
       // Process each of the CiscoSourceNats:
       //   1) Collect references to ACLs and NAT pools.
       //   2) For valid CiscoSourceNat rules, add them to the newIface source NATs list.
-      origSourceNats
-          .stream()
-          .map(nat -> processSourceNat(nat, iface, ipAccessLists))
-          .filter(Objects::nonNull)
-          .forEach(newIface.getSourceNats()::add);
+      newIface.setSourceNats(
+          origSourceNats
+              .stream()
+              .map(nat -> processSourceNat(nat, iface, ipAccessLists))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList()));
     }
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
@@ -3280,12 +3277,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
+    boolean hasContinue =
+        map.getClauses().values().stream().anyMatch(clause -> clause.getContinueLine() != null);
+    if (hasContinue) {
+      return toRoutingPolicies(c, map);
+    }
     RoutingPolicy output = new RoutingPolicy(map.getName(), c);
     List<Statement> statements = output.getStatements();
     Map<Integer, If> clauses = new HashMap<>();
     // descend map so continue targets are available
     If followingClause = null;
-    Integer followingClauseNumber = null;
     for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap().entrySet()) {
       int clauseNumber = e.getKey();
       RouteMapClause rmClause = e.getValue();
@@ -3315,41 +3316,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       for (RouteMapSetLine rmSet : rmClause.getSetList()) {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
-      RouteMapContinue continueStatement = rmClause.getContinueLine();
-      Integer continueTarget = null;
-      If continueTargetIf = null;
-      if (continueStatement != null) {
-        continueTarget = continueStatement.getTarget();
-        int statementLine = continueStatement.getStatementLine();
-        if (continueTarget == null) {
-          continueTarget = followingClauseNumber;
-        }
-        if (continueTarget != null) {
-          if (continueTarget <= clauseNumber) {
-            throw new BatfishException("Can only continue to later clause");
-          }
-          continueTargetIf = clauses.get(continueTarget);
-          if (continueTargetIf == null) {
-            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
-            undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
-                name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
-                statementLine);
-            continueStatement = null;
-          }
-        } else {
-          continueStatement = null;
-        }
-      }
       switch (rmClause.getAction()) {
         case ACCEPT:
-          if (continueStatement == null) {
-            matchStatements.add(Statements.ReturnTrue.toStaticStatement());
-          } else {
-            matchStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
-            matchStatements.add(continueTargetIf);
-          }
+          matchStatements.add(Statements.ReturnTrue.toStaticStatement());
           break;
 
         case REJECT:
@@ -3365,9 +3334,105 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ifExpr.getFalseStatements().add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
       followingClause = ifExpr;
-      followingClauseNumber = clauseNumber;
     }
     statements.add(followingClause);
+    return output;
+  }
+
+  private RoutingPolicy toRoutingPolicies(Configuration c, RouteMap map) {
+    RoutingPolicy output = new RoutingPolicy(map.getName(), c);
+    List<Statement> statements = output.getStatements();
+    Map<Integer, RoutingPolicy> clauses = new HashMap<>();
+    // descend map so continue targets are available
+    RoutingPolicy followingClause = null;
+    Integer followingClauseNumber = null;
+    for (Entry<Integer, RouteMapClause> e : map.getClauses().descendingMap().entrySet()) {
+      int clauseNumber = e.getKey();
+      RouteMapClause rmClause = e.getValue();
+      String clausePolicyName = getRouteMapClausePolicyName(map, clauseNumber);
+      Conjunction conj = new Conjunction();
+      // match ipv4s must be disjoined with match ipv6
+      Disjunction matchIpOrPrefix = new Disjunction();
+      for (RouteMapMatchLine rmMatch : rmClause.getMatchList()) {
+        BooleanExpr matchExpr = rmMatch.toBooleanExpr(c, this, _w);
+        if (rmMatch instanceof RouteMapMatchIpAccessListLine
+            || rmMatch instanceof RouteMapMatchIpPrefixListLine
+            || rmMatch instanceof RouteMapMatchIpv6AccessListLine
+            || rmMatch instanceof RouteMapMatchIpv6PrefixListLine) {
+          matchIpOrPrefix.getDisjuncts().add(matchExpr);
+        } else {
+          conj.getConjuncts().add(matchExpr);
+        }
+      }
+      if (!matchIpOrPrefix.getDisjuncts().isEmpty()) {
+        conj.getConjuncts().add(matchIpOrPrefix);
+      }
+      RoutingPolicy clausePolicy = new RoutingPolicy(clausePolicyName, c);
+      c.getRoutingPolicies().put(clausePolicyName, clausePolicy);
+      If ifStatement = new If();
+      clausePolicy.getStatements().add(ifStatement);
+      clauses.put(clauseNumber, clausePolicy);
+      ifStatement.setComment(clausePolicyName);
+      ifStatement.setGuard(conj);
+      List<Statement> onMatchStatements = ifStatement.getTrueStatements();
+      for (RouteMapSetLine rmSet : rmClause.getSetList()) {
+        rmSet.applyTo(onMatchStatements, this, c, _w);
+      }
+      RouteMapContinue continueStatement = rmClause.getContinueLine();
+      Integer continueTarget = null;
+      RoutingPolicy continueTargetPolicy = null;
+      if (continueStatement != null) {
+        continueTarget = continueStatement.getTarget();
+        int statementLine = continueStatement.getStatementLine();
+        if (continueTarget == null) {
+          continueTarget = followingClauseNumber;
+        }
+        if (continueTarget != null) {
+          if (continueTarget <= clauseNumber) {
+            throw new BatfishException("Can only continue to later clause");
+          }
+          continueTargetPolicy = clauses.get(continueTarget);
+          if (continueTargetPolicy == null) {
+            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
+            undefined(
+                CiscoStructureType.ROUTE_MAP_CLAUSE,
+                name,
+                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
+                statementLine);
+            continueStatement = null;
+          }
+        } else {
+          continueStatement = null;
+        }
+      }
+      switch (rmClause.getAction()) {
+        case ACCEPT:
+          if (continueStatement == null) {
+            onMatchStatements.add(Statements.ReturnTrue.toStaticStatement());
+          } else {
+            onMatchStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+            onMatchStatements.add(new CallStatement(continueTargetPolicy.getName()));
+          }
+          break;
+
+        case REJECT:
+          onMatchStatements.add(Statements.ReturnFalse.toStaticStatement());
+          break;
+
+        default:
+          throw new BatfishException("Invalid action");
+      }
+      if (followingClause != null) {
+        ifStatement.getFalseStatements().add(new CallStatement(followingClause.getName()));
+      } else {
+        ifStatement
+            .getFalseStatements()
+            .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
+      }
+      followingClause = clausePolicy;
+      followingClauseNumber = clauseNumber;
+    }
+    statements.add(new CallStatement(followingClause.getName()));
     return output;
   }
 
