@@ -170,17 +170,37 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void answeringIsRejectedForNonParsedTestrigs() throws Exception {
+  public void answeringIsRejectedForNonParsedBaseTestrigs() throws Exception {
     initTestrigMetadata("testrig1", "env_default", ProcessingStatus.PARSING_FAIL);
-
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig1"),
             new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(
         "Cannot queue dataplane dependent work for testrig1 / env_default: "
+            + "Status is PARSING_FAIL but no incomplete parsing work exists");
+    doAction(new Action(ActionType.QUEUE, work1));
+  }
+
+  @Test
+  public void answeringIsRejectedForNonParsedDeltaTestrigs() throws Exception {
+    initTestrigMetadata("testrig0", "env_default", ProcessingStatus.PARSED);
+    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.PARSING_FAIL);
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig1"),
+            new WorkDetails(
+                "testrig0",
+                "env_default",
+                "testrig1",
+                "env_default",
+                true,
+                WorkType.DATAPLANE_INDEPENDENT_ANSWERING));
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        "Cannot queue dataplane independent work for testrig1 / env_default: "
             + "Status is PARSING_FAIL but no incomplete parsing work exists");
 
     doAction(new Action(ActionType.QUEUE, work1));
@@ -220,13 +240,37 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void dpAnsweringIsRejectedForNonDataplanedTestrigs() throws Exception {
+  public void dpAnsweringIsRejectedForNonDataplanedBaseTestrigs() throws Exception {
     initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANING_FAIL);
 
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig1"),
             new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
+
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage(
+        "Cannot queue dataplane dependent work for testrig1 / env_default: "
+            + "Status is DATAPLANING_FAIL but no incomplete dataplaning work exists");
+
+    doAction(new Action(ActionType.QUEUE, work1));
+  }
+
+  @Test
+  public void dpAnsweringIsRejectedForNonDataplanedDeltaTestrigs() throws Exception {
+    initTestrigMetadata("testrig0", "env_default", ProcessingStatus.DATAPLANED);
+    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANING_FAIL);
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig1"),
+            new WorkDetails(
+                "testrig0",
+                "env_default",
+                "testrig1",
+                "env_default",
+                true,
+                WorkType.DATAPLANE_DEPENDENT_ANSWERING));
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(

@@ -142,7 +142,7 @@ public class WorkQueueMgr {
               String.format(
                   "Cannot queue dataplane dependent work for %s / %s: "
                       + "Status is %s but no incomplete parsing work exists",
-                  wDetails.baseTestrig, wDetails.baseEnv, envMetadata.getProcessingStatus()));
+                  testrig, environment, envMetadata.getProcessingStatus()));
         }
         return parsingWork;
       case PARSED:
@@ -171,7 +171,7 @@ public class WorkQueueMgr {
               String.format(
                   "Cannot queue dataplane dependent work for %s / %s: "
                       + "Status is %s but no incomplete dataplaning work exists",
-                  wDetails.baseTestrig, wDetails.baseEnv, envMetadata.getProcessingStatus()));
+                  testrig, environment, envMetadata.getProcessingStatus()));
         }
         return dataplaningWork;
       case DATAPLANED:
@@ -208,8 +208,8 @@ public class WorkQueueMgr {
           throw new BatfishException(
               String.format(
                   "Cannot queue dataplane independent work for %s / %s: "
-                      + "Status is %s but no incomplete parsing exists",
-                  wDetails.baseTestrig, wDetails.baseEnv, envMetadata.getProcessingStatus()));
+                      + "Status is %s but no incomplete parsing work exists",
+                  testrig, environment, envMetadata.getProcessingStatus()));
         }
         return parsingWork;
       case PARSED:
