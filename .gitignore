@@ -21,3 +21,7 @@ tasks.xml
 /.idea/libraries/
 *.iml
 /.idea/modules.xml
+
+#Eclipse project file that oscillates for some reason and gets generated anyway
+org.eclipse.core.resources.prefs
+
