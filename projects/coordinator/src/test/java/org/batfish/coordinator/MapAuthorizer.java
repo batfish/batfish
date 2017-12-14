@@ -1,14 +1,15 @@
-package org.batfish.coordinator.authorizer;
+package org.batfish.coordinator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.batfish.coordinator.authorizer.Authorizer;
 
 /** An {@link Authorizer} backed by an in-memory map. Useful for testing. */
 public class MapAuthorizer implements Authorizer {
   private HashMap<String, List<String>> _permissionMap;
 
-  public MapAuthorizer() {
+  MapAuthorizer() {
     _permissionMap = new HashMap<>();
   }
 

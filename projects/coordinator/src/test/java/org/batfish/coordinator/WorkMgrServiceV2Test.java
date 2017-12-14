@@ -21,7 +21,6 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.authorizer.Authorizer;
-import org.batfish.coordinator.authorizer.MapAuthorizer;
 import org.batfish.coordinator.config.Settings;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -129,21 +128,12 @@ public class WorkMgrServiceV2Test extends JerseyTest {
             .get();
     assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
 
-    // Test that subsequent calls return 200 with correct API key
+    // Test that subsequent calls return 403 forbidden with wrong API key
     resp =
         getContainersTarget()
             .path(containerName)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "wrongKey")
-            .get();
-    assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
-
-    // And ensure that right key, but in the wrong (old) header field does not work either
-    resp =
-        getContainersTarget()
-            .path(containerName)
-            .request()
-            .header(CoordConsts.SVC_KEY_API_KEY, myKey)
             .get();
     assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
   }
