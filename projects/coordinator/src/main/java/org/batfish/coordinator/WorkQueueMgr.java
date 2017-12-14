@@ -595,7 +595,7 @@ public class WorkQueueMgr {
       case DATAPLANE_DEPENDENT_ANSWERING:
         return queueAnsweringWork(work, true);
       case DATAPLANE_INDEPENDENT_ANSWERING:
-        return queueAnsweringWork(work, true);
+        return queueAnsweringWork(work, false);
       case UNKNOWN:
         return _queueIncompleteWork.enque(work);
       default:
