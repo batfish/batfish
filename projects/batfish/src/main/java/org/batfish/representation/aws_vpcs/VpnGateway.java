@@ -56,8 +56,7 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
       Ip vpcIfaceIp = vgwIfacePrefix.getEndAddress();
       Prefix vpcIfacePrefix = new Prefix(vpcIfaceIp, vgwIfacePrefix.getPrefixLength());
       vpcIface.setPrefix(vpcIfacePrefix);
-      vpcConfigNode.getInterfaces().put(vpcIfaceName, vpcIface);
-      vpcConfigNode.getDefaultVrf().getInterfaces().put(vpcIfaceName, vpcIface);
+      Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfacePrefix);
 
       // associate this gateway with the vpc
       awsVpcConfiguration.getVpcs().get(vpcId).setVpnGatewayId(_vpnGatewayId);
@@ -69,7 +68,7 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
               .setNetwork(vpc.getCidrBlock())
               .setNextHopIp(vpcIfaceIp)
               .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-              .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
               .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(vgwVpcRoute);
     }

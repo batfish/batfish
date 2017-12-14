@@ -16,6 +16,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -157,6 +158,16 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       Subnet subnet = awsVpcConfig.getSubnets().get(netInterface.getSubnetId());
       Prefix ifaceSubnet = subnet.getCidrBlock();
+      Ip defaultGatewayAddress = subnet.computeInstancesIfaceAddress();
+      StaticRoute defaultRoute =
+          StaticRoute.builder()
+              .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+              .setNextHopIp(defaultGatewayAddress)
+              .setNetwork(Prefix.ZERO)
+              .build();
+      cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
+
       for (Ip ip : netInterface.getIpAddressAssociations().keySet()) {
         if (!ifaceSubnet.contains(ip)) {
           throw new BatfishException(
