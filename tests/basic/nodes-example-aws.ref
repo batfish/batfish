@@ -3,151 +3,12 @@
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
       "nodes" : {
-        "i-0383fda87c012141d" : {
+        "CVP Server Test" : {
           "configurationFormat" : "AWS_VPC",
-          "name" : "i-0383fda87c012141d",
+          "name" : "CVP Server Test",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
-          "interfaces" : {
-            "eni-4b466165" : {
-              "name" : "eni-4b466165",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "192.168.2.22/28"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "~SECURITY_GROUP_EGRESS_ACL~",
-              "prefix" : "192.168.2.22/28",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "eni-8c7753a2" : {
-              "name" : "eni-8c7753a2",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "192.168.1.243/24"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "~SECURITY_GROUP_EGRESS_ACL~",
-              "prefix" : "192.168.1.243/24",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            }
-          },
-          "ipAccessLists" : {
-            "~SECURITY_GROUP_EGRESS_ACL~" : {
-              "name" : "~SECURITY_GROUP_EGRESS_ACL~",
-              "lines" : [
-                {
-                  "action" : "ACCEPT",
-                  "dstIps" : [
-                    "0.0.0.0/0"
-                  ],
-                  "negate" : false
-                }
-              ]
-            },
-            "~SECURITY_GROUP_INGRESS_ACL~" : {
-              "name" : "~SECURITY_GROUP_INGRESS_ACL~",
-              "lines" : [
-                {
-                  "action" : "ACCEPT",
-                  "negate" : false,
-                  "srcIps" : [
-                    "192.168.0.0/16"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "dstPorts" : [
-                    "22-22"
-                  ],
-                  "ipProtocols" : [
-                    "TCP"
-                  ],
-                  "negate" : false,
-                  "srcIps" : [
-                    "0.0.0.0/0",
-                    "38.140.26.4",
-                    "38.140.26.5",
-                    "38.140.26.6",
-                    "38.140.26.7"
-                  ],
-                  "srcPorts" : [
-                    "22-22"
-                  ]
-                },
-                {
-                  "action" : "ACCEPT",
-                  "ipProtocols" : [
-                    "ICMP"
-                  ],
-                  "negate" : false,
-                  "srcIps" : [
-                    "38.140.26.0/24"
-                  ]
-                }
-              ]
-            }
-          },
-          "roles" : [
-            "i-0383fda87c012141d"
-          ],
-          "vendorFamily" : {
-            "aws" : {
-              "subnetId" : "subnet-1641fa70",
-              "vpcId" : "vpc-b390fad5"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default",
-              "interfaces" : [
-                "eni-4b466165",
-                "eni-8c7753a2"
-              ]
-            }
-          }
-        },
-        "i-075dc46a9bc347264" : {
-          "configurationFormat" : "AWS_VPC",
-          "name" : "i-075dc46a9bc347264",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-d2b094fc" : {
               "name" : "eni-d2b094fc",
@@ -175,7 +36,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -234,9 +96,6 @@
               ]
             }
           },
-          "roles" : [
-            "i-075dc46a9bc347264"
-          ],
           "vendorFamily" : {
             "aws" : {
               "subnetId" : "subnet-1641fa70",
@@ -248,16 +107,182 @@
               "name" : "default",
               "interfaces" : [
                 "eni-d2b094fc"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                }
               ]
             }
           }
         },
-        "i-0837c877110427f2b" : {
+        "border_01" : {
           "configurationFormat" : "AWS_VPC",
-          "name" : "i-0837c877110427f2b",
+          "name" : "border_01",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
+          "interfaces" : {
+            "eni-4b466165" : {
+              "name" : "eni-4b466165",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.2.22/28"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "outgoingFilter" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "prefix" : "192.168.2.22/28",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "eni-8c7753a2" : {
+              "name" : "eni-8c7753a2",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.1.243/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "outgoingFilter" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "prefix" : "192.168.1.243/24",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "ipAccessLists" : {
+            "~SECURITY_GROUP_EGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false
+                }
+              ]
+            },
+            "~SECURITY_GROUP_INGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "negate" : false,
+                  "srcIps" : [
+                    "192.168.0.0/16"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "dstPorts" : [
+                    "22-22"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0",
+                    "38.140.26.4",
+                    "38.140.26.5",
+                    "38.140.26.6",
+                    "38.140.26.7"
+                  ],
+                  "srcPorts" : [
+                    "22-22"
+                  ]
+                },
+                {
+                  "action" : "ACCEPT",
+                  "ipProtocols" : [
+                    "ICMP"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "38.140.26.0/24"
+                  ]
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "aws" : {
+              "subnetId" : "subnet-1641fa70",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "eni-4b466165",
+                "eni-8c7753a2"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.17",
+                  "tag" : -1
+                }
+              ]
+            }
+          }
+        },
+        "border_02" : {
+          "configurationFormat" : "AWS_VPC",
+          "name" : "border_02",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-6b705445" : {
               "name" : "eni-6b705445",
@@ -285,7 +310,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "eni-a50c2b8b" : {
               "name" : "eni-a50c2b8b",
@@ -313,7 +339,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -372,9 +399,6 @@
               ]
             }
           },
-          "roles" : [
-            "i-0837c877110427f2b"
-          ],
           "vendorFamily" : {
             "aws" : {
               "subnetId" : "subnet-1641fa70",
@@ -387,16 +411,34 @@
               "interfaces" : [
                 "eni-6b705445",
                 "eni-a50c2b8b"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.49",
+                  "tag" : -1
+                }
               ]
             }
           }
         },
-        "i-0b26ec095feb42260" : {
+        "core_01" : {
           "configurationFormat" : "AWS_VPC",
-          "name" : "i-0b26ec095feb42260",
+          "name" : "core_01",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "HOST",
           "interfaces" : {
             "eni-297b5c07" : {
               "name" : "eni-297b5c07",
@@ -424,7 +466,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "eni-707e5a5e" : {
               "name" : "eni-707e5a5e",
@@ -452,7 +495,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -511,9 +555,6 @@
               ]
             }
           },
-          "roles" : [
-            "i-0b26ec095feb42260"
-          ],
           "vendorFamily" : {
             "aws" : {
               "subnetId" : "subnet-1641fa70",
@@ -526,6 +567,24 @@
               "interfaces" : [
                 "eni-297b5c07",
                 "eni-707e5a5e"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.17",
+                  "tag" : -1
+                }
               ]
             }
           }
@@ -537,88 +596,13 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "subnet-1f315846" : {
-              "name" : "subnet-1f315846",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.19/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.19/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-9c8adceb" : {
-              "name" : "subnet-9c8adceb",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.27/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.27/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-d9cafabc" : {
-              "name" : "subnet-d9cafabc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.43/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.43/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.2/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -636,7 +620,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -649,9 +634,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "subnet-1f315846",
-                "subnet-9c8adceb",
-                "subnet-d9cafabc",
                 "vpc-f8fad69d"
               ],
               "staticRoutes" : [
@@ -661,7 +643,7 @@
                   "network" : "172.31.0.0/16",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.3",
-                  "tag" : 0
+                  "tag" : -1
                 }
               ]
             }
@@ -674,140 +656,13 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "subnet-073b8061" : {
-              "name" : "subnet-073b8061",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.15/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.15/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-1641fa70" : {
-              "name" : "subnet-1641fa70",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.31/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.31/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-30398256" : {
-              "name" : "subnet-30398256",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.47/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.47/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-7044ff16" : {
-              "name" : "subnet-7044ff16",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.23/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.23/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-f73a8191" : {
-              "name" : "subnet-f73a8191",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.35/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.35/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.4/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -825,7 +680,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -838,11 +694,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "subnet-073b8061",
-                "subnet-1641fa70",
-                "subnet-30398256",
-                "subnet-7044ff16",
-                "subnet-f73a8191",
                 "vpc-b390fad5"
               ],
               "staticRoutes" : [
@@ -852,7 +703,7 @@
                   "network" : "192.168.0.0/16",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.5",
-                  "tag" : 0
+                  "tag" : -1
                 }
               ]
             }
@@ -865,62 +716,13 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "subnet-62f14104" : {
-              "name" : "subnet-62f14104",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.39/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.39/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-8d0cbdeb" : {
-              "name" : "subnet-8d0cbdeb",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.11/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.11/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "vpc-925131f4" : {
               "name" : "vpc-925131f4",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.0/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -938,7 +740,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -951,8 +754,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "subnet-62f14104",
-                "subnet-8d0cbdeb",
                 "vpc-925131f4"
               ],
               "staticRoutes" : [
@@ -962,7 +763,7 @@
                   "network" : "10.0.0.0/16",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.1",
-                  "tag" : 0
+                  "tag" : -1
                 }
               ]
             }
@@ -2333,40 +2134,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-9b93ddfc" : {
-              "name" : "igw-9b93ddfc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.14/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-7b78771d_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.14/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-073b8061" : {
               "name" : "subnet-073b8061",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.31/28"
+                "192.168.2.17/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2379,20 +2152,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.31/28",
+              "prefix" : "192.168.2.17/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.12/31"
+                "240.0.0.10/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2407,13 +2181,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.12/31",
+              "prefix" : "240.0.0.10/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2457,7 +2232,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-9b93ddfc",
                 "subnet-073b8061",
                 "vpc-b390fad5"
               ],
@@ -2467,16 +2241,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.15",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "192.168.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.13",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.11",
+                  "tag" : -1
                 }
               ]
             }
@@ -2489,40 +2255,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-9b93ddfc" : {
-              "name" : "igw-9b93ddfc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.30/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-7b78771d_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.30/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-1641fa70" : {
               "name" : "subnet-1641fa70",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.1.255/24"
+                "192.168.1.1/24"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2535,20 +2273,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.1.255/24",
+              "prefix" : "192.168.1.1/24",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.28/31"
+                "240.0.0.18/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2563,13 +2302,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.28/31",
+              "prefix" : "240.0.0.18/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2613,7 +2353,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-9b93ddfc",
                 "subnet-1641fa70",
                 "vpc-b390fad5"
               ],
@@ -2623,16 +2362,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.31",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "192.168.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.29",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.19",
+                  "tag" : -1
                 }
               ]
             }
@@ -2645,40 +2376,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-068fee63" : {
-              "name" : "igw-068fee63",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.18/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-4db39c28_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-4db39c28_egress",
-              "prefix" : "240.0.0.18/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-1f315846" : {
               "name" : "subnet-1f315846",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "172.31.15.255/20"
+                "172.31.0.1/20"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2691,20 +2394,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "172.31.15.255/20",
+              "prefix" : "172.31.0.1/20",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.16/31"
+                "240.0.0.12/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2719,13 +2423,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-4db39c28_egress",
-              "prefix" : "240.0.0.16/31",
+              "prefix" : "240.0.0.12/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2778,7 +2483,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-068fee63",
                 "subnet-1f315846",
                 "vpc-f8fad69d"
               ],
@@ -2788,16 +2492,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.19",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "172.31.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.17",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.13",
+                  "tag" : -1
                 }
               ]
             }
@@ -2810,40 +2506,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-9b93ddfc" : {
-              "name" : "igw-9b93ddfc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.46/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-7b78771d_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.46/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-30398256" : {
               "name" : "subnet-30398256",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.47/28"
+                "192.168.2.33/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2856,20 +2524,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.47/28",
+              "prefix" : "192.168.2.33/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.44/31"
+                "240.0.0.26/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -2884,13 +2553,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.44/31",
+              "prefix" : "240.0.0.26/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -2934,7 +2604,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-9b93ddfc",
                 "subnet-30398256",
                 "vpc-b390fad5"
               ],
@@ -2944,16 +2613,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.47",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "192.168.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.45",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.27",
+                  "tag" : -1
                 }
               ]
             }
@@ -2966,40 +2627,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-fac5839d" : {
-              "name" : "igw-fac5839d",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.38/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-3d4f745b_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-3d4f745b_egress",
-              "prefix" : "240.0.0.38/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-62f14104" : {
               "name" : "subnet-62f14104",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "10.0.0.255/24"
+                "10.0.0.1/24"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3012,20 +2645,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "10.0.0.255/24",
+              "prefix" : "10.0.0.1/24",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-925131f4" : {
               "name" : "vpc-925131f4",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.36/31"
+                "240.0.0.22/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3040,13 +2674,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-3d4f745b_egress",
-              "prefix" : "240.0.0.36/31",
+              "prefix" : "240.0.0.22/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3090,7 +2725,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-fac5839d",
                 "subnet-62f14104",
                 "vpc-925131f4"
               ],
@@ -3100,16 +2734,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.39",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "10.0.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.37",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.23",
+                  "tag" : -1
                 }
               ]
             }
@@ -3122,40 +2748,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-9b93ddfc" : {
-              "name" : "igw-9b93ddfc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.22/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-7b78771d_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.22/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-7044ff16" : {
               "name" : "subnet-7044ff16",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.15/28"
+                "192.168.2.1/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3168,20 +2766,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.15/28",
+              "prefix" : "192.168.2.1/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.20/31"
+                "240.0.0.14/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3196,13 +2795,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.20/31",
+              "prefix" : "240.0.0.14/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3246,7 +2846,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-9b93ddfc",
                 "subnet-7044ff16",
                 "vpc-b390fad5"
               ],
@@ -3256,16 +2855,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.23",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "192.168.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.21",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.15",
+                  "tag" : -1
                 }
               ]
             }
@@ -3278,40 +2869,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-fac5839d" : {
-              "name" : "igw-fac5839d",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.10/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-3d4f745b_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-3d4f745b_egress",
-              "prefix" : "240.0.0.10/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-8d0cbdeb" : {
               "name" : "subnet-8d0cbdeb",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "10.0.1.255/24"
+                "10.0.1.1/24"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3324,13 +2887,14 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "10.0.1.255/24",
+              "prefix" : "10.0.1.1/24",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-925131f4" : {
               "name" : "vpc-925131f4",
@@ -3358,7 +2922,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3402,7 +2967,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-fac5839d",
                 "subnet-8d0cbdeb",
                 "vpc-925131f4"
               ],
@@ -3411,17 +2975,9 @@
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
-                  "nextHopInterface" : "null_interface",
-                  "nextHopIp" : "AUTO/NONE(-1l)",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "10.0.0.0/16",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.9",
-                  "tag" : 0
+                  "tag" : -1
                 }
               ]
             }
@@ -3434,40 +2990,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-068fee63" : {
-              "name" : "igw-068fee63",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.26/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-4db39c28_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-4db39c28_egress",
-              "prefix" : "240.0.0.26/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-9c8adceb" : {
               "name" : "subnet-9c8adceb",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "172.31.47.255/20"
+                "172.31.32.1/20"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3480,20 +3008,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "172.31.47.255/20",
+              "prefix" : "172.31.32.1/20",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.24/31"
+                "240.0.0.16/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3508,13 +3037,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-4db39c28_egress",
-              "prefix" : "240.0.0.24/31",
+              "prefix" : "240.0.0.16/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3567,7 +3097,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-068fee63",
                 "subnet-9c8adceb",
                 "vpc-f8fad69d"
               ],
@@ -3577,16 +3106,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.27",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "172.31.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.25",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.17",
+                  "tag" : -1
                 }
               ]
             }
@@ -3599,40 +3120,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-068fee63" : {
-              "name" : "igw-068fee63",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.42/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-4db39c28_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-4db39c28_egress",
-              "prefix" : "240.0.0.42/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-d9cafabc" : {
               "name" : "subnet-d9cafabc",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "172.31.31.255/20"
+                "172.31.16.1/20"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3645,20 +3138,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "172.31.31.255/20",
+              "prefix" : "172.31.16.1/20",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-f8fad69d" : {
               "name" : "vpc-f8fad69d",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.40/31"
+                "240.0.0.24/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3673,13 +3167,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-4db39c28_egress",
-              "prefix" : "240.0.0.40/31",
+              "prefix" : "240.0.0.24/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3732,7 +3227,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-068fee63",
                 "subnet-d9cafabc",
                 "vpc-f8fad69d"
               ],
@@ -3742,16 +3236,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.43",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "172.31.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.41",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.25",
+                  "tag" : -1
                 }
               ]
             }
@@ -3764,40 +3250,12 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "interfaces" : {
-            "igw-9b93ddfc" : {
-              "name" : "igw-9b93ddfc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.34/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "incomingFilter" : "acl-7b78771d_ingress",
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.34/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
             "subnet-f73a8191" : {
               "name" : "subnet-f73a8191",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "192.168.2.63/28"
+                "192.168.2.49/28"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3810,20 +3268,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "192.168.2.63/28",
+              "prefix" : "192.168.2.49/28",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-b390fad5" : {
               "name" : "vpc-b390fad5",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.32/31"
+                "240.0.0.20/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -3838,13 +3297,14 @@
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "outgoingFilter" : "acl-7b78771d_egress",
-              "prefix" : "240.0.0.32/31",
+              "prefix" : "240.0.0.20/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipAccessLists" : {
@@ -3888,7 +3348,6 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "igw-9b93ddfc",
                 "subnet-f73a8191",
                 "vpc-b390fad5"
               ],
@@ -3898,16 +3357,8 @@
                   "administrativeCost" : 1,
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.35",
-                  "tag" : 0
-                },
-                {
-                  "class" : "org.batfish.datamodel.StaticRoute",
-                  "administrativeCost" : 1,
-                  "network" : "192.168.0.0/16",
-                  "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.33",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.21",
+                  "tag" : -1
                 }
               ]
             }
@@ -3924,13 +3375,15 @@
               "name" : "vpn-ba2e34a8-1",
               "address" : "147.75.69.27",
               "externalInterface" : "external1",
-              "ikePolicy" : "vpn-ba2e34a8-1"
+              "ikePolicy" : "vpn-ba2e34a8-1",
+              "localAddress" : "52.27.166.152"
             },
             "vpn-ba2e34a8-2" : {
               "name" : "vpn-ba2e34a8-2",
               "address" : "147.75.69.27",
               "externalInterface" : "external2",
-              "ikePolicy" : "vpn-ba2e34a8-2"
+              "ikePolicy" : "vpn-ba2e34a8-2",
+              "localAddress" : "52.39.121.126"
             }
           },
           "ikePolicies" : {
@@ -3992,7 +3445,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "external2" : {
               "name" : "external2",
@@ -4018,12 +3472,16 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "vpc-815775e7" : {
               "name" : "vpc-815775e7",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.6/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4041,7 +3499,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             },
             "vpn1" : {
               "name" : "vpn1",
@@ -4067,7 +3526,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             },
             "vpn2" : {
               "name" : "vpn2",
@@ -4093,7 +3553,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "ipsecPolicies" : {
@@ -4196,6 +3657,13 @@
                   },
                   "trueStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -4233,6 +3701,13 @@
                   },
                   "trueStatements" : [
                     {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                      "originType" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                        "originType" : "igp"
+                      }
+                    },
+                    {
                       "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                       "type" : "ExitAccept"
                     }
@@ -4243,6 +3718,40 @@
                   "type" : "ExitReject"
                 }
               ]
+            },
+            "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~" : {
+              "name" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                  "destinationVrf" : false,
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitReject"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                    "protocol" : "bgp"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~REJECT_ALL~" : {
+              "name" : "~REJECT_ALL~"
             }
           },
           "vendorFamily" : {
@@ -4253,6 +3762,7 @@
               "name" : "default",
               "bgpProcess" : {
                 "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,
                 "neighbors" : {
                   "169.254.13.238/32" : {
@@ -4298,8 +3808,32 @@
                     "routeReflectorClient" : false,
                     "sendCommunity" : false,
                     "vrf" : "default"
+                  },
+                  "240.0.0.7/32" : {
+                    "name" : "240.0.0.7/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
+                    "address" : "240.0.0.7",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~",
+                    "importPolicy" : "~REJECT_ALL~",
+                    "localAs" : 65401,
+                    "localIp" : "240.0.0.6",
+                    "remoteAs" : 65401,
+                    "remotePrefix" : "240.0.0.7/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
                   }
                 },
+                "routerId" : "169.254.15.193",
                 "tieBreaker" : "ARRIVAL_ORDER"
               },
               "interfaces" : [
@@ -4316,7 +3850,7 @@
                   "network" : "10.100.0.0/16",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.7",
-                  "tag" : 0
+                  "tag" : -1
                 }
               ]
             }
@@ -4327,12 +3861,15 @@
           "name" : "vpc-815775e7",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
+          "deviceType" : "ROUTER",
           "interfaces" : {
             "vgw-81fd279f" : {
               "name" : "vgw-81fd279f",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.7/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4350,12 +3887,27 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "VPN"
+              "type" : "VPN",
+              "vrf" : "default"
             }
           },
           "roles" : [
             "vpc-815775e7"
           ],
+          "routingPolicies" : {
+            "~ACCEPT_ALL~" : {
+              "name" : "~ACCEPT_ALL~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ExitAccept"
+                }
+              ]
+            },
+            "~REJECT_ALL~" : {
+              "name" : "~REJECT_ALL~"
+            }
+          },
           "vendorFamily" : {
             "aws" : {
               "vpcId" : "vpc-815775e7"
@@ -4364,8 +3916,50 @@
           "vrfs" : {
             "default" : {
               "name" : "default",
+              "bgpProcess" : {
+                "multipathEbgp" : false,
+                "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+                "multipathIbgp" : false,
+                "neighbors" : {
+                  "240.0.0.6/32" : {
+                    "name" : "240.0.0.6/32",
+                    "additionalPathsReceive" : false,
+                    "additionalPathsSelectAll" : false,
+                    "additionalPathsSend" : false,
+                    "address" : "240.0.0.6",
+                    "advertiseExternal" : false,
+                    "advertiseInactive" : false,
+                    "allowLocalAsIn" : false,
+                    "allowRemoteAsOut" : false,
+                    "defaultMetric" : 0,
+                    "dynamic" : false,
+                    "ebgpMultihop" : false,
+                    "exportPolicy" : "~REJECT_ALL~",
+                    "importPolicy" : "~ACCEPT_ALL~",
+                    "localAs" : 65401,
+                    "localIp" : "240.0.0.7",
+                    "remoteAs" : 65401,
+                    "remotePrefix" : "240.0.0.6/32",
+                    "routeReflectorClient" : false,
+                    "sendCommunity" : true,
+                    "vrf" : "default"
+                  }
+                },
+                "routerId" : "240.0.0.7",
+                "tieBreaker" : "ARRIVAL_ORDER"
+              },
               "interfaces" : [
                 "vgw-81fd279f"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "10.100.0.0/16",
+                  "nextHopInterface" : "null_interface",
+                  "nextHopIp" : "AUTO/NONE(-1l)",
+                  "tag" : -1
+                }
               ]
             }
           }
@@ -4381,6 +3975,9 @@
               "name" : "igw-fac5839d",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.1/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4398,14 +3995,15 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-62f14104" : {
               "name" : "subnet-62f14104",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.37/31"
+                "240.0.0.23/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -4418,13 +4016,14 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.37/31",
+              "prefix" : "240.0.0.23/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-8d0cbdeb" : {
               "name" : "subnet-8d0cbdeb",
@@ -4450,7 +4049,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -4473,10 +4073,18 @@
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
+                  "network" : "10.0.0.0/16",
+                  "nextHopInterface" : "null_interface",
+                  "nextHopIp" : "AUTO/NONE(-1l)",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
                   "network" : "10.0.0.0/24",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.36",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.22",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
@@ -4484,7 +4092,7 @@
                   "network" : "10.0.1.0/24",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.8",
-                  "tag" : 0
+                  "tag" : -1
                 }
               ]
             }
@@ -4501,6 +4109,9 @@
               "name" : "igw-9b93ddfc",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.5/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4518,14 +4129,15 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-073b8061" : {
               "name" : "subnet-073b8061",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.13/31"
+                "240.0.0.11/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -4538,20 +4150,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.13/31",
+              "prefix" : "240.0.0.11/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1641fa70" : {
               "name" : "subnet-1641fa70",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.29/31"
+                "240.0.0.19/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -4564,20 +4177,21 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.29/31",
+              "prefix" : "240.0.0.19/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-30398256" : {
               "name" : "subnet-30398256",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
-                "240.0.0.45/31"
+                "240.0.0.27/31"
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
@@ -4590,16 +4204,44 @@
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.45/31",
+              "prefix" : "240.0.0.27/31",
               "ripEnabled" : false,
               "ripPassive" : false,
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-7044ff16" : {
               "name" : "subnet-7044ff16",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "240.0.0.15/31"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "240.0.0.15/31",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "subnet-f73a8191" : {
+              "name" : "subnet-f73a8191",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
@@ -4622,33 +4264,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-f73a8191" : {
-              "name" : "subnet-f73a8191",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.33/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.33/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -4674,42 +4291,50 @@
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
+                  "network" : "192.168.0.0/16",
+                  "nextHopInterface" : "null_interface",
+                  "nextHopIp" : "AUTO/NONE(-1l)",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
                   "network" : "192.168.1.0/24",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.28",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.18",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "192.168.2.0/28",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.20",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.14",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "192.168.2.16/28",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.12",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.10",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "192.168.2.32/28",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.44",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.26",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "192.168.2.48/28",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.32",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.20",
+                  "tag" : -1
                 }
               ]
             }
@@ -4726,6 +4351,9 @@
               "name" : "igw-068fee63",
               "accessVlan" : 0,
               "active" : true,
+              "allPrefixes" : [
+                "240.0.0.3/31"
+              ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
               "isisL1InterfaceMode" : "unset",
@@ -4743,10 +4371,38 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
             "subnet-1f315846" : {
               "name" : "subnet-1f315846",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "240.0.0.13/31"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "240.0.0.13/31",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "subnet-9c8adceb" : {
+              "name" : "subnet-9c8adceb",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
@@ -4769,10 +4425,11 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             },
-            "subnet-9c8adceb" : {
-              "name" : "subnet-9c8adceb",
+            "subnet-d9cafabc" : {
+              "name" : "subnet-d9cafabc",
               "accessVlan" : 0,
               "active" : true,
               "allPrefixes" : [
@@ -4795,33 +4452,8 @@
               "spanningTreePortfast" : false,
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
-            },
-            "subnet-d9cafabc" : {
-              "name" : "subnet-d9cafabc",
-              "accessVlan" : 0,
-              "active" : true,
-              "allPrefixes" : [
-                "240.0.0.41/31"
-              ],
-              "autostate" : true,
-              "bandwidth" : 1.0E12,
-              "isisL1InterfaceMode" : "unset",
-              "isisL2InterfaceMode" : "unset",
-              "mtu" : 1500,
-              "nativeVlan" : 1,
-              "ospfDeadInterval" : 0,
-              "ospfEnabled" : false,
-              "ospfHelloMultiplier" : 0,
-              "ospfPassive" : false,
-              "ospfPointToPoint" : false,
-              "prefix" : "240.0.0.41/31",
-              "ripEnabled" : false,
-              "ripPassive" : false,
-              "spanningTreePortfast" : false,
-              "switchportMode" : "NONE",
-              "switchportTrunkEncapsulation" : "DOT1Q",
-              "type" : "PHYSICAL"
+              "type" : "PHYSICAL",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -4845,26 +4477,34 @@
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
+                  "network" : "172.31.0.0/16",
+                  "nextHopInterface" : "null_interface",
+                  "nextHopIp" : "AUTO/NONE(-1l)",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
                   "network" : "172.31.0.0/20",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.16",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.12",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "172.31.16.0/20",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.40",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.24",
+                  "tag" : -1
                 },
                 {
                   "class" : "org.batfish.datamodel.StaticRoute",
                   "administrativeCost" : 1,
                   "network" : "172.31.32.0/20",
                   "nextHopInterface" : "dynamic",
-                  "nextHopIp" : "240.0.0.24",
-                  "tag" : 0
+                  "nextHopIp" : "240.0.0.16",
+                  "tag" : -1
                 }
               ]
             }

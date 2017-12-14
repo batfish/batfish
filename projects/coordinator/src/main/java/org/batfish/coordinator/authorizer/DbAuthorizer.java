@@ -1,5 +1,6 @@
 package org.batfish.coordinator.authorizer;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -16,12 +17,12 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.Main;
+import org.batfish.coordinator.config.Settings;
 
-// An authorizer that is backed by a file
-// Useful for testing
+/** An {@link Authorizer} backed by an SQL database */
 public class DbAuthorizer implements Authorizer {
 
-  private static final String COLUMN_APIKEY = "APIKey";
+  @VisibleForTesting static final String COLUMN_APIKEY = "ApiKey";
   private static final String COLUMN_CONTAINER_NAME = "ContainerName";
   private static final String COLUMN_DATE_CREATED = "DateCreated";
   private static final String COLUMN_DATE_LAST_ACCESSED = "DateLastAccessed";
@@ -29,19 +30,48 @@ public class DbAuthorizer implements Authorizer {
   private static final int DB_VALID_CHECK_TIMEOUT_SECS = 3;
   private static final int MAX_DB_TRIES = 3;
 
-  private static final String TABLE_CONTAINERS = "containers";
-  private static final String TABLE_PERMISSIONS = "containerpermissions";
-  private static final String TABLE_USERS = "members";
+  @VisibleForTesting static final String TABLE_CONTAINERS = "batfish_containers";
+  @VisibleForTesting static final String TABLE_PERMISSIONS = "batfish_containerpermissions";
+  @VisibleForTesting static final String TABLE_USERS = "batfish_members";
 
   private Map<String, Date> _cacheApiKeys = new HashMap<>();
   private Map<String, Date> _cachePermissions = new HashMap<>();
 
   private Connection _dbConn;
   private BatfishLogger _logger;
+  private long _cacheTimeout;
+  private String _connString;
+  private String _driverClassName;
 
-  public DbAuthorizer() throws SQLException {
+  /**
+   * Create a new database authorizer.
+   *
+   * @param connectionString JDBC string to use for connection to the database
+   * @param driverClass specific class name to load as the JDBC driver
+   * @param cacheTimeout time after which cache entries should be invalidated, in milliseconds
+   * @throws SQLException if there are issues connecting to the database
+   */
+  public DbAuthorizer(String connectionString, @Nullable String driverClass, long cacheTimeout)
+      throws SQLException {
     _logger = Main.getLogger();
+    _cacheTimeout = cacheTimeout;
+    _connString = connectionString;
+    _driverClassName = driverClass;
     openDbConnection();
+  }
+
+  /**
+   * Create a new database authorizer from coordinator settings
+   *
+   * @param settings coordinator settings
+   * @return a new authorizer
+   * @throws SQLException if there are issues connecting to the database
+   */
+  public static DbAuthorizer createFromSettings(Settings settings) throws SQLException {
+    return new DbAuthorizer(
+        settings.getDbAuthorizerConnString(),
+        settings.getDriverClass(),
+        settings.getDbAuthorizerCacheExpiryMs());
   }
 
   @Override
@@ -53,20 +83,16 @@ public class DbAuthorizer implements Authorizer {
     java.sql.Date now = new java.sql.Date(new Date().getTime());
     String insertContainersString =
         String.format(
-            "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?) " + " ON DUPLICATE KEY UPDATE %s = ?",
+            "REPLACE INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
             TABLE_CONTAINERS,
             COLUMN_CONTAINER_NAME,
             COLUMN_DATE_CREATED,
-            COLUMN_DATE_LAST_ACCESSED,
             COLUMN_DATE_LAST_ACCESSED);
-    PreparedStatement insertContainers;
     int numInsertRows;
-    try {
-      insertContainers = _dbConn.prepareStatement(insertContainersString);
+    try (PreparedStatement insertContainers = _dbConn.prepareStatement(insertContainersString)) {
       insertContainers.setString(1, containerName);
       insertContainers.setDate(2, now);
       insertContainers.setDate(3, now);
-      insertContainers.setDate(4, now);
       numInsertRows = executeUpdate(insertContainers);
     } catch (SQLException e) {
       throw new BatfishException("Could not update containers table", e);
@@ -87,8 +113,7 @@ public class DbAuthorizer implements Authorizer {
         String.format(
             "INSERT INTO %s (%s, %s) VALUES (?, ?)",
             TABLE_PERMISSIONS, COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
-    try {
-      PreparedStatement insertPermissions = _dbConn.prepareStatement(insertPermissionsString);
+    try (PreparedStatement insertPermissions = _dbConn.prepareStatement(insertPermissionsString)) {
       insertPermissions.setString(1, apiKey);
       insertPermissions.setString(2, containerName);
       numRows = executeUpdate(insertPermissions);
@@ -105,14 +130,13 @@ public class DbAuthorizer implements Authorizer {
   @Nullable
   private synchronized ResultSet executeQuery(PreparedStatement query) {
     int triesLeft = MAX_DB_TRIES;
-    String queryString = query.toString();
     while (triesLeft > 0) {
       triesLeft--;
       try {
-        _logger.debugf("Executing SQL query: %s\n", queryString);
+        _logger.debugf("Executing SQL query: %s\n", query);
         return query.executeQuery();
       } catch (SQLException e) {
-        _logger.errorf("SQLException while executing query '%s': %s", queryString, e.getMessage());
+        _logger.errorf("SQLException while executing query '%s': %s", query, e.getMessage());
         _logger.errorf("Tries left = %d\n", triesLeft);
 
         if (triesLeft > 0) {
@@ -125,7 +149,7 @@ public class DbAuthorizer implements Authorizer {
           }
         }
       } catch (Exception e) {
-        throw new BatfishException("well shit");
+        throw new BatfishException("Non-SQL-related exception occurred when executing query");
       }
     }
 
@@ -179,23 +203,22 @@ public class DbAuthorizer implements Authorizer {
 
     String selectPermittedContainerString =
         String.format(
-            "SELECT * FROM %s WHERE %s = ? AND %s = ?",
+            "SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ?",
             TABLE_PERMISSIONS, COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
     ResultSet rs;
-    try {
-      PreparedStatement ps = _dbConn.prepareStatement(selectPermittedContainerString);
+    boolean authorized = false;
+    try (PreparedStatement ps = _dbConn.prepareStatement(selectPermittedContainerString)) {
       ps.setString(1, apiKey);
       ps.setString(2, containerName);
       rs = executeQuery(ps);
+      if (rs != null) {
+        rs.next();
+        authorized = rs.getInt(1) == 1;
+      }
     } catch (SQLException e) {
-      throw new BatfishException("Could not query permissions table", e);
+      throw new BatfishException("Could not query permissions table successfully", e);
     }
-    boolean authorized;
-    try {
-      authorized = rs != null && rs.first();
-    } catch (SQLException e) {
-      throw new BatfishException("Error examinng permissions query result set", e);
-    }
+
     if (authorized) {
       insertInCache(_cachePermissions, cacheKey);
 
@@ -205,8 +228,8 @@ public class DbAuthorizer implements Authorizer {
           String.format(
               "UPDATE %s SET %s=? WHERE %s=?",
               TABLE_CONTAINERS, COLUMN_DATE_LAST_ACCESSED, COLUMN_CONTAINER_NAME);
-      try {
-        PreparedStatement updatePs = _dbConn.prepareStatement(updatePsString);
+      try (PreparedStatement updatePs = _dbConn.prepareStatement(updatePsString)) {
+
         updatePs.setDate(1, now);
         updatePs.setString(2, containerName);
         executeUpdate(updatePs);
@@ -226,8 +249,7 @@ public class DbAuthorizer implements Authorizer {
   private synchronized boolean isValidInCache(Map<String, Date> cache, String key) {
     if (cache.containsKey(key)) {
       // check if the entry is expired
-      if (new Date().getTime() - cache.get(key).getTime()
-          > Main.getSettings().getDbAuthorizerCacheExpiryMs()) {
+      if (new Date().getTime() - cache.get(key).getTime() > _cacheTimeout) {
         cache.remove(key);
         return false;
       }
@@ -243,21 +265,19 @@ public class DbAuthorizer implements Authorizer {
       return true;
     }
     String selectApiKeyRowString =
-        String.format("SELECT * FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
-    PreparedStatement ps;
+        String.format("SELECT COUNT(*) FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
     ResultSet rs;
-    try {
-      ps = _dbConn.prepareStatement(selectApiKeyRowString);
+    boolean authorized;
+    try (PreparedStatement ps = _dbConn.prepareStatement(selectApiKeyRowString)) {
       ps.setString(1, apiKey);
       rs = executeQuery(ps);
+      if (rs == null) {
+        return false;
+      }
+      rs.next();
+      authorized = rs.getInt(1) == 1;
     } catch (SQLException e) {
       throw new BatfishException("Could not query users table", e);
-    }
-    boolean authorized;
-    try {
-      authorized = rs != null && rs.first();
-    } catch (SQLException e) {
-      throw new BatfishException("Could not example users query result set", e);
     }
     if (authorized) {
       insertInCache(_cacheApiKeys, apiKey);
@@ -270,19 +290,24 @@ public class DbAuthorizer implements Authorizer {
   private synchronized void openDbConnection() throws SQLException {
     int triesLeft = MAX_DB_TRIES;
 
-    String driverClassName = Main.getSettings().getDriverClass();
     while (triesLeft > 0) {
       triesLeft--;
       try {
+        // Gracefully close previous connection if it exists (but could be invalid)
         if (_dbConn != null) {
           _dbConn.close();
+          _dbConn = null;
         }
-        if (driverClassName != null) {
+
+        // Load a specific driver class, if one was specified
+        if (_driverClassName != null) {
           ClassLoader cl = Thread.currentThread().getContextClassLoader();
-          cl.loadClass(driverClassName);
-          Class.forName(driverClassName, true, cl);
+          cl.loadClass(_driverClassName);
+          Class.forName(_driverClassName, true, cl);
         }
-        _dbConn = DriverManager.getConnection(Main.getSettings().getDbAuthorizerConnString());
+
+        // Open a new connection
+        _dbConn = DriverManager.getConnection(_connString);
         return;
       } catch (SQLException e) {
         if (CommonUtil.causedByMessage(e, "Access denied for user")
@@ -291,17 +316,17 @@ public class DbAuthorizer implements Authorizer {
             || CommonUtil.causedBy(e, UnknownHostException.class)
             || CommonUtil.causedBy(e, ConnectException.class)) {
           throw new BatfishException(
-              "Unrecoverable SQLException loading JDBC driver: " + driverClassName, e);
+              "Unrecoverable SQLException loading JDBC driver: " + _driverClassName, e);
         }
         if (triesLeft == 0) {
-          throw new BatfishException("No tries left loading JDBC driver: " + driverClassName);
+          throw new BatfishException("No tries left loading JDBC driver: " + _driverClassName);
         }
         _logger.errorf(
             "SQLException while opening Db connection: %s\n", ExceptionUtils.getStackTrace(e));
         _logger.errorf("Tries left = %d\n", triesLeft);
 
       } catch (ClassNotFoundException e) {
-        throw new BatfishException("JDBC driver class not found: " + driverClassName, e);
+        throw new BatfishException("JDBC driver class not found: " + _driverClassName, e);
       }
     }
   }

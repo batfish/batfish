@@ -3,7 +3,9 @@ package org.batfish.grammar.flatjuniper;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.List;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
@@ -13,6 +15,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,11 +36,15 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
-    String[] configurationNames =
-        new String[] {"multiple_as_disabled", "multiple_as_enabled", "multiple_as_mixed"};
+    List<String> configurationNames =
+        ImmutableList.of("multiple_as_disabled", "multiple_as_enabled", "multiple_as_mixed");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     MultipathEquivalentAsPathMatchMode multipleAsDisabled =
         configurations

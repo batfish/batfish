@@ -62,10 +62,10 @@ public class NatGateway implements AwsVpcEntity, Serializable {
     Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId);
 
     // TODO: Configure forwarding for this NAT
-    for (NatGatewayAddress natAddress : _natGatewayAddresses) {
-      // foreach natgatewayaddress create interfaces for public and private IPs, configure NAT rules
-      // also connect the nat to the VPC router
-    }
+    //    for (NatGatewayAddress natAddress : _natGatewayAddresses) {
+    // foreach natgatewayaddress create interfaces for public and private IPs, configure NAT rules
+    // also connect the nat to the VPC router
+    //    }
 
     return cfgNode;
   }
