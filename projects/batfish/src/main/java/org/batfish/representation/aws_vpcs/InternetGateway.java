@@ -64,7 +64,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
                         .setNetwork(prefix)
                         .setNextHopIp(vpcIfaceIp)
                         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                        .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+                        .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                         .build();
                 cfgNode.getDefaultVrf().getStaticRoutes().add(igwVpcRoute);
               });

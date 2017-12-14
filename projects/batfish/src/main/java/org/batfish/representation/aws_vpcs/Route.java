@@ -84,7 +84,7 @@ public class Route implements Serializable {
         StaticRoute.builder()
             .setNetwork(_destinationCidrBlock)
             .setAdministrativeCost(DEFAULT_STATIC_ROUTE_ADMIN)
-            .setTag(DEFAULT_STATIC_ROUTE_COST);
+            .setMetric(DEFAULT_STATIC_ROUTE_COST);
 
     if (_state == State.BLACKHOLE) {
       srBuilder.setNextHopInterface(Interface.NULL_INTERFACE_NAME);

@@ -1,5 +1,6 @@
 package org.batfish.grammar.cisco;
 
+import static java.util.Comparator.naturalOrder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -10,8 +11,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -36,6 +39,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -53,22 +57,20 @@ public class CiscoGrammarTest {
 
   @Test
   public void testAaaNewmodel() throws IOException {
-    SortedMap<String, String> configurationText = new TreeMap<>();
-    String configurationName = "aaaNoNewmodel";
-    String aaaNoNewmodelConfigurationText =
-        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
-    configurationText.put(configurationName, aaaNoNewmodelConfigurationText);
-    configurationName = "aaaNewmodel";
-    String aaaNewmodelConfigurationText =
-        CommonUtil.readResource(TESTCONFIGS_PREFIX + configurationName);
-    configurationText.put(configurationName, aaaNewmodelConfigurationText);
+    List<String> configurationNames = ImmutableList.of("aaaNoNewmodel", "aaaNewmodel");
+
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            configurationText,
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
+            TestrigText.builder()
+                .setConfigurationText(
+                    configurationNames
+                        .stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                naturalOrder(),
+                                n -> n,
+                                n -> CommonUtil.readResource(TESTCONFIGS_PREFIX + n))))
+                .build(),
             _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Configuration newModelConfiguration = configurations.get("aaaNewmodel");
@@ -82,10 +84,14 @@ public class CiscoGrammarTest {
   @Test
   public void testBgpLocalAs() throws IOException {
     String testrigName = "bgp-local-as";
-    String[] configurationNames = new String[] {"r1", "r2"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
     CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -110,11 +116,15 @@ public class CiscoGrammarTest {
   @Test
   public void testBgpMultipathRelax() throws IOException {
     String testrigName = "bgp-multipath-relax";
-    String[] configurationNames =
-        new String[] {"arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled"};
+    List<String> configurationNames =
+        ImmutableList.of("arista_disabled", "arista_enabled", "nxos_disabled", "nxos_enabled");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
     CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -152,10 +162,14 @@ public class CiscoGrammarTest {
   @Test
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
-    String[] configurationNames = new String[] {"r1", "r2", "r3"};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
     CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
@@ -207,10 +221,14 @@ public class CiscoGrammarTest {
     String iosName = "ios";
     String nxosName = "nxos";
     String eosName = "eos";
-    String[] configurationNames = new String[] {iosName, nxosName, eosName};
+    List<String> configurationNames = ImmutableList.of(iosName, nxosName, eosName);
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations;
     try {
       configurations = batfish.loadConfigurations();
@@ -313,13 +331,14 @@ public class CiscoGrammarTest {
   @Test
   public void testIpsecVpnIos() throws IOException {
     String testrigName = "ipsec-vpn-ios";
-    String r1Name = "r1";
-    String r2Name = "r2";
-    String r3Name = "r3";
-    String[] configurationNames = new String[] {r1Name, r2Name, r3Name};
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations;
     try {
       configurations = batfish.loadConfigurations();
@@ -352,11 +371,15 @@ public class CiscoGrammarTest {
     String iosMaxMetricName = "ios-max-metric";
     String iosMaxMetricCustomName = "ios-max-metric-custom";
     String iosMaxMetricOnStartupName = "ios-max-metric-on-startup";
-    String[] configurationNames =
-        new String[] {iosMaxMetricName, iosMaxMetricCustomName, iosMaxMetricOnStartupName};
+    List<String> configurationNames =
+        ImmutableList.of(iosMaxMetricName, iosMaxMetricCustomName, iosMaxMetricOnStartupName);
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations;
     try {
@@ -398,10 +421,14 @@ public class CiscoGrammarTest {
   public void testOspfPointToPoint() throws IOException {
     String testrigName = "ospf-point-to-point";
     String iosOspfPointToPoint = "ios-ospf-point-to-point";
-    String[] configurationNames = new String[] {iosOspfPointToPoint};
+    List<String> configurationNames = ImmutableList.of(iosOspfPointToPoint);
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     SortedMap<String, Configuration> configurations;
     try {
       configurations = batfish.loadConfigurations();
@@ -420,10 +447,14 @@ public class CiscoGrammarTest {
   public void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
     String iosRecoveryName = "ios-recovery";
-    String[] configurationNames = new String[] {iosRecoveryName};
+    List<String> configurationNames = ImmutableList.of(iosRecoveryName);
+
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigResource(
-            TESTRIGS_PREFIX + testrigName, configurationNames, null, null, null, null, _folder);
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations;
     try {
@@ -464,12 +495,7 @@ public class CiscoGrammarTest {
     }
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
-            configurationTextMap,
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            Collections.emptySortedMap(),
-            _folder);
+            TestrigText.builder().setConfigurationText(configurationTextMap).build(), _folder);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
 
     for (int i = 0; i < configurationNames.length; i++) {
