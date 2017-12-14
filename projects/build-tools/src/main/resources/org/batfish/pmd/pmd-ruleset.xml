@@ -13,7 +13,9 @@
      <exclude name="CheckResultSet"/>
      <exclude name="OverrideBothEqualsAndHashcode"/>
   </rule>
-  <rule ref="rulesets/java/imports.xml"/>
+  <rule ref="rulesets/java/imports.xml">
+     <exclude name="TooManyStaticImports"/>
+  </rule>
   <rule ref="rulesets/java/unnecessary.xml">
      <exclude name="UselessParentheses"/>
   </rule>
