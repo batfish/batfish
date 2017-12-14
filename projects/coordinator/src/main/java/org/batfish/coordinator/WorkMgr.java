@@ -1216,7 +1216,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (!originalDir.toFile().mkdir()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
-    Path zipFile = originalDir.resolve("testrig.zip");
+    Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);
     CommonUtil.writeStreamToFile(fileStream, zipFile);
 
     // Now unzip the user's data to a temporary folder, from which we'll parse and copy it.
