@@ -1,4 +1,4 @@
-package org.batfish.grammar.aws;
+package org.batfish.representation.aws;
 
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
@@ -21,7 +21,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class AwsVpcConfigurationTest {
 
-  private static String TESTRIG_PREFIX = "org/batfish/grammar/aws/testrigs/";
+  private static String TESTRIG_PREFIX = "org/batfish/representation/aws/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
