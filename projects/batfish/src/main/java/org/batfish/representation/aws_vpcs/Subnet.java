@@ -161,18 +161,16 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfacePrefix);
 
     // add a static route on the vpc router for this subnet
-    StaticRoute vpcToSubnetRoute =
+    StaticRoute.Builder sb =
         StaticRoute.builder()
-            .setNetwork(_cidrBlock)
-            .setNextHopIp(subnetIfacePrefix.getAddress())
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
-            .build();
+            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
+    StaticRoute vpcToSubnetRoute =
+        sb.setNetwork(_cidrBlock).setNextHopIp(subnetIfacePrefix.getAddress()).build();
     vpcConfigNode.getDefaultVrf().getStaticRoutes().add(vpcToSubnetRoute);
 
     // Install a default static route towards the VPC router.
-    StaticRoute defaultRoute =
-        StaticRoute.builder().setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress).build();
+    StaticRoute defaultRoute = sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress).build();
     cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
     NetworkAcl myNetworkAcl = findMyNetworkAcl(awsVpcConfiguration.getNetworkAcls());

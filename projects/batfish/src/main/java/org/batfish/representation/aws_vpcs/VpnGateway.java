@@ -68,7 +68,7 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
               .setNetwork(vpc.getCidrBlock())
               .setNextHopIp(vpcIfaceIp)
               .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-              .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+              .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
               .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(vgwVpcRoute);
     }

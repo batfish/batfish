@@ -59,6 +59,8 @@ public class Vpc implements AwsVpcEntity, Serializable {
         .getStaticRoutes()
         .add(
             StaticRoute.builder()
+                .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                 .setNetwork(_cidrBlock)
                 .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
                 .build());

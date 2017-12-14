@@ -390,7 +390,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                 .setNetwork(staticRoutePrefix)
                 .setNextHopIp(ipsecTunnel.getCgwInsideAddress())
                 .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-                .setTag(Route.DEFAULT_STATIC_ROUTE_COST)
+                .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                 .build();
 
         vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);
