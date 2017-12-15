@@ -209,14 +209,14 @@ public class ConfigurationTests {
     Prefix p3to4Physical = new Prefix(ip3to4Physical, 24);
     Interface i3to1 = ib.setOwner(c3).setVrf(v3).setPrefix(p3to1Physical).build();
     ib.setPrefix(p3to4Physical).build();
-    SourceNat snat3_1 = new SourceNat();
-    snat3_1.setPoolIpFirst(ip3to1Physical);
-    snat3_1.setPoolIpLast(ip3to1Physical);
-    SourceNat snat3_2 = new SourceNat();
-    snat3_2.setPoolIpFirst(ip3to1Physical);
-    snat3_2.setPoolIpLast(ip3to1Physical);
+    SourceNat snat3copy1 = new SourceNat();
+    snat3copy1.setPoolIpFirst(ip3to1Physical);
+    snat3copy1.setPoolIpLast(ip3to1Physical);
+    SourceNat snat3copy2 = new SourceNat();
+    snat3copy2.setPoolIpFirst(ip3to1Physical);
+    snat3copy2.setPoolIpLast(ip3to1Physical);
     /* Should not crash with two source-nats aliasing the same public IP */
-    i3to1.setSourceNats(ImmutableList.of(snat3_1, snat3_2));
+    i3to1.setSourceNats(ImmutableList.of(snat3copy1, snat3copy2));
 
     Configuration c4 = cb.build();
     Vrf v4 = vb.setOwner(c4).build();
