@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.pojo.Aggregate.AggregateType;
 import org.junit.Test;
 
 public class TopologyTest {
@@ -26,7 +27,8 @@ public class TopologyTest {
     assertThat(topo.getId(), equalTo(Topology.getId("testrig")));
     assertThat(topo.getTestrigName(), equalTo("testrig"));
     assertThat(topo.getAggregates().size(), equalTo(1));
-    assertThat(topo.getAggregateById(Aggregate.getId("cloud")).getContents().size(), equalTo(1));
+    assertThat(
+        topo.getOrCreateAggregate("cloud", AggregateType.CLOUD).getContents().size(), equalTo(1));
     assertThat(topo.getInterfaces().size(), equalTo(1));
     assertThat(topo.getLinks().size(), equalTo(1));
     assertThat(topo.getNodes().size(), equalTo(1));
