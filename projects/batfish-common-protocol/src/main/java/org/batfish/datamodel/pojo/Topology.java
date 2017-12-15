@@ -56,33 +56,28 @@ public class Topology extends BfObject {
         pojoTopology.getLinks().add(pojoLink);
       }
 
-      // add AWS aggregates
+      // add AWS aggregates; put node in the smallest container we can find for them,
+      // and then put that container in their container
       if (configuration.getConfigurationFormat() == ConfigurationFormat.AWS_VPC) {
-        Aggregate awsAggregate = pojoTopology.getAggregateById(Aggregate.getId("aws"));
-        if (awsAggregate == null) {
-          awsAggregate = new Aggregate("aws", AggregateType.CLOUD);
-          pojoTopology.getAggregates().add(awsAggregate);
-        }
-        awsAggregate.getContents().add(pojoNode.getId());
-
-        if (configuration.getVendorFamily().getAws().getVpcId() != null) {
-          String vpcId = configuration.getVendorFamily().getAws().getVpcId();
-          Aggregate vpcAggregate = pojoTopology.getAggregateById(Aggregate.getId(vpcId));
-          if (vpcAggregate == null) {
-            vpcAggregate = new Aggregate(vpcId, AggregateType.VNET);
-            pojoTopology.getAggregates().add(vpcAggregate);
-          }
-          vpcAggregate.getContents().add(pojoNode.getId());
-        }
-
         if (configuration.getVendorFamily().getAws().getSubnetId() != null) {
           String subnetId = configuration.getVendorFamily().getAws().getSubnetId();
-          Aggregate subnetAggregate = pojoTopology.getAggregateById(Aggregate.getId(subnetId));
-          if (subnetAggregate == null) {
-            subnetAggregate = new Aggregate(subnetId, AggregateType.SUBNET);
-            pojoTopology.getAggregates().add(subnetAggregate);
-          }
+          Aggregate subnetAggregate =
+              pojoTopology.getOrCreateAggregate(subnetId, AggregateType.SUBNET);
           subnetAggregate.getContents().add(pojoNode.getId());
+
+          String vpcId = configuration.getVendorFamily().getAws().getVpcId();
+          Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
+          vpcAggregate.getContents().add(subnetAggregate.getId());
+        } else if (configuration.getVendorFamily().getAws().getVpcId() != null) {
+          String vpcId = configuration.getVendorFamily().getAws().getVpcId();
+          Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
+          vpcAggregate.getContents().add(pojoNode.getId());
+
+          Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
+          awsAggregate.getContents().add(vpcAggregate.getId());
+        } else {
+          Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
+          awsAggregate.getContents().add(pojoNode.getId());
         }
       }
     }
@@ -105,15 +100,6 @@ public class Topology extends BfObject {
     _nodes = new HashSet<>();
   }
 
-  public Aggregate getAggregateById(String id) {
-    for (Aggregate aggregate : _aggregates) {
-      if (aggregate.getId().equals(id)) {
-        return aggregate;
-      }
-    }
-    return null;
-  }
-
   public Set<Aggregate> getAggregates() {
     return _aggregates;
   }
@@ -132,6 +118,18 @@ public class Topology extends BfObject {
 
   public Set<Node> getNodes() {
     return _nodes;
+  }
+
+  public Aggregate getOrCreateAggregate(String name, AggregateType aggType) {
+    String aggId = Aggregate.getId(name);
+    for (Aggregate aggregate : _aggregates) {
+      if (aggregate.getId().equals(aggId)) {
+        return aggregate;
+      }
+    }
+    Aggregate aggregate = new Aggregate(name, aggType);
+    getAggregates().add(aggregate);
+    return aggregate;
   }
 
   @JsonProperty(PROP_TESTRIG_NAME)

@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -178,7 +179,7 @@ public class IpsecVpnCheckQuestionPlugin extends QuestionPlugin {
       }
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      _batfish.initRemoteIpsecVpns(configurations);
+      CommonUtil.initRemoteIpsecVpns(configurations);
 
       IpsecVpnCheckAnswerElement answerElement = new IpsecVpnCheckAnswerElement();
       for (Configuration c : configurations.values()) {
