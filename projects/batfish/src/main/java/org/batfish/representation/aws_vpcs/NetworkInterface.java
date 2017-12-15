@@ -58,10 +58,10 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
 
     if (jObj.has(JSON_KEY_ATTACHMENT)) {
       JSONObject attachJson = jObj.getJSONObject(JSON_KEY_ATTACHMENT);
-      _attachmentInstanceId = Utils.tryGetString(attachJson, JSON_KEY_INSTANCE_ID);
-
-      if (!attachJson.getString(JSON_KEY_STATUS).equals("attached")) {
-        throw new JSONException("network interface " + _networkInterfaceId + " is not attached");
+      if (attachJson.getString(JSON_KEY_STATUS).equals("attached")) {
+        _attachmentInstanceId = Utils.tryGetString(attachJson, JSON_KEY_INSTANCE_ID);
+      } else {
+        _attachmentInstanceId = null;
       }
     } else {
       _attachmentInstanceId = null;

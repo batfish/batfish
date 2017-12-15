@@ -20,7 +20,7 @@ public class BfConsts {
   public static final String ABSPATH_CONFIG_FILE_NAME_ALLINONE =
       "/org/batfish/allinone/config/allinone.properties";
   public static final String ABSPATH_CONFIG_FILE_NAME_BATFISH =
-      "/org/batfish/  config/batfish.properties";
+      "/org/batfish/config/batfish.properties";
   public static final String ABSPATH_CONFIG_FILE_NAME_CLIENT =
       "/org/batfish/client/config/client.properties";
   public static final String ABSPATH_CONFIG_FILE_NAME_COORDINATOR =
@@ -121,10 +121,6 @@ public class BfConsts {
   public static final String RELPATH_ANSWERS_DIR = "answers";
   public static final String RELPATH_AWS_VPC_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_VPC_CONFIGS_FILE = "aws_configs";
-  public static final String RELPATH_CONFIG_FILE_NAME_ALLINONE = "allinone.properties";
-  public static final String RELPATH_CONFIG_FILE_NAME_BATFISH = "batfish.properties";
-  public static final String RELPATH_CONFIG_FILE_NAME_CLIENT = "client.properties";
-  public static final String RELPATH_CONFIG_FILE_NAME_COORDINATOR = "coordinator.properties";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
   public static final String RELPATH_DATA_PLANE = "dp";
@@ -134,7 +130,6 @@ public class BfConsts {
   public static final String RELPATH_DIFF_DIR = "differential";
   public static final String RELPATH_EDGE_BLACKLIST_FILE = "edge_blacklist";
   public static final String RELPATH_ENV_DIR = "env";
-  public static final String RELPATH_ENV_NODE_SET = "env-node-set";
   public static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES = "bgp";
   public static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
@@ -142,19 +137,17 @@ public class BfConsts {
   public static final String RELPATH_ENVIRONMENT_ROUTING_TABLES_ANSWER = "rt_answer";
   public static final String RELPATH_ENVIRONMENTS_DIR = "environments";
   public static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS = "external_bgp_announcements.json";
-  public static final String RELPATH_FAILURE_QUERY_PREFIX = "failure-query";
-  public static final String RELPATH_FLOWS_DUMP_DIR = "flowdump";
   public static final String RELPATH_HOST_CONFIGS_DIR = "hosts";
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
   public static final String RELPATH_METADATA_FILE = "metadata.json";
-  public static final String RELPATH_MULTIPATH_QUERY_PREFIX = "multipath-query";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";
   public static final String RELPATH_NODE_ROLES_PATH = "node_roles.json";
+  public static final String RELPATH_ORIGINAL_DIR = "original";
   public static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   public static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
+  public static final String RELPATH_TESTRIG_ZIP_FILE = "testrig.zip";
   public static final String RELPATH_PRECOMPUTED_ROUTES = "precomputedroutes";
-  public static final String RELPATH_QUERIES_DIR = "queries";
   public static final String RELPATH_QUESTION_FILE = "question.json";
   public static final String RELPATH_QUESTIONS_DIR = "questions";
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
@@ -167,7 +160,6 @@ public class BfConsts {
   public static final String RELPATH_VALIDATE_ENVIRONMENT_ANSWER = "venv_answer";
   public static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
   public static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
-  public static final String RELPATH_Z3_DATA_PLANE_FILE = "dataplane.smt2";
 
   public static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   public static final String SUFFIX_LOG_FILE = ".log";

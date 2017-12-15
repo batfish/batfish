@@ -15,6 +15,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -90,7 +91,7 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
 
-      _batfish.initRemoteIpsecVpns(configurations);
+      CommonUtil.initRemoteIpsecVpns(configurations);
       Set<String> ipsecVpnNodes = answerElement.getIpsecVpnNodes();
       Set<String> node2RegexNodes = new HashSet<>();
 

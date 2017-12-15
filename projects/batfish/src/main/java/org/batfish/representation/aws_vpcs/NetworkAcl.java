@@ -48,11 +48,8 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
       if ((isEgress && entry.getIsEgress()) || (!isEgress && !entry.getIsEgress())) {
         IpAccessListLine line = new IpAccessListLine();
         int key = entry.getRuleNumber();
-        if (entry.getIsAllow()) {
-          line.setAction(LineAction.ACCEPT);
-        } else {
-          line.setAction(LineAction.REJECT);
-        }
+        LineAction action = entry.getIsAllow() ? LineAction.ACCEPT : LineAction.REJECT;
+        line.setAction(action);
         Prefix prefix = entry.getCidrBlock();
         if (!prefix.equals(Prefix.ZERO)) {
           if (isEgress) {
@@ -62,11 +59,13 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
           }
         }
         IpProtocol protocol = IpPermissions.toIpProtocol(entry.getProtocol());
+        String protocolStr = protocol != null ? protocol.toString() : "ALL";
         if (protocol != null) {
           line.getIpProtocols().add(protocol);
         }
         int fromPort = entry.getFromPort();
         int toPort = entry.getToPort();
+        SubRange portRange = new SubRange(fromPort, toPort);
         if (fromPort != -1 || toPort != -1) {
           if (fromPort == -1) {
             fromPort = 0;
@@ -74,9 +73,21 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
           if (toPort == -1) {
             toPort = 65535;
           }
-          SubRange portRange = new SubRange(fromPort, toPort);
           line.getDstPorts().add(portRange);
         }
+        String portStr;
+        if (protocol == IpProtocol.ICMP) {
+          // TODO: flesh these out
+          portStr = "some ICMP type(s)/code(s)";
+        } else if ((fromPort == 0 && toPort == 65535) || (fromPort == -1 && toPort == -1)) {
+          portStr = "ALL";
+        } else {
+          portStr = portRange.toString();
+        }
+        String actionStr = action == LineAction.ACCEPT ? "ALLOW" : "DENY";
+        String lineNumber = key == 32767 ? "*" : Integer.toString(key);
+        line.setName(
+            String.format("%s %s %s %s %s", lineNumber, protocolStr, portStr, prefix, actionStr));
         lineMap.put(key, line);
       }
     }
