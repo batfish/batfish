@@ -20,10 +20,10 @@
     {
       "name" : "vpc-f8fad69d",
       "contents" : [
-        "node-subnet-9c8adceb",
-        "node-subnet-1f315846",
-        "node-subnet-d9cafabc",
-        "node-vpc-f8fad69d"
+        "node-vpc-f8fad69d",
+        "aggregate-subnet-d9cafabc",
+        "aggregate-subnet-9c8adceb",
+        "aggregate-subnet-1f315846"
       ],
       "id" : "aggregate-vpc-f8fad69d",
       "type" : "VNET"
@@ -63,28 +63,14 @@
     {
       "name" : "aws",
       "contents" : [
-        "node-vpc-b390fad5",
-        "node-border_01",
-        "node-border_02",
-        "node-vpc-815775e7",
-        "node-subnet-d9cafabc",
-        "node-subnet-30398256",
         "node-igw-9b93ddfc",
-        "node-subnet-9c8adceb",
-        "node-CVP Server Test",
-        "node-subnet-1f315846",
-        "node-subnet-073b8061",
-        "node-subnet-1641fa70",
-        "node-vpc-f8fad69d",
-        "node-subnet-62f14104",
-        "node-core_01",
-        "node-subnet-7044ff16",
+        "aggregate-vpc-f8fad69d",
+        "aggregate-vpc-815775e7",
+        "aggregate-vpc-925131f4",
         "node-igw-068fee63",
-        "node-subnet-8d0cbdeb",
+        "aggregate-vpc-b390fad5",
         "node-igw-fac5839d",
-        "node-vgw-81fd279f",
-        "node-subnet-f73a8191",
-        "node-vpc-925131f4"
+        "node-vgw-81fd279f"
       ],
       "id" : "aggregate-aws",
       "type" : "CLOUD"
@@ -128,8 +114,8 @@
     {
       "name" : "vpc-925131f4",
       "contents" : [
-        "node-subnet-62f14104",
-        "node-subnet-8d0cbdeb",
+        "aggregate-subnet-62f14104",
+        "aggregate-subnet-8d0cbdeb",
         "node-vpc-925131f4"
       ],
       "id" : "aggregate-vpc-925131f4",
@@ -146,16 +132,12 @@
     {
       "name" : "vpc-b390fad5",
       "contents" : [
-        "node-CVP Server Test",
+        "aggregate-subnet-7044ff16",
         "node-vpc-b390fad5",
-        "node-border_01",
-        "node-border_02",
-        "node-subnet-073b8061",
-        "node-subnet-1641fa70",
-        "node-core_01",
-        "node-subnet-7044ff16",
-        "node-subnet-30398256",
-        "node-subnet-f73a8191"
+        "aggregate-subnet-f73a8191",
+        "aggregate-subnet-30398256",
+        "aggregate-subnet-073b8061",
+        "aggregate-subnet-1641fa70"
       ],
       "id" : "aggregate-vpc-b390fad5",
       "type" : "VNET"
