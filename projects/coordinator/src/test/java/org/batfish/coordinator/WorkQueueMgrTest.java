@@ -134,7 +134,14 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void qetMatchingWorkAbsent() throws Exception {
+  public void getMatchingWorkAbsent() throws Exception {
+    WorkItem wItem = new WorkItem(CONTAINER, "testrig");
+    wItem.addRequestParam("key", "value");
+    // get matching work should be null on an empty queue
+    QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem, QueueType.INCOMPLETE);
+    assertThat(matchingWork, equalTo(null));
+
+    // build two work items that do not match
     WorkItem wItem1 = new WorkItem(CONTAINER, "testrig");
     wItem1.addRequestParam("key1", "value1");
     QueuedWork work1 = new QueuedWork(wItem1, new WorkDetails());
@@ -142,17 +149,13 @@ public class WorkQueueMgrTest {
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
-    // build a work item that matches none of the queued works
-    WorkItem wItem3 = new WorkItem(CONTAINER, "testrig");
-    wItem3.addRequestParam("key3", "value3");
-
-    QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem3, QueueType.INCOMPLETE);
-
-    assertThat(matchingWork, equalTo(null));
+    // should be null again
+    QueuedWork matchingWorkAgain = _workQueueMgr.getMatchingWork(wItem, QueueType.INCOMPLETE);
+    assertThat(matchingWorkAgain, equalTo(null));
   }
 
   @Test
-  public void qetMatchingWorkPresent() throws Exception {
+  public void getMatchingWorkPresent() throws Exception {
     WorkItem wItem1 = new WorkItem(CONTAINER, "testrig");
     wItem1.addRequestParam("key1", "value1");
     QueuedWork work1 = new QueuedWork(wItem1, new WorkDetails());
