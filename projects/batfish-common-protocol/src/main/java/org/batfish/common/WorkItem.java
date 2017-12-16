@@ -125,8 +125,8 @@ public class WorkItem {
    */
   public boolean matches(WorkItem workItem) {
     return (workItem != null
-        && workItem._containerName == _containerName
-        && workItem._testrigName == _testrigName
+        && workItem._containerName.equals(_containerName)
+        && workItem._testrigName.equals(_testrigName)
         && workItem._requestParams.equals(_requestParams));
   }
 

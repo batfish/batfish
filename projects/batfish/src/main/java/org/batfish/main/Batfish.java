@@ -3,7 +3,6 @@ package org.batfish.main;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.File;
@@ -19,7 +18,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -89,8 +87,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfArea;
@@ -1215,7 +1211,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void disableUnusableVpnInterfaces(Map<String, Configuration> configurations) {
-    initRemoteIpsecVpns(configurations);
+    CommonUtil.initRemoteIpsecVpns(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn vpn : c.getIpsecVpns().values()) {
         IpsecVpn remoteVpn = vpn.getRemoteIpsecVpn();
@@ -2068,51 +2064,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private Map<Ip, IpSpace> initPrivateIpsByPublicIp(Map<String, Configuration> configurations) {
-    /*
-     * Very hacky mapping from public IP to space of possible natted private IPs.
-     * Does not currently support source-nat acl.
-     *
-     * The current implementation just considers every IP in every prefix on a non-masquerading
-     * interface (except the local address in each such prefix) to be a possible private IP
-     * match for every public IP referred to by every source-nat pool on a masquerading interface.
-     */
-    ImmutableMap.Builder<Ip, IpSpace> builder = ImmutableMap.builder();
-    for (Configuration c : configurations.values()) {
-      Collection<Interface> interfaces = c.getInterfaces().values();
-      Set<Prefix> nonNattedInterfacePrefixes =
-          interfaces
-              .stream()
-              .filter(i -> i.getSourceNats().isEmpty())
-              .flatMap(i -> i.getAllPrefixes().stream())
-              .collect(ImmutableSet.toImmutableSet());
-      Set<IpWildcard> blacklist =
-          nonNattedInterfacePrefixes
-              .stream()
-              .map(p -> new IpWildcard(p.getAddress(), Ip.ZERO))
-              .collect(ImmutableSet.toImmutableSet());
-      Set<IpWildcard> whitelist =
-          nonNattedInterfacePrefixes
-              .stream()
-              .map(IpWildcard::new)
-              .collect(ImmutableSet.toImmutableSet());
-      IpSpace ipSpace = IpSpace.builder().including(whitelist).excluding(blacklist).build();
-      interfaces
-          .stream()
-          .flatMap(i -> i.getSourceNats().stream())
-          .forEach(
-              sourceNat -> {
-                for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
-                    ipAsLong <= sourceNat.getPoolIpLast().asLong();
-                    ipAsLong++) {
-                  Ip currentPoolIp = new Ip(ipAsLong);
-                  builder.put(currentPoolIp, ipSpace);
-                }
-              });
-    }
-    return builder.build();
-  }
-
   private void initQuestionEnvironment(Question question, boolean dp, boolean differentialContext) {
     EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
     if (!environmentExists(_testrigSettings)) {
@@ -2142,61 +2093,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       pushDeltaEnvironment();
       initQuestionEnvironment(question, dp, true);
       popEnvironment();
-    }
-  }
-
-  @Override
-  public void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
-    Map<IpsecVpn, Ip> remoteAddresses = new IdentityHashMap<>();
-    Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<>();
-    Map<Ip, IpSpace> privateIpsByPublicIp = initPrivateIpsByPublicIp(configurations);
-    for (Configuration c : configurations.values()) {
-      for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-        Ip remoteAddress = ipsecVpn.getIkeGateway().getAddress();
-        remoteAddresses.put(ipsecVpn, remoteAddress);
-        Set<Prefix> externalPrefixes =
-            ipsecVpn.getIkeGateway().getExternalInterface().getAllPrefixes();
-        for (Prefix externalPrefix : externalPrefixes) {
-          Ip externalAddress = externalPrefix.getAddress();
-          Set<IpsecVpn> vpnsUsingExternalAddress =
-              externalAddresses.computeIfAbsent(externalAddress, k -> Sets.newIdentityHashSet());
-          vpnsUsingExternalAddress.add(ipsecVpn);
-        }
-      }
-    }
-    for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
-      IpsecVpn ipsecVpn = e.getKey();
-      Ip remoteAddress = e.getValue();
-      Ip localAddress = ipsecVpn.getIkeGateway().getLocalAddress();
-      ipsecVpn.initCandidateRemoteVpns();
-      Set<IpsecVpn> remoteIpsecVpnCandidates = externalAddresses.get(remoteAddress);
-      if (remoteIpsecVpnCandidates != null) {
-        for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
-          Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate.getIkeGateway().getLocalAddress();
-          if (remoteIpsecVpnLocalAddress != null
-              && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
-            continue;
-          }
-          Ip reciprocalRemoteAddress = remoteAddresses.get(remoteIpsecVpnCandidate);
-          Set<IpsecVpn> reciprocalVpns = externalAddresses.get(reciprocalRemoteAddress);
-          if (reciprocalVpns == null) {
-            IpSpace privateIpsBehindReciprocalRemoteAddress =
-                privateIpsByPublicIp.get(reciprocalRemoteAddress);
-            if (privateIpsBehindReciprocalRemoteAddress != null
-                && privateIpsBehindReciprocalRemoteAddress.contains(localAddress)) {
-              reciprocalVpns = externalAddresses.get(localAddress);
-              ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
-              ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
-              remoteIpsecVpnCandidate.initCandidateRemoteVpns();
-              remoteIpsecVpnCandidate.setRemoteIpsecVpn(ipsecVpn);
-              remoteIpsecVpnCandidate.getCandidateRemoteIpsecVpns().add(ipsecVpn);
-            }
-          } else if (reciprocalVpns.contains(ipsecVpn)) {
-            ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
-            ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
-          }
-        }
-      }
     }
   }
 

@@ -1308,11 +1308,20 @@ public class WorkMgr extends AbstractCoordinator {
     if (Files.exists(testrigDir)) {
       throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
     }
+
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
     }
-    Path zipFile = CommonUtil.createTempFile("testrig", ".zip");
+
+    // Write the user's upload to a directory inside the testrig where we save the original upload.
+    Path originalDir = testrigDir.resolve(BfConsts.RELPATH_ORIGINAL_DIR);
+    if (!originalDir.toFile().mkdir()) {
+      throw new BatfishException("Failed to create directory: '" + originalDir + "'");
+    }
+    Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);
     CommonUtil.writeStreamToFile(fileStream, zipFile);
+
+    // Now unzip the user's data to a temporary folder, from which we'll parse and copy it.
     Path unzipDir = CommonUtil.createTempDirectory("tr");
     UnzipUtility.unzip(zipFile, unzipDir);
 
@@ -1322,7 +1331,6 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Error initializing testrig", e);
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
-      CommonUtil.delete(zipFile);
     }
   }
 
