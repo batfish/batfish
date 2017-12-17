@@ -992,18 +992,7 @@ public class WorkMgr extends AbstractCoordinator {
                 false);
         autoWorkQueue.add(analyzeWork);
       }
-
-      // NB: This way of doing things only works when we have a single worker; otherwise workitems
-      // lower down the order can get fired before those higher in the order
-      // The right solution is to put workitem2 on the queue only after workitem1 has finished
-      // successfully. The rightest solution is for workers to be aware of dependencies so they
-      // don't try to execute tasks that depend on other tasks that are currently being executed.
-
-      // this check is not foolproof because new workers may be added later but good enough for now
-      if (Main.getPoolMgr().getNumWorkers() > 1) {
-        throw new BatfishException("Cannot auto analyze when multiple workers are present");
-      }
-
+      
       for (WorkItem workItem : autoWorkQueue) {
         if (!queueWork(workItem)) {
           throw new BatfishException("Unable to queue work while auto processing: " + workItem);
