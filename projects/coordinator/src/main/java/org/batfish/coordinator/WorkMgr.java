@@ -992,7 +992,7 @@ public class WorkMgr extends AbstractCoordinator {
                 false);
         autoWorkQueue.add(analyzeWork);
       }
-      
+
       for (WorkItem workItem : autoWorkQueue) {
         if (!queueWork(workItem)) {
           throw new BatfishException("Unable to queue work while auto processing: " + workItem);
