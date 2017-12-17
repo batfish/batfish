@@ -211,11 +211,10 @@ public class WorkQueueMgr {
         }
         return parsingWork;
       case PARSED:
-        return parsingWork;
       case DATAPLANING:
       case DATAPLANED:
       case DATAPLANING_FAIL:
-        return null;
+        return parsingWork;
       default:
         throw new BatfishException(
             "Unknown testrig processingStatus: " + envMetadata.getProcessingStatus());
@@ -574,6 +573,23 @@ public class WorkQueueMgr {
         getIncompleteWork(wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv, null);
     if (incompleteWork != null) {
       throw new BatfishException("Cannot queue parsing work while other work is incomplete");
+    } else {
+      EnvironmentMetadata envMetadata =
+          TestrigMetadataMgr.getEnvironmentMetadata(
+              wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
+      if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING) {
+        throw new BatfishException(
+            String.format(
+                "Cannot queue parsing work for %s / %s: "
+                    + "Status is PARSING but no incomplete parsing work exists",
+                wDetails.baseTestrig, wDetails.baseEnv));
+      } else if (envMetadata.getProcessingStatus() == ProcessingStatus.DATAPLANING) {
+        throw new BatfishException(
+            String.format(
+                "Cannot queue parsing work for %s / %s: "
+                    + "Status is DATAPLANING but no incomplete dataplaning work exists",
+                wDetails.baseTestrig, wDetails.baseEnv));
+      }
     }
 
     return _queueIncompleteWork.enque(work);

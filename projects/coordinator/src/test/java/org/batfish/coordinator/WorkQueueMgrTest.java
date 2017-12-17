@@ -13,7 +13,6 @@ import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.queues.WorkQueue.Type;
@@ -29,6 +28,14 @@ import org.junit.rules.ExpectedException;
 public class WorkQueueMgrTest {
 
   private static final String CONTAINER = "container";
+
+  private static final String BASE_TESTIG = "baseTestrig";
+
+  private static final String BASE_ENV = "baseEnv";
+
+  private static final String DELTA_TESTIG = "deltaTestrig";
+
+  private static final String DELTA_ENV = "deltaEnv";
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
@@ -133,6 +140,77 @@ public class WorkQueueMgrTest {
     TestrigMetadataMgr.writeMetadata(trMetadata, metadataPath);
   }
 
+  private void queueWork(String testrig, String environment, WorkType wType) throws Exception {
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(CONTAINER, testrig), new WorkDetails(testrig, environment, wType));
+    _workQueueMgr.queueUnassignedWork(work);
+  }
+
+  private void queueWork(
+      String baseTestrig, String baseEnv, String deltaTestrig, String deltaEnv, WorkType wType)
+      throws Exception {
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(CONTAINER, baseTestrig),
+            new WorkDetails(baseTestrig, baseEnv, deltaTestrig, deltaEnv, true, wType));
+    _workQueueMgr.queueUnassignedWork(work);
+  }
+
+  private void workIsRejected(ProcessingStatus trStatus, WorkType wType) throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, trStatus);
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(CONTAINER, BASE_TESTIG), new WorkDetails(BASE_TESTIG, BASE_ENV, wType));
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Cannot queue ");
+    doAction(new Action(ActionType.QUEUE, work));
+  }
+
+  private void workIsRejected(
+      ProcessingStatus baseTrStatus, ProcessingStatus deltaTrStatus, WorkType wType)
+      throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, baseTrStatus);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, deltaTrStatus);
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(CONTAINER, BASE_TESTIG),
+            new WorkDetails(BASE_TESTIG, BASE_ENV, DELTA_TESTIG, DELTA_ENV, true, wType));
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Cannot queue ");
+    doAction(new Action(ActionType.QUEUE, work));
+  }
+
+  private void workIsQueued(
+      ProcessingStatus trStatus, WorkType wType, WorkStatusCode qwStatus, long queueLength)
+      throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, trStatus);
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(CONTAINER, BASE_TESTIG), new WorkDetails(BASE_TESTIG, BASE_ENV, wType));
+    doAction(new Action(ActionType.QUEUE, work));
+    assertThat(work.getStatus(), equalTo(qwStatus));
+    assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
+  }
+
+  private void workIsQueued(
+      ProcessingStatus baseTrStatus,
+      ProcessingStatus deltaTrStatus,
+      WorkType wType,
+      WorkStatusCode qwStatus,
+      long queueLength)
+      throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, baseTrStatus);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, deltaTrStatus);
+    QueuedWork work =
+        new QueuedWork(
+            new WorkItem(CONTAINER, BASE_TESTIG),
+            new WorkDetails(BASE_TESTIG, BASE_ENV, DELTA_TESTIG, DELTA_ENV, true, wType));
+    doAction(new Action(ActionType.QUEUE, work));
+    assertThat(work.getStatus(), equalTo(qwStatus));
+    assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
+  }
+
   @Test
   public void getMatchingWorkAbsent() throws Exception {
     WorkItem wItem = new WorkItem(CONTAINER, "testrig");
@@ -172,170 +250,659 @@ public class WorkQueueMgrTest {
     assertThat(matchingWork, equalTo(work1));
   }
 
+  // BEGIN: DATAPLANE_INDEPENDENT_ANSWERING TESTS
+
   @Test
-  public void answeringIsRejectedForNonParsedBaseTestrigs() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.PARSING_FAIL);
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "Cannot queue dataplane dependent work for testrig1 / env_default: "
-            + "Status is PARSING_FAIL but no incomplete parsing work exists");
-    doAction(new Action(ActionType.QUEUE, work1));
+  public void diAnsweringForUninitializedBase() throws Exception {
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
   }
 
   @Test
-  public void answeringIsRejectedForNonParsedDeltaTestrigs() throws Exception {
-    initTestrigMetadata("testrig0", "env_default", ProcessingStatus.PARSED);
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.PARSING_FAIL);
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails(
-                "testrig0",
-                "env_default",
-                "testrig1",
-                "env_default",
-                true,
-                WorkType.DATAPLANE_INDEPENDENT_ANSWERING));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "Cannot queue dataplane independent work for testrig1 / env_default: "
-            + "Status is PARSING_FAIL but no incomplete parsing work exists");
-
-    doAction(new Action(ActionType.QUEUE, work1));
+  public void diAnsweringForParsingBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
   }
 
   @Test
-  public void answeringIsQueuedForParsedTestrigs() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANING);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_INDEPENDENT_ANSWERING));
-
-    doAction(new Action(ActionType.QUEUE, work1));
-    assertThat(work1.getStatus(), equalTo(WorkStatusCode.UNASSIGNED));
+  public void diAnsweringForParsingFailBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
   }
 
   @Test
-  public void dpAnsweringIsBlockedForNonDataplanedTestrigs() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.PARSED);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-
-    doAction(new Action(ActionType.QUEUE, work1));
-    assertThat(work1.getStatus(), equalTo(WorkStatusCode.BLOCKED));
-
-    // also assert that a dataplane job was inserted
-    QueuedWork dpWork =
-        _workQueueMgr.getMatchingWork(
-            WorkItemBuilder.getWorkItemGenerateDataPlane(CONTAINER, "testrig1", "env_default"),
-            QueueType.INCOMPLETE);
-    assertThat(dpWork.getStatus(), equalTo(WorkStatusCode.UNASSIGNED));
+  public void diAnsweringForParsedBase() throws Exception {
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
   }
 
   @Test
-  public void dpAnsweringIsRejectedForNonDataplanedBaseTestrigs() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANING_FAIL);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "Cannot queue dataplane dependent work for testrig1 / env_default: "
-            + "Status is DATAPLANING_FAIL but no incomplete dataplaning work exists");
-
-    doAction(new Action(ActionType.QUEUE, work1));
+  public void diAnsweringForDataplaningBase() throws Exception {
+    workIsQueued(
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
   }
 
   @Test
-  public void dpAnsweringIsRejectedForNonDataplanedDeltaTestrigs() throws Exception {
-    initTestrigMetadata("testrig0", "env_default", ProcessingStatus.DATAPLANED);
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANING_FAIL);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails(
-                "testrig0",
-                "env_default",
-                "testrig1",
-                "env_default",
-                true,
-                WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(
-        "Cannot queue dataplane dependent work for testrig1 / env_default: "
-            + "Status is DATAPLANING_FAIL but no incomplete dataplaning work exists");
-
-    doAction(new Action(ActionType.QUEUE, work1));
+  public void diAnsweringForDataplaningFailBase() throws Exception {
+    workIsQueued(
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
   }
 
   @Test
-  public void dpAnsweringIsQueuedForDataplanedTestrigs() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANED);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-
-    doAction(new Action(ActionType.QUEUE, work1));
-    assertThat(work1.getStatus(), equalTo(WorkStatusCode.UNASSIGNED));
+  public void diAnsweringForDataplanedBase() throws Exception {
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
   }
 
   @Test
-  public void parsingIsNotBlockedByOtherTestrigs() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANED);
-    initTestrigMetadata("testrig2", "env_default", ProcessingStatus.UNINITIALIZED);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-    QueuedWork work2 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig2"),
-            new WorkDetails("testrig2", "env_default", WorkType.PARSING));
-
-    doAction(new Action(ActionType.QUEUE, work1));
-    doAction(new Action(ActionType.QUEUE, work2));
-
-    assertThat(work1.getStatus(), equalTo(WorkStatusCode.UNASSIGNED));
+  public void diAnsweringWithBaseParsingQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+    workIsQueued(
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2);
+    workIsQueued(
+        ProcessingStatus.PARSING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        3);
+    workIsQueued(
+        ProcessingStatus.PARSING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        4);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        5);
+    workIsQueued(
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        6);
+    workIsQueued(
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        7);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        8);
   }
 
   @Test
-  public void parsingIsRejectedWhenOtherWorkIsPresent() throws Exception {
-    initTestrigMetadata("testrig1", "env_default", ProcessingStatus.DATAPLANED);
-
-    QueuedWork work1 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig1"),
-            new WorkDetails("testrig1", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
-    QueuedWork work2 =
-        new QueuedWork(
-            new WorkItem(CONTAINER, "testrig2"),
-            new WorkDetails("testrig1", "env_default", WorkType.PARSING));
-
-    doAction(new Action(ActionType.QUEUE, work1));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Cannot queue parsing work while other work is incomplete");
-
-    doAction(new Action(ActionType.QUEUE, work2));
+  public void diAnsweringWithBaseDataplaningQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANING);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        2);
+    workIsQueued(
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        3);
+    workIsQueued(
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        4);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        5);
   }
+
+  @Test
+  public void diAnsweringForUninitializedDelta() throws Exception {
+    workIsRejected(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void diAnsweringForParsingFailDelta() throws Exception {
+    workIsRejected(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.PARSING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void diAnsweringForParsedDelta() throws Exception {
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  @Test
+  public void diAnsweringForDataplaningDelta() throws Exception {
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  @Test
+  public void diAnsweringForDataplaningFailDelta() throws Exception {
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  @Test
+  public void diAnsweringForDataplanedDelta() throws Exception {
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  @Test
+  public void diAnsweringWithDeltaParsingQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.PARSING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        3);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.PARSING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        4);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        5);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        6);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        7);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        8);
+  }
+
+  @Test
+  public void diAnsweringWithDeltaDataplaningQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.PARSED);
+    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.DATAPLANING);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        2);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        3);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        4);
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        5);
+  }
+
+  // END: DATAPLANE_INDEPENDENT_ANSWERING TESTS
+
+  // BEGIN: DATAPLANE_DEPENDENT_ANSWERING TESTS
+
+  @Test
+  public void ddAnsweringForUninitializedBase() throws Exception {
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForParsingBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForParsingFailBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForParsedBase() throws Exception {
+    workIsQueued(
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2); // it is 2 because dataplane work is auto-generated
+  }
+
+  @Test
+  public void ddAnsweringForDataplaningBase() throws Exception {
+    workIsRejected(ProcessingStatus.DATAPLANING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForDataplaningFailBase() throws Exception {
+    workIsRejected(ProcessingStatus.DATAPLANING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForDataplanedBase() throws Exception {
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  @Test
+  public void ddAnsweringWithBaseParsingQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+    workIsQueued(
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2);
+    workIsQueued(
+        ProcessingStatus.PARSING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        3);
+    workIsQueued(
+        ProcessingStatus.PARSING,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        4);
+    workIsQueued(
+        ProcessingStatus.PARSED, WorkType.DATAPLANE_DEPENDENT_ANSWERING, WorkStatusCode.BLOCKED, 5);
+    // the cases for DATAPLANING and DATAPLANING_FAIL are below
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        6);
+  }
+
+  @Test
+  public void ddAnsweringWithBaseParsingQueuedDataplainingFail() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+    workIsRejected(ProcessingStatus.DATAPLANING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringWithBaseParsingQueuedDataplaining() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+    workIsRejected(ProcessingStatus.DATAPLANING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringWithBaseDataplaningQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANING);
+    workIsQueued(
+        ProcessingStatus.PARSED, WorkType.DATAPLANE_DEPENDENT_ANSWERING, WorkStatusCode.BLOCKED, 2);
+    workIsQueued(
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        3);
+    workIsQueued(
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        4);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        5);
+  }
+
+  @Test
+  public void ddAnsweringForUninitializedDelta() throws Exception {
+    workIsRejected(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForParsingFailDelta() throws Exception {
+    workIsRejected(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.PARSING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForParsedDelta() throws Exception {
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2); // it is 2 because dataplane work is auto-generated
+  }
+
+  @Test
+  public void ddAnsweringForDataplaningDelta() throws Exception {
+    workIsRejected(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForDataplaningFailDelta() throws Exception {
+    workIsRejected(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringForDataplanedDelta() throws Exception {
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  @Test
+  public void ddAnsweringWithDeltaParsingQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.PARSING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        3);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.PARSING,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        4);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        5);
+    // the cases for DATAPLANING and DATAPLANING_FAIL are below
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        6);
+  }
+
+  @Test
+  public void ddAnsweringWithDeltaParsingQueuedDataplaningFail() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    workIsRejected(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringWithDeltaParsingQueuedDataplaning() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    workIsRejected(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+  }
+
+  @Test
+  public void ddAnsweringWithDeltaDataplaningQueued() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.PARSED);
+    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.DATAPLANING);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.PARSED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        2);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANING_FAIL,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        3);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANING,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        4);
+    workIsQueued(
+        ProcessingStatus.DATAPLANED,
+        ProcessingStatus.DATAPLANED,
+        WorkType.DATAPLANE_DEPENDENT_ANSWERING,
+        WorkStatusCode.BLOCKED,
+        5);
+  }
+
+  //  END: DATAPLANE_DEPENDENT_ANSWERING TESTS
+
+  // BEGIN: PARSING work tests
+
+  @Test
+  public void parsingForUninitializedBase() throws Exception {
+    workIsQueued(ProcessingStatus.UNINITIALIZED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void parsingAnsweringForParsingBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING, WorkType.PARSING);
+  }
+
+  @Test
+  public void parsingForParsingFailBase() throws Exception {
+    workIsQueued(ProcessingStatus.PARSING_FAIL, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void parsingForParsedBase() throws Exception {
+    workIsQueued(ProcessingStatus.PARSED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void parsingForDataplaningBase() throws Exception {
+    workIsRejected(ProcessingStatus.DATAPLANING, WorkType.PARSING);
+  }
+
+  @Test
+  public void parsingForDataplaningFailBase() throws Exception {
+    workIsQueued(ProcessingStatus.DATAPLANING_FAIL, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void parsingForDataplanedBase() throws Exception {
+    workIsQueued(ProcessingStatus.DATAPLANED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void parsingWithConflictingWorkQueued1() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
+  }
+
+  @Test
+  public void parsingWithConflictingWorkQueued2() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING); // this work interferes
+    queueWork("other", "other", WorkType.PARSING); // this work does not interfere
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
+  }
+
+  @Test
+  public void parsingWithDeltaConflictingWorkQueued() throws Exception {
+    initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    queueWork("other", "other", BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
+  }
+
+  @Test
+  public void parsingWithNonConflictingWorkQueued() throws Exception {
+    initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
+    queueWork("other", "other", WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    workIsQueued(ProcessingStatus.UNINITIALIZED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 2);
+  }
+
+  // END: PARSING TESTS
+
+  // BEGIN: DATAPLANING work tests
+
+  @Test
+  public void dataplainingForUninitializedBase() throws Exception {
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANING);
+  }
+
+  @Test
+  public void dataplaningForParsingBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING, WorkType.DATAPLANING);
+  }
+
+  @Test
+  public void dataplainingForParsingFailBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANING);
+  }
+
+  @Test
+  public void dataplaningForParsedBase() throws Exception {
+    workIsQueued(ProcessingStatus.PARSED, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void dataplaningForDataplaningBase() throws Exception {
+    workIsRejected(ProcessingStatus.DATAPLANING, WorkType.PARSING);
+  }
+
+  @Test
+  public void dataplaningForDataplaningFailBase() throws Exception {
+    workIsQueued(ProcessingStatus.DATAPLANING_FAIL, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void dataplaningForDataplanedBase() throws Exception {
+    workIsQueued(ProcessingStatus.DATAPLANED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 1);
+  }
+
+  @Test
+  public void dataplaningWithConflictingWorkQueued1() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
+  }
+
+  @Test
+  public void dataplaningWithConflictingWorkQueued2() throws Exception {
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata("other", "other", ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING); // this work interferes
+    queueWork("other", "other", WorkType.PARSING); // this work does not interfere
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
+  }
+
+  @Test
+  public void dataplaningWithDeltaConflictingWorkQueued() throws Exception {
+    initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    queueWork("other", "other", BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANING);
+  }
+
+  @Test
+  public void dataplaningWithNonConflictingWorkQueued() throws Exception {
+    initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
+    queueWork("other", "other", WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    workIsQueued(ProcessingStatus.PARSED, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 2);
+  }
+
+  // END: DATAPLANING work tests
 
   @Test
   public void queueUnassignedWorkParsingFailure() throws Exception {
