@@ -29,11 +29,11 @@ public class WorkQueueMgrTest {
 
   private static final String CONTAINER = "container";
 
-  private static final String BASE_TESTIG = "baseTestrig";
+  private static final String BASE_TESTRIG = "baseTestrig";
 
   private static final String BASE_ENV = "baseEnv";
 
-  private static final String DELTA_TESTIG = "deltaTestrig";
+  private static final String DELTA_TESTRIG = "deltaTestrig";
 
   private static final String DELTA_ENV = "deltaEnv";
 
@@ -158,10 +158,10 @@ public class WorkQueueMgrTest {
   }
 
   private void workIsRejected(ProcessingStatus trStatus, WorkType wType) throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, trStatus);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, trStatus);
     QueuedWork work =
         new QueuedWork(
-            new WorkItem(CONTAINER, BASE_TESTIG), new WorkDetails(BASE_TESTIG, BASE_ENV, wType));
+            new WorkItem(CONTAINER, BASE_TESTRIG), new WorkDetails(BASE_TESTRIG, BASE_ENV, wType));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot queue ");
     doAction(new Action(ActionType.QUEUE, work));
@@ -170,12 +170,12 @@ public class WorkQueueMgrTest {
   private void workIsRejected(
       ProcessingStatus baseTrStatus, ProcessingStatus deltaTrStatus, WorkType wType)
       throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, baseTrStatus);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, deltaTrStatus);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, baseTrStatus);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, deltaTrStatus);
     QueuedWork work =
         new QueuedWork(
-            new WorkItem(CONTAINER, BASE_TESTIG),
-            new WorkDetails(BASE_TESTIG, BASE_ENV, DELTA_TESTIG, DELTA_ENV, true, wType));
+            new WorkItem(CONTAINER, BASE_TESTRIG),
+            new WorkDetails(BASE_TESTRIG, BASE_ENV, DELTA_TESTRIG, DELTA_ENV, true, wType));
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot queue ");
     doAction(new Action(ActionType.QUEUE, work));
@@ -184,10 +184,10 @@ public class WorkQueueMgrTest {
   private void workIsQueued(
       ProcessingStatus trStatus, WorkType wType, WorkStatusCode qwStatus, long queueLength)
       throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, trStatus);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, trStatus);
     QueuedWork work =
         new QueuedWork(
-            new WorkItem(CONTAINER, BASE_TESTIG), new WorkDetails(BASE_TESTIG, BASE_ENV, wType));
+            new WorkItem(CONTAINER, BASE_TESTRIG), new WorkDetails(BASE_TESTRIG, BASE_ENV, wType));
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
@@ -200,12 +200,12 @@ public class WorkQueueMgrTest {
       WorkStatusCode qwStatus,
       long queueLength)
       throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, baseTrStatus);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, deltaTrStatus);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, baseTrStatus);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, deltaTrStatus);
     QueuedWork work =
         new QueuedWork(
-            new WorkItem(CONTAINER, BASE_TESTIG),
-            new WorkDetails(BASE_TESTIG, BASE_ENV, DELTA_TESTIG, DELTA_ENV, true, wType));
+            new WorkItem(CONTAINER, BASE_TESTRIG),
+            new WorkDetails(BASE_TESTRIG, BASE_ENV, DELTA_TESTRIG, DELTA_ENV, true, wType));
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
@@ -305,8 +305,8 @@ public class WorkQueueMgrTest {
 
   @Test
   public void diAnsweringWithBaseParsingQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING);
     workIsQueued(
         ProcessingStatus.UNINITIALIZED,
         WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
@@ -346,8 +346,8 @@ public class WorkQueueMgrTest {
 
   @Test
   public void diAnsweringWithBaseDataplaningQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANING);
     workIsQueued(
         ProcessingStatus.PARSED,
         WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
@@ -428,9 +428,9 @@ public class WorkQueueMgrTest {
 
   @Test
   public void diAnsweringWithDeltaParsingQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.PARSING);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.UNINITIALIZED,
@@ -477,9 +477,9 @@ public class WorkQueueMgrTest {
 
   @Test
   public void diAnsweringWithDeltaDataplaningQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.PARSED);
-    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.DATAPLANING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.PARSED);
+    queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.DATAPLANING);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSED,
@@ -555,8 +555,8 @@ public class WorkQueueMgrTest {
 
   @Test
   public void ddAnsweringWithBaseParsingQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING);
     workIsQueued(
         ProcessingStatus.UNINITIALIZED,
         WorkType.DATAPLANE_DEPENDENT_ANSWERING,
@@ -583,23 +583,23 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void ddAnsweringWithBaseParsingQueuedDataplainingFail() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+  public void ddAnsweringWithBaseParsingQueuedDataplaningFail() throws Exception {
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING);
     workIsRejected(ProcessingStatus.DATAPLANING_FAIL, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void ddAnsweringWithBaseParsingQueuedDataplaining() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING);
+  public void ddAnsweringWithBaseParsingQueuedDataplaning() throws Exception {
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING);
     workIsRejected(ProcessingStatus.DATAPLANING, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
   }
 
   @Test
   public void ddAnsweringWithBaseDataplaningQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANING);
     workIsQueued(
         ProcessingStatus.PARSED, WorkType.DATAPLANE_DEPENDENT_ANSWERING, WorkStatusCode.BLOCKED, 2);
     workIsQueued(
@@ -673,9 +673,9 @@ public class WorkQueueMgrTest {
 
   @Test
   public void ddAnsweringWithDeltaParsingQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.PARSING);
     workIsQueued(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.UNINITIALIZED,
@@ -711,9 +711,9 @@ public class WorkQueueMgrTest {
 
   @Test
   public void ddAnsweringWithDeltaParsingQueuedDataplaningFail() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.PARSING);
     workIsRejected(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.DATAPLANING_FAIL,
@@ -722,9 +722,9 @@ public class WorkQueueMgrTest {
 
   @Test
   public void ddAnsweringWithDeltaParsingQueuedDataplaning() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
-    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.PARSING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
+    queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.PARSING);
     workIsRejected(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.DATAPLANING,
@@ -733,9 +733,9 @@ public class WorkQueueMgrTest {
 
   @Test
   public void ddAnsweringWithDeltaDataplaningQueued() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    initTestrigMetadata(DELTA_TESTIG, DELTA_ENV, ProcessingStatus.PARSED);
-    queueWork(DELTA_TESTIG, DELTA_ENV, WorkType.DATAPLANING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.PARSED);
+    queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.DATAPLANING);
     workIsQueued(
         ProcessingStatus.DATAPLANED,
         ProcessingStatus.PARSED,
@@ -803,16 +803,16 @@ public class WorkQueueMgrTest {
 
   @Test
   public void parsingWithConflictingWorkQueued1() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.PARSED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
   @Test
   public void parsingWithConflictingWorkQueued2() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING); // this work interferes
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING); // this work interferes
     queueWork("other", "other", WorkType.PARSING); // this work does not interfere
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
@@ -820,8 +820,8 @@ public class WorkQueueMgrTest {
   @Test
   public void parsingWithDeltaConflictingWorkQueued() throws Exception {
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    queueWork("other", "other", BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    queueWork("other", "other", BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
@@ -837,7 +837,7 @@ public class WorkQueueMgrTest {
   // BEGIN: DATAPLANING work tests
 
   @Test
-  public void dataplainingForUninitializedBase() throws Exception {
+  public void dataplaningForUninitializedBase() throws Exception {
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANING);
   }
 
@@ -847,7 +847,7 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void dataplainingForParsingFailBase() throws Exception {
+  public void dataplaningForParsingFailBase() throws Exception {
     workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANING);
   }
 
@@ -873,16 +873,16 @@ public class WorkQueueMgrTest {
 
   @Test
   public void dataplaningWithConflictingWorkQueued1() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
   @Test
   public void dataplaningWithConflictingWorkQueued2() throws Exception {
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
     initTestrigMetadata("other", "other", ProcessingStatus.UNINITIALIZED);
-    queueWork(BASE_TESTIG, BASE_ENV, WorkType.PARSING); // this work interferes
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING); // this work interferes
     queueWork("other", "other", WorkType.PARSING); // this work does not interfere
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
@@ -890,8 +890,8 @@ public class WorkQueueMgrTest {
   @Test
   public void dataplaningWithDeltaConflictingWorkQueued() throws Exception {
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
-    initTestrigMetadata(BASE_TESTIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    queueWork("other", "other", BASE_TESTIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
+    queueWork("other", "other", BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANING);
   }
 
