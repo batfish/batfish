@@ -130,14 +130,9 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
     if (candidateRegexes.size() == 0) {
       return emptySpecifier;
-    }
-
-    optResult = toRoleSpecifierIfAboveThreshold(findBestRegex(candidateRegexes), candidateRegexes);
-    if (optResult.isPresent()) {
-      return optResult.get();
     } else {
-      // give up and don't infer any roles if the best one is still below threshold
-      return emptySpecifier;
+      // return the best one according to our metric, even if it's below threshold
+      return toRoleSpecifier(findBestRegex(candidateRegexes), candidateRegexes);
     }
   }
 
@@ -296,14 +291,20 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   // the list of candidates must have at least one element
   private Optional<NodeRoleSpecifier> toRoleSpecifierIfAboveThreshold(
       Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
-    List<String> bestRegexTokens = candidates.get(bestRegexAndScore.getFirst());
-    String bestRegex = regexTokensToRegex(bestRegexTokens);
-    // if the score is high enough, we're done
     if (bestRegexAndScore.getSecond() >= ROLE_THRESHOLD) {
-      return Optional.of(regexToRoleSpecifier(bestRegex));
+      NodeRoleSpecifier bestNRS = toRoleSpecifier(bestRegexAndScore, candidates);
+      return Optional.of(bestNRS);
     } else {
       return Optional.empty();
     }
+  }
+
+  // the list of candidates must have at least one element
+  private NodeRoleSpecifier toRoleSpecifier(
+      Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
+    List<String> bestRegexTokens = candidates.get(bestRegexAndScore.getFirst());
+    String bestRegex = regexTokensToRegex(bestRegexTokens);
+    return regexToRoleSpecifier(bestRegex);
   }
 
   NodeRoleSpecifier regexToRoleSpecifier(String regex) {

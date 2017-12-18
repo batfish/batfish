@@ -2,8 +2,8 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -56,10 +56,11 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
         return "";
       }
 
-      StringBuilder sb = new StringBuilder("Results for outliers\n");
+      StringBuilder sb = new StringBuilder("Results for per-role outliers\n");
 
       for (OutlierSet<?> outlier : _serverOutliers) {
-        sb.append("  Hypothesis: every node should have the following set of ");
+        sb.append("  Hypothesis for role " + outlier.getRole() + ":\n");
+        sb.append("    every node should have the following set of ");
         sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
         sb.append("  Outliers: ");
         sb.append(outlier.getOutliers() + "\n");
@@ -68,21 +69,21 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       }
 
       for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
+        sb.append("  Hypothesis for role " + outlier.getRole() + ":\n");
         switch (outlier.getHypothesis()) {
           case SAME_DEFINITION:
             sb.append(
-                "  Hypothesis: every "
+                "    every "
                     + outlier.getStructType()
                     + " named "
                     + outlier.getName()
                     + " should have the same definition\n");
             break;
           case SAME_NAME:
-            sb.append("  Hypothesis:");
             if (outlier.getNamedStructure() != null) {
-              sb.append(" every ");
+              sb.append("    every ");
             } else {
-              sb.append(" no ");
+              sb.append("no ");
             }
             sb.append(
                 "node should define a "
@@ -140,14 +141,20 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
 
       SortedMap<String, AnswerElement> roleAnswers = roleAE.getAnswers();
-      Collection<AnswerElement> allAnswers = roleAnswers.values();
 
       SortedSet<NamedStructureOutlierSet<?>> nsOutliers = new TreeSet<>();
       SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers = new TreeSet<>();
-      for (AnswerElement ae : allAnswers) {
-        OutliersAnswerElement oae = (OutliersAnswerElement) ae;
-        nsOutliers.addAll(oae.getNamedStructureOutliers());
-        serverOutliers.addAll(oae.getServerOutliers());
+      for (Map.Entry<String, AnswerElement> entry : roleAnswers.entrySet()) {
+        String role = entry.getKey();
+        OutliersAnswerElement oae = (OutliersAnswerElement) entry.getValue();
+        for (NamedStructureOutlierSet<?> nsos : oae.getNamedStructureOutliers()) {
+          nsos.setRole(role);
+          nsOutliers.add(nsos);
+        }
+        for (OutlierSet<NavigableSet<String>> os : oae.getServerOutliers()) {
+          os.setRole(role);
+          serverOutliers.add(os);
+        }
       }
 
       _answerElement.setNamedStructureOutliers(nsOutliers);

@@ -3,6 +3,7 @@ package org.batfish.datamodel.collections;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 
 /* An abstract superclass of outlier sets for various hypotheses. */
 public abstract class AbstractOutlierSet {
@@ -10,6 +11,8 @@ public abstract class AbstractOutlierSet {
   protected static final String PROP_CONFORMERS = "conformers";
 
   protected static final String PROP_OUTLIERS = "outliers";
+
+  protected static final String PROP_ROLE = "role";
 
   /** A lower bound on the probability at which a hypothesis should be considered to be true. */
   private static final double THRESHOLD_PROBABILITY = 2.0 / 3.0;
@@ -19,6 +22,9 @@ public abstract class AbstractOutlierSet {
 
   /** The nodes that violate the hypothesis */
   private SortedSet<String> _outliers;
+
+  /** An optional role that all of the conformers and outliers play in the network * */
+  private String _role;
 
   @JsonCreator
   public AbstractOutlierSet(
@@ -36,6 +42,17 @@ public abstract class AbstractOutlierSet {
   @JsonProperty(PROP_OUTLIERS)
   public SortedSet<String> getOutliers() {
     return _outliers;
+  }
+
+  @JsonProperty(PROP_ROLE)
+  @Nullable
+  public String getRole() {
+    return _role;
+  }
+
+  @JsonProperty(PROP_ROLE)
+  public void setRole(String role) {
+    _role = role;
   }
 
   /*
