@@ -1,12 +1,14 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 
 public final class FwFromDestinationPrefixList extends FwFrom {
@@ -29,13 +31,21 @@ public final class FwFromDestinationPrefixList extends FwFrom {
         return;
       }
       RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(_name);
-      for (RouteFilterLine rfLine : destinationPrefixList.getLines()) {
-        if (rfLine.getAction() != LineAction.ACCEPT) {
-          throw new BatfishException("Expected accept action for routerfilterlist from juniper");
-        } else {
-          line.getDstIps().add(new IpWildcard(rfLine.getPrefix()));
-        }
-      }
+      List<IpWildcard> wildcards =
+          destinationPrefixList
+              .getLines()
+              .stream()
+              .map(
+                  rfLine -> {
+                    if (rfLine.getAction() != LineAction.ACCEPT) {
+                      throw new BatfishException(
+                          "Expected accept action for routerfilterlist from juniper");
+                    } else {
+                      return new IpWildcard(rfLine.getPrefix());
+                    }
+                  })
+              .collect(Collectors.toList());
+      line.setDstIps(Iterables.concat(line.getDstIps(), wildcards));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }

@@ -1,6 +1,8 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpAccessListLine;
@@ -70,8 +72,7 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getIpProtocols().add(IpProtocol.UDP);
+          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
           break;
         }
 
@@ -79,9 +80,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC.number())));
           break;
         }
 
@@ -89,10 +91,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.DOMAIN.number(), NamedPort.DOMAIN.number()));
+          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.DOMAIN.number(), NamedPort.DOMAIN.number())));
           break;
         }
 
@@ -100,9 +102,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.FINGER.number(), NamedPort.FINGER.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.FINGER.number(), NamedPort.FINGER.number())));
           break;
         }
 
@@ -110,8 +113,9 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts().add(new SubRange(NamedPort.FTP.number(), NamedPort.FTP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.FTP.number(), NamedPort.FTP.number())));
           break;
         }
 
@@ -119,8 +123,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts().add(new SubRange(NamedPort.HTTP.number(), NamedPort.HTTP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.HTTP.number(), NamedPort.HTTP.number())));
           break;
         }
 
@@ -128,8 +134,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts().add(new SubRange(NamedPort.HTTPS.number(), NamedPort.HTTPS.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.HTTPS.number(), NamedPort.HTTPS.number())));
           break;
         }
 
@@ -143,12 +151,12 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.ISAKMP.number(), NamedPort.ISAKMP.number()));
-          line.getDstPorts()
-              .add(
-                  new SubRange(NamedPort.NON500_ISAKMP.number(), NamedPort.NON500_ISAKMP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              ImmutableSortedSet.of(
+                  new SubRange(NamedPort.ISAKMP.number(), NamedPort.ISAKMP.number()),
+                  new SubRange(
+                      NamedPort.NON500_ISAKMP.number(), NamedPort.NON500_ISAKMP.number())));
           break;
         }
 
@@ -163,9 +171,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.NETCONF_SSH.number(), NamedPort.NETCONF_SSH.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.NETCONF_SSH.number(), NamedPort.NETCONF_SSH.number())));
           break;
         }
 
@@ -173,8 +182,9 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.NTP.number(), NamedPort.NTP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.NTP.number(), NamedPort.NTP.number())));
           break;
         }
 
@@ -182,7 +192,7 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.ICMP);
+          line.setIpProtocols(Collections.singleton(IpProtocol.ICMP));
           // TODO: PING (ECHO REQUEST) uses ICMP (an IP Protocol) type 8. need to
           // add support for ICMP types in packet headers
           break;
@@ -192,8 +202,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.R2CP.number(), NamedPort.R2CP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.R2CP.number(), NamedPort.R2CP.number())));
           break;
         }
 
@@ -201,9 +213,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.REVERSE_SSH.number(), NamedPort.REVERSE_SSH.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.REVERSE_SSH.number(), NamedPort.REVERSE_SSH.number())));
           break;
         }
 
@@ -211,11 +224,11 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
                   new SubRange(
-                      NamedPort.REVERSE_TELNET.number(), NamedPort.REVERSE_TELNET.number()));
+                      NamedPort.REVERSE_TELNET.number(), NamedPort.REVERSE_TELNET.number())));
           break;
         }
 
@@ -223,12 +236,12 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
                   new SubRange(
                       NamedPort.LOGINtcp_OR_WHOudp.number(),
-                      NamedPort.LOGINtcp_OR_WHOudp.number()));
+                      NamedPort.LOGINtcp_OR_WHOudp.number())));
           break;
         }
 
@@ -243,12 +256,12 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
                   new SubRange(
                       NamedPort.CMDtcp_OR_SYSLOGudp.number(),
-                      NamedPort.CMDtcp_OR_SYSLOGudp.number()));
+                      NamedPort.CMDtcp_OR_SYSLOGudp.number())));
           break;
         }
 
@@ -256,10 +269,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.SIP_5060.number(), NamedPort.SIP_5061.number()));
+          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.SIP_5060.number(), NamedPort.SIP_5061.number())));
           break;
         }
 
@@ -267,8 +280,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.SNMP.number(), NamedPort.SNMP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.SNMP.number(), NamedPort.SNMP.number())));
           break;
         }
 
@@ -276,9 +291,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.SNMPTRAP.number(), NamedPort.SNMPTRAP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.SNMPTRAP.number(), NamedPort.SNMPTRAP.number())));
           break;
         }
 
@@ -286,8 +302,9 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts().add(new SubRange(NamedPort.SSH.number(), NamedPort.SSH.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.SSH.number(), NamedPort.SSH.number())));
           break;
         }
 
@@ -295,9 +312,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.TELNET.number(), NamedPort.TELNET.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.TELNET.number(), NamedPort.TELNET.number())));
           break;
         }
 
@@ -305,8 +323,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.TFTP.number(), NamedPort.TFTP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.TFTP.number(), NamedPort.TFTP.number())));
           break;
         }
 
@@ -314,9 +334,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE.number())));
           break;
         }
 
@@ -324,11 +345,11 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
                   new SubRange(
-                      NamedPort.XNM_CLEAR_TEXT.number(), NamedPort.XNM_CLEAR_TEXT.number()));
+                      NamedPort.XNM_CLEAR_TEXT.number(), NamedPort.XNM_CLEAR_TEXT.number())));
           break;
         }
 
@@ -336,9 +357,10 @@ public enum HostSystemService {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.XNM_SSL.number(), NamedPort.XNM_SSL.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.XNM_SSL.number(), NamedPort.XNM_SSL.number())));
           break;
         }
 
