@@ -1,8 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -24,7 +23,7 @@ public class FwFromFragmentOffset extends FwFrom {
 
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    SortedSet<SubRange> offsets = new TreeSet<>(Collections.singleton(_offsetRange));
+    Set<SubRange> offsets = Collections.singleton(_offsetRange);
     if (_except) {
       line.setNotFragmentOffsets(offsets);
     } else {
