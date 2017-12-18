@@ -288,7 +288,6 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
         .orElseThrow(() -> new BatfishException("this exception should not be reachable"));
   }
 
-
   // the list of candidates must have at least one element
   private Optional<NodeRoleSpecifier> toRoleSpecifierIfAboveThreshold(
       Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {

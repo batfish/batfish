@@ -23,7 +23,7 @@ public abstract class AbstractOutlierSet {
   /** The nodes that violate the hypothesis */
   private SortedSet<String> _outliers;
 
-  /** An optional role that all of the conformers and outliers play in the network **/
+  /** An optional role that all of the conformers and outliers play in the network * */
   private String _role;
 
   @JsonCreator

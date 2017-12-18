@@ -45,8 +45,6 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       return _namedStructureOutliers;
     }
 
-
-
     @JsonProperty(PROP_SERVER_OUTLIERS)
     public SortedSet<OutlierSet<NavigableSet<String>>> getServerOutliers() {
       return _serverOutliers;
@@ -75,7 +73,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
         switch (outlier.getHypothesis()) {
           case SAME_DEFINITION:
             sb.append(
-                    "    every "
+                "    every "
                     + outlier.getStructType()
                     + " named "
                     + outlier.getName()
@@ -112,8 +110,7 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_SERVER_OUTLIERS)
-    public void setServerOutliers(
-        SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers) {
+    public void setServerOutliers(SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers) {
       _serverOutliers = serverOutliers;
     }
   }
