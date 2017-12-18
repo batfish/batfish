@@ -1,5 +1,6 @@
 package org.batfish.representation.iptables;
 
+import com.google.common.collect.ImmutableList;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -168,7 +169,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   private IpAccessList toIpAccessList(String aclName, IptablesChain chain, VendorConfiguration vc) {
-    IpAccessList acl = new IpAccessList(aclName, new LinkedList<>());
+    ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
 
     for (IptablesRule rule : chain.getRules()) {
       IpAccessListLine aclLine = new IpAccessListLine();
@@ -216,7 +217,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
       aclLine.setName(rule.getName());
       aclLine.setAction(rule.getIpAccessListLineAction());
-      acl.getLines().add(aclLine);
+      lines.add(aclLine);
     }
 
     // add a final line corresponding to default chain policy
@@ -224,8 +225,9 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     IpAccessListLine defaultLine = new IpAccessListLine();
     defaultLine.setAction(chainAction);
     defaultLine.setName("default");
-    acl.getLines().add(defaultLine);
+    lines.add(defaultLine);
 
+    IpAccessList acl = new IpAccessList(aclName, lines.build());
     return acl;
   }
 
