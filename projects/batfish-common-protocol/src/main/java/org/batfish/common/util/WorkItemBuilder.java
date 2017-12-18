@@ -15,11 +15,15 @@ public class WorkItemBuilder {
       String envName,
       String deltaTestrig,
       String deltaEnvName,
+      boolean isDifferential,
       boolean isDelta) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
     wItem.addRequestParam(BfConsts.COMMAND_ANSWER, "");
     wItem.addRequestParam(BfConsts.ARG_QUESTION_NAME, questionName);
     wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    if (isDifferential) {
+      wItem.addRequestParam(BfConsts.ARG_DIFFERENTIAL, "");
+    }
     if (deltaEnvName != null) {
       wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, deltaEnvName);
     }
@@ -120,6 +124,10 @@ public class WorkItemBuilder {
 
   public static boolean isDataplaningWorkItem(WorkItem workItem) {
     return workItem.getRequestParams().containsKey(BfConsts.COMMAND_DUMP_DP);
+  }
+
+  public static boolean isDifferential(WorkItem workItem) {
+    return workItem.getRequestParams().containsKey(BfConsts.ARG_DIFFERENTIAL);
   }
 
   public static boolean isParsingWorkItem(WorkItem workItem) {

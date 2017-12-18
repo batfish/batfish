@@ -579,7 +579,7 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException("Could not process modified instance data", e);
     }
     String modifiedQuestionStr = questionJson.toString();
-    boolean questionJsonDifferential;
+    boolean questionJsonDifferential = false;
     // check whether question is valid modulo instance data
     try {
       questionJsonDifferential =
@@ -618,6 +618,7 @@ public class Client extends AbstractClient implements IClient {
             _currEnv,
             _currDeltaTestrig,
             _currDeltaEnv,
+            questionJsonDifferential,
             isDelta);
     return execute(wItemAs, outWriter);
   }
@@ -641,7 +642,8 @@ public class Client extends AbstractClient implements IClient {
     return answer(qTypeStr, paramsLine, delta, outWriter);
   }
 
-  private boolean answerFile(Path questionFile, boolean isDelta, FileWriter outWriter) {
+  private boolean answerFile(
+      Path questionFile, boolean isDifferential, boolean isDelta, FileWriter outWriter) {
 
     if (!Files.exists(questionFile)) {
       throw new BatfishException("Question file not found: " + questionFile);
@@ -672,6 +674,7 @@ public class Client extends AbstractClient implements IClient {
             _currEnv,
             _currDeltaTestrig,
             _currDeltaEnv,
+            isDifferential,
             isDelta);
 
     return execute(wItemAs, outWriter);
@@ -726,7 +729,8 @@ public class Client extends AbstractClient implements IClient {
     // if no exception is thrown, then the modifiedQuestionJson is good
     Path questionFile = createTempFile("question", modifiedQuestionJson);
     questionFile.toFile().deleteOnExit();
-    boolean result = answerFile(questionFile, isDelta, outWriter);
+    boolean result =
+        answerFile(questionFile, modifiedQuestion.getDifferential(), isDelta, outWriter);
     if (questionFile != null) {
       CommonUtil.deleteIfExists(questionFile);
     }

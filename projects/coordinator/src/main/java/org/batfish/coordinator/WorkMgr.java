@@ -351,7 +351,6 @@ public class WorkMgr extends AbstractCoordinator {
 
   private WorkDetails computeWorkDetails(WorkItem workItem) {
 
-    boolean isDifferential = false;
     WorkType workType = WorkType.UNKNOWN;
 
     if (WorkItemBuilder.isParsingWorkItem(workItem)) {
@@ -375,7 +374,6 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
       Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
-      isDifferential = question.getDifferential();
       workType =
           question.getDataPlane()
               ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
@@ -395,9 +393,6 @@ public class WorkMgr extends AbstractCoordinator {
       for (String qName : qNames) {
         Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
         Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
-        if (question.getDifferential()) {
-          isDifferential = true;
-        }
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
         }
@@ -412,7 +407,7 @@ public class WorkMgr extends AbstractCoordinator {
             WorkItemBuilder.getBaseEnvironment(settings),
             WorkItemBuilder.getDeltaTestrig(settings),
             WorkItemBuilder.getDeltaEnvironment(settings),
-            isDifferential,
+            WorkItemBuilder.isDifferential(workItem),
             workType);
 
     return details;
