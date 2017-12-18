@@ -2,6 +2,10 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +13,6 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import org.batfish.common.Answerer;
@@ -154,11 +157,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
                         new BatfishException(
                             "Named structure " + name + " has no equivalence classes"));
         SortedSet<String> conformers = max.getNodes();
-        eClasses.remove(max);
-        SortedSet<String> outliers = new TreeSet<>();
-        for (NamedStructureEquivalenceSet<T> eClass : eClasses) {
-          outliers.addAll(eClass.getNodes());
-        }
+
+        SortedSet<String> outliers =
+            eClasses
+                .stream()
+                .filter(eClass -> eClass != max)
+                .flatMap(eClass -> eClass.getNodes().stream())
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
         rankedOutliers.add(
             new NamedStructureOutlierSet<>(
                 hypothesis, structType, name, max.getNamedStructure(), conformers, outliers));
@@ -295,36 +300,43 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return rankedOutliers;
     }
 
-    /* Use the results of CompareSameName to partition nodes into those containing a structure
-      of a given name and those lacking such a structure.  This information will later be used
-      to test the sameName hypothesis.
-    */
+    /**
+     * Use the results of CompareSameName to partition nodes into those containing a structure of a
+     * given name and those lacking such a structure. This information will later be used to test
+     * the sameName hypothesis.
+     */
     private <T> void toNameOnlyEquivalenceSets(
         NamedStructureEquivalenceSets<T> eSets, List<String> nodes) {
-      SortedMap<String, SortedSet<NamedStructureEquivalenceSet<T>>> newESetsMap = new TreeMap<>();
+      ImmutableSortedMap.Builder<String, SortedSet<NamedStructureEquivalenceSet<T>>> newESetsMap =
+          new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
       for (Map.Entry<String, SortedSet<NamedStructureEquivalenceSet<T>>> entry :
           eSets.getSameNamedStructures().entrySet()) {
-        SortedSet<String> presentNodes = new TreeSet<>();
-        T struct = entry.getValue().first().getNamedStructure();
-        for (NamedStructureEquivalenceSet<T> eSet : entry.getValue()) {
-          presentNodes.addAll(eSet.getNodes());
-        }
-        SortedSet<String> absentNodes = new TreeSet<>(nodes);
-        absentNodes.removeAll(presentNodes);
-        SortedSet<NamedStructureEquivalenceSet<T>> newESets = new TreeSet<>();
+        SortedSet<NamedStructureEquivalenceSet<T>> eSetSets = entry.getValue();
+        SortedSet<String> presentNodes =
+            eSetSets
+                .stream()
+                .flatMap(eSet -> eSet.getNodes().stream())
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+        T struct = eSetSets.first().getNamedStructure();
+
+        SortedSet<String> absentNodes =
+            ImmutableSortedSet.copyOf(Sets.difference(ImmutableSet.copyOf(nodes), presentNodes));
         NamedStructureEquivalenceSet<T> presentSet =
             new NamedStructureEquivalenceSet<T>(presentNodes.first(), struct);
         presentSet.setNodes(presentNodes);
-        newESets.add(presentSet);
-        if (absentNodes.size() > 0) {
+        String name = entry.getKey();
+        ImmutableSortedSet.Builder<NamedStructureEquivalenceSet<T>> eqSetsBuilder =
+            new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+        eqSetsBuilder.add(presentSet);
+        if (!absentNodes.isEmpty()) {
           NamedStructureEquivalenceSet<T> absentSet =
-              new NamedStructureEquivalenceSet<T>(absentNodes.first());
+              new NamedStructureEquivalenceSet<T>(absentNodes.first(), null);
           absentSet.setNodes(absentNodes);
-          newESets.add(absentSet);
+          eqSetsBuilder.add(absentSet);
         }
-        newESetsMap.put(entry.getKey(), newESets);
+        newESetsMap.put(name, eqSetsBuilder.build());
       }
-      eSets.setSameNamedStructures(newESetsMap);
+      eSets.setSameNamedStructures(newESetsMap.build());
     }
 
     /* a simple first approach to detect and rank outliers:
