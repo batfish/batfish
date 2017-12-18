@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
@@ -131,6 +132,7 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -502,7 +504,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
             String questionName = analysisQuestionDir.getFileName().toString();
             Path analysisQuestionPath = analysisQuestionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
             _settings.setQuestionPath(analysisQuestionPath);
+            long beforeTime = System.currentTimeMillis();
             Answer currentAnswer = answer();
+            double timeTakenInSeconds = _logger.getElapsedTime(beforeTime);
+            if (currentAnswer.getStatus().equals(AnswerStatus.SUCCESS)) {
+              _logger.info(
+                  String.format(
+                      "Question %s in analysis %s needs data-plane: %s\n",
+                      questionName, analysisName, currentAnswer.getQuestion().getDataPlane()));
+              _logger.info(
+                  String.format(
+                      "Question %s in analysis %s took %.2f seconds\n",
+                      questionName, analysisName, timeTakenInSeconds));
+              SortedMap<String, Variable> variables =
+                  currentAnswer.getQuestion().getInstance().getVariables();
+              if (!variables.isEmpty()) {
+                BatfishObjectMapper mapper = new BatfishObjectMapper(false);
+                try {
+                  _logger.info(
+                      String.format(
+                          "Parameters used in question %s in analysis %s: %s\n",
+                          questionName, analysisName, mapper.writeValueAsString(variables)));
+                } catch (JsonProcessingException e) {
+                  throw new BatfishException(
+                      String.format(
+                          "Error logging variables of question %s in analysis %s",
+                          questionName, analysisName));
+                }
+              }
+            }
             initAnalysisQuestionPath(analysisName, questionName);
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
