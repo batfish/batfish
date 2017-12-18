@@ -1,6 +1,9 @@
 package org.batfish.representation.aws_vpcs;
 
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -69,19 +72,21 @@ public class IpPermissions implements Serializable {
 
   public IpAccessListLine toEgressIpAccessListLine() {
     IpAccessListLine line = toIpAccessListLine();
-    for (Prefix ipRange : _ipRanges) {
-      IpWildcard wildcard = new IpWildcard(ipRange);
-      line.getDstIps().add(wildcard);
-    }
+    line.setDstIps(
+        _ipRanges
+            .stream()
+            .map(IpWildcard::new)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
     return line;
   }
 
   public IpAccessListLine toIngressIpAccessListLine() {
     IpAccessListLine line = toIpAccessListLine();
-    for (Prefix ipRange : _ipRanges) {
-      IpWildcard wildcard = new IpWildcard(ipRange);
-      line.getSrcIps().add(wildcard);
-    }
+    line.setSrcIps(
+        _ipRanges
+            .stream()
+            .map(IpWildcard::new)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
     return line;
   }
 
@@ -90,13 +95,13 @@ public class IpPermissions implements Serializable {
     line.setAction(LineAction.ACCEPT);
     IpProtocol protocol = toIpProtocol(_ipProtocol);
     if (protocol != null) {
-      line.getIpProtocols().add(protocol);
+      line.setIpProtocols(Collections.singleton(protocol));
     }
     if (_fromPort != -1) {
-      line.getSrcPorts().add(new SubRange(_fromPort, _fromPort));
+      line.setSrcPorts(Collections.singleton(new SubRange(_fromPort, _fromPort)));
     }
     if (_toPort != -1) {
-      line.getDstPorts().add(new SubRange(_toPort, _toPort));
+      line.setDstPorts(Collections.singleton(new SubRange(_toPort, _toPort)));
     }
     return line;
   }
