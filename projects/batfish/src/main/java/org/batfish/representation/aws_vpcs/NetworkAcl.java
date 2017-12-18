@@ -1,5 +1,6 @@
 package org.batfish.representation.aws_vpcs;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -53,15 +54,15 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
         Prefix prefix = entry.getCidrBlock();
         if (!prefix.equals(Prefix.ZERO)) {
           if (isEgress) {
-            line.getDstIps().add(new IpWildcard(prefix));
+            line.setDstIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
           } else {
-            line.getSrcIps().add(new IpWildcard(prefix));
+            line.setSrcIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
           }
         }
         IpProtocol protocol = IpPermissions.toIpProtocol(entry.getProtocol());
         String protocolStr = protocol != null ? protocol.toString() : "ALL";
         if (protocol != null) {
-          line.getIpProtocols().add(protocol);
+          line.setIpProtocols(ImmutableSortedSet.of(protocol));
         }
         int fromPort = entry.getFromPort();
         int toPort = entry.getToPort();
@@ -73,7 +74,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
           if (toPort == -1) {
             toPort = 65535;
           }
-          line.getDstPorts().add(portRange);
+          line.setDstPorts(ImmutableSortedSet.of(portRange));
         }
         String portStr;
         if (protocol == IpProtocol.ICMP) {
@@ -91,8 +92,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
         lineMap.put(key, line);
       }
     }
-    List<IpAccessListLine> lines = new ArrayList<>();
-    lines.addAll(lineMap.values());
+    List<IpAccessListLine> lines = new ArrayList<>(lineMap.values());
     IpAccessList list = new IpAccessList(listName, lines);
     return list;
   }

@@ -125,14 +125,6 @@ public class Instance implements AwsVpcEntity, Serializable {
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
-    // create ACLs from inboundRules and outboundRules
-    IpAccessList inAcl = new IpAccessList(sgIngressAclName, inboundRules);
-    IpAccessList outAcl = new IpAccessList(sgEgressAclName, outboundRules);
-    cfgNode.getIpAccessLists().put(sgIngressAclName, inAcl);
-    cfgNode.getIpAccessLists().put(sgEgressAclName, outAcl);
-    _inAcl = inAcl;
-    _outAcl = outAcl;
-
     for (String sGroupId : _securityGroups) {
       SecurityGroup sGroup = awsVpcConfig.getSecurityGroups().get(sGroupId);
 
@@ -143,6 +135,12 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       sGroup.addInOutAccessLines(inboundRules, outboundRules);
     }
+
+    // create ACLs from inboundRules and outboundRules
+    _inAcl = new IpAccessList(sgIngressAclName, inboundRules);
+    _outAcl = new IpAccessList(sgEgressAclName, outboundRules);
+    cfgNode.getIpAccessLists().put(sgIngressAclName, _inAcl);
+    cfgNode.getIpAccessLists().put(sgEgressAclName, _outAcl);
 
     for (String interfaceId : _networkInterfaces) {
 
@@ -185,8 +183,8 @@ public class Instance implements AwsVpcEntity, Serializable {
       iface.setAllPrefixes(ifacePrefixes);
 
       // apply ACLs to interface
-      iface.setIncomingFilter(inAcl);
-      iface.setOutgoingFilter(outAcl);
+      iface.setIncomingFilter(_inAcl);
+      iface.setOutgoingFilter(_outAcl);
 
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
