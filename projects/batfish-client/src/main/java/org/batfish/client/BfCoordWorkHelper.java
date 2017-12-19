@@ -891,7 +891,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public Map<String, String> listTestrigs(String containerName) {
+  public JSONArray listTestrigs(String containerName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_TESTRIGS);
 
@@ -914,17 +914,7 @@ public class BfCoordWorkHelper {
       }
 
       JSONArray testrigArray = jObj.getJSONArray(CoordConsts.SVC_KEY_TESTRIG_LIST);
-
-      Map<String, String> testrigs = new HashMap<>();
-
-      for (int index = 0; index < testrigArray.length(); index++) {
-        JSONObject jObjTestrig = testrigArray.getJSONObject(index);
-        testrigs.put(
-            jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_NAME),
-            jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_INFO));
-      }
-
-      return testrigs;
+      return testrigArray;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");

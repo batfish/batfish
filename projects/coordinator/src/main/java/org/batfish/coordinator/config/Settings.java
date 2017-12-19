@@ -470,6 +470,10 @@ public class Settings extends BaseSettings {
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
   }
 
+  public void setContainersLocation(Path dir) {
+    _containersLocation = dir;
+  }
+
   public void setSslPoolDisable(boolean sslPoolDisable) {
     _sslPoolDisable = sslPoolDisable;
   }
