@@ -3269,14 +3269,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private RouteFilterList toRouteFilterList(PrefixList list) {
     RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
-    for (PrefixListLine prefixListLine : list.getLines()) {
-      RouteFilterLine newRouteFilterListLine =
-          new RouteFilterLine(
-              prefixListLine.getAction(),
-              prefixListLine.getPrefix(),
-              prefixListLine.getLengthRange());
-      newRouteFilterList.addLine(newRouteFilterListLine);
-    }
+    List<RouteFilterLine> newLines =
+        list.getLines()
+            .stream()
+            .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
+            .collect(ImmutableList.toImmutableList());
+    newRouteFilterList.setLines(newLines);
     return newRouteFilterList;
   }
 

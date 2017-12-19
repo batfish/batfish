@@ -1,5 +1,6 @@
 package org.batfish.representation.vyos;
 
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -318,11 +319,14 @@ public class VyosConfiguration extends VendorConfiguration {
   private RouteFilterList toRouteFilterList(PrefixList prefixList) {
     String name = prefixList.getName();
     RouteFilterList newList = new RouteFilterList(name);
-    for (PrefixListRule rule : prefixList.getRules().values()) {
-      RouteFilterLine newLine =
-          new RouteFilterLine(rule.getAction(), rule.getPrefix(), rule.getLengthRange());
-      newList.addLine(newLine);
-    }
+    List<RouteFilterLine> newLines =
+        prefixList
+            .getRules()
+            .values()
+            .stream()
+            .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
+            .collect(ImmutableList.toImmutableList());
+    newList.setLines(newLines);
     return newList;
   }
 
