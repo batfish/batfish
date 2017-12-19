@@ -24543,6 +24543,10 @@
             "          MAXIMUM:'maximum'  <== mode:DEFAULT_MODE",
             "          CLIENT:'client'  <== mode:DEFAULT_MODE",
             "          AUTO:'auto'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (pmp_null",
+            "          NO:'no'  <== mode:DEFAULT_MODE",
+            "          TCP_INSPECTION:'tcp-inspection'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_policy_map",
@@ -24852,6 +24856,21 @@
             "          SCTP:'sctp'  <== mode:DEFAULT_MODE",
             "          IPV6_ADDRESS:'0:02:00'  <== mode:DEFAULT_MODE",
             "          ICMP:'icmp'  <== mode:DEFAULT_MODE",
+            "          IPV6_ADDRESS:'0:00:02'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (null_inner",
+            "          TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "          HALF_CLOSED:'half-closed'  <== mode:DEFAULT_MODE",
+            "          IPV6_ADDRESS:'0:10:00'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (null_inner",
+            "          TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE",
+            "          IPV6_ADDRESS:'0:00:02'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (null_inner",
+            "          TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "          ICMP_ERROR:'icmp-error'  <== mode:DEFAULT_MODE",
             "          IPV6_ADDRESS:'0:00:02'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (null_inner",
@@ -25733,6 +25752,10 @@
             "        (ro_null",
             "          LOG_ADJACENCY_CHANGES:'log-adjacency-changes'  <== mode:DEFAULT_MODE",
             "          DETAIL:'detail'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (ro_common",
+            "        (ro_null",
+            "          LOG_ADJ_CHANGES:'log-adj-changes'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (ro_maximum_paths",
             "        MAXIMUM_PATHS:'maximum-paths'  <== mode:DEFAULT_MODE",
@@ -46589,7 +46612,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                31
+                32
               ]
             }
           }

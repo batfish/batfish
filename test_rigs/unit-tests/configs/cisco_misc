@@ -176,6 +176,7 @@ policy-map type inspect dns preset_dns_map
   id-randomization
   message-length maximum 512
   message-length maximum client auto
+  no tcp-inspection
 policy-map global_policy
  class inspection_default
   inspect dns preset_dns_map
@@ -234,6 +235,9 @@ time-range ACCTIME-247
 timeout xlate 3:00:00
 timeout pat-xlate 0:00:30
 timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 sctp 0:02:00 icmp 0:00:02
+timeout half-closed 0:10:00
+timeout icmp 0:00:02
+timeout icmp-error 0:00:02
 timeout sunrpc 0:10:00 h323 0:05:00 h225 1:00:00 mgcp 0:05:00 mgcp-pat 0:05:00
 timeout sip 0:30:00 sip_media 0:02:00 sip-invite 0:03:00 sip-disconnect 0:02:00
 timeout sip-provisional-media 0:02:00 uauth 0:05:00 absolute
