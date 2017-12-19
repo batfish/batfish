@@ -1,6 +1,9 @@
 package org.batfish.coordinator;
 
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -928,11 +931,10 @@ public class WorkQueueMgrTest {
   @Test
   public void testGetWorkForChecking() throws Exception {
     WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
-
     List<QueuedWork> workToCheck = workQueueMgr.getWorkForChecking();
 
     // Make sure getWorkForChecking() returns no elements when the incomplete work queue is empty
-    assertThat(workToCheck.size(), equalTo(0));
+    assertThat(workToCheck, empty());
 
     QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"));
     QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"));
@@ -941,17 +943,17 @@ public class WorkQueueMgrTest {
     workToCheck = workQueueMgr.getWorkForChecking();
 
     // Make sure unassigned items on the queue are not returned in getWorkForChecking()
-    assertThat(workToCheck.size(), equalTo(0));
+    assertThat(workToCheck, empty());
 
     work2.setStatus(WorkStatusCode.ASSIGNED);
     workToCheck = workQueueMgr.getWorkForChecking();
 
     // Make sure only one item is returned from getWorkForChecking() when there is only one assigned
     // item on the queue
-    assertThat(workToCheck.size(), equalTo(1));
+    assertThat(workToCheck, iterableWithSize(1));
 
-    // Make sure the correct item was returned
-    assertThat(workToCheck.get(0), equalTo(work2));
+    // Make sure the correct work item was returned
+    assertSame(workToCheck.get(0), work2);
 
     // When getWorkForChecking() is called, work2 should transition from ASSIGNED to CHECKINGSTATUS
     assertThat(work2.getStatus(), equalTo(WorkStatusCode.CHECKINGSTATUS));
@@ -960,14 +962,14 @@ public class WorkQueueMgrTest {
 
     // Since work2 status is CHECKINGSTATUS (and work1 is UNASSIGNED), nothing should show up in
     // getWorkForChecking()
-    assertThat(workToCheck.size(), equalTo(0));
+    assertThat(workToCheck, empty());
 
     work1.setStatus(WorkStatusCode.ASSIGNED);
     work2.setStatus(WorkStatusCode.ASSIGNED);
     workToCheck = workQueueMgr.getWorkForChecking();
 
     // With multiple assigned items now queued, getWorkForChecking() should return multiple items
-    assertThat(workToCheck.size(), equalTo(2));
+    assertThat(workToCheck, iterableWithSize(2));
   }
 
   @Test
