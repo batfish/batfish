@@ -3260,12 +3260,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
     String name = eaList.getName();
     RouteFilterList newList = new RouteFilterList(name);
-    List<RouteFilterLine> lines = new ArrayList<>();
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
       RouteFilterLine newLine = toRouteFilterLine(fromLine);
-      lines.add(newLine);
+      newList.addLine(newLine);
     }
-    newList.getLines().addAll(lines);
     return newList;
   }
 

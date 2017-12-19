@@ -1,8 +1,8 @@
 package org.batfish.representation.aws_vpcs;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +92,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
         lineMap.put(key, line);
       }
     }
-    List<IpAccessListLine> lines = new ArrayList<>(lineMap.values());
+    List<IpAccessListLine> lines = ImmutableList.copyOf(lineMap.values());
     IpAccessList list = new IpAccessList(listName, lines);
     return list;
   }
