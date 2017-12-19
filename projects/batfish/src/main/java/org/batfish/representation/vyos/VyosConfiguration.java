@@ -321,7 +321,7 @@ public class VyosConfiguration extends VendorConfiguration {
     for (PrefixListRule rule : prefixList.getRules().values()) {
       RouteFilterLine newLine =
           new RouteFilterLine(rule.getAction(), rule.getPrefix(), rule.getLengthRange());
-      newList.getLines().add(newLine);
+      newList.addLine(newLine);
     }
     return newList;
   }
