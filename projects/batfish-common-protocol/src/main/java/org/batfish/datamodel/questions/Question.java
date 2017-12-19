@@ -8,18 +8,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.questions.Question.InstanceData.Variable;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class Question implements IQuestion {
@@ -298,6 +310,121 @@ public abstract class Question implements IQuestion {
       return "";
     } else {
       return retString + ", ";
+    }
+  }
+
+  public static Question parseQuestion(Path questionPath, ClassLoader classLoader) {
+    String rawQuestionText = CommonUtil.readFile(questionPath);
+    String questionText = Question.preprocessQuestion(rawQuestionText);
+    try {
+      ObjectMapper mapper =
+          (classLoader == null) ? new BatfishObjectMapper() : new BatfishObjectMapper(classLoader);
+      Question question = mapper.readValue(questionText, Question.class);
+      return question;
+    } catch (IOException e) {
+      throw new BatfishException("Could not parse JSON question", e);
+    }
+  }
+
+  private static String preprocessQuestion(String rawQuestionText) {
+    try {
+      JSONObject jobj = new JSONObject(rawQuestionText);
+      if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
+        String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        InstanceData instanceData =
+            mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
+        for (Entry<String, Variable> e : instanceData.getVariables().entrySet()) {
+          String varName = e.getKey();
+          Variable variable = e.getValue();
+          JsonNode value = variable.getValue();
+          if (value == null) {
+            if (variable.getOptional()) {
+              /*
+               * Recursively look for all key, value pairs and remove keys
+               * whose value is "${varName}." Is this fragile?
+               * To be doubly sure, we do only for keys whole parent object is a questions, which
+               * we judge by it having a key "class" whose value starts with "org.batfish.question"
+               */
+              recursivelyRemoveOptionalVar(jobj, varName);
+            } else {
+              // What to do here? For now, do nothing and assume that
+              // later validation will handle it.
+            }
+            continue;
+          }
+          if (variable.getType() == Variable.Type.QUESTION) {
+            if (variable.getMinElements() != null) {
+              if (!value.isArray()) {
+                throw new IllegalArgumentException("Expecting JSON array for array type");
+              }
+              JSONArray arr = new JSONArray();
+              for (int i = 0; i < value.size(); i++) {
+                String valueJsonString = new ObjectMapper().writeValueAsString(value.get(i));
+                arr.put(i, new JSONObject(preprocessQuestion(valueJsonString)));
+              }
+              jobj.put(varName, arr);
+            } else {
+              String valueJsonString = new ObjectMapper().writeValueAsString(value);
+              jobj.put(varName, new JSONObject(preprocessQuestion(valueJsonString)));
+            }
+          }
+        }
+        String questionText = jobj.toString();
+        for (Entry<String, Variable> e : instanceData.getVariables().entrySet()) {
+          String varName = e.getKey();
+          Variable variable = e.getValue();
+          JsonNode value = variable.getValue();
+          String valueJsonString = new ObjectMapper().writeValueAsString(value);
+          boolean stringType = variable.getType().getStringType();
+          boolean setType = variable.getMinElements() != null;
+          if (value != null) {
+            String topLevelVarNameRegex = Pattern.quote("\"${" + varName + "}\"");
+            String inlineVarNameRegex = Pattern.quote("${" + varName + "}");
+            String topLevelReplacement = valueJsonString;
+            String inlineReplacement;
+            if (stringType && !setType) {
+              inlineReplacement = valueJsonString.substring(1, valueJsonString.length() - 1);
+            } else {
+              String quotedValueJsonString = JSONObject.quote(valueJsonString);
+              inlineReplacement =
+                  quotedValueJsonString.substring(1, quotedValueJsonString.length() - 1);
+            }
+            String inlineReplacementRegex = Matcher.quoteReplacement(inlineReplacement);
+            String topLevelReplacementRegex = Matcher.quoteReplacement(topLevelReplacement);
+            questionText = questionText.replaceAll(topLevelVarNameRegex, topLevelReplacementRegex);
+            questionText = questionText.replaceAll(inlineVarNameRegex, inlineReplacementRegex);
+          }
+        }
+        return questionText;
+      }
+      return rawQuestionText;
+    } catch (JSONException | IOException e) {
+      throw new BatfishException(
+          String.format("Could not convert raw question text [%s] to JSON", rawQuestionText), e);
+    }
+  }
+
+  private static void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
+      throws JSONException {
+    Iterator<?> iter = questionObject.keys();
+    while (iter.hasNext()) {
+      String key = (String) iter.next();
+      Object value = questionObject.get(key);
+      if (value instanceof String) {
+        if (value.equals("${" + varName + "}")) {
+          iter.remove();
+        }
+      } else if (value instanceof JSONObject) {
+        JSONObject childObject = (JSONObject) value;
+        if (childObject.has("class")) {
+          Object classValue = childObject.get("class");
+          if (classValue instanceof String
+              && ((String) classValue).startsWith("org.batfish.question")) {
+            recursivelyRemoveOptionalVar(childObject, varName);
+          }
+        }
+      }
     }
   }
 

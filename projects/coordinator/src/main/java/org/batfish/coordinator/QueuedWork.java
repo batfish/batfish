@@ -16,15 +16,18 @@ public class QueuedWork {
   Date _dateLastTaskCheckedStatus;
   Date _dateTerminated;
 
+  WorkDetails _details;
+
   Task _lastTaskCheckResult;
   WorkStatusCode _status;
 
   WorkItem _workItem;
 
-  public QueuedWork(WorkItem workItem) {
+  public QueuedWork(WorkItem workItem, WorkDetails details) {
     _workItem = workItem;
     _status = WorkStatusCode.UNASSIGNED;
     _dateCreated = new Date();
+    _details = details;
   }
 
   public void clearAssignment() {
@@ -37,6 +40,10 @@ public class QueuedWork {
 
   public String getAssignedWorker() {
     return _assignedWorker;
+  }
+
+  public WorkDetails getDetails() {
+    return _details;
   }
 
   public UUID getId() {
