@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.base.Strings;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -104,7 +105,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             _batfish.popEnvironment();
           }
           String hostname = flowBuilder.getIngressNode();
-          Configuration node = (hostname == null) ? null : configurations.get(hostname);
+          Configuration node =
+              Strings.isNullOrEmpty(hostname) ? null : configurations.get(hostname);
           if (node != null) {
             Set<Ip> ips =
                 new TreeSet<>(
