@@ -199,9 +199,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         Configuration node = configurations.get(hostname);
         Map<String, T> structureMap = structureMapRetriever.apply(node);
         for (String structName : allNames) {
-          if (structName.startsWith("~")) {
-            continue;
-          }
           T struct = structureMap.get(structName);
           if (struct != null || _missing) {
             builder.addEntry(structName, hostname, struct);

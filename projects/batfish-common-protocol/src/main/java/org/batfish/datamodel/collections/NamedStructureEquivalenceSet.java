@@ -26,9 +26,9 @@ public class NamedStructureEquivalenceSet<T>
     _nodes = ImmutableSortedSet.of(node);
   }
 
-  public NamedStructureEquivalenceSet(T namedStructure, SortedSet<String> nodes) {
+  public NamedStructureEquivalenceSet(Iterable<String> nodes, T namedStructure) {
     _namedStructure = namedStructure;
-    _nodes = nodes;
+    _nodes = ImmutableSortedSet.copyOf(nodes);
   }
 
   public boolean compareStructure(T s) {
@@ -60,15 +60,7 @@ public class NamedStructureEquivalenceSet<T>
   }
 
   public String prettyPrint(String indent) {
-    String representativeElement = getRepresentativeElement();
-    StringBuilder sb = new StringBuilder(indent + representativeElement);
-    for (String node : _nodes) {
-      if (!node.equals(representativeElement)) {
-        sb.append(" " + node);
-      }
-    }
-    sb.append("\n");
-    return sb.toString();
+    return String.format("%s%s\n", indent, String.join(" ", _nodes));
   }
 
   public void setNamedStructure(T namedStructure) {
@@ -80,7 +72,9 @@ public class NamedStructureEquivalenceSet<T>
   }
 
   @JsonProperty(PROP_REPRESENTATIVE_ELEMENT)
-  private void setRepresentativeElement(String representativeElement) {}
+  private void setRepresentativeElement(String representativeElement) {
+    // No body because this is a virtual property computed from nodes
+  }
 
   @Override
   public String toString() {
