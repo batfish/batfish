@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
+import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -20,7 +22,7 @@ public final class FwFromSourceAddress extends FwFrom {
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
     IpWildcard wildcard = new IpWildcard(_prefix);
-    line.getSrcIps().add(wildcard);
+    line.setSrcIps(Iterables.concat(line.getSrcIps(), Collections.singleton(wildcard)));
   }
 
   public Prefix getPrefix() {

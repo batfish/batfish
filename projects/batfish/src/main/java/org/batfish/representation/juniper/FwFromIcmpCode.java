@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
+import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -18,6 +20,6 @@ public class FwFromIcmpCode extends FwFrom {
 
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    line.getIcmpCodes().add(_icmpCodeRange);
+    line.setIcmpCodes(Iterables.concat(line.getIcmpCodes(), Collections.singleton(_icmpCodeRange)));
   }
 }

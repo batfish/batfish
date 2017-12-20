@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -24,9 +25,12 @@ public class BaseApplication extends ComparableStructure<String> implements Appl
     }
 
     public void applyTo(IpAccessListLine destinationLine) {
-      destinationLine.getIpProtocols().addAll(_line.getIpProtocols());
-      destinationLine.getDstPorts().addAll(_line.getDstPorts());
-      destinationLine.getSrcPorts().addAll(_line.getSrcPorts());
+      destinationLine.setIpProtocols(
+          Iterables.concat(destinationLine.getIpProtocols(), _line.getIpProtocols()));
+      destinationLine.setDstPorts(
+          Iterables.concat(destinationLine.getDstPorts(), _line.getDstPorts()));
+      destinationLine.setSrcPorts(
+          Iterables.concat(destinationLine.getSrcPorts(), _line.getSrcPorts()));
     }
 
     public IpAccessListLine getLine() {
@@ -59,8 +63,8 @@ public class BaseApplication extends ComparableStructure<String> implements Appl
     }
     for (Term term : terms) {
       IpAccessListLine newLine = new IpAccessListLine();
-      newLine.getDstIps().addAll(srcLine.getDstIps());
-      newLine.getSrcIps().addAll(srcLine.getSrcIps());
+      newLine.setDstIps(srcLine.getDstIps());
+      newLine.setSrcIps(srcLine.getSrcIps());
       newLine.setAction(srcLine.getAction());
       term.applyTo(newLine);
       lines.add(newLine);
