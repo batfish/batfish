@@ -930,23 +930,22 @@ public class WorkQueueMgrTest {
 
   @Test
   public void testGetWorkForChecking() throws Exception {
-    WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
-    List<QueuedWork> workToCheck = workQueueMgr.getWorkForChecking();
+    List<QueuedWork> workToCheck = _workQueueMgr.getWorkForChecking();
 
     // Make sure getWorkForChecking() returns no elements when the incomplete work queue is empty
     assertThat(workToCheck, empty());
 
-    QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"));
-    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"));
-    workQueueMgr.queueUnassignedWork(work1);
-    workQueueMgr.queueUnassignedWork(work2);
-    workToCheck = workQueueMgr.getWorkForChecking();
+    QueuedWork work1 = new QueuedWork(new WorkItem(CONTAINER, "testrig"), new WorkDetails());
+    QueuedWork work2 = new QueuedWork(new WorkItem(CONTAINER, "testrig"), new WorkDetails());
+    _workQueueMgr.queueUnassignedWork(work1);
+    _workQueueMgr.queueUnassignedWork(work2);
+    workToCheck = _workQueueMgr.getWorkForChecking();
 
     // Make sure unassigned items on the queue are not returned in getWorkForChecking()
     assertThat(workToCheck, empty());
 
     work2.setStatus(WorkStatusCode.ASSIGNED);
-    workToCheck = workQueueMgr.getWorkForChecking();
+    workToCheck = _workQueueMgr.getWorkForChecking();
 
     // Make sure only one item is returned from getWorkForChecking() when there is only one assigned
     // item on the queue
@@ -958,7 +957,7 @@ public class WorkQueueMgrTest {
     // When getWorkForChecking() is called, work2 should transition from ASSIGNED to CHECKINGSTATUS
     assertThat(work2.getStatus(), equalTo(WorkStatusCode.CHECKINGSTATUS));
 
-    workToCheck = workQueueMgr.getWorkForChecking();
+    workToCheck = _workQueueMgr.getWorkForChecking();
 
     // Since work2 status is CHECKINGSTATUS (and work1 is UNASSIGNED), nothing should show up in
     // getWorkForChecking()
@@ -966,21 +965,10 @@ public class WorkQueueMgrTest {
 
     work1.setStatus(WorkStatusCode.ASSIGNED);
     work2.setStatus(WorkStatusCode.ASSIGNED);
-    workToCheck = workQueueMgr.getWorkForChecking();
+    workToCheck = _workQueueMgr.getWorkForChecking();
 
     // With multiple assigned items now queued, getWorkForChecking() should return multiple items
     assertThat(workToCheck, iterableWithSize(2));
-  }
-
-  @Test
-  public void queueUnassignedWork() throws Exception {
-    WorkQueueMgr workQueueMgr = new WorkQueueMgr(Type.memory);
-    QueuedWork work1 = new QueuedWork(new WorkItem("container", "testrig"));
-    workQueueMgr.queueUnassignedWork(work1);
-    assertThat(workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
-    QueuedWork work2 = new QueuedWork(new WorkItem("container", "testrig"));
-    workQueueMgr.queueUnassignedWork(work2);
-    assertThat(workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(2L));
   }
 
   @Test
