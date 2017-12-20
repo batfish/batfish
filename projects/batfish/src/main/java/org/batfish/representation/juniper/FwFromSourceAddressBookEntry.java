@@ -1,6 +1,9 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -24,9 +27,8 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
     Set<Prefix> prefixes = _localAddressBook.getPrefixes(_addressBookEntryName, w);
-    for (Prefix prefix : prefixes) {
-      IpWildcard wildcard = new IpWildcard(prefix);
-      line.getSrcIps().add(wildcard);
-    }
+    List<IpWildcard> wildcards =
+        prefixes.stream().map(IpWildcard::new).collect(Collectors.toList());
+    line.setSrcIps(Iterables.concat(line.getSrcIps(), wildcards));
   }
 }

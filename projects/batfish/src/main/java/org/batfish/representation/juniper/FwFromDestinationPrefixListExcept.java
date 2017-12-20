@@ -1,12 +1,11 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.BatfishException;
+import com.google.common.collect.Iterables;
+import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 
 public final class FwFromDestinationPrefixListExcept extends FwFrom {
@@ -29,13 +28,8 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
         return;
       }
       RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(_name);
-      for (RouteFilterLine rfLine : destinationPrefixList.getLines()) {
-        if (rfLine.getAction() != LineAction.ACCEPT) {
-          throw new BatfishException("Expected accept action for routerfilterlist from juniper");
-        } else {
-          line.getNotDstIps().add(new IpWildcard(rfLine.getPrefix()));
-        }
-      }
+      List<IpWildcard> wildcards = destinationPrefixList.getMatchingIps();
+      line.setNotDstIps(Iterables.concat(line.getNotDstIps(), wildcards));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }

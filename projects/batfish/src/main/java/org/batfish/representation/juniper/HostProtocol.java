@@ -1,6 +1,8 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpAccessListLine;
@@ -61,10 +63,10 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts()
-              .add(new SubRange(NamedPort.BFD_CONTROL.number(), NamedPort.BFD_ECHO.number()));
+          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.BFD_CONTROL.number(), NamedPort.BFD_ECHO.number())));
           break;
         }
 
@@ -72,8 +74,9 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts().add(new SubRange(NamedPort.BGP.number(), NamedPort.BGP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.BGP.number(), NamedPort.BGP.number())));
           break;
         }
 
@@ -83,7 +86,7 @@ public enum HostProtocol {
           // for IGMP types in packet headers
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.IGMP);
+          line.setIpProtocols(Collections.singleton(IpProtocol.IGMP));
           break;
         }
 
@@ -91,7 +94,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.IGMP);
+          line.setIpProtocols(Collections.singleton(IpProtocol.IGMP));
           break;
         }
 
@@ -99,9 +102,9 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.LDP.number(), NamedPort.LDP.number()));
+          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.LDP.number(), NamedPort.LDP.number())));
           break;
         }
 
@@ -109,8 +112,10 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.TCP);
-          line.getDstPorts().add(new SubRange(NamedPort.MSDP.number(), NamedPort.MSDP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          line.setDstPorts(
+              Collections.singleton(
+                  new SubRange(NamedPort.MSDP.number(), NamedPort.MSDP.number())));
           break;
         }
 
@@ -118,7 +123,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.NARP);
+          line.setIpProtocols(Collections.singleton(IpProtocol.NARP));
           break;
         }
 
@@ -126,7 +131,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.OSPF);
+          line.setIpProtocols(Collections.singleton(IpProtocol.OSPF));
           break;
         }
 
@@ -140,7 +145,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.PGM);
+          line.setIpProtocols(Collections.singleton(IpProtocol.PGM));
           break;
         }
 
@@ -148,7 +153,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.PIM);
+          line.setIpProtocols(Collections.singleton(IpProtocol.PIM));
           break;
         }
 
@@ -156,8 +161,9 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.RIP.number(), NamedPort.RIP.number()));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.RIP.number(), NamedPort.RIP.number())));
           break;
         }
 
@@ -174,7 +180,7 @@ public enum HostProtocol {
           // for ICMP types in packet headers
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.ICMP);
+          line.setIpProtocols(Collections.singleton(IpProtocol.ICMP));
           break;
         }
 
@@ -182,8 +188,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.RSVP);
-          line.getIpProtocols().add(IpProtocol.RSVP_E2E_IGNORE);
+          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.RSVP, IpProtocol.RSVP_E2E_IGNORE));
           break;
         }
 
@@ -191,9 +196,10 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.UDP);
-          line.getDstPorts().add(new SubRange(NamedPort.SAP.number(), NamedPort.SAP.number()));
-          line.getDstIps().add(new IpWildcard(new Prefix("224.2.127.285/32")));
+          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          line.setDstPorts(
+              Collections.singleton(new SubRange(NamedPort.SAP.number(), NamedPort.SAP.number())));
+          line.setDstIps(Collections.singleton(new IpWildcard(new Prefix("224.2.127.285/32"))));
           break;
         }
 
@@ -201,7 +207,7 @@ public enum HostProtocol {
         {
           IpAccessListLine line = new IpAccessListLine();
           _lines.add(line);
-          line.getIpProtocols().add(IpProtocol.VRRP);
+          line.setIpProtocols(Collections.singleton(IpProtocol.VRRP));
           break;
         }
 

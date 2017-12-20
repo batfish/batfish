@@ -1,16 +1,19 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 
 @JsonSchemaDescription("An access-list used to filter IPV4 routes")
@@ -29,11 +32,11 @@ public class RouteFilterList extends ComparableStructure<String> {
   @JsonCreator
   public RouteFilterList(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _lines = new ArrayList<>();
+    _lines = Collections.emptyList();
   }
 
   public void addLine(RouteFilterLine r) {
-    _lines.add(r);
+    _lines = ImmutableList.<RouteFilterLine>builder().addAll(_lines).add(r).build();
   }
 
   @Override
@@ -86,6 +89,28 @@ public class RouteFilterList extends ComparableStructure<String> {
       return true;
     }
     return newPermits(prefix);
+  }
+
+  /**
+   * Returns the set of {@link IpWildcard ips} that match this filter list.
+   *
+   * @throws BatfishException if any line in this {@link RouteFilterList} does not have an {@link
+   *     LineAction#ACCEPT} when matching.
+   */
+  @JsonIgnore
+  public List<IpWildcard> getMatchingIps() {
+    return getLines()
+        .stream()
+        .map(
+            rfLine -> {
+              if (rfLine.getAction() != LineAction.ACCEPT) {
+                throw new BatfishException(
+                    "Expected accept action for routerfilterlist from juniper");
+              } else {
+                return new IpWildcard(rfLine.getPrefix());
+              }
+            })
+        .collect(Collectors.toList());
   }
 
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {

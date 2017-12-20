@@ -1,7 +1,9 @@
 package org.batfish.representation.iptables;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,9 +18,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.SubRange;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
@@ -168,7 +168,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   private IpAccessList toIpAccessList(String aclName, IptablesChain chain, VendorConfiguration vc) {
-    IpAccessList acl = new IpAccessList(aclName, new LinkedList<>());
+    ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
 
     for (IptablesRule rule : chain.getRules()) {
       IpAccessListLine aclLine = new IpAccessListLine();
@@ -178,12 +178,11 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
         switch (match.getMatchType()) {
           case DESTINATION:
-            IpWildcard dstWildCard = match.toIpWildcard();
-            aclLine.getDstIps().add(dstWildCard);
+            aclLine.setDstIps(
+                Iterables.concat(aclLine.getDstIps(), Collections.singleton(match.toIpWildcard())));
             break;
           case DESTINATION_PORT:
-            List<SubRange> dstPortRanges = match.toPortRanges();
-            aclLine.getDstPorts().addAll(dstPortRanges);
+            aclLine.setDstPorts(Iterables.concat(aclLine.getDstPorts(), match.toPortRanges()));
             break;
           case IN_INTERFACE:
             _lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
@@ -194,15 +193,16 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             anyInterface = false;
             break;
           case PROTOCOL:
-            aclLine.getIpProtocols().add(match.toIpProtocol());
+            aclLine.setIpProtocols(
+                Iterables.concat(
+                    aclLine.getIpProtocols(), Collections.singleton(match.toIpProtocol())));
             break;
           case SOURCE:
-            IpWildcard srcWildCard = match.toIpWildcard();
-            aclLine.getSrcIps().add(srcWildCard);
+            aclLine.setSrcIps(
+                Iterables.concat(aclLine.getSrcIps(), Collections.singleton(match.toIpWildcard())));
             break;
           case SOURCE_PORT:
-            List<SubRange> srcPortRanges = match.toPortRanges();
-            aclLine.getSrcPorts().addAll(srcPortRanges);
+            aclLine.setSrcPorts(Iterables.concat(aclLine.getSrcPorts(), match.toPortRanges()));
             break;
           default:
             throw new BatfishException("Unknown match type: " + match.getMatchType());
@@ -216,7 +216,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
       aclLine.setName(rule.getName());
       aclLine.setAction(rule.getIpAccessListLineAction());
-      acl.getLines().add(aclLine);
+      lines.add(aclLine);
     }
 
     // add a final line corresponding to default chain policy
@@ -224,8 +224,9 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     IpAccessListLine defaultLine = new IpAccessListLine();
     defaultLine.setAction(chainAction);
     defaultLine.setName("default");
-    acl.getLines().add(defaultLine);
+    lines.add(defaultLine);
 
+    IpAccessList acl = new IpAccessList(aclName, lines.build());
     return acl;
   }
 

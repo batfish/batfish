@@ -1,6 +1,8 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2114,13 +2116,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
+
+    // All prefixes is the combination of the interface prefix + any secondary prefixes.
+    ImmutableSet.Builder<Prefix> allPrefixes = ImmutableSet.builder();
     if (iface.getPrefix() != null) {
       newIface.setPrefix(iface.getPrefix());
-      newIface.getAllPrefixes().add(iface.getPrefix());
+      allPrefixes.add(iface.getPrefix());
     }
-    newIface.getAllPrefixes().addAll(iface.getSecondaryPrefixes());
-    Long ospfAreaLong = iface.getOspfArea();
+    allPrefixes.addAll(iface.getSecondaryPrefixes());
+    newIface.setAllPrefixes(allPrefixes.build());
 
+    Long ospfAreaLong = iface.getOspfArea();
     if (ospfAreaLong != null) {
       OspfProcess proc = vrf.getOspfProcess();
       if (proc != null) {
@@ -2320,35 +2326,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newLine.setAction(fromLine.getAction());
       IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
       if (srcIpWildcard != null) {
-        newLine.getSrcIps().add(srcIpWildcard);
+        newLine.setSrcIps(ImmutableSortedSet.of(srcIpWildcard));
       }
       IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
       if (dstIpWildcard != null) {
-        newLine.getDstIps().add(dstIpWildcard);
+        newLine.setDstIps(ImmutableSortedSet.of(dstIpWildcard));
       }
       // TODO: src/dst address group
       IpProtocol protocol = fromLine.getProtocol();
       if (protocol != IpProtocol.IP) {
-        newLine.getIpProtocols().add(protocol);
+        newLine.setIpProtocols(ImmutableSortedSet.of(protocol));
       }
-      newLine.getDstPorts().addAll(fromLine.getDstPorts());
-      newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
+      newLine.setDstPorts(fromLine.getDstPorts());
+      newLine.setSrcPorts(fromLine.getSrcPorts());
       Integer icmpType = fromLine.getIcmpType();
       if (icmpType != null) {
-        newLine.setIcmpTypes(new TreeSet<>(Collections.singleton(new SubRange(icmpType))));
+        newLine.setIcmpTypes(ImmutableSortedSet.of(new SubRange(icmpType)));
       }
       Integer icmpCode = fromLine.getIcmpCode();
       if (icmpCode != null) {
-        newLine.setIcmpCodes(new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
+        newLine.setIcmpCodes(ImmutableSortedSet.of(new SubRange(icmpCode)));
       }
       Set<State> states = fromLine.getStates();
-      newLine.getStates().addAll(states);
+      newLine.setStates(states);
       List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
-      newLine.getTcpFlags().addAll(tcpFlags);
+      newLine.setTcpFlags(tcpFlags);
       Set<Integer> dscps = fromLine.getDscps();
-      newLine.getDscps().addAll(dscps);
+      newLine.setDscps(dscps);
       Set<Integer> ecns = fromLine.getEcns();
-      newLine.getEcns().addAll(ecns);
+      newLine.setEcns(ecns);
       lines.add(newLine);
     }
     return new IpAccessList(name, lines);
@@ -3254,25 +3260,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
     String name = eaList.getName();
     RouteFilterList newList = new RouteFilterList(name);
-    List<RouteFilterLine> lines = new ArrayList<>();
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
       RouteFilterLine newLine = toRouteFilterLine(fromLine);
-      lines.add(newLine);
+      newList.addLine(newLine);
     }
-    newList.getLines().addAll(lines);
     return newList;
   }
 
   private RouteFilterList toRouteFilterList(PrefixList list) {
     RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
-    for (PrefixListLine prefixListLine : list.getLines()) {
-      RouteFilterLine newRouteFilterListLine =
-          new RouteFilterLine(
-              prefixListLine.getAction(),
-              prefixListLine.getPrefix(),
-              prefixListLine.getLengthRange());
-      newRouteFilterList.addLine(newRouteFilterListLine);
-    }
+    List<RouteFilterLine> newLines =
+        list.getLines()
+            .stream()
+            .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
+            .collect(ImmutableList.toImmutableList());
+    newRouteFilterList.setLines(newLines);
     return newRouteFilterList;
   }
 
