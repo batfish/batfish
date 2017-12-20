@@ -1130,6 +1130,19 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
+      try {
+        if (TestrigMetadataMgr.getEnvironmentMetadata(
+                    workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
+                == null
+            || (workDetails.isDifferential
+                && TestrigMetadataMgr.getEnvironmentMetadata(
+                        workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
+                    == null)) {
+          throw new BatfishException("Environment metadata not found");
+        }
+      } catch (Exception e) {
+        throw new BatfishException("Testrig/environment metadata not found.");
+      }
       success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
