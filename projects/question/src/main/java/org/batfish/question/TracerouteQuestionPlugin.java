@@ -105,7 +105,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
             _batfish.popEnvironment();
           }
           String hostname = flowBuilder.getIngressNode();
-          Configuration node = Strings.isNullOrEmpty(hostname) ? null : configurations.get(hostname);
+          Configuration node =
+              Strings.isNullOrEmpty(hostname) ? null : configurations.get(hostname);
           if (node != null) {
             Set<Ip> ips =
                 new TreeSet<>(
