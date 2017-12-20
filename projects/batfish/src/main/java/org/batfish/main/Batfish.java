@@ -103,6 +103,7 @@ import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerInfo;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -132,7 +133,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -507,30 +507,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
             long beforeTime = System.currentTimeMillis();
             Answer currentAnswer = answer();
             double timeTakenInSeconds = _logger.getElapsedTime(beforeTime);
-            if (currentAnswer.getStatus().equals(AnswerStatus.SUCCESS)) {
-              _logger.info(
-                  String.format(
-                      "Question %s in analysis %s needs data-plane: %s\n",
-                      questionName, analysisName, currentAnswer.getQuestion().getDataPlane()));
-              _logger.info(
-                  String.format(
-                      "Question %s in analysis %s took %.2f seconds\n",
-                      questionName, analysisName, timeTakenInSeconds));
-              SortedMap<String, Variable> variables =
-                  currentAnswer.getQuestion().getInstance().getVariables();
-              if (!variables.isEmpty()) {
+            // Ensuring that question was parsed successfully
+            if (currentAnswer.getQuestion() != null) {
+              try {
                 BatfishObjectMapper mapper = new BatfishObjectMapper(false);
-                try {
-                  _logger.info(
-                      String.format(
-                          "Parameters used in question %s in analysis %s: %s\n",
-                          questionName, analysisName, mapper.writeValueAsString(variables)));
-                } catch (JsonProcessingException e) {
-                  throw new BatfishException(
-                      String.format(
-                          "Error logging variables of question %s in analysis %s",
-                          questionName, analysisName));
-                }
+                AnswerInfo answerInfo = new AnswerInfo(currentAnswer);
+                answerInfo.setExecutionTime(timeTakenInSeconds);
+                _logger.info(
+                    String.format(
+                        "Ran question %s from analysis %s: %s\n",
+                        questionName, analysisName, mapper.writeValueAsString(answerInfo)));
+              } catch (JsonProcessingException e) {
+                throw new BatfishException(
+                    String.format(
+                        "Error logging question %s in analysis %s", questionName, analysisName),
+                    e);
               }
             }
             initAnalysisQuestionPath(analysisName, questionName);
