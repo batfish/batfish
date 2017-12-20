@@ -606,7 +606,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           || aclName.contains("~INBOUND_ZONE_FILTER~")) {
         continue;
       }
-      SortedSet<?> s = (SortedSet<?>) e.getValue();
+      Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
         String hostname = aclEqSet.getRepresentativeElement();
