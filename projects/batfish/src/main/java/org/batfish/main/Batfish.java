@@ -515,11 +515,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void anonymizeConfigurations() {
-    // TODO Auto-generated method stub
-
-  }
-
   public Answer answer() {
     Question question = null;
 
@@ -3660,11 +3655,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // return answer;
     // }
     //
-    if (_settings.getAnonymize()) {
-      anonymizeConfigurations();
-      return answer;
-    }
-
     // if (_settings.getRoleTransitQuery()) {
     // genRoleTransitQueries();
     // return answer;
