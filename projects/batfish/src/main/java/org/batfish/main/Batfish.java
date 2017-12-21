@@ -964,7 +964,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
-  private Topology getEnvironmentTopology(Map<String, Configuration> configurations) {
+  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
@@ -3736,7 +3736,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void serializeAsJson(Path outputPath, Object object, String objectName) {
+  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
     try {
       new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
     } catch (IOException e) {
@@ -3931,7 +3931,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     veae.setValid(true);
     veae.setVersion(Version.getVersion());
     updateBlacklistedAndInactiveConfigs(configurations, veae);
-    Topology envTopology = getEnvironmentTopology(configurations);
+    Topology envTopology = computeEnvironmentTopology(configurations);
     serializeAsJson(
         _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
@@ -4294,7 +4294,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
     answer.addAnswerElement(ae);
-    Topology envTopology = getEnvironmentTopology(loadConfigurations());
+    Topology envTopology = computeEnvironmentTopology(loadConfigurations());
     serializeAsJson(
         _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
