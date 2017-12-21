@@ -3924,9 +3924,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
-    serializeAsJson(
-        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
 
@@ -3939,6 +3936,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
         "environment topology");
+
+    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
+    serializeAsJson(
+        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
 
     return answer;
   }
