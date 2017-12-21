@@ -65,10 +65,12 @@ public class BatfishTestUtils {
         new Batfish(
             settings, testrigs, makeDataPlaneCache(), makeEnvBgpCache(), makeEnvRouteCache());
     batfish.setMonotonicCache(true);
-    Batfish.serializeAsJson(
-        settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
-        batfish.computeEnvironmentTopology(configurations),
-        "environment topology");
+    if (!configurations.isEmpty()) {
+      Batfish.serializeAsJson(
+          settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          batfish.computeEnvironmentTopology(configurations),
+          "environment topology");
+    }
     return batfish;
   }
 
