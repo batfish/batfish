@@ -964,8 +964,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
-  @Override
-  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
+  private Topology getEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
@@ -1655,6 +1654,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
+  }
+
+  @Override
+  public Topology getEnvironmentTopology() {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.readValue(
+          CommonUtil.readFile(
+              _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath()),
+          Topology.class);
+    } catch (IOException e) {
+      throw new BatfishException("Could not getEnvironmentTopology: ", e);
+    }
   }
 
   @Override
@@ -2898,12 +2910,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseEnvironment();
     Map<String, Configuration> baseConfigurations = loadConfigurations();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
+    Topology baseTopology = getEnvironmentTopology();
     popEnvironment();
 
     // load diff configurations and generate diff data plane
     pushDeltaEnvironment();
     Map<String, Configuration> diffConfigurations = loadConfigurations();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
+    Topology diffTopology = getEnvironmentTopology();
     popEnvironment();
 
     pushDeltaEnvironment();
@@ -2925,7 +2939,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    Topology diffTopology = computeEnvironmentTopology(diffConfigurations);
     SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -2953,7 +2966,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    Topology baseTopology = computeEnvironmentTopology(baseConfigurations);
     SortedSet<Edge> baseEdges = baseTopology.getEdges();
     SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
@@ -3922,7 +3934,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     veae.setValid(true);
     veae.setVersion(Version.getVersion());
     updateBlacklistedAndInactiveConfigs(configurations, veae);
-    Topology envTopology = computeEnvironmentTopology(configurations);
+    Topology envTopology = getEnvironmentTopology(configurations);
     serializeAsJson(
         _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
@@ -4281,6 +4293,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
     answer.addAnswerElement(ae);
+    Topology envTopology = getEnvironmentTopology(loadConfigurations());
+    serializeAsJson(
+        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
+        envTopology,
+        "environment topology");
     return answer;
   }
 

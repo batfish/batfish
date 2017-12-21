@@ -278,7 +278,7 @@ public class Graph {
    * create the opposite edge mapping.
    */
   private void initGraph() {
-    Topology topology = _batfish.computeEnvironmentTopology(_configurations);
+    Topology topology = _batfish.getEnvironmentTopology();
     Map<NodeInterfacePair, Interface> ifaceMap = new HashMap<>();
     Map<String, Set<NodeInterfacePair>> routerIfaceMap = new HashMap<>();
 

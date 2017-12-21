@@ -132,7 +132,8 @@ public class WorkItemBuilder {
 
   public static boolean isParsingWorkItem(WorkItem workItem) {
     return (workItem.getRequestParams().containsKey(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC)
-        || workItem.getRequestParams().containsKey(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT));
+        || workItem.getRequestParams().containsKey(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT)
+        || workItem.getRequestParams().containsKey(BfConsts.COMMAND_VALIDATE_ENVIRONMENT));
   }
 
   public static Pair<Pair<String, String>, Pair<String, String>> getBaseAndDeltaSettings(
