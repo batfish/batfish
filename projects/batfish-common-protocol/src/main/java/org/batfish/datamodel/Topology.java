@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -62,6 +63,31 @@ public class Topology implements Serializable {
   @JsonIgnore
   public Map<String, SortedSet<Edge>> getNodeEdges() {
     return _nodeEdges;
+  }
+
+  /**
+   * Computes a new topology with specified blacklists removed. This function destroys the input
+   * topology object.
+   */
+  public Topology pruneTopology(
+      Set<Edge> blacklistEdges,
+      Set<String> blacklistNodes,
+      Set<NodeInterfacePair> blacklistInterfaces) {
+    if (blacklistEdges != null) {
+      SortedSet<Edge> edges = getEdges();
+      edges.removeAll(blacklistEdges);
+    }
+    if (blacklistNodes != null) {
+      for (String blacklistNode : blacklistNodes) {
+        removeNode(blacklistNode);
+      }
+    }
+    if (blacklistInterfaces != null) {
+      for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
+        removeInterface(blacklistInterface);
+      }
+    }
+    return new Topology(getEdges());
   }
 
   public void removeEdge(Edge edge) {

@@ -1602,18 +1602,10 @@ public class Client extends AbstractClient implements IClient {
     _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     _logger.output("\n");
 
-    WorkItem wItemGenDdp =
-        WorkItemBuilder.getWorkItemCompileDeltaEnvironment(
-            _currContainerName, _currDeltaTestrig, _currEnv, _currDeltaEnv);
-    if (!execute(wItemGenDdp, outWriter)) {
-      return false;
-    }
-
-    WorkItem wItemValidateEnvironment =
-        WorkItemBuilder.getWorkItemValidateEnvironment(
+    WorkItem wItemProcessEnv =
+        WorkItemBuilder.getWorkItemProcessEnvironment(
             _currContainerName, _currDeltaTestrig, _currDeltaEnv);
-
-    if (!execute(wItemValidateEnvironment, outWriter)) {
+    if (!execute(wItemProcessEnv, outWriter)) {
       return false;
     }
 

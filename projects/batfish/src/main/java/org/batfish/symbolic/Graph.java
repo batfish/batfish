@@ -129,6 +129,8 @@ public class Graph {
     }
     _routers = _configurations.keySet();
 
+    Topology topology = _batfish.getEnvironmentTopology();
+
     // Remove the routers we don't want to model
     if (routers != null) {
       List<String> toRemove = new ArrayList<>();
@@ -140,9 +142,15 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
+      topology = topology.pruneTopology(null, routers, null);
     }
 
-    initGraph();
+    // unexpectedly, refs change if we don't compute topology from scratch.
+    // ratul will fix after consulting with ryan.
+    // once fixed, remove this statement and remove computeEnvironmentTopology from IBatfish
+    topology = _batfish.computeEnvironmentTopology(_configurations);
+
+    initGraph(topology);
     initOspfCosts();
     initStaticRoutes();
     addNullRouteEdges();
@@ -277,8 +285,7 @@ public class Graph {
    * Initialize the topology by inferring interface pairs and
    * create the opposite edge mapping.
    */
-  private void initGraph() {
-    Topology topology = _batfish.getEnvironmentTopology();
+  private void initGraph(Topology topology) {
     Map<NodeInterfacePair, Interface> ifaceMap = new HashMap<>();
     Map<String, Set<NodeInterfacePair>> routerIfaceMap = new HashMap<>();
 

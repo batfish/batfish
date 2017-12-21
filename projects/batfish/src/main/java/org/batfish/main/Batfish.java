@@ -880,6 +880,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
+    _logger.resetTimer();
+    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    Topology prunedTopology =
+        topology.pruneTopology(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    _logger.printElapsedTime();
+    return prunedTopology;
+  }
+
+  @Override
   public Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology) {
     Set<NodeInterfacePair> flowSinks = null;
@@ -962,25 +972,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
     _logger.printElapsedTime();
-  }
-
-  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
-    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    SortedSet<Edge> edges = topology.getEdges();
-    edges.removeAll(blacklistEdges);
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    for (String blacklistNode : blacklistNodes) {
-      topology.removeNode(blacklistNode);
-    }
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-      topology.removeInterface(blacklistInterface);
-    }
-    Topology prunedTopology = new Topology(topology.getEdges());
-    _logger.printElapsedTime();
-    return prunedTopology;
   }
 
   private Topology computeTestrigTopology(

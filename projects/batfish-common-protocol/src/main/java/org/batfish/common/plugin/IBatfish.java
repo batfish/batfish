@@ -50,6 +50,8 @@ public interface IBatfish extends IPluginConsumer {
 
   void checkEnvironmentExists();
 
+  Topology computeEnvironmentTopology(Map<String, Configuration> configurations);
+
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
