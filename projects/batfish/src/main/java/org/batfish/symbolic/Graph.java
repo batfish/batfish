@@ -142,7 +142,7 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
-      topology = topology.pruneTopology(null, routers, null);
+      topology.prune(null, routers, null);
     }
 
     // unexpectedly, refs change if we don't compute topology from scratch.

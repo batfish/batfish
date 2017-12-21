@@ -883,10 +883,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
-    Topology prunedTopology =
-        topology.pruneTopology(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
     _logger.printElapsedTime();
-    return prunedTopology;
+    return topology;
   }
 
   @Override
