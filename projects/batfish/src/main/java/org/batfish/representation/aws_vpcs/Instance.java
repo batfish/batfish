@@ -1,7 +1,10 @@
 package org.batfish.representation.aws_vpcs;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,6 +26,47 @@ import org.codehaus.jettison.json.JSONObject;
 
 public class Instance implements AwsVpcEntity, Serializable {
 
+  public enum Status {
+    PENDING("pending"),
+    RUNNING("running"),
+    SHUTTING_DOWN("shutting-down"),
+    TERMINATED("terminated"),
+    STOPPING("stopping"),
+    STOPPED("stopped");
+
+    private static final Map<String, Status> MAP = initMap();
+
+    @JsonCreator
+    public static Status fromString(String name) {
+      Status value = MAP.get(name.toLowerCase());
+      if (value == null) {
+        throw new BatfishException(
+            "No " + Status.class.getSimpleName() + " with name: '" + name + "'");
+      }
+      return value;
+    }
+
+    private static synchronized Map<String, Status> initMap() {
+      Map<String, Status> map = new HashMap<>();
+      for (Status value : Status.values()) {
+        String name = value._name.toLowerCase();
+        map.put(name, value);
+      }
+      return Collections.unmodifiableMap(map);
+    }
+
+    private final String _name;
+
+    private Status(String name) {
+      _name = name;
+    }
+
+    @JsonValue
+    public String getName() {
+      return _name;
+    }
+  }
+
   private static final long serialVersionUID = 1L;
 
   private transient IpAccessList _inAcl;
@@ -34,6 +78,8 @@ public class Instance implements AwsVpcEntity, Serializable {
   private transient IpAccessList _outAcl;
 
   private final List<String> _securityGroups;
+
+  private final Status _status;
 
   private final String _subnetId;
 
@@ -63,6 +109,9 @@ public class Instance implements AwsVpcEntity, Serializable {
       _tags.put(childObject.getString("Key"), childObject.getString("Value"));
     }
 
+    String stateName = jObj.getJSONObject(JSON_KEY_STATE).getString("Name");
+    _status = Status.fromString(stateName);
+
     // check if the public and private ip addresses are associated with an
     // interface
   }
@@ -90,6 +139,10 @@ public class Instance implements AwsVpcEntity, Serializable {
 
   public List<String> getSecurityGroups() {
     return _securityGroups;
+  }
+
+  public Status getStatus() {
+    return _status;
   }
 
   public String getSubnetId() {
