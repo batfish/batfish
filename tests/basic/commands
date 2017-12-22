@@ -47,6 +47,10 @@ test tests/basic/perRoleOutliers.ref get perRoleOutliers hypothesis="sameName"
 #this test has non-deterministic output; commented for now
 #test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
+# init-environment
+test tests/basic/init-env.ref init-environment interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
+test tests/basic/genDp-env.ref generate-delta-dataplane
+
 # example2 testrig
 test tests/basic/init-example2.ref init-testrig test_rigs/example2 basic-example2
 test tests/basic/inferRoles.ref get inferRoles
