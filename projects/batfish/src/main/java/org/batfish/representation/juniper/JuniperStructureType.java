@@ -19,7 +19,7 @@ public enum JuniperStructureType implements StructureType {
 
   private final String _description;
 
-  private JuniperStructureType(String description) {
+  JuniperStructureType(String description) {
     _description = description;
   }
 

@@ -45,7 +45,7 @@ public enum RouteType {
 
   private final String _name;
 
-  private RouteType(String name) {
+  RouteType(String name) {
     _name = name;
   }
 

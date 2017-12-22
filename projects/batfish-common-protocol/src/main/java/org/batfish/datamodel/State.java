@@ -53,7 +53,7 @@ public enum State {
 
   private final int _num;
 
-  private State(int num) {
+  State(int num) {
     _num = num;
   }
 

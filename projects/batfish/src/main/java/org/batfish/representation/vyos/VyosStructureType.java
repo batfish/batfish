@@ -7,7 +7,7 @@ public enum VyosStructureType implements StructureType {
 
   private final String _description;
 
-  private VyosStructureType(String description) {
+  VyosStructureType(String description) {
     _description = description;
   }
 

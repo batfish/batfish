@@ -327,7 +327,7 @@ public enum Command {
 
   private final String _name;
 
-  private Command(String name) {
+  Command(String name) {
     _name = name;
   }
 

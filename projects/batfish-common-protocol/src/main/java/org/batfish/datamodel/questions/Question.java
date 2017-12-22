@@ -85,7 +85,7 @@ public abstract class Question implements IQuestion {
 
         private final boolean _stringType;
 
-        private Type(String name, boolean stringType) {
+        Type(String name, boolean stringType) {
           _name = name;
           _stringType = stringType;
         }

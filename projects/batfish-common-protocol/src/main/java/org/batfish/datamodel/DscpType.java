@@ -25,7 +25,7 @@ public enum DscpType {
 
   private final int _num;
 
-  private DscpType(int num) {
+  DscpType(int num) {
     _num = num;
   }
 
