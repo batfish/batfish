@@ -874,8 +874,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
-  @Override
-  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
+  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
