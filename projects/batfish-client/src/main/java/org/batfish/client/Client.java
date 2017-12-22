@@ -554,6 +554,7 @@ public class Client extends AbstractClient implements IClient {
     JSONObject instanceJson;
     try {
       instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
+      instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
     } catch (JSONException e) {
       throw new BatfishException("Question is missing instance data", e);
     }
