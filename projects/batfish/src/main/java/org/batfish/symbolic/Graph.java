@@ -133,7 +133,7 @@ public class Graph {
 
     // Remove the routers we don't want to model
     if (routers != null) {
-      List<String> toRemove = new ArrayList<>();
+      Set<String> toRemove = new HashSet<>();
       for (String router : _configurations.keySet()) {
         if (!routers.contains(router)) {
           toRemove.add(router);
@@ -142,13 +142,8 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
-      topology.prune(null, routers, null);
+      topology.prune(null, toRemove, null);
     }
-
-    // unexpectedly, refs change if we don't compute topology from scratch.
-    // ratul will fix after consulting with ryan.
-    // once fixed, remove this statement and remove computeEnvironmentTopology from IBatfish
-    topology = _batfish.computeEnvironmentTopology(_configurations);
 
     initGraph(topology);
     initOspfCosts();
