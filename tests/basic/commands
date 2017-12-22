@@ -48,10 +48,10 @@ test tests/basic/perRoleOutliers.ref get perRoleOutliers hypothesis="sameName"
 #test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
 # init-environment
-test tests/basic/init-env.ref init-environment interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
+test tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
 test tests/basic/genDp-env.ref generate-delta-dataplane
 # failure case with non-existent interface
-test tests/basic/init-env-bad.ref init-environment interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
+test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
 
 # example2 testrig
 test tests/basic/init-example2.ref init-testrig test_rigs/example2 basic-example2

@@ -5,7 +5,7 @@
       "answer" : [
         "org.batfish.common.BatfishException: Batfish job failed",
         "   at org.batfish.main.Driver$1.run(Driver.java:384)",
-        "Caused by: org.batfish.common.BatfishException: Cannot continue: environment 'env_0a30fa3d-4fd0-4ffc-8ffc-c4a2434b793b' is invalid:",
+        "Caused by: org.batfish.common.BatfishException: Cannot continue: environment 'newenv-bad' is invalid:",
         "Results of environment processing and validation:",
         "ENVIRONMENT IS INVALID!",
         "undefinedInterfaceBlacklistInterfaces:",
