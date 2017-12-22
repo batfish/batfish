@@ -958,7 +958,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_PREFIX) String containerPrefix) {
     try {
-      _logger.info(String.format("WMS:initContainer %s\n", containerPrefix));
+      _logger.infof("WMS:initContainer %s\n", containerPrefix);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -970,9 +970,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
 
       String outputContainerName = Main.getWorkMgr().initContainer(containerName, containerPrefix);
-      _logger.info(
-          String.format(
-              "Initialized container %s using api-key %s\n", outputContainerName, apiKey));
+      _logger.infof("Initialized container %s using api-key %s\n", outputContainerName, apiKey);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
 
@@ -1648,8 +1646,7 @@ public class WorkMgrService {
       }
 
       Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
-      _logger.info(
-          String.format("Uploaded testrig %s for container %s\n", testrigName, containerName));
+      _logger.infof("Uploaded testrig %s for container %s\n", testrigName, containerName);
       return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
     } catch (FileExistsException
         | FileNotFoundException
