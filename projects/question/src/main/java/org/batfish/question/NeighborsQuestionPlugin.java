@@ -74,7 +74,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private final String _name;
 
-    private EdgeStyle(String name) {
+    EdgeStyle(String name) {
       _name = name;
     }
 

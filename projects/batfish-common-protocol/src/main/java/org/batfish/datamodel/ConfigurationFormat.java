@@ -33,7 +33,7 @@ public enum ConfigurationFormat {
 
   private String _vendorString;
 
-  private ConfigurationFormat(String vendorString) {
+  ConfigurationFormat(String vendorString) {
     _vendorString = vendorString;
   }
 

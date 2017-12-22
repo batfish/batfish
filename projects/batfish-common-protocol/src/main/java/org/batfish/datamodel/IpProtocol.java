@@ -299,7 +299,7 @@ public enum IpProtocol {
 
   private int _number;
 
-  private IpProtocol(int number) {
+  IpProtocol(int number) {
     _number = number;
   }
 

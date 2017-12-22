@@ -43,7 +43,7 @@ public enum Protocol {
 
   private final Integer _port;
 
-  private Protocol(String name, IpProtocol ipProtocol, Integer port) {
+  Protocol(String name, IpProtocol ipProtocol, Integer port) {
     _name = name;
     _ipProtocol = ipProtocol;
     _port = port;
