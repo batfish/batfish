@@ -1,10 +1,13 @@
 package org.batfish.main;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -484,6 +487,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
+    String containerName = _settings.getContainerDir().getFileName().toString();
     Path analysisQuestionsDir =
         _settings
             .getContainerDir()
@@ -502,7 +506,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
             String questionName = analysisQuestionDir.getFileName().toString();
             Path analysisQuestionPath = analysisQuestionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
             _settings.setQuestionPath(analysisQuestionPath);
-            Answer currentAnswer = answer();
+            Answer currentAnswer;
+            try (ActiveSpan analysisQuestionSpan =
+                GlobalTracer.get()
+                    .buildSpan(
+                        String.format(
+                            "Getting answer to question %s from analysis %s",
+                            questionName, analysisName))
+                    .startActive()) {
+              assert analysisQuestionSpan != null; // make span not show up as unused.
+              analysisQuestionSpan.setTag("WorkItemId", _settings.getTaskId());
+              currentAnswer = answer();
+            }
+            // Ensuring that question was parsed successfully
+            if (currentAnswer.getQuestion() != null) {
+              try {
+                BatfishObjectMapper mapper = new BatfishObjectMapper(false);
+                // TODO: This can be represented much cleanly and easily with a Json
+                _logger.infof(
+                    "Ran question %s from analysis %s in container %s; workItemId:%s, status:%s, "
+                        + "computed dataplane:%s, parameters:%s\n",
+                    questionName,
+                    analysisName,
+                    containerName,
+                    _settings.getTaskId(),
+                    currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
+                    currentAnswer.getQuestion().getDataPlane(),
+                    mapper.writeValueAsString(
+                        currentAnswer.getQuestion().getInstance().getVariables()));
+              } catch (JsonProcessingException e) {
+                throw new BatfishException(
+                    String.format(
+                        "Error logging question %s in analysis %s", questionName, analysisName),
+                    e);
+              }
+            }
             initAnalysisQuestionPath(analysisName, questionName);
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
