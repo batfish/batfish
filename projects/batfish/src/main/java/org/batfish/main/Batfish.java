@@ -875,6 +875,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
+    _logger.resetTimer();
+    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    _logger.printElapsedTime();
+    return topology;
+  }
+
+  @Override
   public Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology) {
     Set<NodeInterfacePair> flowSinks = null;
@@ -957,26 +966,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
     _logger.printElapsedTime();
-  }
-
-  @Override
-  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
-    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    SortedSet<Edge> edges = topology.getEdges();
-    edges.removeAll(blacklistEdges);
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    for (String blacklistNode : blacklistNodes) {
-      topology.removeNode(blacklistNode);
-    }
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-      topology.removeInterface(blacklistInterface);
-    }
-    Topology prunedTopology = new Topology(topology.getEdges());
-    _logger.printElapsedTime();
-    return prunedTopology;
   }
 
   private Topology computeTestrigTopology(
@@ -1650,6 +1639,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
+  }
+
+  @Override
+  public Topology getEnvironmentTopology() {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.readValue(
+          CommonUtil.readFile(
+              _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath()),
+          Topology.class);
+    } catch (IOException e) {
+      throw new BatfishException("Could not getEnvironmentTopology: ", e);
+    }
   }
 
   @Override
@@ -2893,12 +2895,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseEnvironment();
     Map<String, Configuration> baseConfigurations = loadConfigurations();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
+    Topology baseTopology = getEnvironmentTopology();
     popEnvironment();
 
     // load diff configurations and generate diff data plane
     pushDeltaEnvironment();
     Map<String, Configuration> diffConfigurations = loadConfigurations();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
+    Topology diffTopology = getEnvironmentTopology();
     popEnvironment();
 
     pushDeltaEnvironment();
@@ -2920,7 +2924,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    Topology diffTopology = computeEnvironmentTopology(diffConfigurations);
     SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -2948,7 +2951,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    Topology baseTopology = computeEnvironmentTopology(baseConfigurations);
     SortedSet<Edge> baseEdges = baseTopology.getEdges();
     SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
@@ -3714,7 +3716,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void serializeAsJson(Path outputPath, Object object, String objectName) {
+  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
     try {
       new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
     } catch (IOException e) {
@@ -3902,9 +3904,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
-    serializeAsJson(
-        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
 
@@ -3917,6 +3916,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
         "environment topology");
+
+    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
+    serializeAsJson(
+        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
 
     return answer;
   }
@@ -4271,6 +4274,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
     answer.addAnswerElement(ae);
+    Topology envTopology = computeEnvironmentTopology(loadConfigurations());
+    serializeAsJson(
+        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
+        envTopology,
+        "environment topology");
     return answer;
   }
 

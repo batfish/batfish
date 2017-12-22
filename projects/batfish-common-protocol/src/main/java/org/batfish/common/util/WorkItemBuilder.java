@@ -36,16 +36,6 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemCompileDeltaEnvironment(
-      String containerName, String testrigName, String envName, String diffEnvName) {
-    WorkItem wItem = new WorkItem(containerName, testrigName);
-    wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
-    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
-    wItem.addRequestParam(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvName);
-    wItem.addRequestParam(BfConsts.ARG_DIFF_ACTIVE, "");
-    return wItem;
-  }
-
   public static WorkItem getWorkItemGenerateDataPlane(
       String containerName, String testrigName, String envName) {
     WorkItem wItem = new WorkItem(containerName, testrigName);
@@ -78,6 +68,15 @@ public class WorkItemBuilder {
     return wItem;
   }
 
+  public static WorkItem getWorkItemProcessEnvironment(
+      String containerName, String testrigName, String envName) {
+    WorkItem wItem = new WorkItem(containerName, testrigName);
+    wItem.addRequestParam(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, "");
+    wItem.addRequestParam(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "");
+    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
+    return wItem;
+  }
+
   public static WorkItem getWorkItemRunAnalysis(
       String analysisName,
       String containerName,
@@ -102,15 +101,6 @@ public class WorkItemBuilder {
     if (differential) {
       wItem.addRequestParam(BfConsts.ARG_DIFFERENTIAL, "");
     }
-    return wItem;
-  }
-
-  public static WorkItem getWorkItemValidateEnvironment(
-      String containerName, String testrigName, String envName) {
-    WorkItem wItem = new WorkItem(containerName, testrigName);
-    wItem.addRequestParam(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "");
-    wItem.addRequestParam(BfConsts.ARG_TESTRIG, testrigName);
-    wItem.addRequestParam(BfConsts.ARG_ENVIRONMENT_NAME, envName);
     return wItem;
   }
 

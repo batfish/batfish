@@ -234,7 +234,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
     SortedMap<String, SortedSet<String>> nodeRolesMap =
         regexToRoleSpecifier(regex).createNodeRolesMap(new TreeSet<>(_nodes));
 
-    Topology topology = _batfish.computeEnvironmentTopology(_configurations);
+    Topology topology = _batfish.getEnvironmentTopology();
 
     // produce a role-level topology and the list of nodes in each edge's source role
     // that have an edge to some node in the edge's target role
