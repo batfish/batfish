@@ -47,6 +47,17 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     BdpDataPlane dp =
         _engine.computeDataPlane(
             differentialContext, configurations, topology, externalAdverts, flowSinks, ae);
+    double averageRoutes =
+        dp.getNodes()
+            .values()
+            .stream()
+            .flatMap(n -> n._virtualRouters.values().stream())
+            .mapToInt(vr -> vr._mainRib.getRoutes().size())
+            .average()
+            .orElse(0.00d);
+    _logger.infof(
+        "Generated data-plane for testrig %s; iterations:%s, avg entries per node:%.2f\n",
+        _batfish.getTestrigName(), ae.getDependentRoutesIterations(), averageRoutes);
     _logger.resetTimer();
     _batfish.newBatch("Writing data plane to disk", 0);
     _batfish.writeDataPlane(dp, ae);

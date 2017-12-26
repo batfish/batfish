@@ -1012,6 +1012,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Get generated facts from topology file
     if (Files.exists(topologyFilePath)) {
       topology = processTopologyFile(topologyFilePath);
+      _logger.infof("Testrig %s has topology file", _settings.getTestrig());
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -3851,6 +3852,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations =
         parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
+    _logger.infof(
+        "Found %d host configs in testrig:%s",
+        allHostConfigurations.size(), _settings.getTestrig());
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
