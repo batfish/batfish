@@ -13,6 +13,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.representation.aws_vpcs.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -90,7 +91,9 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
         break;
       case AwsVpcEntity.JSON_KEY_INSTANCES:
         Instance instance = new Instance(jsonObject, logger);
-        _instances.put(instance.getId(), instance);
+        if (instance.getStatus() == Status.RUNNING) {
+          _instances.put(instance.getId(), instance);
+        }
         break;
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
         CustomerGateway cGateway = new CustomerGateway(jsonObject, logger);
