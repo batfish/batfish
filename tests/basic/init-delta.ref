@@ -59,17 +59,17 @@
         "as1border1" : {
           "bgp group" : {
             "as3" : [
-              82
+              83
             ]
           },
           "expanded community-list" : {
             "as1_community" : [
-              118
+              119
             ]
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              126
+              129
             ]
           }
         },
@@ -158,7 +158,7 @@
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              118
+              120
             ]
           }
         },
