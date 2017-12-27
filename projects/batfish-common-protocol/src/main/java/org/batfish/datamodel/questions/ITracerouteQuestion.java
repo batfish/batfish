@@ -5,7 +5,7 @@ import org.batfish.datamodel.Protocol;
 
 public interface ITracerouteQuestion extends IQuestion {
 
-  void setDstIp(Ip dstIp);
+  void setDst(String dst);
 
   void setDstProtocol(Protocol protocol);
 

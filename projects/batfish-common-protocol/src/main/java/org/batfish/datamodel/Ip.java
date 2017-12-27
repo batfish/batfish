@@ -100,6 +100,14 @@ public class Ip implements Comparable<Ip>, Serializable {
     return Long.compare(_ip, rhs._ip);
   }
 
+  public static Ip createIpOrNull(String addr) {
+    try {
+      return new Ip(ipStrToLong(addr));
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == this) {

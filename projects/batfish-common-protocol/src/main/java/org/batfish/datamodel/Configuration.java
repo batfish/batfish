@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -318,6 +319,27 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonIgnore
   public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
     return _bgpAdvertisements;
+  }
+
+  /**
+   * This function returns the lowest IP across all interfaces for now. We'll improve it later.
+   */
+  @JsonIgnore
+  public Ip getCanonicalIp() {
+    Set<Ip> ips =
+        new TreeSet<>(
+            getVrfs()
+                .values()
+                .stream()
+                .flatMap(v -> v.getInterfaces().values().stream())
+                .flatMap(i -> i.getAllPrefixes().stream())
+                .map(prefix -> prefix.getAddress())
+                .collect(Collectors.toSet()));
+    if (!ips.isEmpty()) {
+      return ips.toArray(new Ip[] {})[0];
+    } else {
+      return null;
+    }
   }
 
   @JsonProperty(PROP_COMMUNITY_LISTS)
