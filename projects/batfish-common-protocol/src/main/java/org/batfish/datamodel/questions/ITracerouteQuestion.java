@@ -1,6 +1,5 @@
 package org.batfish.datamodel.questions;
 
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Protocol;
 
 public interface ITracerouteQuestion extends IQuestion {

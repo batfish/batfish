@@ -321,9 +321,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _bgpAdvertisements;
   }
 
-  /**
-   * This function returns the lowest IP across all interfaces for now. We'll improve it later.
-   */
+  /** Returns the lowest IP across all interfaces for now. We'll improve it later. */
   @JsonIgnore
   public Ip getCanonicalIp() {
     Set<Ip> ips =
