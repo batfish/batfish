@@ -307,7 +307,7 @@ public final class Interface extends ComparableStructure<String> {
       case ALCATEL_AOS:
         return computeAosInteraceType(name);
 
-      case AWS_VPC:
+      case AWS:
         return computeAwsInterfaceType(name);
 
       case ARISTA:

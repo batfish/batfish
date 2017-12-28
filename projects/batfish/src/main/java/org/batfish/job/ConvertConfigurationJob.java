@@ -8,7 +8,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
-import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
+import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -75,7 +75,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
         configurations.put(_name, configuration);
       } else {
-        configurations = ((AwsVpcConfiguration) _configObject).toConfigurations(_warnings);
+        configurations = ((AwsConfiguration) _configObject).toConfigurations(_warnings);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {

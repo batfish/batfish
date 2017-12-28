@@ -65,7 +65,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             break;
           case CADANT:
             break;
@@ -106,7 +106,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 200;
-          case AWS_VPC:
+          case AWS:
             return 20;
           case CADANT:
             return 20;
@@ -150,7 +150,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 200;
-          case AWS_VPC:
+          case AWS:
             return 200;
           case CADANT:
             return 20;
@@ -191,7 +191,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 117;
@@ -232,7 +232,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 118;
@@ -273,7 +273,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 115;
@@ -314,7 +314,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 116;
@@ -355,7 +355,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption due to missing information in manual.
@@ -397,7 +397,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
@@ -439,7 +439,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
@@ -481,7 +481,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
@@ -523,7 +523,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 120;
-          case AWS_VPC:
+          case AWS:
             return 120;
           case CADANT:
             return 120;
@@ -600,7 +600,7 @@ public enum RoutingProtocol {
             return 10;
 
           case ALCATEL_AOS:
-          case AWS_VPC:
+          case AWS:
           case BLADENETWORK:
           case EMPTY:
           case F5:

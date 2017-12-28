@@ -58,7 +58,7 @@ public class Topology extends BfObject {
 
       // add AWS aggregates; put node in the smallest container we can find for them,
       // and then put that container in their container
-      if (configuration.getConfigurationFormat() == ConfigurationFormat.AWS_VPC) {
+      if (configuration.getConfigurationFormat() == ConfigurationFormat.AWS) {
         if (configuration.getVendorFamily().getAws().getSubnetId() != null) {
           String subnetId = configuration.getVendorFamily().getAws().getSubnetId();
           Aggregate subnetAggregate =
@@ -73,8 +73,18 @@ public class Topology extends BfObject {
           Aggregate vpcAggregate = pojoTopology.getOrCreateAggregate(vpcId, AggregateType.VNET);
           vpcAggregate.getContents().add(pojoNode.getId());
 
+          String region = configuration.getVendorFamily().getAws().getRegion();
+          Aggregate regionAggregate =
+              pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
+          regionAggregate.getContents().add(vpcAggregate.getId());
+        } else if (configuration.getVendorFamily().getAws().getRegion() != null) {
+          String region = configuration.getVendorFamily().getAws().getRegion();
+          Aggregate regionAggregate =
+              pojoTopology.getOrCreateAggregate(region, AggregateType.REGION);
+          regionAggregate.getContents().add(pojoNode.getId());
+
           Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
-          awsAggregate.getContents().add(vpcAggregate.getId());
+          awsAggregate.getContents().add(regionAggregate.getId());
         } else {
           Aggregate awsAggregate = pojoTopology.getOrCreateAggregate("aws", AggregateType.CLOUD);
           awsAggregate.getContents().add(pojoNode.getId());

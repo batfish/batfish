@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 public interface AwsVpcEntity {
 

@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -58,8 +58,9 @@ public class NatGateway implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
+  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId);
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // TODO: Configure forwarding for this NAT
     //    for (NatGatewayAddress natAddress : _natGatewayAddresses) {

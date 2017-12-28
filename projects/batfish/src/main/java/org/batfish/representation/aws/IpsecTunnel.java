@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import org.batfish.common.util.CommonUtil;
