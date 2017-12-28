@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -73,7 +73,8 @@ public class Route implements Serializable {
 
   @Nullable
   public StaticRoute toStaticRoute(
-      AwsVpcConfiguration awsVpcConfiguration,
+      AwsConfiguration awsConfiguraion,
+      Region region,
       Ip vpcAddress,
       @Nullable Ip igwAddress,
       @Nullable Ip vgwAddress,
@@ -116,17 +117,11 @@ public class Route implements Serializable {
           // TODO: it is NOT clear that this is the right thing to do
           // for NATs with multiple interfaces, we should probably match on private IPs?
           srBuilder.setNextHopIp(
-              awsVpcConfiguration
-                  .getNatGateways()
-                  .get(_target)
-                  .getNatGatewayAddresses()
-                  .get(0)
-                  ._privateIp);
+              region.getNatGateways().get(_target).getNatGatewayAddresses().get(0)._privateIp);
           break;
 
         case NetworkInterface:
-          NetworkInterface networkInterface =
-              awsVpcConfiguration.getNetworkInterfaces().get(_target);
+          NetworkInterface networkInterface = region.getNetworkInterfaces().get(_target);
           String networkInterfaceSubnetId = networkInterface.getSubnetId();
           if (networkInterfaceSubnetId.equals(subnet.getId())) {
             Set<Ip> networkInterfaceIps = new TreeSet<>();
@@ -139,7 +134,7 @@ public class Route implements Serializable {
             srBuilder.setNextHopIp(lowestIp);
           } else {
             String networkInterfaceVpcId =
-                awsVpcConfiguration.getSubnets().get(networkInterfaceSubnetId).getVpcId();
+                region.getSubnets().get(networkInterfaceSubnetId).getVpcId();
             String vpcId = subnet.getVpcId();
             if (!vpcId.equals(networkInterfaceVpcId)) {
               throw new BatfishException("Cannot peer with interface on different VPC");
@@ -147,21 +142,20 @@ public class Route implements Serializable {
             // need to create a link between subnet on which route is created
             // and instance containing network interface
             String subnetIfaceName = _target;
-            Prefix instanceLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
+            Prefix instanceLinkPrefix = awsConfiguraion.getNextGeneratedLinkSubnet();
             Prefix subnetIfacePrefix = instanceLinkPrefix;
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfacePrefix);
 
             // set up instance interface
             String instanceId = networkInterface.getAttachmentInstanceId();
             String instanceIfaceName = subnet.getId();
-            Configuration instanceCfgNode =
-                awsVpcConfiguration.getConfigurationNodes().get(instanceId);
+            Configuration instanceCfgNode = awsConfiguraion.getConfigurationNodes().get(instanceId);
             Prefix instanceIfacePrefix =
                 new Prefix(
                     instanceLinkPrefix.getEndAddress(), instanceLinkPrefix.getPrefixLength());
             Interface instanceIface =
                 Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfacePrefix);
-            Instance instance = awsVpcConfiguration.getInstances().get(instanceId);
+            Instance instance = region.getInstances().get(instanceId);
             instanceIface.setIncomingFilter(instance.getInAcl());
             instanceIface.setOutgoingFilter(instance.getOutAcl());
             Ip nextHopIp = instanceIfacePrefix.getAddress();
@@ -173,15 +167,14 @@ public class Route implements Serializable {
           // create route for vpc peering connection
           String vpcPeeringConnectionid = _target;
           VpcPeeringConnection vpcPeeringConnection =
-              awsVpcConfiguration.getVpcPeeringConnections().get(vpcPeeringConnectionid);
+              region.getVpcPeeringConnections().get(vpcPeeringConnectionid);
           String localVpcId = subnet.getVpcId();
           String accepterVpcId = vpcPeeringConnection.getAccepterVpcId();
           String requesterVpcId = vpcPeeringConnection.getRequesterVpcId();
           String remoteVpcId = localVpcId.equals(accepterVpcId) ? requesterVpcId : accepterVpcId;
-          Configuration remoteVpcCfgNode =
-              awsVpcConfiguration.getConfigurationNodes().get(remoteVpcId);
+          Configuration remoteVpcCfgNode = awsConfiguraion.getConfigurationNodes().get(remoteVpcId);
           if (remoteVpcCfgNode == null) {
-            awsVpcConfiguration
+            awsConfiguraion
                 .getWarnings()
                 .redFlag(
                     "VPC \""
@@ -199,7 +192,7 @@ public class Route implements Serializable {
           if (!subnetCfgNode.getDefaultVrf().getInterfaces().containsKey(subnetIfaceName)) {
             // create prefix on which subnet and remote vpc router will
             // connect
-            Prefix peeringLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
+            Prefix peeringLinkPrefix = awsConfiguraion.getNextGeneratedLinkSubnet();
             Prefix subnetIfacePrefix = peeringLinkPrefix;
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfacePrefix);
 
@@ -230,7 +223,7 @@ public class Route implements Serializable {
 
         case Instance:
           // TODO: create route for instance
-          awsVpcConfiguration
+          awsConfiguraion
               .getWarnings()
               .redFlag(
                   "Skipping creating route to "

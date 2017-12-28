@@ -37,6 +37,21 @@
       "type" : "SUBNET"
     },
     {
+      "name" : "us-west-2",
+      "contents" : [
+        "node-igw-9b93ddfc",
+        "aggregate-vpc-f8fad69d",
+        "aggregate-vpc-815775e7",
+        "aggregate-vpc-925131f4",
+        "node-igw-068fee63",
+        "aggregate-vpc-b390fad5",
+        "node-igw-fac5839d",
+        "node-vgw-81fd279f"
+      ],
+      "id" : "aggregate-us-west-2",
+      "type" : "REGION"
+    },
+    {
       "name" : "vpc-815775e7",
       "contents" : [
         "node-vpc-815775e7"
@@ -63,14 +78,7 @@
     {
       "name" : "aws",
       "contents" : [
-        "node-igw-9b93ddfc",
-        "aggregate-vpc-f8fad69d",
-        "aggregate-vpc-815775e7",
-        "aggregate-vpc-925131f4",
-        "node-igw-068fee63",
-        "aggregate-vpc-b390fad5",
-        "node-igw-fac5839d",
-        "node-vgw-81fd279f"
+        "aggregate-us-west-2"
       ],
       "id" : "aggregate-aws",
       "type" : "CLOUD"

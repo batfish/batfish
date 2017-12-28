@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -66,8 +66,9 @@ public class Vpc implements AwsVpcEntity, Serializable {
     _vpnGatewayId = vpnGatewayId;
   }
 
-  public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
+  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_vpcId);
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode
         .getDefaultVrf()

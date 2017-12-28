@@ -1,15 +1,14 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws_vpcs.AwsVpcEntity.JSON_KEY_INSTANCES;
-import static org.batfish.representation.aws_vpcs.AwsVpcEntity.JSON_KEY_RESERVATIONS;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCES;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_RESERVATIONS;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.representation.aws_vpcs.Instance;
-import org.batfish.representation.aws_vpcs.Instance.Status;
+import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;

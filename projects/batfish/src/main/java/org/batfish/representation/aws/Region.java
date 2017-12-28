@@ -1,40 +1,32 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
-import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.representation.aws_vpcs.Instance.Status;
+import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
-
-  private static final long INITIAL_GENERATED_IP = Ip.FIRST_CLASS_E_EXPERIMENTAL_IP.asLong();
+public class Region implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private Map<String, Address> _addresses = new HashMap<>();
-
-  private Map<String, Configuration> _configurationNodes = new HashMap<>();
-
-  private long _currentGeneratedIpAsLong;
 
   private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
 
   private Map<String, Instance> _instances = new HashMap<>();
 
   private Map<String, InternetGateway> _internetGateways = new HashMap<>();
+
+  private String _name;
 
   private Map<String, NatGateway> _natGateways = new HashMap<>();
 
@@ -56,10 +48,8 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
   private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
 
-  private transient Warnings _warnings;
-
-  public AwsVpcConfiguration() {
-    _currentGeneratedIpAsLong = INITIAL_GENERATED_IP;
+  public Region(String name) {
+    _name = name;
   }
 
   public void addConfigElement(JSONObject jsonObj, BatfishLogger logger) throws JSONException {
@@ -167,10 +157,6 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
     return _addresses;
   }
 
-  public Map<String, Configuration> getConfigurationNodes() {
-    return _configurationNodes;
-  }
-
   public Map<String, CustomerGateway> getCustomerGateways() {
     return _customerGateways;
   }
@@ -183,6 +169,10 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
     return _internetGateways;
   }
 
+  public String getName() {
+    return _name;
+  }
+
   public Map<String, NatGateway> getNatGateways() {
     return _natGateways;
   }
@@ -193,13 +183,6 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
 
   public Map<String, NetworkInterface> getNetworkInterfaces() {
     return _networkInterfaces;
-  }
-
-  public synchronized Prefix getNextGeneratedLinkSubnet() {
-    Ip prefixBase = new Ip(_currentGeneratedIpAsLong);
-    Prefix val = new Prefix(prefixBase, 31);
-    _currentGeneratedIpAsLong += 2L;
-    return val;
   }
 
   public Map<String, RouteTable> getRouteTables() {
@@ -230,10 +213,6 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
     return _vpnGateways;
   }
 
-  public Warnings getWarnings() {
-    return _warnings;
-  }
-
   private boolean ignoreElement(String key) {
     switch (key) {
       case AwsVpcEntity.JSON_KEY_AVAILABILITY_ZONES:
@@ -249,54 +228,54 @@ public class AwsVpcConfiguration implements Serializable, GenericConfigObject {
     }
   }
 
-  public Map<String, Configuration> toConfigurations(Warnings warnings) {
-    _warnings = warnings;
+  public void toConfigurationNodes(
+      AwsConfiguration awsConfiguration, Map<String, Configuration> configurationNodes) {
 
-    for (Vpc vpc : _vpcs.values()) {
-      Configuration cfgNode = vpc.toConfigurationNode(this);
-      _configurationNodes.put(cfgNode.getName(), cfgNode);
+    for (Vpc vpc : getVpcs().values()) {
+      Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (InternetGateway igw : _internetGateways.values()) {
-      Configuration cfgNode = igw.toConfigurationNode(this);
-      _configurationNodes.put(cfgNode.getName(), cfgNode);
+    for (InternetGateway igw : getInternetGateways().values()) {
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (NatGateway ngw : _natGateways.values()) {
-      _warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
-      Configuration cfgNode = ngw.toConfigurationNode(this);
-      _configurationNodes.put(cfgNode.getName(), cfgNode);
+    for (NatGateway ngw : getNatGateways().values()) {
+      awsConfiguration
+          .getWarnings()
+          .redFlag("NAT functionality not yet implemented for " + ngw.getId());
+      Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (VpnGateway vgw : _vpnGateways.values()) {
-      Configuration cfgNode = vgw.toConfigurationNode(this);
-      _configurationNodes.put(cfgNode.getName(), cfgNode);
+    for (VpnGateway vgw : getVpnGateways().values()) {
+      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (Instance instance : _instances.values()) {
-      Configuration cfgNode = instance.toConfigurationNode(this);
+    for (Instance instance : getInstances().values()) {
+      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this);
       cfgNode.setDeviceType(DeviceType.HOST);
-      _configurationNodes.put(cfgNode.getName(), cfgNode);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (Subnet subnet : _subnets.values()) {
-      Configuration cfgNode = subnet.toConfigurationNode(this);
-      _configurationNodes.put(cfgNode.getName(), cfgNode);
+    for (Subnet subnet : getSubnets().values()) {
+      Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
-    for (VpnConnection vpnConnection : _vpnConnections.values()) {
-      vpnConnection.applyToVpnGateway(this);
+    for (VpnConnection vpnConnection : getVpnConnections().values()) {
+      vpnConnection.applyToVpnGateway(awsConfiguration, this);
     }
 
     // TODO: for now, set all interfaces to have the same bandwidth
-    for (Configuration cfgNode : _configurationNodes.values()) {
+    for (Configuration cfgNode : configurationNodes.values()) {
       for (Vrf vrf : cfgNode.getVrfs().values()) {
         for (Interface iface : vrf.getInterfaces().values()) {
           iface.setBandwidth(1E12d);
         }
       }
     }
-
-    return _configurationNodes;
   }
 }

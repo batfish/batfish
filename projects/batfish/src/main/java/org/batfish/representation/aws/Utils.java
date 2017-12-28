@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
@@ -20,7 +20,7 @@ public class Utils {
         FACTORY
             .configurationBuilder()
             .setHostname(name)
-            .setConfigurationFormat(ConfigurationFormat.AWS_VPC)
+            .setConfigurationFormat(ConfigurationFormat.AWS)
             .setDefaultInboundAction(LineAction.ACCEPT)
             .setDefaultCrossZoneAction(LineAction.ACCEPT)
             .build();
