@@ -970,7 +970,7 @@ public class WorkMgr extends AbstractCoordinator {
       CommonUtil.copy(subFile, target);
     }
     _logger.infof(
-        "Environment data for testrig %s; bgpTables:%s, routingTables:%s\n",
+        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s\n",
         testrigName, bgpTables, routingTables);
 
     if (autoAnalyze) {
