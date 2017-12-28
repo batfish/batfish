@@ -303,11 +303,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         flowBuilder.setDscp(_dscp);
       }
       if (_dst != null) {
-        Ip dstIp = Ip.createIpOrNull(_dst);
-        if (dstIp != null) {
+        try {
+          Ip dstIp = new Ip(Ip.ipStrToLong(_dst));
           flowBuilder.setDstIp(dstIp);
-        } else {
-          flowBuilder.setDstIp(Ip.AUTO);
+        } catch (IllegalArgumentException e) {
+          flowBuilder.setDstIp(Ip.AUTO); // use auto we couldn't parse a valid IP
         }
       }
       if (_dstPort != null) {
@@ -617,6 +617,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       _dscp = dscp;
     }
 
+    @Override
     @JsonProperty(PROP_DST)
     public void setDst(String dst) {
       _dst = dst;

@@ -14,12 +14,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfJson;
 import org.batfish.common.Warnings;
@@ -323,21 +323,16 @@ public final class Configuration extends ComparableStructure<String> {
 
   /** Returns the lowest IP across all interfaces for now. We'll improve it later. */
   @JsonIgnore
+  @Nullable
   public Ip getCanonicalIp() {
-    Set<Ip> ips =
-        new TreeSet<>(
-            getVrfs()
-                .values()
-                .stream()
-                .flatMap(v -> v.getInterfaces().values().stream())
-                .flatMap(i -> i.getAllPrefixes().stream())
-                .map(prefix -> prefix.getAddress())
-                .collect(Collectors.toSet()));
-    if (!ips.isEmpty()) {
-      return ips.toArray(new Ip[] {})[0];
-    } else {
-      return null;
-    }
+    return getVrfs()
+        .values()
+        .stream()
+        .flatMap(v -> v.getInterfaces().values().stream())
+        .flatMap(i -> i.getAllPrefixes().stream())
+        .map(Prefix::getAddress)
+        .min(Ip::compareTo)
+        .orElse(null);
   }
 
   @JsonProperty(PROP_COMMUNITY_LISTS)

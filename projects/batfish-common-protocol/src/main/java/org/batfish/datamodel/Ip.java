@@ -34,7 +34,7 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public static final Ip ZERO = new Ip(0L);
 
-  private static long ipStrToLong(String addr) {
+  public static long ipStrToLong(String addr) {
     String[] addrArray = addr.split("\\.");
     if (addrArray.length != 4) {
       if (addr.startsWith("INVALID_IP") || addr.startsWith("AUTO/NONE")) {
@@ -47,7 +47,7 @@ public class Ip implements Comparable<Ip>, Serializable {
           }
         }
       }
-      throw new BatfishException("Invalid ip string: \"" + addr + "\"");
+      throw new IllegalArgumentException("Invalid ip string: \"" + addr + "\"");
     }
     long num = 0;
     for (int i = 0; i < addrArray.length; i++) {
@@ -57,7 +57,7 @@ public class Ip implements Comparable<Ip>, Serializable {
         int segment = Integer.parseInt(segmentStr);
         num += ((segment % 256 * Math.pow(256, power)));
       } catch (NumberFormatException e) {
-        throw new BatfishException(
+        throw new IllegalArgumentException(
             "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"", e);
       }
     }
@@ -98,14 +98,6 @@ public class Ip implements Comparable<Ip>, Serializable {
   @Override
   public int compareTo(Ip rhs) {
     return Long.compare(_ip, rhs._ip);
-  }
-
-  public static Ip createIpOrNull(String addr) {
-    try {
-      return new Ip(ipStrToLong(addr));
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   @Override
