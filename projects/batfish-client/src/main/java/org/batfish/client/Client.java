@@ -539,7 +539,6 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean answer(
       String questionTemplateName, String paramsLine, boolean isDelta, FileWriter outWriter) {
-    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
     String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
     if (questionContentUnmodified == null) {
       throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
@@ -550,6 +549,11 @@ public class Client extends AbstractClient implements IClient {
       questionJson = new JSONObject(questionContentUnmodified);
     } catch (JSONException e) {
       throw new BatfishException("Question content is not valid JSON", e);
+    }
+    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
+    if (parameters.containsKey("questionName")) {
+      questionName = parameters.get("questionName").asText();
+      parameters.remove("questionName");
     }
     JSONObject instanceJson;
     try {
