@@ -53,7 +53,7 @@ public enum RoutingProtocol {
 
   private final String _protocolName;
 
-  private RoutingProtocol(String protocolName) {
+  RoutingProtocol(String protocolName) {
     _protocolName = protocolName;
   }
 

@@ -113,7 +113,7 @@ public class Settings extends BaseSettings {
   private boolean _tracingEnable;
   private String _workBindHost;
 
-  public Settings(String[] args) throws Exception {
+  public Settings(String[] args) {
     super(
         CommonUtil.getConfig(
             BfConsts.PROP_COORDINATOR_PROPERTIES_PATH,

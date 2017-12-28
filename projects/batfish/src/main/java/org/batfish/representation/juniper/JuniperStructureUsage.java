@@ -23,7 +23,7 @@ public enum JuniperStructureUsage implements StructureUsage {
 
   private final String _description;
 
-  private JuniperStructureUsage(String description) {
+  JuniperStructureUsage(String description) {
     _description = description;
   }
 
