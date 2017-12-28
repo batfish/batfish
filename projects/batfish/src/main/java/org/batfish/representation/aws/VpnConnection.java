@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -191,9 +191,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  public void applyToVpnGateway(AwsVpcConfiguration awsVpcConfiguration) {
-    Configuration vpnGatewayCfgNode =
-        awsVpcConfiguration.getConfigurationNodes().get(_vpnGatewayId);
+  public void applyToVpnGateway(AwsConfiguration awsConfiguration, Region region) {
+    Configuration vpnGatewayCfgNode = awsConfiguration.getConfigurationNodes().get(_vpnGatewayId);
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       int idNum = i + 1;
       String vpnId = _vpnConnectionId + "-" + idNum;
@@ -280,7 +279,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         cgBgpNeighbor.setDefaultMetric(BGP_NEIGHBOR_DEFAULT_METRIC);
         cgBgpNeighbor.setSendCommunity(false);
 
-        VpnGateway vpnGateway = awsVpcConfiguration.getVpnGateways().get(_vpnGatewayId);
+        VpnGateway vpnGateway = region.getVpnGateways().get(_vpnGatewayId);
         List<String> attachmentVpcIds = vpnGateway.getAttachmentVpcIds();
         if (attachmentVpcIds.size() != 1) {
           throw new BatfishException(
@@ -293,7 +292,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         String vpcId = attachmentVpcIds.get(0);
 
         // iBGP connection to VPC
-        Configuration vpcNode = awsVpcConfiguration.getConfigurationNodes().get(vpcId);
+        Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
         Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getPrefix().getAddress();
         Ip vgwToVpcIfaceAddress =
             vpnGatewayCfgNode.getInterfaces().get(vpcId).getPrefix().getAddress();
@@ -350,7 +349,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vpcNode.getRoutingPolicies().put(rpRejectAllName, vpcRpRejectAll);
         vpcToVgwBgpNeighbor.setExportPolicy(rpRejectAllName);
 
-        Vpc vpc = awsVpcConfiguration.getVpcs().get(vpcId);
+        Vpc vpc = region.getVpcs().get(vpcId);
         String originationPolicyName = vpnId + "_origination";
         RoutingPolicy originationRoutingPolicy =
             new RoutingPolicy(originationPolicyName, vpnGatewayCfgNode);

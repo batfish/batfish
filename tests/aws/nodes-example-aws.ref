@@ -4,7 +4,7 @@
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
       "nodes" : {
         "igw-068fee63" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "igw-068fee63",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -42,7 +42,9 @@
             "igw-068fee63"
           ],
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "us-west-2"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -64,7 +66,7 @@
           }
         },
         "igw-9b93ddfc" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "igw-9b93ddfc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -102,7 +104,9 @@
             "igw-9b93ddfc"
           ],
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "us-west-2"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -124,7 +128,7 @@
           }
         },
         "igw-fac5839d" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "igw-fac5839d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -162,7 +166,9 @@
             "igw-fac5839d"
           ],
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "us-west-2"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -1542,7 +1548,7 @@
           }
         },
         "subnet-073b8061" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-073b8061",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -1642,6 +1648,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-073b8061",
               "vpcId" : "vpc-b390fad5"
             }
@@ -1667,7 +1674,7 @@
           }
         },
         "subnet-1641fa70" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-1641fa70",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -1767,6 +1774,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-1641fa70",
               "vpcId" : "vpc-b390fad5"
             }
@@ -1792,7 +1800,7 @@
           }
         },
         "subnet-1f315846" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-1f315846",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -1901,6 +1909,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-1f315846",
               "vpcId" : "vpc-f8fad69d"
             }
@@ -1926,7 +1935,7 @@
           }
         },
         "subnet-30398256" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-30398256",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2026,6 +2035,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-30398256",
               "vpcId" : "vpc-b390fad5"
             }
@@ -2051,7 +2061,7 @@
           }
         },
         "subnet-62f14104" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-62f14104",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2151,6 +2161,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-62f14104",
               "vpcId" : "vpc-925131f4"
             }
@@ -2176,7 +2187,7 @@
           }
         },
         "subnet-7044ff16" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-7044ff16",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2276,6 +2287,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-7044ff16",
               "vpcId" : "vpc-b390fad5"
             }
@@ -2301,7 +2313,7 @@
           }
         },
         "subnet-8d0cbdeb" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-8d0cbdeb",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2401,6 +2413,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-8d0cbdeb",
               "vpcId" : "vpc-925131f4"
             }
@@ -2426,7 +2439,7 @@
           }
         },
         "subnet-9c8adceb" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-9c8adceb",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2535,6 +2548,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-9c8adceb",
               "vpcId" : "vpc-f8fad69d"
             }
@@ -2560,7 +2574,7 @@
           }
         },
         "subnet-d9cafabc" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-d9cafabc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2669,6 +2683,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-d9cafabc",
               "vpcId" : "vpc-f8fad69d"
             }
@@ -2694,7 +2709,7 @@
           }
         },
         "subnet-f73a8191" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "subnet-f73a8191",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2794,6 +2809,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "subnetId" : "subnet-f73a8191",
               "vpcId" : "vpc-b390fad5"
             }
@@ -2819,7 +2835,7 @@
           }
         },
         "vgw-81fd279f" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "vgw-81fd279f",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3209,7 +3225,9 @@
             }
           },
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "us-west-2"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -3311,7 +3329,7 @@
           }
         },
         "vpc-815775e7" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "vpc-815775e7",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3364,6 +3382,7 @@
           },
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "vpcId" : "vpc-815775e7"
             }
           },
@@ -3419,7 +3438,7 @@
           }
         },
         "vpc-925131f4" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "vpc-925131f4",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3512,6 +3531,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "vpcId" : "vpc-925131f4"
             }
           },
@@ -3553,7 +3573,7 @@
           }
         },
         "vpc-b390fad5" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "vpc-b390fad5",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3727,6 +3747,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "vpcId" : "vpc-b390fad5"
             }
           },
@@ -3795,7 +3816,7 @@
           }
         },
         "vpc-f8fad69d" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "vpc-f8fad69d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3915,6 +3936,7 @@
           ],
           "vendorFamily" : {
             "aws" : {
+              "region" : "us-west-2",
               "vpcId" : "vpc-f8fad69d"
             }
           },

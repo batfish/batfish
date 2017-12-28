@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -170,7 +170,7 @@ public class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfig) {
+  public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
     String name = _tags.getOrDefault("Name", _instanceId);
@@ -179,7 +179,7 @@ public class Instance implements AwsVpcEntity, Serializable {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
     for (String sGroupId : _securityGroups) {
-      SecurityGroup sGroup = awsVpcConfig.getSecurityGroups().get(sGroupId);
+      SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
 
       if (sGroup == null) {
         throw new BatfishException(
@@ -197,7 +197,7 @@ public class Instance implements AwsVpcEntity, Serializable {
 
     for (String interfaceId : _networkInterfaces) {
 
-      NetworkInterface netInterface = awsVpcConfig.getNetworkInterfaces().get(interfaceId);
+      NetworkInterface netInterface = region.getNetworkInterfaces().get(interfaceId);
 
       if (netInterface == null) {
         throw new BatfishException(
@@ -207,7 +207,7 @@ public class Instance implements AwsVpcEntity, Serializable {
       ImmutableSortedSet.Builder<Prefix> ifacePrefixesBuilder =
           new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
 
-      Subnet subnet = awsVpcConfig.getSubnets().get(netInterface.getSubnetId());
+      Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
       Prefix ifaceSubnet = subnet.getCidrBlock();
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceAddress();
       StaticRoute defaultRoute =
@@ -241,6 +241,7 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
+      cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     }
 
     return cfgNode;

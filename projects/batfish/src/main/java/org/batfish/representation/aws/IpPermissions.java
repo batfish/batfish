@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;

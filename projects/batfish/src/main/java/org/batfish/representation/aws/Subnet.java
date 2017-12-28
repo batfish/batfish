@@ -1,4 +1,4 @@
-package org.batfish.representation.aws_vpcs;
+package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.List;
@@ -140,7 +140,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return _vpnGatewayId;
   }
 
-  public Configuration toConfigurationNode(AwsVpcConfiguration awsVpcConfiguration) {
+  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
     Configuration cfgNode = Utils.newAwsConfiguration(_subnetId);
 
     // add one interface that faces the instances
@@ -150,7 +150,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Utils.newInterface(instancesIfaceName, cfgNode, instancesIfacePrefix);
 
     // generate a prefix for the link between the VPC router and the subnet
-    Prefix vpcSubnetLinkPrefix = awsVpcConfiguration.getNextGeneratedLinkSubnet();
+    Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
     Prefix subnetIfacePrefix = vpcSubnetLinkPrefix;
     Ip vpcIfaceAddress = vpcSubnetLinkPrefix.getEndAddress();
     Prefix vpcIfacePrefix = new Prefix(vpcIfaceAddress, vpcSubnetLinkPrefix.getPrefixLength());
@@ -160,7 +160,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Interface subnetToVpc = Utils.newInterface(subnetIfaceName, cfgNode, subnetIfacePrefix);
 
     // add a corresponding interface on the VPC router facing the subnet
-    Configuration vpcConfigNode = awsVpcConfiguration.getConfigurationNodes().get(_vpcId);
+    Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(_vpcId);
     String vpcIfaceName = _subnetId;
     Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfacePrefix);
 
@@ -177,7 +177,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     StaticRoute defaultRoute = sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress).build();
     cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
-    NetworkAcl myNetworkAcl = findMyNetworkAcl(awsVpcConfiguration.getNetworkAcls());
+    NetworkAcl myNetworkAcl = findMyNetworkAcl(region.getNetworkAcls());
 
     IpAccessList inAcl = myNetworkAcl.getIngressAcl();
     IpAccessList outAcl = myNetworkAcl.getEgressAcl();
@@ -189,6 +189,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
+    cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     return cfgNode;
   }

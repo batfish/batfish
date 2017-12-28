@@ -157,7 +157,7 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
+import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
@@ -2700,11 +2700,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return ast;
   }
 
-  private AwsVpcConfiguration parseAwsVpcConfigurations(Map<Path, String> configurationData) {
-    AwsVpcConfiguration config = new AwsVpcConfiguration();
+  private AwsConfiguration parseAwsConfigurations(Map<Path, String> configurationData) {
+    AwsConfiguration config = new AwsConfiguration();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path file = configFile.getKey();
       String fileText = configFile.getValue();
+      String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
 
       // we stop classic link processing here because it interferes with VPC
       // processing
@@ -2722,7 +2723,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       if (jsonObj != null) {
         try {
-          config.addConfigElement(jsonObj, _logger);
+          config.addConfigElement(regionName, jsonObj, _logger);
         } catch (JSONException e) {
           throw new BatfishException("Problems parsing JSON in " + file, e);
         }
@@ -3761,17 +3762,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private Answer serializeAwsVpcConfigs(Path testRigPath, Path outputPath) {
+  private Answer serializeAwsConfigs(Path testRigPath, Path outputPath) {
     Answer answer = new Answer();
     Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
-    AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
+        readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
+    AwsConfiguration config = parseAwsConfigurations(configurationData);
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     outputPath.toFile().mkdirs();
-    Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
-    _logger.debug("Serializing AWS VPCs to " + currentOutputPath + "\"...");
+    Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_FILE);
+    _logger.debug("Serializing AWS to " + currentOutputPath + "\"...");
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
@@ -4059,9 +4060,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // look for AWS VPC configs
-    Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
+    Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
     if (Files.exists(awsVpcConfigsPath)) {
-      answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
+      answer.append(serializeAwsConfigs(testRigPath, outputPath));
       configsFound = true;
     }
 
