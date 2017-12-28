@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.UUID;
-import java.util.zip.ZipException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -76,10 +75,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       boolean valid = Main.getAuthorizer().isValidWorkApiKey(apiKey);
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_API_KEY, valid));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:checkApiKey exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -188,11 +184,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException
-        | ZipException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:configureAnalysis exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -236,11 +228,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException
-        | ZipException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:delAnalysis exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -280,10 +268,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", status));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:delContainer exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -329,10 +314,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "true"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:delEnvironment exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -375,10 +357,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "true"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:delQuestion exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -421,10 +400,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "true"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:delTestrig exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -521,10 +497,7 @@ public class WorkMgrService {
       String answersStr = mapper.writeValueAsString(answers);
 
       return successResponse(response.put(CoordConsts.SVC_KEY_ANSWERS, answersStr));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:getAnalysisAnswers exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -618,10 +591,7 @@ public class WorkMgrService {
                   pretty);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:getAnswer exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -826,10 +796,7 @@ public class WorkMgrService {
           .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
           .header(CoordConsts.SVC_FILENAME_HDR, filename)
           .build();
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       return Response.status(Response.Status.BAD_REQUEST)
           .entity(e.getMessage())
           .type(MediaType.TEXT_PLAIN)
@@ -926,10 +893,7 @@ public class WorkMgrService {
           new JSONObject()
               .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
               .put(CoordConsts.SVC_KEY_TASKSTATUS, taskStr));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:getWorkStatus exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -976,10 +940,7 @@ public class WorkMgrService {
 
       return successResponse(
           new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_NAME, outputContainerName));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:initContainer exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1033,10 +994,7 @@ public class WorkMgrService {
       }
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANALYSIS_LIST, retObject));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:listAnalyses exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1076,10 +1034,7 @@ public class WorkMgrService {
 
       return successResponse(
           new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_LIST, new JSONArray(containerList)));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:listContainers exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1124,10 +1079,7 @@ public class WorkMgrService {
       return successResponse(
           new JSONObject()
               .put(CoordConsts.SVC_KEY_ENVIRONMENT_LIST, new JSONArray(environmentList)));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:listEnvironments exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1172,10 +1124,7 @@ public class WorkMgrService {
       }
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, retObject));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:listQuestions exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1284,10 +1233,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "successfully uploaded custom object"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:putObject exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1334,10 +1280,7 @@ public class WorkMgrService {
       boolean result = Main.getWorkMgr().queueWork(workItem);
 
       return successResponse(new JSONObject().put("result", result));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:queueWork exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1383,10 +1326,7 @@ public class WorkMgrService {
       int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(containerName, pluginId, force);
 
       return successResponse(new JSONObject().put("numCommits", numCommits));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:syncTestrigsSyncNow exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1594,10 +1534,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "successfully uploaded question"));
 
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:uploadQuestion exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1648,11 +1585,7 @@ public class WorkMgrService {
       Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
       _logger.infof("Uploaded testrig %s for container %s\n", testrigName, containerName);
       return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException
-        | ZipException e) {
+    } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());
     } catch (Exception e) {
