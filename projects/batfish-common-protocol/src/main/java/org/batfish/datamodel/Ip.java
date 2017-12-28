@@ -34,7 +34,7 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public static final Ip ZERO = new Ip(0L);
 
-  public static long ipStrToLong(String addr) {
+  private static long ipStrToLong(String addr) {
     String[] addrArray = addr.split("\\.");
     if (addrArray.length != 4) {
       if (addr.startsWith("INVALID_IP") || addr.startsWith("AUTO/NONE")) {

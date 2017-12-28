@@ -304,7 +304,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       }
       if (_dst != null) {
         try {
-          Ip dstIp = new Ip(Ip.ipStrToLong(_dst));
+          Ip dstIp = new Ip(_dst);
           flowBuilder.setDstIp(dstIp);
         } catch (IllegalArgumentException e) {
           flowBuilder.setDstIp(Ip.AUTO); // use auto we couldn't parse a valid IP
