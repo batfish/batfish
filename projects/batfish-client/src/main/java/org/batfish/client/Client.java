@@ -2,12 +2,10 @@ package org.batfish.client;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
@@ -3026,7 +3024,7 @@ public class Client extends AbstractClient implements IClient {
         try {
           Answer testAnswer = mapper.readValue(testOutput, Answer.class);
           testAnswerString = mapper.writeValueAsString(testAnswer);
-        } catch (JsonParseException | UnrecognizedPropertyException e) {
+        } catch (JsonProcessingException e) {
           // not all outputs of process command are of Answer.class type
           // in that case, we use the exact string as initialized above for
           // comparison
@@ -3043,7 +3041,7 @@ public class Client extends AbstractClient implements IClient {
           try {
             referenceAnswer = mapper.readValue(referenceOutput, Answer.class);
             referenceAnswerString = mapper.writeValueAsString(referenceAnswer);
-          } catch (JsonParseException | UnrecognizedPropertyException e) {
+          } catch (JsonProcessingException e) {
             // not all outputs of process command are of Answer.class type
             // in that case, we use the exact string as initialized above
             // for comparison
