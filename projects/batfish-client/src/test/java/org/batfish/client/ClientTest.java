@@ -677,14 +677,15 @@ public class ClientTest {
   public void testInvalidIPValue() throws IOException {
     String input = "\"0.0.0\"";
     String expectedMessage = String.format("Invalid ip string: %s", input);
-    validateTypeWithInvalidInput(input, expectedMessage, IP);
+    validateTypeWithInvalidInput(input, IllegalArgumentException.class, expectedMessage, IP);
   }
 
   @Test
   public void testInvalidIpWildcardValue() throws IOException {
     String input = "\"10.168.5.5:10.168.100.$\"";
     String expectedMessage = "Invalid ip segment: \"$\" in ip string: " + "\"10.168.100.$\"";
-    validateTypeWithInvalidInput(input, expectedMessage, IP_WILDCARD);
+    validateTypeWithInvalidInput(
+        input, IllegalArgumentException.class, expectedMessage, IP_WILDCARD);
   }
 
   @Test
@@ -1774,13 +1775,22 @@ public class ClientTest {
   }
 
   private void validateTypeWithInvalidInput(
-      String input, String expectedMessage, Question.InstanceData.Variable.Type type)
+      String input,
+      Class<? extends Throwable> expectedException,
+      String expectedMessage,
+      Question.InstanceData.Variable.Type type)
       throws IOException {
     JsonNode node = _mapper.readTree(input);
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(type);
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(expectedException);
     _thrown.expectMessage(equalTo(expectedMessage));
     Client.validateType(node, variable);
+  }
+
+  private void validateTypeWithInvalidInput(
+      String input, String expectedMessage, Question.InstanceData.Variable.Type type)
+      throws IOException {
+    validateTypeWithInvalidInput(input, BatfishException.class, expectedMessage, type);
   }
 }
