@@ -37,7 +37,7 @@ public enum NeighborType {
 
   private final String _name;
 
-  private NeighborType(String name) {
+  NeighborType(String name) {
     _name = name;
   }
 

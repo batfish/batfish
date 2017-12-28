@@ -37,7 +37,7 @@ public enum RoutingTableFormat {
 
   private final String _name;
 
-  private RoutingTableFormat(String name) {
+  RoutingTableFormat(String name) {
     _name = name;
   }
 

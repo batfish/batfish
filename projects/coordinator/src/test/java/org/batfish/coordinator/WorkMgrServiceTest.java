@@ -30,7 +30,6 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -242,7 +241,7 @@ public class WorkMgrServiceTest {
     }
   }
 
-  private Question createTestQuestion(String name, String description) throws JSONException {
+  private Question createTestQuestion(String name, String description) {
     InstanceData instanceData = new InstanceData();
     instanceData.setDescription(description);
     instanceData.setInstanceName(name);

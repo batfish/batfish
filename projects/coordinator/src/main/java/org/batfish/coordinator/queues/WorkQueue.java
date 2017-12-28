@@ -14,7 +14,7 @@ public interface WorkQueue extends Iterable<QueuedWork> {
 
   QueuedWork deque();
 
-  boolean enque(QueuedWork qWork) throws Exception;
+  boolean enque(QueuedWork qWork);
 
   long getLength();
 

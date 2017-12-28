@@ -100,7 +100,7 @@ public enum CiscoStructureUsage implements StructureUsage {
 
   private final String _description;
 
-  private CiscoStructureUsage(String description) {
+  CiscoStructureUsage(String description) {
     _description = description;
   }
 

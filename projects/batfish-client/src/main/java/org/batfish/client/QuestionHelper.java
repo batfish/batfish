@@ -7,7 +7,7 @@ import org.batfish.datamodel.questions.Question;
 
 public class QuestionHelper {
 
-  public static String getParametersString(Map<String, String> parameters) throws Exception {
+  public static String getParametersString(Map<String, String> parameters) {
     String retString = "{\n";
 
     for (String paramKey : parameters.keySet()) {

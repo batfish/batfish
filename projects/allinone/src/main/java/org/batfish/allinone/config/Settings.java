@@ -39,7 +39,7 @@ public class Settings extends BaseSettings {
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
 
-  public Settings(String[] args) throws Exception {
+  public Settings(String[] args) {
     super(
         CommonUtil.getConfig(
             BfConsts.PROP_ALLINONE_PROPERTIES_PATH,
