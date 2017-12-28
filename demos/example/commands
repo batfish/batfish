@@ -55,12 +55,12 @@ echo # more interestingly, we can also ask questions about data flow, i.e., the 
 
 echo # for example, we can see how host1 reaches a particular IP address 
 echo # the query will take time if the dataplane has not been computed before
-get traceroute ingressNode="host1", dstIp="1.0.2.2"
+get traceroute ingressNode="host1", dst="1.0.2.2"
 echo # --> unlike a regular traceroute we show multipath and interface information
 
 echo # suppose host1 (2.128.0.101) is running DNS and we want to ensure that the server is reachable 
 echo # can easily do this using protocol-specific traceroutes
-get traceroute ingressNode="as2border1", dstIp="2.128.0.101", dstProtocol="dns"
+get traceroute ingressNode="as2border1", dst="2.128.0.101", dstProtocol="dns"
 
 echo ################
 echo # while the above could be done using testing/emulation, we alone can be comprehensive 

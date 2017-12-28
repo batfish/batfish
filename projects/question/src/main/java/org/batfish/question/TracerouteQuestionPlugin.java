@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -108,18 +107,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
           Configuration node =
               Strings.isNullOrEmpty(hostname) ? null : configurations.get(hostname);
           if (node != null) {
-            Set<Ip> ips =
-                new TreeSet<>(
-                    node.getVrfs()
-                        .values()
-                        .stream()
-                        .flatMap(v -> v.getInterfaces().values().stream())
-                        .flatMap(i -> i.getAllPrefixes().stream())
-                        .map(prefix -> prefix.getAddress())
-                        .collect(Collectors.toSet()));
-            if (!ips.isEmpty()) {
-              Ip lowestIp = ips.toArray(new Ip[] {})[0];
-              flowBuilder.setSrcIp(lowestIp);
+            Ip canonicalIp = node.getCanonicalIp();
+            if (canonicalIp != null) {
+              flowBuilder.setSrcIp(canonicalIp);
             } else {
               throw new BatfishException(
                   "Cannot automatically assign source ip to flow since no there are no ip "
@@ -130,6 +120,31 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
           } else {
             throw new BatfishException(
                 "Cannot create flow with non-existent ingress node: '" + hostname + "'");
+          }
+        }
+        if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
+          if (configurations == null) {
+            _batfish.pushBaseEnvironment();
+            configurations = _batfish.loadConfigurations();
+            _batfish.popEnvironment();
+          }
+          String hostname = question.getDst();
+          Configuration node =
+              Strings.isNullOrEmpty(hostname) ? null : configurations.get(hostname);
+          if (node != null) {
+            Ip canonicalIp = node.getCanonicalIp();
+            if (canonicalIp != null) {
+              flowBuilder.setDstIp(canonicalIp);
+            } else {
+              throw new BatfishException(
+                  "Cannot automatically assign destination ip to flow since no there are no ip "
+                      + "addresses assigned to any interface on destination node: '"
+                      + hostname
+                      + "'");
+            }
+          } else {
+            throw new BatfishException(
+                "Destination is neither a valid node nor IP: '" + hostname + "'");
           }
         }
         flowBuilder.setTag(tag);
@@ -186,7 +201,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_DSCP = "dscp";
 
-    private static final String PROP_DST_IP = "dstIp";
+    private static final String PROP_DST = "dst";
 
     private static final String PROP_DST_PORT = "dstPort";
 
@@ -234,7 +249,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
     private Integer _dscp;
 
-    private Ip _dstIp;
+    private String _dst;
 
     private Integer _dstPort;
 
@@ -287,8 +302,13 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       if (_dscp != null) {
         flowBuilder.setDscp(_dscp);
       }
-      if (_dstIp != null) {
-        flowBuilder.setDstIp(_dstIp);
+      if (_dst != null) {
+        try {
+          Ip dstIp = new Ip(_dst);
+          flowBuilder.setDstIp(dstIp);
+        } catch (IllegalArgumentException e) {
+          flowBuilder.setDstIp(Ip.AUTO); // use auto we couldn't parse a valid IP
+        }
       }
       if (_dstPort != null) {
         flowBuilder.setDstPort(_dstPort);
@@ -382,9 +402,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       return _dscp;
     }
 
-    @JsonProperty(PROP_DST_IP)
-    public Ip getDstIp() {
-      return _dstIp;
+    @JsonProperty(PROP_DST)
+    public String getDst() {
+      return _dst;
     }
 
     @JsonProperty(PROP_DST_PORT)
@@ -522,8 +542,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         if (_dscp != null) {
           retString += String.format(", %s=%s", PROP_DSCP, _dscp);
         }
-        if (_dstIp != null) {
-          retString += String.format(", %s=%s", PROP_DST_IP, _dstIp);
+        if (_dst != null) {
+          retString += String.format(", %s=%s", PROP_DST, _dst);
         }
         if (_dstPort != null) {
           retString += String.format(", %S=%s", PROP_DST_PORT, _dstPort);
@@ -598,9 +618,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    @JsonProperty(PROP_DST_IP)
-    public void setDstIp(Ip dstIp) {
-      _dstIp = dstIp;
+    @JsonProperty(PROP_DST)
+    public void setDst(String dst) {
+      _dst = dst;
     }
 
     @JsonProperty(PROP_DST_PORT)
