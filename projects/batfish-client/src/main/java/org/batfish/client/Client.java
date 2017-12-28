@@ -1102,8 +1102,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean generateDataplane(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters)
-      throws Exception {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DP)) {
       return false;
     }
@@ -1119,8 +1118,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean generateDeltaDataplane(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters)
-      throws Exception {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DELTA_DP)) {
       return false;
     }
@@ -1165,8 +1163,7 @@ public class Client extends AbstractClient implements IClient {
       @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
-      boolean delta)
-      throws Exception {
+      boolean delta) {
     Command command = delta ? Command.GET_DELTA : Command.GET;
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
       return false;
@@ -1743,8 +1740,10 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean initTestrig(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
-      throws Exception {
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters,
+      boolean delta) {
     Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
     if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
       return false;
@@ -2149,8 +2148,7 @@ public class Client extends AbstractClient implements IClient {
           1,
           new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
               String filename = file.getFileName().toString();
               if (filename.endsWith(".json")) {
                 jsonQuestionFiles.add(file);
@@ -2558,8 +2556,10 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean reinitTestrig(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
-      throws Exception {
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters,
+      boolean delta) {
     Command command = delta ? Command.REINIT_DELTA_TESTRIG : Command.REINIT_TESTRIG;
     if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
       return false;

@@ -25,7 +25,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
@@ -341,12 +340,10 @@ public class CommonUtil {
               new TrustManager[] {
                 new X509TrustManager() {
                   @Override
-                  public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-                      throws CertificateException {}
+                  public void checkClientTrusted(X509Certificate[] arg0, String arg1) {}
 
                   @Override
-                  public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-                      throws CertificateException {}
+                  public void checkServerTrusted(X509Certificate[] arg0, String arg1) {}
 
                   @Override
                   public X509Certificate[] getAcceptedIssuers() {

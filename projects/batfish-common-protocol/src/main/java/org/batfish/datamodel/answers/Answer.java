@@ -1,7 +1,6 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -86,7 +85,7 @@ public class Answer {
     return string.toString();
   }
 
-  public Answer prettyPrintAnswer() throws JsonProcessingException {
+  public Answer prettyPrintAnswer() {
     Answer answer = new Answer();
     answer.setQuestion(_question);
     answer.setStatus(_status);

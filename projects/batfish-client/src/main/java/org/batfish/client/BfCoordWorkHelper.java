@@ -386,7 +386,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  private ClientBuilder getClientBuilder() throws Exception {
+  private ClientBuilder getClientBuilder() {
     ClientBuilder clientBuilder =
         CommonUtil.createHttpClientBuilder(
             _settings.getSslDisable(),
@@ -709,7 +709,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  public boolean isReachable(boolean chatty) throws Exception {
+  public boolean isReachable(boolean chatty) {
 
     WebTarget webTarget = null;
 

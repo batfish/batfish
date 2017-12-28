@@ -212,7 +212,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testCheckValidTopology() throws IOException {
+  public void testCheckValidTopology() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
@@ -227,7 +227,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testCheckTopologyInvalidNode() throws IOException {
+  public void testCheckTopologyInvalidNode() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
@@ -241,7 +241,7 @@ public class BatfishTest {
   }
 
   @Test
-  public void testCheckTopologyInvalidInterface() throws IOException {
+  public void testCheckTopologyInvalidInterface() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
         "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));

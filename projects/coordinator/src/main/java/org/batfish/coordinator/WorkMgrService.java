@@ -89,17 +89,17 @@ public class WorkMgrService {
     }
   }
 
-  private void checkApiKeyValidity(String apiKey) throws Exception {
+  private void checkApiKeyValidity(String apiKey) {
     if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
       throw new AccessControlException("Invalid API key: " + apiKey);
     }
   }
 
-  private void checkClientVersion(String clientVersion) throws Exception {
+  private void checkClientVersion(String clientVersion) {
     Version.checkCompatibleVersion("Service", "Client", clientVersion);
   }
 
-  private void checkContainerAccessibility(String apiKey, String containerName) throws Exception {
+  private void checkContainerAccessibility(String apiKey, String containerName) {
     if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName, true)) {
       throw new AccessControlException("container is not accessible by the api key");
     }

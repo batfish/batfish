@@ -26,7 +26,7 @@ public class NodSatJob<KeyT> extends BatfishJob<NodSatResult<KeyT>> {
   }
 
   @Override
-  public NodSatResult<KeyT> call() throws Exception {
+  public NodSatResult<KeyT> call() {
     Map<KeyT, Boolean> results = new LinkedHashMap<>();
     long startTime = System.currentTimeMillis();
     long elapsedTime;
