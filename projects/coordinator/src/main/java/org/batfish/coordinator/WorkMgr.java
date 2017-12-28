@@ -951,15 +951,27 @@ public class WorkMgr extends AbstractCoordinator {
     defaultEnvironmentLeafDir.toFile().mkdirs();
 
     // things look ok, now make the move
+    boolean routingTables = false;
+    boolean bgpTables = false;
     for (Path subFile : subFileList) {
       Path target;
       if (isEnvFile(subFile)) {
+        String name = subFile.getFileName().toString();
+        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES)) {
+          routingTables = true;
+        }
+        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
+          bgpTables = true;
+        }
         target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
       } else {
         target = srcTestrigDir.resolve(subFile.getFileName());
       }
       CommonUtil.copy(subFile, target);
     }
+    _logger.infof(
+        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s\n",
+        testrigName, bgpTables, routingTables);
 
     if (autoAnalyze) {
       List<WorkItem> autoWorkQueue = new LinkedList<>();
