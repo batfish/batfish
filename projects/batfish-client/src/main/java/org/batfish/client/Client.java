@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -3043,7 +3044,7 @@ public class Client extends AbstractClient implements IClient {
           try {
             referenceAnswer = mapper.readValue(referenceOutput, Answer.class);
             referenceAnswerString = mapper.writeValueAsString(referenceAnswer);
-          } catch (JsonParseException | UnrecognizedPropertyException e) {
+          } catch (JsonParseException | MismatchedInputException e) {
             // not all outputs of process command are of Answer.class type
             // in that case, we use the exact string as initialized above
             // for comparison
