@@ -12428,7 +12428,9 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "aws_configs"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -12443,7 +12445,9 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "aws_configs"
+            }
           },
           "vrfs" : {
             "default" : {
