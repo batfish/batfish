@@ -12422,7 +12422,7 @@
           }
         },
         "nat-08c21704416f06046" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "nat-08c21704416f06046",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -12437,7 +12437,7 @@
           }
         },
         "nat-09fd8f73171d2d9a3" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "nat-09fd8f73171d2d9a3",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
