@@ -552,8 +552,8 @@ public class Client extends AbstractClient implements IClient {
     }
     String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
     if (parameters.containsKey("questionName")) {
-     questionName = parameters.get("questionName").asText();
-     parameters.remove("questionName");
+      questionName = parameters.get("questionName").asText();
+      parameters.remove("questionName");
     }
     JSONObject instanceJson;
     try {
