@@ -524,7 +524,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 BatfishObjectMapper mapper = new BatfishObjectMapper(false);
                 // TODO: This can be represented much cleanly and easily with a Json
                 _logger.infof(
-                    "Ran question %s from analysis %s in container %s; workItemId:%s, status:%s, "
+                    "Ran question:%s from analysis:%s in container:%s; workItemId:%s, status:%s, "
                         + "computed dataplane:%s, parameters:%s\n",
                     questionName,
                     analysisName,

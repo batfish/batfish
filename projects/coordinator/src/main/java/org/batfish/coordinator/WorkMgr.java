@@ -435,7 +435,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (!aDir.toFile().mkdirs()) {
         throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
       }
-      _logger.infof("Initialized analysis %s in container %s\n", aName, containerName);
+      _logger.infof("Initialized analysis:%s in container:%s\n", aName, containerName);
     }
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
@@ -449,7 +449,7 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
       CommonUtil.writeFile(qFile, entry.getValue());
-      _logger.infof("Added question %s to analysis %s\n", entry.getKey(), aName);
+      _logger.infof("Added question:%s to analysis:%s\n", entry.getKey(), aName);
     }
 
     /** Delete questions */
@@ -459,7 +459,7 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
       }
       CommonUtil.deleteDirectory(qDir);
-      _logger.infof("Deleted question %s from analysis %s\n", qName, aName);
+      _logger.infof("Deleted question:%s from analysis:%s\n", qName, aName);
     }
   }
 
