@@ -71,7 +71,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testParsingRecovery() throws IOException {
+  public void testParsingRecovery() {
     String recoveryText =
         CommonUtil.readResource("org/batfish/grammar/juniper/testconfigs/recovery");
     Settings settings = new Settings();

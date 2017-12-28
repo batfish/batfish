@@ -287,7 +287,7 @@ public class DbAuthorizer implements Authorizer {
     return false;
   }
 
-  private synchronized void openDbConnection() throws SQLException {
+  private synchronized void openDbConnection() {
     int triesLeft = MAX_DB_TRIES;
 
     while (triesLeft > 0) {

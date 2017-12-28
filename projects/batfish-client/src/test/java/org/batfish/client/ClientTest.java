@@ -478,7 +478,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testGetQuestionNameInvalid2() throws JSONException {
+  public void testGetQuestionNameInvalid2() {
     JSONObject testQuestion = new JSONObject();
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("question testquestion does not have instance field");
@@ -884,7 +884,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionFromTextInvalid() throws Exception {
+  public void testLoadQuestionFromTextInvalid() {
     JSONObject testQuestion = new JSONObject();
 
     // checking if exception thrown for instance missing
@@ -997,7 +997,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions1() throws Exception {
+  public void testMergeQuestions1() {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourceQuestion", "sourcequestionvalue");
     sourceMap.put("destinationQuestion", "destinationquestionvalue");
@@ -1017,7 +1017,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions2() throws Exception {
+  public void testMergeQuestions2() {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourceQuestion", "sourcequestionvalue1");
     sourceMap.put("sourceQuestion", "sourcequestionvalue2");
@@ -1648,7 +1648,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testValidFloatValue() throws IOException {
+  public void testValidFloatValue() {
     Float floatValue = 15.0f;
     JsonNode floatNode = _mapper.valueToTree(floatValue);
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
@@ -1719,7 +1719,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testValidLongValue() throws IOException {
+  public void testValidLongValue() {
     Long longValue = 15L;
     JsonNode floatNode = _mapper.valueToTree(longValue);
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();

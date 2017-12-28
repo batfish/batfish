@@ -50,7 +50,7 @@ public class ParseEnvironmentRoutingTableJob
   }
 
   @Override
-  public ParseEnvironmentRoutingTableResult call() throws Exception {
+  public ParseEnvironmentRoutingTableResult call() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     String currentPath = _file.toAbsolutePath().toString();

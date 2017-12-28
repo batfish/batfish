@@ -26,14 +26,14 @@ public class VersionTest {
   }
 
   @Test
-  public void checkIncompatibleVersion() throws Exception {
+  public void checkIncompatibleVersion() {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("other version: '1.3.3' is not compatible with foo version: '1.2.3'");
     Version.checkCompatibleVersion("foo", "1.2.3", "other", "1.3.3");
   }
 
   @Test
-  public void illegalVersions() throws Exception {
+  public void illegalVersions() {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Illegal version 'zebra' for yours");
     Version.isCompatibleVersion("my", "1.2.3", "yours", "zebra");
