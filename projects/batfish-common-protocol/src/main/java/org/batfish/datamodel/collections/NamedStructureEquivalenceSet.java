@@ -3,8 +3,8 @@ package org.batfish.datamodel.collections;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.util.CommonUtil;
 
 public class NamedStructureEquivalenceSet<T>
@@ -18,19 +18,17 @@ public class NamedStructureEquivalenceSet<T>
 
   private SortedSet<String> _nodes;
 
-  private final String _representativeElement;
-
   @JsonCreator
-  public NamedStructureEquivalenceSet(
-      @JsonProperty(PROP_REPRESENTATIVE_ELEMENT) String representativeElement) {
-    _representativeElement = representativeElement;
-  }
+  private NamedStructureEquivalenceSet() {}
 
   public NamedStructureEquivalenceSet(String node, T namedStructure) {
-    this(node);
     _namedStructure = namedStructure;
-    _nodes = new TreeSet<>();
-    _nodes.add(node);
+    _nodes = ImmutableSortedSet.of(node);
+  }
+
+  public NamedStructureEquivalenceSet(Iterable<String> nodes, T namedStructure) {
+    _namedStructure = namedStructure;
+    _nodes = ImmutableSortedSet.copyOf(nodes);
   }
 
   public boolean compareStructure(T s) {
@@ -43,18 +41,7 @@ public class NamedStructureEquivalenceSet<T>
 
   @Override
   public int compareTo(NamedStructureEquivalenceSet<T> rhs) {
-    return _representativeElement.compareTo(rhs._representativeElement);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    } else if (!(o instanceof NamedStructureEquivalenceSet)) {
-      return false;
-    }
-    NamedStructureEquivalenceSet<?> rhs = (NamedStructureEquivalenceSet<?>) o;
-    return _representativeElement.equals(rhs._representativeElement);
+    return getRepresentativeElement().compareTo(rhs.getRepresentativeElement());
   }
 
   // ignore for now to avoid encoding large amounts of information in answer
@@ -69,23 +56,11 @@ public class NamedStructureEquivalenceSet<T>
 
   @JsonProperty(PROP_REPRESENTATIVE_ELEMENT)
   public String getRepresentativeElement() {
-    return _representativeElement;
-  }
-
-  @Override
-  public int hashCode() {
-    return _representativeElement.hashCode();
+    return _nodes.first();
   }
 
   public String prettyPrint(String indent) {
-    StringBuilder sb = new StringBuilder(indent + _representativeElement);
-    for (String node : _nodes) {
-      if (!node.equals(_representativeElement)) {
-        sb.append(" " + node);
-      }
-    }
-    sb.append("\n");
-    return sb.toString();
+    return String.format("%s%s\n", indent, String.join(" ", _nodes));
   }
 
   public void setNamedStructure(T namedStructure) {
@@ -94,5 +69,15 @@ public class NamedStructureEquivalenceSet<T>
 
   public void setNodes(SortedSet<String> nodes) {
     _nodes = nodes;
+  }
+
+  @JsonProperty(PROP_REPRESENTATIVE_ELEMENT)
+  private void setRepresentativeElement(String representativeElement) {
+    // No body because this is a virtual property computed from nodes
+  }
+
+  @Override
+  public String toString() {
+    return _nodes.toString();
   }
 }

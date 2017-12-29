@@ -113,7 +113,7 @@ public class Settings extends BaseSettings {
   private boolean _tracingEnable;
   private String _workBindHost;
 
-  public Settings(String[] args) throws Exception {
+  public Settings(String[] args) {
     super(
         CommonUtil.getConfig(
             BfConsts.PROP_COORDINATOR_PROPERTIES_PATH,
@@ -468,6 +468,10 @@ public class Settings extends BaseSettings {
     _periodCheckWorkMs = getLongOptionValue(ARG_PERIOD_CHECK_WORK_MS);
     _logFile = getStringOptionValue(ARG_LOG_FILE);
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
+  }
+
+  public void setContainersLocation(Path dir) {
+    _containersLocation = dir;
   }
 
   public void setSslPoolDisable(boolean sslPoolDisable) {

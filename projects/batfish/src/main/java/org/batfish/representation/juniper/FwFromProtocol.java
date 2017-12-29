@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
+import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -18,7 +20,7 @@ public final class FwFromProtocol extends FwFrom {
 
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    line.getIpProtocols().add(_protocol);
+    line.setIpProtocols(Iterables.concat(line.getIpProtocols(), Collections.singleton(_protocol)));
   }
 
   public IpProtocol getProtocol() {

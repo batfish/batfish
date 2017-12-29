@@ -3,7 +3,6 @@ package org.batfish.grammar;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
@@ -11,7 +10,7 @@ import org.junit.Test;
 public class ParseTreePrettyPrinterTest {
 
   @Test
-  public void testParseTreePrettyPrintWithCharacterLimit() throws IOException {
+  public void testParseTreePrettyPrintWithCharacterLimit() {
     List<String> strings = new ArrayList<>();
     strings.add("1234");
 

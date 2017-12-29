@@ -4,14 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -67,7 +68,7 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setPrefix(_prefix);
       if (_prefix != null) {
-        iface.getAllPrefixes().add(_prefix);
+        iface.setAllPrefixes(Collections.singleton(_prefix));
       }
       iface.setVrf(_vrf);
       if (_vrf != null) {
@@ -306,7 +307,7 @@ public final class Interface extends ComparableStructure<String> {
       case ALCATEL_AOS:
         return computeAosInteraceType(name);
 
-      case AWS_VPC:
+      case AWS:
         return computeAwsInterfaceType(name);
 
       case ARISTA:
@@ -374,7 +375,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<SubRange> _allowedVlans;
 
-  private Set<Prefix> _allPrefixes;
+  private SortedSet<Prefix> _allPrefixes;
 
   private boolean _autoState;
 
@@ -475,7 +476,7 @@ public final class Interface extends ComparableStructure<String> {
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
-    _allPrefixes = new TreeSet<>();
+    _allPrefixes = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
     _mtu = DEFAULT_MTU;
@@ -931,8 +932,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALL_PREFIXES)
-  public void setAllPrefixes(Set<Prefix> allPrefixes) {
-    _allPrefixes = allPrefixes;
+  public void setAllPrefixes(Iterable<Prefix> allPrefixes) {
+    _allPrefixes = ImmutableSortedSet.copyOf(allPrefixes);
   }
 
   @JsonProperty(PROP_AUTOSTATE)

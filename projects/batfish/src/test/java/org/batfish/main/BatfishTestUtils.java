@@ -65,6 +65,12 @@ public class BatfishTestUtils {
         new Batfish(
             settings, testrigs, makeDataPlaneCache(), makeEnvBgpCache(), makeEnvRouteCache());
     batfish.setMonotonicCache(true);
+    if (!configurations.isEmpty()) {
+      Batfish.serializeAsJson(
+          settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
+          batfish.computeEnvironmentTopology(configurations),
+          "environment topology");
+    }
     return batfish;
   }
 
@@ -104,7 +110,7 @@ public class BatfishTestUtils {
     envSettings.getEnvPath().toFile().mkdirs();
     writeTemporaryTestrigFiles(
         configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
-    writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR));
+    writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
     writeTemporaryTestrigFiles(bgpTablesText, envSettings.getEnvironmentBgpTablesPath());
     writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
     writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));

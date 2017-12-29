@@ -137,7 +137,7 @@ public enum NamedPort {
 
   private int _number;
 
-  private NamedPort(int number) {
+  NamedPort(int number) {
     _number = number;
   }
 

@@ -40,13 +40,24 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     BdpAnswerElement ae = new BdpAnswerElement();
     answer.addAnswerElement(ae);
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Topology topology = _batfish.computeEnvironmentTopology(configurations);
+    Topology topology = _batfish.getEnvironmentTopology();
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     Set<NodeInterfacePair> flowSinks =
         _batfish.computeFlowSinks(configurations, differentialContext, topology);
     BdpDataPlane dp =
         _engine.computeDataPlane(
             differentialContext, configurations, topology, externalAdverts, flowSinks, ae);
+    double averageRoutes =
+        dp.getNodes()
+            .values()
+            .stream()
+            .flatMap(n -> n._virtualRouters.values().stream())
+            .mapToInt(vr -> vr._mainRib.getRoutes().size())
+            .average()
+            .orElse(0.00d);
+    _logger.infof(
+        "Generated data-plane for testrig:%s; iterations:%s, avg entries per node:%.2f\n",
+        _batfish.getTestrigName(), ae.getDependentRoutesIterations(), averageRoutes);
     _logger.resetTimer();
     _batfish.newBatch("Writing data plane to disk", 0);
     _batfish.writeDataPlane(dp, ae);

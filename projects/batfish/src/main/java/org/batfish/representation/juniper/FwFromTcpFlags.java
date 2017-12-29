@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -19,6 +20,6 @@ public final class FwFromTcpFlags extends FwFrom {
 
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    line.getTcpFlags().addAll(_tcpFlags);
+    line.setTcpFlags(Iterables.concat(line.getTcpFlags(), _tcpFlags));
   }
 }

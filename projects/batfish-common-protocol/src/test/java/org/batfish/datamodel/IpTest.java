@@ -11,7 +11,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class IpTest {
   @Test
-  public void numSubnetBitsToSubnetLong() throws Exception {
+  public void numSubnetBitsToSubnetLong() {
     // Test the boundaries (0 and 32) as well as a representative sample of intermediate values.
     assertThat(Ip.numSubnetBitsToSubnetLong(0), equalTo(0L));
     assertThat(Ip.numSubnetBitsToSubnetLong(4), equalTo(0xF0000000L));

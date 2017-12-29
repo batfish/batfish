@@ -79,7 +79,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintAddressCountFromFuncOfSuffixTest() throws IOException {
+  public void jsonPathDisplayHintAddressCountFromFuncOfSuffixTest() {
     String displayVariable = "addressCountFromFuncOfSuffix";
     JsonPathResult result =
         computeJsonPathResult(
@@ -102,7 +102,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintInterfaceListFromPrefixOfSuffixTest() throws IOException {
+  public void jsonPathDisplayHintInterfaceListFromPrefixOfSuffixTest() {
     String displayVariable = "interfaceListFromPrefixOfSuffix";
     JsonPathResult result =
         computeJsonPathResult(
@@ -133,7 +133,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintMissingSuffixTest() throws IOException {
+  public void jsonPathDisplayHintMissingSuffixTest() {
     String displayVariable = "mtuFromSuffixOfSuffix";
     // because includeSuffix is 'false' this should fail
     JsonPathResult result =
@@ -152,7 +152,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintMtuFromSuffixOfSuffixTest() throws IOException {
+  public void jsonPathDisplayHintMtuFromSuffixOfSuffixTest() {
     String displayVariable = "mtuFromSuffixOfSuffix";
     JsonPathResult result =
         computeJsonPathResult(
@@ -175,7 +175,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintNodeFromPrefixTest() throws IOException {
+  public void jsonPathDisplayHintNodeFromPrefixTest() {
     String displayVariable = "nodeFromPrefix";
     JsonPathResult result =
         computeJsonPathResult(
@@ -198,7 +198,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintOneInterfaceCompositionTest() throws IOException {
+  public void jsonPathDisplayHintOneInterfaceCompositionTest() {
     String displayVariable = "oneInterface";
     JsonPathResult result =
         computeJsonPathResult(
@@ -228,7 +228,7 @@ public class JsonPathDisplayHintsTest {
   }
 
   @Test
-  public void jsonPathDisplayHintOneNodeCompositionTest() throws IOException {
+  public void jsonPathDisplayHintOneNodeCompositionTest() {
     String displayVariable = "oneNode";
     JsonPathResult result =
         computeJsonPathResult(

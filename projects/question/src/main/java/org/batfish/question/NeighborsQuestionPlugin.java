@@ -74,7 +74,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private final String _name;
 
-    private EdgeStyle(String name) {
+    EdgeStyle(String name) {
       _name = name;
     }
 
@@ -467,7 +467,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
         SortedSet<VerboseOspfEdge> vedges = new TreeSet<>();
-        initTopology(configurations);
+        initTopology();
         initRemoteOspfNeighbors(_batfish, configurations, _topology);
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
@@ -527,7 +527,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().contains(NeighborType.RIP)) {
         SortedSet<VerboseRipEdge> vedges = new TreeSet<>();
-        initTopology(configurations);
+        initTopology();
         initRemoteRipNeighbors(_batfish, configurations, _topology);
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
@@ -686,7 +686,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().isEmpty()
           || question.getNeighborTypes().contains(NeighborType.LAN)) {
-        initTopology(configurations);
+        initTopology();
         SortedSet<Edge> matchingEdges = new TreeSet<>();
         for (Edge edge : _topology.getEdges()) {
           Matcher node1Matcher = node1Regex.matcher(edge.getNode1());
@@ -761,9 +761,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
     }
 
-    private void initTopology(Map<String, Configuration> configurations) {
+    private void initTopology() {
       if (_topology == null) {
-        _topology = _batfish.computeEnvironmentTopology(configurations);
+        _topology = _batfish.getEnvironmentTopology();
       }
     }
 

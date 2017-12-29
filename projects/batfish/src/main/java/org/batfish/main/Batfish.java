@@ -1,11 +1,13 @@
 package org.batfish.main;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -132,8 +134,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.Question.InstanceData;
-import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
@@ -157,7 +157,7 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
-import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
+import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
@@ -487,6 +487,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
+    String containerName = _settings.getContainerDir().getFileName().toString();
     Path analysisQuestionsDir =
         _settings
             .getContainerDir()
@@ -505,7 +506,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
             String questionName = analysisQuestionDir.getFileName().toString();
             Path analysisQuestionPath = analysisQuestionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
             _settings.setQuestionPath(analysisQuestionPath);
-            Answer currentAnswer = answer();
+            Answer currentAnswer;
+            try (ActiveSpan analysisQuestionSpan =
+                GlobalTracer.get()
+                    .buildSpan(
+                        String.format(
+                            "Getting answer to question %s from analysis %s",
+                            questionName, analysisName))
+                    .startActive()) {
+              assert analysisQuestionSpan != null; // make span not show up as unused.
+              analysisQuestionSpan.setTag("WorkItemId", _settings.getTaskId());
+              currentAnswer = answer();
+            }
+            // Ensuring that question was parsed successfully
+            if (currentAnswer.getQuestion() != null) {
+              try {
+                BatfishObjectMapper mapper = new BatfishObjectMapper(false);
+                // TODO: This can be represented much cleanly and easily with a Json
+                _logger.infof(
+                    "Ran question:%s from analysis:%s in container:%s; workItemId:%s, status:%s, "
+                        + "computed dataplane:%s, parameters:%s\n",
+                    questionName,
+                    analysisName,
+                    containerName,
+                    _settings.getTaskId(),
+                    currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
+                    currentAnswer.getQuestion().getDataPlane(),
+                    mapper.writeValueAsString(
+                        currentAnswer.getQuestion().getInstance().getVariables()));
+              } catch (JsonProcessingException e) {
+                throw new BatfishException(
+                    String.format(
+                        "Error logging question %s in analysis %s", questionName, analysisName),
+                    e);
+              }
+            }
             initAnalysisQuestionPath(analysisName, questionName);
             outputAnswer(currentAnswer);
             ae.getAnswers().put(questionName, currentAnswer);
@@ -518,17 +553,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void anonymizeConfigurations() {
-    // TODO Auto-generated method stub
-
-  }
-
   public Answer answer() {
     Question question = null;
 
     // return right away if we cannot parse the question successfully
     try {
-      question = parseQuestion();
+      question = Question.parseQuestion(_settings.getQuestionPath(), getCurrentClassLoader());
     } catch (Exception e) {
       Answer answer = new Answer();
       BatfishException exception = new BatfishException("Could not parse question", e);
@@ -609,7 +639,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           || aclName.contains("~INBOUND_ZONE_FILTER~")) {
         continue;
       }
-      SortedSet<?> s = (SortedSet<?>) e.getValue();
+      Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
         String hostname = aclEqSet.getRepresentativeElement();
@@ -882,6 +912,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
+  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
+    _logger.resetTimer();
+    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
+    topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    _logger.printElapsedTime();
+    return topology;
+  }
+
   @Override
   public Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology) {
@@ -967,26 +1005,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.printElapsedTime();
   }
 
-  @Override
-  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
-    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    SortedSet<Edge> edges = topology.getEdges();
-    edges.removeAll(blacklistEdges);
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    for (String blacklistNode : blacklistNodes) {
-      topology.removeNode(blacklistNode);
-    }
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-      topology.removeInterface(blacklistInterface);
-    }
-    Topology prunedTopology = new Topology(topology.getEdges());
-    _logger.printElapsedTime();
-    return prunedTopology;
-  }
-
   private Topology computeTestrigTopology(
       Path testRigPath, Map<String, Configuration> configurations) {
     Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
@@ -994,6 +1012,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Get generated facts from topology file
     if (Files.exists(topologyFilePath)) {
       topology = processTopologyFile(topologyFilePath);
+      _logger.infof("Testrig:%s has topology file", _settings.getTestrig());
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -1658,6 +1677,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
+  }
+
+  @Override
+  public Topology getEnvironmentTopology() {
+    try {
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return mapper.readValue(
+          CommonUtil.readFile(
+              _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath()),
+          Topology.class);
+    } catch (IOException e) {
+      throw new BatfishException("Could not getEnvironmentTopology: ", e);
+    }
   }
 
   @Override
@@ -2669,11 +2701,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return ast;
   }
 
-  private AwsVpcConfiguration parseAwsVpcConfigurations(Map<Path, String> configurationData) {
-    AwsVpcConfiguration config = new AwsVpcConfiguration();
+  private AwsConfiguration parseAwsConfigurations(Map<Path, String> configurationData) {
+    AwsConfiguration config = new AwsConfiguration();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path file = configFile.getKey();
       String fileText = configFile.getValue();
+      String regionName = file.getName(file.getNameCount() - 2).toString(); // parent dir name
 
       // we stop classic link processing here because it interferes with VPC
       // processing
@@ -2691,7 +2724,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       if (jsonObj != null) {
         try {
-          config.addConfigElement(jsonObj, _logger);
+          config.addConfigElement(regionName, jsonObj, _logger);
         } catch (JSONException e) {
           throw new BatfishException("Problems parsing JSON in " + file, e);
         }
@@ -2827,21 +2860,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return specifier;
   }
 
-  private Question parseQuestion() {
-    Path questionPath = _settings.getQuestionPath();
-    _logger.info("Reading question file: \"" + questionPath + "\"...");
-    String rawQuestionText = CommonUtil.readFile(questionPath);
-    _logger.info("OK\n");
-    String questionText = preprocessQuestion(rawQuestionText);
-    try {
-      ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
-      Question question = mapper.readValue(questionText, Question.class);
-      return question;
-    } catch (IOException e) {
-      throw new BatfishException("Could not parse JSON question", e);
-    }
-  }
-
   public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     _logger.resetTimer();
@@ -2916,12 +2934,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseEnvironment();
     Map<String, Configuration> baseConfigurations = loadConfigurations();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
+    Topology baseTopology = getEnvironmentTopology();
     popEnvironment();
 
     // load diff configurations and generate diff data plane
     pushDeltaEnvironment();
     Map<String, Configuration> diffConfigurations = loadConfigurations();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
+    Topology diffTopology = getEnvironmentTopology();
     popEnvironment();
 
     pushDeltaEnvironment();
@@ -2943,7 +2963,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<CompositeNodJob> jobs = new ArrayList<>();
 
     // generate local edge reachability and black hole queries
-    Topology diffTopology = computeEnvironmentTopology(diffConfigurations);
     SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
@@ -2971,7 +2990,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
     missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    Topology baseTopology = computeEnvironmentTopology(baseConfigurations);
     SortedSet<Edge> baseEdges = baseTopology.getEdges();
     SortedSet<Edge> missingEdges = new TreeSet<>();
     missingEdges.addAll(baseEdges);
@@ -3059,85 +3077,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (c.getDeviceType() == null) {
         c.setDeviceType(DeviceType.SWITCH);
       }
-    }
-  }
-
-  private String preprocessQuestion(String rawQuestionText) {
-    try {
-      JSONObject jobj = new JSONObject(rawQuestionText);
-      if (jobj.has(BfConsts.PROP_INSTANCE) && !jobj.isNull(BfConsts.PROP_INSTANCE)) {
-        String instanceDataStr = jobj.getString(BfConsts.PROP_INSTANCE);
-        BatfishObjectMapper mapper = new BatfishObjectMapper();
-        InstanceData instanceData =
-            mapper.<InstanceData>readValue(instanceDataStr, new TypeReference<InstanceData>() {});
-        for (Entry<String, Variable> e : instanceData.getVariables().entrySet()) {
-          String varName = e.getKey();
-          Variable variable = e.getValue();
-          JsonNode value = variable.getValue();
-          if (value == null) {
-            if (variable.getOptional()) {
-              /*
-               * Recursively look for all key, value pairs and remove keys
-               * whose value is "${varName}." Is this fragile?
-               * To be doubly sure, we do only for keys whole parent object is a questions, which
-               * we judge by it having a key "class" whose value starts with "org.batfish.question"
-               */
-              recursivelyRemoveOptionalVar(jobj, varName);
-            } else {
-              // What to do here? For now, do nothing and assume that
-              // later validation will handle it.
-            }
-            continue;
-          }
-          if (variable.getType() == Variable.Type.QUESTION) {
-            if (variable.getMinElements() != null) {
-              if (!value.isArray()) {
-                throw new IllegalArgumentException("Expecting JSON array for array type");
-              }
-              JSONArray arr = new JSONArray();
-              for (int i = 0; i < value.size(); i++) {
-                String valueJsonString = new ObjectMapper().writeValueAsString(value.get(i));
-                arr.put(i, new JSONObject(preprocessQuestion(valueJsonString)));
-              }
-              jobj.put(varName, arr);
-            } else {
-              String valueJsonString = new ObjectMapper().writeValueAsString(value);
-              jobj.put(varName, new JSONObject(preprocessQuestion(valueJsonString)));
-            }
-          }
-        }
-        String questionText = jobj.toString();
-        for (Entry<String, Variable> e : instanceData.getVariables().entrySet()) {
-          String varName = e.getKey();
-          Variable variable = e.getValue();
-          JsonNode value = variable.getValue();
-          String valueJsonString = new ObjectMapper().writeValueAsString(value);
-          boolean stringType = variable.getType().getStringType();
-          boolean setType = variable.getMinElements() != null;
-          if (value != null) {
-            String topLevelVarNameRegex = Pattern.quote("\"${" + varName + "}\"");
-            String inlineVarNameRegex = Pattern.quote("${" + varName + "}");
-            String topLevelReplacement = valueJsonString;
-            String inlineReplacement;
-            if (stringType && !setType) {
-              inlineReplacement = valueJsonString.substring(1, valueJsonString.length() - 1);
-            } else {
-              String quotedValueJsonString = JSONObject.quote(valueJsonString);
-              inlineReplacement =
-                  quotedValueJsonString.substring(1, quotedValueJsonString.length() - 1);
-            }
-            String inlineReplacementRegex = Matcher.quoteReplacement(inlineReplacement);
-            String topLevelReplacementRegex = Matcher.quoteReplacement(topLevelReplacement);
-            questionText = questionText.replaceAll(topLevelVarNameRegex, topLevelReplacementRegex);
-            questionText = questionText.replaceAll(inlineVarNameRegex, inlineReplacementRegex);
-          }
-        }
-        return questionText;
-      }
-      return rawQuestionText;
-    } catch (JSONException | IOException e) {
-      throw new BatfishException(
-          String.format("Could not convert raw question text [%s] to JSON", rawQuestionText), e);
     }
   }
 
@@ -3458,29 +3397,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void recursivelyRemoveOptionalVar(JSONObject questionObject, String varName)
-      throws JSONException {
-    Iterator<?> iter = questionObject.keys();
-    while (iter.hasNext()) {
-      String key = (String) iter.next();
-      Object value = questionObject.get(key);
-      if (value instanceof String) {
-        if (value.equals("${" + varName + "}")) {
-          iter.remove();
-        }
-      } else if (value instanceof JSONObject) {
-        JSONObject childObject = (JSONObject) value;
-        if (childObject.has("class")) {
-          Object classValue = childObject.get("class");
-          if (classValue instanceof String
-              && ((String) classValue).startsWith("org.batfish.question")) {
-            recursivelyRemoveOptionalVar(childObject, varName);
-          }
-        }
-      }
-    }
-  }
-
   @Override
   public AnswerElement reducedReachability(HeaderSpace headerSpace, String ingressNodeRegex) {
     if (SystemUtils.IS_OS_MAC_OSX) {
@@ -3780,11 +3696,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // return answer;
     // }
     //
-    if (_settings.getAnonymize()) {
-      anonymizeConfigurations();
-      return answer;
-    }
-
     // if (_settings.getRoleTransitQuery()) {
     // genRoleTransitQueries();
     // return answer;
@@ -3844,7 +3755,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void serializeAsJson(Path outputPath, Object object, String objectName) {
+  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
     try {
       new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
     } catch (IOException e) {
@@ -3852,17 +3763,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private Answer serializeAwsVpcConfigs(Path testRigPath, Path outputPath) {
+  private Answer serializeAwsConfigs(Path testRigPath, Path outputPath) {
     Answer answer = new Answer();
     Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
-    AwsVpcConfiguration config = parseAwsVpcConfigurations(configurationData);
+        readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
+    AwsConfiguration config = parseAwsConfigurations(configurationData);
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     outputPath.toFile().mkdirs();
-    Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_FILE);
-    _logger.debug("Serializing AWS VPCs to " + currentOutputPath + "\"...");
+    Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_FILE);
+    _logger.debug("Serializing AWS to " + currentOutputPath + "\"...");
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
@@ -3942,6 +3853,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations =
         parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
+    _logger.infof(
+        "Testrig:%s has total number of host configs:%d ",
+        _settings.getTestrig(), allHostConfigurations.size());
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
@@ -4032,9 +3946,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         org.batfish.datamodel.pojo.Topology.create(
             _testrigSettings.getName(), configurations, testrigTopology);
     serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
-    serializeAsJson(
-        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
     serializeIndependentConfigs(configurations, outputPath);
     serializeObject(answerElement, _testrigSettings.getConvertAnswerPath());
 
@@ -4047,6 +3958,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
         envTopology,
         "environment topology");
+
+    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
+    serializeAsJson(
+        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
 
     return answer;
   }
@@ -4149,9 +4064,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // look for AWS VPC configs
-    Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR);
+    Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
     if (Files.exists(awsVpcConfigsPath)) {
-      answer.append(serializeAwsVpcConfigs(testRigPath, outputPath));
+      answer.append(serializeAwsConfigs(testRigPath, outputPath));
       configsFound = true;
     }
 
@@ -4401,6 +4316,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     ValidateEnvironmentAnswerElement ae = loadValidateEnvironmentAnswerElement();
     answer.addAnswerElement(ae);
+    Topology envTopology = computeEnvironmentTopology(loadConfigurations());
+    serializeAsJson(
+        _testrigSettings.getEnvironmentSettings().getSerializedTopologyPath(),
+        envTopology,
+        "environment topology");
     return answer;
   }
 

@@ -39,6 +39,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
@@ -47,11 +48,13 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -62,15 +65,8 @@ public class WorkMgr extends AbstractCoordinator {
   static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
-      Main.getWorkMgr().checkTask();
+      Main.getWorkMgr().checkTasks();
       Main.getWorkMgr().assignWork();
-    }
-  }
-
-  static final class CheckTaskTask implements Runnable {
-    @Override
-    public void run() {
-      Main.getWorkMgr().checkTask();
     }
   }
 
@@ -99,7 +95,7 @@ public class WorkMgr extends AbstractCoordinator {
     super(false);
     _settings = settings;
     _logger = logger;
-    _workQueueMgr = new WorkQueueMgr();
+    _workQueueMgr = new WorkQueueMgr(logger);
     loadPlugins();
   }
 
@@ -236,7 +232,13 @@ public class WorkMgr extends AbstractCoordinator {
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
-      _workQueueMgr.markAssignmentSuccess(work, worker);
+      try {
+        _workQueueMgr.markAssignmentSuccess(work, worker);
+      } catch (Exception e) {
+        String stackTrace = ExceptionUtils.getFullStackTrace(e);
+        _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
+      }
+
     } else {
       _workQueueMgr.markAssignmentFailure(work);
     }
@@ -244,22 +246,20 @@ public class WorkMgr extends AbstractCoordinator {
     Main.getPoolMgr().markAssignmentResult(worker, assigned);
   }
 
-  private void checkTask() {
+  private void checkTasks() {
     try {
-      QueuedWork work = _workQueueMgr.getWorkForChecking();
-      if (work == null) {
-        // _logger.info("WM:checkTask: No assigned work\n");
-        return;
+      List<QueuedWork> workToCheck = _workQueueMgr.getWorkForChecking();
+      for (QueuedWork work : workToCheck) {
+        String assignedWorker = work.getAssignedWorker();
+        if (assignedWorker == null) {
+          _logger.error("WM:CheckWork no assigned worker for " + work + "\n");
+          _workQueueMgr.makeWorkUnassigned(work);
+          continue;
+        }
+        checkTask(work, assignedWorker);
       }
-      String assignedWorker = work.getAssignedWorker();
-      if (assignedWorker == null) {
-        _logger.error("WM:CheckWork no assinged worker for " + work + "\n");
-        _workQueueMgr.makeWorkUnassigned(work);
-        return;
-      }
-      checkTask(work, assignedWorker);
     } catch (Exception e) {
-      _logger.error("Got exception in assignWork: " + e.getMessage());
+      _logger.error("Got exception in checkTasks: " + e.getMessage());
     }
   }
 
@@ -340,6 +340,70 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  private WorkDetails computeWorkDetails(WorkItem workItem) {
+
+    WorkType workType = WorkType.UNKNOWN;
+
+    if (WorkItemBuilder.isParsingWorkItem(workItem)) {
+      workType = WorkType.PARSING;
+    }
+
+    if (WorkItemBuilder.isDataplaningWorkItem(workItem)) {
+      if (workType != WorkType.UNKNOWN) {
+        throw new BatfishException("Cannot do composite work. Separate PARSING and DATAPLANING.");
+      }
+      workType = WorkType.DATAPLANING;
+    }
+
+    if (WorkItemBuilder.isAnsweringWorkItem(workItem)) {
+      if (workType != WorkType.UNKNOWN) {
+        throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
+      }
+      String qName = WorkItemBuilder.getQuestionName(workItem);
+      if (qName == null) {
+        throw new BatfishException("Question name not provided for ANSWER work");
+      }
+      Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
+      Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
+      workType =
+          question.getDataPlane()
+              ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
+              : WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+    }
+
+    if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
+      if (workType != WorkType.UNKNOWN) {
+        throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
+      }
+      String aName = WorkItemBuilder.getAnalysisName(workItem);
+      if (aName == null) {
+        throw new BatfishException("Analysis name not provided for ANALYZE work");
+      }
+      Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
+      workType = WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+      for (String qName : qNames) {
+        Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
+        Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
+        if (question.getDataPlane()) {
+          workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
+        }
+      }
+    }
+
+    Pair<Pair<String, String>, Pair<String, String>> settings =
+        WorkItemBuilder.getBaseAndDeltaSettings(workItem);
+    WorkDetails details =
+        new WorkDetails(
+            WorkItemBuilder.getBaseTestrig(settings),
+            WorkItemBuilder.getBaseEnvironment(settings),
+            WorkItemBuilder.getDeltaTestrig(settings),
+            WorkItemBuilder.getDeltaEnvironment(settings),
+            WorkItemBuilder.isDifferential(workItem),
+            workType);
+
+    return details;
+  }
+
   /**
    * Create, update, or truncate an analysis with provided questions or and/or question names
    *
@@ -371,6 +435,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (!aDir.toFile().mkdirs()) {
         throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
       }
+      _logger.infof("Initialized analysis:%s in container:%s\n", aName, containerName);
     }
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
@@ -384,6 +449,7 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
       CommonUtil.writeFile(qFile, entry.getValue());
+      _logger.infof("Added question:%s to analysis:%s\n", entry.getKey(), aName);
     }
 
     /** Delete questions */
@@ -393,6 +459,7 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
       }
       CommonUtil.deleteDirectory(qDir);
+      _logger.infof("Deleted question:%s from analysis:%s\n", qName, aName);
     }
   }
 
@@ -496,8 +563,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   public String getAnalysisQuestion(
       String containerName, String analysisName, String questionName) {
-    Path questionDir = getdirAnalysisQuestion(containerName, analysisName, questionName);
-    Path qFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+    Path qFile = getpathAnalysisQuestion(containerName, analysisName, questionName);
     if (!Files.exists(qFile)) {
       throw new BatfishException("Question file not found for " + questionName);
     }
@@ -650,7 +716,7 @@ public class WorkMgr extends AbstractCoordinator {
     return containers;
   }
 
-  private Path getdirContainer(String containerName, boolean errIfNotEixst) {
+  private static Path getdirContainer(String containerName, boolean errIfNotEixst) {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(containerName).toAbsolutePath();
     if (errIfNotEixst && !Files.exists(containerDir)) {
@@ -687,7 +753,7 @@ public class WorkMgr extends AbstractCoordinator {
     return envDir;
   }
 
-  private Path getdirTestrig(String containerName, String testrigName) {
+  public Path getdirTestrig(String containerName, String testrigName) {
     Path testrigDir = getdirTestrigs(containerName).resolve(Paths.get(testrigName));
     if (!Files.exists(testrigDir)) {
       throw new BatfishException("Testrig '" + testrigName + "' does not exist");
@@ -698,6 +764,28 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Path getdirTestrigs(String containerName) {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+  }
+
+  public Path getpathAnalysisQuestion(
+      String containerName, String analysisName, String questionName) {
+    Path questionDir = getdirAnalysisQuestion(containerName, analysisName, questionName);
+    return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+  }
+
+  public Path getpathContainerQuestion(String containerName, String questionName) {
+    Path questionDir = getdirContainerQuestion(containerName, questionName);
+    return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+  }
+
+  // this function should build on others but some overrides are getting in the way
+  // TODO: cleanup later
+  public static Path getpathTestrigMetadata(String container, String testrig) {
+    return Main.getSettings()
+        .getContainersLocation()
+        .resolve(container)
+        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(testrig)
+        .resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
   public JSONObject getStatusJson() throws JSONException {
@@ -743,6 +831,11 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     return retStringBuilder.toString();
+  }
+
+  public TestrigMetadata getTestrigMetadata(String containerName, String testrigName)
+      throws IOException {
+    return TestrigMetadataMgr.readMetadata(getpathTestrigMetadata(containerName, testrigName));
   }
 
   @Nullable
@@ -834,14 +927,13 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    // Create metadata file (RELPATH_METADATA_FILE is "metadata.json")
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
-    TestrigMetadata metadata = new TestrigMetadata(Instant.now());
-    Path metadataPath = testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE);
+    TestrigMetadata metadata =
+        new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     try {
-      CommonUtil.writeFile(metadataPath, mapper.writeValueAsString(metadata));
+      TestrigMetadataMgr.writeMetadata(
+          metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
     } catch (JsonProcessingException e) {
-      _logger.error(e.getMessage());
+      throw new BatfishException("Could not write testrigMetadata", e);
     }
 
     Path srcSubdir = srcDirEntries.iterator().next();
@@ -859,20 +951,32 @@ public class WorkMgr extends AbstractCoordinator {
     defaultEnvironmentLeafDir.toFile().mkdirs();
 
     // things look ok, now make the move
+    boolean routingTables = false;
+    boolean bgpTables = false;
     for (Path subFile : subFileList) {
       Path target;
       if (isEnvFile(subFile)) {
+        String name = subFile.getFileName().toString();
+        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES)) {
+          routingTables = true;
+        }
+        if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
+          bgpTables = true;
+        }
         target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
       } else {
         target = srcTestrigDir.resolve(subFile.getFileName());
       }
       CommonUtil.copy(subFile, target);
     }
+    _logger.infof(
+        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s\n",
+        testrigName, bgpTables, routingTables);
 
     if (autoAnalyze) {
       List<WorkItem> autoWorkQueue = new LinkedList<>();
 
-      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName, false);
+      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
       autoWorkQueue.add(parseWork);
 
       Set<String> analysisNames = listAnalyses(containerName);
@@ -888,17 +992,6 @@ public class WorkMgr extends AbstractCoordinator {
                 false,
                 false);
         autoWorkQueue.add(analyzeWork);
-      }
-
-      // NB: This way of doing things only works when we have a single worker; otherwise workitems
-      // lower down the order can get fired before those higher in the order
-      // The right solution is to put workitem2 on the queue only after workitem1 has finished
-      // successfully. The rightest solution is for workers to be aware of dependencies so they
-      // don't try to execute tasks that depend on other tasks that are currently being executed.
-
-      // this check is not foolproof because new workers may be added later but good enough for now
-      if (Main.getPoolMgr().getNumWorkers() > 1) {
-        throw new BatfishException("Cannot auto analyze when multiple workers are present");
       }
 
       for (WorkItem workItem : autoWorkQueue) {
@@ -1035,26 +1128,32 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean queueWork(WorkItem workItem) {
-    Path testrigDir =
-        Main.getSettings()
-            .getContainersLocation()
-            .resolve(
-                Paths.get(
-                    workItem.getContainerName(),
-                    BfConsts.RELPATH_TESTRIGS_DIR,
-                    workItem.getTestrigName()));
+    Path testrigDir = getdirTestrig(workItem.getContainerName(), workItem.getTestrigName());
     if (workItem.getTestrigName().isEmpty() || !Files.exists(testrigDir)) {
       throw new BatfishException("Non-existent testrig: '" + testrigDir.getFileName() + "'");
     }
     boolean success;
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
-      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem));
+      WorkDetails workDetails = computeWorkDetails(workItem);
+      try {
+        if (TestrigMetadataMgr.getEnvironmentMetadata(
+                    workItem.getContainerName(), workDetails.baseTestrig, workDetails.baseEnv)
+                == null
+            || (workDetails.isDifferential
+                && TestrigMetadataMgr.getEnvironmentMetadata(
+                        workItem.getContainerName(), workDetails.deltaTestrig, workDetails.deltaEnv)
+                    == null)) {
+          throw new BatfishException("Environment metadata not found");
+        }
+      } catch (Exception e) {
+        throw new BatfishException("Testrig/environment metadata not found.");
+      }
+      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException("Failed to queue work", e);
     }
-    // as an optimization trigger AssignWork to see if we can schedule this
-    // (or another) work
+    // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
       Thread thread =
           new Thread() {
@@ -1177,6 +1276,12 @@ public class WorkMgr extends AbstractCoordinator {
     for (Path subdirFile : subFileList) {
       Path target = dstDir.resolve(subdirFile.getFileName());
       CommonUtil.moveByCopy(subdirFile, target);
+    }
+
+    try {
+      TestrigMetadataMgr.initializeEnvironment(containerName, testrigName, newEnvName);
+    } catch (IOException e) {
+      throw new BatfishException("Could not initialize environmentMetadata", e);
     }
 
     // delete the empty directory and the zip file
