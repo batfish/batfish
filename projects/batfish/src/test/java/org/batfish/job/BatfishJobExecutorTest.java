@@ -128,7 +128,7 @@ public class BatfishJobExecutorTest {
     }
 
     @Override
-    public BfTestResult call() throws Exception {
+    public BfTestResult call() {
       long startTime = System.currentTimeMillis();
       return new BfTestResult(
           System.currentTimeMillis() - startTime, _logger.getHistory(), _testValue);

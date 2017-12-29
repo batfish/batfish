@@ -53,8 +53,6 @@ public interface IBatfish extends IPluginConsumer {
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
-  Topology computeEnvironmentTopology(Map<String, Configuration> configurations);
-
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   DataPlanePluginSettings getDataPlanePluginSettings();
@@ -62,6 +60,8 @@ public interface IBatfish extends IPluginConsumer {
   String getDifferentialFlowTag();
 
   Environment getEnvironment();
+
+  Topology getEnvironmentTopology();
 
   String getFlowTag();
 

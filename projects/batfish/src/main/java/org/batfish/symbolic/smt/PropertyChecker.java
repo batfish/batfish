@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.Iterables;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -79,36 +80,44 @@ public class PropertyChecker {
 
   private void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
+    // Skip inference if the destination IP headerspace does not need to be inferred.
+    if (!q.getHeaderSpace().getDstIps().isEmpty()) {
+      return;
+    }
+
     // Infer relevant destination IP headerspace from interfaces
-    if (q.getHeaderSpace().getDstIps().isEmpty()) {
-      for (GraphEdge ge : destPorts) {
-        // If there is an external interface, then
-        // it can be any prefix, so we leave it unconstrained
-        if (g.getEbgpNeighbors().containsKey(ge)) {
-          q.getHeaderSpace().getDstIps().clear();
-          q.getHeaderSpace().getNotDstIps().clear();
-          break;
-        }
-        // If we don't know what is on the other end
-        if (ge.getPeer() == null) {
+    HeaderSpace headerSpace = q.getHeaderSpace();
+    for (GraphEdge ge : destPorts) {
+      // If there is an external interface, then
+      // it can be any prefix, so we leave it unconstrained
+      if (g.getEbgpNeighbors().containsKey(ge)) {
+        headerSpace.setDstIps(Collections.emptySet());
+        headerSpace.setNotDstIps(Collections.emptySet());
+        break;
+      }
+      // If we don't know what is on the other end
+      if (ge.getPeer() == null) {
+        Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
+        IpWildcard dst = new IpWildcard(pfx);
+        headerSpace.setDstIps(
+            Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
+      } else {
+        // If host, add the subnet but not the neighbor's address
+        if (g.isHost(ge.getRouter())) {
           Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
           IpWildcard dst = new IpWildcard(pfx);
-          q.getHeaderSpace().getDstIps().add(dst);
+          headerSpace.setDstIps(
+              Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
+          Ip ip = ge.getEnd().getPrefix().getAddress();
+          IpWildcard dst2 = new IpWildcard(ip);
+          headerSpace.setNotDstIps(
+              Iterables.concat(headerSpace.getNotDstIps(), Collections.singleton(dst2)));
         } else {
-          // If host, add the subnet but not the neighbor's address
-          if (g.isHost(ge.getRouter())) {
-            Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
-            IpWildcard dst = new IpWildcard(pfx);
-            q.getHeaderSpace().getDstIps().add(dst);
-            Ip ip = ge.getEnd().getPrefix().getAddress();
-            IpWildcard dst2 = new IpWildcard(ip);
-            q.getHeaderSpace().getNotDstIps().add(dst2);
-          } else {
-            // Otherwise, we add the exact address
-            Ip ip = ge.getStart().getPrefix().getAddress();
-            IpWildcard dst = new IpWildcard(ip);
-            q.getHeaderSpace().getDstIps().add(dst);
-          }
+          // Otherwise, we add the exact address
+          Ip ip = ge.getStart().getPrefix().getAddress();
+          IpWildcard dst = new IpWildcard(ip);
+          headerSpace.setDstIps(
+              Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
         }
       }
     }

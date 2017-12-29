@@ -2,12 +2,10 @@ package org.batfish.client;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
@@ -539,7 +537,6 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean answer(
       String questionTemplateName, String paramsLine, boolean isDelta, FileWriter outWriter) {
-    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
     String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
     if (questionContentUnmodified == null) {
       throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
@@ -551,9 +548,15 @@ public class Client extends AbstractClient implements IClient {
     } catch (JSONException e) {
       throw new BatfishException("Question content is not valid JSON", e);
     }
+    String questionName = DEFAULT_QUESTION_PREFIX + "_" + UUID.randomUUID();
+    if (parameters.containsKey("questionName")) {
+      questionName = parameters.get("questionName").asText();
+      parameters.remove("questionName");
+    }
     JSONObject instanceJson;
     try {
       instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
+      instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
     } catch (JSONException e) {
       throw new BatfishException("Question is missing instance data", e);
     }
@@ -579,7 +582,7 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException("Could not process modified instance data", e);
     }
     String modifiedQuestionStr = questionJson.toString();
-    boolean questionJsonDifferential;
+    boolean questionJsonDifferential = false;
     // check whether question is valid modulo instance data
     try {
       questionJsonDifferential =
@@ -618,6 +621,7 @@ public class Client extends AbstractClient implements IClient {
             _currEnv,
             _currDeltaTestrig,
             _currDeltaEnv,
+            questionJsonDifferential,
             isDelta);
     return execute(wItemAs, outWriter);
   }
@@ -641,7 +645,8 @@ public class Client extends AbstractClient implements IClient {
     return answer(qTypeStr, paramsLine, delta, outWriter);
   }
 
-  private boolean answerFile(Path questionFile, boolean isDelta, FileWriter outWriter) {
+  private boolean answerFile(
+      Path questionFile, boolean isDifferential, boolean isDelta, FileWriter outWriter) {
 
     if (!Files.exists(questionFile)) {
       throw new BatfishException("Question file not found: " + questionFile);
@@ -672,6 +677,7 @@ public class Client extends AbstractClient implements IClient {
             _currEnv,
             _currDeltaTestrig,
             _currDeltaEnv,
+            isDifferential,
             isDelta);
 
     return execute(wItemAs, outWriter);
@@ -726,7 +732,8 @@ public class Client extends AbstractClient implements IClient {
     // if no exception is thrown, then the modifiedQuestionJson is good
     Path questionFile = createTempFile("question", modifiedQuestionJson);
     questionFile.toFile().deleteOnExit();
-    boolean result = answerFile(questionFile, isDelta, outWriter);
+    boolean result =
+        answerFile(questionFile, modifiedQuestion.getDifferential(), isDelta, outWriter);
     if (questionFile != null) {
       CommonUtil.deleteIfExists(questionFile);
     }
@@ -1097,8 +1104,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean generateDataplane(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters)
-      throws Exception {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DP)) {
       return false;
     }
@@ -1114,8 +1120,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean generateDeltaDataplane(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters)
-      throws Exception {
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.GEN_DELTA_DP)) {
       return false;
     }
@@ -1160,8 +1165,7 @@ public class Client extends AbstractClient implements IClient {
       @Nullable FileWriter outWriter,
       List<String> options,
       List<String> parameters,
-      boolean delta)
-      throws Exception {
+      boolean delta) {
     Command command = delta ? Command.GET_DELTA : Command.GET;
     if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, command)) {
       return false;
@@ -1598,18 +1602,10 @@ public class Client extends AbstractClient implements IClient {
     _logger.infof("to %s->%s\n", _currDeltaTestrig, _currDeltaEnv);
     _logger.output("\n");
 
-    WorkItem wItemGenDdp =
-        WorkItemBuilder.getWorkItemCompileDeltaEnvironment(
-            _currContainerName, _currDeltaTestrig, _currEnv, _currDeltaEnv);
-    if (!execute(wItemGenDdp, outWriter)) {
-      return false;
-    }
-
-    WorkItem wItemValidateEnvironment =
-        WorkItemBuilder.getWorkItemValidateEnvironment(
+    WorkItem wItemProcessEnv =
+        WorkItemBuilder.getWorkItemProcessEnvironment(
             _currContainerName, _currDeltaTestrig, _currDeltaEnv);
-
-    if (!execute(wItemValidateEnvironment, outWriter)) {
+    if (!execute(wItemProcessEnv, outWriter)) {
       return false;
     }
 
@@ -1746,8 +1742,10 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean initTestrig(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
-      throws Exception {
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters,
+      boolean delta) {
     Command command = delta ? Command.INIT_DELTA_TESTRIG : Command.INIT_TESTRIG;
     if (!isValidArgument(options, parameters, 1, 1, 2, command)) {
       return false;
@@ -1788,8 +1786,7 @@ public class Client extends AbstractClient implements IClient {
 
     if (!autoAnalyze) {
       _logger.output("Parsing now.\n");
-      WorkItem wItemParse =
-          WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName, false);
+      WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrigName);
 
       if (!execute(wItemParse, outWriter)) {
         unsetTestrig(delta);
@@ -1971,15 +1968,36 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean listTestrigs(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_TESTRIGS)) {
+    if (!isValidArgument(options, parameters, 1, 0, 0, Command.LIST_TESTRIGS)) {
       return false;
     }
 
-    Map<String, String> testrigs = _workHelper.listTestrigs(_currContainerName);
-    if (testrigs != null) {
-      for (String testrigName : testrigs.keySet()) {
-        logOutput(
-            outWriter, String.format("Testrig: %s\n%s\n", testrigName, testrigs.get(testrigName)));
+    boolean showMetadata = true;
+    if (options.size() == 1) {
+      if (options.get(0).equals("-nometadata")) {
+        showMetadata = false;
+      } else {
+        _logger.errorf("Unknown option: %s\n", options.get(0));
+        printUsage(Command.LIST_TESTRIGS);
+        return false;
+      }
+    }
+
+    JSONArray testrigArray = _workHelper.listTestrigs(_currContainerName);
+    if (testrigArray != null) {
+      for (int index = 0; index < testrigArray.length(); index++) {
+        try {
+          JSONObject jObjTestrig = testrigArray.getJSONObject(index);
+          String name = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_NAME);
+          String info = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_INFO);
+          logOutput(outWriter, String.format("Testrig: %s\n%s\n", name, info));
+          if (showMetadata) {
+            String metadata = jObjTestrig.getString(CoordConsts.SVC_KEY_TESTRIG_METADATA);
+            logOutput(outWriter, String.format("TestrigMetadata: %s\n", metadata));
+          }
+        } catch (JSONException e) {
+          throw new BatfishException("Unexpected packaging of testrig data", e);
+        }
       }
     }
     return true;
@@ -2132,8 +2150,7 @@ public class Client extends AbstractClient implements IClient {
           1,
           new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
               String filename = file.getFileName().toString();
               if (filename.endsWith(".json")) {
                 jsonQuestionFiles.add(file);
@@ -2541,8 +2558,10 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean reinitTestrig(
-      @Nullable FileWriter outWriter, List<String> options, List<String> parameters, boolean delta)
-      throws Exception {
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters,
+      boolean delta) {
     Command command = delta ? Command.REINIT_DELTA_TESTRIG : Command.REINIT_TESTRIG;
     if (!isValidArgument(options, parameters, 0, 0, 0, command)) {
       return false;
@@ -2556,7 +2575,7 @@ public class Client extends AbstractClient implements IClient {
       testrig = _currDeltaTestrig;
     }
 
-    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig, delta);
+    WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
 
     if (!execute(wItemParse, outWriter)) {
       return false;
@@ -3005,7 +3024,7 @@ public class Client extends AbstractClient implements IClient {
         try {
           Answer testAnswer = mapper.readValue(testOutput, Answer.class);
           testAnswerString = mapper.writeValueAsString(testAnswer);
-        } catch (JsonParseException | UnrecognizedPropertyException e) {
+        } catch (JsonProcessingException e) {
           // not all outputs of process command are of Answer.class type
           // in that case, we use the exact string as initialized above for
           // comparison
@@ -3022,7 +3041,7 @@ public class Client extends AbstractClient implements IClient {
           try {
             referenceAnswer = mapper.readValue(referenceOutput, Answer.class);
             referenceAnswerString = mapper.writeValueAsString(referenceAnswer);
-          } catch (JsonParseException | UnrecognizedPropertyException e) {
+          } catch (JsonProcessingException e) {
             // not all outputs of process command are of Answer.class type
             // in that case, we use the exact string as initialized above
             // for comparison

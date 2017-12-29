@@ -61,7 +61,7 @@ public class Interface extends ComparableStructure<String> {
         case CISCO_NX:
           return NXOS_ETHERNET_BANDWIDTH;
 
-        case AWS_VPC:
+        case AWS:
         case BLADENETWORK:
         case EMPTY:
         case F5:
@@ -196,7 +196,7 @@ public class Interface extends ComparableStructure<String> {
           break;
 
         case ALCATEL_AOS:
-        case AWS_VPC:
+        case AWS:
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:

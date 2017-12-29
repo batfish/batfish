@@ -186,7 +186,7 @@ public class WorkMgrTest {
   }
 
   @Test
-  public void testConfigureAnalysis() throws Exception {
+  public void testConfigureAnalysis() {
     String containerName = "myContainer";
     _manager.initContainer(containerName, null);
     // test init and add questions to analysis

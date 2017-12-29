@@ -36,7 +36,7 @@ public enum BgpTableFormat {
 
   private final String _name;
 
-  private BgpTableFormat(String name) {
+  BgpTableFormat(String name) {
     _name = name;
   }
 

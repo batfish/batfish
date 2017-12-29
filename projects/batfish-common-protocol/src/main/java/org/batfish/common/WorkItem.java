@@ -51,11 +51,11 @@ public class WorkItem {
     }
   }
 
-  private String _containerName;
-  private UUID _id;
+  private final String _containerName;
+  private final UUID _id;
   private HashMap<String, String> _requestParams;
   private HashMap<String, String> _responseParams;
-  private String _testrigName;
+  private final String _testrigName;
   private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
   public WorkItem(String containerName, String testrigName) {
@@ -144,10 +144,6 @@ public class WorkItem {
       return;
     }
     tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
-  }
-
-  public void setId(String idString) {
-    _id = UUID.fromString(idString);
   }
 
   public String toJsonString() {

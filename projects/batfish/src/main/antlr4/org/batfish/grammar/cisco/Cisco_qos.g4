@@ -498,6 +498,7 @@ pmp_null
       | ID_RANDOMIZATION
       | MESSAGE_LENGTH
       | PROTOCOL_VIOLATION
+      | TCP_INSPECTION
    ) ~NEWLINE* NEWLINE
 ;
 

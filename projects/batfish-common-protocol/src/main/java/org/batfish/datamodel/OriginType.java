@@ -36,7 +36,7 @@ public enum OriginType {
 
   private final int _preference;
 
-  private OriginType(String originType, int preference) {
+  OriginType(String originType, int preference) {
     _name = originType;
     _preference = preference;
   }

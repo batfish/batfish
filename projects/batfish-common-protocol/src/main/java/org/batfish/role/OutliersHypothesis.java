@@ -40,7 +40,7 @@ public enum OutliersHypothesis {
 
   private final String _name;
 
-  private OutliersHypothesis(String name) {
+  OutliersHypothesis(String name) {
     _name = name;
   }
 

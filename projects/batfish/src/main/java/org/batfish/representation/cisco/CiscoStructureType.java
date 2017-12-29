@@ -36,7 +36,7 @@ public enum CiscoStructureType implements StructureType {
 
   private final String _description;
 
-  private CiscoStructureType(String description) {
+  CiscoStructureType(String description) {
     _description = description;
   }
 

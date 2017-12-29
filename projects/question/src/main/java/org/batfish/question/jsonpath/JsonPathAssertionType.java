@@ -35,7 +35,7 @@ public enum JsonPathAssertionType {
 
   private final String _name;
 
-  private JsonPathAssertionType(String name) {
+  JsonPathAssertionType(String name) {
     _name = name;
   }
 

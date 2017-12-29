@@ -35,7 +35,7 @@ public enum IsisInterfaceMode {
 
   private final String _name;
 
-  private IsisInterfaceMode(String name) {
+  IsisInterfaceMode(String name) {
     _name = name;
   }
 

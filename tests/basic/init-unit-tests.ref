@@ -854,7 +854,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                31
+                32
               ]
             }
           }

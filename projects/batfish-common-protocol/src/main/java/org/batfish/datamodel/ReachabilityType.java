@@ -38,7 +38,7 @@ public enum ReachabilityType {
 
   private final String _name;
 
-  private ReachabilityType(String name) {
+  ReachabilityType(String name) {
     _name = name;
   }
 

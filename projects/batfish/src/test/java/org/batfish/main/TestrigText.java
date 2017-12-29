@@ -63,8 +63,7 @@ public class TestrigText {
 
     public Builder setAwsText(String testrigResourcePrefix, Iterable<String> filenames) {
       _awsText =
-          readTestrigResources(
-              testrigResourcePrefix, BfConsts.RELPATH_AWS_VPC_CONFIGS_DIR, filenames);
+          readTestrigResources(testrigResourcePrefix, BfConsts.RELPATH_AWS_CONFIGS_DIR, filenames);
       return this;
     }
 

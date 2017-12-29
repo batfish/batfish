@@ -3,21 +3,6 @@
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesDiffAnswerElement",
       "configDiff" : {
-        "as1border1" : {
-          "class" : "org.batfish.datamodel.ConfigurationDiff",
-          "routeFilterListsDiff" : {
-            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
-            "inBeforeOnly" : [
-              "default_list"
-            ]
-          },
-          "routingPoliciesDiff" : {
-            "class" : "org.batfish.datamodel.RoutingPoliciesDiff",
-            "diff" : [
-              "as1_to_as2"
-            ]
-          }
-        },
         "as2dept1" : {
           "class" : "org.batfish.datamodel.ConfigurationDiff",
           "interfacesDiff" : {
@@ -25,21 +10,6 @@
             "diff" : [
               "GigabitEthernet2/0",
               "GigabitEthernet3/0"
-            ]
-          }
-        },
-        "as3border1" : {
-          "class" : "org.batfish.datamodel.ConfigurationDiff",
-          "routeFilterListsDiff" : {
-            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
-            "inBeforeOnly" : [
-              "default_list"
-            ]
-          },
-          "routingPoliciesDiff" : {
-            "class" : "org.batfish.datamodel.RoutingPoliciesDiff",
-            "diff" : [
-              "as3_to_as2"
             ]
           }
         }
@@ -52,5 +22,10 @@
     "nodeRegex" : ".*",
     "summary" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

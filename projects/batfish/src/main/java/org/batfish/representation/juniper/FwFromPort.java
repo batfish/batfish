@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
+import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessListLine;
@@ -22,7 +24,8 @@ public final class FwFromPort extends FwFrom {
 
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    line.getSrcOrDstPorts().add(_portRange);
+    line.setSrcOrDstPorts(
+        Iterables.concat(line.getSrcOrDstPorts(), Collections.singleton(_portRange)));
   }
 
   public SubRange getPortRange() {

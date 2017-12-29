@@ -261,7 +261,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         break;
 
       case ALCATEL_AOS:
-      case AWS_VPC:
+      case AWS:
       case BLADENETWORK:
       case F5:
       case JUNIPER_SWITCH:
