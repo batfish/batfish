@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,11 +102,11 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       // now ask the inner question once per role
       Set<String> innerIncludeNodes =
           innerNRQuestion.getNodeRegex().getMatchingNodes(configurations);
-      String origRegex = namesToRegex(innerIncludeNodes);
       for (Map.Entry<String, SortedSet<String>> entry : roleNodeMap.entrySet()) {
         String role = entry.getKey();
-        String regex = namesToRegex(entry.getValue());
-        innerNRQuestion.setNodeRegex(new NodesSpecifier("(?=" + regex + ")" + origRegex));
+        Set<String> roleNodes = entry.getValue();
+        String regex = namesToRegex(Sets.intersection(innerIncludeNodes, roleNodes));
+        innerNRQuestion.setNodeRegex(new NodesSpecifier(regex));
         String innerQuestionName = innerQuestion.getName();
         Answerer innerAnswerer =
             _batfish.getAnswererCreators().get(innerQuestionName).apply(innerQuestion, _batfish);
