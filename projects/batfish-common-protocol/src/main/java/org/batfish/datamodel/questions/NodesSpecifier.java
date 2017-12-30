@@ -69,7 +69,7 @@ public class NodesSpecifier {
           }
           break;
         default:
-          throw new BatfishException("Unhandled NodeSpecifier type: " + _type);
+          throw new BatfishException("Unhandled NodesSpecifier type: " + _type);
       }
     }
     return nodes;
