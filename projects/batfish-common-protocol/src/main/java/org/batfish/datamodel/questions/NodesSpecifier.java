@@ -16,11 +16,11 @@ public class NodesSpecifier {
     ROLE
   }
 
-  private String _expression;
+  private final String _expression;
 
-  private Pattern _regex;
+  private final Pattern _regex;
 
-  private Type _type;
+  private final Type _type;
 
   public NodesSpecifier() {
     this(".*"); // include everything by default
@@ -28,9 +28,9 @@ public class NodesSpecifier {
 
   /*
    * Currently supported example specifiers:
-   *   lhr-*      —> all nodes with matching names  (consistent with today)
-   *   name:lhr-* -> same as above; name: is optional
-   *   role:*srv* —> all nodes where any role matches *srv*
+   *   lhr-.*      —> all nodes with matching names  (consistent with today)
+   *   name:lhr-.* -> same as above; name: is optional
+   *   role:srv.* —> all nodes where any role matches *srv*
    *
    * In the future, we might need other tags (e.g., loc:) and boolean expressions
    * (e.g., role:*srv* AND lhr-* for all servers with matching names)
@@ -74,6 +74,16 @@ public class NodesSpecifier {
       }
     }
     return nodes;
+  }
+
+  @JsonIgnore
+  public Pattern getRegex() {
+    return _regex;
+  }
+
+  @JsonIgnore
+  public Type getType() {
+    return _type;
   }
 
   @JsonValue
