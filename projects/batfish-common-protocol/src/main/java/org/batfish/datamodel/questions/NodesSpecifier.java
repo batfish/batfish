@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -73,5 +74,10 @@ public class NodesSpecifier {
       }
     }
     return nodes;
+  }
+
+  @JsonValue
+  public String toString() {
+    return _expression;
   }
 }
