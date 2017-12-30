@@ -11,6 +11,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.NodesQuestionPlugin.NodesQuestion;
 import org.batfish.question.QuestionPlugin;
@@ -89,14 +90,14 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_PATHS = "paths";
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private SortedSet<NodeType> _nodeTypes;
 
     private List<JsonPathQuery> _paths;
 
     public NodesPathQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = new NodesSpecifier();
       _nodeTypes = new TreeSet<>();
       _paths = Collections.emptyList();
     }
@@ -112,7 +113,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -134,7 +135,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String nodeRegex) {
+    public void setNodeRegex(NodesSpecifier nodeRegex) {
       _nodeRegex = nodeRegex;
     }
 

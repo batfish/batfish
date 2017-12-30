@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -28,7 +29,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
   private IBatfish _batfish;
   private Map<String, Configuration> _configurations;
-  private List<String> _nodes;
+  private Set<String> _nodes;
 
   // the node name that is used to infer a regex
   private String _chosenNode;
@@ -51,7 +52,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}+";
 
   public InferRoles(
-      List<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
+      Set<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
     _nodes = nodes;
     _configurations = configurations;
     _batfish = batfish;
@@ -137,10 +138,18 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   }
 
   // try to identify a regex that most node names match
-  private boolean inferCommonRegex(List<String> nodes) {
+  private boolean inferCommonRegex(Set<String> nodes) {
     for (int attempts = 0; attempts < 10; attempts++) {
       // pick a random node name, in order to find one with a common pattern
-      _chosenNode = nodes.get(new Random().nextInt(nodes.size()));
+      int index = 0;
+      int random = new Random().nextInt(nodes.size());
+      for (String node : nodes) {
+        if (index == random) {
+          _chosenNode = node;
+          break;
+        }
+        index++;
+      }
       _tokens = tokenizeName(_chosenNode);
       _regex =
           _tokens

@@ -2,13 +2,11 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -16,6 +14,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Problem;
 import org.batfish.datamodel.answers.ProblemsAnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -92,22 +91,15 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     @Override
     public UnusedStructuresAnswerElement answer() {
       UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
-      Pattern nodeRegex;
-      try {
-        nodeRegex = Pattern.compile(question.getNodeRegex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            "Supplied regex for nodes is not a valid java regex: \""
-                + question.getNodeRegex()
-                + "\"",
-            e);
-      }
       UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
       ConvertConfigurationAnswerElement ccae = _batfish.loadConvertConfigurationAnswerElement();
+      Set<String> includeNodes =
+          question.getNodeRegex().getMatchingNodes(_batfish.loadConfigurations());
+
       ccae.getUnusedStructures()
           .forEach(
               (hostname, byType) -> {
-                if (nodeRegex.matcher(hostname).matches()) {
+                if (includeNodes.contains(hostname)) {
                   answerElement.getUnusedStructures().put(hostname, byType);
                 }
               });
@@ -164,10 +156,10 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     public UnusedStructuresQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = new NodesSpecifier();
     }
 
     @Override
@@ -181,12 +173,12 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String nodeRegex) {
+    public void setNodeRegex(NodesSpecifier nodeRegex) {
       _nodeRegex = nodeRegex;
     }
   }

@@ -11,8 +11,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -27,6 +25,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -514,19 +513,9 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
       BgpSessionCheckQuestion question = (BgpSessionCheckQuestion) _question;
 
-      Pattern node1Regex;
-      Pattern node2Regex;
-      try {
-        node1Regex = Pattern.compile(question.getNode1Regex());
-        node2Regex = Pattern.compile(question.getNode2Regex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            String.format(
-                "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                question.getNode1Regex(), question.getNode2Regex()),
-            e);
-      }
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
+      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(configurations);
+      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(configurations);
 
       BgpSessionCheckAnswerElement answerElement = new BgpSessionCheckAnswerElement();
       Set<Ip> allInterfaceIps = new HashSet<>();
@@ -550,7 +539,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
       for (Configuration co : configurations.values()) {
         String hostname = co.getHostname();
-        if (!node1Regex.matcher(co.getHostname()).matches()) {
+        if (!includeNodes1.contains(hostname)) {
           continue;
         }
         for (Vrf vrf : co.getVrfs().values()) {
@@ -647,7 +636,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                   } else {
                     if (!ebgpMultihop
                         && loopbackIps.contains(remoteIp)
-                        && node2RegexMatchesIp(remoteIp, ipOwners, node2Regex)) {
+                        && node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
                       answerElement.add(
                           answerElement.getEbgpRemoteIpOnLoopback(),
                           hostname,
@@ -658,7 +647,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                   // check half open
                   if (localIp != null
                       && allInterfaceIps.contains(remoteIp)
-                      && node2RegexMatchesIp(remoteIp, ipOwners, node2Regex)) {
+                      && node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
                     if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                       answerElement.add(
                           answerElement.getBroken(), hostname, vrfName, bgpNeighborSummary);
@@ -706,7 +695,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                         bgpNeighborSummary);
                   } else {
                     if (!loopbackIps.contains(remoteIp)
-                        && node2RegexMatchesIp(remoteIp, ipOwners, node2Regex)) {
+                        && node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
                       answerElement.add(
                           answerElement.getIbgpRemoteIpOnNonLoopback(),
                           hostname,
@@ -716,7 +705,7 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
                   }
                   if (localIp != null
                       && allInterfaceIps.contains(remoteIp)
-                      && node2RegexMatchesIp(remoteIp, ipOwners, node2Regex)) {
+                      && node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
                     if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
                       answerElement.add(
                           answerElement.getBroken(), hostname, vrfName, bgpNeighborSummary);
@@ -748,13 +737,14 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       return answerElement;
     }
 
-    private boolean node2RegexMatchesIp(Ip ip, Map<Ip, Set<String>> ipOwners, Pattern node2Regex) {
+    private boolean node2RegexMatchesIp(
+        Ip ip, Map<Ip, Set<String>> ipOwners, Set<String> includeNodes2) {
       Set<String> owners = ipOwners.get(ip);
       if (owners == null) {
         throw new BatfishException("Expected at least one owner of ip: " + ip);
       }
       for (String owner : owners) {
-        if (node2Regex.matcher(owner).matches()) {
+        if (includeNodes2.contains(owner)) {
           return true;
         }
       }
@@ -788,14 +778,14 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<String> _foreignBgpGroups;
 
-    private String _node1Regex;
+    private NodesSpecifier _node1Regex;
 
-    private String _node2Regex;
+    private NodesSpecifier _node2Regex;
 
     public BgpSessionCheckQuestion() {
       _foreignBgpGroups = new TreeSet<>();
-      _node1Regex = ".*";
-      _node2Regex = ".*";
+      _node1Regex = new NodesSpecifier();
+      _node2Regex = new NodesSpecifier();
     }
 
     @Override
@@ -814,12 +804,12 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE1_REGEX)
-    public String getNode1Regex() {
+    public NodesSpecifier getNode1Regex() {
       return _node1Regex;
     }
 
     @JsonProperty(PROP_NODE2_REGEX)
-    public String getNode2Regex() {
+    public NodesSpecifier getNode2Regex() {
       return _node2Regex;
     }
 
@@ -829,12 +819,12 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE1_REGEX)
-    public void setNode1Regex(String regex) {
+    public void setNode1Regex(NodesSpecifier regex) {
       _node1Regex = regex;
     }
 
     @JsonProperty(PROP_NODE2_REGEX)
-    public void setNode2Regex(String regex) {
+    public void setNode2Regex(NodesSpecifier regex) {
       _node2Regex = regex;
     }
   }

@@ -14,11 +14,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
@@ -26,6 +22,7 @@ import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -72,13 +69,12 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     public BgpAdvertisementsAnswerElement(
         Set<BgpAdvertisement> externalAdverts,
         Map<String, Configuration> configurations,
-        Pattern nodeRegex,
+        Set<String> includeNodes,
         PrefixSpace prefixSpace) {
       this();
       Set<String> allowedHostnames = new HashSet<>();
       for (String hostname : configurations.keySet()) {
-        Matcher nodeMatcher = nodeRegex.matcher(hostname);
-        if (nodeMatcher.matches()) {
+        if (includeNodes.contains(hostname)) {
           allowedHostnames.add(hostname);
           _sentEbgpAdvertisements.put(hostname, new TreeSet<>());
         }
@@ -108,7 +104,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
     public BgpAdvertisementsAnswerElement(
         Map<String, Configuration> configurations,
-        Pattern nodeRegex,
+        Set<String> includeNodes,
         boolean ebgp,
         boolean ibgp,
         PrefixSpace prefixSpace,
@@ -117,8 +113,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       this();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
-        Matcher nodeMatcher = nodeRegex.matcher(hostname);
-        if (!nodeMatcher.matches()) {
+        if (!includeNodes.contains(hostname)) {
           continue;
         }
         Configuration configuration = e.getValue();
@@ -261,30 +256,21 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     @Override
     public BgpAdvertisementsAnswerElement answer() {
       BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
-      Pattern nodeRegex;
-      try {
-        nodeRegex = Pattern.compile(question.getNodeRegex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            "Supplied regex for nodes is not a valid java regex: \""
-                + question.getNodeRegex()
-                + "\"",
-            e);
-      }
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
         Set<BgpAdvertisement> externalAdverts =
             _batfish.loadExternalBgpAnnouncements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
-                externalAdverts, configurations, nodeRegex, question.getPrefixSpace());
+                externalAdverts, configurations, includeNodes, question.getPrefixSpace());
       } else {
         _batfish.initBgpAdvertisements(configurations);
         answerElement =
             new BgpAdvertisementsAnswerElement(
                 configurations,
-                nodeRegex,
+                includeNodes,
                 question.getEbgp(),
                 question.getIbgp(),
                 question.getPrefixSpace(),
@@ -350,7 +336,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
     private boolean _ibgp;
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private PrefixSpace _prefixSpace;
 
@@ -359,10 +345,10 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     private boolean _sent;
 
     public BgpAdvertisementsQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = new NodesSpecifier();
       _ebgp = true;
       _ibgp = true;
-      _nodeRegex = ".*";
+      _nodeRegex = new NodesSpecifier();
       _received = true;
       _sent = true;
       _prefixSpace = new PrefixSpace();
@@ -394,7 +380,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -451,7 +437,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String nodeRegex) {
+    public void setNodeRegex(NodesSpecifier nodeRegex) {
       _nodeRegex = nodeRegex;
     }
 

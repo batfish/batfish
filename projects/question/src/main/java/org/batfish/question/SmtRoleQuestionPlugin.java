@@ -7,6 +7,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IQuestion;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 
@@ -32,7 +33,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_EQUIVALENCE_TYPE = "equivType";
 
-    private String _nodeRegex = ".*";
+    private NodesSpecifier _nodeRegex = new NodesSpecifier();
 
     private EquivalenceType _type = EquivalenceType.NODE;
 
@@ -41,7 +42,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -51,7 +52,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String x) {
+    public void setNodeRegex(NodesSpecifier x) {
       _nodeRegex = x;
     }
 

@@ -34,6 +34,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -111,7 +112,7 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(HeaderSpace headerSpace, String ingressNodeRegex);
+  AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex);
 
   AtomicInteger newBatch(String description, int jobs);
 
@@ -132,7 +133,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(HeaderSpace headerSpace, String ingressNodeRegex);
+  AnswerElement reducedReachability(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex);
 
   void registerAnswerer(
       String questionName,
@@ -164,17 +165,17 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
-  AnswerElement smtRoles(EquivalenceType t, String nodeRegex);
+  AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
-      String ingressNodeRegexStr,
-      String notIngressNodeRegexStr,
-      String finalNodeRegexStr,
-      String notFinalNodeRegexStr,
+      NodesSpecifier ingressNodeRegex,
+      NodesSpecifier notIngressNodeRegex,
+      NodesSpecifier finalNodeRegex,
+      NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes);
 

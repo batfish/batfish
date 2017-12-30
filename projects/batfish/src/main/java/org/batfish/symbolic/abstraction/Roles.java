@@ -10,12 +10,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -31,7 +30,7 @@ public class Roles {
 
   private BDDNetwork _network;
 
-  private Pattern _nodeRegex;
+  private NodesSpecifier _nodeRegex;
 
   private List<SortedSet<String>> _bgpInEcs = null;
 
@@ -45,13 +44,13 @@ public class Roles {
 
   private List<SortedSet<String>> _nodeEcs = null;
 
-  public static Roles create(IBatfish batfish, Pattern nodeRegex) {
+  public static Roles create(IBatfish batfish, NodesSpecifier nodeRegex) {
     Roles rf = new Roles(batfish, nodeRegex);
     rf.computeRoles();
     return rf;
   }
 
-  private Roles(IBatfish batfish, Pattern nodeRegex) {
+  private Roles(IBatfish batfish, NodesSpecifier nodeRegex) {
     _graph = new Graph(batfish);
     _network = BDDNetwork.create(_graph);
     _nodeRegex = nodeRegex;
@@ -97,11 +96,12 @@ public class Roles {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
+    Set<String> includeNodes =
+        _nodeRegex.getMatchingNodes(_graph.getBatfish().loadConfigurations());
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
 
-      Matcher m = _nodeRegex.matcher(router);
-      if (!m.matches()) {
+      if (!includeNodes.contains(router)) {
         continue;
       }
 

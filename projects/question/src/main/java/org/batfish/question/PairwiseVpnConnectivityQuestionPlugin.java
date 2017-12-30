@@ -9,16 +9,14 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -72,24 +70,13 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       PairwiseVpnConnectivityQuestion question = (PairwiseVpnConnectivityQuestion) _question;
-      Pattern node1Regex;
-      Pattern node2Regex;
-
-      try {
-        node1Regex = Pattern.compile(question.getNode1Regex());
-        node2Regex = Pattern.compile(question.getNode2Regex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            String.format(
-                "One of the supplied regexes (%s  OR  %s) is not a valid java regex.",
-                question.getNode1Regex(), question.getNode2Regex()),
-            e);
-      }
 
       PairwiseVpnConnectivityAnswerElement answerElement =
           new PairwiseVpnConnectivityAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
+      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(configurations);
+      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(configurations);
 
       CommonUtil.initRemoteIpsecVpns(configurations);
       Set<String> ipsecVpnNodes = answerElement.getIpsecVpnNodes();
@@ -98,10 +85,10 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
       for (Configuration c : configurations.values()) {
         String hostname = c.getHostname();
         if (!c.getIpsecVpns().isEmpty()) {
-          if (node1Regex.matcher(hostname).matches()) {
+          if (includeNodes1.contains(hostname)) {
             ipsecVpnNodes.add(c.getHostname());
           }
-          if (node2Regex.matcher(hostname).matches()) {
+          if (includeNodes2.contains(hostname)) {
             node2RegexNodes.add(hostname);
           }
         }
@@ -157,13 +144,13 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE2_REGEX = "node2Regex";
 
-    private String _node1Regex;
+    private NodesSpecifier _node1Regex;
 
-    private String _node2Regex;
+    private NodesSpecifier _node2Regex;
 
     public PairwiseVpnConnectivityQuestion() {
-      _node1Regex = ".*";
-      _node2Regex = ".*";
+      _node1Regex = new NodesSpecifier();
+      _node2Regex = new NodesSpecifier();
     }
 
     @Override
@@ -177,22 +164,22 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE1_REGEX)
-    public String getNode1Regex() {
+    public NodesSpecifier getNode1Regex() {
       return _node1Regex;
     }
 
     @JsonProperty(PROP_NODE2_REGEX)
-    public String getNode2Regex() {
+    public NodesSpecifier getNode2Regex() {
       return _node2Regex;
     }
 
     @JsonProperty(PROP_NODE1_REGEX)
-    public void setNode1Regex(String regex) {
+    public void setNode1Regex(NodesSpecifier regex) {
       _node1Regex = regex;
     }
 
     @JsonProperty(PROP_NODE2_REGEX)
-    public void setNode2Regex(String regex) {
+    public void setNode2Regex(NodesSpecifier regex) {
       _node2Regex = regex;
     }
   }
