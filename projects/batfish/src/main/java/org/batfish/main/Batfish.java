@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -133,6 +132,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -1900,7 +1900,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private NodeRoleSpecifier inferNodeRoles(Map<String, Configuration> configurations) {
-    InferRoles ir = new InferRoles(new ArrayList<>(configurations.keySet()), configurations, this);
+    InferRoles ir = new InferRoles(configurations.keySet(), configurations, this);
     return ir.call();
   }
 
@@ -2587,7 +2587,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(HeaderSpace headerSpace, String ingressNodeRegex) {
+  public AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -2598,10 +2598,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = null;
     Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
     List<NodJob> jobs = new ArrayList<>();
-    Pattern ingressPattern = Pattern.compile(ingressNodeRegex);
+    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
     configurations.forEach(
         (node, configuration) -> {
-          if (!ingressPattern.matcher(node).matches()) {
+          if (!ingressNodes.contains(node)) {
             // Skip nodes that don't match the ingress node regex.
             return;
           }
@@ -3398,7 +3398,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement reducedReachability(HeaderSpace headerSpace, String ingressNodeRegex) {
+  public AnswerElement reducedReachability(
+      HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
     if (SystemUtils.IS_OS_MAC_OSX) {
       // TODO: remove when z3 parallelism bug on OSX is fixed
       _settings.setSequential(true);
@@ -3441,11 +3442,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     List<CompositeNodJob> jobs = new ArrayList<>();
 
-    Pattern ingressPattern = Pattern.compile(ingressNodeRegex);
+    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(baseConfigurations);
 
     // generate base reachability and diff blackhole and blacklist queries
     for (String node : commonNodes) {
-      if (!ingressPattern.matcher(node).matches()) {
+      if (!ingressNodes.contains(node)) {
         // Skip nodes that don't match the ingress node regex.
         continue;
       }
@@ -4151,10 +4152,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement smtRoles(EquivalenceType t, String nodeRegex) {
-    Pattern p = Pattern.compile(nodeRegex);
-
-    Roles roles = Roles.create(this, p);
+  public AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex) {
+    Roles roles = Roles.create(this, nodeRegex);
     return roles.asAnswer(t);
   }
 
@@ -4168,10 +4167,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
-      String ingressNodeRegexStr,
-      String notIngressNodeRegexStr,
-      String finalNodeRegexStr,
-      String notFinalNodeRegexStr,
+      NodesSpecifier ingressNodeRegex,
+      NodesSpecifier notIngressNodeRegex,
+      NodesSpecifier finalNodeRegex,
+      NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes) {
     if (SystemUtils.IS_OS_MAC_OSX) {
@@ -4185,42 +4184,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
 
     // collect ingress nodes
-    Pattern ingressNodeRegex = Pattern.compile(ingressNodeRegexStr);
-    Pattern notIngressNodeRegex = Pattern.compile(notIngressNodeRegexStr);
-    Set<String> activeIngressNodes = new TreeSet<>();
-    for (String node : configurations.keySet()) {
-      Matcher ingressNodeMatcher = ingressNodeRegex.matcher(node);
-      Matcher notIngressNodeMatcher = notIngressNodeRegex.matcher(node);
-      if (ingressNodeMatcher.matches() && !notIngressNodeMatcher.matches()) {
-        activeIngressNodes.add(node);
-      }
-    }
+    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
+    Set<String> notIngressNodes = notIngressNodeRegex.getMatchingNodes(configurations);
+    Set<String> activeIngressNodes = Sets.difference(ingressNodes, notIngressNodes);
     if (activeIngressNodes.isEmpty()) {
       return new StringAnswerElement(
           "NOTHING TO DO: No nodes both match ingressNodeRegex: '"
-              + ingressNodeRegexStr
+              + ingressNodeRegex
               + "' and fail to match notIngressNodeRegex: '"
-              + notIngressNodeRegexStr
+              + notIngressNodeRegex
               + "'");
     }
 
     // collect final nodes
-    Pattern finalNodeRegex = Pattern.compile(finalNodeRegexStr);
-    Pattern notFinalNodeRegex = Pattern.compile(notFinalNodeRegexStr);
-    Set<String> activeFinalNodes = new TreeSet<>();
-    for (String node : configurations.keySet()) {
-      Matcher finalNodeMatcher = finalNodeRegex.matcher(node);
-      Matcher notFinalNodeMatcher = notFinalNodeRegex.matcher(node);
-      if (finalNodeMatcher.matches() && !notFinalNodeMatcher.matches()) {
-        activeFinalNodes.add(node);
-      }
-    }
+    Set<String> finalNodes = finalNodeRegex.getMatchingNodes(configurations);
+    Set<String> notFinalNodes = notFinalNodeRegex.getMatchingNodes(configurations);
+    Set<String> activeFinalNodes = Sets.difference(finalNodes, notFinalNodes);
     if (activeFinalNodes.isEmpty()) {
       return new StringAnswerElement(
           "NOTHING TO DO: No nodes both match finalNodeRegex: '"
-              + finalNodeRegexStr
+              + finalNodeRegex
               + "' and fail to match notFinalNodeRegex: '"
-              + notFinalNodeRegexStr
+              + notFinalNodeRegex
               + "'");
     }
 
