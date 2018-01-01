@@ -157,7 +157,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     private List<String> _roles;
 
     public PerRoleQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

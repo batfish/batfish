@@ -305,8 +305,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
 
     public OspfSessionCheckQuestion() {
       _foreignOspfNetworks = new TreeSet<>();
-      _node1Regex = new NodesSpecifier();
-      _node2Regex = new NodesSpecifier();
+      _node1Regex = NodesSpecifier.ALL;
+      _node2Regex = NodesSpecifier.ALL;
     }
 
     @Override

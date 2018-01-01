@@ -345,10 +345,10 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     private boolean _sent;
 
     public BgpAdvertisementsQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _ebgp = true;
       _ibgp = true;
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _received = true;
       _sent = true;
       _prefixSpace = new PrefixSpace();

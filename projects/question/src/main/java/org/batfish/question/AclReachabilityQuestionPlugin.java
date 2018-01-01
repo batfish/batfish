@@ -70,7 +70,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public AclReachabilityQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _aclNameRegex = ".*";
     }
 

@@ -338,32 +338,6 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         }
       }
 
-      // collect nodes nodes
-      //      Pattern nodeRegex;
-      //
-      //      try {
-      //        nodeRegex = Pattern.compile(question.getNodeRegex());
-      //      } catch (PatternSyntaxException e) {
-      //        throw new BatfishException(
-      //            "Supplied regex for nodes is not a valid java regex: \""
-      //                + question.getNodeRegex()
-      //                + "\"",
-      //            e);
-      //      }
-      //
-      //      Set<String> nodes = new TreeSet<>();
-      //      if (nodeRegex != null) {
-      //        for (String node : configurations.keySet()) {
-      //          if (!nodeRegex.matcher(node).matches()) {
-      //            continue;
-      //          }
-      //          nodes.add(node);
-      //        }
-      //      }
-      //      SortedMap<String, Configuration> answerNodes = new TreeMap<>();
-      //      answerNodes.putAll(configurations);
-      //      answerNodes.keySet().retainAll(nodes);
-
       return new NodesAnswerElement(answerNodes, question.getSummary());
     }
 
@@ -534,7 +508,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     public NodesQuestion() {
       _nodeTypes = new TreeSet<>();
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _summary = true;
     }
 

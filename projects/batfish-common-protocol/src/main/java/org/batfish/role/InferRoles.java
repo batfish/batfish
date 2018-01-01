@@ -1,6 +1,9 @@
 package org.batfish.role;
 
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -51,9 +54,8 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}+";
 
-  public InferRoles(
-      Set<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
-    _nodes = nodes;
+  public InferRoles(Collection nodes, Map<String, Configuration> configurations, IBatfish batfish) {
+    _nodes = ImmutableSortedSet.copyOf(nodes);
     _configurations = configurations;
     _batfish = batfish;
   }
@@ -141,15 +143,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   private boolean inferCommonRegex(Set<String> nodes) {
     for (int attempts = 0; attempts < 10; attempts++) {
       // pick a random node name, in order to find one with a common pattern
-      int index = 0;
-      int random = new Random().nextInt(nodes.size());
-      for (String node : nodes) {
-        if (index == random) {
-          _chosenNode = node;
-          break;
-        }
-        index++;
-      }
+      _chosenNode = Iterables.get(nodes, new Random().nextInt(nodes.size()));
       _tokens = tokenizeName(_chosenNode);
       _regex =
           _tokens

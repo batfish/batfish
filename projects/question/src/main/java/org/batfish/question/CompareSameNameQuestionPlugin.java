@@ -265,7 +265,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     public CompareSameNameQuestion() {
       _namedStructTypes = new TreeSet<>();
       initExcludedNamedStructTypes();
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

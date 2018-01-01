@@ -149,8 +149,8 @@ public class PairwiseVpnConnectivityQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _node2Regex;
 
     public PairwiseVpnConnectivityQuestion() {
-      _node1Regex = new NodesSpecifier();
-      _node2Regex = new NodesSpecifier();
+      _node1Regex = NodesSpecifier.ALL;
+      _node2Regex = NodesSpecifier.ALL;
     }
 
     @Override

@@ -811,8 +811,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private EdgeStyle _style;
 
     public NeighborsQuestion() {
-      _node1Regex = new NodesSpecifier();
-      _node2Regex = new NodesSpecifier();
+      _node1Regex = NodesSpecifier.ALL;
+      _node2Regex = NodesSpecifier.ALL;
       _neighborTypes = new TreeSet<>();
       _style = EdgeStyle.SUMMARY;
     }

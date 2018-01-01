@@ -33,7 +33,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_EQUIVALENCE_TYPE = "equivType";
 
-    private NodesSpecifier _nodeRegex = new NodesSpecifier();
+    private NodesSpecifier _nodeRegex = NodesSpecifier.ALL;
 
     private EquivalenceType _type = EquivalenceType.NODE;
 

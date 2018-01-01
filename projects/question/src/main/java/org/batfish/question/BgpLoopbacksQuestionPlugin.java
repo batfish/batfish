@@ -181,7 +181,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public BgpLoopbacksQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

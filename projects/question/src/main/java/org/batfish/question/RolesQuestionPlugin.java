@@ -127,7 +127,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     private boolean _inferred;
 
     public RolesQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

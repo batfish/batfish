@@ -207,7 +207,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     private boolean _verbose;
 
     public UniqueIpAssignmentsQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

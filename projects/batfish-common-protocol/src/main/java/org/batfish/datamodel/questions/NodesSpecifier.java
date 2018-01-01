@@ -9,6 +9,20 @@ import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 
+/**
+ * Enables specification of groups of nodes in various questions.
+ *
+ * <p>Currently supported example specifiers:
+ *
+ * <ul>
+ *   <li>lhr-.* —> all nodes with matching names (old style)
+ *   <li>name:lhr-.* -> same as above; name: is optional
+ *   <li>role:srv.* —> all nodes where any role matches the pattern
+ * </ul>
+ *
+ * <p>In the future, we might need other tags (e.g., loc:) and boolean expressions (e.g., role:srv.*
+ * AND lhr-* for all servers with matching names)
+ */
 public class NodesSpecifier {
 
   public enum Type {
@@ -16,25 +30,13 @@ public class NodesSpecifier {
     ROLE
   }
 
+  public static NodesSpecifier ALL = new NodesSpecifier(".*");
+
   private final String _expression;
 
   private final Pattern _regex;
 
   private final Type _type;
-
-  public NodesSpecifier() {
-    this(".*"); // include everything by default
-  }
-
-  /*
-   * Currently supported example specifiers:
-   *   lhr-.*      —> all nodes with matching names  (consistent with today)
-   *   name:lhr-.* -> same as above; name: is optional
-   *   role:srv.* —> all nodes where any role matches *srv*
-   *
-   * In the future, we might need other tags (e.g., loc:) and boolean expressions
-   * (e.g., role:*srv* AND lhr-* for all servers with matching names)
-   */
 
   public NodesSpecifier(String expression) {
     _expression = expression;
@@ -45,10 +47,15 @@ public class NodesSpecifier {
       _type = Type.NAME;
       _regex = Pattern.compile(_expression);
     } else if (parts.length == 2) {
-      _type = Type.valueOf(parts[0].toUpperCase());
-      _regex = Pattern.compile(parts[1]);
+      try {
+        _type = Type.valueOf(parts[0].toUpperCase());
+        _regex = Pattern.compile(parts[1]);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            "Illegal NodesSpecifier filter " + parts[1] + ".  Should be one of 'name' or 'role'");
+      }
     } else {
-      throw new IllegalArgumentException("Cannot parse node specifier " + expression);
+      throw new IllegalArgumentException("Cannot parse NodeSpecifier " + expression);
     }
   }
 

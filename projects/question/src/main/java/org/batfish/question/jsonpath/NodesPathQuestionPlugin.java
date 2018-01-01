@@ -97,7 +97,7 @@ public class NodesPathQuestionPlugin extends QuestionPlugin {
     private List<JsonPathQuery> _paths;
 
     public NodesPathQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _nodeTypes = new TreeSet<>();
       _paths = Collections.emptyList();
     }

@@ -173,7 +173,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public InferRolesQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

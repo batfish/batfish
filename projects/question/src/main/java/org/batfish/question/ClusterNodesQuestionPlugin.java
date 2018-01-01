@@ -331,7 +331,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
     public ClusterNodesQuestion() {
       _namedStructTypes = new TreeSet<>();
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _numClusters = 5;
     }
 

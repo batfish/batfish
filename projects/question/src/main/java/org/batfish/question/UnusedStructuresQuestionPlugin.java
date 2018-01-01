@@ -159,7 +159,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public UnusedStructuresQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

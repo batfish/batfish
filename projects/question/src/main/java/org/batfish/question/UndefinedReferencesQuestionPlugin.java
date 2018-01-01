@@ -172,7 +172,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public UndefinedReferencesQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

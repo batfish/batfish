@@ -453,7 +453,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     private SortedSet<RoutingProtocol> _protocols;
 
     public RoutesQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _prefixSpace = new PrefixSpace();
       _protocols = new TreeSet<>();
     }

@@ -135,7 +135,7 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public UniqueBgpPrefixOriginationQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

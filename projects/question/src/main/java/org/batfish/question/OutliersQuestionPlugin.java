@@ -395,7 +395,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     public OutliersQuestion() {
       _namedStructTypes = new TreeSet<>();
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
       _hypothesis = OutliersHypothesis.SAME_DEFINITION;
     }
 

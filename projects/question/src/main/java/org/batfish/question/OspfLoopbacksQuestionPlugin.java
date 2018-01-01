@@ -232,7 +232,7 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public OspfLoopbacksQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override

@@ -147,7 +147,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     private NodesSpecifier _nodeRegex;
 
     public SelfAdjacenciesQuestion() {
-      _nodeRegex = new NodesSpecifier();
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override
