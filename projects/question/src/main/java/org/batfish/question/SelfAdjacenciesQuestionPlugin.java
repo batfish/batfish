@@ -10,10 +10,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -25,6 +22,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -92,22 +90,12 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
       SelfAdjacenciesQuestion question = (SelfAdjacenciesQuestion) _question;
 
-      Pattern nodeRegex;
-      try {
-        nodeRegex = Pattern.compile(question.getNodeRegex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            "Supplied regex for nodes is not a valid java regex: \""
-                + question.getNodeRegex()
-                + "\"",
-            e);
-      }
-
       SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
       configurations.forEach(
           (hostname, c) -> {
-            if (nodeRegex.matcher(hostname).matches()) {
+            if (includeNodes.contains(hostname)) {
               for (Vrf vrf : c.getVrfs().values()) {
                 MultiSet<Prefix> nodePrefixes = new TreeMultiSet<>();
                 for (Interface iface : vrf.getInterfaces().values()) {
@@ -156,10 +144,10 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     public SelfAdjacenciesQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override
@@ -173,12 +161,12 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String nodeRegex) {
+    public void setNodeRegex(NodesSpecifier nodeRegex) {
       _nodeRegex = nodeRegex;
     }
   }

@@ -19,6 +19,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -62,7 +63,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     private boolean _nameOnly;
 
     // the names of all nodes being analyzed
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     public ClusterNodesAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
@@ -324,13 +325,13 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
     private boolean _nameOnly;
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private int _numClusters;
 
     public ClusterNodesQuestion() {
       _namedStructTypes = new TreeSet<>();
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
       _numClusters = 5;
     }
 
@@ -355,7 +356,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -375,7 +376,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
 
