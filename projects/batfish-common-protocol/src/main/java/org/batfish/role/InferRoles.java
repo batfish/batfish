@@ -1,6 +1,9 @@
 package org.batfish.role;
 
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +31,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
   private IBatfish _batfish;
   private Map<String, Configuration> _configurations;
-  private List<String> _nodes;
+  private Collection<String> _nodes;
 
   // the node name that is used to infer a regex
   private String _chosenNode;
@@ -51,8 +54,8 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}+";
 
   public InferRoles(
-      List<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
-    _nodes = nodes;
+      Collection<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
+    _nodes = ImmutableSortedSet.copyOf(nodes);
     _configurations = configurations;
     _batfish = batfish;
   }
@@ -137,10 +140,10 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   }
 
   // try to identify a regex that most node names match
-  private boolean inferCommonRegex(List<String> nodes) {
+  private boolean inferCommonRegex(Collection<String> nodes) {
     for (int attempts = 0; attempts < 10; attempts++) {
       // pick a random node name, in order to find one with a common pattern
-      _chosenNode = nodes.get(new Random().nextInt(nodes.size()));
+      _chosenNode = Iterables.get(nodes, new Random().nextInt(nodes.size()));
       _tokens = tokenizeName(_chosenNode);
       _regex =
           _tokens

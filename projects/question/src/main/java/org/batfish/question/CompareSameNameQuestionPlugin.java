@@ -3,7 +3,6 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
@@ -36,6 +34,7 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.INodeRegexQuestion;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -51,7 +50,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     /** Equivalence sets are keyed by classname */
     private SortedMap<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
 
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     public CompareSameNameAnswerElement() {
       _equivalenceSets = new TreeMap<>();
@@ -74,7 +73,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODES)
-    public List<String> getNodes() {
+    public Set<String> getNodes() {
       return _nodes;
     }
 
@@ -96,7 +95,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODES)
-    public void setNodes(List<String> nodes) {
+    public void setNodes(Set<String> nodes) {
       _nodes = nodes;
     }
   }
@@ -113,7 +112,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Set<String> _namedStructTypes;
 
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     private boolean _singletons;
 
@@ -138,7 +137,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
       _configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
-      _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(), _configurations.keySet());
+      _nodes = question.getNodeRegex().getMatchingNodes(_configurations);
       _namedStructTypes =
           question
               .getNamedStructTypes()
@@ -180,7 +179,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private <T> NamedStructureEquivalenceSets<T> processStructures(
         Class<T> structureClass,
-        List<String> hostnames,
+        Set<String> hostnames,
         Map<String, Configuration> configurations,
         Function<Configuration, Map<String, T>> structureMapRetriever) {
       String structureClassName = structureClass.getSimpleName();
@@ -259,14 +258,14 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<String> _namedStructTypes;
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private boolean _singletons;
 
     public CompareSameNameQuestion() {
       _namedStructTypes = new TreeSet<>();
       initExcludedNamedStructTypes();
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override
@@ -296,7 +295,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     @Override
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -331,7 +330,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     @Override
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
 
