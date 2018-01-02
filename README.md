@@ -5,7 +5,7 @@ Batfish is a network configuration analysis tool that can find bugs and guarante
 
 **Batfish does not require access to network devices.** It only needs offline configuration files, e.g., pulled from RANCID or template authoring tools.
 
-The developers of Batfish include researchers from Intentionet, University of California Los Angeles, University of Southern California, and Microsoft Research. See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
+The developers of Batfish include researchers from [Intentionet](https://www.intentionet.com), University of California Los Angeles, University of Southern California, and Microsoft Research. See [www.batfish.org](http://www.batfish.org) for technical information on how it works.
 
 ## What kinds of correctness checks does Batfish support?
 
@@ -47,7 +47,7 @@ These checks are performed by asking questions about configurations. See [here](
 
 If you are a DIYer, go to [Batfish Wiki](https://github.com/batfish/batfish/wiki)
 
-If you'd like a hosted service, drop a line to info@intentionet.com.
+Batfish is being maintained and released as a commercial product by [Intentionet](https://www.intentionet.com). If you'd like a hosted service, drop a line to [info@intentionet.com](mailto:info@intentionet.com).
 
 ## What configuration formats does Batfish support? 
 
