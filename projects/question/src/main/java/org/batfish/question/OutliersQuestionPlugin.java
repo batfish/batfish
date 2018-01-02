@@ -8,9 +8,9 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -19,7 +19,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
@@ -27,6 +26,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.collections.OutlierSet;
 import org.batfish.datamodel.questions.INodeRegexQuestion;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.role.OutliersHypothesis;
 
@@ -129,7 +129,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     private Map<String, Configuration> _configurations;
 
     // the node names that match the question's node regex
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     // only report outliers that represent this percentage or less of
     // the total number of nodes
@@ -211,7 +211,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       _answerElement = new OutliersAnswerElement();
 
       _configurations = _batfish.loadConfigurations();
-      _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(), _configurations.keySet());
+      _nodes = question.getNodeRegex().getMatchingNodes(_configurations);
 
       switch (question.getHypothesis()) {
         case SAME_DEFINITION:
@@ -306,7 +306,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
      * the sameName hypothesis.
      */
     private <T> void toNameOnlyEquivalenceSets(
-        NamedStructureEquivalenceSets<T> eSets, List<String> nodes) {
+        NamedStructureEquivalenceSets<T> eSets, Set<String> nodes) {
       ImmutableSortedMap.Builder<String, SortedSet<NamedStructureEquivalenceSet<T>>> newESetsMap =
           new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
       for (Map.Entry<String, SortedSet<NamedStructureEquivalenceSet<T>>> entry :
@@ -391,11 +391,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<String> _namedStructTypes;
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     public OutliersQuestion() {
       _namedStructTypes = new TreeSet<>();
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
       _hypothesis = OutliersHypothesis.SAME_DEFINITION;
     }
 
@@ -419,9 +419,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _namedStructTypes;
     }
 
-    @Override
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -435,9 +434,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       _namedStructTypes = namedStructTypes;
     }
 
-    @Override
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
   }

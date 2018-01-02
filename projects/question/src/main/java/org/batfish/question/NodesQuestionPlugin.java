@@ -12,10 +12,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
@@ -26,6 +23,7 @@ import org.batfish.datamodel.NodeType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -332,31 +330,13 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       // initRemoteBgpNeighbors(_batfish, configurations);
 
-      // collect nodes nodes
-      Pattern nodeRegex;
-
-      try {
-        nodeRegex = Pattern.compile(question.getNodeRegex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            "Supplied regex for nodes is not a valid java regex: \""
-                + question.getNodeRegex()
-                + "\"",
-            e);
-      }
-
-      Set<String> nodes = new TreeSet<>();
-      if (nodeRegex != null) {
-        for (String node : configurations.keySet()) {
-          if (!nodeRegex.matcher(node).matches()) {
-            continue;
-          }
-          nodes.add(node);
+      SortedMap<String, Configuration> answerNodes = new TreeMap<>();
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
+      for (String node : configurations.keySet()) {
+        if (nodes.contains(node)) {
+          answerNodes.put(node, configurations.get(node));
         }
       }
-      SortedMap<String, Configuration> answerNodes = new TreeMap<>();
-      answerNodes.putAll(configurations);
-      answerNodes.keySet().retainAll(nodes);
 
       return new NodesAnswerElement(answerNodes, question.getSummary());
     }
@@ -520,7 +500,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_SUMMARY = "summary";
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private SortedSet<NodeType> _nodeTypes;
 
@@ -528,7 +508,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
     public NodesQuestion() {
       _nodeTypes = new TreeSet<>();
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
       _summary = true;
     }
 
@@ -543,7 +523,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -558,7 +538,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
 

@@ -2,18 +2,18 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -27,7 +27,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
     private NodeRoleSpecifier _roleSpecifier;
 
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     public RolesAnswerElement() {}
 
@@ -75,7 +75,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODES)
-    public void setNodes(List<String> nodes) {
+    public void setNodes(Set<String> nodes) {
       _nodes = nodes;
     }
   }
@@ -94,8 +94,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
-      List<String> nodes =
-          CommonUtil.getMatchingStrings(question.getNodeRegex(), configurations.keySet());
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
 
       answerElement.setNodes(nodes);
 
@@ -123,12 +122,12 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_INFERRED = "inferred";
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private boolean _inferred;
 
     public RolesQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override
@@ -142,7 +141,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -152,7 +151,7 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
 

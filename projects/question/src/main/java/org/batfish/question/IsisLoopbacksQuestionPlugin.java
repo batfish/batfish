@@ -4,19 +4,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -133,22 +132,12 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
       IsisLoopbacksQuestion question = (IsisLoopbacksQuestion) _question;
 
-      Pattern nodeRegex;
-      try {
-        nodeRegex = Pattern.compile(question.getNodeRegex());
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            "Supplied regex for nodes is not a valid java regex: \""
-                + question.getNodeRegex()
-                + "\"",
-            e);
-      }
-
       IsisLoopbacksAnswerElement answerElement = new IsisLoopbacksAnswerElement();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
-        if (!nodeRegex.matcher(hostname).matches()) {
+        if (!includeNodes.contains(hostname)) {
           continue;
         }
         Configuration c = e.getValue();
@@ -216,10 +205,10 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     public IsisLoopbacksQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override
@@ -233,12 +222,12 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String nodeRegex) {
+    public void setNodeRegex(NodesSpecifier nodeRegex) {
       _nodeRegex = nodeRegex;
     }
   }
