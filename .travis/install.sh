@@ -5,7 +5,7 @@ cd ${TMP_DIR} || exit 1
 
 if [[ $TRAVIS_OS_NAME == 'linux' ]]; then
    ### install z3
-   Z3_ZIP_URL=https://github.com/Z3Prover/z3/releases/download/z3-4.5.0/z3-4.5.0-x64-ubuntu-14.04.zip
+   Z3_ZIP_URL=https://github.com/Z3Prover/z3/releases/download/z3-4.6.0/z3-4.6.0-x64-ubuntu-14.04.zip
    Z3_ZIP=$(basename ${Z3_ZIP_URL})
    Z3_DIR=$(basename ${Z3_ZIP} .zip)
    wget ${Z3_ZIP_URL} || exit 1

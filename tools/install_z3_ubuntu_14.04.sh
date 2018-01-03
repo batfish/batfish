@@ -12,7 +12,7 @@ LIBDIR=$INSTALL_PREFIX/lib
 OLD_PWD=$PWD
 OLD_UMASK=$(umask)
 WORKING=$(mktemp -d)
-VERSION=4.5.0
+VERSION=4.6.0
 MACHINE=$(uname -m)
 if [ "$MACHINE" = "x86_64" ]; then
 	ARCH=x64
@@ -22,7 +22,7 @@ else
 	echo "Unsupported machine: $MACHINE"
 	exit 1
 fi
-Z3_ZIP_URL=https://github.com/Z3Prover/z3/releases/download/z3-4.5.0/z3-${VERSION}-${ARCH}-ubuntu-14.04.zip
+Z3_ZIP_URL=https://github.com/Z3Prover/z3/releases/download/z3-4.6.0/z3-${VERSION}-${ARCH}-ubuntu-14.04.zip
 Z3_ZIP=$(basename ${Z3_ZIP_URL})
 Z3_DIR=$(basename ${Z3_ZIP} .zip)
 cd $WORKING || exit 1
