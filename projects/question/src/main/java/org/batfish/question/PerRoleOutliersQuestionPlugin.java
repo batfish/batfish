@@ -5,6 +5,7 @@ import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -148,11 +149,11 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
         String role = entry.getKey();
         OutliersAnswerElement oae = (OutliersAnswerElement) entry.getValue();
         for (NamedStructureOutlierSet<?> nsos : oae.getNamedStructureOutliers()) {
-          nsos.setRole(role);
+          nsos.setRole(Optional.of(role));
           nsOutliers.add(nsos);
         }
         for (OutlierSet<NavigableSet<String>> os : oae.getServerOutliers()) {
-          os.setRole(role);
+          os.setRole(Optional.of(role));
           serverOutliers.add(os);
         }
       }
