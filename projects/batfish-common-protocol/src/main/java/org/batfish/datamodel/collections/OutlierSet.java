@@ -32,10 +32,11 @@ public class OutlierSet<T> extends AbstractOutlierSet implements Comparable<Outl
   // sort in reverse order of zScore, which is a measure of how likely it is that
   // our hypothesis is correct
   public int compareTo(OutlierSet<T> other) {
-    int oScore = Double.compare(other.outlierScore(), this.outlierScore());
-    if (oScore != 0) {
-      return oScore;
+    int superScore = super.compareTo(other);
+    if (superScore != 0) {
+      return superScore;
     }
+
     return _name.compareTo(other.getName());
   }
 
@@ -47,7 +48,7 @@ public class OutlierSet<T> extends AbstractOutlierSet implements Comparable<Outl
       return false;
     }
     OutlierSet<?> rhs = (OutlierSet<?>) o;
-    return _definition.equals(rhs.getDefinition()) && _name.equals(rhs.getName());
+    return super.equals(rhs) && _name.equals(rhs.getName());
   }
 
   @JsonProperty(PROP_NAME)

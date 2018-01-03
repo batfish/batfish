@@ -57,14 +57,16 @@ public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
   // our hypothesis is correct
   @Override
   public int compareTo(NamedStructureOutlierSet<T> other) {
-    int scoreComp = Double.compare(other.outlierScore(), this.outlierScore());
-    if (scoreComp != 0) {
-      return scoreComp;
+    int superScore = super.compareTo(other);
+    if (superScore != 0) {
+      return superScore;
     }
+
     int structComp = _structType.compareTo(other.getStructType());
     if (structComp != 0) {
       return structComp;
     }
+
     return _name.compareTo(other.getName());
   }
 
@@ -76,7 +78,8 @@ public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
       return false;
     }
     NamedStructureOutlierSet<?> rhs = (NamedStructureOutlierSet<?>) o;
-    return _structType.equals(rhs.getStructType()) && _name.equals(rhs.getName());
+    return super.equals(rhs) && _structType.equals(rhs.getStructType())
+        && _name.equals(rhs.getName());
   }
 
   @JsonProperty(PROP_HYPOTHESIS)
