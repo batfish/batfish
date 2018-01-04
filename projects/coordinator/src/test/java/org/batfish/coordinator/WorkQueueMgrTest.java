@@ -983,7 +983,7 @@ public class WorkQueueMgrTest {
   }
 
   @Test
-  public void workIsUnblocked() throws Exception {
+  public void workIsUnblocked1() throws Exception {
     initTestrigMetadata("testrig", "env_default", ProcessingStatus.UNINITIALIZED);
 
     QueuedWork work1 =
@@ -994,6 +994,46 @@ public class WorkQueueMgrTest {
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig"),
             new WorkDetails("testrig", "env_default", WorkType.DATAPLANE_INDEPENDENT_ANSWERING));
+    QueuedWork work3 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    doAction(new Action(ActionType.QUEUE, work2));
+    doAction(new Action(ActionType.QUEUE, work3));
+
+    assertThat(work2.getStatus(), equalTo(WorkStatusCode.BLOCKED));
+    assertThat(work3.getStatus(), equalTo(WorkStatusCode.BLOCKED));
+
+    QueuedWork aWork1 =
+        doAction(new Action(ActionType.ASSIGN_SUCCESS, null)); // should be parsing work
+    doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
+
+    QueuedWork aWork2 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
+    doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork2));
+
+    QueuedWork aWork3 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
+    doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork3));
+
+    QueuedWork aWork4 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
+    doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork4));
+
+    assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
+  }
+
+  @Test
+  public void workIsUnblocked2() throws Exception {
+    initTestrigMetadata("testrig", "env_default", ProcessingStatus.UNINITIALIZED);
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env_default", WorkType.PARSING));
+    QueuedWork work2 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env_default", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
     QueuedWork work3 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig"),
