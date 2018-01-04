@@ -2,6 +2,7 @@ package org.batfish.datamodel.collections;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 
@@ -24,7 +25,7 @@ public abstract class AbstractOutlierSet {
   private SortedSet<String> _outliers;
 
   /** An optional role that all of the conformers and outliers play in the network * */
-  private Optional<String> _role;
+  private String _role;
 
   @JsonCreator
   public AbstractOutlierSet(
@@ -32,7 +33,6 @@ public abstract class AbstractOutlierSet {
       @JsonProperty(PROP_OUTLIERS) SortedSet<String> outliers) {
     _conformers = conformers;
     _outliers = outliers;
-    _role = Optional.empty();
   }
 
   // sort in reverse order of zScore, which is a measure of how likely it is that
@@ -67,7 +67,7 @@ public abstract class AbstractOutlierSet {
     AbstractOutlierSet rhs = (AbstractOutlierSet) other;
     return _conformers.equals(rhs.getConformers())
         && _outliers.equals(rhs.getOutliers())
-        && _role.equals(rhs.getRole());
+        && Objects.equals(_role, rhs.getRole());
   }
 
   @JsonProperty(PROP_CONFORMERS)
@@ -82,11 +82,11 @@ public abstract class AbstractOutlierSet {
 
   @JsonProperty(PROP_ROLE)
   public Optional<String> getRole() {
-    return _role;
+    return Optional.ofNullable(_role);
   }
 
   @JsonProperty(PROP_ROLE)
-  public void setRole(Optional<String> role) {
+  public void setRole(String role) {
     _role = role;
   }
 
