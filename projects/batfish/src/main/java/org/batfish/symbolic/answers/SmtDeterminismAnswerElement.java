@@ -1,6 +1,7 @@
 package org.batfish.symbolic.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
@@ -10,15 +11,11 @@ import org.batfish.symbolic.smt.VerificationResult;
 
 public class SmtDeterminismAnswerElement implements AnswerElement {
 
-  private static final String PROP_RESULT = "result";
-
   private static final String PROP_FLOW = "flow";
 
   private static final String PROP_FORWARDING_CASE1 = "forwardingCase1";
 
   private static final String PROP_FORWARDING_CASE2 = "forwardingCase2";
-
-  private VerificationResult _result;
 
   private Flow _flow;
 
@@ -26,21 +23,20 @@ public class SmtDeterminismAnswerElement implements AnswerElement {
 
   private SortedSet<String> _forwardingCase2;
 
+  private VerificationResult _result;
+
   @JsonCreator
+  private SmtDeterminismAnswerElement() {}
+
   public SmtDeterminismAnswerElement(
-      @JsonProperty(PROP_RESULT) VerificationResult result,
-      @JsonProperty(PROP_FLOW) @Nullable Flow flow,
-      @JsonProperty(PROP_FORWARDING_CASE1) @Nullable SortedSet<String> case1,
-      @JsonProperty(PROP_FORWARDING_CASE2) @Nullable SortedSet<String> case2) {
+      VerificationResult result,
+      @Nullable Flow flow,
+      @Nullable SortedSet<String> case1,
+      @Nullable SortedSet<String> case2) {
     _result = result;
     _flow = flow;
     _forwardingCase1 = case1;
     _forwardingCase2 = case2;
-  }
-
-  @JsonProperty(PROP_RESULT)
-  public VerificationResult getResult() {
-    return _result;
   }
 
   @JsonProperty(PROP_FLOW)
@@ -56,6 +52,11 @@ public class SmtDeterminismAnswerElement implements AnswerElement {
   @JsonProperty(PROP_FORWARDING_CASE2)
   public SortedSet<String> getForwardingCase2() {
     return _forwardingCase2;
+  }
+
+  @JsonIgnore
+  public VerificationResult getResult() {
+    return _result;
   }
 
   @Override
@@ -76,5 +77,20 @@ public class SmtDeterminismAnswerElement implements AnswerElement {
       }
     }
     return sb.toString();
+  }
+
+  @JsonProperty(PROP_FLOW)
+  public void setFlow(Flow flow) {
+    _flow = flow;
+  }
+
+  @JsonProperty(PROP_FORWARDING_CASE1)
+  public void setForwardingCase1(SortedSet<String> forwardingCase1) {
+    _forwardingCase1 = forwardingCase1;
+  }
+
+  @JsonProperty(PROP_FORWARDING_CASE2)
+  public void setForwardingCase2(SortedSet<String> forwardingCase2) {
+    _forwardingCase2 = forwardingCase2;
   }
 }
