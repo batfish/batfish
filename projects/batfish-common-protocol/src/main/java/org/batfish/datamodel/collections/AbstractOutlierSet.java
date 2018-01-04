@@ -2,8 +2,9 @@ package org.batfish.datamodel.collections;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
-import javax.annotation.Nullable;
 
 /* An abstract superclass of outlier sets for various hypotheses. */
 public abstract class AbstractOutlierSet {
@@ -34,6 +35,41 @@ public abstract class AbstractOutlierSet {
     _outliers = outliers;
   }
 
+  // sort in reverse order of zScore, which is a measure of how likely it is that
+  // our hypothesis is correct
+  public int compareTo(AbstractOutlierSet other) {
+    int oScore = Double.compare(other.outlierScore(), this.outlierScore());
+    if (oScore != 0) {
+      return oScore;
+    }
+
+    Optional<String> thisRole = this.getRole();
+    Optional<String> otherRole = other.getRole();
+    if (thisRole.isPresent()) {
+      if (otherRole.isPresent()) {
+        return thisRole.get().compareTo(otherRole.get());
+      } else {
+        return 1;
+      }
+    } else if (otherRole.isPresent()) {
+      return -1;
+    } else {
+      return 0;
+    }
+  }
+
+  public boolean equals(Object other) {
+    if (other == this) {
+      return true;
+    } else if (!(other instanceof AbstractOutlierSet)) {
+      return false;
+    }
+    AbstractOutlierSet rhs = (AbstractOutlierSet) other;
+    return _conformers.equals(rhs.getConformers())
+        && _outliers.equals(rhs.getOutliers())
+        && Objects.equals(_role, rhs.getRole());
+  }
+
   @JsonProperty(PROP_CONFORMERS)
   public SortedSet<String> getConformers() {
     return _conformers;
@@ -45,9 +81,8 @@ public abstract class AbstractOutlierSet {
   }
 
   @JsonProperty(PROP_ROLE)
-  @Nullable
-  public String getRole() {
-    return _role;
+  public Optional<String> getRole() {
+    return Optional.ofNullable(_role);
   }
 
   @JsonProperty(PROP_ROLE)
