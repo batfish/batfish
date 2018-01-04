@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class BatfishObjectMapper extends ObjectMapper {
@@ -43,6 +44,8 @@ public class BatfishObjectMapper extends ObjectMapper {
     // Next two lines make Instant class serialize as an RFC-3339 timestamp
     registerModule(new JavaTimeModule());
     disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    // This line makes Java 8's Optional type serialize
+    registerModule(new Jdk8Module());
     // See https://groups.google.com/forum/#!topic/jackson-user/WfZzlt5C2Ww
     //  This fixes issues in which non-empty maps with keys with empty values would get omitted
     //  entirely. See also https://github.com/batfish/batfish/issues/256
