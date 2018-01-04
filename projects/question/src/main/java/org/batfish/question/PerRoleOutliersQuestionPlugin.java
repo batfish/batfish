@@ -60,7 +60,12 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder("Results for per-role outliers\n");
 
       for (OutlierSet<?> outlier : _serverOutliers) {
-        sb.append("  Hypothesis for role " + outlier.getRole() + ":\n");
+        sb.append("  Hypothesis");
+        Optional<String> role = outlier.getRole();
+        if (role.isPresent()) {
+          sb.append(" for role " + role.get());
+        }
+        sb.append(":\n");
         sb.append("    every node should have the following set of ");
         sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
         sb.append("  Outliers: ");
@@ -70,7 +75,12 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       }
 
       for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
-        sb.append("  Hypothesis for role " + outlier.getRole() + ":\n");
+        sb.append("  Hypothesis");
+        Optional<String> role = outlier.getRole();
+        if (role.isPresent()) {
+          sb.append(" for role " + role.get());
+        }
+        sb.append(":\n");
         switch (outlier.getHypothesis()) {
           case SAME_DEFINITION:
             sb.append(
