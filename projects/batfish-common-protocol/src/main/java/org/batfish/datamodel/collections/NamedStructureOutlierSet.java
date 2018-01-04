@@ -78,7 +78,8 @@ public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
       return false;
     }
     NamedStructureOutlierSet<?> rhs = (NamedStructureOutlierSet<?>) o;
-    return super.equals(rhs) && _structType.equals(rhs.getStructType())
+    return super.equals(rhs)
+        && _structType.equals(rhs.getStructType())
         && _name.equals(rhs.getName());
   }
 
