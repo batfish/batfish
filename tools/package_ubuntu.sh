@@ -133,12 +133,11 @@ package() {
    BATFISH_MAIN_CLASS=org.batfish.main.Driver
    COORDINATOR_MAIN_CLASS=org.batfish.coordinator.Main
    BATFISH_TOOLS_PATH="$(cd $(dirname "${BASH_SOURCE}") && pwd)"
-   . "${BATFISH_TOOLS_PATH}/ubuntu_common.sh"
    SCRIPT_NAME="$(basename "${BASH_SOURCE}")"
    BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
    SECONDARY_VERSION=$(echo $BATFISH_VERSION | cut -d'.' -f1,2)
    ARCHITECTURE=$(architecture)
-   UBUNTU_VERSION=$(ubuntu_version)
+   UBUNTU_VERSION="$(lsb_release -rs)"
    VERSION="${BATFISH_VERSION}~ubuntu${UBUNTU_VERSION}"
    PACKAGE_NAME="batfish-${SECONDARY_VERSION}"
    DEB_NAME=${PACKAGE_NAME}_${VERSION}_${ARCHITECTURE}

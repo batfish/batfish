@@ -5,9 +5,7 @@ if [ "${#}" -ne 1 ]; then
    exit 1
 fi
 set -e
-BATFISH_TOOLS_PATH="$(cd $(dirname "${BASH_SOURCE}") && pwd)"
-. "${BATFISH_TOOLS_PATH}/ubuntu_common.sh"
-UBUNTU_VERSION="$(ubuntu_version)"
+UBUNTU_VERSION="$(lsb_release -rs)"
 [ -n "${UBUNTU_VERSION}" ]
 INSTALL_PREFIX="${1}"
 BINDIR="${INSTALL_PREFIX}/bin"
