@@ -159,11 +159,11 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
         String role = entry.getKey();
         OutliersAnswerElement oae = (OutliersAnswerElement) entry.getValue();
         for (NamedStructureOutlierSet<?> nsos : oae.getNamedStructureOutliers()) {
-          nsos.setRole(Optional.of(role));
+          nsos.setRole(role);
           nsOutliers.add(nsos);
         }
         for (OutlierSet<NavigableSet<String>> os : oae.getServerOutliers()) {
-          os.setRole(Optional.of(role));
+          os.setRole(role);
           serverOutliers.add(os);
         }
       }
