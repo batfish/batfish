@@ -73,6 +73,20 @@ public class WorkQueueMgr {
     }
   }
 
+  private QueuedWork generateAndQueueDataplaneWork(
+      String container, String testrig, String environment) throws Exception {
+    WorkItem newWItem =
+        WorkItemBuilder.getWorkItemGenerateDataPlane(container, testrig, environment);
+    WorkDetails details =
+        new WorkDetails(testrig, environment, null, null, false, WorkType.DATAPLANING);
+    QueuedWork newWork = new QueuedWork(newWItem, details);
+    boolean queued = queueUnassignedWork(newWork);
+    if (!queued) {
+      throw new BatfishException("Failed to auto-queue dataplane work");
+    }
+    return newWork;
+  }
+
   private QueuedWork getBlockerForDataplaningWork(QueuedWork work) throws IOException {
 
     WorkItem wItem = work.getWorkItem();
@@ -153,18 +167,7 @@ public class WorkQueueMgr {
         if (dataplaningWork != null) {
           return dataplaningWork;
         }
-        // generate dataplane work
-        WorkItem newWItem =
-            WorkItemBuilder.getWorkItemGenerateDataPlane(
-                wItem.getContainerName(), testrig, environment);
-        WorkDetails details =
-            new WorkDetails(testrig, environment, null, null, false, WorkType.DATAPLANING);
-        QueuedWork newWork = new QueuedWork(newWItem, details);
-        boolean queued = queueUnassignedWork(newWork);
-        if (!queued) {
-          throw new BatfishException("Failed to auto-queue dataplane work");
-        }
-        return newWork;
+        return generateAndQueueDataplaneWork(wItem.getContainerName(), testrig, environment);
       case DATAPLANING_FAIL:
       case DATAPLANING:
         if (dataplaningWork == null) {
@@ -424,6 +427,8 @@ public class WorkQueueMgr {
             for (QueuedWork requeueWork : requeueWorks) {
               _queueIncompleteWork.delete(requeueWork);
               requeueWork.setStatus(WorkStatusCode.UNASSIGNED);
+            }
+            for (QueuedWork requeueWork : requeueWorks) {
               try {
                 boolean queued = queueUnassignedWork(requeueWork);
                 if (!queued) {
