@@ -51,8 +51,10 @@ public abstract class AbstractOutlierSet {
       } else {
         return 1;
       }
-    } else {
+    } else if (otherRole.isPresent()) {
       return -1;
+    } else {
+      return 0;
     }
   }
 
