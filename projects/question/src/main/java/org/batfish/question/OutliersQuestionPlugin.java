@@ -135,6 +135,10 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     // the total number of nodes
     private static double OUTLIERS_THRESHOLD = 1.0 / 3.0;
 
+    // if this flag is true, report all outliers, even those that exceed the threshold above,
+    // and including situations when there are zero outliers
+    private boolean _verbose;
+
     public OutliersAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
@@ -199,7 +203,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       for (SortedSet<String> nodes : equivSets.values()) {
         outliers.addAll(nodes);
       }
-      if (outliers.size() > 0 && isWithinThreshold(conformers, outliers)) {
+      if (_verbose || isWithinThreshold(conformers, outliers)) {
         rankedOutliers.add(new OutlierSet<T>(name, definition, conformers, outliers));
       }
     }
@@ -212,6 +216,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
       _configurations = _batfish.loadConfigurations();
       _nodes = question.getNodeRegex().getMatchingNodes(_configurations);
+      _verbose = question.getVerbose();
 
       switch (question.getHypothesis()) {
         case SAME_DEFINITION:
@@ -230,11 +235,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _answerElement;
     }
 
+    // check that there is at least one outlier, but also that the fraction of outliers
+    // does not exceed our threshold for reporting
     private static boolean isWithinThreshold(
         SortedSet<String> conformers, SortedSet<String> outliers) {
       double cSize = conformers.size();
       double oSize = outliers.size();
-      return (oSize / (cSize + oSize)) <= OUTLIERS_THRESHOLD;
+      return oSize > 0 && (oSize / (cSize + oSize)) <= OUTLIERS_THRESHOLD;
     }
 
     private SortedSet<NamedStructureOutlierSet<?>> namedStructureOutliers(
@@ -272,10 +279,6 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
           throw new BatfishException("Default case of switch should be unreachable");
       }
 
-      for (NamedStructureEquivalenceSets<?> eSets : equivalenceSets.values()) {
-        eSets.clean();
-      }
-
       SortedSet<NamedStructureOutlierSet<?>> outliers =
           rankNamedStructureOutliers(hypothesis, equivalenceSets);
 
@@ -284,8 +287,10 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       // such a structure).  such hypotheses do not seem to be useful in general.
       outliers.removeIf(oset -> oset.getNamedStructure() == null);
 
-      // remove outlier sets that don't meet our threshold
-      outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers()));
+      if(!_verbose) {
+        // remove outlier sets that don't meet our threshold
+        outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers()));
+      }
       return outliers;
     }
 
@@ -378,6 +383,10 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    *     definitions. "sameName" indicates a hypothesis that all nodes should have structures of the
    *     same names. "sameServers" indicates a hypothesis that all nodes should have the same set of
    *     protocol-specific servers (e.g., DNS servers). Default is "sameDefinition".
+   * @param verbose A boolean that indicates whether all results should be returned, including
+   *     situations when a hypothesis yields no outliers and situations when a hypothesis yields
+   *     a number of outliers that exceeds our threshold for considering it a likely error.  Default
+   *     value is false.
    */
   public static final class OutliersQuestion extends Question implements INodeRegexQuestion {
 
@@ -387,11 +396,15 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
+    private static final String PROP_VERBOSE = "verbose";
+
     private OutliersHypothesis _hypothesis;
 
     private SortedSet<String> _namedStructTypes;
 
     private NodesSpecifier _nodeRegex;
+
+    private boolean _verbose;
 
     public OutliersQuestion() {
       _namedStructTypes = new TreeSet<>();
@@ -424,6 +437,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
+    @JsonProperty(PROP_VERBOSE)
+    public boolean getVerbose() {
+      return _verbose;
+    }
+
     @JsonProperty(PROP_HYPOTHESIS)
     public void setHypothesis(OutliersHypothesis hypothesis) {
       _hypothesis = hypothesis;
@@ -437,6 +455,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
+    }
+
+    @JsonProperty(PROP_VERBOSE)
+    public void setVerbose(boolean verbose) {
+      _verbose = verbose;
     }
   }
 
