@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.Comparators;
 import com.google.common.collect.Iterables;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
@@ -629,6 +630,13 @@ public class PropertyChecker {
           }
         }
       }
+      // Ensure cases appear in dictionary order
+      List<SortedSet<String>> cases = new ArrayList<>();
+      cases.add(case1);
+      cases.add(case2);
+      cases.sort(Comparators.lexicographical(String::compareTo));
+      case1 = cases.get(0);
+      case2 = cases.get(1);
     }
 
     return new SmtDeterminismAnswerElement(res, flow, case1, case2);
