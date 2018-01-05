@@ -1,0 +1,635 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersAnswerElement",
+      "namedStructureOutliers" : [
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as2dept1",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as2_community",
+          "structType" : "CommunityList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as1_community",
+          "structType" : "CommunityList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as3_community",
+          "structType" : "CommunityList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "101",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "103",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "101",
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "103",
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as2dept1",
+            "as2dist1",
+            "as2dist2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "105",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2dist1",
+            "as2dist2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "dept_community",
+          "structType" : "CommunityList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "filter::FORWARD",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "mangle::FORWARD",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "mangle::INPUT",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "mangle::OUTPUT",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "mangle::POSTROUTING",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "mangle::PREROUTING",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "nat::OUTPUT",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "nat::POSTROUTING",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1",
+            "host2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "nat::PREROUTING",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2dist1",
+            "as2dist2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "105",
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as3border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "default_list",
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as2border1",
+            "as2border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "outbound_routes",
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as2dist1",
+            "as2dist2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as2dist_to_dept",
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as2dist1",
+            "as2dist2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "dept_to_as2dist",
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as4_community",
+          "structType" : "CommunityList"
+        },
+        {
+          "conformers" : [
+            "as2border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "INSIDE_TO_AS1",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "INSIDE_TO_AS3",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2dept1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "RESTRICT_HOST_TRAFFIC_IN",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2dept1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "RESTRICT_HOST_TRAFFIC_OUT",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2core1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "blocktelnet",
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as4-prefixes",
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as1_to_as4",
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as2dept1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as2_to_dept",
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as4_to_as1",
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as2dept1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "dept_to_as2",
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "102",
+          "outliers" : [
+            "as2dept1"
+          ],
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "host1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "eth0",
+          "outliers" : [
+            "host2"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as2border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "OUTSIDE_TO_INSIDE",
+          "outliers" : [
+            "as2border2"
+          ],
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "filter::INPUT",
+          "outliers" : [
+            "host2"
+          ],
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "host1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "filter::OUTPUT",
+          "outliers" : [
+            "host2"
+          ],
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "102",
+          "outliers" : [
+            "as2dept1",
+            "as2dist1",
+            "as2dist2"
+          ],
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as2border1",
+            "as2border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as1_to_as2",
+          "outliers" : [
+            "as1border1",
+            "as1border2"
+          ],
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as1_to_as3",
+          "outliers" : [
+            "as3border1",
+            "as3border2"
+          ],
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as2_to_as1",
+          "outliers" : [
+            "as2border1",
+            "as2border2"
+          ],
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as2border1",
+            "as2border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as2_to_as3",
+          "outliers" : [
+            "as3border1",
+            "as3border2"
+          ],
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as3_to_as1",
+          "outliers" : [
+            "as3border1",
+            "as3border2"
+          ],
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as2border1",
+            "as2border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "as3_to_as2",
+          "outliers" : [
+            "as3border1",
+            "as3border2"
+          ],
+          "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "inbound_route_filter",
+          "outliers" : [
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "structType" : "RouteFilterList"
+        },
+        {
+          "conformers" : [
+            "as2core1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "GigabitEthernet3/0",
+          "outliers" : [
+            "as2core2",
+            "as2dept1",
+            "as3core1"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "GigabitEthernet2/0",
+          "outliers" : [
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3core1"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "GigabitEthernet0/0",
+          "outliers" : [
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "GigabitEthernet1/0",
+          "outliers" : [
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "Loopback0",
+          "outliers" : [
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1"
+          ],
+          "structType" : "Interface"
+        },
+        {
+          "conformers" : [
+            "as1border1"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "default",
+          "outliers" : [
+            "as1border2",
+            "as1core1",
+            "as2border1",
+            "as2border2",
+            "as2core1",
+            "as2core2",
+            "as2dept1",
+            "as2dist1",
+            "as2dist2",
+            "as3border1",
+            "as3border2",
+            "as3core1",
+            "host1",
+            "host2"
+          ],
+          "structType" : "Vrf"
+        }
+      ]
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersQuestion",
+    "differential" : false,
+    "hypothesis" : "sameDefinition",
+    "nodeRegex" : ".*",
+    "verbose" : true
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}
