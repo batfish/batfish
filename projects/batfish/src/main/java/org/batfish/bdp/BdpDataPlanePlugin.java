@@ -1,6 +1,8 @@
 package org.batfish.bdp;
 
 import com.google.auto.service.AutoService;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -56,11 +58,20 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             .average()
             .orElse(0.00d);
     _logger.infof(
-        "Generated data-plane for testrig:%s; iterations:%s, avg entries per node:%.2f\n",
-        _batfish.getTestrigName(), ae.getDependentRoutesIterations(), averageRoutes);
+        "Generated data-plane for testrig:%s in container:%s; iterations:%s, total nodes:%s, "
+            + "avg entries per node:%.2f\n",
+        _batfish.getTestrigName(),
+        _batfish.getContainerName(),
+        ae.getDependentRoutesIterations(),
+        configurations.size(),
+        averageRoutes);
     _logger.resetTimer();
     _batfish.newBatch("Writing data plane to disk", 0);
-    _batfish.writeDataPlane(dp, ae);
+    try (ActiveSpan writeDataplane =
+        GlobalTracer.get().buildSpan("Writing data-plane").startActive()) {
+      assert writeDataplane != null; // avoid unused warning
+      _batfish.writeDataPlane(dp, ae);
+    }
     _logger.printElapsedTime();
     return answer;
   }

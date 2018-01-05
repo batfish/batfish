@@ -1012,7 +1012,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Get generated facts from topology file
     if (Files.exists(topologyFilePath)) {
       topology = processTopologyFile(topologyFilePath);
-      _logger.infof("Testrig:%s has topology file", _settings.getTestrig());
+      _logger.infof(
+          "Testrig:%s in container:%s has topology file",
+          _settings.getTestrig(), _settings.getContainerDir().getFileName().toString());
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -1588,6 +1590,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     postProcessConfigurations(configurations.values());
     return configurations;
+  }
+
+  @Override
+  public String getContainerName() {
+    return _settings.getContainerDir().getFileName().toString();
   }
 
   public DataPlanePlugin getDataPlanePlugin() {
@@ -3854,12 +3861,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations =
         parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
-    _logger.infof(
-        "Testrig:%s has total number of host configs:%d ",
-        _settings.getTestrig(), allHostConfigurations.size());
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
+    _logger.infof(
+        "Testrig:%s in container:%s has total number of host configs:%d",
+        _settings.getTestrig(),
+        _settings.getContainerDir().getFileName(),
+        allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
@@ -3979,6 +3988,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (vendorConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
+    _logger.infof(
+        "Testrig:%s in container:%s has total number of network configs:%d",
+        _settings.getTestrig(),
+        _settings.getContainerDir().getFileName(),
+        vendorConfigurations.size());
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     CommonUtil.createDirectories(outputPath);
