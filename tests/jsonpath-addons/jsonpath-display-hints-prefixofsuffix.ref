@@ -328,6 +328,10 @@
                     ]
                   }
                 },
+                "ntpServers" : [
+                  "18.18.18.18",
+                  "23.23.23.23"
+                ],
                 "roles" : [
                   "border"
                 ],
@@ -1007,6 +1011,16 @@
                         "name" : "vty4",
                         "execTimeoutMinutes" : 0,
                         "execTimeoutSeconds" : 0
+                      }
+                    },
+                    "ntp" : {
+                      "servers" : {
+                        "18.18.18.18" : {
+                          "name" : "18.18.18.18"
+                        },
+                        "23.23.23.23" : {
+                          "name" : "23.23.23.23"
+                        }
                       }
                     },
                     "services" : {

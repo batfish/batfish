@@ -3,6 +3,29 @@
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesDiffAnswerElement",
       "configDiff" : {
+        "as1border2" : {
+          "class" : "org.batfish.datamodel.ConfigurationDiff",
+          "ipAccessListsDiff" : {
+            "class" : "org.batfish.datamodel.IpAccessListsDiff",
+            "diff" : [
+              "103"
+            ]
+          },
+          "routeFilterListsDiff" : {
+            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
+            "diff" : [
+              "103"
+            ],
+            "diffInfo" : {
+              "103" : {
+                "class" : "org.batfish.datamodel.ConfigDiffElement",
+                "inAfterOnly" : [
+                  "ACCEPT 3.0.2.0/24 [24,24] "
+                ]
+              }
+            }
+          }
+        },
         "as2dept1" : {
           "class" : "org.batfish.datamodel.ConfigurationDiff",
           "interfacesDiff" : {
