@@ -22,7 +22,7 @@ OLD_UMASK=$(umask)
 WORKING=$(mktemp -d)
 cd $WORKING || exit 1
 umask 0022 || exit 1
-VERSION=4.5.0
+VERSION=4.6.0
 wget https://github.com/Z3Prover/z3/archive/z3-${VERSION}.tar.gz || exit 1
 tar -xf z3-${VERSION}.tar.gz || exit 1
 cd z3-z3-${VERSION} || exit 1

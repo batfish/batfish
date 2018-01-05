@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-export BATFISH_SOURCED_SCRIPT="$BASH_SOURCE"
 export OLD_PWD="$PWD"
 
 set -e
@@ -17,19 +16,13 @@ architecture() {
    echo $ARCHITECTURE
 }
 
-ubuntu_version() {
-   head -n1 /etc/issue | cut -f2 -d' ' | cut -f1,2 -d'.'
-}
-
 install_z3() {
-   if [ "${UBUNTU_VERSION}" = "16.04" ]; then
-      echo "Building and installing z3 in $USR_P"
-      $BATFISH_TOOLS_PATH/install_z3_ubuntu_16.04.sh $USR_P
-   elif [ "${UBUNTU_VERSION}" = "14.04" ]; then
-      echo "Installing z3 in $USR_P"
-      $BATFISH_TOOLS_PATH/install_z3_ubuntu_14.04.sh $USR_P
+   if [ "${UBUNTU_VERSION}" = "14.04" -o \
+        "${UBUNTU_VERSION}" = "16.04" ]; then
+      echo "Building and installing z3 in ${USR_P}"
+      "${BATFISH_TOOLS_PATH}/install_z3_ubuntu.sh" "${USR_P}"
    else
-      echo "Unsupported Ubuntu version: $UBUNTU_VERSION"
+      echo "Unsupported Ubuntu version: ${UBUNTU_VERSION}"
       exit 1
    fi
 }
@@ -139,12 +132,12 @@ package() {
    set -e
    BATFISH_MAIN_CLASS=org.batfish.main.Driver
    COORDINATOR_MAIN_CLASS=org.batfish.coordinator.Main
-   BATFISH_TOOLS_PATH="$(readlink -f $(dirname $BATFISH_SOURCED_SCRIPT))"
-   SCRIPT_NAME="$(basename $BATFISH_SOURCED_SCRIPT)"
+   BATFISH_TOOLS_PATH="$(cd $(dirname "${BASH_SOURCE}") && pwd)"
+   SCRIPT_NAME="$(basename "${BASH_SOURCE}")"
    BATFISH_PATH="$(readlink -f ${BATFISH_TOOLS_PATH}/..)"
    SECONDARY_VERSION=$(echo $BATFISH_VERSION | cut -d'.' -f1,2)
    ARCHITECTURE=$(architecture)
-   UBUNTU_VERSION=$(ubuntu_version)
+   UBUNTU_VERSION="$(lsb_release -rs)"
    VERSION="${BATFISH_VERSION}~ubuntu${UBUNTU_VERSION}"
    PACKAGE_NAME="batfish-${SECONDARY_VERSION}"
    DEB_NAME=${PACKAGE_NAME}_${VERSION}_${ARCHITECTURE}
