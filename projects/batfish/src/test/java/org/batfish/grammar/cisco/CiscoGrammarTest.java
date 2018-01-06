@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.InterfaceMatchers.hasDeclaredNames;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -326,6 +327,30 @@ public class CiscoGrammarTest {
   private static String getCLRegex(
       SortedMap<String, CommunityList> communityLists, String communityName) {
     return communityLists.get(communityName).getLines().get(0).getRegex();
+  }
+
+  @Test
+  public void testInterfaceNames() throws IOException {
+    String testrigName = "interface-names";
+    String iosHostname = "ios";
+    String i1Name = "Ethernet0/0";
+
+    List<String> configurationNames = ImmutableList.of(iosHostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+    Interface i1 = configurations.get(iosHostname).getInterfaces().get(i1Name);
+    assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
   }
 
   @Test

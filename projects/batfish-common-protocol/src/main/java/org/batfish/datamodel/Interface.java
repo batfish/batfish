@@ -150,6 +150,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_BANDWIDTH = "bandwidth";
 
+  private static final String PROP_DECLARED_NAMES = "declaredNames";
+
   private static final String PROP_DESCRIPTION = "description";
 
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
@@ -383,6 +385,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient boolean _blacklisted;
 
+  private SortedSet<String> _declaredNames;
+
   private String _description;
 
   private List<Ip> _dhcpRelayAddresses;
@@ -477,6 +481,7 @@ public final class Interface extends ComparableStructure<String> {
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _allPrefixes = ImmutableSortedSet.of();
+    _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
     _mtu = DEFAULT_MTU;
@@ -617,6 +622,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public boolean getBlacklisted() {
     return _blacklisted;
+  }
+
+  @JsonProperty(PROP_DECLARED_NAMES)
+  public SortedSet<String> getDeclaredNames() {
+    return _declaredNames;
   }
 
   @JsonProperty(PROP_DESCRIPTION)
@@ -949,6 +959,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public void setBlacklisted(boolean blacklisted) {
     _blacklisted = blacklisted;
+  }
+
+  @JsonProperty(PROP_DECLARED_NAMES)
+  public void setDeclaredNames(SortedSet<String> declaredNames) {
+    _declaredNames = declaredNames;
   }
 
   @JsonProperty(PROP_DESCRIPTION)

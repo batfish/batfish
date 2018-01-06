@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.math.BigInteger;
@@ -10,7 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -139,62 +139,65 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
   private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
-    Map<String, String> prefixes = new LinkedHashMap<>();
-    prefixes.put("ap", "ap");
-    prefixes.put("Async", "Async");
-    prefixes.put("ATM", "ATM");
-    prefixes.put("BDI", "BDI");
-    prefixes.put("BRI", "BRI");
-    prefixes.put("Bundle-Ether", "Bundle-Ethernet");
-    prefixes.put("BVI", "BVI");
-    prefixes.put("Cable", "Cable");
-    prefixes.put("cable-downstream", "cable-downstream");
-    prefixes.put("cable-mac", "cable-mac");
-    prefixes.put("cable-upstream", "cable-upstream");
-    prefixes.put("Crypto-Engine", "Crypto-Engine");
-    prefixes.put("cmp-mgmt", "cmp-mgmt");
-    prefixes.put("Dialer", "Dialer");
-    prefixes.put("Dot11Radio", "Dot11Radio");
-    prefixes.put("Embedded-Service-Engine", "Embedded-Service-Engine");
-    prefixes.put("Ethernet", "Ethernet");
-    prefixes.put("FastEthernet", "FastEthernet");
-    prefixes.put("fc", "fc");
-    prefixes.put("fe", "FastEthernet");
-    prefixes.put("fortyGigE", "FortyGigabitEthernet");
-    prefixes.put("FortyGigabitEthernet", "FortyGigabitEthernet");
-    prefixes.put("GigabitEthernet", "GigabitEthernet");
-    prefixes.put("ge", "GigabitEthernet");
-    prefixes.put("GMPLS", "GMPLS");
-    prefixes.put("HundredGigE", "HundredGigabitEthernet");
-    prefixes.put("ip", "ip");
-    prefixes.put("Group-Async", "Group-Async");
-    prefixes.put("LongReachEthernet", "LongReachEthernet");
-    prefixes.put("Loopback", "Loopback");
-    prefixes.put("ma", "Management");
-    prefixes.put("Management", "Management");
-    prefixes.put("ManagementEthernet", "ManagementEthernet");
-    prefixes.put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX);
-    prefixes.put("MgmtEth", "ManagementEthernet");
-    prefixes.put("Modular-Cable", "Modular-Cable");
-    prefixes.put("Null", "Null");
-    prefixes.put("Port-channel", "Port-Channel");
-    prefixes.put("POS", "POS");
-    prefixes.put("PTP", "PTP");
-    prefixes.put("Serial", "Serial");
-    prefixes.put("Service-Engine", "Service-Engine");
-    prefixes.put("TenGigabitEthernet", "TenGigabitEthernet");
-    prefixes.put("TenGigE", "TenGigabitEthernet");
-    prefixes.put("te", "TenGigabitEthernet");
-    prefixes.put("trunk", "trunk");
-    prefixes.put("Tunnel", "Tunnel");
-    prefixes.put("tunnel-ip", "tunnel-ip");
-    prefixes.put("tunnel-te", "tunnel-te");
-    prefixes.put("ve", "VirtualEthernet");
-    prefixes.put("Virtual-Template", "Virtual-Template");
-    prefixes.put("Vlan", "Vlan");
-    prefixes.put("Vxlan", "Vxlan");
-    prefixes.put("Wideband-Cable", "Wideband-Cable");
-    return prefixes;
+    /*
+     * Entries are sorted by priority. Do not reorder unless you have a good reason.
+     */
+    return ImmutableMap.<String, String>builder()
+        .put("ap", "ap")
+        .put("Async", "Async")
+        .put("ATM", "ATM")
+        .put("BDI", "BDI")
+        .put("BRI", "BRI")
+        .put("Bundle-Ether", "Bundle-Ethernet")
+        .put("BVI", "BVI")
+        .put("Cable", "Cable")
+        .put("cable-downstream", "cable-downstream")
+        .put("cable-mac", "cable-mac")
+        .put("cable-upstream", "cable-upstream")
+        .put("Crypto-Engine", "Crypto-Engine")
+        .put("cmp-mgmt", "cmp-mgmt")
+        .put("Dialer", "Dialer")
+        .put("Dot11Radio", "Dot11Radio")
+        .put("Ethernet", "Ethernet")
+        .put("Embedded-Service-Engine", "Embedded-Service-Engine")
+        .put("FastEthernet", "FastEthernet")
+        .put("fc", "fc")
+        .put("fe", "FastEthernet")
+        .put("fortyGigE", "FortyGigabitEthernet")
+        .put("FortyGigabitEthernet", "FortyGigabitEthernet")
+        .put("GigabitEthernet", "GigabitEthernet")
+        .put("ge", "GigabitEthernet")
+        .put("GMPLS", "GMPLS")
+        .put("HundredGigE", "HundredGigabitEthernet")
+        .put("ip", "ip")
+        .put("Group-Async", "Group-Async")
+        .put("LongReachEthernet", "LongReachEthernet")
+        .put("Loopback", "Loopback")
+        .put("ma", "Management")
+        .put("Management", "Management")
+        .put("ManagementEthernet", "ManagementEthernet")
+        .put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX)
+        .put("MgmtEth", "ManagementEthernet")
+        .put("Modular-Cable", "Modular-Cable")
+        .put("Null", "Null")
+        .put("Port-channel", "Port-Channel")
+        .put("POS", "POS")
+        .put("PTP", "PTP")
+        .put("Serial", "Serial")
+        .put("Service-Engine", "Service-Engine")
+        .put("TenGigabitEthernet", "TenGigabitEthernet")
+        .put("TenGigE", "TenGigabitEthernet")
+        .put("te", "TenGigabitEthernet")
+        .put("trunk", "trunk")
+        .put("Tunnel", "Tunnel")
+        .put("tunnel-ip", "tunnel-ip")
+        .put("tunnel-te", "tunnel-te")
+        .put("ve", "VirtualEthernet")
+        .put("Virtual-Template", "Virtual-Template")
+        .put("Vlan", "Vlan")
+        .put("Vxlan", "Vxlan")
+        .put("Wideband-Cable", "Wideband-Cable")
+        .build();
   }
 
   @Override
@@ -2116,6 +2119,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
+    newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
 
     // All prefixes is the combination of the interface prefix + any secondary prefixes.
     ImmutableSet.Builder<Prefix> allPrefixes = ImmutableSet.builder();

@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -178,11 +179,14 @@ public class Interface extends ComparableStructure<String> {
 
   private String _vrf;
 
+  private Set<String> _declaredNames;
+
   public Interface(String name, CiscoConfiguration c) {
     super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
+    _declaredNames = ImmutableSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _nativeVlan = 1;
@@ -528,5 +532,13 @@ public class Interface extends ComparableStructure<String> {
 
   public void setVrf(String vrf) {
     _vrf = vrf;
+  }
+
+  public Set<String> getDeclaredNames() {
+    return _declaredNames;
+  }
+
+  public void setDeclaredNames(Set<String> declaredNames) {
+    _declaredNames = declaredNames;
   }
 }

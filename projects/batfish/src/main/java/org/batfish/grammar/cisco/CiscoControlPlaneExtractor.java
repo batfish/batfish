@@ -1,5 +1,6 @@
 package org.batfish.grammar.cisco;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -1004,6 +1005,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _w.pedantic("Interface: '" + name + "' altered more than once");
     }
+    newInterface.setDeclaredNames(
+        ImmutableSet.<String>builder()
+            .addAll(newInterface.getDeclaredNames())
+            .add(ctx.getText())
+            .build());
     if (explicit) {
       _currentInterfaces.add(newInterface);
     }
