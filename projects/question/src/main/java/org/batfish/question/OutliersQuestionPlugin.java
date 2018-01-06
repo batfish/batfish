@@ -133,7 +133,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     // only report outliers that represent this percentage or less of
     // the total number of nodes
-    private static double OUTLIERS_THRESHOLD = 1.0 / 3.0;
+    private static double OUTLIERS_THRESHOLD = 0.34;
 
     public OutliersAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
