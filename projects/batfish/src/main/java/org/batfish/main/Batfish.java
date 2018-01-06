@@ -3854,12 +3854,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations =
         parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
-    _logger.infof(
-        "Testrig:%s has total number of host configs:%d ",
-        _settings.getTestrig(), allHostConfigurations.size());
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
+    _logger.infof(
+        "Testrig:%s has total number of host configs:%d ",
+        _settings.getTestrig(), allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
