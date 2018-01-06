@@ -68,6 +68,9 @@
                     "active" : false,
                     "autostate" : true,
                     "bandwidth" : 1.0E7,
+                    "declaredNames" : [
+                      "Ethernet0/0"
+                    ],
                     "isisL1InterfaceMode" : "unset",
                     "isisL2InterfaceMode" : "unset",
                     "mtu" : 1500,
@@ -95,6 +98,9 @@
                     ],
                     "autostate" : true,
                     "bandwidth" : 1.0E9,
+                    "declaredNames" : [
+                      "GigabitEthernet0/0"
+                    ],
                     "incomingFilter" : "OUTSIDE_TO_INSIDE",
                     "isisL1InterfaceMode" : "unset",
                     "isisL2InterfaceMode" : "unset",
@@ -125,6 +131,9 @@
                     ],
                     "autostate" : true,
                     "bandwidth" : 1.0E9,
+                    "declaredNames" : [
+                      "GigabitEthernet1/0"
+                    ],
                     "isisL1InterfaceMode" : "unset",
                     "isisL2InterfaceMode" : "unset",
                     "mtu" : 1500,
@@ -155,6 +164,9 @@
                     ],
                     "autostate" : true,
                     "bandwidth" : 1.0E9,
+                    "declaredNames" : [
+                      "GigabitEthernet2/0"
+                    ],
                     "isisL1InterfaceMode" : "unset",
                     "isisL2InterfaceMode" : "unset",
                     "mtu" : 1500,
@@ -185,6 +197,9 @@
                     ],
                     "autostate" : true,
                     "bandwidth" : 1.0E12,
+                    "declaredNames" : [
+                      "Loopback0"
+                    ],
                     "isisL1InterfaceMode" : "unset",
                     "isisL2InterfaceMode" : "unset",
                     "mtu" : 1500,
