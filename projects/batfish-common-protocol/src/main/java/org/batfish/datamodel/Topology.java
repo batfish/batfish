@@ -93,10 +93,6 @@ public class Topology implements Serializable {
     }
   }
 
-  private void removeEdge(Edge edge) {
-    _edges.remove(edge);
-  }
-
   private void removeInterface(NodeInterfacePair iface) {
     SortedSet<Edge> interfaceEdges = _interfaceEdges.get(iface);
     if (interfaceEdges != null) {
