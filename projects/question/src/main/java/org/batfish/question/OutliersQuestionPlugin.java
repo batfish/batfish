@@ -133,7 +133,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     // only report outliers that represent this percentage or less of
     // the total number of nodes
-    private static double OUTLIERS_THRESHOLD = 1.0 / 3.0;
+    private static double OUTLIERS_THRESHOLD = 0.34;
 
     // if this flag is true, report all outliers, even those that exceed the threshold above,
     // and including situations when there are zero outliers
