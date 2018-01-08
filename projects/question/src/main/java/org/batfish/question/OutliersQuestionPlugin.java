@@ -287,7 +287,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       // such a structure).  such hypotheses do not seem to be useful in general.
       outliers.removeIf(oset -> oset.getNamedStructure() == null);
 
-      if(!_verbose) {
+      if (!_verbose) {
         // remove outlier sets that don't meet our threshold
         outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers()));
       }
@@ -384,8 +384,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    *     same names. "sameServers" indicates a hypothesis that all nodes should have the same set of
    *     protocol-specific servers (e.g., DNS servers). Default is "sameDefinition".
    * @param verbose A boolean that indicates whether all results should be returned, including
-   *     situations when a hypothesis yields no outliers and situations when a hypothesis yields
-   *     a number of outliers that exceeds our threshold for considering it a likely error.  Default
+   *     situations when a hypothesis yields no outliers and situations when a hypothesis yields a
+   *     number of outliers that exceeds our threshold for considering it a likely error. Default
    *     value is false.
    */
   public static final class OutliersQuestion extends Question implements INodeRegexQuestion {

@@ -5,9 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import org.batfish.datamodel.NodeRoleSpecifier;
 
-/** Represents an inferred policy for the network that all nodes belonging to the same role,
- * according to a given node-role mapping, should have equal values of a given
- * property within the node.
+/**
+ * Represents an inferred policy for the network that all nodes belonging to the same role,
+ * according to a given node-role mapping, should have equal values of a given property within the
+ * node.
  */
 public class RoleConsistencyPolicy {
 
@@ -27,7 +28,6 @@ public class RoleConsistencyPolicy {
     _nodeRoleSpecifier = nodeRoleSpecifier;
     _name = name;
   }
-
 
   @JsonProperty(PROP_NAME)
   public String getName() {

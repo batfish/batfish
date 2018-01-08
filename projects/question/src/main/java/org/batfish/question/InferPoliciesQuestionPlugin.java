@@ -78,7 +78,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     public void setRoleConsistencyPolicies(Set<RoleConsistencyPolicy> roleConsistencyPolicies) {
       _roleConsistencyPolicies = roleConsistencyPolicies;
     }
-    
   }
 
   public static class InferPoliciesAnswerer extends Answerer {
@@ -130,7 +129,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       NodeRoleSpecifier nodeRoleSpecifier = _batfish.getNodeRoleSpecifier(false);
       SortedSet<RoleConsistencyPolicy> policies =
           new TreeSet<>(Comparator.comparing(RoleConsistencyPolicy::getName));
-      for(String name : outliersPerPropertyName.keySet()) {
+      for (String name : outliersPerPropertyName.keySet()) {
         Collection<OutlierSet<NavigableSet<String>>> outlierSets =
             outliersPerPropertyName.get(name);
         if (outlierSets
@@ -154,16 +153,15 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
   /**
-   * Infer likely role-based consistency policies for the network.  Each such policy in general
-   * has the form:  all nodes that have the same role, according to a given role specifier S, must
-   * be consistent with one another in some particular way.
+   * Infer likely role-based consistency policies for the network. Each such policy in general has
+   * the form: all nodes that have the same role, according to a given role specifier S, must be
+   * consistent with one another in some particular way.
    *
    * @type InferPolicies multifile
    */
   public static final class InferPoliciesQuestion extends Question {
 
-    public InferPoliciesQuestion() {
-    }
+    public InferPoliciesQuestion() {}
 
     @Override
     public boolean getDataPlane() {
@@ -174,7 +172,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "InferPolicies";
     }
-
   }
 
   @Override
