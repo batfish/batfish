@@ -28,7 +28,7 @@ public class DisplayHints {
       aMap.put("FileLine", "class:org.batfish.datamodel.collections.FileLinePair");
       aMap.put("Flow", "class:org.batfish.datamodel.Flow");
       aMap.put("FlowTrace", "class:org.batfish.datamodel.FlowTrace");
-      aMap.put("Integer", "class:java.lang.Integer");
+      aMap.put("Integer", "class:java.lang.Long");
       aMap.put("Interface", "class:org.batfish.datamodel.collections.NodeInterfacePair");
       aMap.put("Ip", "class:org.batfish.datamodel.Ip");
       aMap.put("Node", "class:org.batfish.datamodel.pojo.Node");
