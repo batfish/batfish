@@ -118,7 +118,73 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
-  private static final Map<String, String> CISCO_INTERFACE_PREFIXES = getCiscoInterfacePrefixes();
+  /*
+   * This map is used to convert interface names to their canonical forms.
+   * The entries are visited in insertion order until a key is found of which the name to convert is
+   * case-insensitively a prefix. The value corresponding to that key is chosen as the canonical
+   * form for that name.
+   *
+   * NOTE: Entries are sorted by priority. Do not reorder unless you have a good reason.
+   * For instance, we don't want 'e' to be canonically considered 'Embedded-Service-Engine' instead
+   * of 'Ethernet'.
+   */
+  private static final Map<String, String> CISCO_INTERFACE_PREFIXES =
+      ImmutableMap.<String, String>builder()
+          .put("ap", "ap")
+          .put("Async", "Async")
+          .put("ATM", "ATM")
+          .put("BDI", "BDI")
+          .put("BRI", "BRI")
+          .put("Bundle-Ether", "Bundle-Ethernet")
+          .put("BVI", "BVI")
+          .put("Cable", "Cable")
+          .put("cable-downstream", "cable-downstream")
+          .put("cable-mac", "cable-mac")
+          .put("cable-upstream", "cable-upstream")
+          .put("Crypto-Engine", "Crypto-Engine")
+          .put("cmp-mgmt", "cmp-mgmt")
+          .put("Dialer", "Dialer")
+          .put("Dot11Radio", "Dot11Radio")
+          .put("Ethernet", "Ethernet")
+          .put("Embedded-Service-Engine", "Embedded-Service-Engine")
+          .put("FastEthernet", "FastEthernet")
+          .put("fc", "fc")
+          .put("fe", "FastEthernet")
+          .put("fortyGigE", "FortyGigabitEthernet")
+          .put("FortyGigabitEthernet", "FortyGigabitEthernet")
+          .put("GigabitEthernet", "GigabitEthernet")
+          .put("ge", "GigabitEthernet")
+          .put("GMPLS", "GMPLS")
+          .put("HundredGigE", "HundredGigabitEthernet")
+          .put("ip", "ip")
+          .put("Group-Async", "Group-Async")
+          .put("LongReachEthernet", "LongReachEthernet")
+          .put("Loopback", "Loopback")
+          .put("ma", "Management")
+          .put("Management", "Management")
+          .put("ManagementEthernet", "ManagementEthernet")
+          .put("mgmt", "um mgmt")
+          .put("MgmtEth", "ManagementEthernet")
+          .put("Modular-Cable", "Modular-Cable")
+          .put("Null", "Null")
+          .put("Port-channel", "Port-Channel")
+          .put("POS", "POS")
+          .put("PTP", "PTP")
+          .put("Serial", "Serial")
+          .put("Service-Engine", "Service-Engine")
+          .put("TenGigabitEthernet", "TenGigabitEthernet")
+          .put("TenGigE", "TenGigabitEthernet")
+          .put("te", "TenGigabitEthernet")
+          .put("trunk", "trunk")
+          .put("Tunnel", "Tunnel")
+          .put("tunnel-ip", "tunnel-ip")
+          .put("tunnel-te", "tunnel-te")
+          .put("ve", "VirtualEthernet")
+          .put("Virtual-Template", "Virtual-Template")
+          .put("Vlan", "Vlan")
+          .put("Vxlan", "Vxlan")
+          .put("Wideband-Cable", "Wideband-Cable")
+          .build();
 
   static final boolean DEFAULT_VRRP_PREEMPT = true;
 
@@ -137,68 +203,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
-
-  private static synchronized Map<String, String> getCiscoInterfacePrefixes() {
-    /*
-     * Entries are sorted by priority. Do not reorder unless you have a good reason.
-     */
-    return ImmutableMap.<String, String>builder()
-        .put("ap", "ap")
-        .put("Async", "Async")
-        .put("ATM", "ATM")
-        .put("BDI", "BDI")
-        .put("BRI", "BRI")
-        .put("Bundle-Ether", "Bundle-Ethernet")
-        .put("BVI", "BVI")
-        .put("Cable", "Cable")
-        .put("cable-downstream", "cable-downstream")
-        .put("cable-mac", "cable-mac")
-        .put("cable-upstream", "cable-upstream")
-        .put("Crypto-Engine", "Crypto-Engine")
-        .put("cmp-mgmt", "cmp-mgmt")
-        .put("Dialer", "Dialer")
-        .put("Dot11Radio", "Dot11Radio")
-        .put("Ethernet", "Ethernet")
-        .put("Embedded-Service-Engine", "Embedded-Service-Engine")
-        .put("FastEthernet", "FastEthernet")
-        .put("fc", "fc")
-        .put("fe", "FastEthernet")
-        .put("fortyGigE", "FortyGigabitEthernet")
-        .put("FortyGigabitEthernet", "FortyGigabitEthernet")
-        .put("GigabitEthernet", "GigabitEthernet")
-        .put("ge", "GigabitEthernet")
-        .put("GMPLS", "GMPLS")
-        .put("HundredGigE", "HundredGigabitEthernet")
-        .put("ip", "ip")
-        .put("Group-Async", "Group-Async")
-        .put("LongReachEthernet", "LongReachEthernet")
-        .put("Loopback", "Loopback")
-        .put("ma", "Management")
-        .put("Management", "Management")
-        .put("ManagementEthernet", "ManagementEthernet")
-        .put("mgmt", NXOS_MANAGEMENT_INTERFACE_PREFIX)
-        .put("MgmtEth", "ManagementEthernet")
-        .put("Modular-Cable", "Modular-Cable")
-        .put("Null", "Null")
-        .put("Port-channel", "Port-Channel")
-        .put("POS", "POS")
-        .put("PTP", "PTP")
-        .put("Serial", "Serial")
-        .put("Service-Engine", "Service-Engine")
-        .put("TenGigabitEthernet", "TenGigabitEthernet")
-        .put("TenGigE", "TenGigabitEthernet")
-        .put("te", "TenGigabitEthernet")
-        .put("trunk", "trunk")
-        .put("Tunnel", "Tunnel")
-        .put("tunnel-ip", "tunnel-ip")
-        .put("tunnel-te", "tunnel-te")
-        .put("ve", "VirtualEthernet")
-        .put("Virtual-Template", "Virtual-Template")
-        .put("Vlan", "Vlan")
-        .put("Vxlan", "Vxlan")
-        .put("Wideband-Cable", "Wideband-Cable")
-        .build();
-  }
 
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {

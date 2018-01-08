@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -179,14 +179,14 @@ public class Interface extends ComparableStructure<String> {
 
   private String _vrf;
 
-  private Set<String> _declaredNames;
+  private SortedSet<String> _declaredNames;
 
   public Interface(String name, CiscoConfiguration c) {
     super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
-    _declaredNames = ImmutableSet.of();
+    _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _nativeVlan = 1;
@@ -534,11 +534,11 @@ public class Interface extends ComparableStructure<String> {
     _vrf = vrf;
   }
 
-  public Set<String> getDeclaredNames() {
+  public SortedSet<String> getDeclaredNames() {
     return _declaredNames;
   }
 
-  public void setDeclaredNames(Set<String> declaredNames) {
+  public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = declaredNames;
   }
 }
