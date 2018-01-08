@@ -86,7 +86,7 @@ public class DisplayHints {
     }
 
     public boolean isIntOrIntList() {
-      return _baseType.getCanonicalName().equals("java.lang.Integer");
+      return _baseType.getCanonicalName().equals("java.lang.Long");
     }
   }
 
