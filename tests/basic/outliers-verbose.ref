@@ -66,33 +66,7 @@
             "as3border2"
           ],
           "hypothesis" : "sameDefinition",
-          "name" : "103",
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
           "name" : "101",
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "103",
           "structType" : "RouteFilterList"
         },
         {
@@ -239,6 +213,36 @@
           "hypothesis" : "sameDefinition",
           "name" : "dept_to_as2dist",
           "structType" : "RoutingPolicy"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "103",
+          "outliers" : [
+            "as1border2"
+          ],
+          "structType" : "IpAccessList"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameDefinition",
+          "name" : "103",
+          "outliers" : [
+            "as1border2"
+          ],
+          "structType" : "RouteFilterList"
         },
         {
           "conformers" : [
