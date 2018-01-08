@@ -314,7 +314,6 @@ public class BfCoordWorkHelper {
         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DELTA_ENV_NAME, deltaEnvironment);
       }
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ANALYSIS_NAME, analysisName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PRETTY_ANSWER, Boolean.toString(false));
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
@@ -361,7 +360,6 @@ public class BfCoordWorkHelper {
         addTextMultiPart(multiPart, CoordConsts.SVC_KEY_DELTA_ENV_NAME, deltaEnv);
       }
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION_NAME, questionName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_PRETTY_ANSWER, Boolean.toString(false));
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
