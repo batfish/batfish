@@ -117,7 +117,6 @@ public class BfConsts {
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
   public static final String RELPATH_ANSWER_HTML = "answer.html";
   public static final String RELPATH_ANSWER_JSON = "answer.json";
-  public static final String RELPATH_ANSWER_PRETTY_JSON = "answer-pretty.json";
   public static final String RELPATH_ANSWERS_DIR = "answers";
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";

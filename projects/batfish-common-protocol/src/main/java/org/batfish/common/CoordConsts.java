@@ -60,7 +60,6 @@ public class CoordConsts {
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
-  public static final String SVC_KEY_PRETTY_ANSWER = "prettyanswer";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
   public static final String SVC_KEY_SETTINGS = "settings";
