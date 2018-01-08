@@ -539,6 +539,6 @@ public class Interface extends ComparableStructure<String> {
   }
 
   public void setDeclaredNames(SortedSet<String> declaredNames) {
-    _declaredNames = declaredNames;
+    _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
   }
 }
