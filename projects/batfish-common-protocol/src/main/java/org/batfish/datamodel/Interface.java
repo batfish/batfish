@@ -963,7 +963,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_DECLARED_NAMES)
   public void setDeclaredNames(SortedSet<String> declaredNames) {
-    _declaredNames = declaredNames;
+    _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
   }
 
   @JsonProperty(PROP_DESCRIPTION)
