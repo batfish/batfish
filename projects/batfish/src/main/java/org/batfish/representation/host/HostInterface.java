@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.Collections;
@@ -136,6 +137,7 @@ public class HostInterface implements Serializable {
   public Interface toInterface(Configuration configuration, Warnings warnings) {
     Interface iface = new Interface(_canonicalName, configuration);
     iface.setBandwidth(_bandwidth);
+    iface.setDeclaredNames(ImmutableSortedSet.of(_name));
     iface.setPrefix(_prefix);
     iface.setAllPrefixes(Iterables.concat(Collections.singleton(_prefix), _otherPrefixes));
     iface.setVrf(configuration.getDefaultVrf());

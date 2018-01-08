@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1106,6 +1107,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
+    newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);

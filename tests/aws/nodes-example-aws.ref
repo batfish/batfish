@@ -255,6 +255,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -282,6 +285,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/0"
+              ],
               "description" : "link to lhr-fw-01 e1/3",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -313,6 +319,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/1"
+              ],
               "description" : "link to lhr-fw-02 e1/3",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -341,6 +350,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -368,6 +380,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/3"
+              ],
               "description" : "link to lix-peer-01 e1/1",
               "incomingFilter" : "LIMIT_PEER",
               "isisL1InterfaceMode" : "unset",
@@ -395,6 +410,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/4"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -419,6 +437,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/5"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -443,6 +464,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/6"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -467,6 +491,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet1/7"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -494,6 +521,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -522,6 +552,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet2/0"
+              ],
               "description" : "Border Interface",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -551,6 +584,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Loopback0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -581,6 +617,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Tunnel1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -609,6 +648,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Tunnel2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
