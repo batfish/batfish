@@ -163,7 +163,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("ma", "Management")
           .put("Management", "Management")
           .put("ManagementEthernet", "ManagementEthernet")
-          .put("mgmt", "um mgmt")
+          .put("mgmt", "mgmt")
           .put("MgmtEth", "ManagementEthernet")
           .put("Modular-Cable", "Modular-Cable")
           .put("Null", "Null")
