@@ -8879,6 +8879,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "eth0"
+              ],
               "incomingFilter" : "filter::INPUT",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -10769,6 +10772,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/1.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10794,6 +10800,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/20.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10819,6 +10828,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/21.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11683,6 +11695,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "et-0/0/10.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11706,6 +11721,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "ge-0/2/5.0"
+              ],
               "dhcpRelayAddresses" : [
                 "3.4.5.6"
               ],
@@ -11732,6 +11750,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-1/0/0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11777,6 +11798,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "ae0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11804,6 +11828,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "irb.5"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11835,6 +11862,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/0:0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11858,6 +11888,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/5:0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11984,6 +12017,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "irb.10"
+              ],
               "dhcpRelayAddresses" : [
                 "1.2.3.4"
               ],
@@ -12010,6 +12046,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "irb.20"
+              ],
               "dhcpRelayAddresses" : [
                 "1.2.3.4"
               ],
