@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 
 /**
@@ -174,8 +174,10 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _med = med;
     _originatorIp = originatorIp;
     _asPath = asPath;
-    _communities = communities == null ? new TreeSet<>() : communities;
-    _clusterList = clusterList == null ? new TreeSet<>() : clusterList;
+    _communities =
+        communities == null ? Collections.emptySortedSet() : ImmutableSortedSet.copyOf(communities);
+    _clusterList =
+        clusterList == null ? Collections.emptySortedSet() : ImmutableSortedSet.copyOf(clusterList);
     _weight = weight;
   }
 
@@ -339,12 +341,12 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   @JsonProperty(PROP_CLUSTER_LIST)
   public SortedSet<Long> getClusterList() {
-    return Collections.unmodifiableSortedSet(_clusterList);
+    return _clusterList;
   }
 
   @JsonProperty(PROP_COMMUNITIES)
   public SortedSet<Long> getCommunities() {
-    return Collections.unmodifiableSortedSet(_communities);
+    return _communities;
   }
 
   @JsonProperty(PROP_DST_IP)
