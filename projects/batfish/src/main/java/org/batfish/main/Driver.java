@@ -359,7 +359,7 @@ public class Driver {
             public void run() {
               try (ActiveSpan runBatfishSpan =
                   GlobalTracer.get()
-                      .buildSpan("Run Batfish")
+                      .buildSpan("Run Batfish job in a new thread and get the answer")
                       .addReference(References.FOLLOWS_FROM, runBatfishSpanContext)
                       .startActive()) {
                 assert runBatfishSpan != null;
@@ -485,7 +485,7 @@ public class Driver {
                 public void run() {
                   try (ActiveSpan runBatfishSpan =
                       GlobalTracer.get()
-                          .buildSpan("Run Batfish through service")
+                          .buildSpan("Initialize Batfish in a new thread")
                           .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
                           .startActive()) {
                     assert runBatfishSpan != null; // avoid unused warning

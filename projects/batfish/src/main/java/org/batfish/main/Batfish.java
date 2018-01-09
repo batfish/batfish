@@ -1013,8 +1013,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (Files.exists(topologyFilePath)) {
       topology = processTopologyFile(topologyFilePath);
       _logger.infof(
-          "Testrig:%s in container:%s has topology file",
-          _settings.getTestrig(), _settings.getContainerDir().getFileName().toString());
+          "Testrig:%s in container:%s has topology file", getTestrigName(), getContainerName());
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -3866,9 +3865,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.infof(
         "Testrig:%s in container:%s has total number of host configs:%d",
-        _settings.getTestrig(),
-        _settings.getContainerDir().getFileName(),
-        allHostConfigurations.size());
+        getTestrigName(), getContainerName(), allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
@@ -3990,9 +3987,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.infof(
         "Testrig:%s in container:%s has total number of network configs:%d",
-        _settings.getTestrig(),
-        _settings.getContainerDir().getFileName(),
-        vendorConfigurations.size());
+        getTestrigName(), getContainerName(), vendorConfigurations.size());
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     CommonUtil.createDirectories(outputPath);

@@ -407,7 +407,7 @@ public class BdpEngine {
     BdpDataPlane dp = new BdpDataPlane();
     _logger.info("\n*** COMPUTING DATA PLANE ***\n");
     try (ActiveSpan computeDataPlaneSpan =
-        GlobalTracer.get().buildSpan("Computing data-plane").startActive()) {
+        GlobalTracer.get().buildSpan("Computing data plane").startActive()) {
       assert computeDataPlaneSpan != null; // avoid unused warning
       try (ActiveSpan computeIpOwnersSpan =
           GlobalTracer.get().buildSpan("Computing ip owners").startActive()) {
@@ -485,7 +485,7 @@ public class BdpEngine {
       }
 
       try (ActiveSpan activeStaticRoutesSpan =
-          GlobalTracer.get().buildSpan("Activate Static Routes").startActive()) {
+          GlobalTracer.get().buildSpan("Activate static routes").startActive()) {
         assert activeStaticRoutesSpan != null; // avoid unused warning
         // Static nextHopIp routes
         AtomicInteger recomputeStaticCompleted =
@@ -516,7 +516,7 @@ public class BdpEngine {
               "Iteration " + dependentRoutesIterations + ": Recompute aggregate/generated routes",
               nodes.size());
       try (ActiveSpan activeGeneratedRoutesSpan =
-          GlobalTracer.get().buildSpan("Activate Generated Routes").startActive()) {
+          GlobalTracer.get().buildSpan("Activate generated routes").startActive()) {
         assert activeGeneratedRoutesSpan != null; // avoid unused warning
         nodes
             .values()
@@ -535,7 +535,7 @@ public class BdpEngine {
       // OSPF external routes
       // recompute exports
       try (ActiveSpan initOspfExportsSpan =
-          GlobalTracer.get().buildSpan("Initialize OSPF Exports").startActive()) {
+          GlobalTracer.get().buildSpan("Initialize OSPF exports").startActive()) {
         assert initOspfExportsSpan != null; // avoid unused warning
         nodes
             .values()
@@ -552,7 +552,7 @@ public class BdpEngine {
       AtomicBoolean ospfExternalChanged = new AtomicBoolean(true);
       int ospfExternalSubIterations = 0;
       try (ActiveSpan repropagateOspfExportsSpan =
-          GlobalTracer.get().buildSpan("Repropagate OSPF Exports").startActive()) {
+          GlobalTracer.get().buildSpan("Repropagate OSPF exports").startActive()) {
         assert repropagateOspfExportsSpan != null; // avoid unused warning
         while (ospfExternalChanged.get()) {
           ospfExternalSubIterations++;
@@ -601,7 +601,7 @@ public class BdpEngine {
               "Iteration " + dependentRoutesIterations + ": Unstage OSPF external routes",
               nodes.size());
       try (ActiveSpan importOspfExternalRoutesSpan =
-          GlobalTracer.get().buildSpan("Import OSPF External Routes").startActive()) {
+          GlobalTracer.get().buildSpan("Import OSPF external routes").startActive()) {
         assert importOspfExternalRoutesSpan != null; // avoid unused warning
         nodes
             .values()
@@ -620,7 +620,7 @@ public class BdpEngine {
       // BGP routes
       // first let's initialize nodes-level generated/aggregate routes
       try (ActiveSpan initBgpAggregateRoutesSpan =
-          GlobalTracer.get().buildSpan("Initialize BGP aggregate Routes").startActive()) {
+          GlobalTracer.get().buildSpan("Initialize BGP aggregate routes").startActive()) {
         assert initBgpAggregateRoutesSpan != null; // avoid unused warning
         nodes
             .values()
@@ -638,7 +638,7 @@ public class BdpEngine {
           _newBatch.apply(
               "Iteration " + dependentRoutesIterations + ": Propagate BGP routes", nodes.size());
       try (ActiveSpan propagateBgpRoutesSpan =
-          GlobalTracer.get().buildSpan("Propagate BGP Routes").startActive()) {
+          GlobalTracer.get().buildSpan("Propagate BGP routes").startActive()) {
         assert propagateBgpRoutesSpan != null; // avoid unused warning
         nodes
             .values()
@@ -658,7 +658,7 @@ public class BdpEngine {
               "Iteration " + dependentRoutesIterations + ": Import BGP routes into respective RIBs",
               nodes.size());
       try (ActiveSpan finalizeBgpRoutesSpan =
-          GlobalTracer.get().buildSpan("Finalize BGP Routes").startActive()) {
+          GlobalTracer.get().buildSpan("Finalize BGP routes").startActive()) {
         assert finalizeBgpRoutesSpan != null; // avoid unused warning
         nodes
             .values()

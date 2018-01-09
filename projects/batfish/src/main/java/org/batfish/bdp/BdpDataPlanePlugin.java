@@ -58,7 +58,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             .average()
             .orElse(0.00d);
     _logger.infof(
-        "Generated data-plane for testrig:%s in container:%s; iterations:%s, total nodes:%s, "
+        "Generated data plane for testrig:%s in container:%s; iterations:%s, total nodes:%s, "
             + "avg entries per node:%.2f\n",
         _batfish.getTestrigName(),
         _batfish.getContainerName(),
@@ -68,7 +68,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     _logger.resetTimer();
     _batfish.newBatch("Writing data plane to disk", 0);
     try (ActiveSpan writeDataplane =
-        GlobalTracer.get().buildSpan("Writing data-plane").startActive()) {
+        GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
       assert writeDataplane != null; // avoid unused warning
       _batfish.writeDataPlane(dp, ae);
     }
