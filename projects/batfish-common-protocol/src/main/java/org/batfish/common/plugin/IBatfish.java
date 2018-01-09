@@ -56,6 +56,8 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
+  String getContainerName();
+
   DataPlanePluginSettings getDataPlanePluginSettings();
 
   String getDifferentialFlowTag();
@@ -75,6 +77,8 @@ public interface IBatfish extends IPluginConsumer {
   Map<String, String> getQuestionTemplates();
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
+
+  String getTaskId();
 
   Directory getTestrigFileTree();
 

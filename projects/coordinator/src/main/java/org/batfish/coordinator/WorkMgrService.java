@@ -1562,7 +1562,9 @@ public class WorkMgrService {
       }
 
       Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
-      _logger.infof("Uploaded testrig:%s for container:%s\n", testrigName, containerName);
+      _logger.infof(
+          "Uploaded testrig:%s for container:%s using api-key:%s\n",
+          testrigName, containerName, apiKey);
       return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");

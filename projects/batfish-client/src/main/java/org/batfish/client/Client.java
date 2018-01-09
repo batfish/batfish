@@ -931,6 +931,10 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean execute(WorkItem wItem, @Nullable FileWriter outWriter) {
     _logger.info("work-id is " + wItem.getId() + "\n");
+    ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+    if (activeSpan != null) {
+      activeSpan.setTag("work-id", wItem.getId().toString());
+    }
     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _settings.getBatfishLogLevel());
     for (String option : _additionalBatfishOptions.keySet()) {
       wItem.addRequestParam(option, _additionalBatfishOptions.get(option));
@@ -940,33 +944,36 @@ public class Client extends AbstractClient implements IClient {
     if (!queueWorkResult) {
       return queueWorkResult;
     }
-
-    // Poll the work item until it finishes or fails.
-    Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(wItem.getId());
-    if (response == null) {
-      return false;
-    }
-
-    WorkStatusCode status = response.getFirst();
-    Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
-    while (status != WorkStatusCode.TERMINATEDABNORMALLY
-        && status != WorkStatusCode.TERMINATEDNORMALLY
-        && status != WorkStatusCode.ASSIGNMENTERROR
-        && backoff.hasNext()) {
-      printWorkStatusResponse(response);
-      try {
-        Thread.sleep(backoff.nextBackoff().toMillis());
-      } catch (InterruptedException e) {
-        throw new BatfishException("Interrupted while waiting for work item to complete", e);
-      }
+    Pair<WorkStatusCode, String> response;
+    try (ActiveSpan workStatusSpan =
+        GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
+      assert workStatusSpan != null; // avoid unused warning
+      // Poll the work item until it finishes or fails.
       response = _workHelper.getWorkStatus(wItem.getId());
       if (response == null) {
         return false;
       }
-      status = response.getFirst();
-    }
-    printWorkStatusResponse(response);
 
+      WorkStatusCode status = response.getFirst();
+      Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
+      while (status != WorkStatusCode.TERMINATEDABNORMALLY
+          && status != WorkStatusCode.TERMINATEDNORMALLY
+          && status != WorkStatusCode.ASSIGNMENTERROR
+          && backoff.hasNext()) {
+        printWorkStatusResponse(response);
+        try {
+          Thread.sleep(backoff.nextBackoff().toMillis());
+        } catch (InterruptedException e) {
+          throw new BatfishException("Interrupted while waiting for work item to complete", e);
+        }
+        response = _workHelper.getWorkStatus(wItem.getId());
+        if (response == null) {
+          return false;
+        }
+        status = response.getFirst();
+      }
+      printWorkStatusResponse(response);
+    }
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
     String downloadedAnsFile =
