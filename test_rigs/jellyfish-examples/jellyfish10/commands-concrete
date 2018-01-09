@@ -1,2 +1,0 @@
-init-testrig networks/jellyfish/jellyfish10
-test concrete get smt-reachability finalIfaceRegex="Ethernet.*", stats=True
