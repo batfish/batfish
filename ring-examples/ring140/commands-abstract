@@ -1,0 +1,2 @@
+init-testrig networks/ring/ring140
+test abstract get smt-reachability finalIfaceRegex="Ethernet.*", stats=True, useAbstraction=True 

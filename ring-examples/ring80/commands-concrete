@@ -1,0 +1,2 @@
+init-testrig networks/ring/ring80
+test concrete get smt-reachability finalIfaceRegex="Ethernet.*", stats=True

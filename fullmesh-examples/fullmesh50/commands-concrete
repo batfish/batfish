@@ -1,0 +1,2 @@
+init-testrig networks/fullmesh/fullmesh50
+test concrete get smt-reachability finalIfaceRegex="Ethernet.*", stats=True

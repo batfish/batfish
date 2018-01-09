@@ -1,0 +1,2 @@
+init-testrig networks/fattree/fattree10
+test concrete get smt-reachability finalIfaceRegex="Ethernet.*", stats=True

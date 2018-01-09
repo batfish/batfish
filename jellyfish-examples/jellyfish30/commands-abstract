@@ -1,0 +1,2 @@
+init-testrig networks/jellyfish/jellyfish30
+test abstract get smt-reachability finalIfaceRegex="Ethernet.*", stats=True, useAbstraction=True 
