@@ -2,14 +2,12 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.BitSet;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 
 public class PrefixTrie implements Serializable {
 
@@ -140,35 +138,16 @@ public class PrefixTrie implements Serializable {
 
   public PrefixTrie() {
     _trie = new ByteTrie();
-    _prefixes = new TreeSet<>();
+    _prefixes = Collections.emptySortedSet();
   }
 
   @JsonCreator
   public PrefixTrie(SortedSet<Prefix> prefixes) {
+    _prefixes = ImmutableSortedSet.copyOf(prefixes);
     _trie = new ByteTrie();
-    _prefixes = prefixes;
-    for (Prefix prefix : prefixes) {
+    for (Prefix prefix : _prefixes) {
       _trie.addPrefix(prefix);
     }
-  }
-
-  public boolean add(Prefix prefix) {
-    if (prefix == null) {
-      throw new BatfishException("Cannot add null prefix to trie");
-    }
-    boolean changed = _prefixes.add(prefix);
-    if (changed) {
-      _trie.addPrefix(prefix);
-    }
-    return changed;
-  }
-
-  public boolean addAll(Collection<Prefix> prefixes) {
-    boolean changed = false;
-    for (Prefix prefix : prefixes) {
-      changed = changed || add(prefix);
-    }
-    return changed;
   }
 
   public boolean containsIp(Ip address) {
@@ -185,6 +164,6 @@ public class PrefixTrie implements Serializable {
 
   @JsonValue
   public SortedSet<Prefix> getPrefixes() {
-    return Collections.unmodifiableSortedSet(_prefixes);
+    return _prefixes;
   }
 }

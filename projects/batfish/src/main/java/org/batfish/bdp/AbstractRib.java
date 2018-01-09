@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -92,10 +93,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
     private RibTreeNode _right;
 
-    private final Set<R> _routes;
+    private Set<R> _routes;
 
     RibTreeNode(Prefix prefix) {
-      _routes = new HashSet<>();
+      _routes = Collections.emptySet();
       _prefix = prefix;
     }
 
@@ -241,7 +242,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       // for the given route
       if (node == null) {
         node = new RibTreeNode(route.getNetwork());
-        node._routes.add(route);
+        node._routes = Collections.singleton(route);
         // don't forget to assign new node object to parent node
         assignChild(parent, node, rightBranch);
         return true;
@@ -291,7 +292,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
         currentNodeAddressBit = nodeAddressBits.get(nextUnmatchedBit);
         RibTreeNode oldNode = node;
         node = new RibTreeNode(route.getNetwork());
-        node._routes.add(route);
+        node._routes = Collections.singleton(route);
         assignChild(parent, node, rightBranch);
         assignChild(node, oldNode, currentNodeAddressBit);
         return true;
@@ -312,7 +313,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
           new Prefix(route.getNetwork().getAddress(), nextUnmatchedBit).getNetworkPrefix();
       node = new RibTreeNode(newNetwork); // node is the node we are inserting in the middle
       RibTreeNode child = new RibTreeNode(route.getNetwork());
-      child._routes.add(route);
+      child._routes = Collections.singleton(route);
       assignChild(parent, node, rightBranch);
       // child and old node become siblings, children of the newly inserted node
       assignChild(node, child, currentAddressBit);
@@ -331,7 +332,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
 
         // No routes with this prefix, so just add it. No comparison necessary
         if (_routes.isEmpty()) {
-          _routes.add(route);
+          _routes = Collections.singleton(route);
           return true;
         }
 
@@ -352,7 +353,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
             return false;
           }
           // Otherwise add the route
-          _routes.add(route);
+          _routes = ImmutableSet.<R>builder().addAll(_routes).add(route).build();
           return true;
         }
         // Last case, preferenceComparison > 0
@@ -360,8 +361,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
          * Better than all pre-existing routes for this prefix, so
          * replace them with this one.
          */
-        _routes.clear();
-        _routes.add(route);
+        _routes = Collections.singleton(route);
         return true;
       }
       /*
