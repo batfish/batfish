@@ -1,8 +1,5 @@
 package org.batfish.common;
 
-import com.uber.jaeger.SpanContext;
-import io.opentracing.ActiveSpan;
-import io.opentracing.util.GlobalTracer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -367,13 +364,6 @@ public class BatfishLogger {
         outputMsg = String.format("%s: %s", dateStr, msg);
       } else {
         outputMsg = msg;
-      }
-      ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
-      if (activeSpan != null && activeSpan.context() instanceof SpanContext) {
-        SpanContext context = (SpanContext) activeSpan.context();
-        outputMsg =
-            String.format(
-                "%s; trace-id:%s\n", outputMsg.trim(), Long.toHexString(context.getTraceId()));
       }
       if (_ps != null) {
         _ps.print(outputMsg);

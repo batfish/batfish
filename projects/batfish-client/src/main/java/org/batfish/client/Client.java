@@ -931,6 +931,10 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean execute(WorkItem wItem, @Nullable FileWriter outWriter) {
     _logger.info("work-id is " + wItem.getId() + "\n");
+    ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+    if (activeSpan != null) {
+      activeSpan.setTag("work-id", wItem.getId().toString());
+    }
     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _settings.getBatfishLogLevel());
     for (String option : _additionalBatfishOptions.keySet()) {
       wItem.addRequestParam(option, _additionalBatfishOptions.get(option));

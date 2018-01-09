@@ -78,6 +78,8 @@ public interface IBatfish extends IPluginConsumer {
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
+  String getTaskId();
+
   Directory getTestrigFileTree();
 
   String getTestrigName();

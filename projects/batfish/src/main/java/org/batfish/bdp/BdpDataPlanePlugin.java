@@ -59,12 +59,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
             .orElse(0.00d);
     _logger.infof(
         "Generated data plane for testrig:%s in container:%s; iterations:%s, total nodes:%s, "
-            + "avg entries per node:%.2f\n",
+            + "avg entries per node:%.2f, work-id:%s\n",
         _batfish.getTestrigName(),
         _batfish.getContainerName(),
         ae.getDependentRoutesIterations(),
         configurations.size(),
-        averageRoutes);
+        averageRoutes,
+        _batfish.getTaskId());
     _logger.resetTimer();
     _batfish.newBatch("Writing data plane to disk", 0);
     try (ActiveSpan writeDataplane =

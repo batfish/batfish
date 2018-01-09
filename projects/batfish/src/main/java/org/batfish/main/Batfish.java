@@ -514,8 +514,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             "Getting answer to question %s from analysis %s",
                             questionName, analysisName))
                     .startActive()) {
-              assert analysisQuestionSpan != null; // make span not show up as unused.
-              analysisQuestionSpan.setTag("WorkItemId", _settings.getTaskId());
+              assert analysisQuestionSpan != null; // make span not show up as unused
               currentAnswer = answer();
             }
             // Ensuring that question was parsed successfully
@@ -524,12 +523,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 BatfishObjectMapper mapper = new BatfishObjectMapper(false);
                 // TODO: This can be represented much cleanly and easily with a Json
                 _logger.infof(
-                    "Ran question:%s from analysis:%s in container:%s; workItemId:%s, status:%s, "
+                    "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
                         + "computed dataplane:%s, parameters:%s\n",
                     questionName,
                     analysisName,
                     containerName,
-                    _settings.getTaskId(),
+                    getTaskId(),
                     currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
                     currentAnswer.getQuestion().getDataPlane(),
                     mapper.writeValueAsString(
@@ -1856,6 +1855,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       consumedEdges.add(reverseEdge);
     }
     return consumedEdges;
+  }
+
+  @Override
+  public String getTaskId() {
+    return _settings.getTaskId();
   }
 
   public boolean getTerminatedWithException() {
