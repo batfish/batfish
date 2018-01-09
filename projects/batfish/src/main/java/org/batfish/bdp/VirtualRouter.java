@@ -1083,11 +1083,9 @@ public class VirtualRouter extends ComparableStructure<String> {
           BgpAdvertisementType sentType =
               ebgpSession ? BgpAdvertisementType.EBGP_SENT : BgpAdvertisementType.IBGP_SENT;
           Ip sentOriginatorIp = transformedOutgoingRoute.getOriginatorIp();
-          SortedSet<Long> sentClusterList =
-              new TreeSet<>(transformedOutgoingRoute.getClusterList());
+          SortedSet<Long> sentClusterList = transformedOutgoingRoute.getClusterList();
           AsPath sentAsPath = transformedOutgoingRoute.getAsPath();
-          SortedSet<Long> sentCommunities =
-              new TreeSet<>(transformedOutgoingRoute.getCommunities());
+          SortedSet<Long> sentCommunities = transformedOutgoingRoute.getCommunities();
           Prefix sentNetwork = route.getNetwork();
           Ip sentNextHopIp;
           String sentSrcNode = hostname;
@@ -1123,8 +1121,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                   sentMed,
                   sentOriginatorIp,
                   sentAsPath,
-                  new TreeSet<>(sentCommunities),
-                  new TreeSet<>(sentClusterList),
+                  sentCommunities,
+                  sentClusterList,
                   sentWeight);
           _sentBgpAdvertisements.add(sentAdvert);
           numAdvertisements++;
@@ -1378,13 +1376,11 @@ public class VirtualRouter extends ComparableStructure<String> {
           BgpAdvertisementType sentType =
               ebgpSession ? BgpAdvertisementType.EBGP_SENT : BgpAdvertisementType.IBGP_SENT;
           Ip sentOriginatorIp = transformedOutgoingRoute.getOriginatorIp();
-          SortedSet<Long> sentClusterList =
-              new TreeSet<>(transformedOutgoingRoute.getClusterList());
+          SortedSet<Long> sentClusterList = transformedOutgoingRoute.getClusterList();
           boolean sentReceivedFromRouteReflectorClient =
               transformedOutgoingRoute.getReceivedFromRouteReflectorClient();
           AsPath sentAsPath = transformedOutgoingRoute.getAsPath();
-          SortedSet<Long> sentCommunities =
-              new TreeSet<>(transformedOutgoingRoute.getCommunities());
+          SortedSet<Long> sentCommunities = transformedOutgoingRoute.getCommunities();
           Prefix sentNetwork = remoteRoute.getNetwork();
           Ip sentNextHopIp;
           String sentSrcNode = remoteHostname;
@@ -1472,8 +1468,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                   sentMed,
                   sentOriginatorIp,
                   sentAsPath,
-                  new TreeSet<>(sentCommunities),
-                  new TreeSet<>(sentClusterList),
+                  sentCommunities,
+                  sentClusterList,
                   sentWeight);
 
           Prefix prefix = remoteRoute.getNetwork();
@@ -1528,9 +1524,8 @@ public class VirtualRouter extends ComparableStructure<String> {
             long receivedMed = transformedIncomingRoute.getMetric();
             Ip receivedOriginatorIp = sentOriginatorIp;
             AsPath receivedAsPath = transformedIncomingRoute.getAsPath();
-            SortedSet<Long> receivedCommunities =
-                new TreeSet<>(transformedIncomingRoute.getCommunities());
-            SortedSet<Long> receivedClusterList = new TreeSet<>(sentClusterList);
+            SortedSet<Long> receivedCommunities = transformedIncomingRoute.getCommunities();
+            SortedSet<Long> receivedClusterList = sentClusterList;
             int receivedWeight = transformedIncomingRoute.getWeight();
             BgpAdvertisement receivedAdvert =
                 new BgpAdvertisement(
@@ -1549,8 +1544,8 @@ public class VirtualRouter extends ComparableStructure<String> {
                     receivedMed,
                     receivedOriginatorIp,
                     receivedAsPath,
-                    new TreeSet<>(receivedCommunities),
-                    new TreeSet<>(receivedClusterList),
+                    receivedCommunities,
+                    receivedClusterList,
                     receivedWeight);
             if (targetRib.mergeRoute(transformedIncomingRoute)) {
               numRoutes++;
