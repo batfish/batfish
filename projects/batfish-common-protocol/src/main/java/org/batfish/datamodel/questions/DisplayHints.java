@@ -15,22 +15,33 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.collections.FileLinePair;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.pojo.Node;
 
 public class DisplayHints {
 
   public static class Schema {
 
+    private static String getClassString(Class<?> cls) {
+      return String.format("class:%s", cls.getCanonicalName());
+    }
+
     private static final Map<String, String> schemaAliases =
         ImmutableMap.<String, String>builder()
-            .put("Environment", "class:org.batfish.datamodel.pojo.Environment")
-            .put("FileLine", "class:org.batfish.datamodel.collections.FileLinePair")
-            .put("Flow", "class:org.batfish.datamodel.Flow")
-            .put("FlowTrace", "class:org.batfish.datamodel.FlowTrace")
-            .put("Integer", "class:java.lang.Long")
-            .put("Interface", "class:org.batfish.datamodel.collections.NodeInterfacePair")
-            .put("Ip", "class:org.batfish.datamodel.Ip")
-            .put("Node", "class:org.batfish.datamodel.pojo.Node")
-            .put("String", "class:java.lang.String")
+            .put("Environment", getClassString(Environment.class))
+            .put("FileLine", getClassString(FileLinePair.class))
+            .put("Flow", getClassString(Flow.class))
+            .put("FlowTrace", getClassString(FlowTrace.class))
+            .put("Integer", getClassString(Long.class))
+            .put("Interface", getClassString(NodeInterfacePair.class))
+            .put("Ip", getClassString(Ip.class))
+            .put("Node", getClassString(Node.class))
+            .put("String", getClassString(String.class))
             .build();
 
     private Class<?> _baseType;
@@ -83,7 +94,7 @@ public class DisplayHints {
     }
 
     public boolean isIntOrIntList() {
-      return _baseType.getCanonicalName().equals("java.lang.Long");
+      return _baseType.equals(Long.class);
     }
   }
 
