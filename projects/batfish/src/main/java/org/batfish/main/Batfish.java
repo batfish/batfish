@@ -514,8 +514,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             "Getting answer to question %s from analysis %s",
                             questionName, analysisName))
                     .startActive()) {
-              assert analysisQuestionSpan != null; // make span not show up as unused.
-              analysisQuestionSpan.setTag("WorkItemId", _settings.getTaskId());
+              assert analysisQuestionSpan != null; // make span not show up as unused
               currentAnswer = answer();
             }
             // Ensuring that question was parsed successfully
@@ -524,12 +523,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 BatfishObjectMapper mapper = new BatfishObjectMapper(false);
                 // TODO: This can be represented much cleanly and easily with a Json
                 _logger.infof(
-                    "Ran question:%s from analysis:%s in container:%s; workItemId:%s, status:%s, "
+                    "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
                         + "computed dataplane:%s, parameters:%s\n",
                     questionName,
                     analysisName,
                     containerName,
-                    _settings.getTaskId(),
+                    getTaskId(),
                     currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
                     currentAnswer.getQuestion().getDataPlane(),
                     mapper.writeValueAsString(
@@ -1012,7 +1011,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Get generated facts from topology file
     if (Files.exists(topologyFilePath)) {
       topology = processTopologyFile(topologyFilePath);
-      _logger.infof("Testrig:%s has topology file", _settings.getTestrig());
+      _logger.infof(
+          "Testrig:%s in container:%s has topology file", getTestrigName(), getContainerName());
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -1590,6 +1590,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return configurations;
   }
 
+  @Override
+  public String getContainerName() {
+    return _settings.getContainerDir().getFileName().toString();
+  }
+
   public DataPlanePlugin getDataPlanePlugin() {
     return _dataPlanePlugin;
   }
@@ -1850,6 +1855,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       consumedEdges.add(reverseEdge);
     }
     return consumedEdges;
+  }
+
+  @Override
+  public String getTaskId() {
+    return _settings.getTaskId();
   }
 
   public boolean getTerminatedWithException() {
@@ -3836,8 +3846,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to parser errors");
     }
     _logger.infof(
-        "Testrig:%s has total number of host configs:%d ",
-        _settings.getTestrig(), allHostConfigurations.size());
+        "Testrig:%s in container:%s has total number of host configs:%d",
+        getTestrigName(), getContainerName(), allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
@@ -3957,6 +3967,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (vendorConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
+    _logger.infof(
+        "Testrig:%s in container:%s has total number of network configs:%d",
+        getTestrigName(), getContainerName(), vendorConfigurations.size());
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     CommonUtil.createDirectories(outputPath);
