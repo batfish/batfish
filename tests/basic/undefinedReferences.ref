@@ -7,7 +7,7 @@
           "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'filter-bogons'",
           "files" : {
             "as2core2.cfg" : [
-              106
+              109
             ]
           }
         }
@@ -22,7 +22,7 @@
           "route-map" : {
             "filter-bogons" : {
               "bgp inbound route-map" : [
-                106
+                109
               ]
             }
           }

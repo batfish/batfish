@@ -2638,21 +2638,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Driver.newBatch(_settings, description, jobs);
   }
 
-  /**
-   * Returns a {@link Pair} of strings that respectively represent the structured and pretty
-   * answers.
-   */
-  private static Pair<String, String> getAnswerStrings(Answer answer) throws IOException {
-    ObjectMapper mapper = new BatfishObjectMapper();
-
-    String answerString = mapper.writeValueAsString(answer) + '\n';
-
-    Answer prettyAnswer = answer.prettyPrintAnswer();
-    String prettyAnswerString = mapper.writeValueAsString(prettyAnswer) + '\n';
-
-    return new Pair<>(answerString, prettyAnswerString);
-  }
-
   private void outputAnswer(Answer answer) {
     outputAnswer(answer, /* log */ false);
   }
@@ -2662,28 +2647,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void outputAnswer(Answer answer, boolean writeLog) {
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
     try {
-      Pair<String, String> answerStrings = getAnswerStrings(answer);
-      String structuredAnswerString = answerStrings.getFirst();
-      String prettyAnswerString = answerStrings.getSecond();
-      String answerString =
-          _settings.prettyPrintAnswer() ? prettyAnswerString : structuredAnswerString;
+      String answerString = mapper.writeValueAsString(answer) + '\n';
       _logger.debug(answerString);
       @Nullable String logString = writeLog ? answerString : null;
-      writeJsonAnswerWithLog(logString, structuredAnswerString, prettyAnswerString);
+      writeJsonAnswerWithLog(logString, answerString);
     } catch (Exception e) {
       BatfishException be = new BatfishException("Error in sending answer", e);
       try {
         Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        Pair<String, String> answerStrings = getAnswerStrings(failureAnswer);
-        String structuredAnswerString = answerStrings.getFirst();
-        String prettyAnswerString = answerStrings.getSecond();
-        String answerString =
-            _settings.prettyPrintAnswer() ? prettyAnswerString : structuredAnswerString;
+        String answerString = mapper.writeValueAsString(failureAnswer) + '\n';
         _logger.error(answerString);
         @Nullable String logString = writeLog ? answerString : null;
-        writeJsonAnswerWithLog(logString, structuredAnswerString, prettyAnswerString);
+        writeJsonAnswerWithLog(logString, answerString);
       } catch (Exception e1) {
         _logger.errorf("Could not serialize failure answer. %s", ExceptionUtils.getStackTrace(e1));
       }
@@ -4329,7 +4307,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
   }
 
-  private void writeJsonAnswer(String structuredAnswerString, String prettyAnswerString) {
+  private void writeJsonAnswer(String structuredAnswerString) {
     // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
     // Purpose: to write answer json files for adhoc and analysis questions
     // Dependencies: Container, tr & env, (delta tr & env), question name, analysis name if present
@@ -4368,21 +4346,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return;
     }
     Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
     answerDir.toFile().mkdirs();
     CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-    CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
   }
 
-  private void writeJsonAnswerWithLog(
-      @Nullable String logString, String structuredAnswerString, String prettyAnswerString) {
+  private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
     // Write log of WorkItem task to the configured path for logs
     Path jsonPath = _settings.getAnswerJsonPath();
     if (jsonPath != null && logString != null) {
       CommonUtil.writeFile(jsonPath, logString);
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
-    writeJsonAnswer(structuredAnswerString, prettyAnswerString);
+    writeJsonAnswer(structuredAnswerString);
   }
 
   private void writeJsonTopology() {

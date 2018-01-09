@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Collections;
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 
@@ -16,22 +15,22 @@ public enum State {
 
   private static final Map<String, State> _nameMap = buildNameMap();
 
-  private static synchronized Map<String, State> buildNameMap() {
-    Map<String, State> map = new HashMap<>();
+  private static Map<String, State> buildNameMap() {
+    ImmutableMap.Builder<String, State> map = ImmutableMap.builder();
     for (State value : State.values()) {
       String name = value.name().toLowerCase();
       map.put(name, value);
     }
-    return Collections.unmodifiableMap(map);
+    return map.build();
   }
 
-  private static synchronized Map<Integer, State> buildNumberMap() {
-    Map<Integer, State> map = new HashMap<>();
+  private static Map<Integer, State> buildNumberMap() {
+    ImmutableMap.Builder<Integer, State> map = ImmutableMap.builder();
     for (State value : State.values()) {
       int num = value._num;
       map.put(num, value);
     }
-    return Collections.unmodifiableMap(map);
+    return map.build();
   }
 
   public static State fromNum(int num) {
