@@ -122,9 +122,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
         .get(dp)
         .forEach(
             (flow, flowTraces) -> {
-              for (FlowTrace flowTrace : flowTraces) {
-                flowTraceList.add(flowTrace);
-              }
+              flowTraceList.addAll(flowTraces);
             });
     return flowTraceList;
   }

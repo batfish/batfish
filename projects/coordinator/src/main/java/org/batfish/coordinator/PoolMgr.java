@@ -67,9 +67,7 @@ public class PoolMgr {
 
   private synchronized List<String> getAllWorkers() {
     List<String> workers = new LinkedList<>();
-    for (String worker : _workerPool.keySet()) {
-      workers.add(worker);
-    }
+    workers.addAll(_workerPool.keySet());
     return workers;
   }
 
