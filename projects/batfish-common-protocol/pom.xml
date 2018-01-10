@@ -68,7 +68,9 @@
               <sourceDirectory>${basedir}/src/test/antlr4</sourceDirectory>
               <outputDirectory>${project.build.directory}/generated-test-sources/antlr4
               </outputDirectory>
-              <includes>**/*.g4</includes>
+              <includes>
+                <include>**/*.g4</include>
+              </includes>
             </configuration>
           </execution>
         </executions>

@@ -57,7 +57,10 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-              <includes>**/CiscoLexer.g4,**/CiscoParser.g4</includes>
+              <includes>
+              	<include>**/CiscoLexer.g4</include>
+              	<include>**/CiscoParser.g4</include>
+              </includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cisco</libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-cisco</statusDirectory>
             </configuration>
@@ -68,7 +71,10 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-               <includes>**/FlatJuniperLexer.g4,**/FlatJuniperParser.g4</includes>
+              <includes>
+              	<include>**/FlatJuniperLexer.g4</include>
+              	<include>**/FlatJuniperParser.g4</include>
+              </includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper</libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-flatjuniper</statusDirectory>
             </configuration>
@@ -79,7 +85,10 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-              <includes>**/FlatVyosLexer.g4,**/FlatVyosParser.g4</includes>
+              <includes>
+                <include>**/FlatVyosLexer.g4</include>
+                <include>**/FlatVyosParser.g4</include>
+              </includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatvyos</libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-flatvyos</statusDirectory>
             </configuration>
@@ -90,7 +99,10 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-              <includes>**/MrvLexer.g4,**/MrvParser.g4</includes>
+              <includes>
+                <include>**/MrvLexer.g4</include>
+                <include>**/MrvParser.g4</include>
+              </includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/mrv</libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-mrv</statusDirectory>
             </configuration>
@@ -103,8 +115,15 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-              <includes>**/*.g4</includes>
-              <excludes>**/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4</excludes>
+              <includes>
+                <include>**/*.g4</include>
+              </includes>
+              <excludes>
+                <exclude>**/cisco/*.g4</exclude>
+                <exclude>**/flatjuniper/*.g4</exclude>
+                <exclude>**/flatvyos/*.g4</exclude>
+                <exclude>**/mrv/*.g4</exclude>
+              </excludes>
             </configuration>
           </execution>
         </executions>
