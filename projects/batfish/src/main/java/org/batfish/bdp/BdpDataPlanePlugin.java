@@ -1,6 +1,8 @@
 package org.batfish.bdp;
 
 import com.google.auto.service.AutoService;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -40,16 +42,37 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     BdpAnswerElement ae = new BdpAnswerElement();
     answer.addAnswerElement(ae);
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Topology topology = _batfish.computeTopology(configurations);
+    Topology topology = _batfish.getEnvironmentTopology();
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     Set<NodeInterfacePair> flowSinks =
         _batfish.computeFlowSinks(configurations, differentialContext, topology);
     BdpDataPlane dp =
         _engine.computeDataPlane(
             differentialContext, configurations, topology, externalAdverts, flowSinks, ae);
+    double averageRoutes =
+        dp.getNodes()
+            .values()
+            .stream()
+            .flatMap(n -> n._virtualRouters.values().stream())
+            .mapToInt(vr -> vr._mainRib.getRoutes().size())
+            .average()
+            .orElse(0.00d);
+    _logger.infof(
+        "Generated data plane for testrig:%s in container:%s; iterations:%s, total nodes:%s, "
+            + "avg entries per node:%.2f, work-id:%s\n",
+        _batfish.getTestrigName(),
+        _batfish.getContainerName(),
+        ae.getDependentRoutesIterations(),
+        configurations.size(),
+        averageRoutes,
+        _batfish.getTaskId());
     _logger.resetTimer();
     _batfish.newBatch("Writing data plane to disk", 0);
-    _batfish.writeDataPlane(dp, ae);
+    try (ActiveSpan writeDataplane =
+        GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
+      assert writeDataplane != null; // avoid unused warning
+      _batfish.writeDataPlane(dp, ae);
+    }
     _logger.printElapsedTime();
     return answer;
   }

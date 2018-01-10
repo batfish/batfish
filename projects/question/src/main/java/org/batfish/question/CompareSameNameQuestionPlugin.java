@@ -2,7 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.List;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
@@ -35,6 +34,7 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.INodeRegexQuestion;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -50,7 +50,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     /** Equivalence sets are keyed by classname */
     private SortedMap<String, NamedStructureEquivalenceSets<?>> _equivalenceSets;
 
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     public CompareSameNameAnswerElement() {
       _equivalenceSets = new TreeMap<>();
@@ -73,7 +73,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODES)
-    public List<String> getNodes() {
+    public Set<String> getNodes() {
       return _nodes;
     }
 
@@ -95,7 +95,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODES)
-    public void setNodes(List<String> nodes) {
+    public void setNodes(Set<String> nodes) {
       _nodes = nodes;
     }
   }
@@ -106,13 +106,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Map<String, Configuration> _configurations;
 
+    private Set<String> _excludedNamedStructTypes;
+
     private boolean _missing;
 
     private Set<String> _namedStructTypes;
 
-    private Set<String> _excludedNamedStructTypes;
-
-    private List<String> _nodes;
+    private Set<String> _nodes;
 
     private boolean _singletons;
 
@@ -137,7 +137,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
       _configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
-      _nodes = CommonUtil.getMatchingStrings(question.getNodeRegex(), _configurations.keySet());
+      _nodes = question.getNodeRegex().getMatchingNodes(_configurations);
       _namedStructTypes =
           question
               .getNamedStructTypes()
@@ -179,31 +179,32 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private <T> NamedStructureEquivalenceSets<T> processStructures(
         Class<T> structureClass,
-        List<String> hostnames,
+        Set<String> hostnames,
         Map<String, Configuration> configurations,
         Function<Configuration, Map<String, T>> structureMapRetriever) {
-      NamedStructureEquivalenceSets<T> ae =
-          new NamedStructureEquivalenceSets<>(structureClass.getSimpleName());
+      String structureClassName = structureClass.getSimpleName();
       // collect the set of all names for structures of type T, across all nodes
-      Set<String> allNames = new TreeSet<>();
-      for (String hostname : hostnames) {
-        Configuration node = configurations.get(hostname);
-        Map<String, T> structureMap = structureMapRetriever.apply(node);
-        allNames.addAll(structureMap.keySet());
-      }
+      Set<String> allNames =
+          hostnames
+              .stream()
+              .map(configurations::get)
+              .map(structureMapRetriever::apply)
+              .flatMap(structureMap -> structureMap.keySet().stream())
+              .filter(structName -> !structName.startsWith("~"))
+              .collect(ImmutableSet.toImmutableSet());
+      NamedStructureEquivalenceSets.Builder<T> builder =
+          NamedStructureEquivalenceSets.builder(structureClassName);
       for (String hostname : hostnames) {
         Configuration node = configurations.get(hostname);
         Map<String, T> structureMap = structureMapRetriever.apply(node);
         for (String structName : allNames) {
-          if (structName.startsWith("~")) {
-            continue;
-          }
           T struct = structureMap.get(structName);
           if (struct != null || _missing) {
-            ae.add(hostname, structName, struct);
+            builder.addEntry(structName, hostname, struct);
           }
         }
       }
+      NamedStructureEquivalenceSets<T> ae = builder.build();
       if (!_singletons) {
         ae.clean();
       }
@@ -241,44 +242,40 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    */
   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
+    private static final String PROP_EXCLUDED_NAMED_STRUCT_TYPES = "excludedNamedStructTypes";
+
     private static final String PROP_MISSING = "missing";
 
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
-
-    private static final String PROP_EXCLUDED_NAMED_STRUCT_TYPES = "excludedNamedStructTypes";
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private static final String PROP_SINGLETONS = "singletons";
 
+    private SortedSet<String> _excludedNamedStructTypes;
+
     private boolean _missing;
 
     private SortedSet<String> _namedStructTypes;
 
-    private SortedSet<String> _excludedNamedStructTypes;
-
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     private boolean _singletons;
 
     public CompareSameNameQuestion() {
       _namedStructTypes = new TreeSet<>();
       initExcludedNamedStructTypes();
-      _nodeRegex = ".*";
-    }
-
-    // These named structure types seem to be less useful and have many entries
-    // so slow down the computation considerably.  Therefore they are excluded
-    // from the analysis by default.
-    private void initExcludedNamedStructTypes() {
-      _excludedNamedStructTypes = new TreeSet<>();
-      _excludedNamedStructTypes.add(Interface.class.getSimpleName());
-      _excludedNamedStructTypes.add(Vrf.class.getSimpleName());
+      _nodeRegex = NodesSpecifier.ALL;
     }
 
     @Override
     public boolean getDataPlane() {
       return false;
+    }
+
+    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
+    public SortedSet<String> getExcludedNamedStructTypes() {
+      return _excludedNamedStructTypes;
     }
 
     @JsonProperty(PROP_MISSING)
@@ -296,20 +293,29 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return _namedStructTypes;
     }
 
-    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
-    public SortedSet<String> getExcludedNamedStructTypes() {
-      return _excludedNamedStructTypes;
-    }
-
     @Override
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
     @JsonProperty(PROP_SINGLETONS)
     public boolean getSingletons() {
       return _singletons;
+    }
+
+    // These named structure types seem to be less useful and have many entries
+    // so slow down the computation considerably.  Therefore they are excluded
+    // from the analysis by default.
+    private void initExcludedNamedStructTypes() {
+      _excludedNamedStructTypes = new TreeSet<>();
+      _excludedNamedStructTypes.add(Interface.class.getSimpleName());
+      _excludedNamedStructTypes.add(Vrf.class.getSimpleName());
+    }
+
+    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
+    public void setExcludedNamedStructTypes(SortedSet<String> excludedNamedStructTypes) {
+      _excludedNamedStructTypes = excludedNamedStructTypes;
     }
 
     @JsonProperty(PROP_MISSING)
@@ -322,14 +328,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _namedStructTypes = namedStructTypes;
     }
 
-    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
-    public void setExcludedNamedStructTypes(SortedSet<String> excludedNamedStructTypes) {
-      _excludedNamedStructTypes = excludedNamedStructTypes;
-    }
-
     @Override
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
 

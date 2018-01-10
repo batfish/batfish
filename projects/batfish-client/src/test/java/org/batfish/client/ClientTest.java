@@ -478,7 +478,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testGetQuestionNameInvalid2() throws JSONException {
+  public void testGetQuestionNameInvalid2() {
     JSONObject testQuestion = new JSONObject();
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("question testquestion does not have instance field");
@@ -677,14 +677,15 @@ public class ClientTest {
   public void testInvalidIPValue() throws IOException {
     String input = "\"0.0.0\"";
     String expectedMessage = String.format("Invalid ip string: %s", input);
-    validateTypeWithInvalidInput(input, expectedMessage, IP);
+    validateTypeWithInvalidInput(input, IllegalArgumentException.class, expectedMessage, IP);
   }
 
   @Test
   public void testInvalidIpWildcardValue() throws IOException {
     String input = "\"10.168.5.5:10.168.100.$\"";
     String expectedMessage = "Invalid ip segment: \"$\" in ip string: " + "\"10.168.100.$\"";
-    validateTypeWithInvalidInput(input, expectedMessage, IP_WILDCARD);
+    validateTypeWithInvalidInput(
+        input, IllegalArgumentException.class, expectedMessage, IP_WILDCARD);
   }
 
   @Test
@@ -884,7 +885,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionFromTextInvalid() throws Exception {
+  public void testLoadQuestionFromTextInvalid() {
     JSONObject testQuestion = new JSONObject();
 
     // checking if exception thrown for instance missing
@@ -997,7 +998,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions1() throws Exception {
+  public void testMergeQuestions1() {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourceQuestion", "sourcequestionvalue");
     sourceMap.put("destinationQuestion", "destinationquestionvalue");
@@ -1017,7 +1018,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testMergeQuestions2() throws Exception {
+  public void testMergeQuestions2() {
     Multimap<String, String> sourceMap = HashMultimap.create();
     sourceMap.put("sourceQuestion", "sourcequestionvalue1");
     sourceMap.put("sourceQuestion", "sourcequestionvalue2");
@@ -1648,7 +1649,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testValidFloatValue() throws IOException {
+  public void testValidFloatValue() {
     Float floatValue = 15.0f;
     JsonNode floatNode = _mapper.valueToTree(floatValue);
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
@@ -1719,7 +1720,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testValidLongValue() throws IOException {
+  public void testValidLongValue() {
     Long longValue = 15L;
     JsonNode floatNode = _mapper.valueToTree(longValue);
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
@@ -1774,13 +1775,22 @@ public class ClientTest {
   }
 
   private void validateTypeWithInvalidInput(
-      String input, String expectedMessage, Question.InstanceData.Variable.Type type)
+      String input,
+      Class<? extends Throwable> expectedException,
+      String expectedMessage,
+      Question.InstanceData.Variable.Type type)
       throws IOException {
     JsonNode node = _mapper.readTree(input);
     Question.InstanceData.Variable variable = new Question.InstanceData.Variable();
     variable.setType(type);
-    _thrown.expect(BatfishException.class);
+    _thrown.expect(expectedException);
     _thrown.expectMessage(equalTo(expectedMessage));
     Client.validateType(node, variable);
+  }
+
+  private void validateTypeWithInvalidInput(
+      String input, String expectedMessage, Question.InstanceData.Variable.Type type)
+      throws IOException {
+    validateTypeWithInvalidInput(input, BatfishException.class, expectedMessage, type);
   }
 }

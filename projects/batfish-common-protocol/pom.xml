@@ -86,7 +86,7 @@
               <goal>check</goal>
             </goals>
             <configuration>
-              <failOnViolation>false</failOnViolation>
+              <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 
@@ -123,6 +123,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+   <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
     </dependency>
 
     <dependency>

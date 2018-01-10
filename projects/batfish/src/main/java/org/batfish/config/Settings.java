@@ -401,8 +401,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     }
   }
 
-  private static final String ARG_ANONYMIZE = "anonymize";
-
   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
   private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
@@ -508,8 +506,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private String _analysisName;
 
   private boolean _analyze;
-
-  private boolean _anonymize;
 
   private boolean _answer;
 
@@ -736,10 +732,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getAnalyze() {
     return _analyze;
-  }
-
-  public boolean getAnonymize() {
-    return _anonymize;
   }
 
   public boolean getAnswer() {
@@ -1115,7 +1107,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
-    setDefaultProperty(ARG_ANONYMIZE, false);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
@@ -1134,7 +1125,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
-    setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, null);
+    setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
@@ -1206,8 +1197,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private void initOptions() {
 
     addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
-
-    addBooleanOption(ARG_ANONYMIZE, "created anonymized versions of configs in test rig");
 
     addOption(
         BfConsts.ARG_ANSWER_JSON_PATH, "save query json output to specified file", ARGNAME_PATH);
@@ -1498,7 +1487,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     }
 
     // REGULAR OPTIONS
-    _anonymize = getBooleanOptionValue(ARG_ANONYMIZE);
     _analysisName = getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
     _analyze = getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);

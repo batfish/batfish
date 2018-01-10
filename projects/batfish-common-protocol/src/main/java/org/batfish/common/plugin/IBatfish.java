@@ -34,6 +34,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -53,15 +54,17 @@ public interface IBatfish extends IPluginConsumer {
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
-  Topology computeTopology(Map<String, Configuration> configurations);
-
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
+
+  String getContainerName();
 
   DataPlanePluginSettings getDataPlanePluginSettings();
 
   String getDifferentialFlowTag();
 
   Environment getEnvironment();
+
+  Topology getEnvironmentTopology();
 
   String getFlowTag();
 
@@ -74,6 +77,8 @@ public interface IBatfish extends IPluginConsumer {
   Map<String, String> getQuestionTemplates();
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
+
+  String getTaskId();
 
   Directory getTestrigFileTree();
 
@@ -88,8 +93,6 @@ public interface IBatfish extends IPluginConsumer {
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);
 
   InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError);
-
-  void initRemoteIpsecVpns(Map<String, Configuration> configurations);
 
   void initRemoteOspfNeighbors(
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
@@ -113,7 +116,7 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(HeaderSpace headerSpace);
+  AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex);
 
   AtomicInteger newBatch(String description, int jobs);
 
@@ -134,7 +137,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(HeaderSpace headerSpace);
+  AnswerElement reducedReachability(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex);
 
   void registerAnswerer(
       String questionName,
@@ -166,17 +169,17 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
-  AnswerElement smtRoles(EquivalenceType t, String nodeRegex);
+  AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
-      String ingressNodeRegexStr,
-      String notIngressNodeRegexStr,
-      String finalNodeRegexStr,
-      String notFinalNodeRegexStr,
+      NodesSpecifier ingressNodeRegex,
+      NodesSpecifier notIngressNodeRegex,
+      NodesSpecifier finalNodeRegex,
+      NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes);
 

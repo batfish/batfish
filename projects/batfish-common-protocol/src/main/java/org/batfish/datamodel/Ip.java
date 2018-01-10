@@ -47,7 +47,7 @@ public class Ip implements Comparable<Ip>, Serializable {
           }
         }
       }
-      throw new BatfishException("Invalid ip string: \"" + addr + "\"");
+      throw new IllegalArgumentException("Invalid ip string: \"" + addr + "\"");
     }
     long num = 0;
     for (int i = 0; i < addrArray.length; i++) {
@@ -57,7 +57,7 @@ public class Ip implements Comparable<Ip>, Serializable {
         int segment = Integer.parseInt(segmentStr);
         num += ((segment % 256 * Math.pow(256, power)));
       } catch (NumberFormatException e) {
-        throw new BatfishException(
+        throw new IllegalArgumentException(
             "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"", e);
       }
     }

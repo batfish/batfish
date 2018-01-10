@@ -3,19 +3,27 @@
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesDiffAnswerElement",
       "configDiff" : {
-        "as1border1" : {
+        "as1border2" : {
           "class" : "org.batfish.datamodel.ConfigurationDiff",
-          "routeFilterListsDiff" : {
-            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
-            "inBeforeOnly" : [
-              "default_list"
+          "ipAccessListsDiff" : {
+            "class" : "org.batfish.datamodel.IpAccessListsDiff",
+            "diff" : [
+              "103"
             ]
           },
-          "routingPoliciesDiff" : {
-            "class" : "org.batfish.datamodel.RoutingPoliciesDiff",
+          "routeFilterListsDiff" : {
+            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
             "diff" : [
-              "as1_to_as2"
-            ]
+              "103"
+            ],
+            "diffInfo" : {
+              "103" : {
+                "class" : "org.batfish.datamodel.ConfigDiffElement",
+                "inAfterOnly" : [
+                  "ACCEPT 3.0.2.0/24 [24,24] "
+                ]
+              }
+            }
           }
         },
         "as2dept1" : {
@@ -25,21 +33,6 @@
             "diff" : [
               "GigabitEthernet2/0",
               "GigabitEthernet3/0"
-            ]
-          }
-        },
-        "as3border1" : {
-          "class" : "org.batfish.datamodel.ConfigurationDiff",
-          "routeFilterListsDiff" : {
-            "class" : "org.batfish.datamodel.RouteFilterListsDiff",
-            "inBeforeOnly" : [
-              "default_list"
-            ]
-          },
-          "routingPoliciesDiff" : {
-            "class" : "org.batfish.datamodel.RoutingPoliciesDiff",
-            "diff" : [
-              "as3_to_as2"
             ]
           }
         }
@@ -52,5 +45,10 @@
     "nodeRegex" : ".*",
     "summary" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

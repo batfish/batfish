@@ -137,7 +137,7 @@
             <id>check</id>
             <goals><goal>check</goal></goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+               <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 
@@ -241,11 +241,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-exec</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
     </dependency>
@@ -278,6 +273,13 @@
     </dependency>
 
     <!-- Test scope dependencies. -->
+    <dependency>
+      <groupId>org.batfish</groupId>
+      <artifactId>batfish-common-protocol</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

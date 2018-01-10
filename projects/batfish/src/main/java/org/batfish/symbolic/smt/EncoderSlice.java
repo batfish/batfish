@@ -450,8 +450,6 @@ class EncoderSlice {
     int len = p.getPrefixLength();
     int lower = r.getStart();
     int upper = r.getEnd();
-    // well formed prefix
-    assert (p.getPrefixLength() < lower && lower <= upper);
     BoolExpr lowerBitsMatch = firstBitsEqual(_symbolicPacket.getDstIp(), pfx, len);
     if (lower == upper) {
       BoolExpr equalLen = mkEq(prefixLen, mkInt(lower));

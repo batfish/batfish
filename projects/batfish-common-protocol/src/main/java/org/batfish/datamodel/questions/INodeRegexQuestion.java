@@ -4,7 +4,7 @@ package org.batfish.datamodel.questions;
 // to specify the set of nodes to analyze
 public interface INodeRegexQuestion extends IQuestion {
 
-  String getNodeRegex();
+  NodesSpecifier getNodeRegex();
 
-  void setNodeRegex(String regex);
+  void setNodeRegex(NodesSpecifier regex);
 }

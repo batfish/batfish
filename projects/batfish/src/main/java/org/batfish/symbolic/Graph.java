@@ -129,9 +129,11 @@ public class Graph {
     }
     _routers = _configurations.keySet();
 
+    Topology topology = _batfish.getEnvironmentTopology();
+
     // Remove the routers we don't want to model
     if (routers != null) {
-      List<String> toRemove = new ArrayList<>();
+      Set<String> toRemove = new HashSet<>();
       for (String router : _configurations.keySet()) {
         if (!routers.contains(router)) {
           toRemove.add(router);
@@ -140,9 +142,10 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
+      topology.prune(null, toRemove, null);
     }
 
-    initGraph();
+    initGraph(topology);
     initOspfCosts();
     initStaticRoutes();
     addNullRouteEdges();
@@ -277,8 +280,7 @@ public class Graph {
    * Initialize the topology by inferring interface pairs and
    * create the opposite edge mapping.
    */
-  private void initGraph() {
-    Topology topology = _batfish.computeTopology(_configurations);
+  private void initGraph(Topology topology) {
     Map<NodeInterfacePair, Interface> ifaceMap = new HashMap<>();
     Map<String, Set<NodeInterfacePair>> routerIfaceMap = new HashMap<>();
 
@@ -719,10 +721,8 @@ public class Graph {
       sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        if (peer != null) {
-          if (maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
-            todo.add(peer);
-          }
+        if (peer != null && maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
+          todo.add(peer);
         }
       }
     }
@@ -790,10 +790,8 @@ public class Graph {
               list.add(c2);
             }
           }
-          if (c2.getType() == CommunityVar.Type.OTHER) {
-            if (c1.getValue().equals(c2.getValue())) {
-              list.add(c2);
-            }
+          if (c2.getType() == CommunityVar.Type.OTHER && c1.getValue().equals(c2.getValue())) {
+            list.add(c2);
           }
         }
       }

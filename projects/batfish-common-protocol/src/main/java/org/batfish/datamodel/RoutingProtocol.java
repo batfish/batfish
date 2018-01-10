@@ -2,8 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Collections;
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 
@@ -33,13 +32,13 @@ public enum RoutingProtocol {
 
   private static final Map<String, RoutingProtocol> _map = buildMap();
 
-  private static synchronized Map<String, RoutingProtocol> buildMap() {
-    Map<String, RoutingProtocol> map = new HashMap<>();
+  private static Map<String, RoutingProtocol> buildMap() {
+    ImmutableMap.Builder<String, RoutingProtocol> map = ImmutableMap.builder();
     for (RoutingProtocol protocol : RoutingProtocol.values()) {
       String protocolName = protocol._protocolName.toLowerCase();
       map.put(protocolName, protocol);
     }
-    return Collections.unmodifiableMap(map);
+    return map.build();
   }
 
   @JsonCreator
@@ -53,7 +52,7 @@ public enum RoutingProtocol {
 
   private final String _protocolName;
 
-  private RoutingProtocol(String protocolName) {
+  RoutingProtocol(String protocolName) {
     _protocolName = protocolName;
   }
 
@@ -65,7 +64,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             break;
           case CADANT:
             break;
@@ -106,7 +105,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 200;
-          case AWS_VPC:
+          case AWS:
             return 20;
           case CADANT:
             return 20;
@@ -150,7 +149,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 200;
-          case AWS_VPC:
+          case AWS:
             return 200;
           case CADANT:
             return 20;
@@ -191,7 +190,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 117;
@@ -232,7 +231,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 118;
@@ -273,7 +272,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 115;
@@ -314,7 +313,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
-          case AWS_VPC:
+          case AWS:
             return 115;
           case CADANT:
             return 116;
@@ -355,7 +354,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption due to missing information in manual.
@@ -397,7 +396,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
@@ -439,7 +438,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
@@ -481,7 +480,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 110;
-          case AWS_VPC:
+          case AWS:
             return 110;
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
@@ -523,7 +522,7 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             return 120;
-          case AWS_VPC:
+          case AWS:
             return 120;
           case CADANT:
             return 120;
@@ -600,7 +599,7 @@ public enum RoutingProtocol {
             return 10;
 
           case ALCATEL_AOS:
-          case AWS_VPC:
+          case AWS:
           case BLADENETWORK:
           case EMPTY:
           case F5:

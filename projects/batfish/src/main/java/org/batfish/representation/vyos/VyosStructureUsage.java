@@ -7,7 +7,7 @@ public enum VyosStructureUsage implements StructureUsage {
 
   private final String _description;
 
-  private VyosStructureUsage(String description) {
+  VyosStructureUsage(String description) {
     _description = description;
   }
 

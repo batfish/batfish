@@ -60,6 +60,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aaa-accounting"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -133,6 +136,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "access-list"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "access_list"
@@ -150,6 +156,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "address-family"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -669,6 +678,9 @@
               ]
             }
           },
+          "roles" : [
+            "arista-acl"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "arista_acl"
@@ -686,6 +698,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "arista-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -755,6 +770,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "Ethernet0"
+              ],
               "dhcpRelayAddresses" : [
                 "1.2.3.4",
                 "2.3.4.5"
@@ -783,6 +801,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "Ethernet1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -834,6 +855,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Vlan1"
+              ],
               "dhcpRelayAddresses" : [
                 "5.5.5.5"
               ],
@@ -865,6 +889,9 @@
               }
             }
           },
+          "roles" : [
+            "arista-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "arista_interface"
@@ -920,6 +947,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "arista-logging"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "arista_logging",
@@ -940,6 +970,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "arista-misc"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "defaultSwitchportMode" : "NONE",
@@ -958,6 +991,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "arista-ospf"
+          ],
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
               "name" : "~OSPF_EXPORT_POLICY:default~"
@@ -997,6 +1033,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "arista-username"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "enableSecret" : "6a04b2b4f67a9c3a69b681b1782b6cbcddf018f7dd810a274e71e012c83f5efe",
@@ -1026,6 +1065,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-aaa"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -1047,6 +1089,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-acl"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_acl"
@@ -1064,6 +1109,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-airgroup"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_airgroup"
@@ -1090,6 +1138,9 @@
               "encryptionAlgorithm" : "AES_256_CBC"
             }
           },
+          "roles" : [
+            "aruba-crypto"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_crypto"
@@ -1107,6 +1158,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-dhcp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_dhcp",
@@ -1143,6 +1197,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "gigabitethernet0/0/0"
+              ],
               "description" : "\"blah\"",
               "dhcpRelayAddresses" : [
                 "2.3.4.5"
@@ -1167,6 +1224,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "aruba-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_interface"
@@ -1189,6 +1249,9 @@
           "deviceType" : "SWITCH",
           "loggingServers" : [
             "1.2.3.4"
+          ],
+          "roles" : [
+            "aruba-logging"
           ],
           "vendorFamily" : {
             "cisco" : {
@@ -1215,6 +1278,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-misc"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_misc"
@@ -1232,6 +1298,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-net"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_net"
@@ -1249,6 +1318,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-snmp"
+          ],
           "snmpTrapServers" : [
             "1.2.3.4"
           ],
@@ -1323,6 +1395,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-vlan"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_vlan"
@@ -1340,6 +1415,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-voice"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_voice"
@@ -1357,6 +1435,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "aruba-vpn"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "aruba_vpn"
@@ -1476,6 +1557,9 @@
               ]
             }
           },
+          "roles" : [
+            "asa-acl"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "asa_acl"
@@ -1493,6 +1577,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "asa-banner"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
@@ -1523,6 +1610,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "Ethernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -1545,6 +1635,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "asa-ospf"
+          ],
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
               "name" : "~OSPF_EXPORT_POLICY:default~"
@@ -1583,6 +1676,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "asa-ssh"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "asa_ssh"
@@ -1628,6 +1724,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "banner-dos"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
@@ -2011,6 +2110,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "bgp-foundry"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2143,6 +2245,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "bgp-nsr"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2576,6 +2681,9 @@
               ]
             }
           },
+          "roles" : [
+            "cadant-acl"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_acl"
@@ -2593,6 +2701,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cadant-banner"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "banners" : {
@@ -2613,6 +2724,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "cadant-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2675,6 +2789,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cadant-cable"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "cable" : {
@@ -2717,6 +2834,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "ethernet6/0.0"
+              ],
               "description" : "\"squeee\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2746,6 +2866,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "ethernet6/0.48"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2771,6 +2894,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "ethernet6/1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2795,6 +2921,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-downstream1/2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2819,6 +2948,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-downstream1/2/3"
+              ],
               "description" : "\"blah\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2844,6 +2976,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-downstream5/0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2868,6 +3003,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-mac1"
+              ],
               "description" : "\"cable-mac 1\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2896,6 +3034,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-mac1.1"
+              ],
               "description" : "\"foobar\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2928,6 +3069,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-mac1.2"
+              ],
               "description" : "\"bleep\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -2954,6 +3098,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-mac2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -2978,6 +3125,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-mac3"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -3002,6 +3152,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-upstream1/0/0"
+              ],
               "description" : "\"bleh\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -3027,6 +3180,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-upstream1/0/0.0"
+              ],
               "description" : "\"blarp\"",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -3052,6 +3208,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "cable-upstream1/0/10"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -3076,6 +3235,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "mgmt6/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -3095,6 +3257,9 @@
               "vrf" : "management"
             }
           },
+          "roles" : [
+            "cadant-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_interface"
@@ -3219,6 +3384,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cadant-isis"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_isis"
@@ -3240,6 +3408,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cadant-line"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_line"
@@ -3261,6 +3432,9 @@
             "1.2.3.4"
           ],
           "loggingSourceInterface" : "Loopback0",
+          "roles" : [
+            "cadant-logging"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_logging",
@@ -3292,6 +3466,9 @@
             "5.6.7.8"
           ],
           "ntpSourceInterface" : "Loopback0",
+          "roles" : [
+            "cadant-misc"
+          ],
           "tacacsSourceInterface" : "Loopback0",
           "vendorFamily" : {
             "cisco" : {
@@ -3387,6 +3564,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cadant-qos"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cadant_qos"
@@ -3404,6 +3584,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "cadant-rip"
+          ],
           "routingPolicies" : {
             "~RIP_EXPORT_POLICY:default~" : {
               "name" : "~RIP_EXPORT_POLICY:default~"
@@ -3466,6 +3649,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cadant-snmp"
+          ],
           "snmpSourceInterface" : "Loopback0",
           "snmpTrapServers" : [
             "1.2.3.4"
@@ -3503,6 +3689,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-aaa"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "aaa" : {
@@ -3840,6 +4029,9 @@
               "name" : "standard"
             }
           },
+          "roles" : [
+            "cisco-acl"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_acl"
@@ -3919,6 +4111,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-authentication"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_authentication"
@@ -3936,6 +4131,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "cisco-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -4193,6 +4391,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Cable1/2/3"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4212,6 +4413,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "cisco-cable"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "cable" : {
@@ -4274,6 +4478,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-callhome"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_callhome",
@@ -4309,6 +4516,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-controller"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_controller"
@@ -4354,9 +4564,13 @@
             "ESP-3DES-MD5" : {
               "name" : "ESP-3DES-MD5",
               "authenticationAlgorithm" : "HMAC_MD5_96",
-              "encryptionAlgorithm" : "THREEDES_CBC"
+              "encryptionAlgorithm" : "THREEDES_CBC",
+              "protocol" : "ESP"
             }
           },
+          "roles" : [
+            "cisco-crypto"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_crypto"
@@ -4374,6 +4588,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-dhcp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dhcp",
@@ -4402,6 +4619,9 @@
           ],
           "dnsSourceInterface" : "Loopback666",
           "domainName" : "my.domain.name",
+          "roles" : [
+            "cisco-domain"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_domain"
@@ -4419,6 +4639,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-dot11"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dot11"
@@ -4436,6 +4659,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-dot1x"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dot1x"
@@ -4453,6 +4679,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-dspfarm"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_dspfarm"
@@ -4601,6 +4830,9 @@
               ]
             }
           },
+          "roles" : [
+            "cisco-eigrp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_eigrp"
@@ -4618,6 +4850,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-enable"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "enableSecret" : "41fb440a375eb13f1ca17ea2d14b0d4c73c37c32d764f9a34584a62fe8837ca8",
@@ -4643,6 +4878,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4662,6 +4900,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "cisco-flow"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_flow"
@@ -4682,6 +4923,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-hardware"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_hardware"
@@ -4706,6 +4950,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "TenGigE0/0/2/2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4725,6 +4972,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "cisco-hsrp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_hsrp"
@@ -4752,6 +5002,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Async1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4776,6 +5029,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Cable1/2/3:4"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4800,6 +5056,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Crypto-Engine1/2/3"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4824,6 +5083,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Dot11Radio0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4851,6 +5113,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "Ethernet0"
+              ],
               "description" : "description-goes-here",
               "dhcpRelayAddresses" : [
                 "1.2.3.4",
@@ -4886,6 +5151,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "ethernet1/11"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4910,6 +5178,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "ethernet1/12"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4937,6 +5208,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4963,6 +5237,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Loopback0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -4987,6 +5264,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Modular-Cable1/2/3:4"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5011,6 +5291,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Null0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5035,6 +5318,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5059,6 +5345,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan1005"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5083,6 +5372,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan1006"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5107,6 +5399,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Vlan111"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5131,6 +5426,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan1234"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5155,6 +5453,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5179,6 +5480,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan3"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5203,6 +5507,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "vlan4094"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5227,6 +5534,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Vxlan1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5251,6 +5561,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Wideband-Cable1/2/3:4"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5275,6 +5588,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "tunnel-ip6"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -5315,6 +5631,9 @@
               ]
             }
           },
+          "roles" : [
+            "cisco-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_interface"
@@ -5356,6 +5675,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-ip"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ip",
@@ -5513,6 +5835,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-ipsla"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ipsla"
@@ -5530,6 +5855,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-ipv6"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ipv6"
@@ -5807,6 +6135,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "passive",
               "mtu" : 1500,
@@ -5834,6 +6165,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/0/1"
+              ],
               "isisCost" : 15,
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "passive",
@@ -5860,6 +6194,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
               "mtu" : 1500,
@@ -5884,6 +6221,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "HundredGigE0/0/0/0.2302"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
               "mtu" : 1500,
@@ -5908,6 +6248,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Serial4/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "active",
               "mtu" : 1500,
@@ -5927,6 +6270,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "cisco-isis"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_isis"
@@ -5955,6 +6301,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-l2tp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_l2tp",
@@ -5977,6 +6326,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-line"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_line",
@@ -6493,6 +6845,9 @@
             "dead:beef::1"
           ],
           "loggingSourceInterface" : "Management0",
+          "roles" : [
+            "cisco-logging"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_logging",
@@ -6560,6 +6915,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-misc"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_misc",
@@ -6599,6 +6957,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-monitor"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_monitor"
@@ -6616,6 +6977,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-mpls"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_mpls"
@@ -6633,6 +6997,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-multicast"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_multicast"
@@ -6655,6 +7022,9 @@
             "2.3.4.5"
           ],
           "ntpSourceInterface" : "Loopback0",
+          "roles" : [
+            "cisco-ntp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ntp",
@@ -6697,6 +7067,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "ethernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -6727,6 +7100,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "loopback0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -6747,6 +7123,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "cisco-ospf"
+          ],
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
               "name" : "~OSPF_EXPORT_POLICY:default~",
@@ -6813,6 +7192,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-pim"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_pim"
@@ -6830,6 +7212,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-platform"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_platform"
@@ -6847,6 +7232,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-privilege"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_privilege"
@@ -6864,6 +7252,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-qos"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_qos"
@@ -6898,6 +7289,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-redundancy"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_redundancy"
@@ -6915,6 +7309,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "cisco-rip"
+          ],
           "routingPolicies" : {
             "~RIP_EXPORT_POLICY:default~" : {
               "name" : "~RIP_EXPORT_POLICY:default~"
@@ -6940,6 +7337,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-role"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_role"
@@ -6971,22 +7371,8 @@
               "name" : "beeble",
               "statements" : [
                 {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                  "metric" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                    "value" : 0
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                  "localPreference" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                    "value" : 100
-                  }
-                },
-                {
-                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                  "type" : "ReturnTrue"
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~beeble~5~"
                 }
               ]
             },
@@ -7050,6 +7436,38 @@
                   "type" : "ReturnTrue"
                 }
               ]
+            },
+            "~RMCLAUSE~beeble~10~" : {
+              "name" : "~RMCLAUSE~beeble~10~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 0
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 100
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            },
+            "~RMCLAUSE~beeble~5~" : {
+              "name" : "~RMCLAUSE~beeble~5~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~beeble~10~"
+                }
+              ]
             }
           },
           "vendorFamily" : {
@@ -7069,6 +7487,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-sccp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_sccp"
@@ -7086,6 +7507,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-snmp"
+          ],
           "snmpSourceInterface" : "Loopback0",
           "snmpTrapServers" : [
             "10.1.2.3"
@@ -7250,6 +7674,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-ssh"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_ssh",
@@ -7270,6 +7697,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-stcapp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_stcapp"
@@ -7353,6 +7783,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-system"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "defaultSwitchportMode" : "NONE",
@@ -7371,6 +7804,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-tacacs"
+          ],
           "tacacsServers" : [
             "1.2.3.4",
             "1.example.com",
@@ -7405,6 +7841,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-track"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_track"
@@ -7422,6 +7861,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-username"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_username",
@@ -7483,6 +7925,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-vdc"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vdc"
@@ -7500,6 +7945,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-vlan"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vlan"
@@ -7517,6 +7965,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-voice"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_voice"
@@ -7534,6 +7985,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-vpdn"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vpdn"
@@ -7551,6 +8005,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-vpn"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vpn"
@@ -7568,6 +8025,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-vrf"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vrf"
@@ -7608,6 +8068,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "Ethernet0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -7636,6 +8099,9 @@
               }
             }
           },
+          "roles" : [
+            "cisco-vrrp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_vrrp"
@@ -7656,6 +8122,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-webvpn"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_webvpn"
@@ -7673,6 +8142,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "cisco-wsma"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "cisco_wsma"
@@ -8057,6 +8529,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "community-set"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "community_set"
@@ -8224,6 +8699,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "foundry-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -8293,6 +8771,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E7,
+              "declaredNames" : [
+                "ethernet1/15"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -8312,6 +8793,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "foundry-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "foundry_interface"
@@ -8332,6 +8816,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "foundry-misc"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "foundry_misc",
@@ -8392,6 +8879,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "eth0"
+              ],
               "incomingFilter" : "filter::INPUT",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -8621,6 +9111,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "eth0"
+              ],
               "incomingFilter" : "iptables_Ethernet0_ingress",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -8652,6 +9145,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "eth1"
+              ],
               "incomingFilter" : "iptables_Ethernet1_ingress",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -9033,6 +9529,9 @@
               ],
               "autostate" : false,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Vlan303"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 9100,
@@ -9061,6 +9560,9 @@
               ],
               "autostate" : false,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Vlan803"
+              ],
               "dhcpRelayAddresses" : [
                 "10.22.33.111",
                 "10.22.33.112"
@@ -9085,6 +9587,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "interface-exit"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "interface_exit"
@@ -9113,6 +9618,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E8,
+              "declaredNames" : [
+                "FastEthernet12/13"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9137,6 +9645,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "HundredGigE0/6/0/8"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9161,6 +9672,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Port-channel1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9185,6 +9699,9 @@
               "active" : false,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Vlan100"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9204,6 +9721,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "interface-name"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "interface_name"
@@ -9237,6 +9757,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Loopback0"
+              ],
               "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -9258,6 +9781,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "interface-sdr"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "interface_sdr"
@@ -9278,6 +9804,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "ios-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -9637,6 +10166,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "GigabitEthernet0/2/1/6"
+              ],
               "isisL1InterfaceMode" : "active",
               "isisL2InterfaceMode" : "active",
               "mtu" : 1500,
@@ -9733,6 +10265,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Bundle-Ether101"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9757,6 +10292,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Bundle-Ether103"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9781,6 +10319,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Bundle-Ether201"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9806,6 +10347,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "HundredGigE0/2/0/0.292"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9830,6 +10374,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "HundredGigE0/2/0/3"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9854,6 +10401,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "Loopback0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9878,6 +10428,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "TenGigE0/0/0/2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9902,6 +10455,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "TenGigE0/0/0/4"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -9926,6 +10482,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "TenGigE0/0/0/5"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10213,6 +10772,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/1.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10238,6 +10800,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/20.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10263,6 +10828,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/21.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -10407,6 +10975,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "juniper-bgp"
+          ],
           "routingPolicies" : {
             "~DEFAULT_BGP_EXPORT_POLICY~" : {
               "name" : "~DEFAULT_BGP_EXPORT_POLICY~",
@@ -11099,6 +11670,9 @@
               ]
             }
           },
+          "roles" : [
+            "juniper-firewall"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11121,6 +11695,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "et-0/0/10.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11144,6 +11721,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "ge-0/2/5.0"
+              ],
               "dhcpRelayAddresses" : [
                 "3.4.5.6"
               ],
@@ -11170,6 +11750,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-1/0/0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11215,6 +11798,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "ae0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11242,6 +11828,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "irb.5"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11273,6 +11862,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/0:0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11296,6 +11888,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
+              "declaredNames" : [
+                "xe-0/0/5:0.0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11314,6 +11909,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "juniper-interfaces"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11336,6 +11934,9 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "domainName" : "my.domain.name",
+          "roles" : [
+            "juniper-misc"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11355,6 +11956,9 @@
             "1.2.3.4",
             "2.3.4.5"
           ],
+          "roles" : [
+            "juniper-ntp"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11370,6 +11974,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "juniper-passwords"
+          ],
           "tacacsServers" : [
             "1.2.3.4",
             "1.2.3.5"
@@ -11410,6 +12017,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "irb.10"
+              ],
               "dhcpRelayAddresses" : [
                 "1.2.3.4"
               ],
@@ -11436,6 +12046,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "irb.20"
+              ],
               "dhcpRelayAddresses" : [
                 "1.2.3.4"
               ],
@@ -11457,6 +12070,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "juniper-relay"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11646,6 +12262,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "juniper-snmp"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11684,6 +12303,9 @@
           "loggingServers" : [
             "1.2.3.4"
           ],
+          "roles" : [
+            "juniper-syslog"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11699,6 +12321,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "juniper-system"
+          ],
           "vendorFamily" : {
             "juniper" : { }
           },
@@ -11714,6 +12339,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "juniper-tacplus"
+          ],
           "tacacsServers" : [
             "1.2.3.4",
             "5.6.7.8"
@@ -11824,6 +12452,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "mos-application"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "mos_application"
@@ -11848,6 +12479,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "et1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11872,6 +12506,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "et2"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11896,6 +12533,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "ma1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11920,6 +12560,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "ap1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -11939,6 +12582,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "mos-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "mos_interface"
@@ -11967,6 +12613,9 @@
           ],
           "ntpServers" : [
             "1.2.3.4"
+          ],
+          "roles" : [
+            "mos-misc"
           ],
           "tacacsServers" : [
             "1.2.3.4"
@@ -12043,13 +12692,15 @@
           }
         },
         "nat-08c21704416f06046" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "nat-08c21704416f06046",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "aws_configs"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -12058,13 +12709,15 @@
           }
         },
         "nat-09fd8f73171d2d9a3" : {
-          "configurationFormat" : "AWS_VPC",
+          "configurationFormat" : "AWS",
           "name" : "nat-09fd8f73171d2d9a3",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "vendorFamily" : {
-            "aws" : { }
+            "aws" : {
+              "region" : "aws_configs"
+            }
           },
           "vrfs" : {
             "default" : {
@@ -12301,6 +12954,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "neighbor-dos"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -12462,6 +13118,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "neighbor-mix"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -12740,6 +13399,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "neighbor-nxos"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -12975,6 +13637,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "nexus-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
@@ -13160,6 +13825,9 @@
             "1.2.3.4",
             "10.1.2.3"
           ],
+          "roles" : [
+            "nexus-ntp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nexus_ntp",
@@ -13191,6 +13859,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "nexus-ssh"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nexus_ssh"
@@ -13430,6 +14101,9 @@
               "name" : "standard"
             }
           },
+          "roles" : [
+            "nxos-acl"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "nxos_acl"
@@ -13447,6 +14121,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "nxos-bgp"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -13519,6 +14196,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E9,
+              "declaredNames" : [
+                "Ethernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -13538,6 +14218,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "nxos-interface"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "features" : {
@@ -13561,6 +14244,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "nxos-misc"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "features" : {
@@ -13575,12 +14261,1318 @@
             }
           }
         },
+        "nxos_route_map_continue" : {
+          "configurationFormat" : "CISCO_NX",
+          "name" : "nxos_route_map_continue",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
+          "routingPolicies" : {
+            "foobar" : {
+              "name" : "foobar",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~foobar~10~"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~100~" : {
+              "name" : "~RMCLAUSE~foobar~100~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~100~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~110~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 100
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~120~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~10~" : {
+              "name" : "~RMCLAUSE~foobar~10~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~10~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~20~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 10
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnFalse"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~110~" : {
+              "name" : "~RMCLAUSE~foobar~110~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 100
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetLocalDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~foobar~120~"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~120~" : {
+              "name" : "~RMCLAUSE~foobar~120~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~120~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~130~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 120
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 5
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~130~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~130~" : {
+              "name" : "~RMCLAUSE~foobar~130~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~130~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~140~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 130
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 50
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~140~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~140~" : {
+              "name" : "~RMCLAUSE~foobar~140~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~140~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~150~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 140
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 100
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~150~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~150~" : {
+              "name" : "~RMCLAUSE~foobar~150~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~150~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~160~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 150
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 150
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~160~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~160~" : {
+              "name" : "~RMCLAUSE~foobar~160~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~160~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~170~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 160
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 200
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~170~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~170~" : {
+              "name" : "~RMCLAUSE~foobar~170~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~170~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~180~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 170
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 250
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~180~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~180~" : {
+              "name" : "~RMCLAUSE~foobar~180~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~180~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~190~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 180
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 300
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~190~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~190~" : {
+              "name" : "~RMCLAUSE~foobar~190~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~190~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~200~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 190
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 350
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~200~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~200~" : {
+              "name" : "~RMCLAUSE~foobar~200~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~200~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~210~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 200
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 500
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~210~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~20~" : {
+              "name" : "~RMCLAUSE~foobar~20~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~20~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~30~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 20
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnFalse"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~210~" : {
+              "name" : "~RMCLAUSE~foobar~210~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~210~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~220~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 210
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 1000
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~220~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~220~" : {
+              "name" : "~RMCLAUSE~foobar~220~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~220~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~230~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 220
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~240~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~230~" : {
+              "name" : "~RMCLAUSE~foobar~230~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~240~" : {
+              "name" : "~RMCLAUSE~foobar~240~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~240~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~250~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 240
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 20
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 21
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~250~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~250~" : {
+              "name" : "~RMCLAUSE~foobar~250~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~250~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~260~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 250
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 22
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 23
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~260~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~260~" : {
+              "name" : "~RMCLAUSE~foobar~260~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~260~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~270~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 260
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 24
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 25
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~270~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~270~" : {
+              "name" : "~RMCLAUSE~foobar~270~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~270~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~280~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 270
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 26
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 27
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~280~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~280~" : {
+              "name" : "~RMCLAUSE~foobar~280~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~280~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~290~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 280
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 28
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 29
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~290~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~290~" : {
+              "name" : "~RMCLAUSE~foobar~290~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~290~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~300~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 290
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 30
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 31
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~300~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~300~" : {
+              "name" : "~RMCLAUSE~foobar~300~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                    "list" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                        "as" : 65000
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetLocalDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~foobar~310~"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~30~" : {
+              "name" : "~RMCLAUSE~foobar~30~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~30~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~40~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 30
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~50~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~310~" : {
+              "name" : "~RMCLAUSE~foobar~310~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~40~" : {
+              "name" : "~RMCLAUSE~foobar~40~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnFalse"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~50~" : {
+              "name" : "~RMCLAUSE~foobar~50~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 1
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 2
+                        }
+                      },
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 3
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 4
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "SetLocalDefaultActionAccept"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                  "calledPolicyName" : "~RMCLAUSE~foobar~60~"
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~60~" : {
+              "name" : "~RMCLAUSE~foobar~60~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~60~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~70~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 60
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 150
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 5
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 6
+                            }
+                          },
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 7
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 8
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~70~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~70~" : {
+              "name" : "~RMCLAUSE~foobar~70~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~70~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~80~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 70
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 200
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 9
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 10
+                            }
+                          },
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 11
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 12
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~80~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~80~" : {
+              "name" : "~RMCLAUSE~foobar~80~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~80~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~90~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 80
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 250
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 11
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 12
+                            }
+                          },
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 13
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 14
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~90~"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~RMCLAUSE~foobar~90~" : {
+              "name" : "~RMCLAUSE~foobar~90~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~foobar~90~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~100~"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                    "cmp" : "EQ",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 90
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                      "localPreference" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                        "value" : 300
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 15
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 16
+                            }
+                          },
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 17
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 18
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "SetLocalDefaultActionAccept"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                      "calledPolicyName" : "~RMCLAUSE~foobar~100~"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "features" : {
+                "privilege" : true
+              },
+              "hostname" : "nxos_route_map_continue"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default"
+            }
+          }
+        },
         "nxos_system" : {
           "configurationFormat" : "CISCO_NX",
           "name" : "nxos_system",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "nxos-system"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "features" : {
@@ -13618,6 +15610,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roles" : [
+            "peer-template"
+          ],
           "route6FilterLists" : {
             "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
               "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -14069,6 +16064,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "loopback1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -14109,6 +16107,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "pim-snooping"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "pim_snooping"
@@ -17390,6 +19391,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "router-msdp"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "router_msdp"
@@ -17501,6 +19505,9 @@
               ],
               "autostate" : true,
               "bandwidth" : 1.0E8,
+              "declaredNames" : [
+                "FastEthernet0/1"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -17520,6 +19527,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "switchport-range"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "switchport_range"
@@ -17911,6 +19921,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "underscore-variable"
+          ],
           "routingPolicies" : {
             "JKL_MNO_PQR" : {
               "name" : "JKL_MNO_PQR",
@@ -17946,6 +19959,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E8,
+              "declaredNames" : [
+                "FastEthernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -17992,6 +20008,9 @@
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E8,
+              "declaredNames" : [
+                "FastEthernet0/0"
+              ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
@@ -18011,6 +20030,9 @@
               "vrf" : "default"
             }
           },
+          "roles" : [
+            "variables-dos"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "variables_dos"
@@ -18157,6 +20179,9 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roles" : [
+            "vrf-context"
+          ],
           "vendorFamily" : {
             "cisco" : {
               "hostname" : "vrf_context"

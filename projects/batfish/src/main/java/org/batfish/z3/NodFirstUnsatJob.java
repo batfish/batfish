@@ -26,7 +26,7 @@ public class NodFirstUnsatJob<KeyT, ResultT>
   }
 
   @Override
-  public NodFirstUnsatResult<KeyT, ResultT> call() throws Exception {
+  public NodFirstUnsatResult<KeyT, ResultT> call() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     try (Context ctx = new Context()) {

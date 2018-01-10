@@ -1,12 +1,13 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class HeaderSpace implements Serializable {
 
@@ -96,37 +97,37 @@ public class HeaderSpace implements Serializable {
   private List<TcpFlags> _tcpFlags;
 
   public HeaderSpace() {
-    _dscps = new TreeSet<>();
-    _dstIps = new TreeSet<>();
-    _dstPorts = new TreeSet<>();
-    _dstProtocols = new TreeSet<>();
-    _ecns = new TreeSet<>();
-    _fragmentOffsets = new TreeSet<>();
-    _ipProtocols = new TreeSet<>();
-    _packetLengths = new TreeSet<>();
-    _srcIps = new TreeSet<>();
-    _srcOrDstIps = new TreeSet<>();
-    _srcOrDstPorts = new TreeSet<>();
-    _srcOrDstProtocols = new TreeSet<>();
-    _srcPorts = new TreeSet<>();
-    _srcProtocols = new TreeSet<>();
-    _icmpTypes = new TreeSet<>();
-    _icmpCodes = new TreeSet<>();
-    _states = new TreeSet<>();
-    _tcpFlags = new ArrayList<>();
-    _notDscps = new TreeSet<>();
-    _notDstIps = new TreeSet<>();
-    _notDstPorts = new TreeSet<>();
-    _notDstProtocols = new TreeSet<>();
-    _notEcns = new TreeSet<>();
-    _notFragmentOffsets = new TreeSet<>();
-    _notIcmpCodes = new TreeSet<>();
-    _notIcmpTypes = new TreeSet<>();
-    _notIpProtocols = new TreeSet<>();
-    _notPacketLengths = new TreeSet<>();
-    _notSrcIps = new TreeSet<>();
-    _notSrcPorts = new TreeSet<>();
-    _notSrcProtocols = new TreeSet<>();
+    _dscps = Collections.emptySortedSet();
+    _dstIps = Collections.emptySortedSet();
+    _dstPorts = Collections.emptySortedSet();
+    _dstProtocols = Collections.emptySortedSet();
+    _ecns = Collections.emptySortedSet();
+    _fragmentOffsets = Collections.emptySortedSet();
+    _ipProtocols = Collections.emptySortedSet();
+    _packetLengths = Collections.emptySortedSet();
+    _srcIps = Collections.emptySortedSet();
+    _srcOrDstIps = Collections.emptySortedSet();
+    _srcOrDstPorts = Collections.emptySortedSet();
+    _srcOrDstProtocols = Collections.emptySortedSet();
+    _srcPorts = Collections.emptySortedSet();
+    _srcProtocols = Collections.emptySortedSet();
+    _icmpTypes = Collections.emptySortedSet();
+    _icmpCodes = Collections.emptySortedSet();
+    _states = Collections.emptySortedSet();
+    _tcpFlags = Collections.emptyList();
+    _notDscps = Collections.emptySortedSet();
+    _notDstIps = Collections.emptySortedSet();
+    _notDstPorts = Collections.emptySortedSet();
+    _notDstProtocols = Collections.emptySortedSet();
+    _notEcns = Collections.emptySortedSet();
+    _notFragmentOffsets = Collections.emptySortedSet();
+    _notIcmpCodes = Collections.emptySortedSet();
+    _notIcmpTypes = Collections.emptySortedSet();
+    _notIpProtocols = Collections.emptySortedSet();
+    _notPacketLengths = Collections.emptySortedSet();
+    _notSrcIps = Collections.emptySortedSet();
+    _notSrcPorts = Collections.emptySortedSet();
+    _notSrcProtocols = Collections.emptySortedSet();
   }
 
   @Override
@@ -565,132 +566,132 @@ public class HeaderSpace implements Serializable {
     return true;
   }
 
-  public void setDscps(SortedSet<Integer> dscps) {
-    _dscps = dscps;
+  public void setDscps(Iterable<Integer> dscps) {
+    _dscps = ImmutableSortedSet.copyOf(dscps);
   }
 
-  public void setDstIps(SortedSet<IpWildcard> dstIps) {
-    _dstIps = dstIps;
+  public void setDstIps(Iterable<IpWildcard> dstIps) {
+    _dstIps = ImmutableSortedSet.copyOf(dstIps);
   }
 
-  public void setDstPorts(SortedSet<SubRange> dstPorts) {
-    _dstPorts = dstPorts;
+  public void setDstPorts(Iterable<SubRange> dstPorts) {
+    _dstPorts = ImmutableSortedSet.copyOf(dstPorts);
   }
 
-  public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
-    _dstProtocols = dstProtocols;
+  public void setDstProtocols(Iterable<Protocol> dstProtocols) {
+    _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
   }
 
-  public void setEcns(SortedSet<Integer> ecns) {
-    _ecns = ecns;
+  public void setEcns(Iterable<Integer> ecns) {
+    _ecns = ImmutableSortedSet.copyOf(ecns);
   }
 
-  public void setFragmentOffsets(SortedSet<SubRange> fragmentOffsets) {
-    _fragmentOffsets = fragmentOffsets;
+  public void setFragmentOffsets(Iterable<SubRange> fragmentOffsets) {
+    _fragmentOffsets = ImmutableSortedSet.copyOf(fragmentOffsets);
   }
 
-  public void setIcmpCodes(SortedSet<SubRange> icmpCodes) {
-    _icmpCodes = icmpCodes;
+  public void setIcmpCodes(Iterable<SubRange> icmpCodes) {
+    _icmpCodes = ImmutableSortedSet.copyOf(icmpCodes);
   }
 
-  public void setIcmpTypes(SortedSet<SubRange> icmpTypes) {
-    _icmpTypes = icmpTypes;
+  public void setIcmpTypes(Iterable<SubRange> icmpTypes) {
+    _icmpTypes = ImmutableSortedSet.copyOf(icmpTypes);
   }
 
-  public void setIpProtocols(SortedSet<IpProtocol> ipProtocols) {
-    _ipProtocols = ipProtocols;
+  public void setIpProtocols(Iterable<IpProtocol> ipProtocols) {
+    _ipProtocols = ImmutableSortedSet.copyOf(ipProtocols);
   }
 
   public void setNegate(boolean negate) {
     _negate = negate;
   }
 
-  public void setNotDscps(SortedSet<Integer> notDscps) {
-    _notDscps = notDscps;
+  public void setNotDscps(Iterable<Integer> notDscps) {
+    _notDscps = ImmutableSortedSet.copyOf(notDscps);
   }
 
-  public void setNotDstIps(SortedSet<IpWildcard> notDstIps) {
-    _notDstIps = notDstIps;
+  public void setNotDstIps(Iterable<IpWildcard> notDstIps) {
+    _notDstIps = ImmutableSortedSet.copyOf(notDstIps);
   }
 
-  public void setNotDstPorts(SortedSet<SubRange> notDstPorts) {
-    _notDstPorts = notDstPorts;
+  public void setNotDstPorts(Iterable<SubRange> notDstPorts) {
+    _notDstPorts = ImmutableSortedSet.copyOf(notDstPorts);
   }
 
-  public void setNotDstProtocols(SortedSet<Protocol> notDstProtocols) {
-    _notDstProtocols = notDstProtocols;
+  public void setNotDstProtocols(Iterable<Protocol> notDstProtocols) {
+    _notDstProtocols = ImmutableSortedSet.copyOf(notDstProtocols);
   }
 
-  public void setNotEcns(SortedSet<Integer> notEcns) {
-    _notEcns = notEcns;
+  public void setNotEcns(Iterable<Integer> notEcns) {
+    _notEcns = ImmutableSortedSet.copyOf(notEcns);
   }
 
-  public void setNotFragmentOffsets(SortedSet<SubRange> notFragmentOffsets) {
-    _notFragmentOffsets = notFragmentOffsets;
+  public void setNotFragmentOffsets(Iterable<SubRange> notFragmentOffsets) {
+    _notFragmentOffsets = ImmutableSortedSet.copyOf(notFragmentOffsets);
   }
 
-  public void setNotIcmpCodes(SortedSet<SubRange> notIcmpCodes) {
-    _notIcmpCodes = notIcmpCodes;
+  public void setNotIcmpCodes(Iterable<SubRange> notIcmpCodes) {
+    _notIcmpCodes = ImmutableSortedSet.copyOf(notIcmpCodes);
   }
 
-  public void setNotIcmpTypes(SortedSet<SubRange> notIcmpTypes) {
-    _notIcmpTypes = notIcmpTypes;
+  public void setNotIcmpTypes(Iterable<SubRange> notIcmpTypes) {
+    _notIcmpTypes = ImmutableSortedSet.copyOf(notIcmpTypes);
   }
 
-  public void setNotIpProtocols(SortedSet<IpProtocol> notIpProtocols) {
-    _notIpProtocols = notIpProtocols;
+  public void setNotIpProtocols(Iterable<IpProtocol> notIpProtocols) {
+    _notIpProtocols = ImmutableSortedSet.copyOf(notIpProtocols);
   }
 
-  public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
-    _notPacketLengths = notPacketLengths;
+  public void setNotPacketLengths(Iterable<SubRange> notPacketLengths) {
+    _notPacketLengths = ImmutableSortedSet.copyOf(notPacketLengths);
   }
 
-  public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
-    _notSrcIps = notSrcIps;
+  public void setNotSrcIps(Iterable<IpWildcard> notSrcIps) {
+    _notSrcIps = ImmutableSortedSet.copyOf(notSrcIps);
   }
 
-  public void setNotSrcPorts(SortedSet<SubRange> notSrcPorts) {
-    _notSrcPorts = notSrcPorts;
+  public void setNotSrcPorts(Iterable<SubRange> notSrcPorts) {
+    _notSrcPorts = ImmutableSortedSet.copyOf(notSrcPorts);
   }
 
-  public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
-    _notSrcProtocols = notSrcProtocols;
+  public void setNotSrcProtocols(Iterable<Protocol> notSrcProtocols) {
+    _notSrcProtocols = ImmutableSortedSet.copyOf(notSrcProtocols);
   }
 
-  public void setPacketLengths(SortedSet<SubRange> packetLengths) {
-    _packetLengths = packetLengths;
+  public void setPacketLengths(Iterable<SubRange> packetLengths) {
+    _packetLengths = ImmutableSortedSet.copyOf(packetLengths);
   }
 
-  public void setSrcIps(SortedSet<IpWildcard> srcIps) {
-    _srcIps = srcIps;
+  public void setSrcIps(Iterable<IpWildcard> srcIps) {
+    _srcIps = ImmutableSortedSet.copyOf(srcIps);
   }
 
-  public void setSrcOrDstIps(SortedSet<IpWildcard> srcOrDstIps) {
-    _srcOrDstIps = srcOrDstIps;
+  public void setSrcOrDstIps(Iterable<IpWildcard> srcOrDstIps) {
+    _srcOrDstIps = ImmutableSortedSet.copyOf(srcOrDstIps);
   }
 
-  public void setSrcOrDstPorts(SortedSet<SubRange> srcOrDstPorts) {
-    _srcOrDstPorts = srcOrDstPorts;
+  public void setSrcOrDstPorts(Iterable<SubRange> srcOrDstPorts) {
+    _srcOrDstPorts = ImmutableSortedSet.copyOf(srcOrDstPorts);
   }
 
-  public void setSrcOrDstProtocols(SortedSet<Protocol> srcOrDstProtocols) {
-    _srcOrDstProtocols = srcOrDstProtocols;
+  public void setSrcOrDstProtocols(Iterable<Protocol> srcOrDstProtocols) {
+    _srcOrDstProtocols = ImmutableSortedSet.copyOf(srcOrDstProtocols);
   }
 
-  public void setSrcPorts(SortedSet<SubRange> srcPorts) {
-    _srcPorts = srcPorts;
+  public void setSrcPorts(Iterable<SubRange> srcPorts) {
+    _srcPorts = ImmutableSortedSet.copyOf(srcPorts);
   }
 
-  public void setSrcProtocols(SortedSet<Protocol> srcProtocols) {
-    _srcProtocols = srcProtocols;
+  public void setSrcProtocols(Iterable<Protocol> srcProtocols) {
+    _srcProtocols = ImmutableSortedSet.copyOf(srcProtocols);
   }
 
-  public void setStates(SortedSet<State> states) {
-    _states = states;
+  public void setStates(Iterable<State> states) {
+    _states = ImmutableSortedSet.copyOf(states);
   }
 
-  public void setTcpFlags(List<TcpFlags> tcpFlags) {
-    _tcpFlags = tcpFlags;
+  public void setTcpFlags(Iterable<TcpFlags> tcpFlags) {
+    _tcpFlags = ImmutableList.copyOf(tcpFlags);
   }
 
   @Override

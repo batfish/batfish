@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Iterables;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -23,9 +24,9 @@ public class FwFromPacketLength extends FwFrom {
   @Override
   public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
     if (_except) {
-      line.getNotPacketLengths().addAll(_range);
+      line.setNotPacketLengths(Iterables.concat(line.getNotPacketLengths(), _range));
     } else {
-      line.getPacketLengths().addAll(_range);
+      line.setPacketLengths(Iterables.concat(line.getPacketLengths(), _range));
     }
   }
 }

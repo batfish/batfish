@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -227,8 +228,10 @@ public class BgpRoute extends AbstractRoute {
     super(network);
     _admin = admin;
     _asPath = asPath;
-    _clusterList = clusterList != null ? clusterList : new TreeSet<>();
-    _communities = communities != null ? communities : new TreeSet<>();
+    _clusterList =
+        clusterList == null ? Collections.emptySortedSet() : ImmutableSortedSet.copyOf(clusterList);
+    _communities =
+        communities == null ? Collections.emptySortedSet() : ImmutableSortedSet.copyOf(communities);
     _localPreference = localPreference;
     _med = med;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
@@ -309,12 +312,12 @@ public class BgpRoute extends AbstractRoute {
 
   @JsonProperty(PROP_CLUSTER_LIST)
   public SortedSet<Long> getClusterList() {
-    return Collections.unmodifiableSortedSet(_clusterList);
+    return _clusterList;
   }
 
   @JsonProperty(PROP_COMMUNITIES)
   public SortedSet<Long> getCommunities() {
-    return Collections.unmodifiableSortedSet(_communities);
+    return _communities;
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)

@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfJson;
 import org.batfish.common.Warnings;
@@ -40,6 +41,10 @@ public final class Configuration extends ComparableStructure<String> {
 
     private String _hostname;
 
+    private LineAction _defaultCrossZoneAction;
+
+    private LineAction _defaultInboundAction;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Configuration.class);
     }
@@ -48,6 +53,12 @@ public final class Configuration extends ComparableStructure<String> {
     public Configuration build() {
       String name = _hostname != null ? _hostname : generateName();
       Configuration configuration = new Configuration(name, _configurationFormat);
+      if (_defaultCrossZoneAction != null) {
+        configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
+      }
+      if (_defaultInboundAction != null) {
+        configuration.setDefaultInboundAction(_defaultInboundAction);
+      }
       return configuration;
     }
 
@@ -58,6 +69,16 @@ public final class Configuration extends ComparableStructure<String> {
 
     public Builder setHostname(String hostname) {
       _hostname = hostname;
+      return this;
+    }
+
+    public Builder setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {
+      _defaultCrossZoneAction = defaultCrossZoneAction;
+      return this;
+    }
+
+    public Builder setDefaultInboundAction(LineAction defaultInboundAction) {
+      _defaultInboundAction = defaultInboundAction;
       return this;
     }
   }
@@ -298,6 +319,20 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonIgnore
   public NavigableSet<BgpAdvertisement> getBgpAdvertisements() {
     return _bgpAdvertisements;
+  }
+
+  /** Returns the lowest IP across all interfaces for now. We'll improve it later. */
+  @JsonIgnore
+  @Nullable
+  public Ip getCanonicalIp() {
+    return getVrfs()
+        .values()
+        .stream()
+        .flatMap(v -> v.getInterfaces().values().stream())
+        .flatMap(i -> i.getAllPrefixes().stream())
+        .map(Prefix::getAddress)
+        .min(Ip::compareTo)
+        .orElse(null);
   }
 
   @JsonProperty(PROP_COMMUNITY_LISTS)

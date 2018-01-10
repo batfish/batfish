@@ -104,7 +104,7 @@ public class Driver {
   static Logger networkListenerLogger =
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
-  private static synchronized Cache<TestrigSettings, DataPlane> buildDataPlaneCache() {
+  private static Cache<TestrigSettings, DataPlane> buildDataPlaneCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES).weakValues().build();
   }
 
@@ -122,8 +122,7 @@ public class Driver {
             MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
-  private static synchronized Cache<TestrigSettings, SortedMap<String, Configuration>>
-      buildTestrigCache() {
+  private static Cache<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
@@ -347,46 +346,63 @@ public class Driver {
               CACHED_ENVIRONMENT_BGP_TABLES,
               CACHED_ENVIRONMENT_ROUTING_TABLES);
 
+      @Nullable
+      SpanContext runBatfishSpanContext =
+          GlobalTracer.get().activeSpan() == null
+              ? null
+              : GlobalTracer.get().activeSpan().context();
+
       Thread thread =
           new Thread() {
             @Override
             public void run() {
-              Answer answer = null;
-              try {
-                answer = batfish.run();
-                batfish.setTerminatedWithException(false);
-                if (answer.getStatus() == null) {
-                  answer.setStatus(AnswerStatus.SUCCESS);
-                }
-              } catch (CleanBatfishException e) {
-                batfish.setTerminatedWithException(true);
-                String msg = "FATAL ERROR: " + e.getMessage();
-                logger.error(msg);
-                answer = Answer.failureAnswer(msg, null);
-              } catch (QuestionException e) {
-                String stackTrace = ExceptionUtils.getFullStackTrace(e);
-                logger.error(stackTrace);
-                answer = e.getAnswer();
-                answer.setStatus(AnswerStatus.FAILURE);
-                batfish.setTerminatedWithException(true);
-              } catch (CompositeBatfishException e) {
-                String stackTrace = ExceptionUtils.getFullStackTrace(e);
-                logger.error(stackTrace);
-                answer = new Answer();
-                answer.setStatus(AnswerStatus.FAILURE);
-                answer.addAnswerElement(e.getAnswerElement());
-                batfish.setTerminatedWithException(true);
-              } catch (Throwable e) {
-                String stackTrace = ExceptionUtils.getFullStackTrace(e);
-                logger.error(stackTrace);
-                answer = new Answer();
-                answer.setStatus(AnswerStatus.FAILURE);
-                answer.addAnswerElement(
-                    new BatfishException("Batfish job failed", e).getBatfishStackTrace());
-                batfish.setTerminatedWithException(true);
-              } finally {
-                if (settings.getAnswerJsonPath() != null) {
-                  batfish.outputAnswerWithLog(answer);
+              try (ActiveSpan runBatfishSpan =
+                  GlobalTracer.get()
+                      .buildSpan("Run Batfish job in a new thread and get the answer")
+                      .addReference(References.FOLLOWS_FROM, runBatfishSpanContext)
+                      .startActive()) {
+                assert runBatfishSpan != null;
+                Answer answer = null;
+                try {
+                  answer = batfish.run();
+                  batfish.setTerminatedWithException(false);
+                  if (answer.getStatus() == null) {
+                    answer.setStatus(AnswerStatus.SUCCESS);
+                  }
+                } catch (CleanBatfishException e) {
+                  batfish.setTerminatedWithException(true);
+                  String msg = "FATAL ERROR: " + e.getMessage();
+                  logger.error(msg);
+                  answer = Answer.failureAnswer(msg, null);
+                } catch (QuestionException e) {
+                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  logger.error(stackTrace);
+                  answer = e.getAnswer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  batfish.setTerminatedWithException(true);
+                } catch (CompositeBatfishException e) {
+                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  logger.error(stackTrace);
+                  answer = new Answer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  answer.addAnswerElement(e.getAnswerElement());
+                  batfish.setTerminatedWithException(true);
+                } catch (Throwable e) {
+                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  logger.error(stackTrace);
+                  answer = new Answer();
+                  answer.setStatus(AnswerStatus.FAILURE);
+                  answer.addAnswerElement(
+                      new BatfishException("Batfish job failed", e).getBatfishStackTrace());
+                  batfish.setTerminatedWithException(true);
+                } finally {
+                  try (ActiveSpan outputAnswerSpan =
+                      GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
+                    assert outputAnswerSpan != null;
+                    if (settings.getAnswerJsonPath() != null) {
+                      batfish.outputAnswerWithLog(answer);
+                    }
+                  }
                 }
               }
             }
@@ -468,7 +484,7 @@ public class Driver {
                 public void run() {
                   try (ActiveSpan runBatfishSpan =
                       GlobalTracer.get()
-                          .buildSpan("Run Batfish Service")
+                          .buildSpan("Initialize Batfish in a new thread")
                           .addReference(References.FOLLOWS_FROM, runTaskSpanContext)
                           .startActive()) {
                     assert runBatfishSpan != null; // avoid unused warning

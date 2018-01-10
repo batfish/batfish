@@ -19,6 +19,7 @@ import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
@@ -69,7 +70,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(question.getHeaderSpace());
+      return _batfish.multipath(question.getHeaderSpace(), question.getIngressNodeRegex());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
@@ -77,7 +78,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
-      return _batfish.reducedReachability(question.getHeaderSpace());
+      return _batfish.reducedReachability(
+          question.getHeaderSpace(), question.getIngressNodeRegex());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {
@@ -197,15 +199,15 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private SortedSet<ForwardingAction> _actions;
 
-    private String _finalNodeRegex;
+    private NodesSpecifier _finalNodeRegex;
 
     private final HeaderSpace _headerSpace;
 
-    private String _ingressNodeRegex;
+    private NodesSpecifier _ingressNodeRegex;
 
-    private String _notFinalNodeRegex;
+    private NodesSpecifier _notFinalNodeRegex;
 
-    private String _notIngressNodeRegex;
+    private NodesSpecifier _notIngressNodeRegex;
 
     private SortedSet<String> _transitNodes;
 
@@ -215,12 +217,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     public ReachabilityQuestion() {
       _actions = new TreeSet<>(Collections.singleton(ForwardingAction.ACCEPT));
-      _finalNodeRegex = DEFAULT_FINAL_NODE_REGEX;
+      _finalNodeRegex = new NodesSpecifier(DEFAULT_FINAL_NODE_REGEX);
       _headerSpace = new HeaderSpace();
-      _ingressNodeRegex = DEFAULT_INGRESS_NODE_REGEX;
+      _ingressNodeRegex = new NodesSpecifier(DEFAULT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
-      _notFinalNodeRegex = DEFAULT_NOT_FINAL_NODE_REGEX;
-      _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
+      _notFinalNodeRegex = new NodesSpecifier(DEFAULT_NOT_FINAL_NODE_REGEX);
+      _notIngressNodeRegex = new NodesSpecifier(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _transitNodes = DEFAULT_TRANSIT_NODES;
       _notTransitNodes = DEFAULT_NOT_TRANSIT_NODES;
     }
@@ -251,7 +253,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_FINAL_NODE_REGEX)
-    public String getFinalNodeRegex() {
+    public NodesSpecifier getFinalNodeRegex() {
       return _finalNodeRegex;
     }
 
@@ -276,7 +278,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_INGRESS_NODE_REGEX)
-    public String getIngressNodeRegex() {
+    public NodesSpecifier getIngressNodeRegex() {
       return _ingressNodeRegex;
     }
 
@@ -311,7 +313,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
-    public String getNotFinalNodeRegex() {
+    public NodesSpecifier getNotFinalNodeRegex() {
       return _notFinalNodeRegex;
     }
 
@@ -331,7 +333,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
-    public String getNotIngressNodeRegex() {
+    public NodesSpecifier getNotIngressNodeRegex() {
       return _notIngressNodeRegex;
     }
 
@@ -548,7 +550,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_FINAL_NODE_REGEX)
-    public void setFinalNodeRegex(String regex) {
+    public void setFinalNodeRegex(NodesSpecifier regex) {
       _finalNodeRegex = regex;
     }
 
@@ -574,7 +576,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @Override
     @JsonProperty(PROP_INGRESS_NODE_REGEX)
-    public void setIngressNodeRegex(String regex) {
+    public void setIngressNodeRegex(NodesSpecifier regex) {
       _ingressNodeRegex = regex;
     }
 
@@ -605,7 +607,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
-    public void setNotFinalNodeRegex(String notFinalNodeRegex) {
+    public void setNotFinalNodeRegex(NodesSpecifier notFinalNodeRegex) {
       _notFinalNodeRegex = notFinalNodeRegex;
     }
 
@@ -620,7 +622,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
-    public void setNotIngressNodeRegex(String notIngressNodeRegex) {
+    public void setNotIngressNodeRegex(NodesSpecifier notIngressNodeRegex) {
       _notIngressNodeRegex = notIngressNodeRegex;
     }
 

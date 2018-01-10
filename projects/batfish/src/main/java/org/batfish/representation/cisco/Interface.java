@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,7 +62,7 @@ public class Interface extends ComparableStructure<String> {
         case CISCO_NX:
           return NXOS_ETHERNET_BANDWIDTH;
 
-        case AWS_VPC:
+        case AWS:
         case BLADENETWORK:
         case EMPTY:
         case F5:
@@ -178,11 +179,14 @@ public class Interface extends ComparableStructure<String> {
 
   private String _vrf;
 
+  private SortedSet<String> _declaredNames;
+
   public Interface(String name, CiscoConfiguration c) {
     super(name);
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
+    _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _nativeVlan = 1;
@@ -196,7 +200,7 @@ public class Interface extends ComparableStructure<String> {
           break;
 
         case ALCATEL_AOS:
-        case AWS_VPC:
+        case AWS:
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:
@@ -528,5 +532,13 @@ public class Interface extends ComparableStructure<String> {
 
   public void setVrf(String vrf) {
     _vrf = vrf;
+  }
+
+  public SortedSet<String> getDeclaredNames() {
+    return _declaredNames;
+  }
+
+  public void setDeclaredNames(SortedSet<String> declaredNames) {
+    _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
   }
 }

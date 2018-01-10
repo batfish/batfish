@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -66,7 +68,7 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setPrefix(_prefix);
       if (_prefix != null) {
-        iface.getAllPrefixes().add(_prefix);
+        iface.setAllPrefixes(Collections.singleton(_prefix));
       }
       iface.setVrf(_vrf);
       if (_vrf != null) {
@@ -147,6 +149,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_AUTOSTATE = "autostate";
 
   private static final String PROP_BANDWIDTH = "bandwidth";
+
+  private static final String PROP_DECLARED_NAMES = "declaredNames";
 
   private static final String PROP_DESCRIPTION = "description";
 
@@ -305,7 +309,7 @@ public final class Interface extends ComparableStructure<String> {
       case ALCATEL_AOS:
         return computeAosInteraceType(name);
 
-      case AWS_VPC:
+      case AWS:
         return computeAwsInterfaceType(name);
 
       case ARISTA:
@@ -373,13 +377,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<SubRange> _allowedVlans;
 
-  private Set<Prefix> _allPrefixes;
+  private SortedSet<Prefix> _allPrefixes;
 
   private boolean _autoState;
 
   private Double _bandwidth;
 
   private transient boolean _blacklisted;
+
+  private SortedSet<String> _declaredNames;
 
   private String _description;
 
@@ -474,7 +480,8 @@ public final class Interface extends ComparableStructure<String> {
     _active = true;
     _autoState = true;
     _allowedVlans = new ArrayList<>();
-    _allPrefixes = new TreeSet<>();
+    _allPrefixes = ImmutableSortedSet.of();
+    _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
     _mtu = DEFAULT_MTU;
@@ -484,6 +491,7 @@ public final class Interface extends ComparableStructure<String> {
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
     _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
+    _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
 
@@ -614,6 +622,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public boolean getBlacklisted() {
     return _blacklisted;
+  }
+
+  @JsonProperty(PROP_DECLARED_NAMES)
+  public SortedSet<String> getDeclaredNames() {
+    return _declaredNames;
   }
 
   @JsonProperty(PROP_DESCRIPTION)
@@ -929,8 +942,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALL_PREFIXES)
-  public void setAllPrefixes(Set<Prefix> allPrefixes) {
-    _allPrefixes = allPrefixes;
+  public void setAllPrefixes(Iterable<Prefix> allPrefixes) {
+    _allPrefixes = ImmutableSortedSet.copyOf(allPrefixes);
   }
 
   @JsonProperty(PROP_AUTOSTATE)
@@ -946,6 +959,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public void setBlacklisted(boolean blacklisted) {
     _blacklisted = blacklisted;
+  }
+
+  @JsonProperty(PROP_DECLARED_NAMES)
+  public void setDeclaredNames(SortedSet<String> declaredNames) {
+    _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
   }
 
   @JsonProperty(PROP_DESCRIPTION)

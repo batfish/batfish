@@ -1,5 +1,10 @@
 package org.batfish.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -20,7 +25,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.security.KeyStore;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,6 +69,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Topology;
@@ -333,12 +340,10 @@ public class CommonUtil {
               new TrustManager[] {
                 new X509TrustManager() {
                   @Override
-                  public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-                      throws CertificateException {}
+                  public void checkClientTrusted(X509Certificate[] arg0, String arg1) {}
 
                   @Override
-                  public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-                      throws CertificateException {}
+                  public void checkServerTrusted(X509Certificate[] arg0, String arg1) {}
 
                   @Override
                   public X509Certificate[] getAcceptedIssuers() {
@@ -638,8 +643,111 @@ public class CommonUtil {
     }
   }
 
+  @VisibleForTesting
+  static SetMultimap<Ip, IpSpace> initPrivateIpsByPublicIp(
+      Map<String, Configuration> configurations) {
+    /*
+     * Very hacky mapping from public IP to set of spaces of possible natted private IPs.
+     * Does not currently support source-nat acl.
+     *
+     * The current implementation just considers every IP in every prefix on a non-masquerading
+     * interface (except the local address in each such prefix) to be a possible private IP
+     * match for every public IP referred to by every source-nat pool on a masquerading interface.
+     */
+    ImmutableSetMultimap.Builder<Ip, IpSpace> builder = ImmutableSetMultimap.builder();
+    for (Configuration c : configurations.values()) {
+      Collection<Interface> interfaces = c.getInterfaces().values();
+      Set<Prefix> nonNattedInterfacePrefixes =
+          interfaces
+              .stream()
+              .filter(i -> i.getSourceNats().isEmpty())
+              .flatMap(i -> i.getAllPrefixes().stream())
+              .collect(ImmutableSet.toImmutableSet());
+      Set<IpWildcard> blacklist =
+          nonNattedInterfacePrefixes
+              .stream()
+              .map(p -> new IpWildcard(p.getAddress(), Ip.ZERO))
+              .collect(ImmutableSet.toImmutableSet());
+      Set<IpWildcard> whitelist =
+          nonNattedInterfacePrefixes
+              .stream()
+              .map(IpWildcard::new)
+              .collect(ImmutableSet.toImmutableSet());
+      IpSpace ipSpace = IpSpace.builder().including(whitelist).excluding(blacklist).build();
+      interfaces
+          .stream()
+          .flatMap(i -> i.getSourceNats().stream())
+          .forEach(
+              sourceNat -> {
+                for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
+                    ipAsLong <= sourceNat.getPoolIpLast().asLong();
+                    ipAsLong++) {
+                  Ip currentPoolIp = new Ip(ipAsLong);
+                  builder.put(currentPoolIp, ipSpace);
+                }
+              });
+    }
+    return builder.build();
+  }
+
+  public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
+    Map<IpsecVpn, Ip> remoteAddresses = new IdentityHashMap<>();
+    Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<>();
+    SetMultimap<Ip, IpSpace> privateIpsByPublicIp = initPrivateIpsByPublicIp(configurations);
+    for (Configuration c : configurations.values()) {
+      for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
+        Ip remoteAddress = ipsecVpn.getIkeGateway().getAddress();
+        remoteAddresses.put(ipsecVpn, remoteAddress);
+        Set<Prefix> externalPrefixes =
+            ipsecVpn.getIkeGateway().getExternalInterface().getAllPrefixes();
+        for (Prefix externalPrefix : externalPrefixes) {
+          Ip externalAddress = externalPrefix.getAddress();
+          Set<IpsecVpn> vpnsUsingExternalAddress =
+              externalAddresses.computeIfAbsent(externalAddress, k -> Sets.newIdentityHashSet());
+          vpnsUsingExternalAddress.add(ipsecVpn);
+        }
+      }
+    }
+    for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
+      IpsecVpn ipsecVpn = e.getKey();
+      Ip remoteAddress = e.getValue();
+      Ip localAddress = ipsecVpn.getIkeGateway().getLocalAddress();
+      ipsecVpn.initCandidateRemoteVpns();
+      Set<IpsecVpn> remoteIpsecVpnCandidates = externalAddresses.get(remoteAddress);
+      if (remoteIpsecVpnCandidates != null) {
+        for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
+          Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate.getIkeGateway().getLocalAddress();
+          if (remoteIpsecVpnLocalAddress != null
+              && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
+            continue;
+          }
+          Ip reciprocalRemoteAddress = remoteAddresses.get(remoteIpsecVpnCandidate);
+          Set<IpsecVpn> reciprocalVpns = externalAddresses.get(reciprocalRemoteAddress);
+          if (reciprocalVpns == null) {
+            Set<IpSpace> privateIpsBehindReciprocalRemoteAddress =
+                privateIpsByPublicIp.get(reciprocalRemoteAddress);
+            if (privateIpsBehindReciprocalRemoteAddress != null
+                && privateIpsBehindReciprocalRemoteAddress
+                    .stream()
+                    .anyMatch(ipSpace -> ipSpace.contains(localAddress))) {
+              reciprocalVpns = externalAddresses.get(localAddress);
+              ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
+              ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
+              remoteIpsecVpnCandidate.initCandidateRemoteVpns();
+              remoteIpsecVpnCandidate.setRemoteIpsecVpn(ipsecVpn);
+              remoteIpsecVpnCandidate.getCandidateRemoteIpsecVpns().add(ipsecVpn);
+            }
+          } else if (reciprocalVpns.contains(ipsecVpn)) {
+            ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
+            ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
+          }
+        }
+      }
+    }
+  }
+
   public static <S extends Set<T>, T> S intersection(
-      Set<T> set1, Set<T> set2, Supplier<S> setConstructor) {
+      Set<T> set1, Collection<T> set2, Supplier<S> setConstructor) {
     S intersectionSet = setConstructor.get();
     intersectionSet.addAll(set1);
     intersectionSet.retainAll(set2);

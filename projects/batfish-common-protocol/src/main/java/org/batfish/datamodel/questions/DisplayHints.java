@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,26 +15,34 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.collections.FileLinePair;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.pojo.Node;
 
 public class DisplayHints {
 
   public static class Schema {
 
-    private static final Map<String, String> schemaAliases;
-
-    static {
-      Map<String, String> aMap = new HashMap<>();
-      aMap.put("Environment", "class:org.batfish.datamodel.pojo.Environment");
-      aMap.put("FileLine", "class:org.batfish.datamodel.collections.FileLinePair");
-      aMap.put("Flow", "class:org.batfish.datamodel.Flow");
-      aMap.put("FlowTrace", "class:org.batfish.datamodel.FlowTrace");
-      aMap.put("Integer", "class:java.lang.Integer");
-      aMap.put("Interface", "class:org.batfish.datamodel.collections.NodeInterfacePair");
-      aMap.put("Ip", "class:org.batfish.datamodel.Ip");
-      aMap.put("Node", "class:org.batfish.datamodel.pojo.Node");
-      aMap.put("String", "class:java.lang.String");
-      schemaAliases = Collections.unmodifiableMap(aMap);
+    private static String getClassString(Class<?> cls) {
+      return String.format("class:%s", cls.getCanonicalName());
     }
+
+    private static final Map<String, String> schemaAliases =
+        ImmutableMap.<String, String>builder()
+            .put("Environment", getClassString(Environment.class))
+            .put("FileLine", getClassString(FileLinePair.class))
+            .put("Flow", getClassString(Flow.class))
+            .put("FlowTrace", getClassString(FlowTrace.class))
+            .put("Integer", getClassString(Long.class))
+            .put("Interface", getClassString(NodeInterfacePair.class))
+            .put("Ip", getClassString(Ip.class))
+            .put("Node", getClassString(Node.class))
+            .put("String", getClassString(String.class))
+            .build();
 
     private Class<?> _baseType;
 
@@ -86,7 +94,7 @@ public class DisplayHints {
     }
 
     public boolean isIntOrIntList() {
-      return _baseType.getCanonicalName().equals("java.lang.Integer");
+      return _baseType.equals(Long.class);
     }
   }
 

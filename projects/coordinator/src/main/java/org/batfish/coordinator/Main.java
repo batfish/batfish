@@ -127,8 +127,7 @@ public class Main {
           1,
           new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
               String filename = file.getFileName().toString();
               if (filename.endsWith(".json")) {
                 readQuestionTemplate(file, templates);
@@ -174,7 +173,7 @@ public class Main {
         _authorizer = FileAuthorizer.createFromSettings(settings);
         break;
       case database:
-        _authorizer = new DbAuthorizer();
+        _authorizer = DbAuthorizer.createFromSettings(settings);
         break;
       default:
         System.err.print(

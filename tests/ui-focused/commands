@@ -8,7 +8,7 @@ add-batfish-option verboseparse
 test tests/ui-focused/init0.ref init-testrig test_rigs/example testrig0
 test tests/ui-focused/init1.ref init-testrig test_rigs/example testrig1
 test tests/ui-focused/del-testrig.ref del-testrig testrig0
-test tests/ui-focused/list-testrigs1.ref list-testrigs
+test tests/ui-focused/list-testrigs1.ref list-testrigs -nometadata
 
 #### creating, listing, and deleting analyses
 test tests/ui-focused/init-analysis0.ref init-analysis analysis0 tests/ui-focused/templates

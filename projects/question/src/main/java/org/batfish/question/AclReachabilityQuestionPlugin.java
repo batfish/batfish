@@ -10,6 +10,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerElement;
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswerer;
@@ -66,10 +67,10 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
 
     private String _aclNameRegex;
 
-    private String _nodeRegex;
+    private NodesSpecifier _nodeRegex;
 
     public AclReachabilityQuestion() {
-      _nodeRegex = ".*";
+      _nodeRegex = NodesSpecifier.ALL;
       _aclNameRegex = ".*";
     }
 
@@ -89,7 +90,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public String getNodeRegex() {
+    public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
     }
 
@@ -113,7 +114,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(String regex) {
+    public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
   }

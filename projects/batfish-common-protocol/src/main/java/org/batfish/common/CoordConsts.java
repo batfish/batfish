@@ -9,6 +9,7 @@ public class CoordConsts {
   public enum WorkStatusCode {
     ASSIGNED,
     ASSIGNMENTERROR,
+    BLOCKED,
     CHECKINGSTATUS,
     TERMINATEDABNORMALLY,
     TERMINATEDNORMALLY,
@@ -59,7 +60,6 @@ public class CoordConsts {
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
-  public static final String SVC_KEY_PRETTY_ANSWER = "prettyanswer";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
   public static final String SVC_KEY_SETTINGS = "settings";
@@ -67,6 +67,7 @@ public class CoordConsts {
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
   public static final String SVC_KEY_TESTRIG_INFO = "testriginfo";
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
+  public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
   public static final String SVC_KEY_VERSION = "version";
   public static final String SVC_KEY_WORKID = "workid";

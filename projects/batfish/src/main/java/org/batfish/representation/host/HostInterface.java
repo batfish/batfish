@@ -3,7 +3,11 @@ package org.batfish.representation.host;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import org.batfish.common.Warnings;
@@ -11,6 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
 
 public class HostInterface implements Serializable {
@@ -24,6 +29,8 @@ public class HostInterface implements Serializable {
   private static final String PROP_OTHER_PREFIXES = "otherPrefixes";
 
   private static final String PROP_PREFIX = "prefix";
+
+  private static final String PROP_SHARED = "shared";
 
   private static final String PROP_VRF = "vrf";
 
@@ -41,6 +48,8 @@ public class HostInterface implements Serializable {
   private Set<Prefix> _otherPrefixes;
 
   private Prefix _prefix;
+
+  private boolean _shared;
 
   private Vrf _vrf;
 
@@ -80,6 +89,11 @@ public class HostInterface implements Serializable {
     return _prefix;
   }
 
+  @JsonProperty(PROP_SHARED)
+  public boolean getShared() {
+    return _shared;
+  }
+
   @JsonProperty(PROP_VRF)
   public Vrf getVrf() {
     return _vrf;
@@ -110,6 +124,11 @@ public class HostInterface implements Serializable {
     _prefix = prefix;
   }
 
+  @JsonProperty(PROP_SHARED)
+  public void setShared(boolean shared) {
+    _shared = shared;
+  }
+
   @JsonProperty(PROP_VRF)
   public void setVrf(Vrf vrf) {
     _vrf = vrf;
@@ -118,10 +137,17 @@ public class HostInterface implements Serializable {
   public Interface toInterface(Configuration configuration, Warnings warnings) {
     Interface iface = new Interface(_canonicalName, configuration);
     iface.setBandwidth(_bandwidth);
+    iface.setDeclaredNames(ImmutableSortedSet.of(_name));
     iface.setPrefix(_prefix);
-    iface.getAllPrefixes().add(_prefix);
-    iface.getAllPrefixes().addAll(_otherPrefixes);
+    iface.setAllPrefixes(Iterables.concat(Collections.singleton(_prefix), _otherPrefixes));
     iface.setVrf(configuration.getDefaultVrf());
+    if (_shared) {
+      SourceNat sourceNat = new SourceNat();
+      iface.setSourceNats(ImmutableList.of(sourceNat));
+      Ip publicIp = _prefix.getAddress();
+      sourceNat.setPoolIpFirst(publicIp);
+      sourceNat.setPoolIpLast(publicIp);
+    }
     return iface;
   }
 }

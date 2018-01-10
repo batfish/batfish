@@ -29,7 +29,7 @@ public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfi
   }
 
   @Override
-  public FlattenVendorConfigurationResult call() throws Exception {
+  public FlattenVendorConfigurationResult call() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     String inputFileAsString = _inputFile.toAbsolutePath().toString();

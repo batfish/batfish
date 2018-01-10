@@ -27,6 +27,7 @@ router ospf 1
   graceful-restart grace-period 180
   ip ospf event-history hello size small
   log-adjacency-changes detail
+  log-adj-changes
   maximum-paths 32
   redistribute direct route-map DIRECT_OSPF
   redistribute ospf 2 match internal

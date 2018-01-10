@@ -1,7 +1,6 @@
 package org.batfish.client;
 
-import java.util.Collections;
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
@@ -88,12 +87,12 @@ public enum Command {
   private static final Map<Command, Pair<String, String>> _usageMap = buildUsageMap();
 
   private static Map<String, Command> buildNameMap() {
-    Map<String, Command> map = new HashMap<>();
+    ImmutableMap.Builder<String, Command> map = ImmutableMap.builder();
     for (Command value : Command.values()) {
       String name = value._name;
       map.put(name, value);
     }
-    return Collections.unmodifiableMap(map);
+    return map.build();
   }
 
   private static Map<Command, Pair<String, String>> buildUsageMap() {
@@ -111,13 +110,13 @@ public enum Command {
     descs.put(
         ANSWER,
         new Pair<>(
-            "<question-name>  [param1=value1 [param2=value2] ...]",
-            "Answer the template question by name for the base environment"));
+            "<template-name>  [questionName=name] [param1=value1 [param2=value2] ...]",
+            "Answer the template by name for the base environment"));
     descs.put(
         ANSWER_DELTA,
         new Pair<>(
-            "<question-name>  [param1=value1 [param2=value2] ...]",
-            "Answer the template question by name for the delta environment"));
+            "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
+            "Answer the template by name for the delta environment"));
     descs.put(CAT, new Pair<>("<filename>", "Print the contents of the file"));
     descs.put(CHECK_API_KEY, new Pair<>("", "Check if API Key is valid"));
     // descs.put(CHANGE_DIR, CHANGE_DIR
@@ -249,7 +248,9 @@ public enum Command {
         new Pair<>("", "List the environments under current container and testrig"));
     descs.put(
         LIST_QUESTIONS, new Pair<>("", "List the questions under current container and testrig"));
-    descs.put(LIST_TESTRIGS, new Pair<>("", "List the testrigs within the current container"));
+    descs.put(
+        LIST_TESTRIGS,
+        new Pair<>("[-nometadata]", "List the testrigs within the current container"));
     descs.put(
         LOAD_QUESTIONS,
         new Pair<>(
@@ -325,7 +326,7 @@ public enum Command {
 
   private final String _name;
 
-  private Command(String name) {
+  Command(String name) {
     _name = name;
   }
 

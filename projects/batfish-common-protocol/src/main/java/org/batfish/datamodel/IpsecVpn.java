@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -130,7 +129,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
     }
   }
 
-  @JsonIdentityReference(alwaysAsId = true)
+  @JsonIgnore
   public Set<IpsecVpn> getCandidateRemoteIpsecVpns() {
     return _candidateRemoteIpsecVpns;
   }
@@ -170,13 +169,15 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _owner;
   }
 
-  @JsonIdentityReference(alwaysAsId = true)
+  @JsonIgnore
   public IpsecVpn getRemoteIpsecVpn() {
     return _remoteIpsecVpn;
   }
 
   public void initCandidateRemoteVpns() {
-    _candidateRemoteIpsecVpns = new TreeSet<>();
+    if (_candidateRemoteIpsecVpns == null) {
+      _candidateRemoteIpsecVpns = new TreeSet<>();
+    }
   }
 
   public void resolveReferences(Configuration owner) {

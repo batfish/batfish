@@ -6,9 +6,15 @@ public class AwsFamily implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private String _region;
+
   private String _subnetId;
 
   private String _vpcId;
+
+  public String getRegion() {
+    return _region;
+  }
 
   public String getSubnetId() {
     return _subnetId;
@@ -16,6 +22,10 @@ public class AwsFamily implements Serializable {
 
   public String getVpcId() {
     return _vpcId;
+  }
+
+  public void setRegion(String region) {
+    _region = region;
   }
 
   public void setSubnetId(String subnetId) {

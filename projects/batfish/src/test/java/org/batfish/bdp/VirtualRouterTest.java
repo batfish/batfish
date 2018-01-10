@@ -1,5 +1,10 @@
 package org.batfish.bdp;
 
+import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
+import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasNetwork;
+import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasOriginatorIp;
+import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasSourceIp;
+import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasType;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -70,7 +75,6 @@ public class VirtualRouterTest {
 
   private static final String NEIGHBOR_HOST_NAME = "neighbornode";
   private static final int TEST_ADMIN = 100;
-  private static final int TEST_ADMIN_LOWER = 50;
   private static final Long TEST_AREA = 1L;
   private static final int TEST_AS1 = 1;
   private static final int TEST_AS2 = 2;
@@ -187,12 +191,11 @@ public class VirtualRouterTest {
     BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
 
     // checking the attributes of the bgp advertisement
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(TEST_DEST_IP));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(TEST_SRC_IP));
-    assertThat(
-        bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.EBGP_SENT));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(TEST_SRC_IP));
+    assertThat(bgpAdvertisement, hasDestinationIp(TEST_DEST_IP));
+    assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
+    assertThat(bgpAdvertisement, hasOriginatorIp(TEST_SRC_IP));
+    assertThat(bgpAdvertisement, hasType(BgpAdvertisementType.EBGP_SENT));
+    assertThat(bgpAdvertisement, hasSourceIp(TEST_SRC_IP));
   }
 
   @Test
@@ -214,12 +217,11 @@ public class VirtualRouterTest {
     BgpAdvertisement bgpAdvertisement = _testVirtualRouter._sentBgpAdvertisements.iterator().next();
 
     // checking the attributes of the bgp advertisement
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasDestinationIp(TEST_DEST_IP));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasOriginatorIp(TEST_SRC_IP));
-    assertThat(
-        bgpAdvertisement, BgpAdvertisementMatchUtils.hasType(BgpAdvertisementType.IBGP_SENT));
-    assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasSourceIp(TEST_SRC_IP));
+    assertThat(bgpAdvertisement, hasDestinationIp(TEST_DEST_IP));
+    assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
+    assertThat(bgpAdvertisement, hasOriginatorIp(TEST_SRC_IP));
+    assertThat(bgpAdvertisement, hasType(BgpAdvertisementType.IBGP_SENT));
+    assertThat(bgpAdvertisement, hasSourceIp(TEST_SRC_IP));
   }
 
   @Test
@@ -250,7 +252,7 @@ public class VirtualRouterTest {
         .stream()
         .forEach(
             bgpAdvertisement -> {
-              assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+              assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
               nextHopIps.add(bgpAdvertisement.getNextHopIp());
             });
 
@@ -296,7 +298,7 @@ public class VirtualRouterTest {
         .stream()
         .forEach(
             bgpAdvertisement -> {
-              assertThat(bgpAdvertisement, BgpAdvertisementMatchUtils.hasNetwork(TEST_NETWORK));
+              assertThat(bgpAdvertisement, hasNetwork(TEST_NETWORK));
               asPaths.add(bgpAdvertisement.getAsPath());
             });
 

@@ -44,7 +44,7 @@ public enum DiffieHellmanGroup {
 
   private final int _groupNumber;
 
-  private DiffieHellmanGroup(int groupNumber) {
+  DiffieHellmanGroup(int groupNumber) {
     _groupNumber = groupNumber;
   }
 }
