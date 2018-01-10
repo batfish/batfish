@@ -957,9 +957,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               && neighbor.getAdditionalPathsSend()
               && neighbor.getAdditionalPathsSelectAll();
       if (additionalPaths) {
-        for (AbstractRoute candidateRoute : _bgpMultipathRib.getRoutes()) {
-          candidateRoutes.add(candidateRoute);
-        }
+        candidateRoutes.addAll(_bgpMultipathRib.getRoutes());
       }
       for (AbstractRoute route : candidateRoutes) {
         BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
@@ -1226,10 +1224,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               && remoteBgpNeighbor.getAdditionalPathsSend()
               && remoteBgpNeighbor.getAdditionalPathsSelectAll();
       if (additionalPaths) {
-        for (AbstractRoute remoteCandidateRoute :
-            remoteVirtualRouter._prevBgpMultipathRib.getRoutes()) {
-          remoteCandidateRoutes.add(remoteCandidateRoute);
-        }
+        remoteCandidateRoutes.addAll(remoteVirtualRouter._prevBgpMultipathRib.getRoutes());
       }
       for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
         BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
