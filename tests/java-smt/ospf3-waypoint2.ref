@@ -1,0 +1,44 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.symbolic.answers.SmtWaypointAnswerElement",
+      "flowHistory" : {
+        "class" : "org.batfish.datamodel.FlowHistory"
+      },
+      "result" : {
+        "verified" : true
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.SmtWaypointingQuestion$WaypointingQuestion",
+    "baseEnvType" : "any",
+    "benchmark" : false,
+    "deltaEnvType" : "any",
+    "differential" : false,
+    "dstIps" : [
+      "70.70.70.70"
+    ],
+    "envDiff" : false,
+    "failNode1Regex" : ".*",
+    "failNode2Regex" : ".*",
+    "failures" : 0,
+    "finalIfaceRegex" : ".*",
+    "finalNodeRegex" : ".*",
+    "fullModel" : true,
+    "ingressNodeRegex" : "R0",
+    "minimize" : false,
+    "useAbstraction" : false,
+    "waypoints" : [
+      "R0",
+      "(R1|R2)",
+      "R3"
+    ]
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}
