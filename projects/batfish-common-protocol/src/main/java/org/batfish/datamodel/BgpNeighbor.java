@@ -228,7 +228,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     @JsonIgnore
     public Prefix getPrefix() {
       if (_remotePrefix == null) {
-        return new Prefix(_remoteIp, 32);
+        return new Prefix(_remoteIp, Prefix.MAX_PREFIX_LENGTH);
       } else {
         return _remotePrefix;
       }
