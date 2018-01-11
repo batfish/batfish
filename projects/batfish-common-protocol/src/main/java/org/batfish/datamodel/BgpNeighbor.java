@@ -397,7 +397,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    * @param owner The owner of this neighbor
    */
   public BgpNeighbor(Ip address, Configuration owner) {
-    this(new Prefix(address, 32), owner);
+    this(new Prefix(address, Prefix.MAX_PREFIX_LENGTH), owner);
   }
 
   @JsonCreator

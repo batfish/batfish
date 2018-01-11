@@ -10,8 +10,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.batfish.common.Warnings;
@@ -68,21 +66,21 @@ public class HostInterfaceTest {
   }
 
   @Test
-  public void testShared() throws JsonParseException, JsonMappingException, IOException {
-    Ip sharedAddress = new Ip("1.0.0.1");
-    InterfaceAddress sharedPrefix = new InterfaceAddress(sharedAddress, 24);
+  public void testShared() throws IOException {
+    Ip sharedIp = new Ip("1.0.0.1");
+    InterfaceAddress sharedAddress = new InterfaceAddress(sharedIp, 24);
     Prefix nonShared1Prefix = Prefix.fromString("2.0.0.2/24");
     Prefix nonShared2Prefix = Prefix.fromString("3.0.0.2/24");
     String ifaceSharedText =
-        "{\"name\":\"shared_interface\", \"address\":\""
-            + sharedPrefix.toString()
+        "{\"name\":\"shared_interface\", \"prefix\":\""
+            + sharedAddress.toString()
             + "\", \"shared\":true}";
     String ifaceNonShared1Text =
-        "{\"name\":\"non_shared1_interface\", \"address\":\""
+        "{\"name\":\"non_shared1_interface\", \"prefix\":\""
             + nonShared1Prefix.toString()
             + "\", \"shared\":false}";
     String ifaceNonShared2Text =
-        "{\"name\":\"non_shared2_interface\", \"address\":\"" + nonShared2Prefix.toString() + "\"}";
+        "{\"name\":\"non_shared2_interface\", \"prefix\":\"" + nonShared2Prefix.toString() + "\"}";
 
     HostInterface sharedHostInterface = _mapper.readValue(ifaceSharedText, HostInterface.class);
     HostInterface nonShared1HostInterface =
@@ -106,7 +104,7 @@ public class HostInterfaceTest {
      */
     assertThat(
         sharedInterface,
-        hasSourceNats(hasItem(allOf(hasPoolIpFirst(sharedAddress), hasPoolIpLast(sharedAddress)))));
+        hasSourceNats(hasItem(allOf(hasPoolIpFirst(sharedIp), hasPoolIpLast(sharedIp)))));
     assertThat(nonShared1Interface, hasSourceNats(empty()));
     assertThat(nonShared2Interface, hasSourceNats(empty()));
   }
