@@ -1629,7 +1629,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       address = new InterfaceAddress(ctx.IP_PREFIX().getText());
     } else if (ctx.IP_ADDRESS() != null) {
       Ip ip = new Ip(ctx.IP_ADDRESS().getText());
-      address = new InterfaceAddress(ip, 32);
+      address = new InterfaceAddress(ip, Prefix.MAX_PREFIX_LENGTH);
     } else {
       throw new BatfishException("Invalid or missing address");
     }

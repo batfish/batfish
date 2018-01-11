@@ -224,7 +224,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
       InterfaceAddress externalInterfacePrefix =
-          new InterfaceAddress(ipsecTunnel.getVgwOutsideAddress(), 32);
+          new InterfaceAddress(ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
       Interface externalInterface =
           Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfacePrefix);
 
