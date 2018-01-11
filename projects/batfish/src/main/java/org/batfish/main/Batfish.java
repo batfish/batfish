@@ -85,12 +85,12 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfNeighbor;
@@ -1363,7 +1363,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       int offset = 0;
       for (NodeInterfacePair currentPair : interfaceSet) {
         Ip ip = new Ip(currentStartingIpAsLong + offset);
-        NetworkAddress prefix = new NetworkAddress(ip, subnetBits);
+        InterfaceAddress prefix = new InterfaceAddress(ip, subnetBits);
         String ifaceName = currentPair.getInterface();
         Interface iface = new Interface(ifaceName, configs.get(currentPair.getHostname()));
         iface.setAddress(prefix);
@@ -1449,13 +1449,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // if (!neighbor.getRemoteAs().equals(stubAs)) {
     // continue;
     // }
-    // Prefix neighborPrefix = neighbor.getAddress();
+    // Prefix neighborPrefix = neighbor.getIp();
     // if (neighborPrefix.getPrefixLength() != 32) {
     // throw new BatfishException(
     // "do not currently handle generating stubs based on dynamic bgp
     // sessions");
     // }
-    // Ip neighborAddress = neighborPrefix.getAddress();
+    // Ip neighborAddress = neighborPrefix.getIp();
     // int edgeAs = neighbor.getLocalAs();
     // /*
     // * Now that we have the ip address of the stub, we want to find the
@@ -1465,7 +1465,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // */
     // boolean found = false;
     // for (Interface iface : config.getInterfaces().values()) {
-    // Prefix prefix = iface.getAddress();
+    // Prefix prefix = iface.getIp();
     // if (prefix == null || !prefix.contains(neighborAddress)) {
     // continue;
     // }
@@ -1539,7 +1539,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // edgeNeighbor.setSendCommunity(true);
     // edgeNeighbor.setDefaultMetric(0);
     // stub.getBgpProcess().getNeighbors()
-    // .put(edgeNeighbor.getAddress(), edgeNeighbor);
+    // .put(edgeNeighbor.getIp(), edgeNeighbor);
     // break;
     // }
     // else {
@@ -2077,7 +2077,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // DependentRoute exportSourceRoute = export.getDependency();
     // if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
     // && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
-    // Prefix prefix = export.getAddress();
+    // Prefix prefix = export.getIp();
     // ebgpExportSpace.addPrefix(prefix);
     // }
     // }
@@ -2163,7 +2163,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               SortedSet<Edge> ifaceEdges =
                   topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
               boolean hasNeighbor = false;
-              Ip localIp = iface.getAddress().getAddress();
+              Ip localIp = iface.getAddress().getIp();
               if (ifaceEdges != null) {
                 for (Edge edge : ifaceEdges) {
                   if (edge.getNode1().equals(hostname)) {
@@ -2181,7 +2181,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
                       if (remoteArea != null
                           && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
-                        Ip remoteIp = remoteIface.getAddress().getAddress();
+                        Ip remoteIp = remoteIface.getAddress().getIp();
                         Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
                         OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
                         if (neighbor == null) {
@@ -2246,7 +2246,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             SortedSet<Edge> ifaceEdges =
                 topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
             boolean hasNeighbor = false;
-            Ip localIp = iface.getAddress().getAddress();
+            Ip localIp = iface.getAddress().getIp();
             if (ifaceEdges != null) {
               for (Edge edge : ifaceEdges) {
                 if (edge.getNode1().equals(hostname)) {
@@ -2262,7 +2262,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       remoteProc.setRipNeighbors(new TreeMap<>());
                     }
                     if (remoteProc.getInterfaces().contains(remoteIfaceName)) {
-                      Ip remoteIp = remoteIface.getAddress().getAddress();
+                      Ip remoteIp = remoteIface.getAddress().getIp();
                       Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
                       RipNeighbor neighbor = proc.getRipNeighbors().get(localKey);
                       if (neighbor == null) {

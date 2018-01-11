@@ -13,8 +13,8 @@ import java.util.TreeSet;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
 
@@ -47,9 +47,9 @@ public class HostInterface implements Serializable {
 
   private String _name;
 
-  private Set<NetworkAddress> _otherAddresses;
+  private Set<InterfaceAddress> _otherAddresses;
 
-  private NetworkAddress _address;
+  private InterfaceAddress _address;
 
   private boolean _shared;
 
@@ -82,12 +82,12 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_ADDRESSES)
-  public Set<NetworkAddress> getOtherAddresses() {
+  public Set<InterfaceAddress> getOtherAddresses() {
     return _otherAddresses;
   }
 
   @JsonProperty(PROP_ADDRESS)
-  public NetworkAddress getAddress() {
+  public InterfaceAddress getAddress() {
     return _address;
   }
 
@@ -117,12 +117,12 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_ADDRESSES)
-  public void setOtherAddresses(Set<NetworkAddress> otherAddresses) {
+  public void setOtherAddresses(Set<InterfaceAddress> otherAddresses) {
     _otherAddresses = otherAddresses;
   }
 
   @JsonProperty(PROP_ADDRESS)
-  public void setAddress(NetworkAddress address) {
+  public void setAddress(InterfaceAddress address) {
     _address = address;
   }
 
@@ -130,7 +130,7 @@ public class HostInterface implements Serializable {
   @JsonProperty(PROP_PREFIX)
   @Deprecated
   public void setPrefix(String prefix) {
-    _address = new NetworkAddress(prefix);
+    _address = new InterfaceAddress(prefix);
   }
 
   @JsonProperty(PROP_SHARED)
@@ -153,7 +153,7 @@ public class HostInterface implements Serializable {
     if (_shared) {
       SourceNat sourceNat = new SourceNat();
       iface.setSourceNats(ImmutableList.of(sourceNat));
-      Ip publicIp = _address.getAddress();
+      Ip publicIp = _address.getIp();
       sourceNat.setPoolIpFirst(publicIp);
       sourceNat.setPoolIpLast(publicIp);
     }

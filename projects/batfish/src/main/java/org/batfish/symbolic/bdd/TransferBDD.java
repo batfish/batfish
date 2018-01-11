@@ -105,7 +105,7 @@ class TransferBDD {
    * [var(0), ..., var(n)]
    */
   public static BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
-    BitSet b = p.getAddress().getAddressBits();
+    BitSet b = p.getStartIp().getAddressBits();
     BDD acc = factory.one();
     for (int i = 0; i < length; i++) {
       boolean res = b.get(i);
@@ -703,9 +703,9 @@ class TransferBDD {
     // y = r2.getPrefixLength();
     // ret.getPrefixLength().setValue(ite(guard, x, y));
 
-    // x = r1.getAddress();
-    // y = r2.getAddress();
-    // ret.getAddress().setValue(ite(guard, x, y));
+    // x = r1.getIp();
+    // y = r2.getIp();
+    // ret.getIp().setValue(ite(guard, x, y));
 
     x = r1.getAdminDist();
     y = r2.getAdminDist();

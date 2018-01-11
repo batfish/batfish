@@ -9,8 +9,8 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
@@ -144,9 +144,9 @@ public class Route implements Serializable {
             // need to create a link between subnet on which route is created
             // and instance containing network interface
             String subnetIfaceName = _target;
-            Pair<NetworkAddress, NetworkAddress> instanceLink =
+            Pair<InterfaceAddress, InterfaceAddress> instanceLink =
                 awsConfiguration.getNextGeneratedLinkSubnet();
-            NetworkAddress subnetIfaceAddress = instanceLink.getFirst();
+            InterfaceAddress subnetIfaceAddress = instanceLink.getFirst();
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
 
             // set up instance interface
@@ -154,13 +154,13 @@ public class Route implements Serializable {
             String instanceIfaceName = subnet.getId();
             Configuration instanceCfgNode =
                 awsConfiguration.getConfigurationNodes().get(instanceId);
-            NetworkAddress instanceIfaceAddress = instanceLink.getSecond();
+            InterfaceAddress instanceIfaceAddress = instanceLink.getSecond();
             Interface instanceIface =
                 Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfaceAddress);
             Instance instance = region.getInstances().get(instanceId);
             instanceIface.setIncomingFilter(instance.getInAcl());
             instanceIface.setOutgoingFilter(instance.getOutAcl());
-            Ip nextHopIp = instanceIfaceAddress.getAddress();
+            Ip nextHopIp = instanceIfaceAddress.getIp();
             srBuilder.setNextHopIp(nextHopIp);
           }
           break;
@@ -195,13 +195,13 @@ public class Route implements Serializable {
           if (!subnetCfgNode.getDefaultVrf().getInterfaces().containsKey(subnetIfaceName)) {
             // create prefix on which subnet and remote vpc router will
             // connect
-            Pair<NetworkAddress, NetworkAddress> peeringLink =
+            Pair<InterfaceAddress, InterfaceAddress> peeringLink =
                 awsConfiguration.getNextGeneratedLinkSubnet();
-            NetworkAddress subnetIfaceAddress = peeringLink.getFirst();
+            InterfaceAddress subnetIfaceAddress = peeringLink.getFirst();
             Utils.newInterface(subnetIfaceName, subnetCfgNode, subnetIfaceAddress);
 
             // set up remote vpc router interface
-            NetworkAddress remoteVpcIfaceAddress = peeringLink.getSecond();
+            InterfaceAddress remoteVpcIfaceAddress = peeringLink.getSecond();
             Interface remoteVpcIface = new Interface(remoteVpcIfaceName, remoteVpcCfgNode);
             remoteVpcCfgNode.getInterfaces().put(remoteVpcIfaceName, remoteVpcIface);
             remoteVpcCfgNode
@@ -218,7 +218,7 @@ public class Route implements Serializable {
                   .getInterfaces()
                   .get(remoteVpcIfaceName)
                   .getAddress()
-                  .getAddress();
+                  .getIp();
 
           // initialize static route on new link
           srBuilder.setNextHopIp(remoteVpcIfaceIp);

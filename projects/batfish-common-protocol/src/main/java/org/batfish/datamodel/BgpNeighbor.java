@@ -506,7 +506,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
   public Ip getAddress() {
     if (_key != null && _key.getPrefixLength() == 32) {
-      return _key.getAddress();
+      return _key.getStartIp();
     } else {
       return null;
     }

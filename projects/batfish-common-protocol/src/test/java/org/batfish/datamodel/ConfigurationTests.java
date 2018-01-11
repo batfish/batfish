@@ -160,10 +160,10 @@ public class ConfigurationTests {
 
     Configuration c1 = cb.build();
     Vrf v1 = vb.setOwner(c1).build();
-    NetworkAddress p1to2Physical = new NetworkAddress(ip1to2Physical, 24);
-    NetworkAddress p1to2Tunnel = new NetworkAddress(ip1to2Tunnel, 24);
-    NetworkAddress p1to3Physical = new NetworkAddress(ip1to3Physical, 24);
-    NetworkAddress p1to4Tunnel = new NetworkAddress(ip1to4Tunnel, 24);
+    InterfaceAddress p1to2Physical = new InterfaceAddress(ip1to2Physical, 24);
+    InterfaceAddress p1to2Tunnel = new InterfaceAddress(ip1to2Tunnel, 24);
+    InterfaceAddress p1to3Physical = new InterfaceAddress(ip1to3Physical, 24);
+    InterfaceAddress p1to4Tunnel = new InterfaceAddress(ip1to4Tunnel, 24);
     Interface i1to2 = ib.setOwner(c1).setVrf(v1).setAddress(p1to2Physical).build();
     Interface t1to2 = ib.setAddress(p1to2Tunnel).build();
     Interface i1to3 = ib.setOwner(c1).setVrf(v1).setAddress(p1to3Physical).build();
@@ -189,8 +189,8 @@ public class ConfigurationTests {
 
     Configuration c2 = cb.build();
     Vrf v2 = vb.setOwner(c2).build();
-    NetworkAddress p2to1Physical = new NetworkAddress(ip2to1Physical, 24);
-    NetworkAddress p2to1Tunnel = new NetworkAddress(ip2to1Tunnel, 24);
+    InterfaceAddress p2to1Physical = new InterfaceAddress(ip2to1Physical, 24);
+    InterfaceAddress p2to1Tunnel = new InterfaceAddress(ip2to1Tunnel, 24);
     Interface i2to1 = ib.setOwner(c2).setVrf(v2).setAddress(p2to1Physical).build();
     Interface t2to1 = ib.setAddress(p2to1Tunnel).build();
     IpsecVpn vpn2to1 = new IpsecVpn("vpn2to1", c2);
@@ -205,8 +205,8 @@ public class ConfigurationTests {
 
     Configuration c3 = cb.build();
     Vrf v3 = vb.setOwner(c3).build();
-    NetworkAddress p3to1Physical = new NetworkAddress(ip3to1Physical, 24);
-    NetworkAddress p3to4Physical = new NetworkAddress(ip3to4Physical, 24);
+    InterfaceAddress p3to1Physical = new InterfaceAddress(ip3to1Physical, 24);
+    InterfaceAddress p3to4Physical = new InterfaceAddress(ip3to4Physical, 24);
     Interface i3to1 = ib.setOwner(c3).setVrf(v3).setAddress(p3to1Physical).build();
     ib.setAddress(p3to4Physical).build();
     SourceNat snat3copy1 = new SourceNat();
@@ -220,8 +220,8 @@ public class ConfigurationTests {
 
     Configuration c4 = cb.build();
     Vrf v4 = vb.setOwner(c4).build();
-    NetworkAddress p4to1Tunnel = new NetworkAddress(ip4to1Tunnel, 24);
-    NetworkAddress p4to3Physical = new NetworkAddress(ip4to3Physical, 24);
+    InterfaceAddress p4to1Tunnel = new InterfaceAddress(ip4to1Tunnel, 24);
+    InterfaceAddress p4to3Physical = new InterfaceAddress(ip4to3Physical, 24);
     Interface t4to1 = ib.setOwner(c4).setVrf(v4).setAddress(p4to1Tunnel).build();
     Interface i4to3 = ib.setAddress(p4to3Physical).build();
     IpsecVpn vpn4to1 = new IpsecVpn("vpn4to1", c4);

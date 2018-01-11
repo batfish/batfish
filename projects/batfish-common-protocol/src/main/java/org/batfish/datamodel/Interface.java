@@ -40,7 +40,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private Configuration _owner;
 
-    private NetworkAddress _address;
+    private InterfaceAddress _address;
 
     private Vrf _vrf;
 
@@ -121,7 +121,7 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setAddress(NetworkAddress address) {
+    public Builder setAddress(InterfaceAddress address) {
       _address = address;
       return this;
     }
@@ -377,7 +377,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private List<SubRange> _allowedVlans;
 
-  private SortedSet<NetworkAddress> _allAddresses;
+  private SortedSet<InterfaceAddress> _allAddresses;
 
   private boolean _autoState;
 
@@ -433,7 +433,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private Configuration _owner;
 
-  private NetworkAddress _address;
+  private InterfaceAddress _address;
 
   private Boolean _proxyArp;
 
@@ -600,7 +600,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ALL_ADDRESSES)
   @JsonPropertyDescription("All IPV4 address/network assignments on this interface")
-  public Set<NetworkAddress> getAllAddresses() {
+  public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -790,7 +790,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ADDRESS)
   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
-  public NetworkAddress getAddress() {
+  public InterfaceAddress getAddress() {
     return _address;
   }
 
@@ -942,7 +942,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ALL_ADDRESSES)
-  public void setAllAddresses(Iterable<NetworkAddress> allAddresses) {
+  public void setAllAddresses(Iterable<InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
   }
 
@@ -1082,7 +1082,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ADDRESS)
-  public void setAddress(NetworkAddress address) {
+  public void setAddress(InterfaceAddress address) {
     _address = address;
   }
 

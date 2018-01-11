@@ -11,9 +11,9 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_nexthop_selfContext;
@@ -476,7 +476,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
     if (ctx.DHCP() != null) {
       todo(ctx, F_INTERFACES_ADDRESS_DHCP);
     } else if (ctx.IP_PREFIX() != null) {
-      NetworkAddress address = new NetworkAddress(ctx.IP_PREFIX().getText());
+      InterfaceAddress address = new InterfaceAddress(ctx.IP_PREFIX().getText());
       if (_currentInterface.getAddress() == null) {
         _currentInterface.setAddress(address);
       }

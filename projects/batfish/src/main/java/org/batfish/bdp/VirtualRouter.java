@@ -26,8 +26,8 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfExternalRoute;
@@ -231,9 +231,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         Prefix matchingRoutePrefix = matchingRoute.getNetwork();
         // check to make sure matching route's prefix does not totally
         // contain this static route's prefix
-        if (matchingRoutePrefix.getAddress().asLong() > staticRoutePrefix.getAddress().asLong()
-            || matchingRoutePrefix.getEndAddress().asLong()
-                < staticRoutePrefix.getEndAddress().asLong()) {
+        if (matchingRoutePrefix.getStartIp().asLong() > staticRoutePrefix.getStartIp().asLong()
+            || matchingRoutePrefix.getEndIp().asLong() < staticRoutePrefix.getEndIp().asLong()) {
           changed |= _mainRib.mergeRoute(sr);
           break; // break out of the inner loop but continue processing static routes
         }
@@ -602,7 +601,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                       iface
                           .getAllAddresses()
                           .stream()
-                          .map(Prefix::forNetworkAddress)
+                          .map(InterfaceAddress::getPrefix)
                           .collect(Collectors.toSet());
                   int interfaceOspfCost = iface.getOspfCost();
                   for (Prefix prefix : allNetworkPrefixes) {
@@ -644,7 +643,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             iface
                 .getAllAddresses()
                 .stream()
-                .map(Prefix::forNetworkAddress)
+                .map(InterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         long cost = RipProcess.DEFAULT_RIP_COST;
         for (Prefix prefix : allNetworkPrefixes) {
@@ -706,8 +705,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     for (Interface i : _vrf.getInterfaces().values()) {
       if (i.getActive()) { // Make sure the interface is active
         // Create a route for each interface prefix
-        for (NetworkAddress ifaceAddress : i.getAllAddresses()) {
-          Prefix prefix = Prefix.forNetworkAddress(ifaceAddress);
+        for (InterfaceAddress ifaceAddress : i.getAllAddresses()) {
+          Prefix prefix = ifaceAddress.getPrefix();
           ConnectedRoute cr = new ConnectedRoute(prefix, i.getName());
           _connectedRib.mergeRoute(cr);
         }
@@ -900,7 +899,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         // Do not support dynamic outside neighbors
         continue;
       }
-      Ip remoteIp = remotePrefix.getAddress();
+      Ip remoteIp = remotePrefix.getStartIp();
       if (ipOwners.get(remoteIp) != null) {
         // Skip if neighbor is not outside the network
         continue;
@@ -1058,11 +1057,11 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
           // should only happen for ibgp
           String nextHopInterface = route.getNextHopInterface();
-          NetworkAddress nextHopPrefix = _c.getInterfaces().get(nextHopInterface).getAddress();
+          InterfaceAddress nextHopPrefix = _c.getInterfaces().get(nextHopInterface).getAddress();
           if (nextHopPrefix == null) {
             throw new BatfishException("route's nextHopInterface has no address");
           }
-          nextHopIp = nextHopPrefix.getAddress();
+          nextHopIp = nextHopPrefix.getIp();
         }
         transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
         transformedOutgoingRouteBuilder.setLocalPreference(localPreference);
@@ -1344,12 +1343,12 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
           // should only happen for ibgp
           String nextHopInterface = remoteRoute.getNextHopInterface();
-          NetworkAddress nextHopPrefix =
+          InterfaceAddress nextHopPrefix =
               remoteVrf.getInterfaces().get(nextHopInterface).getAddress();
           if (nextHopPrefix == null) {
             throw new BatfishException("remote route's nextHopInterface has no address");
           }
-          nextHopIp = nextHopPrefix.getAddress();
+          nextHopIp = nextHopPrefix.getIp();
         }
         transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
         transformedOutgoingRouteBuilder.setLocalPreference(localPreference);
@@ -1633,7 +1632,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             OspfExternalType1Route newRoute =
                 new OspfExternalType1Route(
                     neighborRoute.getNetwork(),
-                    neighborInterface.getAddress().getAddress(),
+                    neighborInterface.getAddress().getIp(),
                     admin,
                     newMetric,
                     neighborRoute.getLsaMetric(),
@@ -1664,7 +1663,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             OspfExternalType2Route newRoute =
                 new OspfExternalType2Route(
                     neighborRoute.getNetwork(),
-                    neighborInterface.getAddress().getAddress(),
+                    neighborInterface.getAddress().getIp(),
                     admin,
                     neighborRoute.getMetric(),
                     neighborRoute.getLsaMetric(),
@@ -1767,7 +1766,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         && stageOspfInterAreaRoute(
             neighborRoute,
             neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
-            neighborInterface.getAddress().getAddress(),
+            neighborInterface.getAddress().getIp(),
             incrementalCost,
             adminCost,
             areaNum);
@@ -1844,7 +1843,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         && stageOspfInterAreaRoute(
             neighborRoute,
             neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
-            neighborInterface.getAddress().getAddress(),
+            neighborInterface.getAddress().getIp(),
             incrementalCost,
             adminCost,
             areaNum);
@@ -1857,7 +1856,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       int adminCost,
       long areaNum) {
     long newCost = neighborRoute.getMetric() + incrementalCost;
-    Ip nextHopIp = neighborInterface.getAddress().getAddress();
+    Ip nextHopIp = neighborInterface.getAddress().getIp();
     OspfIntraAreaRoute newRoute =
         new OspfIntraAreaRoute(neighborRoute.getNetwork(), nextHopIp, adminCost, newCost, areaNum);
     return neighborRoute.getArea() == areaNum && _ospfIntraAreaStagingRib.mergeRoute(newRoute);
@@ -1967,7 +1966,7 @@ public class VirtualRouter extends ComparableStructure<String> {
          */
         for (RipInternalRoute neighborRoute : neighborVirtualRouter._ripInternalRib.getRoutes()) {
           long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
-          Ip nextHopIp = neighborInterface.getAddress().getAddress();
+          Ip nextHopIp = neighborInterface.getAddress().getIp();
           RipInternalRoute newRoute =
               new RipInternalRoute(neighborRoute.getNetwork(), nextHopIp, admin, newCost);
           if (_ripInternalStagingRib.mergeRoute(newRoute)) {

@@ -446,7 +446,7 @@ class EncoderSlice {
   BoolExpr isRelevantFor(ArithExpr prefixLen, PrefixRange range) {
     Prefix p = range.getPrefix();
     SubRange r = range.getLengthRange();
-    long pfx = p.getAddress().asLong();
+    long pfx = p.getStartIp().asLong();
     int len = p.getPrefixLength();
     int lower = r.getStart();
     int upper = r.getEnd();
@@ -476,7 +476,7 @@ class EncoderSlice {
   }
 
   BoolExpr isRelevantFor(Prefix p, BitVecExpr be) {
-    long pfx = p.getAddress().asLong();
+    long pfx = p.getStartIp().asLong();
     return firstBitsEqual(be, pfx, p.getPrefixLength());
   }
 
@@ -714,7 +714,7 @@ class EncoderSlice {
                       .contains(e);
 
               Interface i = e.getStart();
-              Prefix p = Prefix.forNetworkAddress(i.getAddress());
+              Prefix p = i.getAddress().getPrefix();
 
               boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
               // Optimization: Don't model the connected interfaces that aren't relevant
@@ -1595,11 +1595,11 @@ class EncoderSlice {
           GraphEdge other = getGraph().getOtherEnd().get(ge);
           BoolExpr connectedWillSend;
           if (other == null || getGraph().isHost(ge.getPeer())) {
-            Ip ip = ge.getStart().getAddress().getAddress();
+            Ip ip = ge.getStart().getAddress().getIp();
             BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
             connectedWillSend = mkNot(mkEq(_symbolicPacket.getDstIp(), val));
           } else {
-            Ip ip = other.getStart().getAddress().getAddress();
+            Ip ip = other.getStart().getAddress().getIp();
             BitVecExpr val = getCtx().mkBV(ip.asLong(), 32);
             connectedWillSend = mkEq(_symbolicPacket.getDstIp(), val);
           }
@@ -1993,7 +1993,7 @@ class EncoderSlice {
     if (vars.getIsUsed()) {
 
       if (proto.isConnected()) {
-        Prefix p = Prefix.forNetworkAddress(iface.getAddress());
+        Prefix p = iface.getAddress().getPrefix();
         BoolExpr relevant =
             mkAnd(
                 interfaceActive(iface, proto),

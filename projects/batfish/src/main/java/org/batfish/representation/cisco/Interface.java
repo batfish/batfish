@@ -10,9 +10,9 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisInterfaceMode;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -151,7 +151,7 @@ public class Interface extends ComparableStructure<String> {
 
   private int _outgoingFilterLine;
 
-  private NetworkAddress _address;
+  private InterfaceAddress _address;
 
   private boolean _proxyArp;
 
@@ -159,13 +159,13 @@ public class Interface extends ComparableStructure<String> {
 
   int _routingPolicyLine;
 
-  private Set<NetworkAddress> _secondaryAddresses;
+  private Set<InterfaceAddress> _secondaryAddresses;
 
   private List<CiscoSourceNat> _sourceNats;
 
   private boolean _spanningTreePortfast;
 
-  private NetworkAddress _standbyAddress;
+  private InterfaceAddress _standbyAddress;
 
   private Boolean _switchport;
 
@@ -238,8 +238,8 @@ public class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  public Set<NetworkAddress> getAllAddresses() {
-    Set<NetworkAddress> allAddresses = new TreeSet<>();
+  public Set<InterfaceAddress> getAllAddresses() {
+    Set<InterfaceAddress> allAddresses = new TreeSet<>();
     if (_address != null) {
       allAddresses.add(_address);
     }
@@ -327,7 +327,7 @@ public class Interface extends ComparableStructure<String> {
     return _outgoingFilterLine;
   }
 
-  public NetworkAddress getAddress() {
+  public InterfaceAddress getAddress() {
     return _address;
   }
 
@@ -343,7 +343,7 @@ public class Interface extends ComparableStructure<String> {
     return _routingPolicyLine;
   }
 
-  public Set<NetworkAddress> getSecondaryAddresses() {
+  public Set<InterfaceAddress> getSecondaryAddresses() {
     return _secondaryAddresses;
   }
 
@@ -355,7 +355,7 @@ public class Interface extends ComparableStructure<String> {
     return _spanningTreePortfast;
   }
 
-  public NetworkAddress getStandbyAddress() {
+  public InterfaceAddress getStandbyAddress() {
     return _standbyAddress;
   }
 
@@ -478,7 +478,7 @@ public class Interface extends ComparableStructure<String> {
     _outgoingFilterLine = outgoingFilterLine;
   }
 
-  public void setAddress(NetworkAddress address) {
+  public void setAddress(InterfaceAddress address) {
     _address = address;
   }
 
@@ -502,7 +502,7 @@ public class Interface extends ComparableStructure<String> {
     _spanningTreePortfast = spanningTreePortfast;
   }
 
-  public void setStandbyAddress(NetworkAddress standbyAddress) {
+  public void setStandbyAddress(InterfaceAddress standbyAddress) {
     _standbyAddress = standbyAddress;
   }
 

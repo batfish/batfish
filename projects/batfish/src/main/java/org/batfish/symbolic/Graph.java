@@ -24,8 +24,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -203,7 +203,7 @@ public class Graph {
       for (OspfArea area : ospf.getAreas().values()) {
         for (Interface iface : area.getInterfaces().values()) {
           if (iface.getActive() && iface.getOspfEnabled()) {
-            acc.add(Prefix.forNetworkAddress(iface.getAddress()));
+            acc.add(iface.getAddress().getPrefix());
           }
         }
       }
@@ -250,9 +250,9 @@ public class Graph {
 
     if (proto.isConnected()) {
       for (Interface iface : conf.getInterfaces().values()) {
-        NetworkAddress p = iface.getAddress();
-        if (p != null) {
-          acc.add(Prefix.forNetworkAddress(p));
+        InterfaceAddress address = iface.getAddress();
+        if (address != null) {
+          acc.add(address.getPrefix());
         }
       }
       return acc;
@@ -435,7 +435,7 @@ public class Graph {
           boolean isNextHop =
               there != null
                   && there.getAddress() != null
-                  && there.getAddress().getAddress().equals(nhIp);
+                  && there.getAddress().getIp().equals(nhIp);
 
           if (isNextHop) {
             someIface = true;
@@ -479,7 +479,7 @@ public class Graph {
         Interface iface = new Interface(name);
         iface.setActive(true);
         iface.setAddress(
-            new NetworkAddress(sr.getNetwork().getAddress(), sr.getNextHopIp().numSubnetBits()));
+            new InterfaceAddress(sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
         iface.setBandwidth(0.);
         // Add static route to all static routes list
         Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
@@ -531,7 +531,7 @@ public class Graph {
             Ip ip = ipList.get(i);
             BgpNeighbor n = ns.get(i);
             Interface iface = ge.getStart();
-            if (ip != null && Prefix.forNetworkAddress(iface.getAddress()).contains(ip)) {
+            if (ip != null && iface.getAddress().getPrefix().contains(ip)) {
               _ebgpNeighbors.put(ge, n);
             }
           }
@@ -550,7 +550,7 @@ public class Graph {
     // TODO is this valid.
     Prefix p = n.getPrefix();
     assert p.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH;
-    iface.setAddress(new NetworkAddress(n.getPrefix().getAddress(), Prefix.MAX_PREFIX_LENGTH));
+    iface.setAddress(new InterfaceAddress(n.getPrefix().getStartIp(), Prefix.MAX_PREFIX_LENGTH));
     iface.setBandwidth(0.);
     return iface;
   }

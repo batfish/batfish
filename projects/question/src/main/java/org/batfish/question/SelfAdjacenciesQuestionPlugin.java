@@ -16,8 +16,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -102,8 +102,8 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
                 for (Interface iface : vrf.getInterfaces().values()) {
                   Set<Prefix> ifaceBasePrefixes = new HashSet<>();
                   if (iface.getActive()) {
-                    for (NetworkAddress prefix : iface.getAllAddresses()) {
-                      Prefix basePrefix = Prefix.forNetworkAddress(prefix);
+                    for (InterfaceAddress address : iface.getAllAddresses()) {
+                      Prefix basePrefix = address.getPrefix();
                       if (!ifaceBasePrefixes.contains(basePrefix)) {
                         ifaceBasePrefixes.add(basePrefix);
                         nodePrefixes.add(basePrefix);
@@ -112,12 +112,12 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
                   }
                 }
                 for (Interface iface : vrf.getInterfaces().values()) {
-                  for (NetworkAddress prefix : iface.getAllAddresses()) {
-                    Prefix basePrefix = Prefix.forNetworkAddress(prefix);
+                  for (InterfaceAddress address : iface.getAllAddresses()) {
+                    Prefix basePrefix = address.getPrefix();
                     if (nodePrefixes.count(basePrefix) > 1) {
-                      Ip address = prefix.getAddress();
+                      Ip ip = address.getIp();
                       String interfaceName = iface.getName();
-                      answerElement.add(hostname, basePrefix, interfaceName, address);
+                      answerElement.add(hostname, basePrefix, interfaceName, ip);
                     }
                   }
                 }

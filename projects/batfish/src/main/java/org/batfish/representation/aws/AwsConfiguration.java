@@ -8,8 +8,8 @@ import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericConfigObject;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -45,10 +45,10 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return _configurationNodes;
   }
 
-  public synchronized Pair<NetworkAddress, NetworkAddress> getNextGeneratedLinkSubnet() {
+  public synchronized Pair<InterfaceAddress, InterfaceAddress> getNextGeneratedLinkSubnet() {
     assert _currentGeneratedIpAsLong % 2 == 0;
-    NetworkAddress val = new NetworkAddress(new Ip(_currentGeneratedIpAsLong), 31);
-    NetworkAddress val2 = new NetworkAddress(new Ip(_currentGeneratedIpAsLong + 1), 31);
+    InterfaceAddress val = new InterfaceAddress(new Ip(_currentGeneratedIpAsLong), 31);
+    InterfaceAddress val2 = new InterfaceAddress(new Ip(_currentGeneratedIpAsLong + 1), 31);
     _currentGeneratedIpAsLong += 2L;
     return new Pair<>(val, val2);
   }

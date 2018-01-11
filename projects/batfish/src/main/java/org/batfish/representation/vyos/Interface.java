@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.NetworkAddress;
+import org.batfish.datamodel.InterfaceAddress;
 
 public class Interface extends ComparableStructure<String> {
 
@@ -35,13 +35,13 @@ public class Interface extends ComparableStructure<String> {
     }
   }
 
-  private final Set<NetworkAddress> _allAddresses;
+  private final Set<InterfaceAddress> _allAddresses;
 
   private double _bandwidth;
 
   private String _description;
 
-  private NetworkAddress _address;
+  private InterfaceAddress _address;
 
   private InterfaceType _type;
 
@@ -50,7 +50,7 @@ public class Interface extends ComparableStructure<String> {
     _allAddresses = new TreeSet<>();
   }
 
-  public Set<NetworkAddress> getAllAddresses() {
+  public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -62,7 +62,7 @@ public class Interface extends ComparableStructure<String> {
     return _description;
   }
 
-  public NetworkAddress getAddress() {
+  public InterfaceAddress getAddress() {
     return _address;
   }
 
@@ -78,7 +78,7 @@ public class Interface extends ComparableStructure<String> {
     _description = description;
   }
 
-  public void setAddress(NetworkAddress address) {
+  public void setAddress(InterfaceAddress address) {
     _address = address;
   }
 

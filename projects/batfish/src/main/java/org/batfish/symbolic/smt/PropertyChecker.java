@@ -98,24 +98,24 @@ public class PropertyChecker {
       }
       // If we don't know what is on the other end
       if (ge.getPeer() == null) {
-        Prefix pfx = Prefix.forNetworkAddress(ge.getStart().getAddress());
+        Prefix pfx = ge.getStart().getAddress().getPrefix();
         IpWildcard dst = new IpWildcard(pfx);
         headerSpace.setDstIps(
             Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
       } else {
         // If host, add the subnet but not the neighbor's address
         if (g.isHost(ge.getRouter())) {
-          Prefix pfx = Prefix.forNetworkAddress(ge.getStart().getAddress());
+          Prefix pfx = ge.getStart().getAddress().getPrefix();
           IpWildcard dst = new IpWildcard(pfx);
           headerSpace.setDstIps(
               Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
-          Ip ip = ge.getEnd().getAddress().getAddress();
+          Ip ip = ge.getEnd().getAddress().getIp();
           IpWildcard dst2 = new IpWildcard(ip);
           headerSpace.setNotDstIps(
               Iterables.concat(headerSpace.getNotDstIps(), Collections.singleton(dst2)));
         } else {
           // Otherwise, we add the exact address
-          Ip ip = ge.getStart().getAddress().getAddress();
+          Ip ip = ge.getStart().getAddress().getIp();
           IpWildcard dst = new IpWildcard(ip);
           headerSpace.setDstIps(
               Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
@@ -203,7 +203,7 @@ public class PropertyChecker {
         } else if (dstPorts.contains(ge)) {
           // Don't fail an interface if it is for the destination ip we are considering
           // Otherwise, any failure can trivially make equivalence false
-          Prefix pfx = Prefix.forNetworkAddress(ge.getStart().getAddress());
+          Prefix pfx = ge.getStart().getAddress().getPrefix();
           BitVecExpr dstIp = enc.getMainSlice().getSymbolicPacket().getDstIp();
           BoolExpr relevant = enc.getMainSlice().isRelevantFor(pfx, dstIp);
           BoolExpr notFailed = enc.mkEq(f, enc.mkInt(0));

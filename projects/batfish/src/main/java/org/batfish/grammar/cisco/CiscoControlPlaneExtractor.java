@@ -39,6 +39,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6Wildcard;
@@ -53,7 +54,6 @@ import org.batfish.datamodel.IsisMetricType;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
@@ -763,7 +763,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ip != null) {
       return toIp(ctx.ip);
     } else if (ctx.prefix != null) {
-      return Prefix.fromString(ctx.prefix.getText()).getAddress();
+      return Prefix.fromString(ctx.prefix.getText()).getStartIp();
     } else {
       return Ip.ZERO;
     }
@@ -1792,8 +1792,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     // might cause problems if interfaces are declared after ospf, but
     // whatever
-    for (NetworkAddress address : iface.getAllAddresses()) {
-      Prefix prefix = Prefix.forNetworkAddress(address);
+    for (InterfaceAddress address : iface.getAllAddresses()) {
+      Prefix prefix = address.getPrefix();
       OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
       _currentOspfProcess.getNetworks().add(network);
     }
@@ -3150,8 +3150,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip primaryIp = toIp(ctx.pip);
     Ip primaryMask = toIp(ctx.pmask);
     Ip standbyIp = toIp(ctx.sip);
-    NetworkAddress primaryAddress = new NetworkAddress(primaryIp, primaryMask);
-    NetworkAddress standbyAddress = new NetworkAddress(standbyIp, primaryMask);
+    InterfaceAddress primaryAddress = new InterfaceAddress(primaryIp, primaryMask);
+    InterfaceAddress standbyAddress = new InterfaceAddress(standbyIp, primaryMask);
     _configuration.getFailoverPrimaryAddresses().put(name, primaryAddress);
     _configuration.getFailoverStandbyAddresses().put(name, standbyAddress);
   }
@@ -3215,20 +3215,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_address(If_ip_addressContext ctx) {
-    NetworkAddress address;
+    InterfaceAddress address;
     if (ctx.prefix != null) {
-      address = new NetworkAddress(ctx.prefix.getText());
+      address = new InterfaceAddress(ctx.prefix.getText());
     } else {
       Ip ip = new Ip(ctx.ip.getText());
       Ip mask = new Ip(ctx.subnet.getText());
-      address = new NetworkAddress(ip, mask);
+      address = new InterfaceAddress(ip, mask);
     }
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setAddress(address);
     }
     if (ctx.STANDBY() != null) {
       Ip standbyIp = toIp(ctx.standby_address);
-      NetworkAddress standbyAddress = new NetworkAddress(standbyIp, address.getNetworkBits());
+      InterfaceAddress standbyAddress = new InterfaceAddress(standbyIp, address.getNetworkBits());
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setStandbyAddress(standbyAddress);
       }
@@ -3239,13 +3239,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
     Ip ip;
     Ip mask;
-    NetworkAddress address;
+    InterfaceAddress address;
     if (ctx.prefix != null) {
-      address = new NetworkAddress(ctx.prefix.getText());
+      address = new InterfaceAddress(ctx.prefix.getText());
     } else {
       ip = new Ip(ctx.ip.getText());
       mask = new Ip(ctx.subnet.getText());
-      address = new NetworkAddress(ip, mask.numSubnetBits());
+      address = new InterfaceAddress(ip, mask.numSubnetBits());
     }
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.getSecondaryAddresses().add(address);
@@ -3909,7 +3909,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       nextHopIp = toIp(ctx.nexthopip);
     } else if (ctx.nexthopprefix != null) {
       Prefix nextHopPrefix = Prefix.fromString(ctx.nexthopprefix.getText());
-      nextHopIp = nextHopPrefix.getAddress();
+      nextHopIp = nextHopPrefix.getStartIp();
     }
     if (ctx.nexthopint != null) {
       nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
@@ -5015,7 +5015,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip wildcard;
     if (ctx.prefix != null) {
       Prefix prefix = Prefix.fromString(ctx.prefix.getText());
-      address = prefix.getAddress();
+      address = prefix.getStartIp();
       wildcard = prefix.getPrefixWildcard();
     } else {
       address = toIp(ctx.ip);

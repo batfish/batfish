@@ -42,6 +42,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -56,7 +57,6 @@ import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
@@ -286,11 +286,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, String> _failoverInterfaces;
 
-  private final Map<String, NetworkAddress> _failoverPrimaryPrefixes;
+  private final Map<String, InterfaceAddress> _failoverPrimaryPrefixes;
 
   private boolean _failoverSecondary;
 
-  private final Map<String, NetworkAddress> _failoverStandbyPrefixes;
+  private final Map<String, InterfaceAddress> _failoverStandbyPrefixes;
 
   private String _failoverStatefulSignalingInterface;
 
@@ -457,12 +457,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           new org.batfish.datamodel.VrrpGroup(groupNum);
                       newGroup.setPreempt(vrrpGroup.getPreempt());
                       newGroup.setPriority(vrrpGroup.getPriority());
-                      NetworkAddress ifacePrefix = iface.getAddress();
+                      InterfaceAddress ifacePrefix = iface.getAddress();
                       if (ifacePrefix != null) {
                         int prefixLength = ifacePrefix.getNetworkBits();
                         Ip address = vrrpGroup.getVirtualAddress();
                         if (address != null) {
-                          NetworkAddress virtualAddress = new NetworkAddress(address, prefixLength);
+                          InterfaceAddress virtualAddress =
+                              new InterfaceAddress(address, prefixLength);
                           newGroup.setVirtualAddress(virtualAddress);
                         } else {
                           _w.redFlag(
@@ -576,9 +577,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         String iname = e.getKey();
         org.batfish.datamodel.Interface iface = e.getValue();
         if (iname.startsWith("Loopback")) {
-          NetworkAddress prefix = iface.getAddress();
+          InterfaceAddress prefix = iface.getAddress();
           if (prefix != null) {
-            Ip currentIp = prefix.getAddress();
+            Ip currentIp = prefix.getIp();
             if (currentIp.asLong() > processRouterId.asLong()) {
               processRouterId = currentIp;
             }
@@ -587,9 +588,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       if (processRouterId.equals(Ip.ZERO)) {
         for (org.batfish.datamodel.Interface currentInterface : vrf.getInterfaces().values()) {
-          NetworkAddress prefix = currentInterface.getAddress();
+          InterfaceAddress prefix = currentInterface.getAddress();
           if (prefix != null) {
-            Ip currentIp = prefix.getAddress();
+            Ip currentIp = prefix.getIp();
             if (currentIp.asLong() > processRouterId.asLong()) {
               processRouterId = currentIp;
             }
@@ -665,7 +666,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverInterfaces;
   }
 
-  public Map<String, NetworkAddress> getFailoverPrimaryAddresses() {
+  public Map<String, InterfaceAddress> getFailoverPrimaryAddresses() {
     return _failoverPrimaryPrefixes;
   }
 
@@ -673,7 +674,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverSecondary;
   }
 
-  public Map<String, NetworkAddress> getFailoverStandbyAddresses() {
+  public Map<String, InterfaceAddress> getFailoverStandbyAddresses() {
     return _failoverStandbyPrefixes;
   }
 
@@ -710,10 +711,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .values()
             .stream()
             .filter(
-                i ->
-                    i.getAllAddresses()
-                        .stream()
-                        .anyMatch(p -> p.getAddress().equals(sourceAddress)))
+                i -> i.getAllAddresses().stream().anyMatch(p -> p.getIp().equals(sourceAddress)))
             .findFirst()
             .orElse(null);
       }
@@ -956,9 +954,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface sourceInterface =
             vrf.getInterfaces().get(updateSourceInterface);
         if (sourceInterface != null) {
-          NetworkAddress prefix = sourceInterface.getAddress();
+          InterfaceAddress prefix = sourceInterface.getAddress();
           if (prefix != null) {
-            Ip sourceIp = prefix.getAddress();
+            Ip sourceIp = prefix.getIp();
             updateSource = sourceIp;
           } else {
             _w.redFlag(
@@ -975,17 +973,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
               updateSourceInterfaceLine);
         }
       } else {
-        Ip neighborAddress = lpg.getNeighborPrefix().getAddress();
+        Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-          for (NetworkAddress ifacePrefix : iface.getAllAddresses()) {
-            if (Prefix.forNetworkAddress(ifacePrefix).contains(neighborAddress)) {
-              Ip ifaceAddress = ifacePrefix.getAddress();
+          for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+            if (interfaceAddress.getPrefix().contains(neighborAddress)) {
+              Ip ifaceAddress = interfaceAddress.getIp();
               updateSource = ifaceAddress;
             }
           }
         }
       }
-      if (updateSource == null && lpg.getNeighborPrefix().getAddress().valid()) {
+      if (updateSource == null && lpg.getNeighborPrefix().getStartIp().valid()) {
         _w.redFlag("Could not determine update source for BGP neighbor: '" + lpg.getName() + "'");
       }
     }
@@ -1137,9 +1135,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void processFailoverSettings() {
     if (_failover) {
       Interface commIface;
-      NetworkAddress commPrefix;
+      InterfaceAddress commPrefix;
       Interface sigIface;
-      NetworkAddress sigPrefix;
+      InterfaceAddress sigPrefix;
       if (_failoverSecondary) {
         commIface = _interfaces.get(_failoverCommunicationInterface);
         commPrefix = _failoverStandbyPrefixes.get(_failoverCommunicationInterfaceAlias);
@@ -2129,7 +2127,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
 
     // All prefixes is the combination of the interface prefix + any secondary prefixes.
-    ImmutableSet.Builder<NetworkAddress> allPrefixes = ImmutableSet.builder();
+    ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
     if (iface.getAddress() != null) {
       newIface.setAddress(iface.getAddress());
       allPrefixes.add(iface.getAddress());
@@ -2147,8 +2145,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (iface.getOspfPassive()) {
           proc.getPassiveInterfaceList().add(name);
         }
-        for (NetworkAddress address : newIface.getAllAddresses()) {
-          Prefix prefix = Prefix.forNetworkAddress(address);
+        for (InterfaceAddress address : newIface.getAllAddresses()) {
+          Prefix prefix = address.getPrefix();
           OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
           proc.getNetworks().add(ospfNetwork);
         }
@@ -2675,8 +2673,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
             int result = Integer.compare(rhsPrefixLength, lhsPrefixLength); // intentionally swapped
             if (result == 0) {
-              long lhsIp = lhs.getPrefix().getAddress().asLong();
-              long rhsIp = rhs.getPrefix().getAddress().asLong();
+              long lhsIp = lhs.getPrefix().getStartIp().asLong();
+              long rhsIp = rhs.getPrefix().getStartIp().asLong();
               result = Long.compare(lhsIp, rhsIp);
             }
             return result;
@@ -2689,15 +2687,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface iface = e.getValue();
-      NetworkAddress interfacePrefix = iface.getAddress();
+      InterfaceAddress interfacePrefix = iface.getAddress();
       if (interfacePrefix == null) {
         continue;
       }
       for (OspfNetwork network : networks) {
         Prefix networkPrefix = network.getPrefix();
-        Ip networkAddress = networkPrefix.getAddress();
+        Ip networkAddress = networkPrefix.getStartIp();
         Ip maskedInterfaceAddress =
-            interfacePrefix.getAddress().getNetworkAddress(networkPrefix.getPrefixLength());
+            interfacePrefix.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
         if (maskedInterfaceAddress.equals(networkAddress)) {
           // we have a longest prefix match
           long areaNum = network.getArea();
@@ -2982,8 +2980,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (!iface.getActive()) {
           continue;
         }
-        for (NetworkAddress prefix : iface.getAllAddresses()) {
-          Ip ip = prefix.getAddress();
+        for (InterfaceAddress prefix : iface.getAllAddresses()) {
+          Ip ip = prefix.getIp();
           if (highestIp.asLong() < ip.asLong()) {
             highestIp = ip;
           }
@@ -3009,11 +3007,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface i = e.getValue();
-      NetworkAddress interfaceAddress = i.getAddress();
+      InterfaceAddress interfaceAddress = i.getAddress();
       if (interfaceAddress == null) {
         continue;
       }
-      Prefix interfaceNetwork = Prefix.forNetworkAddress(interfaceAddress);
+      Prefix interfaceNetwork = interfaceAddress.getPrefix();
       if (networks.contains(interfaceNetwork)) {
         newProcess.getInterfaces().add(ifaceName);
         i.setRipEnabled(true);
@@ -3903,7 +3901,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
         c.getIkeGateways().put(name, ikeGateway);
-        ikeGateway.setAddress(remotePrefix.getAddress());
+        ikeGateway.setAddress(remotePrefix.getStartIp());
         Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remotePrefix);
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));

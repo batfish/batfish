@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.BooleanExpr;
@@ -44,9 +44,9 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
         Configuration node = configurations.get(hostname);
         for (Interface iface : node.getInterfaces().values()) {
           if (iface.getActive()) {
-            NetworkAddress prefix = iface.getAddress();
+            InterfaceAddress prefix = iface.getAddress();
             if (prefix != null) {
-              _blacklistIps.add(prefix.getAddress());
+              _blacklistIps.add(prefix.getIp());
             }
           }
         }
@@ -59,9 +59,9 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
         Configuration node = configurations.get(hostname);
         Interface iface = node.getInterfaces().get(ifaceName);
         if (iface.getActive()) {
-          NetworkAddress prefix = iface.getAddress();
+          InterfaceAddress prefix = iface.getAddress();
           if (prefix != null) {
-            _blacklistIps.add(prefix.getAddress());
+            _blacklistIps.add(prefix.getIp());
           }
         }
       }
@@ -74,14 +74,14 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
                 .getInterfaces()
                 .get(edge.getInt1())
                 .getAddress()
-                .getAddress();
+                .getIp();
         Ip ip2 =
             configurations
                 .get(edge.getNode2())
                 .getInterfaces()
                 .get(edge.getInt2())
                 .getAddress()
-                .getAddress();
+                .getIp();
         _blacklistIps.add(ip1);
         _blacklistIps.add(ip2);
       }

@@ -26,6 +26,7 @@ import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
@@ -36,7 +37,6 @@ import org.batfish.datamodel.IsisOption;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -1407,7 +1407,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Interface _currentInterface;
 
-  private NetworkAddress _currentInterfaceAddress;
+  private InterfaceAddress _currentInterfaceAddress;
 
   private IpsecPolicy _currentIpsecPolicy;
 
@@ -1623,13 +1623,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterIfi_address(Ifi_addressContext ctx) {
-    Set<NetworkAddress> allAddresses = _currentInterface.getAllAddresses();
-    NetworkAddress address;
+    Set<InterfaceAddress> allAddresses = _currentInterface.getAllAddresses();
+    InterfaceAddress address;
     if (ctx.IP_PREFIX() != null) {
-      address = new NetworkAddress(ctx.IP_PREFIX().getText());
+      address = new InterfaceAddress(ctx.IP_PREFIX().getText());
     } else if (ctx.IP_ADDRESS() != null) {
       Ip ip = new Ip(ctx.IP_ADDRESS().getText());
-      address = new NetworkAddress(ip, 32);
+      address = new InterfaceAddress(ip, 32);
     } else {
       throw new BatfishException("Invalid or missing address");
     }
@@ -1641,7 +1641,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentInterface.setPreferredAddress(address);
     }
     allAddresses.add(address);
-    Ip ip = address.getAddress();
+    Ip ip = address.getIp();
     _currentInterface.getAllAddressIps().add(ip);
   }
 
@@ -2830,7 +2830,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
     Ip virtualAddress = new Ip(ctx.IP_ADDRESS().getText());
     int prefixLength = _currentInterfaceAddress.getNetworkBits();
-    _currentVrrpGroup.setVirtualAddress(new NetworkAddress(virtualAddress, prefixLength));
+    _currentVrrpGroup.setVirtualAddress(new InterfaceAddress(virtualAddress, prefixLength));
   }
 
   @Override

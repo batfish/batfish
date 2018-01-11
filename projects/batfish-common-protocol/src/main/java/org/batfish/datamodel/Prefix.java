@@ -15,10 +15,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   public static final Prefix ZERO = new Prefix(Ip.ZERO, 0);
 
-  public static Prefix forNetworkAddress(NetworkAddress address) {
-    return new Prefix(address.getAddress(), address.getNetworkBits());
-  }
-
   private static long getNetworkEnd(long networkStart, int prefixLength) {
     long networkEnd = networkStart;
     int onesLength = 32 - prefixLength;
@@ -36,15 +32,15 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return wildcard;
   }
 
-  private Ip _address;
+  private Ip _ip;
 
   private int _prefixLength;
 
-  public Prefix(Ip address, int prefixLength) {
-    if (address == null) {
+  public Prefix(@Nonnull Ip ip, int prefixLength) {
+    if (ip == null) {
       throw new BatfishException("Cannot create prefix with null network");
     }
-    _address = address.getNetworkAddress(prefixLength);
+    _ip = ip.getNetworkAddress(prefixLength);
     _prefixLength = prefixLength;
   }
 
@@ -70,7 +66,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Override
   public int compareTo(Prefix rhs) {
-    int ret = _address.compareTo(rhs._address);
+    int ret = _ip.compareTo(rhs._ip);
     if (ret != 0) {
       return ret;
     }
@@ -78,14 +74,14 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   public boolean contains(Ip ip) {
-    long start = _address.asLong();
-    long end = getEndAddress().asLong();
+    long start = _ip.asLong();
+    long end = getEndIp().asLong();
     long ipAsLong = ip.asLong();
     return start <= ipAsLong && ipAsLong <= end;
   }
 
   public boolean containsPrefix(Prefix prefix) {
-    return contains(prefix._address) && _prefixLength < prefix._prefixLength;
+    return contains(prefix._ip) && _prefixLength < prefix._prefixLength;
   }
 
   @Override
@@ -96,15 +92,15 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       return false;
     }
     Prefix rhs = (Prefix) o;
-    return _address.equals(rhs._address) && _prefixLength == rhs._prefixLength;
+    return _ip.equals(rhs._ip) && _prefixLength == rhs._prefixLength;
   }
 
-  public Ip getAddress() {
-    return _address;
+  public Ip getStartIp() {
+    return _ip;
   }
 
-  public Ip getEndAddress() {
-    return new Ip(getNetworkEnd(_address.asLong(), _prefixLength));
+  public Ip getEndIp() {
+    return new Ip(getNetworkEnd(_ip.asLong(), _prefixLength));
   }
 
   public int getPrefixLength() {
@@ -117,15 +113,11 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return new Ip(wildcardLong);
   }
 
-  public Ip getSubnetMask() {
-    return Ip.numSubnetBitsToSubnetMask(_prefixLength);
-  }
-
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _address.hashCode();
+    result = prime * result + _ip.hashCode();
     result = prime * result + _prefixLength;
     return result;
   }
@@ -133,6 +125,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   @Override
   @JsonValue
   public String toString() {
-    return _address + "/" + _prefixLength;
+    return _ip + "/" + _prefixLength;
   }
 }

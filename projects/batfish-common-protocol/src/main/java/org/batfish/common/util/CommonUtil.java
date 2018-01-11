@@ -68,11 +68,11 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Topology;
@@ -203,7 +203,7 @@ public class CommonUtil {
       Map<String, Configuration> configurations, boolean excludeInactive) {
     // TODO: confirm VRFs are handled correctly
     Map<Ip, Set<String>> ipOwners = new HashMap<>();
-    Map<Pair<NetworkAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
+    Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
     configurations.forEach(
         (hostname, c) -> {
           for (Interface i : c.getInterfaces().values()) {
@@ -212,14 +212,14 @@ public class CommonUtil {
               i.getVrrpGroups()
                   .forEach(
                       (groupNum, vrrpGroup) -> {
-                        NetworkAddress address = vrrpGroup.getVirtualAddress();
+                        InterfaceAddress address = vrrpGroup.getVirtualAddress();
                         if (address == null) {
                           // This Vlan Interface has invalid configuration. The VRRP has no source
                           // IP address that would be used for VRRP election. This interface could
                           // never win the election, so is not a candidate.
                           return;
                         }
-                        Pair<NetworkAddress, Integer> key = new Pair<>(address, groupNum);
+                        Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
                         Set<Interface> candidates =
                             vrrpGroups.computeIfAbsent(
                                 key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
@@ -228,7 +228,7 @@ public class CommonUtil {
               // collect prefixes
               i.getAllAddresses()
                   .stream()
-                  .map(NetworkAddress::getAddress)
+                  .map(InterfaceAddress::getIp)
                   .forEach(
                       ip -> {
                         Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
@@ -240,8 +240,8 @@ public class CommonUtil {
     vrrpGroups.forEach(
         (p, candidates) -> {
           int groupNum = p.getSecond();
-          NetworkAddress address = p.getFirst();
-          Ip ip = address.getAddress();
+          InterfaceAddress address = p.getFirst();
+          Ip ip = address.getIp();
           int lowestPriority = Integer.MAX_VALUE;
           String bestCandidate = null;
           SortedSet<String> bestCandidates = new TreeSet<>();
@@ -658,7 +658,7 @@ public class CommonUtil {
     ImmutableSetMultimap.Builder<Ip, IpSpace> builder = ImmutableSetMultimap.builder();
     for (Configuration c : configurations.values()) {
       Collection<Interface> interfaces = c.getInterfaces().values();
-      Set<NetworkAddress> nonNattedInterfaceAddresses =
+      Set<InterfaceAddress> nonNattedInterfaceAddresses =
           interfaces
               .stream()
               .filter(i -> i.getSourceNats().isEmpty())
@@ -667,7 +667,7 @@ public class CommonUtil {
       Set<IpWildcard> blacklist =
           nonNattedInterfaceAddresses
               .stream()
-              .map(p -> new IpWildcard(p.getAddress(), Ip.ZERO))
+              .map(p -> new IpWildcard(p.getIp(), Ip.ZERO))
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> whitelist =
           nonNattedInterfaceAddresses
@@ -699,10 +699,10 @@ public class CommonUtil {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
         Ip remoteAddress = ipsecVpn.getIkeGateway().getAddress();
         remoteAddresses.put(ipsecVpn, remoteAddress);
-        Set<NetworkAddress> externalPrefixes =
+        Set<InterfaceAddress> externalPrefixes =
             ipsecVpn.getIkeGateway().getExternalInterface().getAllAddresses();
-        for (NetworkAddress externalPrefix : externalPrefixes) {
-          Ip externalAddress = externalPrefix.getAddress();
+        for (InterfaceAddress externalPrefix : externalPrefixes) {
+          Ip externalAddress = externalPrefix.getIp();
           Set<IpsecVpn> vpnsUsingExternalAddress =
               externalAddresses.computeIfAbsent(externalAddress, k -> Sets.newIdentityHashSet());
           vpnsUsingExternalAddress.add(ipsecVpn);
@@ -924,9 +924,9 @@ public class CommonUtil {
             String ifaceName = e.getKey();
             Interface iface = e.getValue();
             if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()) {
-              for (NetworkAddress address : iface.getAllAddresses()) {
+              for (InterfaceAddress address : iface.getAllAddresses()) {
                 if (address.getNetworkBits() < 32) {
-                  Prefix prefix = Prefix.forNetworkAddress(address);
+                  Prefix prefix = address.getPrefix();
                   NodeInterfacePair pair = new NodeInterfacePair(nodeName, ifaceName);
                   Set<NodeInterfacePair> interfaceBucket =
                       prefixInterfaces.computeIfAbsent(prefix, k -> new HashSet<>());

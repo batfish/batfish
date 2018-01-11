@@ -29,8 +29,8 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -242,8 +242,8 @@ public class BdpDataPlane implements Serializable, DataPlane {
             // handle connected neighbors
             Configuration nextHop = _nodes.get(nextHopName)._c;
             Interface nextHopInInt = nextHop.getInterfaces().get(nextHopInIntName);
-            for (NetworkAddress prefix : nextHopInInt.getAllAddresses()) {
-              Ip address = prefix.getAddress();
+            for (InterfaceAddress prefix : nextHopInInt.getAllAddresses()) {
+              Ip address = prefix.getIp();
               if (network.contains(address)) {
                 Prefix neighborPrefix = new Prefix(address, MAX_PREFIX_LENGTH);
                 FibRow neighborRow =

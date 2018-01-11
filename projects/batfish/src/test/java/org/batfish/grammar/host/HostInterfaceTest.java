@@ -19,8 +19,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.representation.host.HostInterface;
@@ -70,7 +70,7 @@ public class HostInterfaceTest {
   @Test
   public void testShared() throws JsonParseException, JsonMappingException, IOException {
     Ip sharedAddress = new Ip("1.0.0.1");
-    NetworkAddress sharedPrefix = new NetworkAddress(sharedAddress, 24);
+    InterfaceAddress sharedPrefix = new InterfaceAddress(sharedAddress, 24);
     Prefix nonShared1Prefix = Prefix.fromString("2.0.0.2/24");
     Prefix nonShared2Prefix = Prefix.fromString("3.0.0.2/24");
     String ifaceSharedText =

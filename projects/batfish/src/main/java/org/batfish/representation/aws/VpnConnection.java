@@ -22,6 +22,7 @@ import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecPolicy;
@@ -30,7 +31,6 @@ import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
@@ -223,14 +223,14 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
-      NetworkAddress externalInterfacePrefix =
-          new NetworkAddress(ipsecTunnel.getVgwOutsideAddress(), 32);
+      InterfaceAddress externalInterfacePrefix =
+          new InterfaceAddress(ipsecTunnel.getVgwOutsideAddress(), 32);
       Interface externalInterface =
           Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfacePrefix);
 
       String vpnInterfaceName = "vpn" + idNum;
-      NetworkAddress vpnInterfacePrefix =
-          new NetworkAddress(
+      InterfaceAddress vpnInterfacePrefix =
+          new InterfaceAddress(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Interface vpnInterface =
           Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfacePrefix);
@@ -250,7 +250,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       // ike
       ikeGateway.setExternalInterface(externalInterface);
       ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
-      ikeGateway.setLocalAddress(externalInterface.getAddress().getAddress());
+      ikeGateway.setLocalAddress(externalInterface.getAddress().getIp());
       if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
         ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
         ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
@@ -296,9 +296,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
         // iBGP connection to VPC
         Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
-        Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getAddress().getAddress();
-        Ip vgwToVpcIfaceAddress =
-            vpnGatewayCfgNode.getInterfaces().get(vpcId).getAddress().getAddress();
+        Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getAddress().getIp();
+        Ip vgwToVpcIfaceAddress = vpnGatewayCfgNode.getInterfaces().get(vpcId).getAddress().getIp();
         BgpNeighbor vgwToVpcBgpNeighbor = new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode);
         proc.getNeighbors().put(vgwToVpcBgpNeighbor.getPrefix(), vgwToVpcBgpNeighbor);
         vgwToVpcBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);

@@ -17,13 +17,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -307,13 +307,13 @@ public class VyosConfiguration extends VendorConfiguration {
     newIface.setActive(true); // TODO: may have to change
     newIface.setBandwidth(iface.getBandwidth());
     newIface.setDescription(iface.getDescription());
-    NetworkAddress prefix = iface.getAddress();
+    InterfaceAddress prefix = iface.getAddress();
     if (prefix != null) {
       newIface.setAddress(iface.getAddress());
     }
     newIface.getAllAddresses().addAll(iface.getAllAddresses());
-    for (NetworkAddress p : newIface.getAllAddresses()) {
-      _ipToInterfaceMap.put(p.getAddress(), newIface);
+    for (InterfaceAddress p : newIface.getAllAddresses()) {
+      _ipToInterfaceMap.put(p.getIp(), newIface);
     }
     return newIface;
   }

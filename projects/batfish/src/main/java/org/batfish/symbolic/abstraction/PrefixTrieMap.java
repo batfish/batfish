@@ -29,7 +29,7 @@ public class PrefixTrieMap implements Serializable {
 
     void addPrefix(Prefix prefix, String device) {
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getAddress().getAddressBits();
+      BitSet bits = prefix.getStartIp().getAddressBits();
       Set<String> devices = new HashSet<>();
       devices.add(device);
       _root.addPrefix(prefix, devices, bits, prefixLength, 0);
@@ -81,7 +81,7 @@ public class PrefixTrieMap implements Serializable {
     private Prefix extendPrefixWith(Prefix p, boolean val) {
       int length = p.getPrefixLength();
       assert (length < 32);
-      Ip ip = p.getAddress();
+      Ip ip = p.getStartIp();
       long l = ip.asLong();
       long lnew = l;
       if (val) {

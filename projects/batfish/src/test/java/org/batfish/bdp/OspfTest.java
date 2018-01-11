@@ -25,7 +25,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.NetworkAddress;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
@@ -51,26 +51,26 @@ import org.junit.Test;
 
 public class OspfTest {
 
-  private static final NetworkAddress C1_E1_2_PREFIX = new NetworkAddress("10.12.0.1/24");
-  private static final NetworkAddress C1_L0_PREFIX = new NetworkAddress("1.1.1.1/32");
-  private static final NetworkAddress C1_L1_PREFIX = new NetworkAddress("1.1.1.11/32");
+  private static final InterfaceAddress C1_E1_2_PREFIX = new InterfaceAddress("10.12.0.1/24");
+  private static final InterfaceAddress C1_L0_PREFIX = new InterfaceAddress("1.1.1.1/32");
+  private static final InterfaceAddress C1_L1_PREFIX = new InterfaceAddress("1.1.1.11/32");
   private static final String C1_NAME = "R1";
 
-  private static final NetworkAddress C2_E2_1_PREFIX = new NetworkAddress("10.12.0.2/24");
-  private static final NetworkAddress C2_E2_3_PREFIX = new NetworkAddress("10.23.0.2/24");
-  private static final NetworkAddress C2_L0_PREFIX = new NetworkAddress("2.2.2.2/32");
-  private static final NetworkAddress C2_L1_PREFIX = new NetworkAddress("2.2.2.22/32");
+  private static final InterfaceAddress C2_E2_1_PREFIX = new InterfaceAddress("10.12.0.2/24");
+  private static final InterfaceAddress C2_E2_3_PREFIX = new InterfaceAddress("10.23.0.2/24");
+  private static final InterfaceAddress C2_L0_PREFIX = new InterfaceAddress("2.2.2.2/32");
+  private static final InterfaceAddress C2_L1_PREFIX = new InterfaceAddress("2.2.2.22/32");
   private static final String C2_NAME = "R2";
 
-  private static final NetworkAddress C3_E3_2_PREFIX = new NetworkAddress("10.23.0.3/24");
-  private static final NetworkAddress C3_E3_4_PREFIX = new NetworkAddress("10.34.0.3/24");
-  private static final NetworkAddress C3_L0_PREFIX = new NetworkAddress("3.3.3.3/32");
-  private static final NetworkAddress C3_L1_PREFIX = new NetworkAddress("3.3.3.33/32");
+  private static final InterfaceAddress C3_E3_2_PREFIX = new InterfaceAddress("10.23.0.3/24");
+  private static final InterfaceAddress C3_E3_4_PREFIX = new InterfaceAddress("10.34.0.3/24");
+  private static final InterfaceAddress C3_L0_PREFIX = new InterfaceAddress("3.3.3.3/32");
+  private static final InterfaceAddress C3_L1_PREFIX = new InterfaceAddress("3.3.3.33/32");
   private static final String C3_NAME = "R3";
 
-  private static final NetworkAddress C4_E4_3_PREFIX = new NetworkAddress("10.34.0.4/24");
-  private static final NetworkAddress C4_L0_PREFIX = new NetworkAddress("4.4.4.4/32");
-  private static final NetworkAddress C4_L1_PREFIX = new NetworkAddress("4.4.4.44/32");
+  private static final InterfaceAddress C4_E4_3_PREFIX = new InterfaceAddress("10.34.0.4/24");
+  private static final InterfaceAddress C4_L0_PREFIX = new InterfaceAddress("4.4.4.4/32");
+  private static final InterfaceAddress C4_L1_PREFIX = new InterfaceAddress("4.4.4.44/32");
   private static final String C4_NAME = "R4";
 
   private static final long MAX_METRIC_EXTERNAL_NETWORKS = 16711680L;
@@ -81,8 +81,8 @@ public class OspfTest {
   private static void assertNoRoute(
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
       String hostname,
-      NetworkAddress address) {
-    Prefix prefix = Prefix.forNetworkAddress(address);
+      InterfaceAddress address) {
+    Prefix prefix = address.getPrefix();
     assertThat(routesByNode, hasKey(hostname));
     SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
@@ -94,9 +94,9 @@ public class OspfTest {
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
-      NetworkAddress address,
+      InterfaceAddress address,
       long expectedCost) {
-    Prefix prefix = Prefix.forNetworkAddress(address);
+    Prefix prefix = address.getPrefix();
     assertThat(routesByNode, hasKey(hostname));
     SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
@@ -108,15 +108,14 @@ public class OspfTest {
     assertThat(route, hasProtocol(protocol));
   }
 
-  private static List<Statement> getExportPolicyStatements(NetworkAddress address) {
+  private static List<Statement> getExportPolicyStatements(InterfaceAddress address) {
     long externalOspfMetric = 20L;
     If exportIfMatchL2Prefix = new If();
     exportIfMatchL2Prefix.setGuard(
         new MatchPrefixSet(
             new DestinationNetwork(),
             new ExplicitPrefixSet(
-                new PrefixSpace(
-                    ImmutableSet.of(PrefixRange.fromPrefix(Prefix.forNetworkAddress(address)))))));
+                new PrefixSpace(ImmutableSet.of(PrefixRange.fromPrefix(address.getPrefix()))))));
     exportIfMatchL2Prefix.setTrueStatements(
         ImmutableList.of(
             new SetOspfMetricType(OspfMetricType.E1),

@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -39,7 +39,7 @@ public class Interface extends ComparableStructure<String> {
 
   private final ArrayList<SubRange> _allowedVlans;
 
-  private final Set<NetworkAddress> _allAddresses;
+  private final Set<InterfaceAddress> _allAddresses;
 
   private final Set<Ip> _allAddressIps;
 
@@ -77,9 +77,9 @@ public class Interface extends ComparableStructure<String> {
 
   private Interface _parent;
 
-  private NetworkAddress _preferredAddress;
+  private InterfaceAddress _preferredAddress;
 
-  private NetworkAddress _primaryAddress;
+  private InterfaceAddress _primaryAddress;
 
   private String _routingInstance;
 
@@ -130,7 +130,7 @@ public class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  public Set<NetworkAddress> getAllAddresses() {
+  public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -202,11 +202,11 @@ public class Interface extends ComparableStructure<String> {
     return _parent;
   }
 
-  public NetworkAddress getPreferredAddress() {
+  public InterfaceAddress getPreferredAddress() {
     return _preferredAddress;
   }
 
-  public NetworkAddress getPrimaryAddress() {
+  public InterfaceAddress getPrimaryAddress() {
     return _primaryAddress;
   }
 
@@ -301,11 +301,11 @@ public class Interface extends ComparableStructure<String> {
     _parent = parent;
   }
 
-  public void setPreferredAddress(NetworkAddress address) {
+  public void setPreferredAddress(InterfaceAddress address) {
     _preferredAddress = address;
   }
 
-  public void setPrimaryAddress(NetworkAddress address) {
+  public void setPrimaryAddress(InterfaceAddress address) {
     _primaryAddress = address;
   }
 

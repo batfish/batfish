@@ -18,8 +18,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfNeighbor.OspfNeighborSummary;
 import org.batfish.datamodel.OspfProcess;
@@ -208,8 +208,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       for (Configuration c : configurations.values()) {
         for (Interface i : c.getInterfaces().values()) {
           if (i.getActive() && i.getAddress() != null) {
-            for (NetworkAddress prefix : i.getAllAddresses()) {
-              Ip address = prefix.getAddress();
+            for (InterfaceAddress prefix : i.getAllAddresses()) {
+              Ip address = prefix.getIp();
               if (i.isLoopback(c.getConfigurationFormat())) {
                 loopbackIps.add(address);
               }

@@ -250,7 +250,7 @@ class CounterExample {
       nhint = ge.getStart().getName();
     } else {
       type = StringUtils.capitalize(proto.name().toLowerCase()) + "Route";
-      nhip = ge.getStart().getAddress().getAddress().toString();
+      nhip = ge.getStart().getAddress().getIp().toString();
       nhint = "dynamic";
     }
     return String.format("%s<%s,nhip:%s,nhint:%s>", type, pfx, nhip, nhint);
@@ -386,7 +386,7 @@ class CounterExample {
           // Check if there is an accepting interface
           for (GraphEdge ge : slice.getGraph().getEdgeMap().get(current)) {
             Interface i = ge.getStart();
-            Ip ip = i.getAddress().getAddress();
+            Ip ip = i.getAddress().getIp();
             if (ip.equals(f.getDstIp())) {
               FlowTrace ft = new FlowTrace(FlowDisposition.ACCEPTED, hops, "ACCEPTED");
               return new Tuple<>(f, ft);

@@ -25,13 +25,13 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
@@ -451,7 +451,7 @@ public class Synthesizer {
       for (IpWildcard srcIpWildcard : srcIpWildcards) {
         if (srcIpWildcard.isPrefix()) {
           Prefix srcPrefix = srcIpWildcard.toPrefix();
-          long srcIp = srcPrefix.getAddress().asLong();
+          long srcIp = srcPrefix.getStartIp().asLong();
 
           int srcIpWildcardBits = IP_BITS - srcPrefix.getPrefixLength();
           int srcIpStart = srcIpWildcardBits;
@@ -491,7 +491,7 @@ public class Synthesizer {
       for (IpWildcard srcIpWildcard : srcIpWildcardsBlacklist) {
         if (srcIpWildcard.isPrefix()) {
           Prefix srcPrefix = srcIpWildcard.toPrefix();
-          long srcIp = srcPrefix.getAddress().asLong();
+          long srcIp = srcPrefix.getStartIp().asLong();
 
           int srcIpWildcardBits = IP_BITS - srcPrefix.getPrefixLength();
           int srcIpStart = srcIpWildcardBits;
@@ -531,7 +531,7 @@ public class Synthesizer {
       for (IpWildcard srcOrDstIpWildcard : srcOrDstIpWildcards) {
         if (srcOrDstIpWildcard.isPrefix()) {
           Prefix srcOrDstPrefix = srcOrDstIpWildcard.toPrefix();
-          long srcOrDstIp = srcOrDstPrefix.getAddress().asLong();
+          long srcOrDstIp = srcOrDstPrefix.getStartIp().asLong();
 
           int srcOrDstIpWildcardBits = IP_BITS - srcOrDstPrefix.getPrefixLength();
           int srcOrDstIpStart = srcOrDstIpWildcardBits;
@@ -581,7 +581,7 @@ public class Synthesizer {
       for (IpWildcard dstIpWildcard : dstIpWildcards) {
         if (dstIpWildcard.isPrefix()) {
           Prefix dstPrefix = dstIpWildcard.toPrefix();
-          long dstIp = dstPrefix.getAddress().asLong();
+          long dstIp = dstPrefix.getStartIp().asLong();
 
           int dstIpWildcardBits = IP_BITS - dstPrefix.getPrefixLength();
           int dstIpStart = dstIpWildcardBits;
@@ -621,7 +621,7 @@ public class Synthesizer {
       for (IpWildcard dstIpWildcard : dstIpWildcardsBlacklist) {
         if (dstIpWildcard.isPrefix()) {
           Prefix dstPrefix = dstIpWildcard.toPrefix();
-          long dstIp = dstPrefix.getAddress().asLong();
+          long dstIp = dstPrefix.getStartIp().asLong();
 
           int dstIpWildcardBits = IP_BITS - dstPrefix.getPrefixLength();
           int dstIpStart = dstIpWildcardBits;
@@ -967,10 +967,10 @@ public class Synthesizer {
                   Set<FibRow> notRows = new TreeSet<>();
                   for (int j = i + 1; j < fib.length; j++) {
                     FibRow specificRow = fib[j];
-                    long currentStart = currentRow.getPrefix().getAddress().asLong();
-                    long currentEnd = currentRow.getPrefix().getEndAddress().asLong();
-                    long specificStart = specificRow.getPrefix().getAddress().asLong();
-                    long specificEnd = specificRow.getPrefix().getEndAddress().asLong();
+                    long currentStart = currentRow.getPrefix().getStartIp().asLong();
+                    long currentEnd = currentRow.getPrefix().getEndIp().asLong();
+                    long specificStart = specificRow.getPrefix().getStartIp().asLong();
+                    long specificEnd = specificRow.getPrefix().getEndIp().asLong();
                     // check whether later prefix is contained in this one
                     if (currentStart <= specificStart && specificEnd <= currentEnd) {
                       if (currentStart == specificStart && currentEnd == specificEnd) {
@@ -1015,7 +1015,7 @@ public class Synthesizer {
                   // must not match more specific routes
                   for (FibRow notRow : notRows) {
                     int prefixLength = notRow.getPrefix().getPrefixLength();
-                    long prefix = notRow.getPrefix().getAddress().asLong();
+                    long prefix = notRow.getPrefix().getStartIp().asLong();
                     int first = IP_BITS - prefixLength;
                     if (first >= IP_BITS) {
                       continue;
@@ -1031,7 +1031,7 @@ public class Synthesizer {
 
                   // must match route
                   int prefixLength = currentRow.getPrefix().getPrefixLength();
-                  long prefix = currentRow.getPrefix().getAddress().asLong();
+                  long prefix = currentRow.getPrefix().getStartIp().asLong();
                   int first = IP_BITS - prefixLength;
                   if (first < IP_BITS) {
                     int last = IP_BITS - 1;
@@ -1128,9 +1128,9 @@ public class Synthesizer {
       Configuration c = e.getValue();
       for (Interface i : c.getInterfaces().values()) {
         if (i.getActive()) {
-          NetworkAddress prefix = i.getAddress();
+          InterfaceAddress prefix = i.getAddress();
           if (prefix != null) {
-            Ip ip = prefix.getAddress();
+            Ip ip = prefix.getIp();
             interfaceIps.add(ip);
           }
         }
@@ -1159,9 +1159,9 @@ public class Synthesizer {
       Configuration c = e.getValue();
       for (Interface i : c.getInterfaces().values()) {
         if (i.getActive()) {
-          NetworkAddress prefix = i.getAddress();
+          InterfaceAddress prefix = i.getAddress();
           if (prefix != null) {
-            Ip ip = prefix.getAddress();
+            Ip ip = prefix.getIp();
             interfaceIps.add(ip);
           }
         }
@@ -1749,9 +1749,9 @@ public class Synthesizer {
         String ifaceName = i.getName();
         AndExpr conditions = new AndExpr();
         OrExpr dstIpMatchesInterface = new OrExpr();
-        NetworkAddress prefix = i.getAddress();
+        InterfaceAddress prefix = i.getAddress();
         if (prefix != null) {
-          Ip ip = prefix.getAddress();
+          Ip ip = prefix.getIp();
           EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
           dstIpMatchesInterface.addDisjunct(dstIpMatches);
         }
@@ -1815,9 +1815,9 @@ public class Synthesizer {
       for (Interface i : c.getInterfaces().values()) {
         String ifaceName = i.getName();
         OrExpr dstIpMatchesInterface = new OrExpr();
-        NetworkAddress prefix = i.getAddress();
+        InterfaceAddress prefix = i.getAddress();
         if (prefix != null) {
-          Ip ip = prefix.getAddress();
+          Ip ip = prefix.getIp();
           EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
           dstIpMatchesInterface.addDisjunct(dstIpMatches);
         }
@@ -1841,7 +1841,7 @@ public class Synthesizer {
    * c.getHostname(); PostInExpr postIn = new PostInExpr(hostname); for
    * (Interface i : c.getInterfaces().values()) { String ifaceName =
    * i.getName(); OrExpr someDstIpMatches = new OrExpr(); Prefix prefix =
-   * i.getAddress(); if (prefix != null) { Ip ip = prefix.getAddress(); EqExpr
+   * i.getIp(); if (prefix != null) { Ip ip = prefix.getIp(); EqExpr
    * dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
    * someDstIpMatches.addDisjunct(dstIpMatches); } AndExpr
    * inboundInterfaceConditions = new AndExpr();
@@ -1874,9 +1874,9 @@ public class Synthesizer {
       String hostname = c.getHostname();
       OrExpr someDstIpMatch = new OrExpr();
       for (Interface i : c.getInterfaces().values()) {
-        NetworkAddress prefix = i.getAddress();
+        InterfaceAddress prefix = i.getAddress();
         if (prefix != null) {
-          Ip ip = prefix.getAddress();
+          Ip ip = prefix.getIp();
           EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
           someDstIpMatch.addDisjunct(dstIpMatches);
         }

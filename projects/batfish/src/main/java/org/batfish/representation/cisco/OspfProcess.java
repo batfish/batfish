@@ -10,8 +10,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -91,8 +91,8 @@ public class OspfProcess extends ComparableStructure<String> {
 
   public void computeNetworks(Collection<Interface> interfaces) {
     for (Interface i : interfaces) {
-      NetworkAddress intPrefix = i.getAddress();
-      if (intPrefix == null) {
+      InterfaceAddress address = i.getAddress();
+      if (address == null) {
         continue;
       }
       for (OspfWildcardNetwork wn : _wildcardNetworks) {
@@ -100,13 +100,13 @@ public class OspfProcess extends ComparableStructure<String> {
         // network when the wildcard is ORed to both
         long wildcardLong = wn.getWildcard().asLong();
         long ospfNetworkLong = wn.getNetworkAddress().asLong();
-        long intIpLong = intPrefix.getAddress().asLong();
+        long intIpLong = address.getIp().asLong();
         long wildcardedOspfNetworkLong = ospfNetworkLong | wildcardLong;
         long wildcardedIntIpLong = intIpLong | wildcardLong;
         if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
           // since we have a match, we add the INTERFACE network, ignoring
           // the wildcard stuff from before
-          Prefix newOspfNetwork = Prefix.forNetworkAddress(intPrefix);
+          Prefix newOspfNetwork = address.getPrefix();
           _networks.add(new OspfNetwork(newOspfNetwork, wn.getArea()));
           break;
         }

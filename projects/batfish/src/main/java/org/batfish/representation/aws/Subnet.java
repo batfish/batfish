@@ -9,9 +9,9 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
@@ -38,7 +38,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   Ip computeInstancesIfaceAddress() {
-    return new Ip(_cidrBlock.getAddress().asLong() + 1L);
+    return new Ip(_cidrBlock.getStartIp().asLong() + 1L);
   }
 
   private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
@@ -148,15 +148,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;
     Ip instancesIfaceAddress = computeInstancesIfaceAddress();
-    NetworkAddress instancesIfacePrefix =
-        new NetworkAddress(instancesIfaceAddress, _cidrBlock.getPrefixLength());
+    InterfaceAddress instancesIfacePrefix =
+        new InterfaceAddress(instancesIfaceAddress, _cidrBlock.getPrefixLength());
     Utils.newInterface(instancesIfaceName, cfgNode, instancesIfacePrefix);
 
     // generate a prefix for the link between the VPC router and the subnet
-    Pair<NetworkAddress, NetworkAddress> vpcSubnetLinkPrefix =
+    Pair<InterfaceAddress, InterfaceAddress> vpcSubnetLinkPrefix =
         awsConfiguration.getNextGeneratedLinkSubnet();
-    NetworkAddress subnetIfaceAddress = vpcSubnetLinkPrefix.getFirst();
-    NetworkAddress vpcIfaceAddress = vpcSubnetLinkPrefix.getSecond();
+    InterfaceAddress subnetIfaceAddress = vpcSubnetLinkPrefix.getFirst();
+    InterfaceAddress vpcIfaceAddress = vpcSubnetLinkPrefix.getSecond();
 
     // add an interface that faces the VPC router
     String subnetIfaceName = _vpcId;
@@ -173,12 +173,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
             .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
     StaticRoute vpcToSubnetRoute =
-        sb.setNetwork(_cidrBlock).setNextHopIp(subnetIfaceAddress.getAddress()).build();
+        sb.setNetwork(_cidrBlock).setNextHopIp(subnetIfaceAddress.getIp()).build();
     vpcConfigNode.getDefaultVrf().getStaticRoutes().add(vpcToSubnetRoute);
 
     // Install a default static route towards the VPC router.
     StaticRoute defaultRoute =
-        sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress.getAddress()).build();
+        sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress.getIp()).build();
     cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
     NetworkAcl myNetworkAcl = findMyNetworkAcl(region.getNetworkAcls());

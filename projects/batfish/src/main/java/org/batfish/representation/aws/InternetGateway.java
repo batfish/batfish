@@ -6,7 +6,7 @@ import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.NetworkAddress;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -42,15 +42,15 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
     for (String vpcId : _attachmentVpcIds) {
 
       String igwIfaceName = vpcId;
-      Pair<NetworkAddress, NetworkAddress> igwAddresses =
+      Pair<InterfaceAddress, InterfaceAddress> igwAddresses =
           awsConfiguration.getNextGeneratedLinkSubnet();
-      NetworkAddress igwIfaceAddress = igwAddresses.getFirst();
+      InterfaceAddress igwIfaceAddress = igwAddresses.getFirst();
       Utils.newInterface(igwIfaceName, cfgNode, igwIfaceAddress);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(vpcId);
       String vpcIfaceName = _internetGatewayId;
-      NetworkAddress vpcIfaceAddress = igwAddresses.getSecond();
+      InterfaceAddress vpcIfaceAddress = igwAddresses.getSecond();
       Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
 
       // associate this gateway with the vpc
@@ -64,7 +64,7 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
                 StaticRoute igwVpcRoute =
                     StaticRoute.builder()
                         .setNetwork(prefix)
-                        .setNextHopIp(vpcIfaceAddress.getAddress())
+                        .setNextHopIp(vpcIfaceAddress.getIp())
                         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
                         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                         .build();

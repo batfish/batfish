@@ -51,7 +51,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     boolean containsRoute(R route) {
       Prefix prefix = route.getNetwork();
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getAddress().getAddressBits();
+      BitSet bits = prefix.getStartIp().getAddressBits();
       return _root.containsRoute(route, bits, prefixLength, 0);
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     boolean mergeRoute(R route) {
       Prefix prefix = route.getNetwork();
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getAddress().getAddressBits();
+      BitSet bits = prefix.getStartIp().getAddressBits();
       return _root.mergeRoute(route, bits, prefixLength, 0);
     }
 
@@ -251,7 +251,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       // Node exists, get some helper data out of the current node we are examining
       Prefix nodePrefix = node._prefix;
       int nodePrefixLength = nodePrefix.getPrefixLength();
-      Ip nodeAddress = nodePrefix.getAddress();
+      Ip nodeAddress = nodePrefix.getStartIp();
       BitSet nodeAddressBits = nodeAddress.getAddressBits();
       int nextUnmatchedBit;
       // Set up two "pointers" as we scan through the route's and the node's prefixes
@@ -309,7 +309,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       RibTreeNode oldNode = node;
 
       // newNetwork has the max prefix match up to nextUnmatchedBit
-      Prefix newNetwork = new Prefix(route.getNetwork().getAddress(), nextUnmatchedBit);
+      Prefix newNetwork = new Prefix(route.getNetwork().getStartIp(), nextUnmatchedBit);
       node = new RibTreeNode(newNetwork); // node is the node we are inserting in the middle
       RibTreeNode child = new RibTreeNode(route.getNetwork());
       child._routes = Collections.singleton(route);

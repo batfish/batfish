@@ -16,7 +16,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.NetworkAddress;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -182,11 +182,10 @@ public class OspfLoopbacksQuestionPlugin extends QuestionPlugin {
                   if (exportPolicyName != null) {
                     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
                     if (exportPolicy != null) {
-                      for (NetworkAddress prefix : iface.getAllAddresses()) {
+                      for (InterfaceAddress prefix : iface.getAllAddresses()) {
                         ConnectedRoute route =
                             new ConnectedRoute(
-                                new Prefix(prefix.getAddress(), prefix.getNetworkBits()),
-                                interfaceName);
+                                new Prefix(prefix.getIp(), prefix.getNetworkBits()), interfaceName);
                         if (exportPolicy.process(
                             route,
                             new OspfExternalRoute.Builder(),

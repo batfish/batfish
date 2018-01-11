@@ -7,7 +7,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.NetworkAddress;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -47,15 +47,16 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
     for (String vpcId : _attachmentVpcIds) {
 
       String vgwIfaceName = vpcId;
-      Pair<NetworkAddress, NetworkAddress> vpcLink = awsConfiguration.getNextGeneratedLinkSubnet();
-      NetworkAddress vgwIfaceAddress = vpcLink.getFirst();
+      Pair<InterfaceAddress, InterfaceAddress> vpcLink =
+          awsConfiguration.getNextGeneratedLinkSubnet();
+      InterfaceAddress vgwIfaceAddress = vpcLink.getFirst();
       Utils.newInterface(vgwIfaceName, cfgNode, vgwIfaceAddress);
 
       // add the interface to the vpc router
       Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(vpcId);
       String vpcIfaceName = _vpnGatewayId;
       Interface vpcIface = new Interface(vpcIfaceName, vpcConfigNode);
-      NetworkAddress vpcIfaceAddress = vpcLink.getSecond();
+      InterfaceAddress vpcIfaceAddress = vpcLink.getSecond();
       vpcIface.setAddress(vpcIfaceAddress);
       Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
 
@@ -70,7 +71,7 @@ public class VpnGateway implements AwsVpcEntity, Serializable {
                 StaticRoute vgwVpcRoute =
                     StaticRoute.builder()
                         .setNetwork(prefix)
-                        .setNextHopIp(vpcIfaceAddress.getAddress())
+                        .setNextHopIp(vpcIfaceAddress.getIp())
                         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
                         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                         .build();

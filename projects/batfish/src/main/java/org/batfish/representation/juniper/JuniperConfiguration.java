@@ -28,6 +28,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -38,7 +39,6 @@ import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.NetworkAddress;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
@@ -492,9 +492,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // peer
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-          for (NetworkAddress address : iface.getAllAddresses()) {
-            if (Prefix.forNetworkAddress(address).contains(ip)) {
-              localAddress = address.getAddress();
+          for (InterfaceAddress address : iface.getAllAddresses()) {
+            if (address.getPrefix().contains(ip)) {
+              localAddress = address.getIp();
               break outerloop;
             }
           }
@@ -503,9 +503,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (localAddress == null && _defaultAddressSelection) {
         initFirstLoopbackInterface();
         if (_lo0 != null) {
-          NetworkAddress lo0Unit0Prefix = _lo0.getPrimaryAddress();
+          InterfaceAddress lo0Unit0Prefix = _lo0.getPrimaryAddress();
           if (lo0Unit0Prefix != null) {
-            localAddress = lo0Unit0Prefix.getAddress();
+            localAddress = lo0Unit0Prefix.getIp();
           }
         }
       }
@@ -1423,7 +1423,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // if (from instanceof FwFromDestinationAddress) {
     // FwFromDestinationAddress fromDestinationAddress =
     // (FwFromDestinationAddress) from;
-    // Prefix destinationPrefix = fromDestinationAddress.getAddress();
+    // Prefix destinationPrefix = fromDestinationAddress.getIp();
     // destinationPrefixes.add(destinationPrefix);
     // }
     // if (from instanceof FwFromDestinationPort) {
@@ -1435,7 +1435,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // }
     // else if (from instanceof FwFromSourceAddress) {
     // FwFromSourceAddress fromSourceAddress = (FwFromSourceAddress) from;
-    // Prefix sourcePrefix = fromSourceAddress.getAddress();
+    // Prefix sourcePrefix = fromSourceAddress.getIp();
     // sourcePrefixes.add(sourcePrefix);
     // }
     // if (from instanceof FwFromSourcePort) {
@@ -1484,7 +1484,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // if (!nextPrefixes.isEmpty()) {
     // List<Ip> nextHopIps = new ArrayList<>();
     // for (Prefix nextPrefix : nextPrefixes) {
-    // nextHopIps.add(nextPrefix.getAddress());
+    // nextHopIps.add(nextPrefix.getIp());
     // int prefixLength = nextPrefix.getPrefixLength();
     // if (prefixLength != 32) {
     // _w.redFlag(
@@ -1772,10 +1772,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (loopback0 != null) {
         Interface loopback0unit0 = loopback0.getUnits().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
         if (loopback0unit0 != null) {
-          NetworkAddress prefix = loopback0unit0.getPrimaryAddress();
+          InterfaceAddress prefix = loopback0unit0.getPrimaryAddress();
           if (prefix != null) {
             // now we should set router-id
-            Ip routerId = prefix.getAddress();
+            Ip routerId = prefix.getIp();
             _defaultRoutingInstance.setRouterId(routerId);
           }
         }
