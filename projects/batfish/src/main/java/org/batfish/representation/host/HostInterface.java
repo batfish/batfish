@@ -20,15 +20,13 @@ import org.batfish.datamodel.Vrf;
 
 public class HostInterface implements Serializable {
 
-  private static final String PROP_ADDRESS = "address";
-
   private static final String PROP_BANDWIDTH = "bandwidth";
 
   private static final String PROP_GATEWAY = "gateway";
 
   private static final String PROP_NAME = "name";
 
-  private static final String PROP_OTHER_ADDRESSES = "otherAddresses";
+  private static final String PROP_OTHER_PREFIXES = "otherPrefixes";
 
   private static final String PROP_PREFIX = "prefix";
 
@@ -61,6 +59,11 @@ public class HostInterface implements Serializable {
     _otherAddresses = new TreeSet<>();
   }
 
+  @JsonProperty(PROP_PREFIX)
+  public InterfaceAddress getAddress() {
+    return _address;
+  }
+
   @JsonProperty(PROP_BANDWIDTH)
   public Double getBandwidth() {
     return _bandwidth;
@@ -81,14 +84,9 @@ public class HostInterface implements Serializable {
     return _name;
   }
 
-  @JsonProperty(PROP_OTHER_ADDRESSES)
+  @JsonProperty(PROP_OTHER_PREFIXES)
   public Set<InterfaceAddress> getOtherAddresses() {
     return _otherAddresses;
-  }
-
-  @JsonProperty(PROP_ADDRESS)
-  public InterfaceAddress getAddress() {
-    return _address;
   }
 
   @JsonProperty(PROP_SHARED)
@@ -116,21 +114,14 @@ public class HostInterface implements Serializable {
     _gateway = gateway;
   }
 
-  @JsonProperty(PROP_OTHER_ADDRESSES)
+  @JsonProperty(PROP_OTHER_PREFIXES)
   public void setOtherAddresses(Set<InterfaceAddress> otherAddresses) {
     _otherAddresses = otherAddresses;
   }
 
-  @JsonProperty(PROP_ADDRESS)
+  @JsonProperty(PROP_PREFIX)
   public void setAddress(InterfaceAddress address) {
     _address = address;
-  }
-
-  /** For backwards-compatible parsing. TODO: hack. */
-  @JsonProperty(PROP_PREFIX)
-  @Deprecated
-  public void setPrefix(String prefix) {
-    _address = new InterfaceAddress(prefix);
   }
 
   @JsonProperty(PROP_SHARED)

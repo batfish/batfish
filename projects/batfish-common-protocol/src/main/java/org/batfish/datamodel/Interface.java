@@ -142,9 +142,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_ACTIVE = "active";
 
-  private static final String PROP_ADDRESS = "prefix";
-
-  private static final String PROP_ALL_ADDRESSES = "allPrefixes";
+  private static final String PROP_ALL_PREFIXES = "allPrefixes";
 
   private static final String PROP_ALLOWED_VLANS = "allowedVlans";
 
@@ -189,6 +187,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OSPF_POINT_TO_POINT = "ospfPointToPoint";
 
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
+
+  private static final String PROP_PREFIX = "prefix";
 
   private static final String PROP_RIP_ENABLED = "ripEnabled";
 
@@ -598,7 +598,7 @@ public final class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  @JsonProperty(PROP_ALL_ADDRESSES)
+  @JsonProperty(PROP_ALL_PREFIXES)
   @JsonPropertyDescription("All IPV4 address/network assignments on this interface")
   public Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
@@ -788,7 +788,7 @@ public final class Interface extends ComparableStructure<String> {
     return _owner;
   }
 
-  @JsonProperty(PROP_ADDRESS)
+  @JsonProperty(PROP_PREFIX)
   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
   public InterfaceAddress getAddress() {
     return _address;
@@ -941,7 +941,7 @@ public final class Interface extends ComparableStructure<String> {
     _allowedVlans = allowedVlans;
   }
 
-  @JsonProperty(PROP_ALL_ADDRESSES)
+  @JsonProperty(PROP_ALL_PREFIXES)
   public void setAllAddresses(Iterable<InterfaceAddress> allAddresses) {
     _allAddresses = ImmutableSortedSet.copyOf(allAddresses);
   }
@@ -1081,7 +1081,7 @@ public final class Interface extends ComparableStructure<String> {
     _owner = owner;
   }
 
-  @JsonProperty(PROP_ADDRESS)
+  @JsonProperty(PROP_PREFIX)
   public void setAddress(InterfaceAddress address) {
     _address = address;
   }
@@ -1167,7 +1167,7 @@ public final class Interface extends ComparableStructure<String> {
     JSONObject iface = new JSONObject();
     iface.put("node", _owner.getName());
     iface.put("name", _key);
-    iface.put(PROP_ADDRESS, _address.toString());
+    iface.put(PROP_PREFIX, _address.toString());
     iface.put(PROP_INTERFACE_TYPE, _interfaceType.toString());
     return iface;
   }
