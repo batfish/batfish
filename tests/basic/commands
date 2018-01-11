@@ -41,8 +41,10 @@ test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2bor
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
 test tests/basic/outliers3.ref get outliers hypothesis="sameServers"
+test tests/basic/outliers-verbose.ref get outliers verbose=True
 test tests/basic/perRole.ref get perRole question={"class": "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"}
 test tests/basic/perRoleOutliers.ref get perRoleOutliers hypothesis="sameName"
+test tests/basic/inferPolicies.ref get inferPolicies
 
 #this test has non-deterministic output; commented for now
 #test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
