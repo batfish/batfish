@@ -127,9 +127,7 @@ public class DisplayHints {
     public Set<String> getVars() {
       Set<String> retSet = new HashSet<>();
       if (_dictionary != null) {
-        for (String var : _dictionary.values()) {
-          retSet.add(var);
-        }
+        retSet.addAll(_dictionary.values());
       }
       return retSet;
     }
