@@ -397,7 +397,7 @@ class PropertyAdder {
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
-    
+
     // Compute waypoint transition map
     int startIndex = waypoints.size();
     Map<String, Set<Integer>> transitionMap = new HashMap<>();
@@ -471,7 +471,7 @@ class PropertyAdder {
 
           BoolExpr transitionVal = _encoderSlice.mkFalse();
           for (Integer i : choices) {
-            ArithExpr idx = ctx.mkInt(i+1);
+            ArithExpr idx = ctx.mkInt(i + 1);
             transitionVal = ctx.mkOr(transitionVal, ctx.mkEq(peerWaypoint, idx));
           }
           ArithExpr newVal =
