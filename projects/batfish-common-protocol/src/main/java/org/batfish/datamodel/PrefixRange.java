@@ -32,9 +32,9 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
   public static PrefixRange fromString(String prefixRangeStr) {
     String[] parts = prefixRangeStr.split(":");
     if (parts.length == 1) {
-      return fromPrefix(Prefix.fromString(parts[0]));
+      return fromPrefix(Prefix.parse(parts[0]));
     } else if (parts.length == 2) {
-      return new PrefixRange(Prefix.fromString(parts[0]), new SubRange(parts[1]));
+      return new PrefixRange(Prefix.parse(parts[0]), new SubRange(parts[1]));
     } else {
       throw new BatfishException("Invalid PrefixRange string: '" + prefixRangeStr + "'");
     }

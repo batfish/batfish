@@ -309,7 +309,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void enterStatict_route(Statict_routeContext ctx) {
-    Prefix prefix = Prefix.fromString(ctx.IP_PREFIX().getText());
+    Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
     _currentStaticRoutePrefix = prefix;
   }
 
@@ -537,7 +537,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void exitPlrt_prefix(Plrt_prefixContext ctx) {
-    Prefix prefix = Prefix.fromString(ctx.prefix.getText());
+    Prefix prefix = Prefix.parse(ctx.prefix.getText());
     _currentPrefixListRule.setPrefix(prefix);
   }
 

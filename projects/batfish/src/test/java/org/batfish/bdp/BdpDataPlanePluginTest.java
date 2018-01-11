@@ -556,7 +556,7 @@ public class BdpDataPlanePluginTest {
 
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes();
-    Prefix bgpPrefix = Prefix.fromString("1.1.1.1/32");
+    Prefix bgpPrefix = Prefix.parse("1.1.1.1/32");
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
     Stream<AbstractRoute> r2MatchingRoutes =
@@ -670,8 +670,8 @@ public class BdpDataPlanePluginTest {
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
     Set<Prefix> r1Prefixes = r1Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
-    Prefix r1Loopback0Prefix = Prefix.fromString("1.0.0.1/32");
-    Prefix r3Loopback0Prefix = Prefix.fromString("3.0.0.3/32");
+    Prefix r1Loopback0Prefix = Prefix.parse("1.0.0.1/32");
+    Prefix r3Loopback0Prefix = Prefix.parse("3.0.0.3/32");
 
     // Ensure that r3loopback was accepted by r1
     assertThat(r3Loopback0Prefix, isIn(r1Prefixes));
@@ -772,8 +772,8 @@ public class BdpDataPlanePluginTest {
         r2aRoutes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r2bPrefixes =
         r2bRoutes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
-    Prefix r1Loopback0Prefix = Prefix.fromString("1.0.0.1/32");
-    Prefix r1Loopback1Prefix = Prefix.fromString("1.0.0.2/32");
+    Prefix r1Loopback0Prefix = Prefix.parse("1.0.0.1/32");
+    Prefix r1Loopback1Prefix = Prefix.parse("1.0.0.2/32");
     assertTrue(r2aPrefixes.contains(r1Loopback0Prefix));
     assertTrue(r2aPrefixes.contains(r1Loopback1Prefix));
     /*
@@ -809,7 +809,7 @@ public class BdpDataPlanePluginTest {
     Set<Prefix> r2Prefixes = r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     // 9.9.9.9/32 is the prefix we test with
-    Prefix r1AdvertisedPrefix = Prefix.fromString("9.9.9.9/32");
+    Prefix r1AdvertisedPrefix = Prefix.parse("9.9.9.9/32");
 
     // Ensure that the prefix is accepted by r2, because router ids are different
     assertThat(r1AdvertisedPrefix, isIn(r2Prefixes));
@@ -836,7 +836,7 @@ public class BdpDataPlanePluginTest {
     SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes();
-    Prefix staticRoutePrefix = Prefix.fromString("10.0.0.0/8");
+    Prefix staticRoutePrefix = Prefix.parse("10.0.0.0/8");
     SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
     AbstractRoute r1BdpRoute =
         r1BdpRoutes
@@ -873,14 +873,14 @@ public class BdpDataPlanePluginTest {
             .build();
     StaticRoute srBoth =
         StaticRoute.builder()
-            .setNetwork(Prefix.fromString("10.0.1.0/24"))
+            .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface(i.getName())
             .setNextHopIp(new Ip("10.0.0.1"))
             .build();
     vrf.getStaticRoutes().add(srBoth);
     StaticRoute srJustInterface =
         StaticRoute.builder()
-            .setNetwork(Prefix.fromString("10.0.2.0/24"))
+            .setNetwork(Prefix.parse("10.0.2.0/24"))
             .setNextHopInterface(i.getName())
             .build();
     vrf.getStaticRoutes().add(srJustInterface);

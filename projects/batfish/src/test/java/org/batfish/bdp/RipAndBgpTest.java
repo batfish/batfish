@@ -52,9 +52,9 @@ public class RipAndBgpTest {
         r2Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
         r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
-    Prefix prefix1 = Prefix.fromString("1.0.0.0/8");
-    Prefix prefix2 = Prefix.fromString("2.0.0.0/8");
-    Prefix prefix3 = Prefix.fromString("3.0.0.0/8");
+    Prefix prefix1 = Prefix.parse("1.0.0.0/8");
+    Prefix prefix2 = Prefix.parse("2.0.0.0/8");
+    Prefix prefix3 = Prefix.parse("3.0.0.0/8");
 
     assertThat(r1Prefixes, containsInAnyOrder(prefix1, prefix2, prefix3));
     assertThat(r2Prefixes, containsInAnyOrder(prefix1, prefix2, prefix3));

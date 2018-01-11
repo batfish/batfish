@@ -69,8 +69,8 @@ public class HostInterfaceTest {
   public void testShared() throws IOException {
     Ip sharedIp = new Ip("1.0.0.1");
     InterfaceAddress sharedAddress = new InterfaceAddress(sharedIp, 24);
-    Prefix nonShared1Prefix = Prefix.fromString("2.0.0.2/24");
-    Prefix nonShared2Prefix = Prefix.fromString("3.0.0.2/24");
+    Prefix nonShared1Prefix = Prefix.parse("2.0.0.2/24");
+    Prefix nonShared2Prefix = Prefix.parse("3.0.0.2/24");
     String ifaceSharedText =
         "{\"name\":\"shared_interface\", \"prefix\":\""
             + sharedAddress.toString()

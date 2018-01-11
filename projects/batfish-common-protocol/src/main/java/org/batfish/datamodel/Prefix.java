@@ -49,7 +49,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   @JsonCreator
-  public static Prefix fromString(String text) {
+  public static Prefix parse(String text) {
     String[] parts = text.split("/");
     if (parts.length != 2) {
       throw new BatfishException("Invalid prefix string: \"" + text + "\"");
