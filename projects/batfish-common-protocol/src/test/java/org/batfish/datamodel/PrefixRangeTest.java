@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
