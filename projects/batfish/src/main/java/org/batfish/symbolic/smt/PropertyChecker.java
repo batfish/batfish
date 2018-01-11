@@ -423,7 +423,8 @@ public class PropertyChecker {
 
                 related = enc.mkAnd(related, relatePackets(enc, enc2));
                 enc.add(related);
-                enc.add(enc.mkNot(required));
+                BoolExpr property = q.getNegate() ? required : enc.mkNot(required);
+                enc.add(property);
 
               } else {
                 BoolExpr allProp = enc.mkTrue();
@@ -431,7 +432,8 @@ public class PropertyChecker {
                   BoolExpr r = prop.get(router);
                   allProp = enc.mkAnd(allProp, r);
                 }
-                enc.add(enc.mkNot(allProp));
+                BoolExpr property = q.getNegate() ? allProp : enc.mkNot(allProp);
+                enc.add(property);
               }
 
               addFailureConstraints(enc, destPorts, failOptions);
@@ -491,13 +493,16 @@ public class PropertyChecker {
               fh =
                   ce.buildFlowHistoryDiff(
                       testrigName,
+                      q.getNegate(),
                       vp.getSrcRouters(),
                       vp.getEnc(),
                       vp.getEncDiff(),
                       vp.getProp(),
                       vp.getPropDiff());
             } else {
-              fh = ce.buildFlowHistory(testrigName, vp.getSrcRouters(), vp.getEnc(), vp.getProp());
+              fh =
+                  ce.buildFlowHistory(
+                      testrigName, q.getNegate(), vp.getSrcRouters(), vp.getEnc(), vp.getProp());
             }
             return new SmtReachabilityAnswerElement(vp.getResult(), fh);
           }
@@ -588,13 +593,16 @@ public class PropertyChecker {
               fh =
                   ce.buildFlowHistoryDiff(
                       testrigName,
+                      q.getNegate(),
                       vp.getSrcRouters(),
                       vp.getEnc(),
                       vp.getEncDiff(),
                       vp.getProp(),
                       vp.getPropDiff());
             } else {
-              fh = ce.buildFlowHistory(testrigName, vp.getSrcRouters(), vp.getEnc(), vp.getProp());
+              fh =
+                  ce.buildFlowHistory(
+                      testrigName, q.getNegate(), vp.getSrcRouters(), vp.getEnc(), vp.getProp());
             }
             return new SmtWaypointAnswerElement(vp.getResult(), fh);
           }

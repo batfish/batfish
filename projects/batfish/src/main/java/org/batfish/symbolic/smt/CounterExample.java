@@ -411,6 +411,7 @@ class CounterExample {
    */
   FlowHistory buildFlowHistory(
       String testrigName,
+      boolean negate,
       Collection<String> sourceRouters,
       Encoder enc,
       Map<String, BoolExpr> reach) {
@@ -418,7 +419,8 @@ class CounterExample {
     FlowHistory fh = new FlowHistory();
     for (String source : sourceRouters) {
       BoolExpr sourceVar = reach.get(source);
-      if (isFalse(sourceVar)) {
+      boolean needsTrace = (negate ? isTrue(sourceVar) : isFalse(sourceVar));
+      if (needsTrace) {
         Tuple<Flow, FlowTrace> tup = buildFlowTrace(enc, source);
         SortedSet<Edge> failedLinks = buildFailedLinks(enc);
         SortedSet<BgpAdvertisement> envRoutes = buildEnvRoutingTable(enc);
@@ -436,6 +438,7 @@ class CounterExample {
    */
   FlowHistory buildFlowHistoryDiff(
       String testRigName,
+      boolean negate,
       Collection<String> sourceRouters,
       Encoder enc,
       Encoder enc2,
@@ -449,7 +452,9 @@ class CounterExample {
       BoolExpr sourceVar2 = reach2.get(source);
       String val1 = evaluate(sourceVar1);
       String val2 = evaluate(sourceVar2);
-      if (!Objects.equals(val1, val2)) {
+      boolean eqObjs = Objects.equals(val1, val2);
+      boolean needsTrace = (negate == eqObjs);
+      if (needsTrace) {
         Tuple<Flow, FlowTrace> diff = buildFlowTrace(enc, source);
         Tuple<Flow, FlowTrace> base = buildFlowTrace(enc2, source);
         SortedSet<Edge> failedLinksDiff = buildFailedLinks(enc);
