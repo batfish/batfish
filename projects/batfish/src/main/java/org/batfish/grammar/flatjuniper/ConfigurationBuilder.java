@@ -2683,7 +2683,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Prefix nextPrefix;
     if (ctx.ip != null) {
       Ip nextIp = new Ip(ctx.ip.getText());
-      nextPrefix = new Prefix(nextIp, 32);
+      nextPrefix = new Prefix(nextIp, Prefix.MAX_PREFIX_LENGTH);
     } else {
       nextPrefix = Prefix.fromString(ctx.prefix.getText());
     }
