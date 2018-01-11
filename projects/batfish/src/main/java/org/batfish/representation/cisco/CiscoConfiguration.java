@@ -1333,7 +1333,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpAggregateIpv4Network aggNet = e.getValue();
       boolean summaryOnly = aggNet.getSummaryOnly();
       int prefixLength = prefix.getPrefixLength();
-      SubRange prefixRange = new SubRange(prefixLength + 1, 32);
+      SubRange prefixRange = new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH);
       if (summaryOnly) {
         summaryOnlyNetworks.add(aggNet);
       }
@@ -1402,7 +1402,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpAggregateIpv6Network aggNet = e.getValue();
       boolean summaryOnly = aggNet.getSummaryOnly();
       int prefixLength = prefix6.getPrefixLength();
-      SubRange prefixRange = new SubRange(prefixLength + 1, 32);
+      SubRange prefixRange = new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH);
       if (summaryOnly) {
         summaryOnlyIpv6Networks.add(aggNet);
       }
@@ -1473,7 +1473,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         Prefix prefix = summaryOnlyNetwork.getPrefix();
         int prefixLength = prefix.getPrefixLength();
         RouteFilterLine line =
-            new RouteFilterLine(LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
+            new RouteFilterLine(
+                LineAction.ACCEPT,
+                prefix,
+                new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH));
         matchSuppressedSummaryOnlyRoutes.addLine(line);
       }
       suppressSummaryOnly.setGuard(
@@ -2433,11 +2436,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // .add(new PolicyMapSetLevelLine(summaryLevel));
     // int length = summaryPrefix.getPrefixLength();
     // int rejectLowerBound = length + 1;
-    // if (rejectLowerBound > 32) {
+    // if (rejectLowerBound > Prefix.MAX_LENGTH) {
     // throw new VendorConversionException(
     // "Invalid summary prefix: " + summaryPrefix.toString());
     // }
-    // SubRange summarizedRange = new SubRange(rejectLowerBound, 32);
+    // SubRange summarizedRange = new SubRange(rejectLowerBound, Prefix.MAX_LENGTH);
     // RouteFilterLine summarized = new RouteFilterLine(LineAction.ACCEPT,
     // summaryPrefix, summarizedRange);
     // RouteFilterLine summary = new RouteFilterLine(LineAction.ACCEPT,

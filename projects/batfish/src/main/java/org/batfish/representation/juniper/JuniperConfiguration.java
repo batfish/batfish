@@ -942,7 +942,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RouteFilterList rfList = new RouteFilterList(rflName);
     rfList.addLine(
         new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32)));
+            LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
         new org.batfish.datamodel.GeneratedRoute.Builder();
     newRoute.setNetwork(prefix);
