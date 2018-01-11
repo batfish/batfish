@@ -1,5 +1,6 @@
 package org.batfish.common.plugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -172,6 +173,8 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
+
+  AnswerElement smtWaypoint(HeaderLocationQuestion q, List<String> waypoints);
 
   AnswerElement standard(
       HeaderSpace headerSpace,

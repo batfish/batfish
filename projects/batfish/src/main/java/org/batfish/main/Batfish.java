@@ -4155,6 +4155,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public AnswerElement smtWaypoint(HeaderLocationQuestion q, List<String> waypoints) {
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkWaypointing(q, waypoints);
+  }
+
+  @Override
   public AnswerElement standard(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,

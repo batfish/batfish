@@ -52,6 +52,7 @@ import org.batfish.symbolic.answers.SmtDeterminismAnswerElement;
 import org.batfish.symbolic.answers.SmtManyAnswerElement;
 import org.batfish.symbolic.answers.SmtOneAnswerElement;
 import org.batfish.symbolic.answers.SmtReachabilityAnswerElement;
+import org.batfish.symbolic.answers.SmtWaypointAnswerElement;
 import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PathRegexes;
 import org.batfish.symbolic.utils.PatternUtils;
@@ -546,6 +547,58 @@ public class PropertyChecker {
           return eqVars;
         },
         (vp) -> new SmtOneAnswerElement(vp.getResult()));
+  }
+
+  /*
+   * Computes whether a collection of source routers will always send
+   * traffic through a collection of waypoints.
+   */
+  public AnswerElement checkWaypointing(HeaderLocationQuestion q, List<String> waypoints) {
+    if (waypoints.size() == 0) {
+      throw new BatfishException("Empty list of  waypoints");
+    }
+    // Compute the collections of waypoints from regexes
+    Pattern empty = Pattern.compile("");
+    Graph g = new Graph(_batfish);
+    List<List<String>> waypointChoices = new ArrayList<>();
+    for (String waypoint : waypoints) {
+      Pattern p = Pattern.compile(waypoint);
+      List<String> choices = PatternUtils.findMatchingNodes(g, p, empty);
+      waypointChoices.add(choices);
+    }
+    // Ensure that the network satisfies the waypointing requirements
+    return checkProperty(
+        q,
+        (enc, srcRouters, destPorts) -> {
+          PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
+          Map<String, ArithExpr> waypointIdxVars =
+              pa.instrumentWaypointing(destPorts, waypointChoices);
+          Map<String, BoolExpr> waypointVars = new HashMap<>();
+          waypointIdxVars.forEach((n, ae) -> waypointVars.put(n, enc.mkEq(ae, enc.mkInt(0))));
+          return waypointVars;
+        },
+        (vp) -> {
+          if (vp.getResult().isVerified()) {
+            return new SmtWaypointAnswerElement(vp.getResult(), new FlowHistory());
+          } else {
+            FlowHistory fh;
+            CounterExample ce = new CounterExample(vp.getModel());
+            String testrigName = _batfish.getTestrigName();
+            if (q.getDiffType() != null) {
+              fh =
+                  ce.buildFlowHistoryDiff(
+                      testrigName,
+                      vp.getSrcRouters(),
+                      vp.getEnc(),
+                      vp.getEncDiff(),
+                      vp.getProp(),
+                      vp.getPropDiff());
+            } else {
+              fh = ce.buildFlowHistory(testrigName, vp.getSrcRouters(), vp.getEnc(), vp.getProp());
+            }
+            return new SmtWaypointAnswerElement(vp.getResult(), fh);
+          }
+        });
   }
 
   /*

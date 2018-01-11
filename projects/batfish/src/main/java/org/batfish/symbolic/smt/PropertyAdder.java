@@ -7,6 +7,7 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Solver;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -384,6 +385,110 @@ class PropertyAdder {
     }
 
     return lenVars;
+  }
+
+  /*
+   * Instruments the network with path length information to a
+   * destination port corresponding to a graph edge ge.
+   * A router has a path of length n if some neighbor has a path
+   * with length n-1.
+   */
+  Map<String, ArithExpr> instrumentWaypointing(Set<GraphEdge> ges, List<List<String>> waypoints) {
+    Context ctx = _encoderSlice.getCtx();
+    Solver solver = _encoderSlice.getSolver();
+    String sliceName = _encoderSlice.getSliceName();
+    
+    // Compute waypoint transition map
+    int startIndex = waypoints.size();
+    Map<String, Set<Integer>> transitionMap = new HashMap<>();
+    for (int i = 0; i < waypoints.size(); i++) {
+      List<String> choices = waypoints.get(i);
+      for (String choice : choices) {
+        Set<Integer> existing = transitionMap.computeIfAbsent(choice, k -> new HashSet<>());
+        existing.add(i);
+      }
+    }
+
+    ArithExpr zero = ctx.mkInt(0);
+    ArithExpr one = ctx.mkInt(1);
+    ArithExpr minusOne = ctx.mkInt(-1);
+
+    // Initialize waypointing variables
+    Graph graph = _encoderSlice.getGraph();
+    Map<String, ArithExpr> waypointVars = new HashMap<>();
+    for (String router : graph.getRouters()) {
+      String name = _encoderSlice.getEncoder().getId() + "_" + sliceName + "_waypointing_" + router;
+      ArithExpr var = ctx.mkIntConst(name);
+      waypointVars.put(router, var);
+      _encoderSlice.getAllVariables().put(var.toString(), var);
+      // Bound waypoint index range
+      BoolExpr lowerBound = ctx.mkGe(var, ctx.mkInt(-1));
+      BoolExpr upperBound = ctx.mkLe(var, ctx.mkInt(startIndex));
+      solver.add(lowerBound);
+      solver.add(upperBound);
+    }
+
+    for (Entry<String, List<GraphEdge>> entry : graph.getEdgeMap().entrySet()) {
+      String router = entry.getKey();
+      List<GraphEdge> edges = entry.getValue();
+      ArithExpr waypoint = waypointVars.get(router);
+
+      boolean isEndWaypoint = waypoints.get(waypoints.size() - 1).contains(router);
+
+      // If there is a direct route, then we have starting index
+      BoolExpr hasDirectRoute = ctx.mkFalse();
+      BoolExpr isAbsorbed = ctx.mkFalse();
+      SymbolicRoute r = _encoderSlice.getBestNeighborPerProtocol(router, Protocol.CONNECTED);
+
+      for (GraphEdge ge : edges) {
+        if (!ge.isAbstract() && ges.contains(ge)) {
+          // Reachable if we leave the network
+          if (ge.getPeer() == null) {
+            BoolExpr fwdIface = _encoderSlice.getForwardsAcross().get(ge.getRouter(), ge);
+            assert (fwdIface != null);
+            hasDirectRoute = ctx.mkOr(hasDirectRoute, fwdIface);
+          }
+          // Also reachable if connected route and we use it despite not forwarding
+          if (r != null) {
+            BitVecExpr dstIp = _encoderSlice.getSymbolicPacket().getDstIp();
+            BitVecExpr ip = ctx.mkBV(ge.getStart().getPrefix().getAddress().asLong(), 32);
+            BoolExpr reach = ctx.mkAnd(r.getPermitted(), ctx.mkEq(dstIp, ip));
+            isAbsorbed = ctx.mkOr(isAbsorbed, reach);
+          }
+        }
+      }
+
+      Set<Integer> choices = transitionMap.computeIfAbsent(router, k -> new HashSet<>());
+
+      BoolExpr accNone = ctx.mkTrue();
+      BoolExpr accSome = ctx.mkFalse();
+      for (GraphEdge edge : edges) {
+        if (!edge.isAbstract() && edge.getPeer() != null) {
+          BoolExpr dataFwd = _encoderSlice.getForwardsAcross().get(router, edge);
+          assert (dataFwd != null);
+          ArithExpr peerWaypoint = waypointVars.get(edge.getPeer());
+          accNone = ctx.mkAnd(accNone, ctx.mkOr(ctx.mkLt(peerWaypoint, zero), ctx.mkNot(dataFwd)));
+
+          BoolExpr transitionVal = _encoderSlice.mkFalse();
+          for (Integer i : choices) {
+            ArithExpr idx = ctx.mkInt(i+1);
+            transitionVal = ctx.mkOr(transitionVal, ctx.mkEq(peerWaypoint, idx));
+          }
+          ArithExpr newVal =
+              _encoderSlice.mkIf(transitionVal, ctx.mkSub(peerWaypoint, one), peerWaypoint);
+          BoolExpr fwd = ctx.mkAnd(dataFwd, ctx.mkEq(waypoint, newVal));
+          accSome = ctx.mkOr(accSome, fwd);
+        }
+      }
+
+      ArithExpr start = (isEndWaypoint ? ctx.mkInt(startIndex - 1) : ctx.mkInt(startIndex));
+      BoolExpr guard = _encoderSlice.mkOr(hasDirectRoute, isAbsorbed);
+      BoolExpr cond1 = _encoderSlice.mkIf(accNone, ctx.mkEq(waypoint, minusOne), accSome);
+      BoolExpr cond2 = _encoderSlice.mkIf(guard, ctx.mkEq(waypoint, start), cond1);
+      solver.add(cond2);
+    }
+
+    return waypointVars;
   }
 
   /*
