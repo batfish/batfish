@@ -667,12 +667,12 @@ public class CommonUtil {
       Set<IpWildcard> blacklist =
           nonNattedInterfaceAddresses
               .stream()
-              .map(p -> new IpWildcard(p.getIp(), Ip.ZERO))
+              .map(address -> new IpWildcard(address.getIp(), Ip.ZERO))
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> whitelist =
           nonNattedInterfaceAddresses
               .stream()
-              .map(IpWildcard::new)
+              .map(address -> new IpWildcard(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
       IpSpace ipSpace = IpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces

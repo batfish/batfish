@@ -68,11 +68,6 @@ public class IpWildcard extends Pair<Ip, Ip> {
     this(prefix.getStartIp(), prefix.getPrefixWildcard());
   }
 
-  public IpWildcard(InterfaceAddress address) {
-    // TODO: fix this.
-    this(address.getPrefix());
-  }
-
   @JsonCreator
   public IpWildcard(String str) {
     super(parseAddress(str), parseMask(str));
