@@ -593,7 +593,7 @@ public class CommonUtil {
         if (proc != null) {
           for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
             bgpNeighbor.initCandidateRemoteBgpNeighbors();
-            if (bgpNeighbor.getPrefix().getPrefixLength() < 32) {
+            if (bgpNeighbor.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
               throw new BatfishException(
                   hostname
                       + ": Do not support dynamic bgp sessions at this time: "
@@ -925,7 +925,7 @@ public class CommonUtil {
             Interface iface = e.getValue();
             if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()) {
               for (InterfaceAddress address : iface.getAllAddresses()) {
-                if (address.getNetworkBits() < 32) {
+                if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
                   Prefix prefix = address.getPrefix();
                   NodeInterfacePair pair = new NodeInterfacePair(nodeName, ifaceName);
                   Set<NodeInterfacePair> interfaceBucket =

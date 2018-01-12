@@ -505,7 +505,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_ADDRESS)
   @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
   public Ip getAddress() {
-    if (_key != null && _key.getPrefixLength() == 32) {
+    if (_key != null && _key.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
       return _key.getStartIp();
     } else {
       return null;
@@ -577,7 +577,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       "Whether this represents a connection to a specific peer (false) or a passive connection to "
           + "a network of peers (true)")
   public boolean getDynamic() {
-    return _key != null && _key.getPrefixLength() < 32;
+    return _key != null && _key.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH;
   }
 
   @JsonProperty(PROP_EBGP_MULTIHOP)

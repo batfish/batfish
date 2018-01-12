@@ -80,7 +80,7 @@ public class PrefixTrieMap implements Serializable {
 
     private Prefix extendPrefixWith(Prefix p, boolean val) {
       int length = p.getPrefixLength();
-      assert (length < 32);
+      assert (length < Prefix.MAX_PREFIX_LENGTH);
       Ip ip = p.getStartIp();
       long l = ip.asLong();
       long lnew = l;
