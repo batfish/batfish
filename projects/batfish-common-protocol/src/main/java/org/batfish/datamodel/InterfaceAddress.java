@@ -42,7 +42,8 @@ public final class InterfaceAddress implements Comparable<InterfaceAddress>, Ser
     }
     String[] parts = text.split("/");
     if (parts.length != 2) {
-      throw new BatfishException("Invalid InterfaceAddress string: \"" + text + "\"");
+      throw new BatfishException(
+          String.format("Invalid %s string: \"%s\"", InterfaceAddress.class.getSimpleName(), text));
     }
     _ip = new Ip(parts[0]);
     try {
