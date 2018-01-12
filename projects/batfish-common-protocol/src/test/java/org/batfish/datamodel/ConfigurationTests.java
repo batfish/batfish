@@ -174,7 +174,7 @@ public class ConfigurationTests {
     IkeGateway g1to2 = new IkeGateway("g1to2");
     c1.getIkeGateways().put(g1to2.getName(), g1to2);
     g1to2.setAddress(ip2to1Physical);
-    g1to2.setLocalAddress(ip1to2Physical);
+    g1to2.setLocalIp(ip1to2Physical);
     g1to2.setExternalInterface(i1to2);
     vpn1to2.setIkeGateway(g1to2);
     IpsecVpn vpn1to4 = new IpsecVpn("vpn1to4", c1);
@@ -183,7 +183,7 @@ public class ConfigurationTests {
     IkeGateway g1to4 = new IkeGateway("g1to4");
     c1.getIkeGateways().put(g1to4.getName(), g1to4);
     g1to4.setAddress(ip3to1Physical);
-    g1to4.setLocalAddress(ip1to3Physical);
+    g1to4.setLocalIp(ip1to3Physical);
     g1to4.setExternalInterface(i1to3);
     vpn1to4.setIkeGateway(g1to4);
 
@@ -199,7 +199,7 @@ public class ConfigurationTests {
     IkeGateway g2to1 = new IkeGateway("g2to1");
     c2.getIkeGateways().put(g2to1.getName(), g2to1);
     g2to1.setAddress(ip1to2Physical);
-    g2to1.setLocalAddress(ip2to1Physical);
+    g2to1.setLocalIp(ip2to1Physical);
     g2to1.setExternalInterface(i2to1);
     vpn2to1.setIkeGateway(g2to1);
 
@@ -230,7 +230,7 @@ public class ConfigurationTests {
     IkeGateway g4 = new IkeGateway("g4to1");
     c4.getIkeGateways().put(g4.getName(), g4);
     g4.setAddress(ip1to3Physical);
-    g4.setLocalAddress(ip4to3Physical);
+    g4.setLocalIp(ip4to3Physical);
     g4.setExternalInterface(i4to3);
     vpn4to1.setIkeGateway(g4);
 

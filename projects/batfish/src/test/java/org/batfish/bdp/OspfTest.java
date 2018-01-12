@@ -51,26 +51,26 @@ import org.junit.Test;
 
 public class OspfTest {
 
-  private static final InterfaceAddress C1_E1_2_PREFIX = new InterfaceAddress("10.12.0.1/24");
-  private static final InterfaceAddress C1_L0_PREFIX = new InterfaceAddress("1.1.1.1/32");
-  private static final InterfaceAddress C1_L1_PREFIX = new InterfaceAddress("1.1.1.11/32");
+  private static final InterfaceAddress C1_E1_2_ADDRESS = new InterfaceAddress("10.12.0.1/24");
+  private static final InterfaceAddress C1_L0_ADDRESS = new InterfaceAddress("1.1.1.1/32");
+  private static final InterfaceAddress C1_L1_ADDRESS = new InterfaceAddress("1.1.1.11/32");
   private static final String C1_NAME = "R1";
 
-  private static final InterfaceAddress C2_E2_1_PREFIX = new InterfaceAddress("10.12.0.2/24");
-  private static final InterfaceAddress C2_E2_3_PREFIX = new InterfaceAddress("10.23.0.2/24");
-  private static final InterfaceAddress C2_L0_PREFIX = new InterfaceAddress("2.2.2.2/32");
-  private static final InterfaceAddress C2_L1_PREFIX = new InterfaceAddress("2.2.2.22/32");
+  private static final InterfaceAddress C2_E2_1_ADDRESS = new InterfaceAddress("10.12.0.2/24");
+  private static final InterfaceAddress C2_E2_3_ADDRESS = new InterfaceAddress("10.23.0.2/24");
+  private static final InterfaceAddress C2_L0_ADDRESS = new InterfaceAddress("2.2.2.2/32");
+  private static final InterfaceAddress C2_L1_ADDRESS = new InterfaceAddress("2.2.2.22/32");
   private static final String C2_NAME = "R2";
 
-  private static final InterfaceAddress C3_E3_2_PREFIX = new InterfaceAddress("10.23.0.3/24");
-  private static final InterfaceAddress C3_E3_4_PREFIX = new InterfaceAddress("10.34.0.3/24");
-  private static final InterfaceAddress C3_L0_PREFIX = new InterfaceAddress("3.3.3.3/32");
-  private static final InterfaceAddress C3_L1_PREFIX = new InterfaceAddress("3.3.3.33/32");
+  private static final InterfaceAddress C3_E3_2_ADDRESS = new InterfaceAddress("10.23.0.3/24");
+  private static final InterfaceAddress C3_E3_4_ADDRESS = new InterfaceAddress("10.34.0.3/24");
+  private static final InterfaceAddress C3_L0_ADDRESS = new InterfaceAddress("3.3.3.3/32");
+  private static final InterfaceAddress C3_L1_ADDRESS = new InterfaceAddress("3.3.3.33/32");
   private static final String C3_NAME = "R3";
 
-  private static final InterfaceAddress C4_E4_3_PREFIX = new InterfaceAddress("10.34.0.4/24");
-  private static final InterfaceAddress C4_L0_PREFIX = new InterfaceAddress("4.4.4.4/32");
-  private static final InterfaceAddress C4_L1_PREFIX = new InterfaceAddress("4.4.4.44/32");
+  private static final InterfaceAddress C4_E4_3_ADDRESS = new InterfaceAddress("10.34.0.4/24");
+  private static final InterfaceAddress C4_L0_ADDRESS = new InterfaceAddress("4.4.4.4/32");
+  private static final InterfaceAddress C4_L1_ADDRESS = new InterfaceAddress("4.4.4.44/32");
   private static final String C4_NAME = "R4";
 
   private static final long MAX_METRIC_EXTERNAL_NETWORKS = 16711680L;
@@ -185,25 +185,25 @@ public class OspfTest {
     Configuration c1 = cb.setHostname(C1_NAME).build();
     Vrf v1 = vb.setOwner(c1).build();
     RoutingPolicy c1ExportPolicy =
-        rpb.setOwner(c1).setStatements(getExportPolicyStatements(C1_L1_PREFIX)).build();
+        rpb.setOwner(c1).setStatements(getExportPolicyStatements(C1_L1_ADDRESS)).build();
     OspfProcess op1 = opb.setVrf(v1).setExportPolicy(c1ExportPolicy).build();
     OspfArea oa1a = oaba.setOspfProcess(op1).build();
     OspfArea oa1b = areaA == areaB ? oa1a : oabb.setOspfProcess(op1).build();
     ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C1_L0_PREFIX).build();
+    ib.setOspfPassive(true).setName(l0Name).setAddress(C1_L0_ADDRESS).build();
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
-        .setAddress(C1_L1_PREFIX)
+        .setAddress(C1_L1_ADDRESS)
         .build();
     ib.setOspfEnabled(true).setOspfArea(oa1b);
-    ib.setName(c1E1To2Name).setAddress(C1_E1_2_PREFIX).build();
+    ib.setName(c1E1To2Name).setAddress(C1_E1_2_ADDRESS).build();
 
     Configuration c2 = cb.setHostname(C2_NAME).build();
     Vrf v2 = vb.setOwner(c2).build();
     RoutingPolicy c2ExportPolicy =
-        rpb.setOwner(c2).setStatements(getExportPolicyStatements(C2_L1_PREFIX)).build();
+        rpb.setOwner(c2).setStatements(getExportPolicyStatements(C2_L1_ADDRESS)).build();
     OspfProcess op2 =
         opb.setVrf(v2)
             .setMaxMetricExternalNetworks(maxMetricExternalNetworks)
@@ -221,56 +221,56 @@ public class OspfTest {
     OspfArea oa2d =
         areaB == areaD ? oa2b : areaC == areaD ? oa2c : oabd.setOspfProcess(op2).build();
     ib.setOwner(c2).setVrf(v2).setOspfArea(oa2c);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C2_L0_PREFIX).build();
+    ib.setOspfPassive(true).setName(l0Name).setAddress(C2_L0_ADDRESS).build();
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
-        .setAddress(C2_L1_PREFIX)
+        .setAddress(C2_L1_ADDRESS)
         .build();
     ib.setOspfEnabled(true).setOspfArea(oa2b);
-    ib.setName(c2E2To1Name).setAddress(C2_E2_1_PREFIX).setOspfPointToPoint(true).build();
+    ib.setName(c2E2To1Name).setAddress(C2_E2_1_ADDRESS).setOspfPointToPoint(true).build();
     ib.setOspfPointToPoint(false).setOspfArea(oa2d);
-    ib.setName(c2E2To3Name).setAddress(C2_E2_3_PREFIX).build();
+    ib.setName(c2E2To3Name).setAddress(C2_E2_3_ADDRESS).build();
 
     Configuration c3 = cb.setHostname(C3_NAME).build();
     Vrf v3 = vb.setOwner(c3).build();
     RoutingPolicy c3ExportPolicy =
-        rpb.setOwner(c3).setStatements(getExportPolicyStatements(C3_L1_PREFIX)).build();
+        rpb.setOwner(c3).setStatements(getExportPolicyStatements(C3_L1_ADDRESS)).build();
     OspfProcess op3 = opb.setVrf(v3).setExportPolicy(c3ExportPolicy).build();
     OspfArea oa3d = oabd.setOspfProcess(op3).build();
     OspfArea oa3e = areaD == areaE ? oa3d : oabe.setOspfProcess(op3).build();
     OspfArea oa3f =
         areaD == areaF ? oa3d : areaE == areaF ? oa3e : oabf.setOspfProcess(op3).build();
     ib.setOwner(c3).setVrf(v3).setOspfArea(oa3e);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C3_L0_PREFIX).build();
+    ib.setOspfPassive(true).setName(l0Name).setAddress(C3_L0_ADDRESS).build();
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
-        .setAddress(C3_L1_PREFIX)
+        .setAddress(C3_L1_ADDRESS)
         .build();
     ib.setOspfEnabled(true).setOspfArea(oa3d);
-    ib.setName(c3E3To2Name).setAddress(C3_E3_2_PREFIX).build();
-    ib.setName(c3E3To4Name).setAddress(C3_E3_4_PREFIX).setOspfArea(oa3f).build();
+    ib.setName(c3E3To2Name).setAddress(C3_E3_2_ADDRESS).build();
+    ib.setName(c3E3To4Name).setAddress(C3_E3_4_ADDRESS).setOspfArea(oa3f).build();
 
     Configuration c4 = cb.setHostname(C4_NAME).build();
     Vrf v4 = vb.setOwner(c4).build();
     RoutingPolicy c4ExportPolicy =
-        rpb.setOwner(c4).setStatements(getExportPolicyStatements(C4_L1_PREFIX)).build();
+        rpb.setOwner(c4).setStatements(getExportPolicyStatements(C4_L1_ADDRESS)).build();
     OspfProcess op4 = opb.setVrf(v4).setExportPolicy(c4ExportPolicy).build();
     OspfArea oa4f = oabf.setOspfProcess(op4).build();
     OspfArea oa4g = areaF == areaG ? oa4f : oabg.setOspfProcess(op4).build();
     ib.setOwner(c4).setVrf(v4).setOspfArea(oa4g);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C4_L0_PREFIX).build();
+    ib.setOspfPassive(true).setName(l0Name).setAddress(C4_L0_ADDRESS).build();
     ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
-        .setAddress(C4_L1_PREFIX)
+        .setAddress(C4_L1_ADDRESS)
         .build();
     ib.setOspfEnabled(true).setOspfArea(oa4f);
-    ib.setName(c4E4To3Name).setAddress(C4_E4_3_PREFIX).build();
+    ib.setName(c4E4To3Name).setAddress(C4_E4_3_ADDRESS).build();
 
     SortedMap<String, Configuration> configurations =
         new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
@@ -312,36 +312,36 @@ public class OspfTest {
             null,
             null,
             MAX_METRIC_TRANSIT_LINKS);
-    assertRoute(routesByNode, OSPF, C1_NAME, C2_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C3_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C4_L0_PREFIX, 65538L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_PREFIX, 65557L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C2_E2_3_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C3_E3_4_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C1_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C1_E1_2_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C1_L0_PREFIX, 65538L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_PREFIX, 65557L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_PREFIX, 3L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C1_E1_2_PREFIX, 3L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_PREFIX, 2L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C2_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C3_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C4_L0_ADDRESS, 65538L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 65557L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C2_E2_3_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C3_E3_4_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C1_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C1_E1_2_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C1_L0_ADDRESS, 65538L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 65557L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C1_E1_2_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_ADDRESS, 2L);
   }
 
   @Test
@@ -359,36 +359,36 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             null,
             MAX_METRIC_TRANSIT_LINKS);
-    assertRoute(routesByNode, OSPF, C1_NAME, C2_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C3_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C4_L0_PREFIX, 65538L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_PREFIX, 65557L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C2_E2_3_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF, C1_NAME, C3_E3_4_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C1_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C1_E1_2_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C1_L0_PREFIX, 65538L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_PREFIX, 65557L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C1_E1_2_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_PREFIX, 2L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C2_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C3_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C4_L0_ADDRESS, 65538L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 65557L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C2_E2_3_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF, C1_NAME, C3_E3_4_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C1_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C1_E1_2_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C1_L0_ADDRESS, 65538L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 65557L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C1_E1_2_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_ADDRESS, 2L);
   }
 
   @Test
@@ -406,36 +406,36 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_PREFIX, 16711702L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_PREFIX, 2L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 16711702L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_ADDRESS, 2L);
   }
 
   @Test
@@ -453,36 +453,36 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_PREFIX, 16711702L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_PREFIX, 2L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 16711702L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_ADDRESS, 2L);
   }
 
   @Test
@@ -500,36 +500,36 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_PREFIX, 16711701);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF_IA, C2_NAME, C4_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_PREFIX, 65556L);
-    assertRoute(routesByNode, OSPF_IA, C2_NAME, C3_E3_4_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_PREFIX, 16711702L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C2_L0_PREFIX, 65537L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C3_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_PREFIX, 16711682L);
-    assertRoute(routesByNode, OSPF_IA, C4_NAME, C2_E2_3_PREFIX, 2L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 16711701);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C4_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF_IA, C2_NAME, C4_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C4_L1_ADDRESS, 65556L);
+    assertRoute(routesByNode, OSPF_IA, C2_NAME, C3_E3_4_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_L0_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C1_L1_ADDRESS, 16711702L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C2_L0_ADDRESS, 65537L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C2_L1_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_ADDRESS, 16711682L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C2_E2_3_ADDRESS, 2L);
   }
 
   @Test
@@ -547,35 +547,35 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_PREFIX, 16711701L);
-    assertNoRoute(routesByNode, C1_NAME, C4_L0_PREFIX);
-    assertNoRoute(routesByNode, C1_NAME, C4_L1_PREFIX);
-    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_PREFIX, 16711681L);
-    assertNoRoute(routesByNode, C1_NAME, C3_E3_4_PREFIX);
-    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_PREFIX, 65555L);
-    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_PREFIX, 65555L);
-    assertNoRoute(routesByNode, C2_NAME, C4_L0_PREFIX);
-    assertNoRoute(routesByNode, C2_NAME, C4_L1_PREFIX);
-    assertNoRoute(routesByNode, C2_NAME, C3_E3_4_PREFIX);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_PREFIX, 16711701L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_PREFIX, 65536L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_PREFIX, 16711681L);
-    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_PREFIX, 2L);
-    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_PREFIX, 21L);
-    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_PREFIX, 16711681L);
-    assertNoRoute(routesByNode, C4_NAME, C1_L0_PREFIX);
-    assertNoRoute(routesByNode, C4_NAME, C1_L1_PREFIX);
-    assertNoRoute(routesByNode, C4_NAME, C2_L0_PREFIX);
-    assertNoRoute(routesByNode, C4_NAME, C2_L1_PREFIX);
-    assertNoRoute(routesByNode, C4_NAME, C3_L0_PREFIX);
-    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_PREFIX, 21L);
-    assertNoRoute(routesByNode, C4_NAME, C1_E1_2_PREFIX);
-    assertNoRoute(routesByNode, C4_NAME, C2_E2_3_PREFIX);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C1_NAME, C3_L1_ADDRESS, 16711701L);
+    assertNoRoute(routesByNode, C1_NAME, C4_L0_ADDRESS);
+    assertNoRoute(routesByNode, C1_NAME, C4_L1_ADDRESS);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_ADDRESS, 16711681L);
+    assertNoRoute(routesByNode, C1_NAME, C3_E3_4_ADDRESS);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C1_L1_ADDRESS, 65555L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C2_NAME, C3_L1_ADDRESS, 65555L);
+    assertNoRoute(routesByNode, C2_NAME, C4_L0_ADDRESS);
+    assertNoRoute(routesByNode, C2_NAME, C4_L1_ADDRESS);
+    assertNoRoute(routesByNode, C2_NAME, C3_E3_4_ADDRESS);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_L0_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C1_L1_ADDRESS, 16711701L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 65536L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C2_L1_ADDRESS, 16711681L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_E1, C3_NAME, C4_L1_ADDRESS, 21L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_ADDRESS, 16711681L);
+    assertNoRoute(routesByNode, C4_NAME, C1_L0_ADDRESS);
+    assertNoRoute(routesByNode, C4_NAME, C1_L1_ADDRESS);
+    assertNoRoute(routesByNode, C4_NAME, C2_L0_ADDRESS);
+    assertNoRoute(routesByNode, C4_NAME, C2_L1_ADDRESS);
+    assertNoRoute(routesByNode, C4_NAME, C3_L0_ADDRESS);
+    assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
+    assertNoRoute(routesByNode, C4_NAME, C1_E1_2_ADDRESS);
+    assertNoRoute(routesByNode, C4_NAME, C2_E2_3_ADDRESS);
   }
 }

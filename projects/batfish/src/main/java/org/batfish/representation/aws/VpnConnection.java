@@ -229,11 +229,11 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
           Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
 
       String vpnInterfaceName = "vpn" + idNum;
-      InterfaceAddress vpnInterfacePrefix =
+      InterfaceAddress vpnInterfaceAddress =
           new InterfaceAddress(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Interface vpnInterface =
-          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfacePrefix);
+          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
 
       // Set fields within representation structures
 
@@ -250,7 +250,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       // ike
       ikeGateway.setExternalInterface(externalInterface);
       ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
-      ikeGateway.setLocalAddress(externalInterface.getAddress().getIp());
+      ikeGateway.setLocalIp(externalInterface.getAddress().getIp());
       if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
         ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
         ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);

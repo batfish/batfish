@@ -1128,9 +1128,9 @@ public class Synthesizer {
       Configuration c = e.getValue();
       for (Interface i : c.getInterfaces().values()) {
         if (i.getActive()) {
-          InterfaceAddress prefix = i.getAddress();
-          if (prefix != null) {
-            Ip ip = prefix.getIp();
+          InterfaceAddress address = i.getAddress();
+          if (address != null) {
+            Ip ip = address.getIp();
             interfaceIps.add(ip);
           }
         }
@@ -1159,9 +1159,9 @@ public class Synthesizer {
       Configuration c = e.getValue();
       for (Interface i : c.getInterfaces().values()) {
         if (i.getActive()) {
-          InterfaceAddress prefix = i.getAddress();
-          if (prefix != null) {
-            Ip ip = prefix.getIp();
+          InterfaceAddress address = i.getAddress();
+          if (address != null) {
+            Ip ip = address.getIp();
             interfaceIps.add(ip);
           }
         }
@@ -1749,9 +1749,9 @@ public class Synthesizer {
         String ifaceName = i.getName();
         AndExpr conditions = new AndExpr();
         OrExpr dstIpMatchesInterface = new OrExpr();
-        InterfaceAddress prefix = i.getAddress();
-        if (prefix != null) {
-          Ip ip = prefix.getIp();
+        InterfaceAddress address = i.getAddress();
+        if (address != null) {
+          Ip ip = address.getIp();
           EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
           dstIpMatchesInterface.addDisjunct(dstIpMatches);
         }
@@ -1815,9 +1815,9 @@ public class Synthesizer {
       for (Interface i : c.getInterfaces().values()) {
         String ifaceName = i.getName();
         OrExpr dstIpMatchesInterface = new OrExpr();
-        InterfaceAddress prefix = i.getAddress();
-        if (prefix != null) {
-          Ip ip = prefix.getIp();
+        InterfaceAddress address = i.getAddress();
+        if (address != null) {
+          Ip ip = address.getIp();
           EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
           dstIpMatchesInterface.addDisjunct(dstIpMatches);
         }
@@ -1874,9 +1874,9 @@ public class Synthesizer {
       String hostname = c.getHostname();
       OrExpr someDstIpMatch = new OrExpr();
       for (Interface i : c.getInterfaces().values()) {
-        InterfaceAddress prefix = i.getAddress();
-        if (prefix != null) {
-          Ip ip = prefix.getIp();
+        InterfaceAddress address = i.getAddress();
+        if (address != null) {
+          Ip ip = address.getIp();
           EqExpr dstIpMatches = new EqExpr(new VarIntExpr(DST_IP_VAR), new LitIntExpr(ip));
           someDstIpMatch.addDisjunct(dstIpMatches);
         }

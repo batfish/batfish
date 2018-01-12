@@ -210,7 +210,7 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
       Prefix ifaceSubnet = subnet.getCidrBlock();
-      Ip defaultGatewayAddress = subnet.computeInstancesIfaceAddress();
+      Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
       StaticRoute defaultRoute =
           StaticRoute.builder()
               .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)

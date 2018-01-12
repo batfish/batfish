@@ -242,10 +242,10 @@ public class BdpDataPlane implements Serializable, DataPlane {
             // handle connected neighbors
             Configuration nextHop = _nodes.get(nextHopName)._c;
             Interface nextHopInInt = nextHop.getInterfaces().get(nextHopInIntName);
-            for (InterfaceAddress prefix : nextHopInInt.getAllAddresses()) {
-              Ip address = prefix.getIp();
-              if (network.contains(address)) {
-                Prefix neighborPrefix = new Prefix(address, MAX_PREFIX_LENGTH);
+            for (InterfaceAddress address : nextHopInInt.getAllAddresses()) {
+              Ip ip = address.getIp();
+              if (network.contains(ip)) {
+                Prefix neighborPrefix = new Prefix(ip, MAX_PREFIX_LENGTH);
                 FibRow neighborRow =
                     new FibRow(neighborPrefix, outInt, nextHopName, nextHopInIntName);
                 fibs.add(neighborRow);

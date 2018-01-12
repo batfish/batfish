@@ -1363,10 +1363,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       int offset = 0;
       for (NodeInterfacePair currentPair : interfaceSet) {
         Ip ip = new Ip(currentStartingIpAsLong + offset);
-        InterfaceAddress prefix = new InterfaceAddress(ip, subnetBits);
+        InterfaceAddress address = new InterfaceAddress(ip, subnetBits);
         String ifaceName = currentPair.getInterface();
         Interface iface = new Interface(ifaceName, configs.get(currentPair.getHostname()));
-        iface.setAddress(prefix);
+        iface.setAddress(address);
 
         // dirty hack for setting bandwidth for now
         double ciscoBandwidth =

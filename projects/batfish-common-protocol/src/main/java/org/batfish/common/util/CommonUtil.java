@@ -692,46 +692,45 @@ public class CommonUtil {
   }
 
   public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
-    Map<IpsecVpn, Ip> remoteAddresses = new IdentityHashMap<>();
-    Map<Ip, Set<IpsecVpn>> externalAddresses = new HashMap<>();
+    Map<IpsecVpn, Ip> vpmRemoteIps = new IdentityHashMap<>();
+    Map<Ip, Set<IpsecVpn>> externalIpVpnMap = new HashMap<>();
     SetMultimap<Ip, IpSpace> privateIpsByPublicIp = initPrivateIpsByPublicIp(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-        Ip remoteAddress = ipsecVpn.getIkeGateway().getAddress();
-        remoteAddresses.put(ipsecVpn, remoteAddress);
-        Set<InterfaceAddress> externalPrefixes =
+        Ip remoteIp = ipsecVpn.getIkeGateway().getAddress();
+        vpmRemoteIps.put(ipsecVpn, remoteIp);
+        Set<InterfaceAddress> externalAddresses =
             ipsecVpn.getIkeGateway().getExternalInterface().getAllAddresses();
-        for (InterfaceAddress externalPrefix : externalPrefixes) {
-          Ip externalAddress = externalPrefix.getIp();
+        for (InterfaceAddress address : externalAddresses) {
+          Ip ip = address.getIp();
           Set<IpsecVpn> vpnsUsingExternalAddress =
-              externalAddresses.computeIfAbsent(externalAddress, k -> Sets.newIdentityHashSet());
+              externalIpVpnMap.computeIfAbsent(ip, k -> Sets.newIdentityHashSet());
           vpnsUsingExternalAddress.add(ipsecVpn);
         }
       }
     }
-    for (Entry<IpsecVpn, Ip> e : remoteAddresses.entrySet()) {
+    for (Entry<IpsecVpn, Ip> e : vpmRemoteIps.entrySet()) {
       IpsecVpn ipsecVpn = e.getKey();
-      Ip remoteAddress = e.getValue();
-      Ip localAddress = ipsecVpn.getIkeGateway().getLocalAddress();
+      Ip remoteIp = e.getValue();
+      Ip localIp = ipsecVpn.getIkeGateway().getLocalIp();
       ipsecVpn.initCandidateRemoteVpns();
-      Set<IpsecVpn> remoteIpsecVpnCandidates = externalAddresses.get(remoteAddress);
+      Set<IpsecVpn> remoteIpsecVpnCandidates = externalIpVpnMap.get(remoteIp);
       if (remoteIpsecVpnCandidates != null) {
         for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
-          Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate.getIkeGateway().getLocalAddress();
-          if (remoteIpsecVpnLocalAddress != null
-              && !remoteIpsecVpnLocalAddress.equals(remoteAddress)) {
+          Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate.getIkeGateway().getLocalIp();
+          if (remoteIpsecVpnLocalAddress != null && !remoteIpsecVpnLocalAddress.equals(remoteIp)) {
             continue;
           }
-          Ip reciprocalRemoteAddress = remoteAddresses.get(remoteIpsecVpnCandidate);
-          Set<IpsecVpn> reciprocalVpns = externalAddresses.get(reciprocalRemoteAddress);
+          Ip reciprocalRemoteAddress = vpmRemoteIps.get(remoteIpsecVpnCandidate);
+          Set<IpsecVpn> reciprocalVpns = externalIpVpnMap.get(reciprocalRemoteAddress);
           if (reciprocalVpns == null) {
             Set<IpSpace> privateIpsBehindReciprocalRemoteAddress =
                 privateIpsByPublicIp.get(reciprocalRemoteAddress);
             if (privateIpsBehindReciprocalRemoteAddress != null
                 && privateIpsBehindReciprocalRemoteAddress
                     .stream()
-                    .anyMatch(ipSpace -> ipSpace.contains(localAddress))) {
-              reciprocalVpns = externalAddresses.get(localAddress);
+                    .anyMatch(ipSpace -> ipSpace.contains(localIp))) {
+              reciprocalVpns = externalIpVpnMap.get(localIp);
               ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
               ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
               remoteIpsecVpnCandidate.initCandidateRemoteVpns();

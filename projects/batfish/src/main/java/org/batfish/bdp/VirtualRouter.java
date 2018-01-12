@@ -1057,11 +1057,11 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
           // should only happen for ibgp
           String nextHopInterface = route.getNextHopInterface();
-          InterfaceAddress nextHopPrefix = _c.getInterfaces().get(nextHopInterface).getAddress();
-          if (nextHopPrefix == null) {
+          InterfaceAddress nextHopAddress = _c.getInterfaces().get(nextHopInterface).getAddress();
+          if (nextHopAddress == null) {
             throw new BatfishException("route's nextHopInterface has no address");
           }
-          nextHopIp = nextHopPrefix.getIp();
+          nextHopIp = nextHopAddress.getIp();
         }
         transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
         transformedOutgoingRouteBuilder.setLocalPreference(localPreference);
@@ -1343,12 +1343,12 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
           // should only happen for ibgp
           String nextHopInterface = remoteRoute.getNextHopInterface();
-          InterfaceAddress nextHopPrefix =
+          InterfaceAddress nextHopAddress =
               remoteVrf.getInterfaces().get(nextHopInterface).getAddress();
-          if (nextHopPrefix == null) {
+          if (nextHopAddress == null) {
             throw new BatfishException("remote route's nextHopInterface has no address");
           }
-          nextHopIp = nextHopPrefix.getIp();
+          nextHopIp = nextHopAddress.getIp();
         }
         transformedOutgoingRouteBuilder.setNextHopIp(nextHopIp);
         transformedOutgoingRouteBuilder.setLocalPreference(localPreference);

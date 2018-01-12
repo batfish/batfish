@@ -486,33 +486,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
       neighbor.setSendCommunity(true);
 
       // inherit update-source
-      Ip localAddress = ig.getLocalAddress();
-      if (localAddress == null) {
+      Ip localIp = ig.getLocalAddress();
+      if (localIp == null) {
         // assign the ip of the interface that is likely connected to this
         // peer
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
           for (InterfaceAddress address : iface.getAllAddresses()) {
             if (address.getPrefix().contains(ip)) {
-              localAddress = address.getIp();
+              localIp = address.getIp();
               break outerloop;
             }
           }
         }
       }
-      if (localAddress == null && _defaultAddressSelection) {
+      if (localIp == null && _defaultAddressSelection) {
         initFirstLoopbackInterface();
         if (_lo0 != null) {
-          InterfaceAddress lo0Unit0Prefix = _lo0.getPrimaryAddress();
-          if (lo0Unit0Prefix != null) {
-            localAddress = lo0Unit0Prefix.getIp();
+          InterfaceAddress lo0Unit0Address = _lo0.getPrimaryAddress();
+          if (lo0Unit0Address != null) {
+            localIp = lo0Unit0Address.getIp();
           }
         }
       }
-      if (localAddress == null && ip.valid()) {
+      if (localIp == null && ip.valid()) {
         _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: " + ip);
       } else {
-        neighbor.setLocalIp(localAddress);
+        neighbor.setLocalIp(localIp);
       }
       if (neighbor.getGroup() == null || !_unreferencedBgpGroups.containsKey(neighbor.getGroup())) {
         proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
@@ -1031,7 +1031,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // address
     newIkeGateway.setAddress(oldIkeGateway.getAddress());
-    newIkeGateway.setLocalAddress(oldIkeGateway.getLocalAddress());
+    newIkeGateway.setLocalIp(oldIkeGateway.getLocalAddress());
 
     // external interface
     Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
@@ -1772,10 +1772,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (loopback0 != null) {
         Interface loopback0unit0 = loopback0.getUnits().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
         if (loopback0unit0 != null) {
-          InterfaceAddress prefix = loopback0unit0.getPrimaryAddress();
-          if (prefix != null) {
+          InterfaceAddress address = loopback0unit0.getPrimaryAddress();
+          if (address != null) {
             // now we should set router-id
-            Ip routerId = prefix.getIp();
+            Ip routerId = address.getIp();
             _defaultRoutingInstance.setRouterId(routerId);
           }
         }

@@ -307,8 +307,8 @@ public class VyosConfiguration extends VendorConfiguration {
     newIface.setActive(true); // TODO: may have to change
     newIface.setBandwidth(iface.getBandwidth());
     newIface.setDescription(iface.getDescription());
-    InterfaceAddress prefix = iface.getAddress();
-    if (prefix != null) {
+    InterfaceAddress address = iface.getAddress();
+    if (address != null) {
       newIface.setAddress(iface.getAddress());
     }
     newIface.getAllAddresses().addAll(iface.getAllAddresses());

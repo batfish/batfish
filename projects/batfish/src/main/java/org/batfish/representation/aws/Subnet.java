@@ -37,7 +37,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);
   }
 
-  Ip computeInstancesIfaceAddress() {
+  Ip computeInstancesIfaceIp() {
     return new Ip(_cidrBlock.getStartIp().asLong() + 1L);
   }
 
@@ -147,10 +147,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;
-    Ip instancesIfaceAddress = computeInstancesIfaceAddress();
-    InterfaceAddress instancesIfacePrefix =
-        new InterfaceAddress(instancesIfaceAddress, _cidrBlock.getPrefixLength());
-    Utils.newInterface(instancesIfaceName, cfgNode, instancesIfacePrefix);
+    Ip instancesIfaceIp = computeInstancesIfaceIp();
+    InterfaceAddress instancesIfaceAddress =
+        new InterfaceAddress(instancesIfaceIp, _cidrBlock.getPrefixLength());
+    Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
     // generate a prefix for the link between the VPC router and the subnet
     Pair<InterfaceAddress, InterfaceAddress> vpcSubnetLinkPrefix =
