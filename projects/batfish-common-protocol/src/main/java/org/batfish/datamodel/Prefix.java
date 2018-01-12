@@ -40,7 +40,11 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     if (ip == null) {
       throw new BatfishException("Cannot create prefix with null network");
     }
-    _ip = ip.getNetworkAddress(prefixLength);
+    if (ip.valid()) {
+      // TODO: stop using Ip as a holder for invalid values.
+      ip = ip.getNetworkAddress(prefixLength);
+    }
+    _ip = ip;
     _prefixLength = prefixLength;
   }
 
