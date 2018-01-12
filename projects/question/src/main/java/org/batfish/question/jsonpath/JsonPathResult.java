@@ -137,7 +137,8 @@ public class JsonPathResult {
       try {
         jpeHint = JsonPathExtractionHint.fromExtractionHint(entry.getValue());
       } catch (IOException e) {
-        throw new BatfishException("Could not extract JsonPathExtractionHint from ExtractionHint");
+        throw new BatfishException(
+            "Could not extract JsonPathExtractionHint from ExtractionHint", e);
       }
       switch (jpeHint.getUse()) {
         case PREFIX:

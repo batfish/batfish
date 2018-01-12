@@ -33,6 +33,7 @@
     <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
     <maven-pmd-plugin.version>3.8</maven-pmd-plugin.version>
@@ -144,6 +145,19 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
           <version>${maven-install-plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>test-jar</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
@@ -433,6 +447,13 @@
       <dependency>
         <groupId>org.batfish</groupId>
         <artifactId>batfish-common-protocol</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
+        <artifactId>batfish-common-protocol</artifactId>
+        <classifier>tests</classifier>
         <version>${project.version}</version>
       </dependency>
 

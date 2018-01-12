@@ -514,8 +514,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             "Getting answer to question %s from analysis %s",
                             questionName, analysisName))
                     .startActive()) {
-              assert analysisQuestionSpan != null; // make span not show up as unused.
-              analysisQuestionSpan.setTag("WorkItemId", _settings.getTaskId());
+              assert analysisQuestionSpan != null; // make span not show up as unused
               currentAnswer = answer();
             }
             // Ensuring that question was parsed successfully
@@ -524,12 +523,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 BatfishObjectMapper mapper = new BatfishObjectMapper(false);
                 // TODO: This can be represented much cleanly and easily with a Json
                 _logger.infof(
-                    "Ran question:%s from analysis:%s in container:%s; workItemId:%s, status:%s, "
+                    "Ran question:%s from analysis:%s in container:%s; work-id:%s, status:%s, "
                         + "computed dataplane:%s, parameters:%s\n",
                     questionName,
                     analysisName,
                     containerName,
-                    _settings.getTaskId(),
+                    getTaskId(),
                     currentAnswer.getSummary().getNumFailed() > 0 ? "failed" : "passed",
                     currentAnswer.getQuestion().getDataPlane(),
                     mapper.writeValueAsString(
@@ -1012,7 +1011,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Get generated facts from topology file
     if (Files.exists(topologyFilePath)) {
       topology = processTopologyFile(topologyFilePath);
-      _logger.infof("Testrig:%s has topology file", _settings.getTestrig());
+      _logger.infof(
+          "Testrig:%s in container:%s has topology file", getTestrigName(), getContainerName());
     } else {
       // guess adjacencies based on interface subnetworks
       _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
@@ -1590,6 +1590,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return configurations;
   }
 
+  @Override
+  public String getContainerName() {
+    return _settings.getContainerDir().getFileName().toString();
+  }
+
   public DataPlanePlugin getDataPlanePlugin() {
     return _dataPlanePlugin;
   }
@@ -1850,6 +1855,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       consumedEdges.add(reverseEdge);
     }
     return consumedEdges;
+  }
+
+  @Override
+  public String getTaskId() {
+    return _settings.getTaskId();
   }
 
   public boolean getTerminatedWithException() {
@@ -2628,21 +2638,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Driver.newBatch(_settings, description, jobs);
   }
 
-  /**
-   * Returns a {@link Pair} of strings that respectively represent the structured and pretty
-   * answers.
-   */
-  private static Pair<String, String> getAnswerStrings(Answer answer) throws IOException {
-    ObjectMapper mapper = new BatfishObjectMapper();
-
-    String answerString = mapper.writeValueAsString(answer) + '\n';
-
-    Answer prettyAnswer = answer.prettyPrintAnswer();
-    String prettyAnswerString = mapper.writeValueAsString(prettyAnswer) + '\n';
-
-    return new Pair<>(answerString, prettyAnswerString);
-  }
-
   private void outputAnswer(Answer answer) {
     outputAnswer(answer, /* log */ false);
   }
@@ -2652,28 +2647,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private void outputAnswer(Answer answer, boolean writeLog) {
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
     try {
-      Pair<String, String> answerStrings = getAnswerStrings(answer);
-      String structuredAnswerString = answerStrings.getFirst();
-      String prettyAnswerString = answerStrings.getSecond();
-      String answerString =
-          _settings.prettyPrintAnswer() ? prettyAnswerString : structuredAnswerString;
+      String answerString = mapper.writeValueAsString(answer) + '\n';
       _logger.debug(answerString);
       @Nullable String logString = writeLog ? answerString : null;
-      writeJsonAnswerWithLog(logString, structuredAnswerString, prettyAnswerString);
+      writeJsonAnswerWithLog(logString, answerString);
     } catch (Exception e) {
       BatfishException be = new BatfishException("Error in sending answer", e);
       try {
         Answer failureAnswer = Answer.failureAnswer(e.toString(), answer.getQuestion());
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
-        Pair<String, String> answerStrings = getAnswerStrings(failureAnswer);
-        String structuredAnswerString = answerStrings.getFirst();
-        String prettyAnswerString = answerStrings.getSecond();
-        String answerString =
-            _settings.prettyPrintAnswer() ? prettyAnswerString : structuredAnswerString;
+        String answerString = mapper.writeValueAsString(failureAnswer) + '\n';
         _logger.error(answerString);
         @Nullable String logString = writeLog ? answerString : null;
-        writeJsonAnswerWithLog(logString, structuredAnswerString, prettyAnswerString);
+        writeJsonAnswerWithLog(logString, answerString);
       } catch (Exception e1) {
         _logger.errorf("Could not serialize failure answer. %s", ExceptionUtils.getStackTrace(e1));
       }
@@ -3858,8 +3846,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to parser errors");
     }
     _logger.infof(
-        "Testrig:%s has total number of host configs:%d ",
-        _settings.getTestrig(), allHostConfigurations.size());
+        "Testrig:%s in container:%s has total number of host configs:%d",
+        getTestrigName(), getContainerName(), allHostConfigurations.size());
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
@@ -3979,6 +3967,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (vendorConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
+    _logger.infof(
+        "Testrig:%s in container:%s has total number of network configs:%d",
+        getTestrigName(), getContainerName(), vendorConfigurations.size());
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     CommonUtil.createDirectories(outputPath);
@@ -4316,7 +4307,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
   }
 
-  private void writeJsonAnswer(String structuredAnswerString, String prettyAnswerString) {
+  private void writeJsonAnswer(String structuredAnswerString) {
     // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
     // Purpose: to write answer json files for adhoc and analysis questions
     // Dependencies: Container, tr & env, (delta tr & env), question name, analysis name if present
@@ -4355,21 +4346,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return;
     }
     Path structuredAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
-    Path prettyAnswerPath = answerDir.resolve(BfConsts.RELPATH_ANSWER_PRETTY_JSON);
     answerDir.toFile().mkdirs();
     CommonUtil.writeFile(structuredAnswerPath, structuredAnswerString);
-    CommonUtil.writeFile(prettyAnswerPath, prettyAnswerString);
   }
 
-  private void writeJsonAnswerWithLog(
-      @Nullable String logString, String structuredAnswerString, String prettyAnswerString) {
+  private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
     // Write log of WorkItem task to the configured path for logs
     Path jsonPath = _settings.getAnswerJsonPath();
     if (jsonPath != null && logString != null) {
       CommonUtil.writeFile(jsonPath, logString);
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
-    writeJsonAnswer(structuredAnswerString, prettyAnswerString);
+    writeJsonAnswer(structuredAnswerString);
   }
 
   private void writeJsonTopology() {

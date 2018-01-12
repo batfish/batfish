@@ -421,7 +421,6 @@ public class WorkMgrService {
    * @param deltaTestrig The name of the delta testrig on which the analysis was run
    * @param deltaEnv The name of the delta environment on which the analysis was run
    * @param analysisName The name of the analysis
-   * @param prettyAnswer Whether or not to pretty&#8208;print the result
    * @return TODO: document JSON response
    */
   @POST
@@ -436,7 +435,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
-      @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
       _logger.info(
@@ -456,8 +454,6 @@ public class WorkMgrService {
       checkStringParam(testrigName, "Base testrig name");
       checkStringParam(baseEnv, "Base environment name");
       checkStringParam(analysisName, "Analysis name");
-      checkStringParam(prettyAnswer, "Retrieve pretty-printed answers");
-      boolean pretty = Boolean.parseBoolean(prettyAnswer);
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
@@ -486,13 +482,7 @@ public class WorkMgrService {
       Map<String, String> answers =
           Main.getWorkMgr()
               .getAnalysisAnswers(
-                  containerName,
-                  testrigName,
-                  baseEnv,
-                  deltaTestrig,
-                  deltaEnv,
-                  analysisName,
-                  pretty);
+                  containerName, testrigName, baseEnv, deltaTestrig, deltaEnv, analysisName);
 
       String answersStr = mapper.writeValueAsString(answers);
 
@@ -518,7 +508,6 @@ public class WorkMgrService {
    * @param deltaTestrig The name of the delta testrig on which the question was asked
    * @param deltaEnv The name of the delta environment on which the question was asked
    * @param questionName The name of the question
-   * @param prettyAnswer Whether or not to pretty&#8208;print the result
    * @return TODO: document JSON response
    */
   @POST
@@ -533,7 +522,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
       @FormDataParam(CoordConsts.SVC_KEY_DELTA_ENV_NAME) String deltaEnv,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
-      @FormDataParam(CoordConsts.SVC_KEY_PRETTY_ANSWER) String prettyAnswer,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
       _logger.info(
@@ -553,8 +541,6 @@ public class WorkMgrService {
       checkStringParam(testrigName, "Base testrig name");
       checkStringParam(baseEnv, "Base environment name");
       checkStringParam(questionName, "Question name");
-      checkStringParam(prettyAnswer, "Retrieve pretty-printed answer");
-      boolean pretty = Boolean.parseBoolean(prettyAnswer);
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
@@ -581,14 +567,7 @@ public class WorkMgrService {
 
       String answer =
           Main.getWorkMgr()
-              .getAnswer(
-                  containerName,
-                  testrigName,
-                  baseEnv,
-                  deltaTestrig,
-                  deltaEnv,
-                  questionName,
-                  pretty);
+              .getAnswer(containerName, testrigName, baseEnv, deltaTestrig, deltaEnv, questionName);
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_ANSWER, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -1583,7 +1562,9 @@ public class WorkMgrService {
       }
 
       Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
-      _logger.infof("Uploaded testrig:%s for container:%s\n", testrigName, containerName);
+      _logger.infof(
+          "Uploaded testrig:%s for container:%s using api-key:%s\n",
+          testrigName, containerName, apiKey);
       return successResponse(new JSONObject().put("result", "successfully uploaded testrig"));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:uploadTestrig exception: " + e.getMessage() + "\n");

@@ -94,9 +94,7 @@ public class ConcretizerQuery {
 
   private void refreshStatements() {
     _statements.clear();
-    for (Statement varDecl : Synthesizer.getVarDeclExprs()) {
-      _statements.add(varDecl);
-    }
+    _statements.addAll(Synthesizer.getVarDeclExprs());
     for (BooleanExpr constraint : _constraints) {
       _statements.add(new AssertExpr(constraint));
     }

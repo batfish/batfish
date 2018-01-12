@@ -435,7 +435,6 @@ public class WorkMgr extends AbstractCoordinator {
       if (!aDir.toFile().mkdirs()) {
         throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
       }
-      _logger.infof("Initialized analysis:%s in container:%s\n", aName, containerName);
     }
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
@@ -449,7 +448,6 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
       CommonUtil.writeFile(qFile, entry.getValue());
-      _logger.infof("Added question:%s to analysis:%s\n", entry.getKey(), aName);
     }
 
     /** Delete questions */
@@ -459,7 +457,6 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
       }
       CommonUtil.deleteDirectory(qDir);
-      _logger.infof("Deleted question:%s from analysis:%s\n", qName, aName);
     }
   }
 
@@ -498,8 +495,7 @@ public class WorkMgr extends AbstractCoordinator {
       String baseEnv,
       String deltaTestrig,
       String deltaEnv,
-      String analysisName,
-      boolean pretty)
+      String analysisName)
       throws JsonProcessingException {
     Path analysisDir = getdirContainerAnalysis(containerName, analysisName);
     Path testrigDir = getdirTestrig(containerName, baseTestrig);
@@ -514,8 +510,6 @@ public class WorkMgr extends AbstractCoordinator {
       if (!Files.exists(questionFile)) {
         throw new BatfishException("Question file for question " + questionName + "not found");
       }
-      String answerFilename =
-          pretty ? BfConsts.RELPATH_ANSWER_PRETTY_JSON : BfConsts.RELPATH_ANSWER_JSON;
       Path answerDir =
           testrigDir.resolve(
               Paths.get(
@@ -528,13 +522,10 @@ public class WorkMgr extends AbstractCoordinator {
       if (deltaTestrig != null) {
         answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_DELTA, deltaTestrig, deltaEnv));
       }
-      Path answerFile = answerDir.resolve(answerFilename);
+      Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
       if (!Files.exists(answerFile)) {
         Answer ans = Answer.failureAnswer("Not answered", null);
         ans.setStatus(AnswerStatus.NOTFOUND);
-        if (pretty) {
-          ans = ans.prettyPrintAnswer();
-        }
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         answer = mapper.writeValueAsString(ans);
       } else {
@@ -546,9 +537,6 @@ public class WorkMgr extends AbstractCoordinator {
         if (answerIsStale) {
           Answer ans = Answer.failureAnswer("Not fresh", null);
           ans.setStatus(AnswerStatus.STALE);
-          if (pretty) {
-            ans = ans.prettyPrintAnswer();
-          }
           BatfishObjectMapper mapper = new BatfishObjectMapper();
           answer = mapper.writeValueAsString(ans);
         } else {
@@ -576,8 +564,7 @@ public class WorkMgr extends AbstractCoordinator {
       String baseEnv,
       String deltaTestrig,
       String deltaEnv,
-      String questionName,
-      boolean pretty)
+      String questionName)
       throws JsonProcessingException {
     Path questionDir = getdirContainerQuestion(containerName, questionName);
     Path questionFile = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
@@ -592,16 +579,11 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       answerDir = answerDir.resolve(Paths.get(BfConsts.RELPATH_STANDARD_DIR));
     }
-    String answerFilename =
-        pretty ? BfConsts.RELPATH_ANSWER_PRETTY_JSON : BfConsts.RELPATH_ANSWER_JSON;
-    Path answerFile = answerDir.resolve(answerFilename);
+    Path answerFile = answerDir.resolve(BfConsts.RELPATH_ANSWER_JSON);
     String answer = "unknown";
     if (!Files.exists(answerFile)) {
       Answer ans = Answer.failureAnswer("Not answered", null);
       ans.setStatus(AnswerStatus.NOTFOUND);
-      if (pretty) {
-        ans = ans.prettyPrintAnswer();
-      }
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       answer = mapper.writeValueAsString(ans);
     } else {
@@ -610,9 +592,6 @@ public class WorkMgr extends AbstractCoordinator {
           > 0) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);
-        if (pretty) {
-          ans = ans.prettyPrintAnswer();
-        }
         BatfishObjectMapper mapper = new BatfishObjectMapper();
         answer = mapper.writeValueAsString(ans);
       } else {

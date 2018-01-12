@@ -8,6 +8,8 @@ fi
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
+export ALLINONE_JAVA_ARGS="-enableassertions $ALLINONE_JAVA_ARGS"
+
 . tools/batfish_functions.sh
 batfish_test_all || exit 1
 
