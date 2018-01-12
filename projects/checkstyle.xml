@@ -101,6 +101,9 @@
             <property name="tokens" value="METHOD_REF"/>
             <property name="option" value="nl"/>
         </module>
+        <module name="PackageDeclaration">
+            <property name="matchDirectoryStructure" value="true"/>
+        </module>
         <module name="PackageName">
             <property name="format" value="^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*(\.[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*)*+$"/>
             <message key="name.invalidPattern"
