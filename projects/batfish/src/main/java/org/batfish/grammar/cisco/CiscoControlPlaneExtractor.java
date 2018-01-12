@@ -39,6 +39,7 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6Wildcard;
@@ -762,7 +763,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ip != null) {
       return toIp(ctx.ip);
     } else if (ctx.prefix != null) {
-      return new Prefix(ctx.prefix.getText()).getAddress();
+      return Prefix.parse(ctx.prefix.getText()).getStartIp();
     } else {
       return Ip.ZERO;
     }
@@ -1631,7 +1632,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       pushPeer(_currentIpPeerGroup);
     } else if (ctx.ip_prefix != null) {
-      Prefix prefix = new Prefix(ctx.ip_prefix.getText());
+      Prefix prefix = Prefix.parse(ctx.ip_prefix.getText());
       _currentDynamicIpPeerGroup = proc.getDynamicIpPeerGroups().get(prefix);
       if (_currentDynamicIpPeerGroup == null) {
         _currentDynamicIpPeerGroup = proc.addDynamicIpPeerGroup(prefix);
@@ -1791,9 +1792,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     // might cause problems if interfaces are declared after ospf, but
     // whatever
-    for (Prefix prefix : iface.getAllPrefixes()) {
-      Prefix networkPrefix = prefix.getNetworkPrefix();
-      OspfNetwork network = new OspfNetwork(networkPrefix, _currentOspfArea);
+    for (InterfaceAddress address : iface.getAllAddresses()) {
+      Prefix prefix = address.getPrefix();
+      OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
       _currentOspfProcess.getNetworks().add(network);
     }
     _currentOspfInterface = iface.getName();
@@ -2383,7 +2384,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           prefix = new Prefix(network, prefixLength);
         } else {
           // ctx.prefix != null
-          prefix = new Prefix(ctx.prefix.getText());
+          prefix = Prefix.parse(ctx.prefix.getText());
         }
         BgpAggregateIpv4Network net = new BgpAggregateIpv4Network(prefix);
         net.setAsSet(asSet);
@@ -2486,7 +2487,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.name.getStart().getLine();
     BgpProcess proc = currentVrf().getBgpProcess();
     if (ctx.IP_PREFIX() != null) {
-      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+      Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       DynamicIpBgpPeerGroup pg = proc.addDynamicIpPeerGroup(prefix);
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
@@ -3149,10 +3150,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip primaryIp = toIp(ctx.pip);
     Ip primaryMask = toIp(ctx.pmask);
     Ip standbyIp = toIp(ctx.sip);
-    Prefix primaryPrefix = new Prefix(primaryIp, primaryMask);
-    Prefix standbyPrefix = new Prefix(standbyIp, primaryMask);
-    _configuration.getFailoverPrimaryPrefixes().put(name, primaryPrefix);
-    _configuration.getFailoverStandbyPrefixes().put(name, standbyPrefix);
+    InterfaceAddress primaryAddress = new InterfaceAddress(primaryIp, primaryMask);
+    InterfaceAddress standbyAddress = new InterfaceAddress(standbyIp, primaryMask);
+    _configuration.getFailoverPrimaryAddresses().put(name, primaryAddress);
+    _configuration.getFailoverStandbyAddresses().put(name, standbyAddress);
   }
 
   @Override
@@ -3214,40 +3215,40 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_address(If_ip_addressContext ctx) {
-    Prefix prefix;
+    InterfaceAddress address;
     if (ctx.prefix != null) {
-      prefix = new Prefix(ctx.prefix.getText());
+      address = new InterfaceAddress(ctx.prefix.getText());
     } else {
-      Ip address = new Ip(ctx.ip.getText());
+      Ip ip = new Ip(ctx.ip.getText());
       Ip mask = new Ip(ctx.subnet.getText());
-      prefix = new Prefix(address, mask);
+      address = new InterfaceAddress(ip, mask);
     }
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setPrefix(prefix);
+      currentInterface.setAddress(address);
     }
     if (ctx.STANDBY() != null) {
-      Ip standbyAddress = toIp(ctx.standby_address);
-      Prefix standbyPrefix = new Prefix(standbyAddress, prefix.getPrefixLength());
+      Ip standbyIp = toIp(ctx.standby_address);
+      InterfaceAddress standbyAddress = new InterfaceAddress(standbyIp, address.getNetworkBits());
       for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setStandbyPrefix(standbyPrefix);
+        currentInterface.setStandbyAddress(standbyAddress);
       }
     }
   }
 
   @Override
   public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
-    Ip address;
+    Ip ip;
     Ip mask;
-    Prefix prefix;
+    InterfaceAddress address;
     if (ctx.prefix != null) {
-      prefix = new Prefix(ctx.prefix.getText());
+      address = new InterfaceAddress(ctx.prefix.getText());
     } else {
-      address = new Ip(ctx.ip.getText());
+      ip = new Ip(ctx.ip.getText());
       mask = new Ip(ctx.subnet.getText());
-      prefix = new Prefix(address, mask.numSubnetBits());
+      address = new InterfaceAddress(ip, mask.numSubnetBits());
     }
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.getSecondaryPrefixes().add(prefix);
+      currentInterface.getSecondaryAddresses().add(address);
     }
   }
 
@@ -3860,7 +3861,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIp_prefix_list_tail(Ip_prefix_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.action);
-    Prefix prefix = new Prefix(ctx.prefix.getText());
+    Prefix prefix = Prefix.parse(ctx.prefix.getText());
     int prefixLength = prefix.getPrefixLength();
     int minLen = prefixLength;
     int maxLen = prefixLength;
@@ -3891,7 +3892,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIp_route_tail(Ip_route_tailContext ctx) {
     Prefix prefix;
     if (ctx.prefix != null) {
-      prefix = new Prefix(ctx.prefix.getText());
+      prefix = Prefix.parse(ctx.prefix.getText());
     } else {
       Ip address = toIp(ctx.address);
       Ip mask = toIp(ctx.mask);
@@ -3907,8 +3908,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.nexthopip != null) {
       nextHopIp = toIp(ctx.nexthopip);
     } else if (ctx.nexthopprefix != null) {
-      Prefix nextHopPrefix = new Prefix(ctx.nexthopprefix.getText());
-      nextHopIp = nextHopPrefix.getAddress();
+      Prefix nextHopPrefix = Prefix.parse(ctx.nexthopprefix.getText());
+      nextHopIp = nextHopPrefix.getStartIp();
     }
     if (ctx.nexthopint != null) {
       nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
@@ -4343,7 +4344,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNetwork_bgp_tail(Network_bgp_tailContext ctx) {
     Prefix prefix;
     if (ctx.prefix != null) {
-      prefix = new Prefix(ctx.prefix.getText());
+      prefix = Prefix.parse(ctx.prefix.getText());
     } else {
       Ip address = toIp(ctx.ip);
       Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask();
@@ -4738,7 +4739,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         if (ctx.ipa != null) {
           prefix = new Prefix(toIp(ctx.ipa), Prefix.MAX_PREFIX_LENGTH);
         } else {
-          prefix = new Prefix(ctx.prefix.getText());
+          prefix = Prefix.parse(ctx.prefix.getText());
         }
         int prefixLength = prefix.getPrefixLength();
         int minLen = prefixLength;
@@ -5013,8 +5014,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip address;
     Ip wildcard;
     if (ctx.prefix != null) {
-      Prefix prefix = new Prefix(ctx.prefix.getText());
-      address = prefix.getAddress();
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      address = prefix.getStartIp();
       wildcard = prefix.getPrefixWildcard();
     } else {
       address = toIp(ctx.ip);
@@ -5168,7 +5169,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoa_range(Roa_rangeContext ctx) {
     OspfProcess proc = currentVrf().getOspfProcess();
-    Prefix prefix = new Prefix(ctx.prefix.getText());
+    Prefix prefix = Prefix.parse(ctx.prefix.getText());
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Map<Prefix, Boolean> area =
         proc.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
@@ -5309,7 +5310,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRs_route(Rs_routeContext ctx) {
     if (ctx.prefix != null) {
-      Prefix prefix = new Prefix(ctx.prefix.getText());
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
       Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
       String nextHopInterface = null;
       if (ctx.nhip != null) {
@@ -6223,7 +6224,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.HOST() != null) {
       return Ip.ZERO;
     } else if (ctx.prefix != null) {
-      return new Prefix(ctx.prefix.getText()).getPrefixWildcard();
+      return Prefix.parse(ctx.prefix.getText()).getPrefixWildcard();
     } else if (ctx.ip != null) {
       // basically same as host
       return Ip.ZERO;
@@ -7267,7 +7268,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         Prefix prefix = null;
         Prefix6 prefix6 = null;
         if (pctxt.prefix != null) {
-          prefix = new Prefix(pctxt.prefix.getText());
+          prefix = Prefix.parse(pctxt.prefix.getText());
           lower = prefix.getPrefixLength();
           upper = Prefix.MAX_PREFIX_LENGTH;
         } else if (pctxt.ipa != null) {

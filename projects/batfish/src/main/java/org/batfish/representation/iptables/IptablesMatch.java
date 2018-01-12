@@ -70,7 +70,7 @@ public class IptablesMatch implements Serializable {
     }
 
     if (_matchData instanceof Ip) {
-      Prefix pfx = new Prefix((Ip) _matchData, 32);
+      Prefix pfx = new Prefix((Ip) _matchData, Prefix.MAX_PREFIX_LENGTH);
       return new IpWildcard(pfx);
     } else if (_matchData instanceof Prefix) {
       return new IpWildcard((Prefix) _matchData);

@@ -39,6 +39,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
@@ -1519,8 +1520,8 @@ public class BdpEngine {
             // TODO: proxyArp probably shouldn't be null
             neighborUnreachable = true;
           } else {
-            for (Prefix prefix : int2.getAllPrefixes()) {
-              if (prefix.getNetworkPrefix().contains(arpIp)) {
+            for (InterfaceAddress address : int2.getAllAddresses()) {
+              if (address.getPrefix().contains(arpIp)) {
                 neighborUnreachable = true;
                 break;
               }

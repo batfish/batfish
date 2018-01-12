@@ -40,7 +40,8 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
         for (RouteFilterLine line : rf.getLines()) {
           Prefix prefix = line.getPrefix();
           LineAction action = line.getAction();
-          SubRange orLongerLineRange = new SubRange(line.getLengthRange().getStart(), 32);
+          SubRange orLongerLineRange =
+              new SubRange(line.getLengthRange().getStart(), Prefix.MAX_PREFIX_LENGTH);
           RouteFilterLine orLongerLine = new RouteFilterLine(action, prefix, orLongerLineRange);
           orLongerList.addLine(orLongerLine);
           c.getRouteFilterLists().put(orLongerListName, orLongerList);

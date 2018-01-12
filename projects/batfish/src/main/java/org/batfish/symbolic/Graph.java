@@ -24,6 +24,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
@@ -202,7 +203,7 @@ public class Graph {
       for (OspfArea area : ospf.getAreas().values()) {
         for (Interface iface : area.getInterfaces().values()) {
           if (iface.getActive() && iface.getOspfEnabled()) {
-            acc.add(iface.getPrefix().getNetworkPrefix());
+            acc.add(iface.getAddress().getPrefix());
           }
         }
       }
@@ -234,7 +235,7 @@ public class Graph {
                           ExplicitPrefixSet eps = (ExplicitPrefixSet) e;
                           Set<PrefixRange> ranges = eps.getPrefixSpace().getPrefixRanges();
                           for (PrefixRange r : ranges) {
-                            acc.add(r.getPrefix().getNetworkPrefix());
+                            acc.add(r.getPrefix());
                           }
                         }
                       }
@@ -249,9 +250,9 @@ public class Graph {
 
     if (proto.isConnected()) {
       for (Interface iface : conf.getInterfaces().values()) {
-        Prefix p = iface.getPrefix();
-        if (p != null) {
-          acc.add(p.getNetworkPrefix());
+        InterfaceAddress address = iface.getAddress();
+        if (address != null) {
+          acc.add(address.getPrefix());
         }
       }
       return acc;
@@ -260,7 +261,7 @@ public class Graph {
     if (proto.isStatic()) {
       for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
         if (sr.getNetwork() != null) {
-          acc.add(sr.getNetwork().getNetworkPrefix());
+          acc.add(sr.getNetwork());
         }
       }
       return acc;
@@ -311,7 +312,7 @@ public class Graph {
       for (NodeInterfacePair nip : nips) {
         SortedSet<Edge> es = ifaceEdges.get(nip);
         Interface i1 = ifaceMap.get(nip);
-        boolean hasNoOtherEnd = (es == null && i1.getPrefix() != null);
+        boolean hasNoOtherEnd = (es == null && i1.getAddress() != null);
         if (hasNoOtherEnd) {
           GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
           graphEdges.add(ge);
@@ -433,8 +434,8 @@ public class Graph {
 
           boolean isNextHop =
               there != null
-                  && there.getPrefix() != null
-                  && there.getPrefix().getAddress().equals(nhIp);
+                  && there.getAddress() != null
+                  && there.getAddress().getIp().equals(nhIp);
 
           if (isNextHop) {
             someIface = true;
@@ -477,7 +478,8 @@ public class Graph {
         // Create null route interface
         Interface iface = new Interface(name);
         iface.setActive(true);
-        iface.setPrefix(sr.getNetwork());
+        iface.setAddress(
+            new InterfaceAddress(sr.getNetwork().getStartIp(), sr.getNextHopIp().numSubnetBits()));
         iface.setBandwidth(0.);
         // Add static route to all static routes list
         Map<String, List<StaticRoute>> map = _staticRoutes.get(router);
@@ -529,7 +531,7 @@ public class Graph {
             Ip ip = ipList.get(i);
             BgpNeighbor n = ns.get(i);
             Interface iface = ge.getStart();
-            if (ip != null && iface.getPrefix().contains(ip)) {
+            if (ip != null && iface.getAddress().getPrefix().contains(ip)) {
               _ebgpNeighbors.put(ge, n);
             }
           }
@@ -545,7 +547,10 @@ public class Graph {
   private Interface createIbgpInterface(BgpNeighbor n, String peer) {
     Interface iface = new Interface("iBGP-" + peer);
     iface.setActive(true);
-    iface.setPrefix(n.getPrefix());
+    // TODO is this valid.
+    Prefix p = n.getPrefix();
+    assert p.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH;
+    iface.setAddress(new InterfaceAddress(n.getPrefix().getStartIp(), Prefix.MAX_PREFIX_LENGTH));
     iface.setBandwidth(0.);
     return iface;
   }
@@ -1160,7 +1165,7 @@ public class Graph {
                       .append(",")
                       .append(edge.getEnd().getName());
                 }
-                sb.append(edge.getStart().getPrefix());
+                sb.append(edge.getStart().getAddress());
                 sb.append("\n");
               });
         });

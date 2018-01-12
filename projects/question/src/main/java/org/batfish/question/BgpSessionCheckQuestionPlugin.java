@@ -21,6 +21,7 @@ import org.batfish.datamodel.BgpNeighbor.BgpNeighborSummary;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -523,14 +524,14 @@ public class BgpSessionCheckQuestionPlugin extends QuestionPlugin {
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
       for (Configuration c : configurations.values()) {
         for (Interface i : c.getInterfaces().values()) {
-          if (i.getActive() && i.getPrefix() != null) {
-            for (Prefix prefix : i.getAllPrefixes()) {
-              Ip address = prefix.getAddress();
+          if (i.getActive() && i.getAddress() != null) {
+            for (InterfaceAddress address : i.getAllAddresses()) {
+              Ip ip = address.getIp();
               if (i.isLoopback(c.getConfigurationFormat())) {
-                loopbackIps.add(address);
+                loopbackIps.add(ip);
               }
-              allInterfaceIps.add(address);
-              Set<String> currentIpOwners = ipOwners.computeIfAbsent(address, k -> new HashSet<>());
+              allInterfaceIps.add(ip);
+              Set<String> currentIpOwners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
               currentIpOwners.add(c.getHostname());
             }
           }

@@ -12,6 +12,8 @@ public class IkeGateway extends ComparableStructure<String> {
 
   private static final String PROP_IKE_POLICY = "ikePolicy";
 
+  private static final String PROP_LOCAL_ADDRESS = "localAddress";
+
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -25,7 +27,7 @@ public class IkeGateway extends ComparableStructure<String> {
 
   private transient String _ikePolicyName;
 
-  private Ip _localAddress;
+  private Ip _localIp;
 
   private String _localId;
 
@@ -53,7 +55,7 @@ public class IkeGateway extends ComparableStructure<String> {
     if (!other._ikePolicy.equals(_ikePolicy)) {
       return false;
     }
-    if (!other._localAddress.equals(_localAddress)) {
+    if (!other._localIp.equals(_localIp)) {
       return false;
     }
     if (!other._localId.equals(_localId)) {
@@ -102,10 +104,11 @@ public class IkeGateway extends ComparableStructure<String> {
     }
   }
 
+  @JsonProperty(PROP_LOCAL_ADDRESS)
   @JsonPropertyDescription(
       "Local IP address from which to connect to IKE gateway. Used instead of external interface.")
-  public Ip getLocalAddress() {
-    return _localAddress;
+  public Ip getLocalIp() {
+    return _localIp;
   }
 
   @JsonPropertyDescription("Local IKE ID used in connection to IKE gateway.")
@@ -151,8 +154,9 @@ public class IkeGateway extends ComparableStructure<String> {
     _ikePolicyName = ikePolicyName;
   }
 
-  public void setLocalAddress(Ip localAddress) {
-    _localAddress = localAddress;
+  @JsonProperty(PROP_LOCAL_ADDRESS)
+  public void setLocalIp(Ip localIp) {
+    _localIp = localIp;
   }
 
   public void setLocalId(String localId) {

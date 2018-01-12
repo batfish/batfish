@@ -11,6 +11,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -308,7 +309,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void enterStatict_route(Statict_routeContext ctx) {
-    Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
+    Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
     _currentStaticRoutePrefix = prefix;
   }
 
@@ -475,11 +476,11 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
     if (ctx.DHCP() != null) {
       todo(ctx, F_INTERFACES_ADDRESS_DHCP);
     } else if (ctx.IP_PREFIX() != null) {
-      Prefix prefix = new Prefix(ctx.IP_PREFIX().getText());
-      if (_currentInterface.getPrefix() == null) {
-        _currentInterface.setPrefix(prefix);
+      InterfaceAddress address = new InterfaceAddress(ctx.IP_PREFIX().getText());
+      if (_currentInterface.getAddress() == null) {
+        _currentInterface.setAddress(address);
       }
-      _currentInterface.getAllPrefixes().add(prefix);
+      _currentInterface.getAllAddresses().add(address);
     }
   }
 
@@ -536,7 +537,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void exitPlrt_prefix(Plrt_prefixContext ctx) {
-    Prefix prefix = new Prefix(ctx.prefix.getText());
+    Prefix prefix = Prefix.parse(ctx.prefix.getText());
     _currentPrefixListRule.setPrefix(prefix);
   }
 

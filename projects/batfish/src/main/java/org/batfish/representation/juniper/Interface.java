@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -39,9 +39,9 @@ public class Interface extends ComparableStructure<String> {
 
   private final ArrayList<SubRange> _allowedVlans;
 
-  private final Set<Prefix> _allPrefixes;
+  private final Set<InterfaceAddress> _allAddresses;
 
-  private final Set<Ip> _allPrefixIps;
+  private final Set<Ip> _allAddressIps;
 
   private double _bandwidth;
 
@@ -77,9 +77,9 @@ public class Interface extends ComparableStructure<String> {
 
   private Interface _parent;
 
-  private Prefix _preferredPrefix;
+  private InterfaceAddress _preferredAddress;
 
-  private Prefix _primaryPrefix;
+  private InterfaceAddress _primaryAddress;
 
   private String _routingInstance;
 
@@ -99,8 +99,8 @@ public class Interface extends ComparableStructure<String> {
   public Interface(String name, int definitionLine) {
     super(name);
     _active = true;
-    _allPrefixes = new LinkedHashSet<>();
-    _allPrefixIps = new LinkedHashSet<>();
+    _allAddresses = new LinkedHashSet<>();
+    _allAddressIps = new LinkedHashSet<>();
     _bandwidth = getDefaultBandwidthByName(name);
     _definitionLine = definitionLine;
     _isisSettings = new IsisInterfaceSettings();
@@ -130,12 +130,12 @@ public class Interface extends ComparableStructure<String> {
     return _allowedVlans;
   }
 
-  public Set<Prefix> getAllPrefixes() {
-    return _allPrefixes;
+  public Set<InterfaceAddress> getAllAddresses() {
+    return _allAddresses;
   }
 
-  public Set<Ip> getAllPrefixIps() {
-    return _allPrefixIps;
+  public Set<Ip> getAllAddressIps() {
+    return _allAddressIps;
   }
 
   public double getBandwidth() {
@@ -202,12 +202,12 @@ public class Interface extends ComparableStructure<String> {
     return _parent;
   }
 
-  public Prefix getPreferredPrefix() {
-    return _preferredPrefix;
+  public InterfaceAddress getPreferredAddress() {
+    return _preferredAddress;
   }
 
-  public Prefix getPrimaryPrefix() {
-    return _primaryPrefix;
+  public InterfaceAddress getPrimaryAddress() {
+    return _primaryAddress;
   }
 
   public String getRoutingInstance() {
@@ -301,12 +301,12 @@ public class Interface extends ComparableStructure<String> {
     _parent = parent;
   }
 
-  public void setPreferredPrefix(Prefix prefix) {
-    _preferredPrefix = prefix;
+  public void setPreferredAddress(InterfaceAddress address) {
+    _preferredAddress = address;
   }
 
-  public void setPrimaryPrefix(Prefix prefix) {
-    _primaryPrefix = prefix;
+  public void setPrimaryAddress(InterfaceAddress address) {
+    _primaryAddress = address;
   }
 
   public void setRoutingInstance(String routingInstance) {

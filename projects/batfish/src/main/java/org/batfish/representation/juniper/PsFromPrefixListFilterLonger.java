@@ -40,8 +40,9 @@ public final class PsFromPrefixListFilterLonger extends PsFrom {
         for (RouteFilterLine line : rf.getLines()) {
           Prefix prefix = line.getPrefix();
           LineAction action = line.getAction();
-          SubRange longerLineRange = new SubRange(line.getLengthRange().getStart() + 1, 32);
-          if (longerLineRange.getStart() > 32) {
+          SubRange longerLineRange =
+              new SubRange(line.getLengthRange().getStart() + 1, Prefix.MAX_PREFIX_LENGTH);
+          if (longerLineRange.getStart() > Prefix.MAX_PREFIX_LENGTH) {
             warnings.redFlag(
                 "'prefix-list-filter "
                     + _prefixList

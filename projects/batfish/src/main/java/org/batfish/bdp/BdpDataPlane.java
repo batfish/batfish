@@ -29,6 +29,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -72,7 +73,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                         ImmutableMap.builder();
                     ImmutableList.Builder<AbstractRoute> remainingRoutes = ImmutableList.builder();
                     for (AbstractRoute route : vr._mainRib.getRoutes()) {
-                      Prefix network = route.getNetwork().getNetworkPrefix();
+                      Prefix network = route.getNetwork();
                       switch (route.getProtocol()) {
                         case CONNECTED:
                           importConnectedRoute(
@@ -121,7 +122,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                                 for (FibRow interfaceRouteRow : currentInterfaceRouteRows) {
                                   FibRow row =
                                       new FibRow(
-                                          route.getNetwork().getNetworkPrefix(),
+                                          route.getNetwork(),
                                           interfaceRouteRow.getInterface(),
                                           interfaceRouteRow.getNextHop(),
                                           interfaceRouteRow.getNextHopInterface());
@@ -241,10 +242,10 @@ public class BdpDataPlane implements Serializable, DataPlane {
             // handle connected neighbors
             Configuration nextHop = _nodes.get(nextHopName)._c;
             Interface nextHopInInt = nextHop.getInterfaces().get(nextHopInIntName);
-            for (Prefix prefix : nextHopInInt.getAllPrefixes()) {
-              Ip address = prefix.getAddress();
-              if (network.contains(address)) {
-                Prefix neighborPrefix = new Prefix(address, MAX_PREFIX_LENGTH);
+            for (InterfaceAddress address : nextHopInInt.getAllAddresses()) {
+              Ip ip = address.getIp();
+              if (network.contains(ip)) {
+                Prefix neighborPrefix = new Prefix(ip, MAX_PREFIX_LENGTH);
                 FibRow neighborRow =
                     new FibRow(neighborPrefix, outInt, nextHopName, nextHopInIntName);
                 fibs.add(neighborRow);

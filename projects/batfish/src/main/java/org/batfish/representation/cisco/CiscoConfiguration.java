@@ -42,6 +42,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
@@ -285,11 +286,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, String> _failoverInterfaces;
 
-  private final Map<String, Prefix> _failoverPrimaryPrefixes;
+  private final Map<String, InterfaceAddress> _failoverPrimaryAddresses;
 
   private boolean _failoverSecondary;
 
-  private final Map<String, Prefix> _failoverStandbyPrefixes;
+  private final Map<String, InterfaceAddress> _failoverStandbyAddresses;
 
   private String _failoverStatefulSignalingInterface;
 
@@ -401,8 +402,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
     _failoverInterfaces = new TreeMap<>();
-    _failoverPrimaryPrefixes = new TreeMap<>();
-    _failoverStandbyPrefixes = new TreeMap<>();
+    _failoverPrimaryAddresses = new TreeMap<>();
+    _failoverStandbyAddresses = new TreeMap<>();
     _igmpAcls = new TreeSet<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
@@ -456,12 +457,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           new org.batfish.datamodel.VrrpGroup(groupNum);
                       newGroup.setPreempt(vrrpGroup.getPreempt());
                       newGroup.setPriority(vrrpGroup.getPriority());
-                      Prefix ifacePrefix = iface.getPrefix();
-                      if (ifacePrefix != null) {
-                        int prefixLength = ifacePrefix.getPrefixLength();
+                      InterfaceAddress ifaceAddress = iface.getAddress();
+                      if (ifaceAddress != null) {
+                        int prefixLength = ifaceAddress.getNetworkBits();
                         Ip address = vrrpGroup.getVirtualAddress();
                         if (address != null) {
-                          Prefix virtualAddress = new Prefix(address, prefixLength);
+                          InterfaceAddress virtualAddress =
+                              new InterfaceAddress(address, prefixLength);
                           newGroup.setVirtualAddress(virtualAddress);
                         } else {
                           _w.redFlag(
@@ -575,9 +577,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         String iname = e.getKey();
         org.batfish.datamodel.Interface iface = e.getValue();
         if (iname.startsWith("Loopback")) {
-          Prefix prefix = iface.getPrefix();
-          if (prefix != null) {
-            Ip currentIp = prefix.getAddress();
+          InterfaceAddress address = iface.getAddress();
+          if (address != null) {
+            Ip currentIp = address.getIp();
             if (currentIp.asLong() > processRouterId.asLong()) {
               processRouterId = currentIp;
             }
@@ -586,9 +588,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       if (processRouterId.equals(Ip.ZERO)) {
         for (org.batfish.datamodel.Interface currentInterface : vrf.getInterfaces().values()) {
-          Prefix prefix = currentInterface.getPrefix();
-          if (prefix != null) {
-            Ip currentIp = prefix.getAddress();
+          InterfaceAddress address = currentInterface.getAddress();
+          if (address != null) {
+            Ip currentIp = address.getIp();
             if (currentIp.asLong() > processRouterId.asLong()) {
               processRouterId = currentIp;
             }
@@ -664,16 +666,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _failoverInterfaces;
   }
 
-  public Map<String, Prefix> getFailoverPrimaryPrefixes() {
-    return _failoverPrimaryPrefixes;
+  public Map<String, InterfaceAddress> getFailoverPrimaryAddresses() {
+    return _failoverPrimaryAddresses;
   }
 
   public boolean getFailoverSecondary() {
     return _failoverSecondary;
   }
 
-  public Map<String, Prefix> getFailoverStandbyPrefixes() {
-    return _failoverStandbyPrefixes;
+  public Map<String, InterfaceAddress> getFailoverStandbyAddresses() {
+    return _failoverStandbyAddresses;
   }
 
   public String getFailoverStatefulSignalingInterface() {
@@ -709,8 +711,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .values()
             .stream()
             .filter(
-                i ->
-                    i.getAllPrefixes().stream().anyMatch(p -> p.getAddress().equals(sourceAddress)))
+                i -> i.getAllAddresses().stream().anyMatch(p -> p.getIp().equals(sourceAddress)))
             .findFirst()
             .orElse(null);
       }
@@ -953,9 +954,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface sourceInterface =
             vrf.getInterfaces().get(updateSourceInterface);
         if (sourceInterface != null) {
-          Prefix prefix = sourceInterface.getPrefix();
-          if (prefix != null) {
-            Ip sourceIp = prefix.getAddress();
+          InterfaceAddress address = sourceInterface.getAddress();
+          if (address != null) {
+            Ip sourceIp = address.getIp();
             updateSource = sourceIp;
           } else {
             _w.redFlag(
@@ -972,17 +973,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
               updateSourceInterfaceLine);
         }
       } else {
-        Ip neighborAddress = lpg.getNeighborPrefix().getAddress();
+        Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-          for (Prefix ifacePrefix : iface.getAllPrefixes()) {
-            if (ifacePrefix.contains(neighborAddress)) {
-              Ip ifaceAddress = ifacePrefix.getAddress();
+          for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+            if (interfaceAddress.getPrefix().contains(neighborAddress)) {
+              Ip ifaceAddress = interfaceAddress.getIp();
               updateSource = ifaceAddress;
             }
           }
         }
       }
-      if (updateSource == null && lpg.getNeighborPrefix().getAddress().valid()) {
+      if (updateSource == null && lpg.getNeighborPrefix().getStartIp().valid()) {
         _w.redFlag("Could not determine update source for BGP neighbor: '" + lpg.getName() + "'");
       }
     }
@@ -1134,26 +1135,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void processFailoverSettings() {
     if (_failover) {
       Interface commIface;
-      Prefix commPrefix;
+      InterfaceAddress commAddress;
       Interface sigIface;
-      Prefix sigPrefix;
+      InterfaceAddress sigAddress;
       if (_failoverSecondary) {
         commIface = _interfaces.get(_failoverCommunicationInterface);
-        commPrefix = _failoverStandbyPrefixes.get(_failoverCommunicationInterfaceAlias);
+        commAddress = _failoverStandbyAddresses.get(_failoverCommunicationInterfaceAlias);
         sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-        sigPrefix = _failoverStandbyPrefixes.get(_failoverStatefulSignalingInterfaceAlias);
+        sigAddress = _failoverStandbyAddresses.get(_failoverStatefulSignalingInterfaceAlias);
         for (Interface iface : _interfaces.values()) {
-          iface.setPrefix(iface.getStandbyPrefix());
+          iface.setAddress(iface.getStandbyAddress());
         }
       } else {
         commIface = _interfaces.get(_failoverCommunicationInterface);
-        commPrefix = _failoverPrimaryPrefixes.get(_failoverCommunicationInterfaceAlias);
+        commAddress = _failoverPrimaryAddresses.get(_failoverCommunicationInterfaceAlias);
         sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-        sigPrefix = _failoverPrimaryPrefixes.get(_failoverStatefulSignalingInterfaceAlias);
+        sigAddress = _failoverPrimaryAddresses.get(_failoverStatefulSignalingInterfaceAlias);
       }
-      commIface.setPrefix(commPrefix);
+      commIface.setAddress(commAddress);
       commIface.setActive(true);
-      sigIface.setPrefix(sigPrefix);
+      sigIface.setAddress(sigAddress);
       sigIface.setActive(true);
     }
   }
@@ -1332,7 +1333,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpAggregateIpv4Network aggNet = e.getValue();
       boolean summaryOnly = aggNet.getSummaryOnly();
       int prefixLength = prefix.getPrefixLength();
-      SubRange prefixRange = new SubRange(prefixLength + 1, 32);
+      SubRange prefixRange = new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH);
       if (summaryOnly) {
         summaryOnlyNetworks.add(aggNet);
       }
@@ -1401,7 +1402,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpAggregateIpv6Network aggNet = e.getValue();
       boolean summaryOnly = aggNet.getSummaryOnly();
       int prefixLength = prefix6.getPrefixLength();
-      SubRange prefixRange = new SubRange(prefixLength + 1, 32);
+      SubRange prefixRange = new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH);
       if (summaryOnly) {
         summaryOnlyIpv6Networks.add(aggNet);
       }
@@ -1472,7 +1473,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         Prefix prefix = summaryOnlyNetwork.getPrefix();
         int prefixLength = prefix.getPrefixLength();
         RouteFilterLine line =
-            new RouteFilterLine(LineAction.ACCEPT, prefix, new SubRange(prefixLength + 1, 32));
+            new RouteFilterLine(
+                LineAction.ACCEPT,
+                prefix,
+                new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH));
         matchSuppressedSummaryOnlyRoutes.addLine(line);
       }
       suppressSummaryOnly.setGuard(
@@ -2126,13 +2130,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
 
     // All prefixes is the combination of the interface prefix + any secondary prefixes.
-    ImmutableSet.Builder<Prefix> allPrefixes = ImmutableSet.builder();
-    if (iface.getPrefix() != null) {
-      newIface.setPrefix(iface.getPrefix());
-      allPrefixes.add(iface.getPrefix());
+    ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
+    if (iface.getAddress() != null) {
+      newIface.setAddress(iface.getAddress());
+      allPrefixes.add(iface.getAddress());
     }
-    allPrefixes.addAll(iface.getSecondaryPrefixes());
-    newIface.setAllPrefixes(allPrefixes.build());
+    allPrefixes.addAll(iface.getSecondaryAddresses());
+    newIface.setAllAddresses(allPrefixes.build());
 
     Long ospfAreaLong = iface.getOspfArea();
     if (ospfAreaLong != null) {
@@ -2144,9 +2148,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (iface.getOspfPassive()) {
           proc.getPassiveInterfaceList().add(name);
         }
-        for (Prefix prefix : newIface.getAllPrefixes()) {
-          Prefix networkPrefix = prefix.getNetworkPrefix();
-          OspfNetwork ospfNetwork = new OspfNetwork(networkPrefix, ospfAreaLong);
+        for (InterfaceAddress address : newIface.getAllAddresses()) {
+          Prefix prefix = address.getPrefix();
+          OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
           proc.getNetworks().add(ospfNetwork);
         }
       } else {
@@ -2432,11 +2436,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // .add(new PolicyMapSetLevelLine(summaryLevel));
     // int length = summaryPrefix.getPrefixLength();
     // int rejectLowerBound = length + 1;
-    // if (rejectLowerBound > 32) {
+    // if (rejectLowerBound > Prefix.MAX_LENGTH) {
     // throw new VendorConversionException(
     // "Invalid summary prefix: " + summaryPrefix.toString());
     // }
-    // SubRange summarizedRange = new SubRange(rejectLowerBound, 32);
+    // SubRange summarizedRange = new SubRange(rejectLowerBound, Prefix.MAX_LENGTH);
     // RouteFilterLine summarized = new RouteFilterLine(LineAction.ACCEPT,
     // summaryPrefix, summarizedRange);
     // RouteFilterLine summary = new RouteFilterLine(LineAction.ACCEPT,
@@ -2672,8 +2676,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
             int result = Integer.compare(rhsPrefixLength, lhsPrefixLength); // intentionally swapped
             if (result == 0) {
-              long lhsIp = lhs.getPrefix().getAddress().asLong();
-              long rhsIp = rhs.getPrefix().getAddress().asLong();
+              long lhsIp = lhs.getPrefix().getStartIp().asLong();
+              long rhsIp = rhs.getPrefix().getStartIp().asLong();
               result = Long.compare(lhsIp, rhsIp);
             }
             return result;
@@ -2686,15 +2690,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface iface = e.getValue();
-      Prefix interfacePrefix = iface.getPrefix();
-      if (interfacePrefix == null) {
+      InterfaceAddress interfaceAddress = iface.getAddress();
+      if (interfaceAddress == null) {
         continue;
       }
       for (OspfNetwork network : networks) {
         Prefix networkPrefix = network.getPrefix();
-        Ip networkAddress = networkPrefix.getAddress();
+        Ip networkAddress = networkPrefix.getStartIp();
         Ip maskedInterfaceAddress =
-            interfacePrefix.getAddress().getNetworkAddress(networkPrefix.getPrefixLength());
+            interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
         if (maskedInterfaceAddress.equals(networkAddress)) {
           // we have a longest prefix match
           long areaNum = network.getArea();
@@ -2965,7 +2969,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         Interface iface = e.getValue();
         if (ifaceName.toLowerCase().startsWith("loopback")
             && iface.getActive()
-            && iface.getPrefix() != null) {
+            && iface.getAddress() != null) {
           loopbackInterfaces.put(ifaceName, iface);
         }
       }
@@ -2979,8 +2983,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (!iface.getActive()) {
           continue;
         }
-        for (Prefix prefix : iface.getAllPrefixes()) {
-          Ip ip = prefix.getAddress();
+        for (InterfaceAddress address : iface.getAllAddresses()) {
+          Ip ip = address.getIp();
           if (highestIp.asLong() < ip.asLong()) {
             highestIp = ip;
           }
@@ -3006,11 +3010,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, org.batfish.datamodel.Interface> e : vrf.getInterfaces().entrySet()) {
       String ifaceName = e.getKey();
       org.batfish.datamodel.Interface i = e.getValue();
-      Prefix interfaceAddressPrefix = i.getPrefix();
-      if (interfaceAddressPrefix == null) {
+      InterfaceAddress interfaceAddress = i.getAddress();
+      if (interfaceAddress == null) {
         continue;
       }
-      Prefix interfaceNetwork = interfaceAddressPrefix.getNetworkPrefix();
+      Prefix interfaceNetwork = interfaceAddress.getPrefix();
       if (networks.contains(interfaceNetwork)) {
         newProcess.getInterfaces().add(ifaceName);
         i.setRipEnabled(true);
@@ -3707,7 +3711,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag("Can't match IkeGateway: tunnel source or destination is not set for " + name);
         } else {
           for (IkeGateway ikeGateway : c.getIkeGateways().values()) {
-            if (source.equals(ikeGateway.getLocalAddress())
+            if (source.equals(ikeGateway.getLocalIp())
                 && destination.equals(ikeGateway.getAddress())) {
               ipsecVpn.setIkeGateway(ikeGateway);
             }
@@ -3900,7 +3904,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
         c.getIkeGateways().put(name, ikeGateway);
-        ikeGateway.setAddress(remotePrefix.getAddress());
+        ikeGateway.setAddress(remotePrefix.getStartIp());
         Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remotePrefix);
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
@@ -3908,7 +3912,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag("External interface not found for ikeGateway for isakmpProfile " + name);
         }
         ikeGateway.setIkePolicy(ikePolicy);
-        ikeGateway.setLocalAddress(isakmpProfile.getLocalAddress());
+        ikeGateway.setLocalIp(isakmpProfile.getLocalAddress());
       }
     }
   }

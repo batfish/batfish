@@ -37,6 +37,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -66,11 +67,11 @@ import org.junit.Test;
 
 public class VirtualRouterTest {
   /** Make a CISCO IOS router with 3 interfaces named Eth1-Eth3, /16 prefixes on each interface */
-  private static final Map<String, Prefix> exampleInterfacePrefixes =
-      ImmutableMap.<String, Prefix>builder()
-          .put("Ethernet1", new Prefix("10.1.0.0/16"))
-          .put("Ethernet2", new Prefix("10.2.0.0/16"))
-          .put("Ethernet3", new Prefix("10.3.0.0/16"))
+  private static final Map<String, InterfaceAddress> exampleInterfaceAddresses =
+      ImmutableMap.<String, InterfaceAddress>builder()
+          .put("Ethernet1", new InterfaceAddress("10.1.0.0/16"))
+          .put("Ethernet2", new InterfaceAddress("10.2.0.0/16"))
+          .put("Ethernet3", new InterfaceAddress("10.3.0.0/16"))
           .build();
 
   private static final String NEIGHBOR_HOST_NAME = "neighbornode";
@@ -83,7 +84,7 @@ public class VirtualRouterTest {
   private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
   private static final int TEST_METRIC = 30;
   private static final Ip TEST_SRC_IP = new Ip("1.1.1.1");
-  private static final Prefix TEST_NETWORK = new Prefix("4.4.4.4/32");
+  private static final Prefix TEST_NETWORK = Prefix.parse("4.4.4.4/32");
   private static final Ip TEST_NEXT_HOP_IP1 = new Ip("1.2.3.4");
   private static final Ip TEST_NEXT_HOP_IP2 = new Ip("2.3.4.5");
   private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
@@ -125,14 +126,13 @@ public class VirtualRouterTest {
     _routingPolicyBuilder = nf.routingPolicyBuilder().setOwner(_testVirtualRouter._c);
   }
 
-  private static void addInterfaces(Configuration c, Map<String, Prefix> interfacePrefixes) {
+  private static void addInterfaces(
+      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib =
         nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
-    interfacePrefixes.forEach(
-        (ifaceName, prefix) -> {
-          ib.setName(ifaceName).setPrefix(prefix).build();
-        });
+    interfaceAddresses.forEach(
+        (ifaceName, address) -> ib.setName(ifaceName).setAddress(address).build());
   }
 
   private static Node makeIosRouter(String hostname) {
@@ -353,7 +353,7 @@ public class VirtualRouterTest {
 
   @Test
   public void testGetBetterOspfRouteMetric() {
-    Prefix ospfInterAreaRoutePrefix = new Prefix("1.1.1.1/24");
+    Prefix ospfInterAreaRoutePrefix = Prefix.parse("1.1.1.1/24");
     long definedMetric = 5;
     long definedArea = 1;
     OspfInterAreaRoute route =
@@ -387,7 +387,7 @@ public class VirtualRouterTest {
     // The route is not in the area's prefix, return the current metric
     assertThat(
         VirtualRouter.computeUpdatedOspfSummaryMetric(
-            route, new Prefix("2.0.0.0/8"), 4L, definedArea, true),
+            route, Prefix.parse("2.0.0.0/8"), 4L, definedArea, true),
         equalTo(4L));
 
     OspfInterAreaRoute sameAreaRoute =
@@ -409,7 +409,7 @@ public class VirtualRouterTest {
   public void testInitConnectedRib() {
     // Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
-    addInterfaces(vr._c, exampleInterfacePrefixes);
+    addInterfaces(vr._c, exampleInterfaceAddresses);
     vr.initRibs();
 
     // Test
@@ -419,10 +419,10 @@ public class VirtualRouterTest {
     assertThat(
         vr._connectedRib.getRoutes(),
         Matchers.containsInAnyOrder(
-            exampleInterfacePrefixes
+            exampleInterfaceAddresses
                 .entrySet()
                 .stream()
-                .map(e -> new ConnectedRoute(e.getValue(), e.getKey()))
+                .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey()))
                 .collect(Collectors.toList())
                 .toArray(new ConnectedRoute[] {})));
   }
@@ -518,14 +518,14 @@ public class VirtualRouterTest {
     VirtualRouter exportingRouter = routers.get(exportingRouterName);
     testRouter.initRibs();
     exportingRouter.initRibs();
-    addInterfaces(testRouter._c, exampleInterfacePrefixes);
+    addInterfaces(testRouter._c, exampleInterfaceAddresses);
     addInterfaces(
         exportingRouter._c,
-        ImmutableMap.of(exportingRouterInterfaceName, new Prefix("10.4.0.0/16")));
+        ImmutableMap.of(exportingRouterInterfaceName, new InterfaceAddress("10.4.0.0/16")));
     int adminCost =
         RoutingProtocol.OSPF.getDefaultAdministrativeCost(testRouter._c.getConfigurationFormat());
 
-    Prefix prefix = new Prefix("7.7.7.0/24");
+    Prefix prefix = Prefix.parse("7.7.7.0/24");
     OspfIntraAreaRoute route = new OspfIntraAreaRoute(prefix, new Ip("7.7.1.1"), adminCost, 20, 1);
     exportingRouter._ospfIntraAreaRib.mergeRoute(route);
 
@@ -572,7 +572,7 @@ public class VirtualRouterTest {
   public void testRipInitialization() {
     // Incomplete Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
-    addInterfaces(vr._c, exampleInterfacePrefixes);
+    addInterfaces(vr._c, exampleInterfaceAddresses);
     vr.initRibs();
     vr.initBaseRipRoutes();
 
@@ -589,13 +589,13 @@ public class VirtualRouterTest {
     assertThat(
         vr._ripInternalRib.getRoutes(),
         containsInAnyOrder(
-            exampleInterfacePrefixes
+            exampleInterfaceAddresses
                 .values()
                 .stream()
                 .map(
-                    p ->
+                    address ->
                         new RipInternalRoute(
-                            p,
+                            address.getPrefix(),
                             null,
                             RoutingProtocol.RIP.getDefaultAdministrativeCost(
                                 vr._c.getConfigurationFormat()),
@@ -614,7 +614,7 @@ public class VirtualRouterTest {
     int admin = 50;
     int metric = 100;
     long area = 1L;
-    Prefix prefix = new Prefix("7.7.7.0/24");
+    Prefix prefix = Prefix.parse("7.7.7.0/24");
     OspfInterAreaRoute iaroute =
         new OspfInterAreaRoute(prefix, new Ip("7.7.1.1"), admin, metric, area);
 
@@ -635,7 +635,7 @@ public class VirtualRouterTest {
     VirtualRouter vr = makeIosVirtualRouter(null);
     vr.initRibs();
     SortedSet<StaticRoute> routeSet =
-        ImmutableSortedSet.of(new StaticRoute(new Prefix("1.1.1.1/32"), Ip.ZERO, null, 1, 0));
+        ImmutableSortedSet.of(new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 1, 0));
     vr._vrf.setStaticRoutes(routeSet);
 
     // Test

@@ -17,12 +17,12 @@ public class PrefixMatchExpr extends BooleanExpr {
     if (length == 0) {
       _expr = TrueExpr.INSTANCE;
     } else if (length == Synthesizer.IP_BITS) {
-      _expr = new EqExpr(varExpr, new LitIntExpr(prefix.getAddress()));
+      _expr = new EqExpr(varExpr, new LitIntExpr(prefix.getStartIp()));
     } else {
       int low = Synthesizer.IP_BITS - length;
       int high = Synthesizer.IP_BITS - 1;
       IntExpr lhs = new ExtractExpr(var, low, high);
-      IntExpr rhs = new LitIntExpr(prefix.getAddress().asLong(), low, high);
+      IntExpr rhs = new LitIntExpr(prefix.getStartIp().asLong(), low, high);
       _expr = new EqExpr(lhs, rhs);
     }
   }

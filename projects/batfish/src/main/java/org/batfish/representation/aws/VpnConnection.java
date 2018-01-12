@@ -22,6 +22,7 @@ import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecPolicy;
@@ -173,7 +174,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       JSONArray routes = jObj.getJSONArray(JSON_KEY_ROUTES);
       for (int index = 0; index < routes.length(); index++) {
         JSONObject childObject = routes.getJSONObject(index);
-        _routes.add(new Prefix(childObject.getString(JSON_KEY_DESTINATION_CIDR_BLOCK)));
+        _routes.add(Prefix.parse(childObject.getString(JSON_KEY_DESTINATION_CIDR_BLOCK)));
       }
     }
 
@@ -222,15 +223,17 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
-      Prefix externalInterfacePrefix = new Prefix(ipsecTunnel.getVgwOutsideAddress(), 32);
+      InterfaceAddress externalInterfaceAddress =
+          new InterfaceAddress(ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
       Interface externalInterface =
-          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfacePrefix);
+          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
 
       String vpnInterfaceName = "vpn" + idNum;
-      Prefix vpnInterfacePrefix =
-          new Prefix(ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
+      InterfaceAddress vpnInterfaceAddress =
+          new InterfaceAddress(
+              ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Interface vpnInterface =
-          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfacePrefix);
+          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
 
       // Set fields within representation structures
 
@@ -247,7 +250,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       // ike
       ikeGateway.setExternalInterface(externalInterface);
       ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
-      ikeGateway.setLocalAddress(externalInterface.getPrefix().getAddress());
+      ikeGateway.setLocalIp(externalInterface.getAddress().getIp());
       if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
         ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
         ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
@@ -293,9 +296,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
         // iBGP connection to VPC
         Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
-        Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getPrefix().getAddress();
-        Ip vgwToVpcIfaceAddress =
-            vpnGatewayCfgNode.getInterfaces().get(vpcId).getPrefix().getAddress();
+        Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getAddress().getIp();
+        Ip vgwToVpcIfaceAddress = vpnGatewayCfgNode.getInterfaces().get(vpcId).getAddress().getIp();
         BgpNeighbor vgwToVpcBgpNeighbor = new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode);
         proc.getNeighbors().put(vgwToVpcBgpNeighbor.getPrefix(), vgwToVpcBgpNeighbor);
         vgwToVpcBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
