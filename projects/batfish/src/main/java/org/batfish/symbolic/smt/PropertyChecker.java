@@ -870,7 +870,7 @@ public class PropertyChecker {
         throw new BatfishException("Invalid link from: " + hop1 + " to " + hop2);
       }
       ArithExpr failed = enc.getSymbolicFailures().getFailedVariable(edge);
-      assert(failed != null);
+      assert (failed != null);
       notAvailable = enc.mkOr(notAvailable, enc.mkEq(failed, enc.mkInt(1)));
     }
     return notAvailable;
