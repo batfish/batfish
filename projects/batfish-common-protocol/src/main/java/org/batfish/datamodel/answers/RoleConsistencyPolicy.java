@@ -1,4 +1,4 @@
-package org.batfish.datamodel.collections;
+package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
