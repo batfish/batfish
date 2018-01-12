@@ -4137,6 +4137,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public AnswerElement smtPathPreferences(HeaderLocationQuestion q, List<List<String>> pathPrefs) {
+    PropertyChecker p = new PropertyChecker(this);
+    return p.checkPathPreferences(q, pathPrefs);
+  }
+
+  @Override
   public AnswerElement smtReachability(HeaderLocationQuestion q) {
     PropertyChecker p = new PropertyChecker(this);
     return p.checkReachability(q);

@@ -43,7 +43,7 @@ public class SmtWaypointingQuestion extends QuestionPlugin {
     }
 
     @JsonProperty(WAYPOINTS_VAR)
-    public void setBound(List<String> w) {
+    public void setWaypoints(List<String> w) {
       this._waypoints = w;
     }
 

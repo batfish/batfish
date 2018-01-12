@@ -168,6 +168,8 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtMultipathConsistency(HeaderLocationQuestion q);
 
+  AnswerElement smtPathPreferences(HeaderLocationQuestion q, List<List<String>> pathPrefs);
+
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
   AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex);

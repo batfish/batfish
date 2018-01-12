@@ -1058,7 +1058,7 @@ class EncoderSlice {
    * This method is necessary, because optimizations might
    * decide that certain records can be merged together.
    */
-  private SymbolicRoute correctVars(LogicalEdge e) {
+  SymbolicRoute correctVars(LogicalEdge e) {
     SymbolicRoute vars = e.getSymbolicRecord();
     if (!vars.getIsUsed()) {
       return _logicalGraph.getOtherEnd().get(e).getSymbolicRecord();
