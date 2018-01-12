@@ -11,8 +11,8 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.node.AndExpr;
 import org.batfish.z3.node.BooleanExpr;
@@ -44,9 +44,9 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
         Configuration node = configurations.get(hostname);
         for (Interface iface : node.getInterfaces().values()) {
           if (iface.getActive()) {
-            Prefix prefix = iface.getPrefix();
-            if (prefix != null) {
-              _blacklistIps.add(prefix.getAddress());
+            InterfaceAddress address = iface.getAddress();
+            if (address != null) {
+              _blacklistIps.add(address.getIp());
             }
           }
         }
@@ -59,9 +59,9 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
         Configuration node = configurations.get(hostname);
         Interface iface = node.getInterfaces().get(ifaceName);
         if (iface.getActive()) {
-          Prefix prefix = iface.getPrefix();
-          if (prefix != null) {
-            _blacklistIps.add(prefix.getAddress());
+          InterfaceAddress address = iface.getAddress();
+          if (address != null) {
+            _blacklistIps.add(address.getIp());
           }
         }
       }
@@ -73,15 +73,15 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
                 .get(edge.getNode1())
                 .getInterfaces()
                 .get(edge.getInt1())
-                .getPrefix()
-                .getAddress();
+                .getAddress()
+                .getIp();
         Ip ip2 =
             configurations
                 .get(edge.getNode2())
                 .getInterfaces()
                 .get(edge.getInt2())
-                .getPrefix()
-                .getAddress();
+                .getAddress()
+                .getIp();
         _blacklistIps.add(ip1);
         _blacklistIps.add(ip2);
       }

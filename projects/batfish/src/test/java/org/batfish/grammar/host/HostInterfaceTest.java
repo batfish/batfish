@@ -10,8 +10,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.batfish.common.Warnings;
@@ -19,6 +17,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -67,14 +66,14 @@ public class HostInterfaceTest {
   }
 
   @Test
-  public void testShared() throws JsonParseException, JsonMappingException, IOException {
-    Ip sharedAddress = new Ip("1.0.0.1");
-    Prefix sharedPrefix = new Prefix(sharedAddress, 24);
-    Prefix nonShared1Prefix = new Prefix("2.0.0.2/24");
-    Prefix nonShared2Prefix = new Prefix("3.0.0.2/24");
+  public void testShared() throws IOException {
+    Ip sharedIp = new Ip("1.0.0.1");
+    InterfaceAddress sharedAddress = new InterfaceAddress(sharedIp, 24);
+    Prefix nonShared1Prefix = Prefix.parse("2.0.0.2/24");
+    Prefix nonShared2Prefix = Prefix.parse("3.0.0.2/24");
     String ifaceSharedText =
         "{\"name\":\"shared_interface\", \"prefix\":\""
-            + sharedPrefix.toString()
+            + sharedAddress.toString()
             + "\", \"shared\":true}";
     String ifaceNonShared1Text =
         "{\"name\":\"non_shared1_interface\", \"prefix\":\""
@@ -105,7 +104,7 @@ public class HostInterfaceTest {
      */
     assertThat(
         sharedInterface,
-        hasSourceNats(hasItem(allOf(hasPoolIpFirst(sharedAddress), hasPoolIpLast(sharedAddress)))));
+        hasSourceNats(hasItem(allOf(hasPoolIpFirst(sharedIp), hasPoolIpLast(sharedIp)))));
     assertThat(nonShared1Interface, hasSourceNats(empty()));
     assertThat(nonShared2Interface, hasSourceNats(empty()));
   }

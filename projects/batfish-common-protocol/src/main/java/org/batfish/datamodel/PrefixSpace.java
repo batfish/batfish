@@ -29,16 +29,16 @@ public class PrefixSpace implements Serializable {
 
     public void addPrefixRange(PrefixRange prefixRange) {
       Prefix prefix = prefixRange.getPrefix();
-      BitSet bits = getAddressBits(prefix.getAddress());
+      BitSet bits = getAddressBits(prefix.getStartIp());
 
       // The minimum length of the range may be shorter than the actual prefix length.
       // If so, we need to specially handle all shorter prefixes with a custom address and bitset.
       int minLength = prefixRange.getLengthRange().getStart();
       int maxLength = Math.min(prefixRange.getLengthRange().getEnd(), prefix.getPrefixLength() - 1);
       for (int currentLength = minLength; currentLength <= maxLength; currentLength++) {
-        Prefix currentPrefix = new Prefix(prefix.getAddress(), currentLength).getNetworkPrefix();
+        Prefix currentPrefix = new Prefix(prefix.getStartIp(), currentLength);
         PrefixRange currentPrefixRange = PrefixRange.fromPrefix(currentPrefix);
-        BitSet currentBits = getAddressBits(currentPrefix.getAddress());
+        BitSet currentBits = getAddressBits(currentPrefix.getStartIp());
         _root.addPrefixRange(currentPrefixRange, currentBits, currentLength, 0);
       }
 
@@ -61,7 +61,7 @@ public class PrefixSpace implements Serializable {
     public boolean containsPrefixRange(PrefixRange prefixRange) {
       Prefix prefix = prefixRange.getPrefix();
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = getAddressBits(prefix.getAddress());
+      BitSet bits = getAddressBits(prefix.getStartIp());
       return _root.containsPrefixRange(prefixRange, bits, prefixLength, 0);
     }
 

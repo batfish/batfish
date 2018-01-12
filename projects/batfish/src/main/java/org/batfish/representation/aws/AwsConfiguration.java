@@ -4,9 +4,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericConfigObject;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.codehaus.jettison.json.JSONException;
@@ -44,11 +46,14 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return _configurationNodes;
   }
 
-  public synchronized Prefix getNextGeneratedLinkSubnet() {
-    Ip prefixBase = new Ip(_currentGeneratedIpAsLong);
-    Prefix val = new Prefix(prefixBase, 31);
+  public synchronized Pair<InterfaceAddress, InterfaceAddress> getNextGeneratedLinkSubnet() {
+    assert _currentGeneratedIpAsLong % 2 == 0;
+    InterfaceAddress val =
+        new InterfaceAddress(new Ip(_currentGeneratedIpAsLong), Prefix.MAX_PREFIX_LENGTH - 1);
+    InterfaceAddress val2 =
+        new InterfaceAddress(new Ip(_currentGeneratedIpAsLong + 1), Prefix.MAX_PREFIX_LENGTH - 1);
     _currentGeneratedIpAsLong += 2L;
-    return val;
+    return new Pair<>(val, val2);
   }
 
   public Warnings getWarnings() {

@@ -23,7 +23,7 @@ public class FibRow implements Comparable<FibRow>, Serializable {
 
   @Override
   public int compareTo(FibRow rhs) {
-    int prefixComparison = _prefix.getAddress().compareTo(rhs._prefix.getAddress());
+    int prefixComparison = _prefix.getStartIp().compareTo(rhs._prefix.getStartIp());
     if (prefixComparison == 0) {
       int lengthComparison =
           Integer.compare(_prefix.getPrefixLength(), rhs._prefix.getPrefixLength());

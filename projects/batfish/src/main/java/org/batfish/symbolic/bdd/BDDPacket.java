@@ -391,7 +391,7 @@ public class BDDPacket {
 
   public BDD restrict(BDD bdd, Prefix pfx) {
     int len = pfx.getPrefixLength();
-    BitSet bits = pfx.getAddress().getAddressBits();
+    BitSet bits = pfx.getStartIp().getAddressBits();
     int[] vars = new int[len];
     BDD[] vals = new BDD[len];
     pairing.reset();

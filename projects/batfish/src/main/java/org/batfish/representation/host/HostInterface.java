@@ -13,8 +13,8 @@ import java.util.TreeSet;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
 
@@ -45,9 +45,9 @@ public class HostInterface implements Serializable {
 
   private String _name;
 
-  private Set<Prefix> _otherPrefixes;
+  private Set<InterfaceAddress> _otherAddresses;
 
-  private Prefix _prefix;
+  private InterfaceAddress _address;
 
   private boolean _shared;
 
@@ -56,7 +56,12 @@ public class HostInterface implements Serializable {
   @JsonCreator
   public HostInterface(@JsonProperty(PROP_NAME) String name) {
     _name = name;
-    _otherPrefixes = new TreeSet<>();
+    _otherAddresses = new TreeSet<>();
+  }
+
+  @JsonProperty(PROP_PREFIX)
+  public InterfaceAddress getAddress() {
+    return _address;
   }
 
   @JsonProperty(PROP_BANDWIDTH)
@@ -80,13 +85,8 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_PREFIXES)
-  public Set<Prefix> getOtherPrefixes() {
-    return _otherPrefixes;
-  }
-
-  @JsonProperty(PROP_PREFIX)
-  public Prefix getPrefix() {
-    return _prefix;
+  public Set<InterfaceAddress> getOtherAddresses() {
+    return _otherAddresses;
   }
 
   @JsonProperty(PROP_SHARED)
@@ -115,13 +115,13 @@ public class HostInterface implements Serializable {
   }
 
   @JsonProperty(PROP_OTHER_PREFIXES)
-  public void setOtherPrefixes(Set<Prefix> otherPrefixes) {
-    _otherPrefixes = otherPrefixes;
+  public void setOtherAddresses(Set<InterfaceAddress> otherAddresses) {
+    _otherAddresses = otherAddresses;
   }
 
   @JsonProperty(PROP_PREFIX)
-  public void setPrefix(Prefix prefix) {
-    _prefix = prefix;
+  public void setAddress(InterfaceAddress address) {
+    _address = address;
   }
 
   @JsonProperty(PROP_SHARED)
@@ -138,13 +138,13 @@ public class HostInterface implements Serializable {
     Interface iface = new Interface(_canonicalName, configuration);
     iface.setBandwidth(_bandwidth);
     iface.setDeclaredNames(ImmutableSortedSet.of(_name));
-    iface.setPrefix(_prefix);
-    iface.setAllPrefixes(Iterables.concat(Collections.singleton(_prefix), _otherPrefixes));
+    iface.setAddress(_address);
+    iface.setAllAddresses(Iterables.concat(Collections.singleton(_address), _otherAddresses));
     iface.setVrf(configuration.getDefaultVrf());
     if (_shared) {
       SourceNat sourceNat = new SourceNat();
       iface.setSourceNats(ImmutableList.of(sourceNat));
-      Ip publicIp = _prefix.getAddress();
+      Ip publicIp = _address.getIp();
       sourceNat.setPoolIpFirst(publicIp);
       sourceNat.setPoolIpLast(publicIp);
     }

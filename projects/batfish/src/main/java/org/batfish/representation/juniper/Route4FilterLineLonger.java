@@ -23,7 +23,7 @@ public class Route4FilterLineLonger extends Route4FilterLine {
     }
     org.batfish.datamodel.RouteFilterLine line =
         new org.batfish.datamodel.RouteFilterLine(
-            LineAction.ACCEPT, _prefix, new SubRange(prefixLength + 1, 32));
+            LineAction.ACCEPT, _prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH));
     rfl.addLine(line);
   }
 

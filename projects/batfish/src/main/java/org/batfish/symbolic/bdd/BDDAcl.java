@@ -290,7 +290,7 @@ public class BDDAcl {
    * Does the 32 bit integer match the prefix using lpm?
    */
   private BDD isRelevantFor(Prefix p, BDDInteger i) {
-    return firstBitsEqual(i.getBitvec(), p.getNetworkPrefix(), p.getPrefixLength());
+    return firstBitsEqual(i.getBitvec(), p, p.getPrefixLength());
   }
 
   /*
@@ -302,7 +302,7 @@ public class BDDAcl {
    * [var(0), ..., var(n)]
    */
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
-    BitSet b = p.getAddress().getAddressBits();
+    BitSet b = p.getStartIp().getAddressBits();
     BDD acc = _factory.one();
     for (int i = 0; i < length; i++) {
       boolean res = b.get(i);
