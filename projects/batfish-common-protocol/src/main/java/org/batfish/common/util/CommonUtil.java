@@ -692,13 +692,13 @@ public class CommonUtil {
   }
 
   public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
-    Map<IpsecVpn, Ip> vpmRemoteIps = new IdentityHashMap<>();
+    Map<IpsecVpn, Ip> vpnRemoteIps = new IdentityHashMap<>();
     Map<Ip, Set<IpsecVpn>> externalIpVpnMap = new HashMap<>();
     SetMultimap<Ip, IpSpace> privateIpsByPublicIp = initPrivateIpsByPublicIp(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
         Ip remoteIp = ipsecVpn.getIkeGateway().getAddress();
-        vpmRemoteIps.put(ipsecVpn, remoteIp);
+        vpnRemoteIps.put(ipsecVpn, remoteIp);
         Set<InterfaceAddress> externalAddresses =
             ipsecVpn.getIkeGateway().getExternalInterface().getAllAddresses();
         for (InterfaceAddress address : externalAddresses) {
@@ -709,7 +709,7 @@ public class CommonUtil {
         }
       }
     }
-    for (Entry<IpsecVpn, Ip> e : vpmRemoteIps.entrySet()) {
+    for (Entry<IpsecVpn, Ip> e : vpnRemoteIps.entrySet()) {
       IpsecVpn ipsecVpn = e.getKey();
       Ip remoteIp = e.getValue();
       Ip localIp = ipsecVpn.getIkeGateway().getLocalIp();
@@ -721,7 +721,7 @@ public class CommonUtil {
           if (remoteIpsecVpnLocalAddress != null && !remoteIpsecVpnLocalAddress.equals(remoteIp)) {
             continue;
           }
-          Ip reciprocalRemoteAddress = vpmRemoteIps.get(remoteIpsecVpnCandidate);
+          Ip reciprocalRemoteAddress = vpnRemoteIps.get(remoteIpsecVpnCandidate);
           Set<IpsecVpn> reciprocalVpns = externalIpVpnMap.get(reciprocalRemoteAddress);
           if (reciprocalVpns == null) {
             Set<IpSpace> privateIpsBehindReciprocalRemoteAddress =
