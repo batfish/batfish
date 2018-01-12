@@ -784,7 +784,7 @@ public class PropertyChecker {
 
     List<List<String>> pathPrefsRev = new ArrayList<>(pathPrefs);
     Collections.reverse(pathPrefsRev);
-    
+
     return checkProperty(
         q,
         (enc, srcRouters, destPorts) -> {
