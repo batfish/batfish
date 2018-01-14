@@ -8,14 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.annotation.Nonnull;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
@@ -40,10 +38,6 @@ class AbstractionBuilder {
   private static final int EBGP_INDEX = -1;
 
   private static final int HOST_OR_LOOPBACK_INDEX = -2;
-
-  private static final boolean ENABLE_SELF_LOOP_OPTIMIZATION = true;
-
-  private static final boolean ENABLE_MONOTINICITY_OPTIMIZATION = true;
 
   private IBatfish _batfish;
 
@@ -217,12 +211,6 @@ class AbstractionBuilder {
 
     collectInterfaceInformation(partition, isUniversal);
 
-    if (!countMatters) {
-      applyMonotonicityOptimization(partition, isUniversal);
-    }
-
-    applySelfLoopOptimization(partition, isUniversal);
-
     // If there is more than one policy to the same abstract neighbor, we make concrete
     // Since by definition this can not be a valid abstraction
     Set<String> makeConcrete = new HashSet<>();
@@ -287,96 +275,6 @@ class AbstractionBuilder {
     }
   }
 
-  private void applySelfLoopOptimization(Set<String> partition, boolean isUniversal) {
-    if (ENABLE_SELF_LOOP_OPTIMIZATION) {
-      if (isUniversal) {
-        // Optimization: Find if we can ignore self loops, and if so, delete the entries
-        Set<String> canIgnoreSelfLoops = canIgnoreSelfLoops(partition);
-        for (String router : canIgnoreSelfLoops) {
-          Integer j = _abstractGroups.getHandle(router);
-          Map<Integer, Set<EdgePolicyToRole>> map = _eeMap.get(router);
-          map.remove(j);
-          _universalMap.get(router).removeIf(tup -> tup.getSecond().getAbstractId().equals(j));
-        }
-      } else {
-        // Optimization: Find if we can ignore self loops, and if so, delete the entries
-        Set<String> canIgnoreSelfLoops = canIgnoreSelfLoops(partition);
-        for (String router : canIgnoreSelfLoops) {
-          Integer j = _abstractGroups.getHandle(router);
-          Map<Integer, Set<EdgePolicyToRole>> map = _eeMap.get(router);
-          map.remove(j);
-          _existentialMap
-              .get(router)
-              .entrySet()
-              .removeIf(entry -> entry.getKey().getAbstractId().equals(j));
-        }
-      }
-    }
-  }
-
-  private void applyMonotonicityOptimization(Set<String> partition, boolean isUniversal) {
-    // Optimization: monotonicity
-    if (ENABLE_MONOTINICITY_OPTIMIZATION) {
-      Integer currentIdx = _abstractGroups.getHandle(partition.iterator().next());
-      Set<Integer> toDelete = new HashSet<>();
-      Set<Integer> neighborGroups = collectNeighborGroups(partition);
-      // System.out.println("Current Partition: " + partition);
-      for (Integer i : neighborGroups) {
-        Set<String> neighbors = _abstractGroups.getPartition(i);
-        // System.out.println("  Looking at neighbors: " + neighbors + " with " + i);
-        if (neighbors.size() == 1 && _destinations.containsAll(neighbors)) {
-          continue;
-        }
-        // Check if a single policy to some neighbor
-        Set<Set<EdgePolicy>> allPolicies = collectAllPolicies(i, partition);
-        //System.out.println("  All current policies: " + allPolicies);
-        if (allPolicies.size() != 1) {
-          continue;
-        }
-        // System.out.println("  HAS SINGLE POLICY");
-
-        collectInterfaceInformation(neighbors, isUniversal);
-
-        Set<Integer> groups = collectNeighborGroups(neighbors);
-        groups.remove(HOST_OR_LOOPBACK_INDEX);
-        groups.remove(i);
-        //System.out.println("  All groups that neighbor has: " + groups);
-        if (groups.size() != 1) {
-          continue;
-        }
-        // System.out.println("  NEIGHBORS ARE ISOLATED");
-        // All have same policy towards this group
-        Set<Set<EdgePolicy>> allPols = collectAllPolicies(currentIdx, neighbors);
-        //System.out.println("  All policies from neighbor: " + allPols);
-        //System.out.println("  All pols: " + allPols);
-        if (allPols.size() == 1) {
-          // System.out.println("  NEIGHBORS ALSO ONLY HAVE ONE");
-          toDelete.add(i);
-          break; // only do this once
-        }
-      }
-      for (Integer i : toDelete) {
-        for (String router : partition) {
-          _existentialMap
-              .get(router)
-              .entrySet()
-              .removeIf(entry -> entry.getKey().getAbstractId().equals(i));
-        }
-      }
-    }
-  }
-
-  @Nonnull
-  private Set<Set<EdgePolicy>> collectAllPolicies(Integer currentIdx, Set<String> neighbors) {
-    Set<Set<EdgePolicy>> allPols = new HashSet<>();
-    for (String router : neighbors) {
-      Set<EdgePolicy> pols = _polMap.get(router, currentIdx);
-      if (pols != null) {
-        allPols.add(pols);
-      }
-    }
-    return allPols;
-  }
 
   private void collectInterfaceInformation(Set<String> partition, boolean isUniversal) {
     for (String router : partition) {
@@ -424,22 +322,6 @@ class AbstractionBuilder {
     }
   }
 
-  @Nonnull
-  private Set<Integer> collectNeighborGroups(Set<String> partition) {
-    Set<Integer> neighborGroups = new HashSet<>();
-    for (String router : partition) {
-      for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
-        if (ge.getPeer() != null) {
-          Integer peerGroup = _abstractGroups.getHandle(ge.getPeer());
-          if (peerGroup >= 0) {
-            neighborGroups.add(peerGroup);
-          }
-        }
-      }
-    }
-    return neighborGroups;
-  }
-
   // TODO: lookup based on local preference
   private boolean needUniversalAbstraction() {
     return false;
@@ -477,9 +359,6 @@ class AbstractionBuilder {
    * representatives from each role that serve as the abstraction.
    */
   private Map<Integer, Set<String>> pickCanonicalRouters() {
-    Set<String> avoidNodes =
-        (ENABLE_MONOTINICITY_OPTIMIZATION ? findDeadRouters() : new HashSet<>());
-
     Table2<String, Integer, Set<String>> neighborByAbstractId = collectNeighborByAbstractId();
     Map<Integer, Set<String>> chosen = new HashMap<>();
     Stack<String> stack = new Stack<>();
@@ -523,23 +402,12 @@ class AbstractionBuilder {
       for (Entry<Integer, Set<String>> entry : neighbors.entrySet()) {
         Integer j = entry.getKey();
 
-        if (ENABLE_SELF_LOOP_OPTIMIZATION) {
-          if (_abstractGroups.getPartition(j).contains(router)) {
-            if (isMonotonic(_polMap.get(router), j)) {
-              continue;
-            }
-          }
-        }
-
         Set<String> peers = entry.getValue();
         Set<String> chosenPeers = chosen.computeIfAbsent(j, k -> new HashSet<>());
         // Find how many choices we need, and collect the options
         int numNeeded = _possibleFailures + 1;
         options.clear();
         for (String x : peers) {
-          if (avoidNodes.contains(x)) {
-            continue;
-          }
           if (chosenPeers.contains(x)) {
             numNeeded--;
           } else {
@@ -558,38 +426,6 @@ class AbstractionBuilder {
     return chosen;
   }
 
-  private Set<String> canIgnoreSelfLoops(Set<String> partition) {
-    Set<String> ignore = new HashSet<>();
-    for (String router : partition) {
-      Map<Integer, Set<EdgePolicy>> map = _polMap.get(router);
-      map.forEach(
-          (i, set) -> {
-            if (isMonotonic(map, i)) {
-              ignore.add(router);
-            }
-          });
-    }
-    return ignore;
-  }
-
-  // TODO: this should be carefully checked and optimized
-  private boolean isMonotonic(Map<Integer, Set<EdgePolicy>> neighborPols, Integer j) {
-    // Check if the same policy is used for all neighbors
-    Set<EdgePolicy> pols = neighborPols.get(j);
-    if (pols == null) {
-      return true;
-    }
-    for (Entry<Integer, Set<EdgePolicy>> entry : neighborPols.entrySet()) {
-      Integer i = entry.getKey();
-      Set<EdgePolicy> pols2 = entry.getValue();
-      if (!i.equals(j)) {
-        if (!Objects.equals(pols, pols2)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
 
   /*
    * Creates a new Configuration from an old one for an abstract router
@@ -763,38 +599,5 @@ class AbstractionBuilder {
     Graph abstractGraph = new Graph(_batfish, newConfigs);
     AbstractionMap map = new AbstractionMap(canonicalChoices, _abstractGroups.getParitionMap());
     return new Tuple<>(abstractGraph, map);
-  }
-
-  private Set<String> findDeadRouters() {
-    Set<String> deadNodes = new HashSet<>();
-    boolean changed = true;
-    while (changed) {
-      changed = false;
-      for (Set<String> partition : _abstractGroups.partitions()) {
-        Set<Integer> partitionGroups = collectNeighborGroups(partition);
-        partitionGroups.remove(HOST_OR_LOOPBACK_INDEX);
-        for (String router : partition) {
-          if (deadNodes.contains(router) || _destinations.contains(router)) {
-            continue;
-          }
-          Integer i = _abstractGroups.getHandle(router);
-          Set<Integer> individualGroups = new HashSet<>();
-          for (String neighbor : _graph.getNeighbors().get(router)) {
-            if (deadNodes.contains(neighbor)) {
-              continue;
-            }
-            Integer j = _abstractGroups.getHandle(neighbor);
-            if (!i.equals(j)) {
-              individualGroups.add(j);
-            }
-          }
-          if (!individualGroups.equals(partitionGroups)) {
-            deadNodes.add(router);
-            changed = true;
-          }
-        }
-      }
-    }
-    return deadNodes;
   }
 }
