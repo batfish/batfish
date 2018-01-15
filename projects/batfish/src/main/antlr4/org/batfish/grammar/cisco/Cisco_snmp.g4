@@ -146,12 +146,6 @@ ss_host_version
    )?
 ;
 
-ss_host_vrf
-:
-   VRF vrf = variable
-;
-
-
 ss_null
 :
    (

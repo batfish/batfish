@@ -214,42 +214,45 @@ cisco_configuration
    NEWLINE?
    (
       sl += stanza
-   )+ END? COLON? NEWLINE? EOF
+   )+ COLON? NEWLINE? EOF
 ;
 
 cops_listener
 :
    LISTENER
    (
-      (
-         copsl_access_list
-         |
-         (
-            ADMIN_STATE
-            | AIS_SHUT
-            | ALARM_REPORT
-            | CABLELENGTH
-            | CHANNEL_GROUP
-            | CLOCK
-            | DESCRIPTION
-            | FDL
-            | FRAMING
-            | G709
-            | LINECODE
-            | PM
-            | PRI_GROUP
-            | PROACTIVE
-            | SHUTDOWN
-            | STS_1
-            | WAVELENGTH
-         ) ~NEWLINE* NEWLINE
-      )
+      copsl_access_list
+      | copsl_null
    )
 ;
 
 copsl_access_list
 :
    ACCESS_LIST name = variable_permissive NEWLINE
+;
+
+copsl_null
+:
+   NO?
+   (
+      ADMIN_STATE
+      | AIS_SHUT
+      | ALARM_REPORT
+      | CABLELENGTH
+      | CHANNEL_GROUP
+      | CLOCK
+      | DESCRIPTION
+      | FDL
+      | FRAMING
+      | G709
+      | LINECODE
+      | PM
+      | PRI_GROUP
+      | PROACTIVE
+      | SHUTDOWN
+      | STS_1
+      | WAVELENGTH
+   ) ~NEWLINE* NEWLINE
 ;
 
 cp_ip_access_group
@@ -1963,24 +1966,11 @@ role_null
    NO?
    (
       DESCRIPTION
-      |
-      (
-         PERMIT
-         (
-            INTERFACE
-            | VLAN
-            | VRF
-         )
-      )
+      | PERMIT
+      | INTERFACE
+      | VLAN
+      | VRF
       | RULE
-      |
-      (
-         (
-            INTERFACE
-            | VLAN
-            | VRF
-         ) POLICY DENY
-      )
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2959,12 +2949,6 @@ s_username_attributes
 s_vlan
 :
    NO? VLAN
-   (
-        ~(
-            ACCESS_MAP
-            | DEC
-        )
-   )?
    (
       ACCESS_MAP
       |

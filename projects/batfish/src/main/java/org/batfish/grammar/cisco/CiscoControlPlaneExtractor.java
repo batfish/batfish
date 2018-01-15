@@ -740,7 +740,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_IP_ROUTE_VRF = "ip route vrf / vrf - ip route";
 
-  private static final String F_OSPF_AREA_NSSA = "ospf - not-so-stubby areas";
+  private static final String F_OSPF_AREA_NSSA_DEFAULT_ORIGINATE =
+      "ospf - not-so-stubby areas - default-originate";
+
+  private static final String F_OSPF_AREA_NSSA_NO_REDISTRIBUTION =
+      "ospf - not-so-stubby areas - no-redistribution";
 
   private static final String F_OSPF_MAXIMUM_PATHS = "ospf - maximum-paths";
 
@@ -3656,6 +3660,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip source = null;
     if (ctx.IP_ADDRESS() != null) {
       source = toIp(ctx.IP_ADDRESS());
+    } else {
+      throw new BatfishException(
+          "Fixme: do not handle iftunnel_source with interface source instead of ip");
     }
     for (Interface iface : _currentInterfaces) {
       iface.getTunnelInitIfNull().setSource(source);
@@ -4977,8 +4984,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     boolean noSummary = ctx.NO_SUMMARY() != null;
     boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
     boolean noRedstribution = ctx.NO_REDISTRIBUTION() != null;
-    if (defaultOriginate || noRedstribution) {
-      todo(ctx, F_OSPF_AREA_NSSA);
+    if (defaultOriginate) {
+      todo(ctx, F_OSPF_AREA_NSSA_DEFAULT_ORIGINATE);
+    }
+    if (noRedstribution) {
+      todo(ctx, F_OSPF_AREA_NSSA_NO_REDISTRIBUTION);
     }
     proc.getNssas().put(area, noSummary);
   }

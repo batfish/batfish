@@ -310,8 +310,8 @@ cis_null
       | INVALID_SPI_RECOVERY
       | KEEPALIVE
       | KEY
-      | NAT_TRAVERSAL
       | NAT
+      | NAT_TRAVERSAL
    ) ~NEWLINE* NEWLINE
 ;
 

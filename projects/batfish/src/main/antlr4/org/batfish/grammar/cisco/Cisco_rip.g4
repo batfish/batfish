@@ -33,9 +33,9 @@ rr_distribute_list
    (
       IN
       | OUT
-   ) 
+   )
    (
-      i = interface_name 
+      i = interface_name
    )? NEWLINE
 ;
 

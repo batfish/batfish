@@ -598,7 +598,7 @@ set_interface_rm_stanza
 
 set_ip_default_nexthop_stanza
 :
-    SET IP DEFAULT NEXT_HOP nhip=IP_ADDRESS NEWLINE
+   SET IP DEFAULT NEXT_HOP nhip = IP_ADDRESS NEWLINE
 ;
 
 set_ip_df_rm_stanza

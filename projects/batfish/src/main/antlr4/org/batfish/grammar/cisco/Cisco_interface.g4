@@ -13,16 +13,16 @@ if_autostate
 
 if_channel_group
 :
-	CHANNEL_GROUP num = DEC
-	(
-		MODE
-		(
-			ON
-			| ACTIVE
-			| PASSIVE
-            | DESIRABLE
-		)
-	)? NEWLINE
+   CHANNEL_GROUP num = DEC
+   (
+      MODE
+      (
+         ON
+         | ACTIVE
+         | PASSIVE
+         | DESIRABLE
+      )
+   )? NEWLINE
 ;
 
 if_default_gw
@@ -1099,7 +1099,7 @@ s_interface
    )
    (
       if_autostate
-   	  | if_channel_group
+      | if_channel_group
       | if_default_gw
       | if_description
       | if_flow_sampler

@@ -54,7 +54,6 @@ address_family_rb_stanza
       additional_paths_rb_stanza
       | aggregate_address_rb_stanza
       | bgp_tail
-      | default_information_originate_rb_stanza
       |
       {!_multilineBgpNeighbors}?
 
@@ -62,7 +61,6 @@ address_family_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
       | null_no_neighbor_rb_stanza
-      | null_bgp_tail
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
    )* address_family_footer
