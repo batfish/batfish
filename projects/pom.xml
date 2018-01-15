@@ -74,6 +74,7 @@
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>
     <xstream.version>1.4.7</xstream.version>
+    <z3.version>2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae</z3.version>
   </properties>
 
 
@@ -289,10 +290,10 @@
             <configuration>
               <groupId>com.microsoft.z3</groupId>
               <artifactId>z3</artifactId>
-              <version>batfish-internal</version>
+              <version>${z3.version}</version>
               <packaging>jar</packaging>
-              <file>${basedir}/lib/z3/com.microsoft.z3.jar</file>
-              <sources>${basedir}/lib/z3/com.microsoft.z3-sources.jar</sources>
+              <file>${basedir}/lib/z3/com.microsoft.z3-${z3.version}.jar</file>
+              <sources>${basedir}/lib/z3/com.microsoft.z3-${z3.version}-sources.jar</sources>
             </configuration>
           </execution>
           <!-- JavaBDD Binary Decision Diagram library -->
@@ -563,7 +564,7 @@
       <dependency>
         <groupId>com.microsoft.z3</groupId>
         <artifactId>z3</artifactId>
-        <version>batfish-internal</version>
+        <version>${z3.version}</version>
       </dependency>
 
       <dependency>
