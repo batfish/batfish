@@ -6,6 +6,16 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+rr_default_metric
+:
+   DEFAULT_METRIC metric = DEC NEWLINE
+;
+
+rr_default_information
+:
+   DEFAULT_INFORMATION ORIGINATE NEWLINE
+;
+
 rr_distance
 :
    DISTANCE distance = DEC NEWLINE
@@ -23,7 +33,10 @@ rr_distribute_list
    (
       IN
       | OUT
-   ) NEWLINE
+   ) 
+   (
+      i = interface_name 
+   )? NEWLINE
 ;
 
 rr_network
@@ -40,6 +53,7 @@ rr_null
       (
          NO SHUTDOWN
       )
+      | TIMERS
       | VERSION
    ) ~NEWLINE* NEWLINE
 ;
@@ -63,7 +77,9 @@ s_router_rip
 :
    ROUTER RIP NEWLINE
    (
-      rr_distance
+      rr_default_metric
+      | rr_default_information
+      | rr_distance
       | rr_distribute_list
       | rr_network
       | rr_null

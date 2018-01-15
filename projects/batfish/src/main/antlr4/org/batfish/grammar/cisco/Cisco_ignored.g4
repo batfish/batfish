@@ -59,7 +59,6 @@ null_block
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE_ACL_COUNTER
       | ENABLE_QOS_STATISTICS
-      | END
       | ETHERNET
       | EXCEPTION_SLAVE
       | EXIT
@@ -72,6 +71,7 @@ null_block
       | GLOBAL_PORT_SECURITY
       | GROUP_POLICY
       | HASH_ALGORITHM
+      | HOLD_QUEUE
       | HPM
       | HSRP
       | HW_SWITCH
@@ -261,6 +261,8 @@ null_block
       | VLAN_GROUP
       | VLAN_POLICY
       | VLT
+      | VOICE
+      | VRRP
       | VXLAN
       | VTY_POOL
       | WISM
@@ -417,6 +419,7 @@ null_inner
       | LOG
       | LPTS
       | MAC_ADDRESS
+      | MAXIMUM
       | MEDIA
       | MEMBER
       | MESH_GROUP
@@ -476,6 +479,7 @@ null_inner
       | REQUEST
       | RESOURCES
       | RESPONDER
+      | RETRANSMIT
       | RETRIES
       | REVISION
       | RING
@@ -494,6 +498,7 @@ null_inner
       | SERVICE_TYPE
       | SESSION
       | SEVERITY
+      | SHUTDOWN
       | SIGNING
       | SINGLE_CONNECTION
       | SINGLE_ROUTER_MODE
@@ -531,6 +536,7 @@ null_inner
       | VERSION
       | VIRTUAL
       | VIRTUAL_ROUTER
+      | VLAN
       | VM_CPU
       | VM_MEMORY
       | VPN_FILTER
@@ -621,6 +627,10 @@ null_single
       | DIALER_LIST
       | DNS
       | DNS_GUARD
+      |
+      (
+      	DOMAIN LOOKUP
+      )
       | DOWNLINK
       | DSP
       | DSS

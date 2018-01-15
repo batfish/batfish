@@ -148,6 +148,7 @@ logging_null
       | ASDM
       | ASDM_BUFFER_SIZE
       | BUFFER_SIZE
+      | COUNT
       | CMTS
       | DEBUG_TRACE
       | DISCRIMINATOR
@@ -163,6 +164,7 @@ logging_null
       | LOGFILE
       | MESSAGE_COUNTER
       | MONITOR
+      | ORIGIN_ID
       | PERMIT_HOSTDOWN
       | PROPRIETARY
       | OVERRIDE
@@ -174,6 +176,7 @@ logging_null
       | SYNCHRONOUS
       | SYSLOG
       | TIMESTAMP
+      | USERINFO
    ) ~NEWLINE* NEWLINE
 ;
 

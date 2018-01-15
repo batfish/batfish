@@ -596,6 +596,11 @@ set_interface_rm_stanza
    SET INTERFACE ~NEWLINE* NEWLINE
 ;
 
+set_ip_default_nexthop_stanza
+:
+    SET IP DEFAULT NEXT_HOP nhip=IP_ADDRESS NEWLINE
+;
+
 set_ip_df_rm_stanza
 :
    SET IP DF ~NEWLINE* NEWLINE
@@ -732,6 +737,7 @@ set_rm_stanza
    | set_extcomm_list_rm_stanza
    | set_extcommunity_rm_stanza
    | set_interface_rm_stanza
+   | set_ip_default_nexthop_stanza
    | set_ip_df_rm_stanza
    | set_ipv6_rm_stanza
    | set_local_preference_rm_stanza

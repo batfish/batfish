@@ -19,14 +19,41 @@ ro_area_nssa
       | area_ip = IP_ADDRESS
    ) NSSA
    (
-      NO_SUMMARY
-      | DEFAULT_INFORMATION_ORIGINATE
+      (
+         DEFAULT_INFORMATION_ORIGINATE
+         (
+            (
+               METRIC metric = DEC
+            )
+            |
+            (
+               METRIC_TYPE metric_type = DEC
+            )
+         )*
+      )
+      | NO_REDISTRIBUTION
+      | NO_SUMMARY
    )* NEWLINE
 ;
 
 ro_area_range
 :
-   AREA area = IP_ADDRESS RANGE area_range = IP_PREFIX NEWLINE
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   )
+   RANGE
+   (
+   	  (
+         area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
+      )
+      | area_prefix = IP_PREFIX
+   )
+   (
+      ADVERTISE
+      | NOT_ADVERTISE
+   ) NEWLINE
 ;
 
 ro_area_stub
@@ -47,7 +74,17 @@ ro_area
    (
       area_int = DEC
       | area_ip = IP_ADDRESS
-   ) NEWLINE
+   )
+   (
+      DEFAULT_COST cost = DEC
+   )?
+   (
+      FILTER_LIST PREFIX prefix_list_name=VARIABLE
+      (
+        IN
+        | OUT
+      )
+   )?  NEWLINE
    (
       ro_common
       | roa_cost
@@ -174,6 +211,7 @@ ro_null
       )
       | AUTO_COST
       | BFD
+      | CAPABILITY
       | DEAD_INTERVAL
       | DISCARD_ROUTE
       | DISTRIBUTE_LIST
@@ -568,4 +606,3 @@ s_router_ospfv3
       | rov3_common
    )*
 ;
-

@@ -20,7 +20,7 @@ options {
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
-   
+
    @Override
    public String getStateInfo() {
       return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
@@ -214,14 +214,36 @@ cisco_configuration
    NEWLINE?
    (
       sl += stanza
-   )+ COLON? NEWLINE? EOF
+   )+ END? COLON? NEWLINE? EOF
 ;
 
 cops_listener
 :
    LISTENER
    (
-      copsl_access_list
+      (
+         copsl_access_list
+         |
+         (
+            ADMIN_STATE
+            | AIS_SHUT
+            | ALARM_REPORT
+            | CABLELENGTH
+            | CHANNEL_GROUP
+            | CLOCK
+            | DESCRIPTION
+            | FDL
+            | FRAMING
+            | G709
+            | LINECODE
+            | PM
+            | PRI_GROUP
+            | PROACTIVE
+            | SHUTDOWN
+            | STS_1
+            | WAVELENGTH
+         ) ~NEWLINE* NEWLINE
+      )
    )
 ;
 
@@ -904,6 +926,7 @@ ip_dhcp_null
       | PACKET
       | SMART_RELAY
       | SNOOPING
+      | USE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1060,7 +1083,8 @@ ip_route_tail
       | prefix = IP_PREFIX
    )
    (
-      nexthopip = IP_ADDRESS
+      global = GLOBAL
+      | nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
       | GLOBAL
       | nexthopint = interface_name
@@ -1105,6 +1129,7 @@ ip_sla_null
       | REQUEST_DATA_SIZE
       | SAMPLES_OF_HISTORY_KEPT
       | TAG
+      | TIMEOUT
       | TOS
       | UDP_JITTER
    ) ~NEWLINE* NEWLINE
@@ -1115,6 +1140,7 @@ ip_ssh_null
    (
       AUTHENTICATION_RETRIES
       | CLIENT
+      | LOGGING
       | MAXSTARTUPS
       | PORT
       | RSA
@@ -1937,7 +1963,24 @@ role_null
    NO?
    (
       DESCRIPTION
+      |
+      (
+         PERMIT
+         (
+            INTERFACE
+            | VLAN
+            | VRF
+         )
+      )
       | RULE
+      |
+      (
+         (
+            INTERFACE
+            | VLAN
+            | VRF
+         ) POLICY DENY
+      )
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -2917,6 +2960,12 @@ s_vlan
 :
    NO? VLAN
    (
+        ~(
+            ACCESS_MAP
+            | DEC
+        )
+   )?
+   (
       ACCESS_MAP
       |
       (
@@ -3160,11 +3209,14 @@ spanning_tree_null
 :
    (
       BACKBONEFAST
+      | BPDUFILTER
       | BRIDGE
+      | COST
       | DISPUTE
       | ETHERCHANNEL
       | EXTEND
       | FCOE
+      | GUARD
       | LOGGING
       | LOOPGUARD
       | MODE
@@ -3291,6 +3343,7 @@ stanza
    | s_application
    | s_application_var
    | s_archive
+   | s_arp_access_list_extended
    | s_authentication
    | s_cable
    | s_call_home

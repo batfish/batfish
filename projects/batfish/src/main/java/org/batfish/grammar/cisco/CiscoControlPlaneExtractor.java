@@ -3652,7 +3652,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
-    Ip source = toIp(ctx.IP_ADDRESS());
+    // FIXME: Handle interface sources
+    Ip source = null;
+    if (ctx.IP_ADDRESS() != null) {
+      source = toIp(ctx.IP_ADDRESS());
+    }
     for (Interface iface : _currentInterfaces) {
       iface.getTunnelInitIfNull().setSource(source);
     }
@@ -4972,7 +4976,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int area = (ctx.area_int != null) ? toInteger(ctx.area_int) : (int) toIp(ctx.area_ip).asLong();
     boolean noSummary = ctx.NO_SUMMARY() != null;
     boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
-    if (defaultOriginate) {
+    boolean noRedstribution = ctx.NO_REDISTRIBUTION() != null;
+    if (defaultOriginate || noRedstribution) {
       todo(ctx, F_OSPF_AREA_NSSA);
     }
     proc.getNssas().put(area, noSummary);
