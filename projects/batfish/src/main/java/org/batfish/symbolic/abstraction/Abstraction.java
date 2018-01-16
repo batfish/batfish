@@ -167,7 +167,7 @@ public class Abstraction {
           if (PrefixUtils.overlap(p, dstIps) && !PrefixUtils.overlap(p, notDstIps)) {
             Set<Prefix> toAdd = new HashSet<>();
             for (Prefix pfx : dstIps) {
-              if (p.equals(pfx.getNetworkPrefix())) {
+              if (p.equals(pfx)) {
                 toAdd.add(p);
               } else if (pfx.containsPrefix(p)) {
                 toAdd.add(p);
@@ -186,7 +186,7 @@ public class Abstraction {
 
   private void extractPrefixesFromHeaderSpace(List<Prefix> dstIps, List<Prefix> notDstIps) {
     if (_headerspace == null || _headerspace.getDstIps().isEmpty()) {
-      dstIps.add(new Prefix("0.0.0.0/0"));
+      dstIps.add(Prefix.ZERO);
     } else {
       for (IpWildcard ip : _headerspace.getDstIps()) {
         if (!ip.isPrefix()) {
@@ -706,9 +706,9 @@ public class Abstraction {
       if (leavesNetwork
           || (abstractRouters.contains(ge.getRouter()) && abstractRouters.contains(ge.getPeer()))) {
         toRetain.add(ge.getStart());
-        Ip start = ge.getStart().getPrefix().getAddress();
+        Ip start = ge.getStart().getAddress().getIp();
         if (!leavesNetwork) {
-          Ip end = ge.getEnd().getPrefix().getAddress();
+          Ip end = ge.getEnd().getAddress().getIp();
           ipNeighbors.add(new Pair<>(start, end));
         }
         BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);

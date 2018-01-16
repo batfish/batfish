@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -204,12 +205,12 @@ public class Instance implements AwsVpcEntity, Serializable {
             "Network interface " + interfaceId + " for instance " + _instanceId + " not found");
       }
 
-      ImmutableSortedSet.Builder<Prefix> ifacePrefixesBuilder =
+      ImmutableSortedSet.Builder<InterfaceAddress> ifaceAddressesBuilder =
           new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
 
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());
       Prefix ifaceSubnet = subnet.getCidrBlock();
-      Ip defaultGatewayAddress = subnet.computeInstancesIfaceAddress();
+      Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
       StaticRoute defaultRoute =
           StaticRoute.builder()
               .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
@@ -224,16 +225,16 @@ public class Instance implements AwsVpcEntity, Serializable {
           throw new BatfishException(
               "Instance subnet: " + ifaceSubnet + " does not contain private ip: " + ip);
         }
-        if (ip.equals(ifaceSubnet.getEndAddress())) {
+        if (ip.equals(ifaceSubnet.getEndIp())) {
           throw new BatfishException(
               "Expected end address: " + ip + " to be used by generated subnet node");
         }
-        Prefix prefix = new Prefix(ip, ifaceSubnet.getPrefixLength());
-        ifacePrefixesBuilder.add(prefix);
+        InterfaceAddress address = new InterfaceAddress(ip, ifaceSubnet.getPrefixLength());
+        ifaceAddressesBuilder.add(address);
       }
-      SortedSet<Prefix> ifacePrefixes = ifacePrefixesBuilder.build();
-      Interface iface = Utils.newInterface(interfaceId, cfgNode, ifacePrefixes.first());
-      iface.setAllPrefixes(ifacePrefixes);
+      SortedSet<InterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
+      Interface iface = Utils.newInterface(interfaceId, cfgNode, ifaceAddresses.first());
+      iface.setAllAddresses(ifaceAddresses);
 
       // apply ACLs to interface
       iface.setIncomingFilter(_inAcl);

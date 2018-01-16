@@ -340,7 +340,7 @@ public class BDDRoute {
 
   public BDDRoute restrict(Prefix pfx) {
     int len = pfx.getPrefixLength();
-    BitSet bits = pfx.getAddress().getAddressBits();
+    BitSet bits = pfx.getStartIp().getAddressBits();
     int[] vars = new int[len];
     BDD[] vals = new BDD[len];
     // NOTE: do not create a new pairing each time

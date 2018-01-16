@@ -329,8 +329,8 @@ public final class Configuration extends ComparableStructure<String> {
         .values()
         .stream()
         .flatMap(v -> v.getInterfaces().values().stream())
-        .flatMap(i -> i.getAllPrefixes().stream())
-        .map(Prefix::getAddress)
+        .flatMap(i -> i.getAllAddresses().stream())
+        .map(InterfaceAddress::getIp)
         .min(Ip::compareTo)
         .orElse(null);
   }

@@ -17,8 +17,8 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
     // Canonicalize the prefix by dropping extra bits in the address that are longer than any
     // relevant length.
     int realPrefixLength = Math.min(prefix.getPrefixLength(), lengthRange.getEnd());
-    Ip realPrefixAddress = prefix.getAddress().getNetworkAddress(realPrefixLength);
-    this._prefix = new Prefix(realPrefixAddress, prefix.getPrefixLength()).getNetworkPrefix();
+    Ip realPrefixAddress = prefix.getStartIp().getNetworkAddress(realPrefixLength);
+    this._prefix = new Prefix(realPrefixAddress, prefix.getPrefixLength());
     this._lengthRange = lengthRange;
   }
 
@@ -32,9 +32,9 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
   public static PrefixRange fromString(String prefixRangeStr) {
     String[] parts = prefixRangeStr.split(":");
     if (parts.length == 1) {
-      return fromPrefix(new Prefix(parts[0]));
+      return fromPrefix(Prefix.parse(parts[0]));
     } else if (parts.length == 2) {
-      return new PrefixRange(new Prefix(parts[0]), new SubRange(parts[1]));
+      return new PrefixRange(Prefix.parse(parts[0]), new SubRange(parts[1]));
     } else {
       throw new BatfishException("Invalid PrefixRange string: '" + prefixRangeStr + "'");
     }
@@ -52,10 +52,10 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
     Prefix prefix = getPrefix();
     SubRange lengthRange = getLengthRange();
     int prefixLength = prefix.getPrefixLength();
-    long maskedPrefixAsLong = prefix.getAddress().getNetworkAddress(prefixLength).asLong();
+    long maskedPrefixAsLong = prefix.getStartIp().getNetworkAddress(prefixLength).asLong();
     Prefix argPrefix = argPrefixRange.getPrefix();
     SubRange argLengthRange = argPrefixRange.getLengthRange();
-    long argMaskedPrefixAsLong = argPrefix.getAddress().getNetworkAddress(prefixLength).asLong();
+    long argMaskedPrefixAsLong = argPrefix.getStartIp().getNetworkAddress(prefixLength).asLong();
     return maskedPrefixAsLong == argMaskedPrefixAsLong
         && lengthRange.getStart() <= argLengthRange.getStart()
         && lengthRange.getEnd() >= argLengthRange.getEnd();

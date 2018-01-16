@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
@@ -30,13 +32,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
   private transient String _vpnGatewayId;
 
   public Subnet(JSONObject jObj, BatfishLogger logger) throws JSONException {
-    _cidrBlock = new Prefix(jObj.getString(JSON_KEY_CIDR_BLOCK));
+    _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
     _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);
   }
 
-  Ip computeInstancesIfaceAddress() {
-    return new Ip(_cidrBlock.getNetworkAddress().asLong() + 1L);
+  Ip computeInstancesIfaceIp() {
+    return new Ip(_cidrBlock.getStartIp().asLong() + 1L);
   }
 
   private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
@@ -145,24 +147,25 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;
-    Ip instancesIfaceAddress = computeInstancesIfaceAddress();
-    Prefix instancesIfacePrefix = new Prefix(instancesIfaceAddress, _cidrBlock.getPrefixLength());
-    Utils.newInterface(instancesIfaceName, cfgNode, instancesIfacePrefix);
+    Ip instancesIfaceIp = computeInstancesIfaceIp();
+    InterfaceAddress instancesIfaceAddress =
+        new InterfaceAddress(instancesIfaceIp, _cidrBlock.getPrefixLength());
+    Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
 
     // generate a prefix for the link between the VPC router and the subnet
-    Prefix vpcSubnetLinkPrefix = awsConfiguration.getNextGeneratedLinkSubnet();
-    Prefix subnetIfacePrefix = vpcSubnetLinkPrefix;
-    Ip vpcIfaceAddress = vpcSubnetLinkPrefix.getEndAddress();
-    Prefix vpcIfacePrefix = new Prefix(vpcIfaceAddress, vpcSubnetLinkPrefix.getPrefixLength());
+    Pair<InterfaceAddress, InterfaceAddress> vpcSubnetLinkPrefix =
+        awsConfiguration.getNextGeneratedLinkSubnet();
+    InterfaceAddress subnetIfaceAddress = vpcSubnetLinkPrefix.getFirst();
+    InterfaceAddress vpcIfaceAddress = vpcSubnetLinkPrefix.getSecond();
 
     // add an interface that faces the VPC router
     String subnetIfaceName = _vpcId;
-    Interface subnetToVpc = Utils.newInterface(subnetIfaceName, cfgNode, subnetIfacePrefix);
+    Interface subnetToVpc = Utils.newInterface(subnetIfaceName, cfgNode, subnetIfaceAddress);
 
     // add a corresponding interface on the VPC router facing the subnet
     Configuration vpcConfigNode = awsConfiguration.getConfigurationNodes().get(_vpcId);
     String vpcIfaceName = _subnetId;
-    Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfacePrefix);
+    Utils.newInterface(vpcIfaceName, vpcConfigNode, vpcIfaceAddress);
 
     // add a static route on the vpc router for this subnet
     StaticRoute.Builder sb =
@@ -170,11 +173,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
             .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
     StaticRoute vpcToSubnetRoute =
-        sb.setNetwork(_cidrBlock).setNextHopIp(subnetIfacePrefix.getAddress()).build();
+        sb.setNetwork(_cidrBlock).setNextHopIp(subnetIfaceAddress.getIp()).build();
     vpcConfigNode.getDefaultVrf().getStaticRoutes().add(vpcToSubnetRoute);
 
     // Install a default static route towards the VPC router.
-    StaticRoute defaultRoute = sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress).build();
+    StaticRoute defaultRoute =
+        sb.setNetwork(Prefix.ZERO).setNextHopIp(vpcIfaceAddress.getIp()).build();
     cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
     NetworkAcl myNetworkAcl = findMyNetworkAcl(region.getNetworkAcls());

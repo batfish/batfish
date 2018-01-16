@@ -19,6 +19,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -136,8 +137,10 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
               boolean exported = false;
 
               outerloop:
-              for (Prefix prefix : iface.getAllPrefixes()) {
-                ConnectedRoute route = new ConnectedRoute(prefix, interfaceName);
+              for (InterfaceAddress address : iface.getAllAddresses()) {
+                ConnectedRoute route =
+                    new ConnectedRoute(
+                        new Prefix(address.getIp(), address.getNetworkBits()), interfaceName);
                 for (RoutingPolicy exportPolicy : exportPolicies) {
                   if (exportPolicy.process(
                       route, new BgpRoute.Builder(), null, vrf.getName(), Direction.OUT)) {

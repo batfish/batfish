@@ -24,13 +24,13 @@ public class PrefixTrie implements Serializable {
 
     public void addPrefix(Prefix prefix) {
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getAddress().getAddressBits();
+      BitSet bits = prefix.getStartIp().getAddressBits();
       _root.addPrefix(prefix, bits, prefixLength, 0);
     }
 
     public boolean containsPathFromPrefix(Prefix prefix) {
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getAddress().getAddressBits();
+      BitSet bits = prefix.getStartIp().getAddressBits();
       return _root.containsPathFromPrefix(bits, prefixLength, 0);
     }
 
