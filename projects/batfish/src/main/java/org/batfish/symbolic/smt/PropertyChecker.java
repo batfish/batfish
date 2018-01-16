@@ -243,7 +243,7 @@ public class PropertyChecker {
       ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
       l = System.currentTimeMillis() - l;
       System.out.println("Created BDDs");
-      return new Tuple<>(ecs.stream(), l);
+      return new Tuple<>(ecs.parallelStream(), l);
     } else {
       List<Supplier<NetworkSlice>> singleEc = new ArrayList<>();
       Graph g = graph == null ? new Graph(_batfish) : graph;
@@ -321,7 +321,7 @@ public class PropertyChecker {
  * General purpose logic for checking a property that holds that
  * handles the various flags and parameters for a query with endpoints
  */
-  private AnswerElement checkProperty2(
+  private AnswerElement checkPropertyTest(
       HeaderLocationQuestion q,
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
       Function<VerifyParam, AnswerElement> answer) {
