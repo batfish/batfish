@@ -886,7 +886,7 @@ public class Graph {
     return comms;
   }
 
-  private Set<CommunityVar> findAllCommunities(String router) {
+  public Set<CommunityVar> findAllCommunities(String router) {
     Set<CommunityVar> comms = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
 

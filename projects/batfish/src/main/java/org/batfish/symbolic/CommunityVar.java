@@ -51,8 +51,24 @@ public class CommunityVar implements Comparable<CommunityVar> {
     return _long;
   }
 
-  @Override public String toString() {
-    return '<' + _value + ',' + _type + '>';
+  @Override
+  public String toString() {
+    String val = '<' + _value + ',' + _type + '>';
+    String typ;
+    switch (_type) {
+      case EXACT:
+        typ = "Exact";
+        break;
+      case REGEX:
+        typ = "Regex";
+        break;
+      case OTHER:
+        typ = "Other";
+        break;
+      default:
+        typ = "Exact";
+    }
+    return typ + val;
   }
 
   @Override

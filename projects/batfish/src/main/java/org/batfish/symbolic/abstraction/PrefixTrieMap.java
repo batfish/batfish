@@ -107,7 +107,7 @@ class PrefixTrieMap {
       if (_left == null && _right == null) {
         addEntry(map, devices, prefix);
       } else {
-        // Optimization to avoid creating huge numbers of prefixes:
+        // PolicyQuotient to avoid creating huge numbers of prefixes:
         // Check if at least one of the branches has a different device in the leaf
         if (hasUniqueDevice(devices)) {
           Prefix left = prefix == null ? null : extendPrefixWith(prefix, false);

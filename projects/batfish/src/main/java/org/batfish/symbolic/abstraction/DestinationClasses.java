@@ -266,7 +266,7 @@ public class DestinationClasses {
     return _headerspace;
   }
 
-  Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> getHeaderspaceMap() {
+  public Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> getHeaderspaceMap() {
     return _headerspaceMap;
   }
 }

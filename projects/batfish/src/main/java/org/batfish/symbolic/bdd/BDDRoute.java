@@ -38,6 +38,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private static BDDPairing pairing;
 
+  private int _hcode = 0;
+
 
   static {
     allMetricTypes = new ArrayList<>();
@@ -173,6 +175,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   /*
    * Convenience method for the copy constructor
    */
+  @Override
   public BDDRoute deepCopy() {
     return new BDDRoute(this);
   }
@@ -181,7 +184,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */
-  public String dot(BDD bdd) {
+  String dot(BDD bdd) {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph G {\n");
     sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
@@ -288,13 +291,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   @Override
   public int hashCode() {
-    int result = _adminDist != null ? _adminDist.hashCode() : 0;
-    result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
-    result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
-    result = 31 * result + (_med != null ? _med.hashCode() : 0);
-    result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-    result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
-    return result;
+    if (_hcode == 0) {
+      int result = _adminDist != null ? _adminDist.hashCode() : 0;
+      result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
+      result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
+      result = 31 * result + (_med != null ? _med.hashCode() : 0);
+      result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
+      result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+      _hcode = result;
+    }
+    return _hcode;
   }
 
   @Override

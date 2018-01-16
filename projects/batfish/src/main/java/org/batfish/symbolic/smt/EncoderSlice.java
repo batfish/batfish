@@ -50,7 +50,7 @@ import org.batfish.symbolic.utils.PrefixUtils;
 
 /**
  * A class responsible for building a symbolic encoding of the network for a particular packet. The
- * encoding is heavily specialized based on the Optimizations class, and what optimizations it
+ * encoding is heavily specialized based on the PolicyQuotient class, and what optimizations it
  * indicates are possible.
  *
  * @author Ryan Beckett
@@ -729,7 +729,7 @@ class EncoderSlice {
               Prefix p = i.getPrefix();
 
               boolean doModel = !(proto.isConnected() && p != null && !relevantPrefix(p));
-              // Optimization: Don't model the connected interfaces that aren't relevant
+              // PolicyQuotient: Don't model the connected interfaces that aren't relevant
               if (doModel) {
                 if (notNeeded) {
                   String name =

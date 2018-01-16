@@ -94,13 +94,16 @@ class TransferBDD {
 
   private Graph _graph;
 
+  private PolicyQuotient _policyQuotient;
+
   private Set<Prefix> _ignoredNetworks;
 
   private List<Statement> _statements;
 
-  TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
+  TransferBDD(Graph g, Configuration conf, List<Statement> statements, PolicyQuotient pq) {
     _graph = g;
     _conf = conf;
+    _policyQuotient = pq;
     _statements = statements;
   }
 
@@ -377,7 +380,7 @@ class TransferBDD {
 
     } else if (expr instanceof MatchAsPath) {
       p.debug("MatchAsPath");
-      System.out.println("Warning: use of unimplemented feature MatchAsPath");
+      // System.out.println("Warning: use of unimplemented feature MatchAsPath");
       TransferReturn ret = new TransferReturn(p.getData(), factory.one());
       return fromExpr(ret);
     }
@@ -471,7 +474,7 @@ class TransferBDD {
 
           case RemovePrivateAs:
             p.debug("RemovePrivateAs");
-            System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
+            // System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
             break;
 
           default:
@@ -573,11 +576,13 @@ class TransferBDD {
         AddCommunity ac = (AddCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
-          p.indent().debug("Value: " + cvar);
-          BDD comm = p.getData().getCommunities().get(cvar);
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-          p.indent().debug("New Value: " + newValue);
-          p.getData().getCommunities().put(cvar, newValue);
+          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
+            p.indent().debug("Value: " + cvar);
+            BDD comm = p.getData().getCommunities().get(cvar);
+            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+            p.indent().debug("New Value: " + newValue);
+            p.getData().getCommunities().put(cvar, newValue);
+          }
         }
 
       } else if (stmt instanceof SetCommunity) {
@@ -585,11 +590,13 @@ class TransferBDD {
         SetCommunity sc = (SetCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
-          p.indent().debug("Value: " + cvar);
-          BDD comm = p.getData().getCommunities().get(cvar);
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-          p.indent().debug("New Value: " + newValue);
-          p.getData().getCommunities().put(cvar, newValue);
+          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
+            p.indent().debug("Value: " + cvar);
+            BDD comm = p.getData().getCommunities().get(cvar);
+            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+            p.indent().debug("New Value: " + newValue);
+            p.getData().getCommunities().put(cvar, newValue);
+          }
         }
 
       } else if (stmt instanceof DeleteCommunity) {
@@ -607,11 +614,13 @@ class TransferBDD {
         }
         // Delete the comms
         for (CommunityVar cvar : toDelete) {
-          p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
-          BDD comm = p.getData().getCommunities().get(cvar);
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
-          p.indent().debug("New Value: " + newValue);
-          p.getData().getCommunities().put(cvar, newValue);
+          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
+            p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
+            BDD comm = p.getData().getCommunities().get(cvar);
+            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
+            p.indent().debug("New Value: " + newValue);
+            p.getData().getCommunities().put(cvar, newValue);
+          }
         }
 
       } else if (stmt instanceof RetainCommunity) {
@@ -630,12 +639,12 @@ class TransferBDD {
 
       } else if (stmt instanceof SetOrigin) {
         p.debug("SetOrigin");
-        System.out.println("Warning: use of unimplemented feature SetOrigin");
+        // System.out.println("Warning: use of unimplemented feature SetOrigin");
         // TODO: implement me
 
       } else if (stmt instanceof SetNextHop) {
         p.debug("SetNextHop");
-        System.out.println("Warning: use of unimplemented feature SetNextHop");
+        // System.out.println("Warning: use of unimplemented feature SetNextHop");
         // TODO: implement me
 
       } else {
@@ -788,7 +797,10 @@ class TransferBDD {
       CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
-
+      // Skip this match if it is irrelevant
+      if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
+        continue;
+      }
       List<CommunityVar> deps = _commDeps.get(cvar);
       for (CommunityVar dep : deps) {
         p.debug("Test for: " + dep);
@@ -940,15 +952,26 @@ class TransferBDD {
   }
 
   /*
+   * Communities assumed to not be attached
+   */
+  private void addCommunityAssumptions(BDDRoute route) {
+    for (CommunityVar comm : _comms) {
+      if (_policyQuotient.getCommsUsedOnlyLocally().contains(comm)) {
+        route.getCommunities().put(comm, factory.zero());
+      }
+    }
+  }
+
+  /*
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
   public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
-    long l = System.currentTimeMillis();
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.getAllCommunities();
     BDDRoute o = new BDDRoute(_comms);
+    addCommunityAssumptions(o);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();

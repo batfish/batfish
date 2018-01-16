@@ -88,12 +88,12 @@ public class PropertyChecker {
       for (GraphEdge ge : destPorts) {
         // If there is an external interface, then
         // it can be any prefix, so we leave it unconstrained
-        if (g.getEbgpNeighbors().containsKey(ge)) {
+        if (g.isExternal(ge)) {
           q.getHeaderSpace().getDstIps().clear();
           q.getHeaderSpace().getNotDstIps().clear();
           break;
         }
-        // If we don't know what is on the other end
+        // If not eBGP and we don't know what is on the other end
         if (ge.getPeer() == null) {
           Prefix pfx = ge.getStart().getPrefix().getNetworkPrefix();
           IpWildcard dst = new IpWildcard(pfx);
@@ -231,13 +231,19 @@ public class PropertyChecker {
   private Tuple<Stream<Supplier<NetworkSlice>>, Long> findAllNetworkSlices(
       HeaderQuestion q, @Nullable Graph graph, boolean useDefaultCase) {
     if (q.getUseAbstraction()) {
-      long l = System.currentTimeMillis();
       HeaderSpace h = q.getHeaderSpace();
       int numFailures = q.getFailures();
+      System.out.println("Start verification");
+      System.out.println("Using headerspace: " + h.getDstIps());
       DestinationClasses dcs = DestinationClasses.create(_batfish, h, useDefaultCase);
-      l = System.currentTimeMillis() - l;
+      System.out.println("Number of edges: " + dcs.getGraph().getAllRealEdges().size());
+      System.out.println("Created destination classes");
+      System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());
+      long l = System.currentTimeMillis();
       ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
-      return new Tuple<>(ecs.parallelStream(), l);
+      l = System.currentTimeMillis() - l;
+      System.out.println("Created BDDs");
+      return new Tuple<>(ecs.stream(), l);
     } else {
       List<Supplier<NetworkSlice>> singleEc = new ArrayList<>();
       Graph g = graph == null ? new Graph(_batfish) : graph;
@@ -309,6 +315,133 @@ public class PropertyChecker {
     }
     return new SmtOneAnswerElement(result);
   }
+
+
+  /*
+ * General purpose logic for checking a property that holds that
+ * handles the various flags and parameters for a query with endpoints
+ */
+  private AnswerElement checkProperty2(
+      HeaderLocationQuestion q,
+      TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
+      Function<VerifyParam, AnswerElement> answer) {
+
+    long totalTime = System.currentTimeMillis();
+    PathRegexes p = new PathRegexes(q);
+    Graph graph = new Graph(_batfish);
+    Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
+    List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
+
+    if (destPorts.isEmpty()) {
+      throw new BatfishException("Set of valid destination interfaces is empty");
+    }
+    if (sourceRouters.isEmpty()) {
+      throw new BatfishException("Set of valid ingress nodes is empty");
+    }
+
+    inferDestinationHeaderSpace(graph, destPorts, q);
+    Set<GraphEdge> failOptions = failLinkSet(graph, q);
+    Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
+    Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
+    Long timeAbstraction = ecs.getSecond();
+
+    AnswerElement[] answerElement = new AnswerElement[1];
+    VerificationResult[] result = new VerificationResult[2];
+    List<VerificationStats> ecStats = new ArrayList<>();
+
+    System.out.println("Start verification");
+
+    // Checks ECs in parallel, but short circuits when a counterexample is found
+    boolean hasCounterExample =
+        stream.anyMatch(
+            lazyEc -> {
+              long timeEc = System.currentTimeMillis();
+
+              System.out.println("Computing abstraction");
+
+              NetworkSlice slice = lazyEc.get();
+
+              System.out.println("Computed abstraction: ");
+
+              timeEc = System.currentTimeMillis() - timeEc;
+
+              synchronized (_lock) {
+                // Make sure the headerspace is correct
+                HeaderLocationQuestion question = new HeaderLocationQuestion(q);
+                question.setHeaderSpace(slice.getHeaderSpace());
+
+                // Get the EC graph and mapping
+                Graph g = slice.getGraph();
+                Set<String> srcRouters = mapConcreteToAbstract(slice, sourceRouters);
+
+                System.out.println("Graph size: " + g.getRouters().size());
+
+                long timeEncoding = System.currentTimeMillis();
+                Encoder enc = new Encoder(g, question);
+                enc.getSolver().add(enc.mkFalse());
+
+                // enc.computeEncoding();
+
+                System.out.println("Computed encoding");
+                System.out.println("Encoding size: " + enc.getAllVariables().size());
+
+                timeEncoding = System.currentTimeMillis() - timeEncoding;
+
+                Tuple<VerificationResult, Model> tup = enc.verify();
+                VerificationResult res = tup.getFirst();
+                Model model = tup.getSecond();
+
+                if (q.getBenchmark()) {
+                  VerificationStats stats = res.getStats();
+                  stats.setAvgComputeEcTime(timeEc);
+                  stats.setMaxComputeEcTime(timeEc);
+                  stats.setMinComputeEcTime(timeEc);
+                  stats.setAvgEncodingTime(timeEncoding);
+                  stats.setMaxEncodingTime(timeEncoding);
+                  stats.setMinEncodingTime(timeEncoding);
+                  stats.setTimeCreateBdds((double) timeAbstraction);
+
+                  synchronized (_lock) {
+                    ecStats.add(stats);
+                  }
+                }
+
+                if (!res.isVerified()) {
+                  // enc2, prop, prop2
+                  VerifyParam vp = new VerifyParam(res, model, srcRouters, enc, null, null, null);
+                  AnswerElement ae = answer.apply(vp);
+                  synchronized (_lock) {
+                    answerElement[0] = ae;
+                    result[0] = res;
+                  }
+                  return true;
+                }
+
+                synchronized (_lock) {
+                  result[1] = res;
+                }
+                return false;
+              }
+            });
+
+    totalTime = (System.currentTimeMillis() - totalTime);
+    VerificationResult res;
+    AnswerElement ae;
+    if (hasCounterExample) {
+      res = result[0];
+      ae = answerElement[0];
+    } else {
+      res = result[1];
+      VerifyParam vp = new VerifyParam(res, null, null, null, null, null, null);
+      ae = answer.apply(vp);
+    }
+    if (q.getBenchmark()) {
+      VerificationStats stats = VerificationStats.combineAll(ecStats, totalTime);
+      res.setStats(stats);
+    }
+    return ae;
+  }
+
 
   /*
    * General purpose logic for checking a property that holds that
@@ -414,17 +547,17 @@ public class PropertyChecker {
                     BoolExpr sourceProp2 = prop2.get(source);
                     BoolExpr val;
                     switch (q.getDiffType()) {
-                      case INCREASED:
-                        val = enc.mkImplies(sourceProp1, sourceProp2);
-                        break;
-                      case REDUCED:
-                        val = enc.mkImplies(sourceProp2, sourceProp1);
-                        break;
-                      case ANY:
-                        val = enc.mkEq(sourceProp1, sourceProp2);
-                        break;
-                      default:
-                        throw new BatfishException("Missing case: " + q.getDiffType());
+                    case INCREASED:
+                      val = enc.mkImplies(sourceProp1, sourceProp2);
+                      break;
+                    case REDUCED:
+                      val = enc.mkImplies(sourceProp2, sourceProp1);
+                      break;
+                    case ANY:
+                      val = enc.mkEq(sourceProp1, sourceProp2);
+                      break;
+                    default:
+                      throw new BatfishException("Missing case: " + q.getDiffType());
                     }
                     required = enc.mkAnd(required, val);
                   }

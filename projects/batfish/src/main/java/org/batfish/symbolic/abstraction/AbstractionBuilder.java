@@ -130,8 +130,6 @@ class AbstractionBuilder {
 
       Collection<Set<String>> ps = _abstractGroups.partitions();
 
-      // System.out.println("Partitions: " + ps);
-
       for (Set<String> partition : ps) {
         // Nothing to refine if already a concrete node
         if (partition.size() <= 1) {
@@ -147,9 +145,9 @@ class AbstractionBuilder {
         }
         // If something changed, then start over early
         // Helps the next iteration to use the newly reflected information.
-        if (todo.size() > 0) {
-          break;
-        }
+        // if (todo.size() > 0) {
+        //  break;
+        //}
       }
 
       // Now refine the abstraction further
@@ -214,12 +212,12 @@ class AbstractionBuilder {
     // If there is more than one policy to the same abstract neighbor, we make concrete
     // Since by definition this can not be a valid abstraction
     Set<String> makeConcrete = new HashSet<>();
-    _eeMap.forEach(
-        (router, peerGroup, edges) -> {
-          if (partition.contains(router) && edges.size() > 1) {
-            makeConcrete.add(router);
-          }
-        });
+    // _eeMap.forEach(
+    //    (router, peerGroup, edges) -> {
+    //      if (partition.contains(router) && edges.size() > 1) {
+    //        makeConcrete.add(router);
+    //      }
+    //    });
 
     Collection<Set<String>> newPartitions = new HashSet<>();
 

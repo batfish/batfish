@@ -20,12 +20,13 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
 
-
 public class BDDNetwork {
 
   private Graph _graph;
 
   private Pattern _nodeRegex;
+
+  private PolicyQuotient _policyQuotient;
 
   private Map<GraphEdge, BDDRoute> _exportBgpPolicies;
 
@@ -44,16 +45,17 @@ public class BDDNetwork {
   }
 
   public static BDDNetwork create(Graph g, Pattern nodeRegex) {
-    long l = System.currentTimeMillis();
-    BDDNetwork network = new BDDNetwork(g, nodeRegex);
+    PolicyQuotient pq = new PolicyQuotient(g);
+    BDDNetwork network = new BDDNetwork(g, nodeRegex, pq);
     network.computeInterfacePolicies();
     return network;
   }
 
 
-  private BDDNetwork(Graph graph, Pattern nodeRegex) {
+  private BDDNetwork(Graph graph, Pattern nodeRegex, PolicyQuotient pq) {
     _graph = graph;
     _nodeRegex = nodeRegex;
+    _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
     _importBgpPolicies = new HashMap<>();
@@ -71,7 +73,7 @@ public class BDDNetwork {
     if (ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
-    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
+    TransferBDD t = new TransferBDD(g, conf, pol.getStatements(), _policyQuotient);
     return t.compute(networks);
   }
 
