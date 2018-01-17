@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.SortedSet;
 
-public class OutlierSet<T> extends AbstractOutlierSet implements Comparable<OutlierSet<T>> {
+public class OutlierSet<T> extends AbstractOutlierSet
+    implements NodePropertyOutlierSet, Comparable<OutlierSet<T>> {
 
   private static final String PROP_NAME = "name";
 
