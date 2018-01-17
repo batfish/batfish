@@ -3770,9 +3770,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
     AwsConfiguration config;
-    try (ActiveSpan serializeAwsConfigsSpan =
+    try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
-      assert serializeAwsConfigsSpan != null; // avoid unused warning
+      assert parseAwsConfigsSpan != null; // avoid unused warning
       config = parseAwsConfigurations(configurationData);
     }
 
@@ -3859,9 +3859,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations;
-    try (ActiveSpan serializeHostConfigsSpan =
+    try (ActiveSpan parseHostConfigsSpan =
         GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
-      assert serializeHostConfigsSpan != null; // avoid unused warning
+      assert parseHostConfigsSpan != null; // avoid unused warning
       allHostConfigurations =
           parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
     }
@@ -3986,9 +3986,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<String, VendorConfiguration> vendorConfigurations;
-    try (ActiveSpan serializeNetworkConfigsSpan =
+    try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
-      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+      assert parseNetworkConfigsSpan != null; // avoid unused warning
       vendorConfigurations =
           parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
     }
