@@ -18,7 +18,11 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
+<<<<<<< Updated upstream
 import org.batfish.datamodel.answers.RoleConsistencyPolicy;
+=======
+import org.batfish.datamodel.collections.NamedStructureOutlierSet;
+>>>>>>> Stashed changes
 import org.batfish.datamodel.collections.OutlierSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
@@ -97,18 +101,16 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
       _answerElement = new InferPoliciesAnswerElement();
 
-      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
-      innerQ.setHypothesis(OutliersHypothesis.SAME_SERVERS);
-      innerQ.setVerbose(true);
+      _answerElement.setRoleConsistencyPolicies(propertyConsistencyPolicies());
 
-      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleQuestion outerQ = outerPlugin.createQuestion();
-      outerQ.setQuestion(innerQ);
+      return _answerElement;
+    }
 
-      // find all outliers for protocol-specific servers, on a per-role basis
-      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
+    private SortedSet<RoleConsistencyPolicy> propertyConsistencyPolicies() {
 
-      SortedMap<String, AnswerElement> roleAnswers = roleAE.getAnswers();
+      SortedMap<String, AnswerElement> roleAnswers =
+          perRoleOutlierInfo(OutliersHypothesis.SAME_SERVERS);
+
       Multimap<String, OutlierSet<NavigableSet<String>>> outliersPerPropertyName =
           TreeMultimap.create();
 
@@ -145,9 +147,40 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           policies.add(new RoleConsistencyPolicy(nodeRoleSpecifier, name));
         }
       }
+      return policies;
+    }
 
-      _answerElement.setRoleConsistencyPolicies(policies);
-      return _answerElement;
+    private SortedSet<RoleConsistencyPolicy> nameConsistencyPolicies() {
+
+      SortedMap<String, AnswerElement> roleAnswers =
+          perRoleOutlierInfo(OutliersHypothesis.SAME_NAME);
+
+      Multimap<String, NamedStructureOutlierSet<?>> outliersPerStructureType =
+          TreeMultimap.create();
+
+      // partition the resulting outliers by structure type (e.g., Ip Access List, Route Map)
+      for (Map.Entry<String, AnswerElement> entry : roleAnswers.entrySet()) {
+        String role = entry.getKey();
+        OutliersAnswerElement oae = (OutliersAnswerElement) entry.getValue();
+        for (NamedStructureOutlierSet<?> os : oae.getNamedStructureOutliers()) {
+          // update each outlier set to know its associated role
+          os.setRole(role);
+          outliersPerPropertyName.put(os.getName(), os);
+        }
+      }
+
+    private SortedMap<String, AnswerElement> perRoleOutlierInfo(OutliersHypothesis hypothesis) {
+      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
+      innerQ.setHypothesis(hypothesis);
+      innerQ.setVerbose(true);
+
+      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
+      PerRoleQuestion outerQ = outerPlugin.createQuestion();
+      outerQ.setQuestion(innerQ);
+
+      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
+
+      return roleAE.getAnswers();
     }
   }
 
