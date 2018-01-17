@@ -8,7 +8,7 @@
       "parseStatus" : {
         "lhr-border-02" : "PASSED"
       },
-      "version" : "0.33.0"
+      "version" : "0.34.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
@@ -21,7 +21,7 @@
           }
         }
       },
-      "version" : "0.33.0"
+      "version" : "0.34.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
