@@ -2,7 +2,6 @@ package org.batfish.client;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -385,19 +384,14 @@ public class BfCoordWorkHelper {
   }
 
   private ClientBuilder getClientBuilder() {
-    ClientBuilder clientBuilder =
-        CommonUtil.createHttpClientBuilder(
+    return CommonUtil.createHttpClientBuilder(
             _settings.getSslDisable(),
             _settings.getSslTrustAllCerts(),
             _settings.getSslKeystoreFile(),
             _settings.getSslKeystorePassword(),
             _settings.getSslTruststoreFile(),
-            _settings.getSslTruststorePassword());
-    clientBuilder.register(MultiPartFeature.class);
-    if (_settings.getTracingEnable()) {
-      clientBuilder.register(ClientTracingFeature.class);
-    }
-    return clientBuilder;
+            _settings.getSslTruststorePassword())
+        .register(MultiPartFeature.class);
   }
 
   /**
