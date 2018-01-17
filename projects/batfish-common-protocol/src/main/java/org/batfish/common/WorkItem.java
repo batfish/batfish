@@ -1,5 +1,6 @@
 package org.batfish.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -38,6 +39,32 @@ public class WorkItem {
     populateHashMap(responseParams, responseObject);
 
     return new WorkItem(id, containerName, testrigName, requestParams, responseParams);
+  }
+
+  @JsonCreator
+  public WorkItem(String jsonString) throws JSONException {
+    JSONArray array = new JSONArray(jsonString);
+
+    UUID id = UUID.fromString(array.get(0).toString());
+
+    String containerName = array.get(1).toString();
+    String testrigName = array.get(2).toString();
+
+    HashMap<String, String> requestParams = new HashMap<>();
+    HashMap<String, String> responseParams = new HashMap<>();
+
+    JSONObject requestObject = new JSONObject(array.get(3).toString());
+    JSONObject responseObject = new JSONObject(array.get(4).toString());
+
+    _id = UUID.randomUUID();
+    _containerName = containerName;
+    _testrigName = testrigName;
+    _requestParams = new HashMap<>();
+    _responseParams = new HashMap<>();
+    _spanData = new HashMap<>();
+
+    populateHashMap(requestParams, requestObject);
+    populateHashMap(responseParams, responseObject);
   }
 
   private static void populateHashMap(HashMap<String, String> map, JSONObject jsonObject)

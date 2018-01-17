@@ -54,6 +54,7 @@ import jline.console.UserInterruptException;
 import jline.console.completer.Completer;
 import jline.console.history.FileHistory;
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
@@ -89,6 +90,7 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Question.InstanceData;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable;
@@ -1961,6 +1963,19 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean listIncompleteWork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_ENVIRONMENTS)) {
+      return false;
+    }
+    if (!isSetContainer(true)) {
+      return false;
+    }
+    List<WorkStatus> workList = _workHelper.listIncompleteWork(_currContainerName);
+    _logger.outputf("Incomplete works: %s\n", workList);
+
+    return true;
+  }
+
   private boolean listQuestions(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_QUESTIONS)) {
       return false;
@@ -2447,6 +2462,8 @@ public class Client extends AbstractClient implements IClient {
         return listContainers(options, parameters);
       case LIST_ENVIRONMENTS:
         return listEnvironments(options, parameters);
+      case LIST_INCOMPLETE_WORK:
+        return listIncompleteWork(options, parameters);
       case LIST_QUESTIONS:
         return listQuestions(options, parameters);
       case LIST_TESTRIGS:
