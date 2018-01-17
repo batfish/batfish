@@ -270,7 +270,13 @@ public class WorkMgr extends AbstractCoordinator {
     task.setStatus(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
-    try {
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan checkTaskSpan =
+        GlobalTracer.get()
+            .buildSpan("Checking Task Status")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert checkTaskSpan != null; // avoid unused warning
       client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
