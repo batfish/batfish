@@ -277,15 +277,20 @@ public class WorkMgr extends AbstractCoordinator {
             .addReference(References.FOLLOWS_FROM, queueWorkSpan)
             .startActive()) {
       assert checkTaskSpan != null; // avoid unused warning
-      client =
+      ClientBuilder clientBuilder =
           CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
-              .build();
+              _settings.getSslPoolDisable(),
+              _settings.getSslPoolTrustAllCerts(),
+              _settings.getSslPoolKeystoreFile(),
+              _settings.getSslPoolKeystorePassword(),
+              _settings.getSslPoolTruststoreFile(),
+              _settings.getSslPoolTruststorePassword());
+
+      if (GlobalTracer.isRegistered()) {
+        clientBuilder.register(ClientTracingFeature.class);
+      }
+
+      client = clientBuilder.build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client
