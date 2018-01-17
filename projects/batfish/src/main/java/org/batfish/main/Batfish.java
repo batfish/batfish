@@ -557,7 +557,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Question question = null;
 
     // return right away if we cannot parse the question successfully
-    try {
+    try (ActiveSpan parseQuestionSpan =
+        GlobalTracer.get().buildSpan("Parse question").startActive()) {
+      assert parseQuestionSpan != null; // avoid not used warning
       question = Question.parseQuestion(_settings.getQuestionPath(), getCurrentClassLoader());
     } catch (Exception e) {
       Answer answer = new Answer();
@@ -576,13 +578,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _settings.setDiffActive(diffActive);
     _settings.setDiffQuestion(diff);
 
-    // Ensures configurations are parsed and ready
-    loadConfigurations();
+    try (ActiveSpan loadConfigurationSpan =
+        GlobalTracer.get().buildSpan("Load configurations").startActive()) {
+      assert loadConfigurationSpan != null; // avoid not used warning
+      // Ensures configurations are parsed and ready
+      loadConfigurations();
+    }
 
-    initQuestionEnvironments(question, diff, diffActive, dp);
+    try (ActiveSpan initQuestionEnvSpan =
+        GlobalTracer.get().buildSpan("Init question environment").startActive()) {
+      assert initQuestionEnvSpan != null; // avoid not used warning
+      initQuestionEnvironments(question, diff, diffActive, dp);
+    }
+
     AnswerElement answerElement = null;
     BatfishException exception = null;
-    try {
+    try (ActiveSpan getAnswerSpan = GlobalTracer.get().buildSpan("Get answer").startActive()) {
+      assert getAnswerSpan != null; // avoid not used warning
       if (question.getDifferential()) {
         answerElement = Answerer.create(question, this).answerDiff();
       } else {
@@ -3757,7 +3769,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
-    AwsConfiguration config = parseAwsConfigurations(configurationData);
+    AwsConfiguration config;
+    try (ActiveSpan serializeAwsConfigsSpan =
+        GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
+      assert serializeAwsConfigsSpan != null; // avoid unused warning
+      config = parseAwsConfigurations(configurationData);
+    }
 
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
@@ -3841,8 +3858,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
     // read the host files
-    SortedMap<String, VendorConfiguration> allHostConfigurations =
-        parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
+    SortedMap<String, VendorConfiguration> allHostConfigurations;
+    try (ActiveSpan serializeHostConfigsSpan =
+        GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
+      assert serializeHostConfigsSpan != null; // avoid unused warning
+      allHostConfigurations =
+          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
+    }
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
@@ -3963,8 +3985,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
     Map<Path, String> configurationData =
         readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    Map<String, VendorConfiguration> vendorConfigurations =
-        parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
+    Map<String, VendorConfiguration> vendorConfigurations;
+    try (ActiveSpan serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
+      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+      vendorConfigurations =
+          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
+    }
     if (vendorConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
