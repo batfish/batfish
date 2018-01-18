@@ -969,7 +969,8 @@ public class BfCoordWorkHelper {
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, wItem.toJsonString());
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, mapper.writeValueAsString(wItem));
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
 
       JSONObject jObj = postData(webTarget, multiPart);

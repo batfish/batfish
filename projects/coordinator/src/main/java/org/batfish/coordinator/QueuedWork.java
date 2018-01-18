@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
+import org.batfish.common.util.BatfishObjectMapper;
 
 public class QueuedWork {
 
@@ -81,7 +82,7 @@ public class QueuedWork {
   public String toString() {
     return String.format(
         "%s [%s] [%s %s %s] [%s] [%s, %s]",
-        _workItem.toJsonString(),
+        _workItem.toString(),
         _status,
         _dateCreated,
         _dateAssigned,
