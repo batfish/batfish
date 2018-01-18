@@ -1,5 +1,8 @@
 package org.batfish.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -7,77 +10,38 @@ import io.opentracing.propagation.Format.Builtin;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.propagation.TextMapInjectAdapter;
 import io.opentracing.util.GlobalTracer;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class WorkItem {
 
-  public static WorkItem fromJsonString(String jsonString) throws JSONException {
-
-    JSONArray array = new JSONArray(jsonString);
-
-    UUID id = UUID.fromString(array.get(0).toString());
-
-    String containerName = array.get(1).toString();
-    String testrigName = array.get(2).toString();
-
-    HashMap<String, String> requestParams = new HashMap<>();
-    HashMap<String, String> responseParams = new HashMap<>();
-
-    JSONObject requestObject = new JSONObject(array.get(3).toString());
-    JSONObject responseObject = new JSONObject(array.get(4).toString());
-
-    populateHashMap(requestParams, requestObject);
-    populateHashMap(responseParams, responseObject);
-
-    return new WorkItem(id, containerName, testrigName, requestParams, responseParams);
-  }
-
-  private static void populateHashMap(HashMap<String, String> map, JSONObject jsonObject)
-      throws JSONException {
-
-    Iterator<?> keys = jsonObject.keys();
-
-    while (keys.hasNext()) {
-      String key = (String) keys.next();
-      map.put(key, jsonObject.getString(key));
-    }
-  }
+  private static final String PROP_CONTAINER_NAME = "containerName";
+  private static final String PROP_ID = "id";
+  private static final String PROP_REQUEST_PARAMS = "requestParams";
+  private static final String PROP_TESTRIG_NAME = "testrigName";
 
   private final String _containerName;
   private final UUID _id;
-  private HashMap<String, String> _requestParams;
-  private HashMap<String, String> _responseParams;
+  private Map<String, String> _requestParams;
   private final String _testrigName;
   private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
   public WorkItem(String containerName, String testrigName) {
-    _id = UUID.randomUUID();
-    _containerName = containerName;
-    _testrigName = testrigName;
-    _requestParams = new HashMap<>();
-    _responseParams = new HashMap<>();
-    _spanData = new HashMap<>();
+    this(UUID.randomUUID(), containerName, testrigName, new HashMap<>());
   }
 
+  @JsonCreator
   public WorkItem(
-      UUID id,
-      String containerName,
-      String testrigName,
-      HashMap<String, String> reqParams,
-      HashMap<String, String> resParams) {
+      @JsonProperty(PROP_ID) UUID id,
+      @JsonProperty(PROP_CONTAINER_NAME) String containerName,
+      @JsonProperty(PROP_TESTRIG_NAME) String testrigName,
+      @JsonProperty(PROP_REQUEST_PARAMS) Map<String, String> reqParams) {
     _id = id;
     _containerName = containerName;
     _testrigName = testrigName;
     _requestParams = reqParams;
-    _responseParams = resParams;
     _spanData = new HashMap<>();
   }
 
@@ -85,12 +49,19 @@ public class WorkItem {
     _requestParams.put(key, value);
   }
 
+  @JsonProperty(PROP_CONTAINER_NAME)
   public String getContainerName() {
     return _containerName;
   }
 
+  @JsonProperty(PROP_ID)
   public UUID getId() {
     return _id;
+  }
+
+  @JsonProperty(PROP_REQUEST_PARAMS)
+  public Map<String, String> getRequestParams() {
+    return _requestParams;
   }
 
   /**
@@ -100,6 +71,7 @@ public class WorkItem {
    *     WorkItem}
    */
   @Nullable
+  @JsonIgnore
   public SpanContext getSourceSpan() {
     return getSourceSpan(GlobalTracer.get());
   }
@@ -109,10 +81,7 @@ public class WorkItem {
     return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
   }
 
-  public HashMap<String, String> getRequestParams() {
-    return _requestParams;
-  }
-
+  @JsonProperty(PROP_TESTRIG_NAME)
   public String getTestrigName() {
     return _testrigName;
   }
@@ -146,21 +115,7 @@ public class WorkItem {
     tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
   }
 
-  public String toJsonString() {
-    JSONObject requestObject = new JSONObject(_requestParams);
-    JSONObject responseObject = new JSONObject(_responseParams);
-    JSONArray array =
-        new JSONArray(
-            Arrays.asList(
-                _id,
-                _containerName,
-                _testrigName,
-                requestObject.toString(),
-                responseObject.toString()));
-    return array.toString();
-  }
-
-  public JSONObject toTask() {
-    return new JSONObject(_requestParams);
+  public String toString() {
+    return String.format("[%s %s %s %s]", _id, _containerName, _testrigName, _requestParams);
   }
 }
