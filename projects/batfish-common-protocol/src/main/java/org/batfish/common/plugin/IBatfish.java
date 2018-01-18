@@ -190,7 +190,8 @@ public interface IBatfish extends IPluginConsumer {
       String finalNodeRegexStr,
       String notFinalNodeRegexStr,
       Set<String> transitNodes,
-      Set<String> notTransitNodes);
+      Set<String> notTransitNodes,
+      boolean useAbstraction);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 

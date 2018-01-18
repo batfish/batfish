@@ -68,4 +68,5 @@ test tests/basic/example-iptables-reachability.ref get reachability ingressNodeR
 test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes=["z1-firewall"], actions=["ACCEPT"]
 test tests/basic/example-iptables-protection.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.20","10.0.3.21"], notSrcIps=["10.0.3.0/24", "10.0.4.0/24"], notIpProtocols=["OSPF"], actions=["ACCEPT"]
 
-
+# test the useAbstraction command
+test tests/basic/example-reachability-abstraction.ref get reachability dstIps=["10.0.4.20"]

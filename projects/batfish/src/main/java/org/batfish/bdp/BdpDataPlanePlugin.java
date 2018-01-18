@@ -33,6 +33,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
@@ -412,9 +413,21 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   @Override
   public Answer computeDataPlane(boolean differentialContext) {
     Answer answer = new Answer();
-    BdpDataPlane dp = new BdpDataPlane();
     BdpAnswerElement ae = new BdpAnswerElement();
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
+
+    BdpDataPlane dp = computeDataPlane(differentialContext, ae, configurations);
+    ae.setVersion(Version.getVersion());
+    _batfish.newBatch("Writing data plane to disk", 0);
+    _batfish.writeDataPlane(dp, ae);
+    _batfish.printElapsedTime();
+    answer.addAnswerElement(ae);
+    return answer;
+  }
+
+  public BdpDataPlane computeDataPlane(boolean differentialContext, BdpAnswerElement ae,
+      Map<String, Configuration> configurations) {
+    BdpDataPlane dp = new BdpDataPlane();
     Topology topology = _batfish.computeTopology(configurations);
     _batfish.resetTimer();
     _logger.info("\n*** COMPUTING DATA PLANE ***\n");
@@ -433,12 +446,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
     dp.setNodes(nodes);
     dp.setTopology(topology);
     dp.setFlowSinks(_batfish.computeFlowSinks(configurations, differentialContext, topology));
-    ae.setVersion(Version.getVersion());
-    _batfish.newBatch("Writing data plane to disk", 0);
-    _batfish.writeDataPlane(dp, ae);
-    _batfish.printElapsedTime();
-    answer.addAnswerElement(ae);
-    return answer;
+    return dp;
   }
 
   private void computeDependentRoutesIteration(

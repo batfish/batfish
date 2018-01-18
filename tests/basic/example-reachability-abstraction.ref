@@ -1,0 +1,766 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.datamodel.FlowHistory",
+      "traces" : {
+        "Flow<ingressNode:internet-host ingressVrf:default srcIp:10.0.1.1 dstIp:10.0.4.20 ipProtocol:OSPF dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "internet-host",
+            "ingressVrf" : "default",
+            "ipProtocol" : "OSPF",
+            "packetLength" : 0,
+            "srcIp" : "10.0.1.1",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "internet-host",
+                      "node1interface" : "eth0",
+                      "node2" : "r3",
+                      "node2interface" : "Ethernet2"
+                    },
+                    "routes" : [
+                      "StaticRoute<0.0.0.0/0,nhip:10.0.8.1,nhint:eth0>_fnhip:10.0.8.1"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r3",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet2"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.7.2,nhint:dynamic>_fnhip:10.0.7.2"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:r1 ingressVrf:default srcIp:10.0.1.1 dstIp:10.0.4.20 ipProtocol:OSPF dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "r1",
+            "ingressVrf" : "default",
+            "ipProtocol" : "OSPF",
+            "packetLength" : 0,
+            "srcIp" : "10.0.1.1",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "r1",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.0.2,nhint:dynamic>_fnhip:10.0.0.2"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:r2 ingressVrf:default srcIp:10.0.1.1 dstIp:10.0.4.20 ipProtocol:OSPF dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "r2",
+            "ingressVrf" : "default",
+            "ipProtocol" : "OSPF",
+            "packetLength" : 0,
+            "srcIp" : "10.0.1.1",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:r3 ingressVrf:default srcIp:10.0.1.1 dstIp:10.0.4.20 ipProtocol:OSPF dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "r3",
+            "ingressVrf" : "default",
+            "ipProtocol" : "OSPF",
+            "packetLength" : 0,
+            "srcIp" : "10.0.1.1",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "r3",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet2"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.7.2,nhint:dynamic>_fnhip:10.0.7.2"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:z1-firewall ingressVrf:default srcIp:10.0.1.1 dstIp:10.0.4.20 ipProtocol:OSPF dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "z1-firewall",
+            "ingressVrf" : "default",
+            "ipProtocol" : "OSPF",
+            "packetLength" : 0,
+            "srcIp" : "10.0.1.1",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "z1-firewall",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r1",
+                      "node2interface" : "Ethernet1"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.2.1,nhint:dynamic>_fnhip:10.0.2.1"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r1",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.0.2,nhint:dynamic>_fnhip:10.0.0.2"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:z1-host1 ingressVrf:default srcIp:10.0.3.0 dstIp:10.0.4.20 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "z1-host1",
+            "ingressVrf" : "default",
+            "ipProtocol" : "ICMP",
+            "packetLength" : 0,
+            "srcIp" : "10.0.3.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "z1-host1",
+                      "node1interface" : "eth0",
+                      "node2" : "z1-firewall",
+                      "node2interface" : "Ethernet1"
+                    },
+                    "routes" : [
+                      "StaticRoute<0.0.0.0/0,nhip:10.0.3.1,nhint:eth0>_fnhip:10.0.3.1"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z1-firewall",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r1",
+                      "node2interface" : "Ethernet1"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.2.1,nhint:dynamic>_fnhip:10.0.2.1"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r1",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.0.2,nhint:dynamic>_fnhip:10.0.0.2"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:z1-host2 ingressVrf:default srcIp:10.0.3.0 dstIp:10.0.4.20 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "z1-host2",
+            "ingressVrf" : "default",
+            "ipProtocol" : "ICMP",
+            "packetLength" : 0,
+            "srcIp" : "10.0.3.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "z1-host2",
+                      "node1interface" : "eth0",
+                      "node2" : "z1-firewall",
+                      "node2interface" : "Ethernet1"
+                    },
+                    "routes" : [
+                      "StaticRoute<0.0.0.0/0,nhip:10.0.3.1,nhint:eth0>_fnhip:10.0.3.1"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z1-firewall",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r1",
+                      "node2interface" : "Ethernet1"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.2.1,nhint:dynamic>_fnhip:10.0.2.1"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r1",
+                      "node1interface" : "Ethernet0",
+                      "node2" : "r2",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.0.2,nhint:dynamic>_fnhip:10.0.0.2"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "r2",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-firewall",
+                      "node2interface" : "Ethernet0"
+                    },
+                    "routes" : [
+                      "OspfIntraAreaRoute<10.0.4.0/24,nhip:10.0.1.10,nhint:dynamic>_fnhip:10.0.1.10"
+                    ]
+                  },
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:z2-firewall ingressVrf:default srcIp:0.0.0.0 dstIp:10.0.4.20 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "z2-firewall",
+            "ingressVrf" : "default",
+            "ipProtocol" : "ICMP",
+            "packetLength" : 0,
+            "srcIp" : "0.0.0.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "z2-firewall",
+                      "node1interface" : "Ethernet1",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:Ethernet1>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:z2-host1 ingressVrf:default srcIp:0.0.0.0 dstIp:10.0.4.20 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "z2-host1",
+            "ingressVrf" : "default",
+            "ipProtocol" : "ICMP",
+            "packetLength" : 0,
+            "srcIp" : "0.0.0.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        },
+        "Flow<ingressNode:z2-host2 ingressVrf:default srcIp:0.0.0.0 dstIp:10.0.4.20 ipProtocol:ICMP dscp: 0 ecn:0 fragmentOffset:0 icmpType:255 icmpCode:255 packetLength:0 state:NEW tag:BASE>" : {
+          "environments" : {
+            "BASE" : {
+              "envName" : "env_default",
+              "testrigName" : "tr_48db7643-cebc-4054-9496-92b1b687e28f"
+            }
+          },
+          "flow" : {
+            "dscp" : 0,
+            "dstIp" : "10.0.4.20",
+            "dstPort" : 0,
+            "ecn" : 0,
+            "fragmentOffset" : 0,
+            "icmpCode" : 255,
+            "icmpVar" : 255,
+            "ingressNode" : "z2-host2",
+            "ingressVrf" : "default",
+            "ipProtocol" : "ICMP",
+            "packetLength" : 0,
+            "srcIp" : "0.0.0.0",
+            "srcPort" : 0,
+            "state" : "NEW",
+            "tag" : "BASE",
+            "tcpFlagsAck" : 0,
+            "tcpFlagsCwr" : 0,
+            "tcpFlagsEce" : 0,
+            "tcpFlagsFin" : 0,
+            "tcpFlagsPsh" : 0,
+            "tcpFlagsRst" : 0,
+            "tcpFlagsSyn" : 0,
+            "tcpFlagsUrg" : 0
+          },
+          "paths" : {
+            "BASE" : [
+              {
+                "disposition" : "ACCEPTED",
+                "hops" : [
+                  {
+                    "edge" : {
+                      "node1" : "z2-host2",
+                      "node1interface" : "eth0",
+                      "node2" : "z2-host1",
+                      "node2interface" : "eth0"
+                    },
+                    "routes" : [
+                      "ConnectedRoute<10.0.4.0/24,nhip:AUTO/NONE(-1l),nhint:eth0>_fnhip:null"
+                    ]
+                  }
+                ],
+                "notes" : "ACCEPTED"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
+    "actions" : [
+      "ACCEPT"
+    ],
+    "differential" : false,
+    "dstIps" : [
+      "10.0.4.20"
+    ],
+    "finalNodeRegex" : ".*",
+    "ingressNodeRegex" : ".*",
+    "negateHeader" : false,
+    "type" : "standard",
+    "useAbstraction" : false
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

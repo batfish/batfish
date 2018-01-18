@@ -89,7 +89,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           question.getFinalNodeRegex(),
           question.getNotFinalNodeRegex(),
           question.getTransitNodes(),
-          question.getNotTransitNodes());
+          question.getNotTransitNodes(),
+          question.getUseAbstraction());
     }
   }
 
@@ -128,6 +129,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final SortedSet<String> DEFAULT_NOT_TRANSIT_NODES =
         Collections.<String>emptySortedSet();
+
+    private static final boolean DEFAULT_USE_ABSTRACTION = false;
 
     private static final String PROP_DST_IPS = "dstIps";
 
@@ -195,6 +198,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NOT_TRANSIT_NODES = "notTransitNodes";
 
+    private static final String PROP_USE_ABSTRACTION = "useAbstraction";
+
     private SortedSet<ForwardingAction> _actions;
 
     private String _finalNodeRegex;
@@ -213,6 +218,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private ReachabilityType _reachabilityType;
 
+    private boolean _useAbstraction;
+
     public ReachabilityQuestion() {
       _actions = new TreeSet<>(Collections.singleton(ForwardingAction.ACCEPT));
       _finalNodeRegex = DEFAULT_FINAL_NODE_REGEX;
@@ -223,6 +230,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
       _transitNodes = DEFAULT_TRANSIT_NODES;
       _notTransitNodes = DEFAULT_NOT_TRANSIT_NODES;
+      _useAbstraction = DEFAULT_USE_ABSTRACTION;
     }
 
     @JsonProperty(PROP_ACTIONS)
@@ -232,7 +240,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @Override
     public boolean getDataPlane() {
-      return true;
+      return !_useAbstraction;
     }
 
     @JsonProperty(PROP_DST_IPS)
@@ -410,6 +418,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return _headerSpace.getSrcProtocols();
     }
 
+    @JsonProperty(PROP_USE_ABSTRACTION)
+    public boolean getUseAbstraction() {
+      return _useAbstraction;
+    }
+
     @Override
     public boolean getTraffic() {
       return true;
@@ -519,6 +532,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         }
         if (_notTransitNodes != null && !_notTransitNodes.isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_TRANSIT_NODES, _notTransitNodes);
+        }
+        if (_useAbstraction != DEFAULT_USE_ABSTRACTION) {
+          retString += String.format(", %s=%s", PROP_USE_ABSTRACTION, _useAbstraction);
         }
         return retString;
       } catch (Exception e) {
@@ -708,6 +724,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_SRC_PROTOCOLS)
     public void setSrcProtocols(SortedSet<Protocol> srcProtocols) {
       _headerSpace.setSrcProtocols(new TreeSet<>(srcProtocols));
+    }
+
+    @JsonProperty(PROP_USE_ABSTRACTION)
+    public void setUseAbstraction(boolean b) {
+      _useAbstraction = b;
     }
   }
 
