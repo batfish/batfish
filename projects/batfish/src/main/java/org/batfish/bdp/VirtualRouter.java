@@ -462,6 +462,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               builder.setOriginType(originType);
               builder.setProtocol(targetProtocol);
               // TODO: support external route reflector clients
+              builder.setReceivedFromIp(advert.getSrcIp());
               builder.setReceivedFromRouteReflectorClient(false);
               builder.setSrcProtocol(srcProtocol);
               // TODO: possibly suppport setting tag
@@ -693,6 +694,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       /* Note: Origin type and originator IP should get overwritten, but are needed initially */
       b.setOriginatorIp(_vrf.getBgpProcess().getRouterId());
       b.setOriginType(OriginType.INCOMPLETE);
+      b.setReceivedFromIp(Ip.ZERO);
       BgpRoute br = b.build();
       br.setNonRouting(true);
       _bgpMultipathRib.mergeRoute(br);
