@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.RouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
@@ -418,6 +420,15 @@ public class BdpEngine {
         dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       }
       CommonUtil.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
+      configurations
+          .values()
+          .parallelStream()
+          .map(Configuration::getVrfs)
+          .map(Map::values)
+          .flatMap(Collection::stream)
+          .filter(v -> v.getBgpProcess() != null)
+          .map(Vrf::getBgpProcess)
+          .forEach(proc -> proc.initClusterIds());
       SortedMap<String, Node> nodes = new TreeMap<>();
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
       SortedMap<Integer, SortedSet<Prefix>> iterationOscillatingPrefixes = new TreeMap<>();

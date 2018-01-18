@@ -3,8 +3,10 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -17,8 +19,8 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
-    private Vrf _vrf;
     private Ip _routerId;
+    private Vrf _vrf;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, BgpProcess.class);
@@ -36,13 +38,13 @@ public class BgpProcess implements Serializable {
       return bgpProcess;
     }
 
-    public BgpProcess.Builder setVrf(Vrf vrf) {
-      _vrf = vrf;
+    public BgpProcess.Builder setRouterId(Ip routerId) {
+      _routerId = routerId;
       return this;
     }
 
-    public BgpProcess.Builder setRouterId(Ip routerId) {
-      _routerId = routerId;
+    public BgpProcess.Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
       return this;
     }
   }
@@ -61,6 +63,8 @@ public class BgpProcess implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private transient Set<Long> _clusterIds;
 
   /**
    * The set of <i>neighbor-independent</i> generated routes that may be advertised by this process
@@ -91,6 +95,11 @@ public class BgpProcess implements Serializable {
     _neighbors = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
+  }
+
+  @JsonIgnore
+  public Set<Long> getClusterIds() {
+    return _clusterIds;
   }
 
   /** @return {@link #_generatedRoutes} */
@@ -138,6 +147,15 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
+  }
+
+  public void initClusterIds() {
+    _clusterIds =
+        _neighbors
+            .values()
+            .stream()
+            .map(BgpNeighbor::getClusterId)
+            .collect(ImmutableSet.toImmutableSet());
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)
