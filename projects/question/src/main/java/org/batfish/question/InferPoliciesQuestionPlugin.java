@@ -57,6 +57,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
         sb.append("Policy: nodes in the same role should have ");
         switch (policy.getHypothesis()) {
           case SAME_DEFINITION:
+            sb.append("the same definition for same-named structures of type " + policy.getName());
           case SAME_NAME:
             sb.append("same-named structures of type " + policy.getName());
             break;
