@@ -33,7 +33,6 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;

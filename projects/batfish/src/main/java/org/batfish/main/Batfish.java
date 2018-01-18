@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
+//import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -177,9 +177,11 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
-import org.batfish.symbolic.abstraction.DestinationClasses;
-import org.batfish.symbolic.abstraction.NetworkSlice;
+import org.batfish.symbolic.abstraction.BatfishCompressor;
+//import org.batfish.symbolic.abstraction.DestinationClasses;
+//import org.batfish.symbolic.abstraction.NetworkSlice;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.answers.CompressionAnswerElement;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -4416,6 +4418,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
+  public AnswerElement compression() {
+    BatfishCompressor c = new BatfishCompressor(this);
+    //Map<String, Configuration> configs = c.compress();
+    return new CompressionAnswerElement();
+  }
+
+  @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this);
     return p.checkBlackHole(q);
@@ -4508,10 +4517,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (useAbstraction) {
       System.out.println("Configurations before abstraction: " + configurations.size());
       // TODO: what does defaultCase do?
+      BatfishCompressor c = new BatfishCompressor(this);
+      configurations = c.compress(headerSpace);
+      /*
       DestinationClasses dcs = DestinationClasses.create(this,headerSpace,false);
       List<Supplier<NetworkSlice>> slices = NetworkSlice.allSlices(dcs,0);
       System.out.println("SLICES: " + slices.size());
       configurations = slices.get(0).get().getGraph().getConfigurations();
+      */
       System.out.println("Configurations after abstraction: " + configurations.size());
       BdpDataPlanePlugin bdpDataPlanePlugin = (BdpDataPlanePlugin) _dataPlanePlugin;
       BdpAnswerElement ae = new BdpAnswerElement();
@@ -4602,7 +4615,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(dataPlane,flows);
+    getDataPlanePlugin().processFlows(flows);
 
     AnswerElement answerElement = getHistory();
     return answerElement;
