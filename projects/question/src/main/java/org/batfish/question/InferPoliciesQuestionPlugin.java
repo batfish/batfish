@@ -58,6 +58,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
         switch (policy.getHypothesis()) {
           case SAME_DEFINITION:
             sb.append("the same definition for same-named structures of type " + policy.getName());
+            break;
           case SAME_NAME:
             sb.append("same-named structures of type " + policy.getName());
             break;
