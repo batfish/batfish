@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
+import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
+import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -386,6 +388,9 @@ public class CommonUtil {
         }
         sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
         clientBuilder.sslContext(sslcontext);
+      }
+      if (GlobalTracer.isRegistered()) {
+        clientBuilder.register(ClientTracingFeature.class);
       }
     } catch (Exception e) {
       throw new BatfishException("Error creating HTTP client builder", e);
