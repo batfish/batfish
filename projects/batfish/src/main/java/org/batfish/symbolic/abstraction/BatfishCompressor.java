@@ -18,6 +18,8 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -88,10 +90,15 @@ public class BatfishCompressor {
     If i = new If();
     List<Statement> falseStatements = new ArrayList<>();
     falseStatements.add(new StaticStatement(Statements.ReturnFalse));
-    PrefixSpace ps = new PrefixSpace(filters);
-    ExplicitPrefixSet eps = new ExplicitPrefixSet(ps);
-    MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
-    i.setGuard(match);
+    if (filters == null) {
+      StaticBooleanExpr sbe = new StaticBooleanExpr(BooleanExprs.False);
+      i.setGuard(sbe);
+    } else {
+      PrefixSpace ps = new PrefixSpace(filters);
+      ExplicitPrefixSet eps = new ExplicitPrefixSet(ps);
+      MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
+      i.setGuard(match);
+    }
     i.setFalseStatements(falseStatements);
     i.setTrueStatements(pol.getStatements());
     List<Statement> newStatements = new ArrayList<>();
@@ -103,9 +110,8 @@ public class BatfishCompressor {
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
       Map<GraphEdge, Set<PrefixRange>> filters = filtersByRouter.get(router);
-      for (Entry<GraphEdge,Set<PrefixRange>> e : filters.entrySet()) {
-        GraphEdge ge = e.getKey();
-        Set<PrefixRange> ranges = e.getValue();
+      for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
+        Set<PrefixRange> ranges = filters.get(ge);
         RoutingPolicy ipol = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         RoutingPolicy epol = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         applyFilters(ipol, ranges);
