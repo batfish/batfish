@@ -118,22 +118,4 @@ public class WorkItem {
   public String toString() {
     return String.format("[%s %s %s %s]", _id, _containerName, _testrigName, _requestParams);
   }
-
-  //  public String toJsonString() {
-  //    JSONObject requestObject = new JSONObject(_requestParams);
-  //    JSONObject responseObject = new JSONObject(_responseParams);
-  //    JSONArray array =
-  //        new JSONArray(
-  //            Arrays.asList(
-  //                _id,
-  //                _containerName,
-  //                _testrigName,
-  //                requestObject.toString(),
-  //                responseObject.toString()));
-  //    return array.toString();
-  //  }
-
-  // public JSONObject toTask() {
-  //  return new JSONObject(_requestParams);
-  // }
 }
