@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
-import org.batfish.common.util.BatfishObjectMapper;
 
 public class QueuedWork {
 
