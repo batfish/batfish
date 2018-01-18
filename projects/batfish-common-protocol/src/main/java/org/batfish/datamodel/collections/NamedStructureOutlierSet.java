@@ -8,7 +8,7 @@ import java.util.SortedSet;
 import org.batfish.role.OutliersHypothesis;
 
 public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
-    implements NodePropertyOutlierSet, Comparable<NamedStructureOutlierSet<T>> {
+    implements Comparable<NamedStructureOutlierSet<T>> {
 
   private static final String PROP_HYPOTHESIS = "hypothesis";
 

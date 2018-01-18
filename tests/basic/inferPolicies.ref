@@ -4,7 +4,204 @@
       "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
       "roleConsistencyPolicies" : [
         {
+          "hypothesis" : "sameServers",
           "name" : "LoggingServers",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameName",
+          "name" : "CommunityList",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameName",
+          "name" : "Interface",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameName",
+          "name" : "IpAccessList",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameName",
+          "name" : "RouteFilterList",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameName",
+          "name" : "Vrf",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameDefinition",
+          "name" : "CommunityList",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "hypothesis" : "sameDefinition",
+          "name" : "IpAccessList",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
