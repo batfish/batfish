@@ -13,11 +13,11 @@ import org.batfish.common.WorkItem;
  */
 public class WorkStatus {
 
-  private static final String PROP_TASK_STATUS = "taskstatus";
+  private static final String PROP_TASK = "task";
   private static final String PROP_WORK_ITEM = "workitem";
   private static final String PROP_WORK_STATUS_CODE = "workstatuscode";
 
-  private final Task _taskStatus;
+  private final Task _task;
 
   private final WorkItem _workItem;
 
@@ -27,15 +27,15 @@ public class WorkStatus {
   public WorkStatus(
       @JsonProperty(PROP_WORK_ITEM) WorkItem wItem,
       @JsonProperty(PROP_WORK_STATUS_CODE) WorkStatusCode wStatusCode,
-      @JsonProperty(PROP_TASK_STATUS) Task taskStatus) {
+      @JsonProperty(PROP_TASK) Task task) {
     _workItem = wItem;
     _workStatusCode = wStatusCode;
-    _taskStatus = taskStatus;
+    _task = task;
   }
 
-  @JsonProperty(PROP_TASK_STATUS)
+  @JsonProperty(PROP_TASK)
   public Task getTaskStatusStr() {
-    return _taskStatus;
+    return _task;
   }
 
   @JsonProperty(PROP_WORK_ITEM)
@@ -46,5 +46,9 @@ public class WorkStatus {
   @JsonProperty(PROP_WORK_STATUS_CODE)
   public WorkStatusCode getWorkStatusCode() {
     return _workStatusCode;
+  }
+
+  public String toString() {
+    return String.format("[%s %s %s]", _workItem, _workStatusCode, _task);
   }
 }
