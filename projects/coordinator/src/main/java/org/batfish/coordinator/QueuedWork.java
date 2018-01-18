@@ -81,7 +81,7 @@ public class QueuedWork {
   public String toString() {
     return String.format(
         "%s [%s] [%s %s %s] [%s] [%s, %s]",
-        _workItem.toJsonString(),
+        _workItem.toString(),
         _status,
         _dateCreated,
         _dateAssigned,

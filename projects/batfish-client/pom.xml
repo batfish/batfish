@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.batfish</groupId>
     <artifactId>batfish-parent</artifactId>
-    <version>0.33.0</version>
+    <version>0.34.0</version>
   </parent>
 
   <artifactId>batfish-client</artifactId>
@@ -121,11 +121,6 @@
     <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-util</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jaxrs2</artifactId>
     </dependency>
 
     <dependency>

@@ -3,8 +3,6 @@ package org.batfish.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor.Work;
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -388,19 +386,14 @@ public class BfCoordWorkHelper {
   }
 
   private ClientBuilder getClientBuilder() {
-    ClientBuilder clientBuilder =
-        CommonUtil.createHttpClientBuilder(
+    return CommonUtil.createHttpClientBuilder(
             _settings.getSslDisable(),
             _settings.getSslTrustAllCerts(),
             _settings.getSslKeystoreFile(),
             _settings.getSslKeystorePassword(),
             _settings.getSslTruststoreFile(),
-            _settings.getSslTruststorePassword());
-    clientBuilder.register(MultiPartFeature.class);
-    if (_settings.getTracingEnable()) {
-      clientBuilder.register(ClientTracingFeature.class);
-    }
-    return clientBuilder;
+            _settings.getSslTruststorePassword())
+        .register(MultiPartFeature.class);
   }
 
   /**
@@ -1013,7 +1006,8 @@ public class BfCoordWorkHelper {
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, wItem.toJsonString());
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, mapper.writeValueAsString(wItem));
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
 
       JSONObject jObj = postData(webTarget, multiPart);

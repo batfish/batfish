@@ -33,7 +33,7 @@ cd build
 NUMJOBS="$(grep -i processor /proc/cpuinfo | wc -l)"
 make -j"${NUMJOBS}"
 make install
-umask "{$OLD_UMASK}"
+umask "${OLD_UMASK}"
 cd "${OLD_PWD}"
 rm -rf "${WORKING}"
 

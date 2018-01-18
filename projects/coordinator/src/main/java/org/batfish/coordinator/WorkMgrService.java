@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -465,7 +466,7 @@ public class WorkMgrService {
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
-        WorkItem workItem = WorkItem.fromJsonString(workItemStr);
+        WorkItem workItem = mapper.readValue(workItemStr, WorkItem.class);
         if (!workItem.getContainerName().equals(containerName)
             || !workItem.getTestrigName().equals(testrigName)) {
           return failureResponse(
@@ -548,8 +549,10 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+
       if (!Strings.isNullOrEmpty(workItemStr)) {
-        WorkItem workItem = WorkItem.fromJsonString(workItemStr);
+        WorkItem workItem = mapper.readValue(workItemStr, WorkItem.class);
         if (!workItem.getContainerName().equals(containerName)
             || !workItem.getTestrigName().equals(testrigName)) {
           return failureResponse(
@@ -557,7 +560,6 @@ public class WorkMgrService {
         }
         QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
         if (work != null) {
-          BatfishObjectMapper mapper = new BatfishObjectMapper();
           String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
           return successResponse(
               new JSONObject()
@@ -1296,7 +1298,8 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      WorkItem workItem = WorkItem.fromJsonString(workItemStr);
+      ObjectMapper mapper = new BatfishObjectMapper();
+      WorkItem workItem = mapper.readValue(workItemStr, WorkItem.class);
 
       checkContainerAccessibility(apiKey, workItem.getContainerName());
 

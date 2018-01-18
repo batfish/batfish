@@ -2609,11 +2609,11 @@ public class Client extends AbstractClient implements IClient {
   }
 
   public void run(List<String> initialCommands) {
-    loadPlugins();
-    initHelpers();
     if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
       initTracer();
     }
+    loadPlugins();
+    initHelpers();
     _logger.debugf(
         "Will use coordinator at %s://%s\n",
         (_settings.getSslDisable()) ? "http" : "https", _settings.getCoordinatorHost());
