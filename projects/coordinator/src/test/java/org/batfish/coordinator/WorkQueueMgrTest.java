@@ -254,6 +254,19 @@ public class WorkQueueMgrTest {
     assertThat(matchingWork, equalTo(work1));
   }
 
+  @Test
+  public void listIncompleteWork() throws Exception {
+    QueuedWork work1 = new QueuedWork(new WorkItem(CONTAINER, "testrig"), new WorkDetails());
+    QueuedWork work2 = new QueuedWork(new WorkItem("other", "testrig"), new WorkDetails());
+    _workQueueMgr.queueUnassignedWork(work1);
+    _workQueueMgr.queueUnassignedWork(work2);
+
+    List<QueuedWork> works = _workQueueMgr.listIncompleteWork(CONTAINER);
+
+    assertThat(works.size(), equalTo(1));
+    assertThat(works.get(0), equalTo(work1));
+  }
+
   // BEGIN: DATAPLANE_INDEPENDENT_ANSWERING TESTS
 
   @Test
