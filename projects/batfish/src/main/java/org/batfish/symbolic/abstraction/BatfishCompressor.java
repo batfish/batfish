@@ -88,8 +88,10 @@ public class BatfishCompressor {
       return;
     }
     If i = new If();
+    List<Statement> newStatements = new ArrayList<>();
     List<Statement> falseStatements = new ArrayList<>();
-    falseStatements.add(new StaticStatement(Statements.ReturnFalse));
+    Statement reject = new StaticStatement(Statements.ExitReject);
+    falseStatements.add(reject);
     if (filters == null) {
       StaticBooleanExpr sbe = new StaticBooleanExpr(BooleanExprs.False);
       i.setGuard(sbe);
@@ -101,7 +103,6 @@ public class BatfishCompressor {
     }
     i.setFalseStatements(falseStatements);
     i.setTrueStatements(pol.getStatements());
-    List<Statement> newStatements = new ArrayList<>();
     newStatements.add(i);
     pol.setStatements(newStatements);
   }
