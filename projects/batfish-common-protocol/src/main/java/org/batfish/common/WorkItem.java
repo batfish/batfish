@@ -17,42 +17,10 @@ import javax.annotation.Nullable;
 
 public class WorkItem {
 
-  //  public static WorkItem fromJsonString(String jsonString) throws JSONException {
-  //
-  //    JSONArray array = new JSONArray(jsonString);
-  //
-  //    UUID id = UUID.fromString(array.get(0).toString());
-  //
-  //    String containerName = array.get(1).toString();
-  //    String testrigName = array.get(2).toString();
-  //
-  //    HashMap<String, String> requestParams = new HashMap<>();
-  //    HashMap<String, String> responseParams = new HashMap<>();
-  //
-  //    JSONObject requestObject = new JSONObject(array.get(3).toString());
-  //    JSONObject responseObject = new JSONObject(array.get(4).toString());
-  //
-  //    populateHashMap(requestParams, requestObject);
-  //    populateHashMap(responseParams, responseObject);
-  //
-  //    return new WorkItem(id, containerName, testrigName, requestParams, responseParams);
-  //  }
-  //
-  //  private static void populateHashMap(HashMap<String, String> map, JSONObject jsonObject)
-  //      throws JSONException {
-  //
-  //    Iterator<?> keys = jsonObject.keys();
-  //
-  //    while (keys.hasNext()) {
-  //      String key = (String) keys.next();
-  //      map.put(key, jsonObject.getString(key));
-  //    }
-  //  }
-
-  private final String PROP_CONTAINER_NAME = "containerName";
-  private final String PROP_ID = "id";
-  private final String PROP_REQUEST_PARAMS = "requestParams";
-  private final String PROP_TESTRIG_NAME = "testrigName";
+  private static final String PROP_CONTAINER_NAME = "containerName";
+  private static final String PROP_ID = "id";
+  private static final String PROP_REQUEST_PARAMS = "requestParams";
+  private static final String PROP_TESTRIG_NAME = "testrigName";
 
   private final String _containerName;
   private final UUID _id;
