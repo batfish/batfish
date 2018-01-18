@@ -160,6 +160,8 @@ public interface IBatfish extends IPluginConsumer {
 
   void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
 
+  AnswerElement compression();
+
   AnswerElement smtBlackhole(HeaderQuestion q);
 
   AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);

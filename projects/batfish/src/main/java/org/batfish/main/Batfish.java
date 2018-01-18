@@ -174,7 +174,9 @@ import org.batfish.representation.aws_vpcs.AwsVpcConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
+import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.answers.CompressionAnswerElement;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -4408,6 +4410,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public void setTerminatedWithException(boolean terminatedWithException) {
     _terminatedWithException = terminatedWithException;
+  }
+
+  @Override
+  public AnswerElement compression() {
+    BatfishCompressor c = new BatfishCompressor(this);
+    Map<String, Configuration> configs = c.compress();
+    return new CompressionAnswerElement();
   }
 
   @Override
