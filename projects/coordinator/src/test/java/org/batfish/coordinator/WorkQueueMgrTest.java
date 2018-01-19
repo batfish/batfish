@@ -263,8 +263,7 @@ public class WorkQueueMgrTest {
 
     List<QueuedWork> works = _workQueueMgr.listIncompleteWork(CONTAINER);
 
-    assertThat(works.size(), equalTo(1));
-    assertThat(works.get(0), equalTo(work1));
+    assertThat(works, equalTo(Collections.singletonList(work1)));
   }
 
   // BEGIN: DATAPLANE_INDEPENDENT_ANSWERING TESTS
