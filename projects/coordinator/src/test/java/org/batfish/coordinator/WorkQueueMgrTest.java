@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
