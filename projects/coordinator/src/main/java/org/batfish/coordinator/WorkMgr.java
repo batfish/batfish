@@ -141,7 +141,7 @@ public class WorkMgr extends AbstractCoordinator {
             .startActive()) {
       assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
-      JSONObject task = work.getWorkItem().toTask();
+      JSONObject task = new JSONObject(work.getWorkItem().getRequestParams());
       Path containerDir =
           Main.getSettings().getContainersLocation().resolve(work.getWorkItem().getContainerName());
       String testrigName = work.getWorkItem().getTestrigName();
