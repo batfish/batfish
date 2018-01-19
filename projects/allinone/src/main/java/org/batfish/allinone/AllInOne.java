@@ -15,6 +15,7 @@ import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.main.Driver.RunMode;
 
 public class AllInOne {
 
@@ -149,9 +150,10 @@ public class AllInOne {
 
     String batfishArgs =
         String.format(
-            "%s -%s -%s %s -%s %s",
+            "%s -%s %s -%s %s -%s %s",
             _settings.getBatfishArgs(),
-            org.batfish.config.Settings.ARG_SERVICE_MODE,
+            org.batfish.config.Settings.ARG_RUN_MODE,
+            _settings.getBatfishRunMode(),
             org.batfish.config.Settings.ARG_COORDINATOR_REGISTER,
             "true",
             org.batfish.config.Settings.ARG_TRACING_ENABLE,

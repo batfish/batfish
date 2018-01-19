@@ -632,7 +632,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
+  public Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -640,7 +640,7 @@ public class BfCoordWorkHelper {
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, parseWorkUUID.toString());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
@@ -741,6 +741,29 @@ public class BfCoordWorkHelper {
         return false;
       }
       throw e;
+    }
+  }
+
+  public boolean killWork(String workId) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_KILL_WORK);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return false;
+      }
+
+      return Boolean.valueOf(jObj.toString());
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return false;
     }
   }
 

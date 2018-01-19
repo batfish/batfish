@@ -46,6 +46,7 @@ public enum Command {
   INIT_DELTA_TESTRIG("init-delta-testrig"),
   INIT_ENVIRONMENT("init-environment"),
   INIT_TESTRIG("init-testrig"),
+  KILL_WORK("kill-work"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
   LIST_ENVIRONMENTS("list-environments"),
@@ -241,6 +242,7 @@ public enum Command {
         new Pair<>(
             "[-autoanalyze] <testrig zipfile or directory> [<testrig-name>]",
             "Initialize the testrig with default environment"));
+    descs.put(KILL_WORK, new Pair<>("<guid>", "Kill work with the given GUID"));
     descs.put(LIST_ANALYSES, new Pair<>("", "List the analyses and their configuration"));
     descs.put(LIST_CONTAINERS, new Pair<>("", "List the containers to which you have access"));
     descs.put(

@@ -987,6 +987,72 @@ public class WorkMgr extends AbstractCoordinator {
     return ENV_FILENAMES.contains(name);
   }
 
+  public boolean killWork(QueuedWork work) {
+    String worker = work.getAssignedWorker();
+    if (worker == null) {
+      return false;
+    }
+
+    Client client = null;
+    boolean killed = false;
+
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan killTaskSpan =
+        GlobalTracer.get()
+            .buildSpan("Checking Task Status")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert killTaskSpan != null; // avoid unused warning
+      client =
+          CommonUtil.createHttpClientBuilder(
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
+              .build();
+
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
+      WebTarget webTarget =
+          client
+              .target(
+                  String.format(
+                      "%s://%s%s/%s",
+                      protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_KILL_TASK_RSC))
+              .queryParam(
+                  BfConsts.SVC_TASKID_KEY,
+                  UriComponent.encode(
+                      work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
+
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
+      } else {
+        String sobj = response.readEntity(String.class);
+        JSONArray array = new JSONArray(sobj);
+        _logger.info(String.format("response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
+
+        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+          _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
+        } else {
+          killed = true;
+        }
+      }
+    } catch (ProcessingException e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error(String.format("exception: %s\n", stackTrace));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
+      return killed;
+    }
+  }
+
   public SortedSet<String> listAnalyses(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);

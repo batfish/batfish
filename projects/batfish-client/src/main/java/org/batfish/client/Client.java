@@ -1892,6 +1892,16 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
+  private boolean killWork(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.KILL_WORK)) {
+      return false;
+    }
+    String workId = parameters.get(0);
+    boolean killed = _workHelper.killWork(workId);
+    _logger.outputf("Killed: %s\n", killed);
+    return killed;
+  }
+
   private boolean listAnalyses(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_ANALYSES)) {
@@ -2441,6 +2451,8 @@ public class Client extends AbstractClient implements IClient {
         return initEnvironment(words, outWriter, options, parameters);
       case INIT_TESTRIG:
         return initTestrig(outWriter, options, parameters, false);
+      case KILL_WORK:
+        return killWork(options, parameters);
       case LIST_ANALYSES:
         return listAnalyses(outWriter, options, parameters);
       case LIST_CONTAINERS:

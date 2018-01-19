@@ -69,6 +69,23 @@ public class Service {
   }
 
   @GET
+  @Path(BfConsts.SVC_KILL_TASK_RSC)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray killTask(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
+    _logger.info("BFS:killTask " + taskId + "\n");
+    try {
+      if (taskId == null || taskId.equals("")) {
+        return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
+      }
+
+      Driver.killTask(taskId);
+      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY));
+    } catch (Exception e) {
+      return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
+    }
+  }
+
+  @GET
   @Path(BfConsts.SVC_RUN_TASK_RSC)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray runTask(

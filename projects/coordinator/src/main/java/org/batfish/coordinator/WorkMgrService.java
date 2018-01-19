@@ -932,6 +932,52 @@ public class WorkMgrService {
   }
 
   /**
+   * Kill the specified work
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param workId The work ID to kill
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_KILL_WORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray killWork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKID) String workId) {
+    try {
+      _logger.info("WMS:killWork " + workId + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(workId, "work id");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
+
+      if (work == null) {
+        return failureResponse("work with the specified id does not exist or is not inaccessible");
+      }
+
+      checkContainerAccessibility(apiKey, work.getWorkItem().getContainerName());
+
+      boolean killed = Main.getWorkMgr().killWork(work);
+
+      return successResponse(new JSONObject(Boolean.toString(killed)));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.error("WMS:killWork exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:killWork exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * List the analyses under the specified container
    *
    * @param apiKey The API key of the client
