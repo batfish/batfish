@@ -14,6 +14,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Task;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -61,7 +62,7 @@ public class Service {
       if (task == null) {
         task = new Task(TaskStatus.Unknown);
       }
-      String taskStr = task.updateAndWrite();
+      String taskStr = new BatfishObjectMapper().writeValueAsString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
@@ -78,7 +79,7 @@ public class Service {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
       Task task = Driver.killTask(taskId);
-      String taskStr = task.updateAndWrite();
+      String taskStr = new BatfishObjectMapper().writeValueAsString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));

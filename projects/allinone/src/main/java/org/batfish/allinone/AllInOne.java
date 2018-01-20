@@ -15,7 +15,6 @@ import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
-import org.batfish.main.Driver.RunMode;
 
 public class AllInOne {
 

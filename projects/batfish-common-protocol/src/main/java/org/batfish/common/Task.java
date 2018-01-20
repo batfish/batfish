@@ -1,16 +1,13 @@
 package org.batfish.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.batfish.common.BfConsts.TaskStatus;
-import org.batfish.common.util.BatfishObjectMapper;
 
 public class Task {
 
@@ -97,11 +94,11 @@ public class Task {
 
   private static final String PROP_TERMINATED = "terminated";
 
-  private String[] _args;
+  private final String[] _args;
 
-  private List<Batch> _batches;
+  private final List<Batch> _batches;
 
-  private Date _obtained;
+  private final Date _obtained;
 
   private TaskStatus _status;
 
@@ -182,11 +179,5 @@ public class Task {
     return String.format(
         "[Status: %s LastBatch: %s]",
         _status, _batches.isEmpty() ? "None" : _batches.get(_batches.size() - 1));
-  }
-
-  public synchronized String updateAndWrite() throws JsonProcessingException {
-    _obtained = new Date();
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
-    return mapper.writeValueAsString(this);
   }
 }
