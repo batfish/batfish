@@ -20,6 +20,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
@@ -28,54 +29,52 @@ import org.batfish.datamodel.collections.OutlierSet;
 import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.role.OutliersHypothesis;
+import org.batfish.role.RoleConsistencyHypothesis;
 
 @AutoService(Plugin.class)
-public class OutliersQuestionPlugin extends QuestionPlugin {
+public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
-  public static class OutliersAnswerElement implements AnswerElement {
+  public static class RoleConsistencyAnswerElement implements AnswerElement {
 
-    private static final String PROP_NAMED_STRUCTURE_OUTLIERS = "namedStructureOutliers";
+    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
-    private static final String PROP_SERVER_OUTLIERS = "serverOutliers";
+    private static final String PROP_NAME = "name";
 
-    private SortedSet<NamedStructureOutlierSet<?>> _namedStructureOutliers;
+    private SortedSet<OutlierSet<NavigableSet<String>>> _outliers;
 
-    private SortedSet<OutlierSet<NavigableSet<String>>> _serverOutliers;
-
-    public OutliersAnswerElement() {
-      _namedStructureOutliers = new TreeSet<>();
-      _serverOutliers = new TreeSet<>();
+    public RoleConsistencyAnswerElement() {
+      _namedStructureRoleConsistency = new TreeSet<>();
+      _serverRoleConsistency = new TreeSet<>();
     }
 
     @JsonProperty(PROP_NAMED_STRUCTURE_OUTLIERS)
-    public SortedSet<NamedStructureOutlierSet<?>> getNamedStructureOutliers() {
-      return _namedStructureOutliers;
+    public SortedSet<NamedStructureOutlierSet<?>> getNamedStructureRoleConsistency() {
+      return _namedStructureRoleConsistency;
     }
 
     @JsonProperty(PROP_SERVER_OUTLIERS)
-    public SortedSet<OutlierSet<NavigableSet<String>>> getServerOutliers() {
-      return _serverOutliers;
+    public SortedSet<OutlierSet<NavigableSet<String>>> getServerRoleConsistency() {
+      return _serverRoleConsistency;
     }
 
     @Override
     public String prettyPrint() {
-      if (_namedStructureOutliers.size() == 0 && _serverOutliers.size() == 0) {
+      if (_namedStructureRoleConsistency.size() == 0 && _serverRoleConsistency.size() == 0) {
         return "";
       }
 
       StringBuilder sb = new StringBuilder("Results for outliers\n");
 
-      for (OutlierSet<?> outlier : _serverOutliers) {
+      for (OutlierSet<?> outlier : _serverRoleConsistency) {
         sb.append("  Hypothesis: every node should have the following set of ");
         sb.append(outlier.getName() + ": " + outlier.getDefinition() + "\n");
-        sb.append("  Outliers: ");
-        sb.append(outlier.getOutliers() + "\n");
+        sb.append("  RoleConsistency: ");
+        sb.append(outlier.getRoleConsistency() + "\n");
         sb.append("  Conformers: ");
         sb.append(outlier.getConformers() + "\n\n");
       }
 
-      for (NamedStructureOutlierSet<?> outlier : _namedStructureOutliers) {
+      for (NamedStructureOutlierSet<?> outlier : _namedStructureRoleConsistency) {
         switch (outlier.getHypothesis()) {
           case SAME_DEFINITION:
             sb.append(
@@ -102,8 +101,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
           default:
             throw new BatfishException("Unexpected hypothesis" + outlier.getHypothesis());
         }
-        sb.append("  Outliers: ");
-        sb.append(outlier.getOutliers() + "\n");
+        sb.append("  RoleConsistency: ");
+        sb.append(outlier.getRoleConsistency() + "\n");
         sb.append("  Conformers: ");
         sb.append(outlier.getConformers() + "\n\n");
       }
@@ -111,20 +110,20 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NAMED_STRUCTURE_OUTLIERS)
-    public void setNamedStructureOutliers(
-        SortedSet<NamedStructureOutlierSet<?>> namedStructureOutliers) {
-      _namedStructureOutliers = namedStructureOutliers;
+    public void setNamedStructureRoleConsistency(
+        SortedSet<NamedStructureOutlierSet<?>> namedStructureRoleConsistency) {
+      _namedStructureRoleConsistency = namedStructureRoleConsistency;
     }
 
     @JsonProperty(PROP_SERVER_OUTLIERS)
-    public void setServerOutliers(SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers) {
-      _serverOutliers = serverOutliers;
+    public void setServerRoleConsistency(SortedSet<OutlierSet<NavigableSet<String>>> serverRoleConsistency) {
+      _serverRoleConsistency = serverRoleConsistency;
     }
   }
 
-  public static class OutliersAnswerer extends Answerer {
+  public static class RoleConsistencyAnswerer extends Answerer {
 
-    private OutliersAnswerElement _answerElement;
+    private RoleConsistencyAnswerElement _answerElement;
 
     private Map<String, Configuration> _configurations;
 
@@ -139,14 +138,14 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     // and including situations when there are zero outliers
     private boolean _verbose;
 
-    public OutliersAnswerer(Question question, IBatfish batfish) {
+    public RoleConsistencyAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
-    private <T> void addNamedStructureOutliers(
-        OutliersHypothesis hypothesis,
+    private <T> void addNamedStructureRoleConsistency(
+        RoleConsistencyHypothesis hypothesis,
         NamedStructureEquivalenceSets<T> equivSet,
-        SortedSet<NamedStructureOutlierSet<?>> rankedOutliers) {
+        SortedSet<NamedStructureOutlierSet<?>> rankedRoleConsistency) {
       String structType = equivSet.getStructureClassName();
       for (Map.Entry<String, SortedSet<NamedStructureEquivalenceSet<T>>> entry :
           equivSet.getSameNamedStructures().entrySet()) {
@@ -168,14 +167,14 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
                 .filter(eClass -> eClass != max)
                 .flatMap(eClass -> eClass.getNodes().stream())
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-        rankedOutliers.add(
+        rankedRoleConsistency.add(
             new NamedStructureOutlierSet<>(
                 hypothesis, structType, name, max.getNamedStructure(), conformers, outliers));
       }
     }
 
-    private <T> void addPropertyOutliers(
-        String name, Function<Configuration, T> accessor, SortedSet<OutlierSet<T>> rankedOutliers) {
+    private <T> void addPropertyRoleConsistency(
+        String name, Function<Configuration, T> accessor, SortedSet<OutlierSet<T>> rankedRoleConsistency) {
 
       // partition the nodes into equivalence classes based on their values for the
       // property of interest
@@ -204,15 +203,15 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         outliers.addAll(nodes);
       }
       if (_verbose || isWithinThreshold(conformers, outliers)) {
-        rankedOutliers.add(new OutlierSet<T>(name, definition, conformers, outliers));
+        rankedRoleConsistency.add(new OutlierSet<T>(name, definition, conformers, outliers));
       }
     }
 
     @Override
-    public OutliersAnswerElement answer() {
+    public RoleConsistencyAnswerElement answer() {
 
-      OutliersQuestion question = (OutliersQuestion) _question;
-      _answerElement = new OutliersAnswerElement();
+      RoleConsistencyQuestion question = (RoleConsistencyQuestion) _question;
+      _answerElement = new RoleConsistencyAnswerElement();
 
       _configurations = _batfish.loadConfigurations();
       _nodes = question.getNodeRegex().getMatchingNodes(_configurations);
@@ -221,11 +220,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       switch (question.getHypothesis()) {
         case SAME_DEFINITION:
         case SAME_NAME:
-          SortedSet<NamedStructureOutlierSet<?>> outliers = namedStructureOutliers(question);
-          _answerElement.setNamedStructureOutliers(outliers);
+          SortedSet<NamedStructureOutlierSet<?>> outliers = namedStructureRoleConsistency(question);
+          _answerElement.setNamedStructureRoleConsistency(outliers);
           break;
         case SAME_SERVERS:
-          _answerElement.setServerOutliers(serverOutliers());
+          _answerElement.setServerRoleConsistency(serverRoleConsistency());
           break;
         default:
           throw new BatfishException(
@@ -244,8 +243,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return oSize > 0 && (oSize / (cSize + oSize)) <= OUTLIERS_THRESHOLD;
     }
 
-    private SortedSet<NamedStructureOutlierSet<?>> namedStructureOutliers(
-        OutliersQuestion question) {
+    private SortedSet<NamedStructureOutlierSet<?>> namedStructureRoleConsistency(
+        RoleConsistencyQuestion question) {
 
       // first get the results of compareSameName
       CompareSameNameQuestionPlugin.CompareSameNameQuestion inner =
@@ -262,7 +261,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets =
           innerAnswer.getEquivalenceSets();
 
-      OutliersHypothesis hypothesis = question.getHypothesis();
+      RoleConsistencyHypothesis hypothesis = question.getHypothesis();
       switch (hypothesis) {
         case SAME_DEFINITION:
           // nothing to do before ranking outliers
@@ -280,7 +279,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       }
 
       SortedSet<NamedStructureOutlierSet<?>> outliers =
-          rankNamedStructureOutliers(hypothesis, equivalenceSets);
+          rankNamedStructureRoleConsistency(hypothesis, equivalenceSets);
 
       // remove outlier sets where the hypothesis is that a particular named structure
       // should *not* exist (this  happens when more nodes lack such a structure than contain
@@ -289,20 +288,20 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
       if (!_verbose) {
         // remove outlier sets that don't meet our threshold
-        outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers()));
+        outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getRoleConsistency()));
       }
       return outliers;
     }
 
-    private SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers() {
-      SortedSet<OutlierSet<NavigableSet<String>>> rankedOutliers = new TreeSet<>();
-      addPropertyOutliers("DnsServers", Configuration::getDnsServers, rankedOutliers);
-      addPropertyOutliers("LoggingServers", Configuration::getLoggingServers, rankedOutliers);
-      addPropertyOutliers("NtpServers", Configuration::getNtpServers, rankedOutliers);
-      addPropertyOutliers("SnmpTrapServers", Configuration::getSnmpTrapServers, rankedOutliers);
-      addPropertyOutliers("TacacsServers", Configuration::getTacacsServers, rankedOutliers);
+    private SortedSet<OutlierSet<NavigableSet<String>>> serverRoleConsistency() {
+      SortedSet<OutlierSet<NavigableSet<String>>> rankedRoleConsistency = new TreeSet<>();
+      addPropertyRoleConsistency("DnsServers", Configuration::getDnsServers, rankedRoleConsistency);
+      addPropertyRoleConsistency("LoggingServers", Configuration::getLoggingServers, rankedRoleConsistency);
+      addPropertyRoleConsistency("NtpServers", Configuration::getNtpServers, rankedRoleConsistency);
+      addPropertyRoleConsistency("SnmpTrapServers", Configuration::getSnmpTrapServers, rankedRoleConsistency);
+      addPropertyRoleConsistency("TacacsServers", Configuration::getTacacsServers, rankedRoleConsistency);
 
-      return rankedOutliers;
+      return rankedRoleConsistency;
     }
 
     /**
@@ -350,66 +349,39 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
      * with the largest number of elements is correct and the property equivalence classes
      * represent bugs
      */
-    private SortedSet<NamedStructureOutlierSet<?>> rankNamedStructureOutliers(
-        OutliersHypothesis hypothesis,
+    private SortedSet<NamedStructureOutlierSet<?>> rankNamedStructureRoleConsistency(
+        RoleConsistencyHypothesis hypothesis,
         SortedMap<String, NamedStructureEquivalenceSets<?>> equivSets) {
-      SortedSet<NamedStructureOutlierSet<?>> rankedOutliers = new TreeSet<>();
+      SortedSet<NamedStructureOutlierSet<?>> rankedRoleConsistency = new TreeSet<>();
       for (NamedStructureEquivalenceSets<?> entry : equivSets.values()) {
-        addNamedStructureOutliers(hypothesis, entry, rankedOutliers);
+        addNamedStructureRoleConsistency(hypothesis, entry, rankedRoleConsistency);
       }
-      return rankedOutliers;
+      return rankedRoleConsistency;
     }
   }
 
   // <question_page_comment>
   /**
-   * Detects and ranks outliers based on a comparison of nodes' configurations.
+   * Checks a role-based consistency policy requiring that all nodes of the same role have the
+   * same value for some particular configuration property (e.g., DnsServers).
    *
-   * <p>If many nodes have a structure of a given name and a few do not, this may indicate an error.
-   * If many nodes have a structure named N whose definition is identical, and a few nodes have a
-   * structure named N that is defined differently, this may indicate an error. This question
-   * leverages this and similar intuition to find outliers.
+   * @type RoleConsistency multifile
+   * @param nodeRoleSpecifier A NodeRoleSpecifier that specifies the role(s) of each node.
    *
-   * @type Outliers multifile
-   * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicies, IkeProposal, IpAccessList,
-   *     IpsecPolicy, IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]'
-   *     (which denotes all structure types). This option is applicable to the "sameName" and
-   *     "sameDefinition" hypotheses.
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
-   *     nodes).
-   * @param hypothesis A string that indicates the hypothesis being used to identify outliers.
-   *     "sameDefinition" indicates a hypothesis that same-named structures should have identical
-   *     definitions. "sameName" indicates a hypothesis that all nodes should have structures of the
-   *     same names. "sameServers" indicates a hypothesis that all nodes should have the same set of
-   *     protocol-specific servers (e.g., DNS servers). Default is "sameDefinition".
-   * @param verbose A boolean that indicates whether all results should be returned, including
-   *     situations when a hypothesis yields no outliers and situations when a hypothesis yields a
-   *     number of outliers that exceeds our threshold for considering it a likely error. Default
-   *     value is false.
+   * @param name A string representing the name of the configuration property to check.  Allowed
+   *             values are DnsServers, LoggingServers, NtpServers, SnmpServers, TacacsServers.
    */
-  public static final class OutliersQuestion extends Question implements INodeRegexQuestion {
+  public static final class RoleConsistencyQuestion extends Question implements INodeRegexQuestion {
 
-    private static final String PROP_HYPOTHESIS = "hypothesis";
+    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
-    private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
+    private static final String PROP_NAME = "name";
 
-    private static final String PROP_NODE_REGEX = "nodeRegex";
+    private NodeRoleSpecifier _roleSpecifier;
 
-    private static final String PROP_VERBOSE = "verbose";
+    private String _name;
 
-    private OutliersHypothesis _hypothesis;
-
-    private SortedSet<String> _namedStructTypes;
-
-    private NodesSpecifier _nodeRegex;
-
-    private boolean _verbose;
-
-    public OutliersQuestion() {
-      _namedStructTypes = new TreeSet<>();
-      _nodeRegex = NodesSpecifier.ALL;
-      _hypothesis = OutliersHypothesis.SAME_DEFINITION;
+    public RoleConsistencyQuestion() {
     }
 
     @Override
@@ -418,7 +390,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_HYPOTHESIS)
-    public OutliersHypothesis getHypothesis() {
+    public RoleConsistencyHypothesis getHypothesis() {
       return _hypothesis;
     }
 
@@ -443,7 +415,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_HYPOTHESIS)
-    public void setHypothesis(OutliersHypothesis hypothesis) {
+    public void setHypothesis(RoleConsistencyHypothesis hypothesis) {
       _hypothesis = hypothesis;
     }
 
@@ -464,12 +436,12 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
   }
 
   @Override
-  protected OutliersAnswerer createAnswerer(Question question, IBatfish batfish) {
-    return new OutliersAnswerer(question, batfish);
+  protected RoleConsistencyAnswerer createAnswerer(Question question, IBatfish batfish) {
+    return new RoleConsistencyAnswerer(question, batfish);
   }
 
   @Override
-  protected OutliersQuestion createQuestion() {
-    return new OutliersQuestion();
+  protected RoleConsistencyQuestion createQuestion() {
+    return new RoleConsistencyQuestion();
   }
 }
