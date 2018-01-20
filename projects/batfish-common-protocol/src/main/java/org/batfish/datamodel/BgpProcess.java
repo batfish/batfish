@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
@@ -64,7 +66,7 @@ public class BgpProcess implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private transient Set<Long> _clusterIds;
+  private Supplier<Set<Long>> _clusterIds;
 
   /**
    * The set of <i>neighbor-independent</i> generated routes that may be advertised by this process
@@ -95,11 +97,24 @@ public class BgpProcess implements Serializable {
     _neighbors = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
+    _clusterIds =
+        Suppliers.memoize(
+            (Serializable & com.google.common.base.Supplier<Set<Long>>)
+                () ->
+                    _neighbors
+                        .values()
+                        .stream()
+                        .map(BgpNeighbor::getClusterId)
+                        .collect(ImmutableSet.toImmutableSet()));
   }
 
+  /**
+   * Returns set of all cluster IDs for all neighbors. The result is memoized, so this should only
+   * be called after the neighbors are finalized.
+   */
   @JsonIgnore
   public Set<Long> getClusterIds() {
-    return _clusterIds;
+    return _clusterIds.get();
   }
 
   /** @return {@link #_generatedRoutes} */
@@ -147,15 +162,6 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
-  }
-
-  public void initClusterIds() {
-    _clusterIds =
-        _neighbors
-            .values()
-            .stream()
-            .map(BgpNeighbor::getClusterId)
-            .collect(ImmutableSet.toImmutableSet());
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)

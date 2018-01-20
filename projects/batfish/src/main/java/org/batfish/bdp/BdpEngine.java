@@ -420,15 +420,6 @@ public class BdpEngine {
         dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       }
       CommonUtil.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
-      configurations
-          .values()
-          .parallelStream()
-          .map(Configuration::getVrfs)
-          .map(Map::values)
-          .flatMap(Collection::stream)
-          .filter(v -> v.getBgpProcess() != null)
-          .map(Vrf::getBgpProcess)
-          .forEach(proc -> proc.initClusterIds());
       SortedMap<String, Node> nodes = new TreeMap<>();
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
       SortedMap<Integer, SortedSet<Prefix>> iterationOscillatingPrefixes = new TreeMap<>();

@@ -45,19 +45,21 @@ import org.junit.Test;
 
 public class RouteReflectionTest {
 
-  private static Prefix AS1_PREFIX = Prefix.parse("1.0.0.0/8");
+  private static final Prefix AS1_PREFIX = Prefix.parse("1.0.0.0/8");
 
-  private static Prefix AS3_PREFIX = Prefix.parse("3.0.0.0/8");
+  private static final Prefix AS3_PREFIX = Prefix.parse("3.0.0.0/8");
 
-  private static String EDGE1_NAME = "edge1";
+  private static final int EDGE_PREFIX_LENGTH = 24;
 
-  private static String EDGE2_NAME = "edge2";
+  private static final String EDGE1_NAME = "edge1";
 
-  private static String RR_NAME = "rr";
+  private static final String EDGE2_NAME = "edge2";
 
-  private static String RR1_NAME = "rr1";
+  private static final String RR_NAME = "rr";
 
-  private static String RR2_NAME = "rr2";
+  private static final String RR1_NAME = "rr1";
+
+  private static final String RR2_NAME = "rr2";
 
   private static void assertIbgpRoute(
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
@@ -90,8 +92,6 @@ public class RouteReflectionTest {
 
   private RoutingPolicy.Builder _defaultExportPolicyBuilder;
 
-  private int _edgePrefixLength;
-
   private Interface.Builder _ib;
 
   private BgpNeighbor.Builder _nb;
@@ -104,6 +104,9 @@ public class RouteReflectionTest {
 
   private Vrf.Builder _vb;
 
+  /*
+   * See documentation of calling functions for information description of produced network
+   */
   private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> generateRoutesOneReflector(
       boolean edge1RouteReflectorClient, boolean edge2RouteReflectorClient) {
     Ip as1PeeringIp = new Ip("10.12.11.1");
@@ -121,9 +124,9 @@ public class RouteReflectionTest {
     Configuration edge1 = _cb.setHostname(EDGE1_NAME).build();
     Vrf vEdge1 = _vb.setOwner(edge1).build();
     _ib.setOwner(edge1).setVrf(vEdge1);
-    _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
     _nb.setOwner(edge1)
@@ -145,9 +148,9 @@ public class RouteReflectionTest {
     Configuration rr = _cb.setHostname(RR_NAME).build();
     Vrf vRr = _vb.setOwner(rr).build();
     _ib.setOwner(rr).setVrf(vRr);
-    _ib.setAddress(new InterfaceAddress(rrEdge1IfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(rrEdge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(rrLoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rrEdge2IfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(rrEdge2IfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess rrProc = _pb.setRouterId(rrLoopbackIp).setVrf(vRr).build();
     RoutingPolicy rrExportPolicy = _defaultExportPolicyBuilder.setOwner(rr).build();
     _nb.setOwner(rr)
@@ -171,9 +174,9 @@ public class RouteReflectionTest {
     Configuration edge2 = _cb.setHostname(EDGE2_NAME).build();
     Vrf vEdge2 = _vb.setOwner(edge2).build();
     _ib.setOwner(edge2).setVrf(vEdge2);
-    _ib.setAddress(new InterfaceAddress(edge2EbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(edge2EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge2LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge2IbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(edge2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess edge2Proc = _pb.setRouterId(edge2LoopbackIp).setVrf(vEdge2).build();
     RoutingPolicy edge2EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge2).build();
     _nb.setOwner(edge2)
@@ -248,9 +251,9 @@ public class RouteReflectionTest {
     Configuration edge1 = _cb.setHostname(EDGE1_NAME).build();
     Vrf vEdge1 = _vb.setOwner(edge1).build();
     _ib.setOwner(edge1).setVrf(vEdge1);
-    _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
     _nb.setOwner(edge1)
@@ -272,9 +275,9 @@ public class RouteReflectionTest {
     Configuration rr1 = _cb.setHostname(RR1_NAME).build();
     Vrf vRr1 = _vb.setOwner(rr1).build();
     _ib.setOwner(rr1).setVrf(vRr1);
-    _ib.setAddress(new InterfaceAddress(rr1Edge1IfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(rr1Edge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(rr1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rr1Rr2IfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(rr1Rr2IfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess rr1Proc = _pb.setRouterId(rr1LoopbackIp).setVrf(vRr1).build();
     RoutingPolicy rr1ExportPolicy = _defaultExportPolicyBuilder.setOwner(rr1).build();
     _nb.setOwner(rr1)
@@ -293,7 +296,7 @@ public class RouteReflectionTest {
     Vrf vRr2 = _vb.setOwner(rr2).build();
     _ib.setOwner(rr2).setVrf(vRr2);
     _ib.setAddress(new InterfaceAddress(rr2LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
-    _ib.setAddress(new InterfaceAddress(rr2IbgpIfaceIp, _edgePrefixLength)).build();
+    _ib.setAddress(new InterfaceAddress(rr2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess rr2Proc = _pb.setRouterId(rr2LoopbackIp).setVrf(vRr2).build();
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(rr2).build();
 
@@ -340,6 +343,7 @@ public class RouteReflectionTest {
     return engine.getRoutes(dp);
   }
 
+  /** Initialize builders with values common to all tests */
   @Before
   public void setup() {
     _ab =
@@ -357,7 +361,6 @@ public class RouteReflectionTest {
     _nb = _nf.bgpNeighborBuilder().setLocalAs(2);
     _pb = _nf.bgpProcessBuilder();
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    _edgePrefixLength = 24;
     If acceptIffBgp = new If();
     Disjunction guard = new Disjunction();
     guard.setDisjuncts(
@@ -366,8 +369,12 @@ public class RouteReflectionTest {
     acceptIffBgp.setGuard(guard);
     acceptIffBgp.setTrueStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
     acceptIffBgp.setFalseStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+
+    /* Builder that creates default BGP export policy */
     _defaultExportPolicyBuilder =
         _nf.routingPolicyBuilder().setStatements(ImmutableList.of(acceptIffBgp));
+
+    /* Builder that creates BGP export policy that rejects everything */
     _nullExportPolicyBuilder =
         _nf.routingPolicyBuilder()
             .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()));
