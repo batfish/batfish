@@ -14,6 +14,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
@@ -28,6 +29,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
+import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.collections.UnionSplit;
@@ -360,7 +362,7 @@ class AbstractionBuilder {
     Table2<String, Integer, Set<String>> neighborByAbstractId = collectNeighborByAbstractId();
     Map<Integer, Set<String>> chosen = new HashMap<>();
     Stack<String> stack = new Stack<>();
-    List<String> options = new ArrayList<>();
+    List<Configuration> options = new ArrayList<>();
 
     if (_destinations.isEmpty()) {
       // When destination only can be from external
@@ -409,12 +411,26 @@ class AbstractionBuilder {
           if (chosenPeers.contains(x)) {
             numNeeded--;
           } else {
-            options.add(x);
+            options.add(_graph.getConfigurations().get(x));
           }
         }
+
+        // Chose the ones with the lowest router ID
+        options.sort((o1, o2) -> {
+          Long id1 = _graph.routerId(o1, Protocol.BGP);
+          Long id2 = _graph.routerId(o2, Protocol.BGP);
+          if (id1 == null && id2 == null) {
+            return o1.getName().compareTo(o2.getName());
+          } else if (id1 == null || id2 == null) {
+            throw new BatfishException("Missing BGP process in abstraction");
+          } else {
+            return id1.compareTo(id2);
+          }
+        });
+
         // Add new neighbors until satisfied
         for (int k = 0; k < Math.min(numNeeded, options.size()); k++) {
-          String y = options.get(k);
+          String y = options.get(k).getName();
           chosenPeers.add(y);
           stack.push(y);
         }

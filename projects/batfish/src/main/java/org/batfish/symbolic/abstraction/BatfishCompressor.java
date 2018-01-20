@@ -2,16 +2,15 @@ package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -47,43 +46,55 @@ public class BatfishCompressor {
     _graph = new Graph(batfish);
   }
 
-  private void addAll(
-      Map<GraphEdge, Set<PrefixRange>> newMap, Map<GraphEdge, Set<PrefixRange>> oldMap) {
-    for (Entry<GraphEdge, Set<PrefixRange>> entry : oldMap.entrySet()) {
-      Set<PrefixRange> s = newMap.get(entry.getKey());
+  private void addAll(Map<GraphEdge, PrefixSpace> newMap, Map<GraphEdge, PrefixSpace> oldMap) {
+    for (Entry<GraphEdge, PrefixSpace> entry : oldMap.entrySet()) {
+      PrefixSpace s = newMap.get(entry.getKey());
       if (s == null) {
         newMap.put(entry.getKey(), entry.getValue());
       } else {
-        s.addAll(entry.getValue());
+        s.addSpace(entry.getValue());
       }
     }
   }
 
-  private Map<GraphEdge, Set<PrefixRange>> mergeFilters(
-      Map<GraphEdge, Set<PrefixRange>> x, Map<GraphEdge, Set<PrefixRange>> y) {
-    Map<GraphEdge, Set<PrefixRange>> newMap = new HashMap<>();
+  private Map<GraphEdge, PrefixSpace> mergeFilters(
+      Map<GraphEdge, PrefixSpace> x, Map<GraphEdge, PrefixSpace> y) {
+    Map<GraphEdge, PrefixSpace> newMap = new HashMap<>();
     addAll(newMap, x);
     addAll(newMap, y);
     return newMap;
   }
 
-  private Map<GraphEdge, Set<PrefixRange>> processSlice(NetworkSlice slice) {
-    Map<GraphEdge, Set<PrefixRange>> filters = new HashMap<>();
+  private Prefix makeCanonical(Prefix p) {
+    int length = p.getPrefixLength();
+    long l = p.getAddress().asLong();
+    l = (l >> 32 - length);
+    l = (l << 32 - length);
+    Ip ip = new Ip(l);
+    return new Prefix(ip, length);
+  }
+
+  private Map<GraphEdge, PrefixSpace> processSlice(NetworkSlice slice) {
+    Map<GraphEdge, PrefixSpace> filters = new HashMap<>();
     for (GraphEdge edge : slice.getGraph().getAllEdges()) {
-      if (!edge.isAbstract() && !edge.isNullEdge()) {
-        Set<PrefixRange> ranges = new HashSet<>();
+      if (!edge.isAbstract() && edge.getPeer() != null) {
+        PrefixSpace space = new PrefixSpace();
         for (IpWildcard wc : slice.getHeaderSpace().getDstIps()) {
+          // TODO: properly cover the entire space
           Prefix p = wc.toPrefix();
-          PrefixRange r = new PrefixRange(p, new SubRange(p.getPrefixLength(), 32));
-          ranges.add(r);
+          for (int i = 0; i < p.getPrefixLength(); i++) {
+            Prefix pfx = new Prefix(p.getAddress(), i);
+            PrefixRange r = new PrefixRange(makeCanonical(pfx), new SubRange(i, i));
+            space.addPrefixRange(r);
+          }
         }
-        filters.put(edge, ranges);
+        filters.put(edge, space);
       }
     }
     return filters;
   }
 
-  private void applyFilters(@Nullable RoutingPolicy pol, Set<PrefixRange> filters) {
+  private void applyFilters(@Nullable RoutingPolicy pol, @Nullable PrefixSpace filters) {
     if (pol == null) {
       return;
     }
@@ -96,8 +107,7 @@ public class BatfishCompressor {
       StaticBooleanExpr sbe = new StaticBooleanExpr(BooleanExprs.False);
       i.setGuard(sbe);
     } else {
-      PrefixSpace ps = new PrefixSpace(filters);
-      ExplicitPrefixSet eps = new ExplicitPrefixSet(ps);
+      ExplicitPrefixSet eps = new ExplicitPrefixSet(filters);
       MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
       i.setGuard(match);
     }
@@ -107,31 +117,44 @@ public class BatfishCompressor {
     pol.setStatements(newStatements);
   }
 
-  private void applyFilters(Table2<String, GraphEdge, Set<PrefixRange>> filtersByRouter) {
+  private Map<String, Configuration> applyFilters(
+      Table2<String, GraphEdge, PrefixSpace> filtersByRouter) {
+    Map<String, Configuration> newConfigs = new HashMap<>();
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
-      Map<GraphEdge, Set<PrefixRange>> filters = filtersByRouter.get(router);
-      for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
-        Set<PrefixRange> ranges = filters.get(ge);
-        RoutingPolicy ipol = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
-        RoutingPolicy epol = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
-        applyFilters(ipol, ranges);
-        applyFilters(epol, ranges);
+      Map<GraphEdge, PrefixSpace> filters = filtersByRouter.get(router);
+      if (filters != null) {
+        for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
+          PrefixSpace space = filters.get(ge);
+          RoutingPolicy ipol = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
+          RoutingPolicy epol = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
+          applyFilters(ipol, space);
+          applyFilters(epol, space);
+        }
+        newConfigs.put(router, entry.getValue());
       }
     }
+    return newConfigs;
   }
 
   public Map<String, Configuration> compress(HeaderSpace h) {
     DestinationClasses dcs = DestinationClasses.create(_batfish, h, true);
     ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
-    Map<GraphEdge, Set<PrefixRange>> filters =
+    Map<GraphEdge, PrefixSpace> filters =
         ecs.parallelStream().map(s -> processSlice(s.get())).reduce(this::mergeFilters).get();
-    Table2<String, GraphEdge, Set<PrefixRange>> filtersByRouter = new Table2<>();
-    for (Entry<GraphEdge,Set<PrefixRange>> entry : filters.entrySet()) {
+    Table2<String, GraphEdge, PrefixSpace> filtersByRouter = new Table2<>();
+    for (Entry<GraphEdge, PrefixSpace> entry : filters.entrySet()) {
       GraphEdge ge = entry.getKey();
       filtersByRouter.put(ge.getRouter(), ge, entry.getValue());
     }
-    applyFilters(filtersByRouter);
-    return _graph.getConfigurations();
+    /* filters.forEach(
+        (ge, filts) -> {
+          System.out.println("Edge: " + ge);
+          for (PrefixRange filt : filts.getPrefixRanges()) {
+            System.out.println("  filter: " + filt);
+          }
+        }); */
+    Map<String, Configuration> newConfigs = applyFilters(filtersByRouter);
+    return newConfigs;
   }
 }

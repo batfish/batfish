@@ -1008,7 +1008,7 @@ public class Graph {
   /*
  * Find the router Id for the neighbor corresponding to a logical edge.
  */
-  public long findRouterId(GraphEdge ge, Protocol proto) {
+  @Nullable public Long findRouterId(GraphEdge ge, Protocol proto) {
     GraphEdge eOther = _otherEnd.get(ge);
 
     if (proto.isOspf() || proto.isConnected() || proto.isStatic()) {
@@ -1033,14 +1033,22 @@ public class Graph {
   /*
    * Find the router Id for a router and a protocol.
    */
-  private long routerId(Configuration conf, Protocol proto) {
+  @Nullable public Long routerId(Configuration conf, Protocol proto) {
     if (proto.isBgp()) {
-      return conf.getDefaultVrf().getBgpProcess().getRouterId().asLong();
+      BgpProcess bgp = conf.getDefaultVrf().getBgpProcess();
+      if (bgp == null) {
+        return null;
+      }
+      return bgp.getRouterId().asLong();
     }
     if (proto.isOspf()) {
-      return conf.getDefaultVrf().getOspfProcess().getRouterId().asLong();
+      OspfProcess ospf = conf.getDefaultVrf().getOspfProcess();
+      if (ospf == null) {
+        return null;
+      }
+      return ospf.getRouterId().asLong();
     } else {
-      return 0;
+      return 0L;
     }
   }
 
