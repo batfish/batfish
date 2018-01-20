@@ -3,6 +3,7 @@ package org.batfish.config;
 import java.nio.file.Path;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.batfish.bdp.BdpSettings;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
