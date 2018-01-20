@@ -66,7 +66,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
             sb.append("the same " + policy.getName());
             break;
           default:
-            throw new BatfishException("this case should be unreachable");
+            throw new BatfishException("Unrecognized hypothesis " + policy.getHypothesis());
         }
         sb.append("\n");
         sb.append("Role specifier:\n");
