@@ -99,7 +99,7 @@ public class BgpProcess implements Serializable {
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds =
         Suppliers.memoize(
-            (Serializable & com.google.common.base.Supplier<Set<Long>>)
+            (Serializable & Supplier<Set<Long>>)
                 () ->
                     _neighbors
                         .values()
