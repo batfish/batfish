@@ -1,4 +1,4 @@
-package org.batfish.config;
+package org.batfish.bdp;
 
 import org.batfish.common.plugin.DataPlanePluginSettings;
 
