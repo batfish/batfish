@@ -40,6 +40,7 @@ public enum Command {
   GET_OBJECT_DELTA("get-delta-object"),
   GET_QUESTION("get-question"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
+  GET_WORK_STATUS("get-work-status"),
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
@@ -62,6 +63,7 @@ public enum Command {
   RUN_ANALYSIS("run-analysis"),
   RUN_ANALYSIS_DELTA("run-analysis-delta"),
   RUN_ANALYSIS_DIFFERENTIAL("run-analysis-differential"),
+  SET_BACKGROUND_EXECUCTION("set-background-execution"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_CONTAINER("set-container"),
   SET_DELTA_ENV("set-delta-environment"),
@@ -169,6 +171,7 @@ public enum Command {
     descs.put(GET_OBJECT_DELTA, new Pair<>("<object path>", "Get the object from delta testrig"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
     descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
+    descs.put(GET_WORK_STATUS, new Pair<>("<work-id>", "Get the status of the specified work id"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));
     descs.put(
         INIT_ANALYSIS,
@@ -272,6 +275,9 @@ public enum Command {
     descs.put(REINIT_TESTRIG, new Pair<>("", "Reinitialize the testrig with default environment"));
     descs.put(
         RUN_ANALYSIS, new Pair<>("<analysis-name>", "Run the (previously configured) analysis"));
+    descs.put(
+        SET_BACKGROUND_EXECUCTION,
+        new Pair<>("<true|false>", "Whether to wait for commands to finish before returning"));
     descs.put(
         SET_BATFISH_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));

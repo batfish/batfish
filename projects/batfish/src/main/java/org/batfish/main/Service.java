@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -58,8 +59,7 @@ public class Service {
 
       Task task = Driver.getTaskFromLog(taskId);
       if (task == null) {
-        task = new Task(null);
-        task.setStatus(TaskStatus.Unknown);
+        task = new Task(TaskStatus.Unknown);
       }
       String taskStr = task.updateAndWrite();
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
@@ -74,12 +74,12 @@ public class Service {
   public JSONArray killTask(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
     _logger.info("BFS:killTask " + taskId + "\n");
     try {
-      if (taskId == null || taskId.equals("")) {
+      if (Strings.isNullOrEmpty(taskId)) {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
       }
-
-      Driver.killTask(taskId);
-      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY));
+      Task task = Driver.killTask(taskId);
+      String taskStr = task.updateAndWrite();
+      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
     }

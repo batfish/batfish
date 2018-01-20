@@ -260,8 +260,7 @@ public class WorkMgr extends AbstractCoordinator {
   private void checkTask(QueuedWork work, String worker) {
     _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
 
-    Task task = new Task();
-    task.setStatus(TaskStatus.UnreachableOrBadResponse);
+    Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
     SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
@@ -989,8 +988,18 @@ public class WorkMgr extends AbstractCoordinator {
 
   public boolean killWork(QueuedWork work) {
     String worker = work.getAssignedWorker();
+
     if (worker == null) {
-      return false;
+      // this work was not assigned in the first place
+      boolean killed = false;
+      Task fakeTask = new Task(TaskStatus.TerminatedAbnormally, "Killed unassigned work");
+      try {
+        _workQueueMgr.processTaskCheckResult(work, fakeTask);
+        killed = true;
+      } catch (Exception e) {
+        _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      }
+      return killed;
     }
 
     Client client = null;
@@ -1029,28 +1038,36 @@ public class WorkMgr extends AbstractCoordinator {
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
       } else {
-        String sobj = response.readEntity(String.class);
-        JSONArray array = new JSONArray(sobj);
-        _logger.info(String.format("response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
-
-        if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
-          _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
-        } else {
+        try {
+          String sobj = response.readEntity(String.class);
+          JSONArray array = new JSONArray(sobj);
+          _logger.infof("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
+          if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+            _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
+          } else {
+            Task task = new BatfishObjectMapper().readValue(array.getString(1), Task.class);
+            _workQueueMgr.processTaskCheckResult(work, task);
+            killed = true;
+          }
+        } catch (IllegalStateException e) {
+          // can happen if the worker dies before we could finish reading; lets assume success
+          _logger.infof("worker appears dead before response completion\n");
+          Task fakeTask =
+              new Task(TaskStatus.TerminatedAbnormally, "Worker appears dead before responding");
+          _workQueueMgr.processTaskCheckResult(work, fakeTask);
           killed = true;
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
+      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getFullStackTrace(e));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error(String.format("exception: %s\n", stackTrace));
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
     } finally {
       if (client != null) {
         client.close();
       }
-      return killed;
     }
+    return killed;
   }
 
   public SortedSet<String> listAnalyses(String containerName) {

@@ -761,7 +761,12 @@ public class BfCoordWorkHelper {
         return false;
       }
 
-      return Boolean.valueOf(jObj.toString());
+      if (!jObj.has(CoordConsts.SVC_KEY_RESULT)) {
+        _logger.errorf("result key not found in: %s\n", jObj);
+        return false;
+      }
+
+      return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");

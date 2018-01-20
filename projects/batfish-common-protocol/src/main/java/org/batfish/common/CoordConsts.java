@@ -62,6 +62,7 @@ public class CoordConsts {
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
+  public static final String SVC_KEY_RESULT = "result";
   public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";

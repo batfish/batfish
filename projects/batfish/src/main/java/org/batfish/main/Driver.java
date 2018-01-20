@@ -240,13 +240,31 @@ public class Driver {
   }
 
   @Nullable
-  public static synchronized void killTask(String taskId) {
+  public static synchronized Task killTask(String taskId) {
     Task task = _taskLog.get(taskId);
-    if (task != null
-        && task.getStatus() != TaskStatus.TerminatedNormally
-        && task.getStatus() != TaskStatus.TerminatedAbnormally) {
-      // we kill the task by killing ourselves
-      System.exit(0);
+    if (task == null) {
+      throw new BatfishException("Task with provided id not found: " + taskId);
+    } else if (task.getStatus() == TaskStatus.TerminatedNormally
+        || task.getStatus() == TaskStatus.TerminatedAbnormally) {
+      throw new BatfishException("Task with provided id already terminated " + taskId);
+    } else {
+      // update task details in case a new query for status check comes in
+      task.newBatch("Got kill request");
+      task.setStatus(TaskStatus.TerminatedAbnormally);
+      task.setTerminated(new Date());
+
+      // we die after a little bit, to allow for the response making it back to the coordinator
+      new java.util.Timer()
+          .schedule(
+              new java.util.TimerTask() {
+                @Override
+                public void run() {
+                  System.exit(0);
+                }
+              },
+              3000);
+
+      return task;
     }
   }
 
@@ -669,7 +687,7 @@ public class Driver {
                     } else {
                       task.setStatus(TaskStatus.TerminatedAbnormally);
                     }
-                    task.setTerminated();
+                    task.setTerminated(new Date());
                     jobLogger.close();
                     makeIdle();
                   }

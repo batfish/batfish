@@ -95,29 +95,25 @@ public class WorkQueueMgrTest {
         break;
       case STATUS_INPROGRESS:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.InProgress);
+          Task task = new Task(TaskStatus.InProgress);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
       case STATUS_TERMINATED_ABNORMALLY:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.TerminatedAbnormally);
+          Task task = new Task(TaskStatus.TerminatedAbnormally);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
       case STATUS_TERMINATED_NORMALLY:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.TerminatedNormally);
+          Task task = new Task(TaskStatus.TerminatedNormally);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
       case STATUS_UNREACHABLE:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.UnreachableOrBadResponse);
+          Task task = new Task(TaskStatus.UnreachableOrBadResponse);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;

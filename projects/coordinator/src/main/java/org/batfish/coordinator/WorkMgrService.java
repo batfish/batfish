@@ -969,7 +969,7 @@ public class WorkMgrService {
 
       boolean killed = Main.getWorkMgr().killWork(work);
 
-      return successResponse(new JSONObject(Boolean.toString(killed)));
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_RESULT, killed));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.error("WMS:killWork exception: " + e.getMessage() + "\n");
       return failureResponse(e.getMessage());

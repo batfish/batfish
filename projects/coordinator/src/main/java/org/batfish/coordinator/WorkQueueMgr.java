@@ -451,8 +451,8 @@ public class WorkQueueMgr {
                 // put this work back on incomplete queue and process as if it terminatedabnormally
                 // people may be checking its status and this work may be blocking others
                 _queueIncompleteWork.enque(requeueWork);
-                Task fakeTask = new Task();
-                fakeTask.setStatus(TaskStatus.TerminatedAbnormally);
+                Task fakeTask =
+                    new Task(TaskStatus.TerminatedAbnormally, "Couldn't requeue after unblocking");
                 processTaskCheckResult(requeueWork, fakeTask);
               }
             }

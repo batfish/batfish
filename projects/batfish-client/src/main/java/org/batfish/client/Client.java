@@ -427,6 +427,8 @@ public class Client extends AbstractClient implements IClient {
 
   private Map<String, String> _additionalBatfishOptions;
 
+  private boolean _backgroundExecution = false;
+
   private final Map<String, String> _bfq;
 
   private String _currContainerName = null;
@@ -945,6 +947,11 @@ public class Client extends AbstractClient implements IClient {
     if (!queueWorkResult) {
       return queueWorkResult;
     }
+
+    if (_backgroundExecution) {
+      return true;
+    }
+
     Pair<WorkStatusCode, String> response;
     try (ActiveSpan workStatusSpan =
         GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
@@ -961,7 +968,7 @@ public class Client extends AbstractClient implements IClient {
           && status != WorkStatusCode.TERMINATEDNORMALLY
           && status != WorkStatusCode.ASSIGNMENTERROR
           && backoff.hasNext()) {
-        printWorkStatusResponse(response);
+        printWorkStatusResponse(response, false);
         try {
           Thread.sleep(backoff.nextBackoff().toMillis());
         } catch (InterruptedException e) {
@@ -973,7 +980,7 @@ public class Client extends AbstractClient implements IClient {
         }
         status = response.getFirst();
       }
-      printWorkStatusResponse(response);
+      printWorkStatusResponse(response, false);
     }
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
@@ -1469,6 +1476,23 @@ public class Client extends AbstractClient implements IClient {
     } catch (JSONException e) {
       throw new BatfishException("Failed to print templates", e);
     }
+
+    return true;
+  }
+
+  private boolean getWorkStatus(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_WORK_STATUS)) {
+      return false;
+    }
+
+    UUID workId = UUID.fromString(parameters.get(0));
+
+    Pair<WorkStatusCode, String> response = _workHelper.getWorkStatus(workId);
+    if (response == null) {
+      return false;
+    }
+
+    printWorkStatusResponse(response, true);
 
     return true;
   }
@@ -2307,11 +2331,12 @@ public class Client extends AbstractClient implements IClient {
     _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
   }
 
-  private void printWorkStatusResponse(Pair<WorkStatusCode, String> response) {
+  private void printWorkStatusResponse(
+      Pair<WorkStatusCode, String> response, boolean unconditionalPrint) {
 
-    if (_logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
+    if (unconditionalPrint || _logger.getLogLevel() >= BatfishLogger.LEVEL_INFO) {
       WorkStatusCode status = response.getFirst();
-      _logger.infof("status: %s\n", status);
+      _logger.outputf("status: %s\n", status);
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       Task task;
@@ -2323,7 +2348,7 @@ public class Client extends AbstractClient implements IClient {
       }
 
       if (task == null) {
-        _logger.infof(".... no task information\n");
+        _logger.outputf(".... no task information\n");
         return;
       }
 
@@ -2335,14 +2360,14 @@ public class Client extends AbstractClient implements IClient {
         if (i == batches.size() - 1
             || status == WorkStatusCode.TERMINATEDNORMALLY
             || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-          _logger.infof(".... %s\n", batches.get(i));
+          _logger.outputf(".... %s\n", batches.get(i));
         } else {
           _logger.debugf(".... %s\n", batches.get(i));
         }
       }
       if (status == WorkStatusCode.TERMINATEDNORMALLY
           || status == WorkStatusCode.TERMINATEDABNORMALLY) {
-        _logger.infof(".... %s: %s\n", task.getTerminated(), status);
+        _logger.outputf(".... %s: %s\n", task.getTerminated(), status);
       }
     }
   }
@@ -2453,6 +2478,8 @@ public class Client extends AbstractClient implements IClient {
         return getQuestion(options, parameters);
       case GET_QUESTION_TEMPLATES:
         return getQuestionTemplates(options, parameters);
+      case GET_WORK_STATUS:
+        return getWorkStatus(options, parameters);
       case HELP:
         return help(options, parameters);
       case INIT_ANALYSIS:
@@ -2495,6 +2522,8 @@ public class Client extends AbstractClient implements IClient {
         return runAnalysis(outWriter, options, parameters, false, true);
       case REINIT_TESTRIG:
         return reinitTestrig(outWriter, options, parameters, false);
+      case SET_BACKGROUND_EXECUCTION:
+        return setBackgroundExecution(options, parameters);
       case SET_BATFISH_LOGLEVEL:
         return setBatfishLogLevel(options, parameters);
       case SET_CONTAINER:
@@ -2760,6 +2789,15 @@ public class Client extends AbstractClient implements IClient {
         System.exit(1);
       }
     }
+  }
+
+  private boolean setBackgroundExecution(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_BACKGROUND_EXECUCTION)) {
+      return false;
+    }
+    _backgroundExecution = Boolean.valueOf(parameters.get(0));
+    _logger.output("Changed background execution to " + _backgroundExecution + "\n");
+    return true;
   }
 
   private boolean setBatfishLogLevel(List<String> options, List<String> parameters) {
