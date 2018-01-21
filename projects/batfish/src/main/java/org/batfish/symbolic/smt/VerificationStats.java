@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.function.Function;
 import org.batfish.common.BatfishException;
+import org.batfish.symbolic.utils.Tuple;
 
 /**
  * A simple class to record a few statistics about the network encoding and how long it spends in Z3
@@ -19,11 +20,15 @@ public class VerificationStats {
 
   private static final String PROP_MIN_NUM_NODES = "minNumNodes";
 
+  private static final String PROP_VARIANCE_NUM_NODES = "varianceNumNodes";
+
   private static final String PROP_AVERAGE_NUM_EDGES = "avgNumEdges";
 
   private static final String PROP_MAX_NUM_EDGES = "maxNumEdges";
 
   private static final String PROP_MIN_NUM_EDGES = "minNumEdges";
+
+  private static final String PROP_VARIANCE_NUM_EDGES = "varianceNumEdges";
 
   private static final String PROP_AVERAGE_NUM_VARS = "avgNumVariables";
 
@@ -67,11 +72,15 @@ public class VerificationStats {
 
   private double _minNumNodes;
 
+  private double _varianceNumNodes;
+
   private double _avgNumEdges;
 
   private double _maxNumEdges;
 
   private double _minNumEdges;
+
+  private double _varianceNumEdges;
 
   private double _avgNumVariables;
 
@@ -131,6 +140,25 @@ public class VerificationStats {
     return max;
   }
 
+  private static Tuple<Double, Double> variance(List<VerificationStats> stats) {
+    if (stats.size() <= 1) {
+      return new Tuple<>(0.0, 0.0);
+    }
+    double meanNodes = avg(stats, VerificationStats::getAvgNumNodes);
+    double meanEdges = avg(stats, VerificationStats::getAvgNumEdges);
+    double nodeVar = 0;
+    double edgeVar = 0;
+    for (VerificationStats stat : stats) {
+      double numNodes = stat.getAvgNumNodes();
+      double numEdges = stat.getAvgNumEdges();
+      nodeVar += (numNodes - meanNodes) * (numNodes - meanNodes);
+      edgeVar += (numEdges - meanEdges) * (numEdges - meanEdges);
+    }
+    nodeVar = nodeVar / (stats.size() - 1);
+    edgeVar = edgeVar / (stats.size() - 1);
+    return new Tuple<>(nodeVar, edgeVar);
+  }
+
   private static double avg(List<VerificationStats> stats, Function<VerificationStats, Double> f) {
     double tot = 0;
     for (VerificationStats stat : stats) {
@@ -169,6 +197,9 @@ public class VerificationStats {
     newStats.setTimeCreateBdds(allStats.get(0).getTimeCreateBdds());
     newStats.setNumEcs(allStats.size());
     newStats.setTotalTime(totalTime);
+    Tuple<Double, Double> variances = variance(allStats);
+    newStats.setVarianceNumNodes(Math.sqrt(variances.getFirst()));
+    newStats.setVarianceNumEdges(Math.sqrt(variances.getSecond()));
     return newStats;
   }
 
@@ -188,9 +219,11 @@ public class VerificationStats {
     sb.append("Avg. Num nodes:         ").append(fmt(getAvgNumNodes())).append("\n");
     sb.append("Max. Num nodes:         ").append(fmt(getMaxNumNodes())).append("\n");
     sb.append("Min. Num nodes:         ").append(fmt(getMinNumNodes())).append("\n");
+    sb.append("Var. Num nodes:         ").append(fmt(getVarianceNumNodes())).append("\n");
     sb.append("Avg. Num edges:         ").append(fmt(getAvgNumEdges())).append("\n");
     sb.append("Max. Num edges:         ").append(fmt(getMaxNumEdges())).append("\n");
     sb.append("Min. Num edges:         ").append(fmt(getMinNumEdges())).append("\n");
+    sb.append("Var. Num edges:         ").append(fmt(getVarianceNumEdges())).append("\n");
     sb.append("Avg. Num vars:          ").append(fmt(getAvgNumVariables())).append("\n");
     sb.append("Max. Num vars:          ").append(fmt(getMaxNumVariables())).append("\n");
     sb.append("Min. Num vars:          ").append(fmt(getMinNumVariables())).append("\n");
@@ -242,6 +275,16 @@ public class VerificationStats {
     this._minNumNodes = x;
   }
 
+  @JsonProperty(PROP_VARIANCE_NUM_NODES)
+  public double getVarianceNumNodes() {
+    return this._varianceNumNodes;
+  }
+
+  @JsonProperty(PROP_VARIANCE_NUM_NODES)
+  public void setVarianceNumNodes(double x) {
+    this._varianceNumNodes = x;
+  }
+
   @JsonProperty(PROP_AVERAGE_NUM_EDGES)
   public double getAvgNumEdges() {
     return _avgNumEdges;
@@ -270,6 +313,16 @@ public class VerificationStats {
   @JsonProperty(PROP_MIN_NUM_EDGES)
   public void setMinNumEdges(double x) {
     this._minNumEdges = x;
+  }
+
+  @JsonProperty(PROP_VARIANCE_NUM_EDGES)
+  public double getVarianceNumEdges() {
+    return this._varianceNumEdges;
+  }
+
+  @JsonProperty(PROP_VARIANCE_NUM_EDGES)
+  public void setVarianceNumEdges(double x) {
+    this._varianceNumEdges = x;
   }
 
   @JsonProperty(PROP_AVERAGE_NUM_VARS)

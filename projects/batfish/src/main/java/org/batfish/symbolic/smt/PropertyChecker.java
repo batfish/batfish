@@ -636,7 +636,7 @@ public class PropertyChecker {
    * one or more destinations.
    */
   public AnswerElement checkReachability(HeaderLocationQuestion q) {
-    return checkProperty(
+    return checkPropertyTest(
         q,
         (enc, srcRouters, destPorts) -> {
           PropertyAdder pa = new PropertyAdder(enc.getMainSlice());
