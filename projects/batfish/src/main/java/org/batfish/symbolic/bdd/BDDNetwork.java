@@ -138,11 +138,14 @@ public class BDDNetwork {
         Integer ospfCost = ge.getStart().getOspfCost();
         SortedSet<Pair<Prefix,Integer>> staticPrefixes = new TreeSet<>();
         SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
+        // TODO: check if null-routed static route is covered by another originated prefix
         for (StaticRoute sr : staticRoutes) {
-          Prefix pfx = sr.getNetwork().getNetworkPrefix();
-          Integer adminCost = sr.getAdministrativeCost();
-          Pair<Prefix,Integer> tup = new Pair<>(pfx, adminCost);
-          staticPrefixes.add(tup);
+          if (!Graph.isNullRouted(sr)) {
+            Prefix pfx = sr.getNetwork().getNetworkPrefix();
+            Integer adminCost = sr.getAdministrativeCost();
+            Pair<Prefix, Integer> tup = new Pair<>(pfx, adminCost);
+            staticPrefixes.add(tup);
+          }
         }
         InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticPrefixes);
         InterfacePolicy epol = new InterfacePolicy(aclOut, bgpOut, ospfCost, null);

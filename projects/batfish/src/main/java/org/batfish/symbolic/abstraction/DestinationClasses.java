@@ -48,7 +48,7 @@ public class DestinationClasses {
 
   private boolean _useDefaultCase;
 
-  private Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> _headerspaceMap;
+  private Map<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> _headerspaceMap;
 
   private DestinationClasses(IBatfish batfish, @Nullable HeaderSpace h, boolean defaultCase) {
     _batfish = batfish;
@@ -111,8 +111,7 @@ public class DestinationClasses {
     if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
       // System.out.println("Catch all: " + catchAll.getDstIps());
       // System.out.println("Catch all: " + catchAll.getNotDstIps());
-      Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(catchAll, null);
-      _headerspaceMap.put(new HashSet<>(), tup);
+      _headerspaceMap.put(new HashSet<>(), new Tuple<>(catchAll, new Tuple<>(null, true)));
     }
   }
 
@@ -123,8 +122,7 @@ public class DestinationClasses {
           if (_headerspace != null) {
             copyAllButDestinationIp(h, _headerspace);
           }
-          Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(h, prefixes);
-          _headerspaceMap.put(devices, tup);
+          _headerspaceMap.put(devices, new Tuple<>(h, new Tuple<>(prefixes, false)));
         });
   }
 
@@ -266,7 +264,7 @@ public class DestinationClasses {
     return _headerspace;
   }
 
-  public Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> getHeaderspaceMap() {
+  public Map<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> getHeaderspaceMap() {
     return _headerspaceMap;
   }
 }

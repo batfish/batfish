@@ -193,7 +193,7 @@ public class Graph {
   /*
    * Check if a static route is configured to drop packets
    */
-  private static boolean isNullRouted(StaticRoute sr) {
+  public static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
   }
 

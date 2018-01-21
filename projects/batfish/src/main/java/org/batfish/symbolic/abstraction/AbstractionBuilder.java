@@ -55,6 +55,8 @@ class AbstractionBuilder {
 
   private List<Prefix> _prefixes;
 
+  private boolean _isDefaultCase;
+
   private Map<GraphEdge, InterfacePolicy> _exportPol;
 
   private Map<GraphEdge, InterfacePolicy> _importPol;
@@ -75,11 +77,13 @@ class AbstractionBuilder {
       Set<String> devices,
       HeaderSpace h,
       List<Prefix> pfxs,
-      int fails) {
+      int fails,
+      boolean isDefaultCase) {
     this._batfish = a.getBatfish();
     this._graph = a.getGraph();
     this._network = network;
     this._possibleFailures = fails;
+    this._isDefaultCase = isDefaultCase;
     this._destinations = devices;
     this._headerspace = h;
     this._prefixes = pfxs;
@@ -95,8 +99,10 @@ class AbstractionBuilder {
       Set<String> devices,
       HeaderSpace h,
       List<Prefix> pfxs,
-      int fails) {
-    AbstractionBuilder g = new AbstractionBuilder(a, network, devices, h, pfxs, fails);
+      int fails,
+      boolean isDefaultCase) {
+    AbstractionBuilder g =
+        new AbstractionBuilder(a, network, devices, h, pfxs, fails, isDefaultCase);
     return g.computeAbstraction();
   }
 
@@ -169,7 +175,7 @@ class AbstractionBuilder {
     AbstractionMap abstractionMap = abstractNetwork.getSecond();
     //System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
     Abstraction a = new Abstraction(abstractGraph, abstractionMap);
-    return new NetworkSlice(_headerspace, a);
+    return new NetworkSlice(_headerspace, a, _isDefaultCase);
   }
 
   /*
@@ -236,11 +242,12 @@ class AbstractionBuilder {
       Map<Set<Tuple<String, EdgePolicyToRole>>, Set<String>> inversePolicyMap = new HashMap<>();
       _universalMap.forEach(
           (router, set) -> {
-            if (!makeConcrete.contains(router)) {
+            if (partition.contains(router) && !makeConcrete.contains(router)) {
               Set<String> routers = inversePolicyMap.computeIfAbsent(set, gs -> new HashSet<>());
               routers.add(router);
             }
           });
+      newPartitions.addAll(inversePolicyMap.values());
     } else {
       if (countMatters) {
         Map<Map<EdgePolicyToRole, Integer>, Set<String>> inversePolicyMap = new HashMap<>();
@@ -274,7 +281,6 @@ class AbstractionBuilder {
       }
     }
   }
-
 
   private void collectInterfaceInformation(Set<String> partition, boolean isUniversal) {
     for (String router : partition) {
@@ -416,17 +422,18 @@ class AbstractionBuilder {
         }
 
         // Chose the ones with the lowest router ID
-        options.sort((o1, o2) -> {
-          Long id1 = _graph.routerId(o1, Protocol.BGP);
-          Long id2 = _graph.routerId(o2, Protocol.BGP);
-          if (id1 == null && id2 == null) {
-            return o1.getName().compareTo(o2.getName());
-          } else if (id1 == null || id2 == null) {
-            throw new BatfishException("Missing BGP process in abstraction");
-          } else {
-            return id1.compareTo(id2);
-          }
-        });
+        options.sort(
+            (o1, o2) -> {
+              Long id1 = _graph.routerId(o1, Protocol.BGP);
+              Long id2 = _graph.routerId(o2, Protocol.BGP);
+              if (id1 == null && id2 == null) {
+                return o1.getName().compareTo(o2.getName());
+              } else if (id1 == null || id2 == null) {
+                throw new BatfishException("Missing BGP process in abstraction");
+              } else {
+                return id1.compareTo(id2);
+              }
+            });
 
         // Add new neighbors until satisfied
         for (int k = 0; k < Math.min(numNeeded, options.size()); k++) {
@@ -439,7 +446,6 @@ class AbstractionBuilder {
 
     return chosen;
   }
-
 
   /*
    * Creates a new Configuration from an old one for an abstract router
