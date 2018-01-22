@@ -297,6 +297,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
 
+      // route reflection
+      Ip declaredClusterId = ig.getClusterId();
+      if (declaredClusterId != null) {
+        neighbor.setRouteReflectorClient(true);
+        neighbor.setClusterId(declaredClusterId.asLong());
+      } else {
+        neighbor.setClusterId(routerId.asLong());
+      }
+
       // multipath multiple-as
       boolean currentGroupMultipathMultipleAs = ig.getMultipathMultipleAs();
       if (multipathMultipleAsSet && currentGroupMultipathMultipleAs != multipathMultipleAs) {

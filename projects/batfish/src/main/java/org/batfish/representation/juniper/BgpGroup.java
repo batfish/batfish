@@ -22,11 +22,13 @@ public class BgpGroup implements Serializable {
 
   private Boolean _advertisePeerAs;
 
-  private String _authenticationKey;
-
   private BgpAuthenticationAlgorithm _authenticationAlgorithm;
 
+  private String _authenticationKey;
+
   private String _authenticationKeyChainName;
+
+  private Ip _clusterId;
 
   private String _description;
 
@@ -90,6 +92,9 @@ public class BgpGroup implements Serializable {
       if (_authenticationKeyChainName == null) {
         _authenticationKeyChainName = _parent._authenticationKeyChainName;
       }
+      if (_clusterId == null) {
+        _clusterId = _parent._clusterId;
+      }
       if (_description == null) {
         _description = _parent._description;
       }
@@ -151,6 +156,10 @@ public class BgpGroup implements Serializable {
 
   public String getAuthenticationKeyChainName() {
     return _authenticationKeyChainName;
+  }
+
+  public Ip getClusterId() {
+    return _clusterId;
   }
 
   public final String getDescription() {
@@ -235,6 +244,10 @@ public class BgpGroup implements Serializable {
 
   public void setAuthenticationKeyChainName(String authenticationKeyChainName) {
     _authenticationKeyChainName = authenticationKeyChainName;
+  }
+
+  public void setClusterId(Ip clusterId) {
+    _clusterId = clusterId;
   }
 
   public final void setDescription(String description) {
