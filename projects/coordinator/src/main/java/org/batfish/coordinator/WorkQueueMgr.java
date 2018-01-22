@@ -335,6 +335,16 @@ public class WorkQueueMgr {
     return workToCheck;
   }
 
+  public synchronized List<QueuedWork> listIncompleteWork(String containerName) {
+    List<QueuedWork> retList = new LinkedList<>();
+    for (QueuedWork work : _queueIncompleteWork) {
+      if (work.getWorkItem().getContainerName().equals(containerName)) {
+        retList.add(work);
+      }
+    }
+    return retList;
+  }
+
   public synchronized void makeWorkUnassigned(QueuedWork work) {
     work.setStatus(WorkStatusCode.UNASSIGNED);
   }
