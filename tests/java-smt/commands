@@ -79,7 +79,7 @@ test tests/java-smt/stable3-nondeterministic.ref get smt-deterministic
 
 # Check proper dropping behavior when the metric has overflow
 init-testrig test_rigs/smt-examples/OVERFLOW1 tr-smt-overflow1
-test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], fullModel=True
+test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], modelOverflow=True, fullModel=True
 
 # Check correct handling of OSPF areas
 init-testrig test_rigs/smt-examples/AREA1 tr-smt-area1
@@ -134,6 +134,11 @@ test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", 
 # Put everything together in testrigs/example
 #init-testrig test_rigs/example tr-smt-example
 #test tests/java-smt/differential3.ref get smt-reachability failures=1, diffType=any, ingressNodeRegex="host1", finalNodeRegex="as3core1", failNode1Regex="as2border2", failNode2Regex="as3border1", noEnvironment=True
+
+# Test BDD-based encoding of route-maps and ACLs
+init-testrig test_rigs/smt-examples/BDD1 tr-bdd1
+test tests/java-smt/roles1.ref get smt-roles equivType=policy
+
 
 # Test BDD-based encoding of route-maps and ACLs
 init-testrig test_rigs/smt-examples/BDD1 tr-bdd1

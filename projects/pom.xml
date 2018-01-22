@@ -568,6 +568,12 @@
       </dependency>
 
       <dependency>
+        <groupId>net.sf.javabdd</groupId>
+        <artifactId>bdd</artifactId>
+        <version>batfish-internal</version>
+      </dependency>
+
+      <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
         <version>${xstream.version}</version>

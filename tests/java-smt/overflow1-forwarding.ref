@@ -99,7 +99,10 @@
     "envDiff" : false,
     "failures" : 0,
     "fullModel" : true,
-    "minimize" : false
+    "minimize" : false,
+    "modelOverflow" : true,
+    "stats" : false,
+    "useAbstraction" : false
   },
   "status" : "SUCCESS",
   "summary" : {
