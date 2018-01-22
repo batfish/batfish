@@ -1,7 +1,5 @@
 package org.batfish.bdp;
 
-import org.batfish.config.BdpSettings;
-
 public class TestBdpSettings implements BdpSettings {
 
   private boolean _bdpDetail;

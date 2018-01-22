@@ -2,10 +2,11 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -13,13 +14,17 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.RoleConsistencyPolicy;
+import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.collections.OutlierSet;
+import org.batfish.datamodel.collections.RoleBasedOutlierSet;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
@@ -34,10 +39,10 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ROLE_CONSISTENCY_POLICIES = "roleConsistencyPolicies";
 
-    private Set<RoleConsistencyPolicy> _roleConsistencyPolicies;
+    private List<RoleConsistencyPolicy> _roleConsistencyPolicies;
 
     public InferPoliciesAnswerElement() {
-      _roleConsistencyPolicies = new TreeSet<>();
+      _roleConsistencyPolicies = new LinkedList<>();
     }
 
     @Override
@@ -49,7 +54,21 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
         List<String> roleRegexes = specifier.getRoleRegexes();
         SortedMap<String, SortedSet<String>> roleMap = specifier.getRoleMap();
 
-        sb.append("Policy: nodes in the same role should have the same " + policy.getName() + "\n");
+        sb.append("Policy: nodes in the same role should have ");
+        switch (policy.getHypothesis()) {
+          case SAME_DEFINITION:
+            sb.append("the same definition for same-named structures of type " + policy.getName());
+            break;
+          case SAME_NAME:
+            sb.append("same-named structures of type " + policy.getName());
+            break;
+          case SAME_SERVERS:
+            sb.append("the same " + policy.getName());
+            break;
+          default:
+            throw new BatfishException("Unrecognized hypothesis " + policy.getHypothesis());
+        }
+        sb.append("\n");
         sb.append("Role specifier:\n");
         if (!roleRegexes.isEmpty()) {
           sb.append("  Role regexes: \n");
@@ -70,13 +89,12 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_ROLE_CONSISTENCY_POLICIES)
-    public Set<RoleConsistencyPolicy> getRoleConsistencyPolicies() {
+    public List<RoleConsistencyPolicy> getRoleConsistencyPolicies() {
       return _roleConsistencyPolicies;
     }
 
-    @JsonProperty(PROP_ROLE_CONSISTENCY_POLICIES)
-    public void setRoleConsistencyPolicies(Set<RoleConsistencyPolicy> roleConsistencyPolicies) {
-      _roleConsistencyPolicies = roleConsistencyPolicies;
+    public void addRoleConsistencyPolicies(Set<RoleConsistencyPolicy> roleConsistencyPolicies) {
+      _roleConsistencyPolicies.addAll(roleConsistencyPolicies);
     }
   }
 
@@ -97,57 +115,118 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
       _answerElement = new InferPoliciesAnswerElement();
 
-      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
-      innerQ.setHypothesis(OutliersHypothesis.SAME_SERVERS);
-      innerQ.setVerbose(true);
+      _answerElement.addRoleConsistencyPolicies(serverConsistencyPolicies());
+      _answerElement.addRoleConsistencyPolicies(
+          namedStructureConsistencyPolicies(OutliersHypothesis.SAME_NAME));
+      _answerElement.addRoleConsistencyPolicies(
+          namedStructureConsistencyPolicies(OutliersHypothesis.SAME_DEFINITION));
 
-      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleQuestion outerQ = outerPlugin.createQuestion();
-      outerQ.setQuestion(innerQ);
+      return _answerElement;
+    }
 
-      // find all outliers for protocol-specific servers, on a per-role basis
-      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
+    private SortedSet<RoleConsistencyPolicy> serverConsistencyPolicies() {
 
-      SortedMap<String, AnswerElement> roleAnswers = roleAE.getAnswers();
+      OutliersHypothesis hypothesis = OutliersHypothesis.SAME_SERVERS;
+
+      SortedMap<String, AnswerElement> roleAnswers = perRoleOutlierInfo(hypothesis);
+
       Multimap<String, OutlierSet<NavigableSet<String>>> outliersPerPropertyName =
-          TreeMultimap.create();
+          outliersByProperty(
+              roleAnswers.values(), OutliersAnswerElement::getServerOutliers, OutlierSet::getName);
 
-      // partition the resulting outliers by property name (e.g., DNS Servers, Logging Servers)
-      for (Map.Entry<String, AnswerElement> entry : roleAnswers.entrySet()) {
-        String role = entry.getKey();
-        OutliersAnswerElement oae = (OutliersAnswerElement) entry.getValue();
-        for (OutlierSet<NavigableSet<String>> os : oae.getServerOutliers()) {
-          // update each outlier set to know its associated role
-          os.setRole(role);
-          outliersPerPropertyName.put(os.getName(), os);
-        }
-      }
-
-      // for each property name, check whether there is sufficient support for a
-      // role consistency policy, which says that nodes of the same role should have
-      // the same value for that property
-      NodeRoleSpecifier nodeRoleSpecifier = _batfish.getNodeRoleSpecifier(false);
-      SortedSet<RoleConsistencyPolicy> policies =
-          new TreeSet<>(Comparator.comparing(RoleConsistencyPolicy::getName));
+      // remove outlier sets where no nodes declare any servers
+      List<String> undeclared = new LinkedList<>();
       for (String name : outliersPerPropertyName.keySet()) {
         Collection<OutlierSet<NavigableSet<String>>> outlierSets =
             outliersPerPropertyName.get(name);
         if (outlierSets
             .stream()
             .allMatch(oset -> oset.getDefinition().isEmpty() && oset.getOutliers().isEmpty())) {
-          // no servers for this protocol have been declared, so skip it
-          continue;
+          undeclared.add(name);
         }
+      }
+      for (String name : undeclared) {
+        outliersPerPropertyName.removeAll(name);
+      }
+
+      return policiesAboveThreshold(outliersPerPropertyName, hypothesis);
+    }
+
+    private SortedSet<RoleConsistencyPolicy> namedStructureConsistencyPolicies(
+        OutliersHypothesis hypothesis) {
+
+      SortedMap<String, AnswerElement> roleAnswers = perRoleOutlierInfo(hypothesis);
+
+      Multimap<String, NamedStructureOutlierSet<?>> outliersPerStructureType =
+          outliersByProperty(
+              roleAnswers.values(),
+              OutliersAnswerElement::getNamedStructureOutliers,
+              NamedStructureOutlierSet::getStructType);
+
+      return policiesAboveThreshold(outliersPerStructureType, hypothesis);
+    }
+
+    // obtain all outlier sets for the given hypothesis
+    private SortedMap<String, AnswerElement> perRoleOutlierInfo(OutliersHypothesis hypothesis) {
+      OutliersQuestion innerQ = new OutliersQuestionPlugin().createQuestion();
+      innerQ.setHypothesis(hypothesis);
+      innerQ.setVerbose(true);
+
+      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
+      PerRoleQuestion outerQ = outerPlugin.createQuestion();
+      outerQ.setQuestion(innerQ);
+
+      PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
+
+      SortedMap<String, AnswerElement> answers = roleAE.getAnswers();
+      for (Map.Entry<String, AnswerElement> entry : answers.entrySet()) {
+        String role = entry.getKey();
+        OutliersAnswerElement oae = (OutliersAnswerElement) entry.getValue();
+        // update each outlier set to know its associated role
+        setRoleAll(oae.getServerOutliers(), role);
+        setRoleAll(oae.getNamedStructureOutliers(), role);
+      }
+      return answers;
+    }
+
+    private <T extends RoleBasedOutlierSet> Multimap<String, T> outliersByProperty(
+        Collection<AnswerElement> answers,
+        Function<OutliersAnswerElement, Collection<T>> outliersFun,
+        Function<T, String> propertyNameFun) {
+
+      Multimap<String, T> outliersPerProperty = LinkedListMultimap.create();
+
+      // partition the resulting outliers by structure type (e.g., Ip Access List, Route Map)
+      for (AnswerElement ae : answers) {
+        OutliersAnswerElement oae = (OutliersAnswerElement) ae;
+        for (T os : outliersFun.apply(oae)) {
+          outliersPerProperty.put(propertyNameFun.apply(os), os);
+        }
+      }
+      return outliersPerProperty;
+    }
+
+    private <T extends RoleBasedOutlierSet> SortedSet<RoleConsistencyPolicy> policiesAboveThreshold(
+        Multimap<String, T> outliersPerPropertyName, OutliersHypothesis hypothesis) {
+      NodeRoleSpecifier nodeRoleSpecifier = _batfish.getNodeRoleSpecifier(false);
+      SortedSet<RoleConsistencyPolicy> policies =
+          new TreeSet<>(Comparator.comparing(RoleConsistencyPolicy::getName));
+      for (String name : outliersPerPropertyName.keySet()) {
+        Collection<T> outlierSets = outliersPerPropertyName.get(name);
         int conformers = outlierSets.stream().mapToInt(oset -> oset.getConformers().size()).sum();
         int outliers = outlierSets.stream().mapToInt(oset -> oset.getOutliers().size()).sum();
         double all = (double) conformers + outliers;
         if (conformers / all >= CONFORMERS_THRESHOLD) {
-          policies.add(new RoleConsistencyPolicy(nodeRoleSpecifier, name));
+          policies.add(new RoleConsistencyPolicy(nodeRoleSpecifier, name, hypothesis));
         }
       }
+      return policies;
+    }
 
-      _answerElement.setRoleConsistencyPolicies(policies);
-      return _answerElement;
+    private void setRoleAll(Collection<? extends RoleBasedOutlierSet> outlierSets, String role) {
+      for (RoleBasedOutlierSet os : outlierSets) {
+        os.setRole(role);
+      }
     }
   }
 
