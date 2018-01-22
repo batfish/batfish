@@ -1,5 +1,6 @@
 package org.batfish.symbolic;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import org.batfish.datamodel.Configuration;
@@ -93,6 +94,15 @@ public class AstVisitor {
       Configuration conf, List<Statement> ss, Consumer<Statement> fs, Consumer<BooleanExpr> fe) {
     for (Statement s : ss) {
       visit(conf, s, fs, fe);
+    }
+  }
+
+  public void visit(
+      Collection<Configuration> configs, Consumer<Statement> fs, Consumer<BooleanExpr> fe) {
+    for (Configuration conf : configs) {
+      for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
+        visit(conf, pol.getStatements(), fs, fe);
+      }
     }
   }
 }

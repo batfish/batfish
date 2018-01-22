@@ -144,7 +144,7 @@ class Optimizations {
                                   val[0] = true;
                                 }
                               },
-                              expr -> {});
+                              expr -> { });
                         }));
     return val[0];
   }
@@ -178,7 +178,7 @@ class Optimizations {
                                     val[0] = true;
                                   }
                                 },
-                                expr -> {})));
+                                expr -> { })));
     return val[0];
   }
 
@@ -188,7 +188,7 @@ class Optimizations {
    */
   private boolean computeKeepMed() {
     return !Optimizations.ENABLE_SLICING_OPTIMIZATION;
-    /* if (!Optimizations.ENABLE_SLICING_OPTIMIZATION) {
+    /* if (!PolicyQuotient.ENABLE_SLICING_OPTIMIZATION) {
         return true;
     }
     return _hasEnvironment; */
@@ -223,7 +223,7 @@ class Optimizations {
                                     val[0] = true;
                                   }
                                 },
-                                expr -> {})));
+                                expr -> { })));
     if (val[0]) {
       return true;
     }

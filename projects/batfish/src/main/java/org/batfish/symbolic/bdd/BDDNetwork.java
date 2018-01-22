@@ -4,13 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -20,6 +23,10 @@ import org.batfish.symbolic.abstraction.InterfacePolicy;
 public class BDDNetwork {
 
   private Graph _graph;
+
+  private NodesSpecifier _nodeSpecifier;
+
+  private PolicyQuotient _policyQuotient;
 
   private Map<GraphEdge, BDDRoute> _exportBgpPolicies;
 
@@ -34,13 +41,21 @@ public class BDDNetwork {
   private Map<GraphEdge, BDDAcl> _outAcls;
 
   public static BDDNetwork create(Graph g) {
-    BDDNetwork network = new BDDNetwork(g);
+    return create(g, NodesSpecifier.ALL);
+  }
+
+  public static BDDNetwork create(Graph g, NodesSpecifier nodesSpecifier) {
+    PolicyQuotient pq = new PolicyQuotient(g);
+    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, pq);
     network.computeInterfacePolicies();
     return network;
   }
 
-  private BDDNetwork(Graph graph) {
+
+  private BDDNetwork(Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
     _graph = graph;
+    _nodeSpecifier = nodesSpecifier;
+    _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
     _importBgpPolicies = new HashMap<>();
@@ -54,8 +69,12 @@ public class BDDNetwork {
    */
   private BDDRoute computeBDD(
       Graph g, Configuration conf, RoutingPolicy pol, boolean ignoreNetworks) {
-    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
-    return t.compute(ignoreNetworks);
+    Set<Prefix> networks = null;
+    if (ignoreNetworks) {
+      networks = Graph.getOriginatedNetworks(conf);
+    }
+    TransferBDD t = new TransferBDD(g, conf, pol.getStatements(), _policyQuotient);
+    return t.compute(networks);
   }
 
   /*
@@ -63,9 +82,13 @@ public class BDDNetwork {
    * representation of the import and export policies on this interface.
    */
   private void computeInterfacePolicies() {
-
     for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
       String router = entry.getKey();
+      // Skip if doesn't match the node regex
+      Matcher m = _nodeSpecifier.getRegex().matcher(router);
+      if (!m.matches()) {
+        continue;
+      }
       Configuration conf = entry.getValue();
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge ge : edges) {
@@ -84,14 +107,15 @@ public class BDDNetwork {
 
         IpAccessList in = ge.getStart().getIncomingFilter();
         IpAccessList out = ge.getStart().getOutgoingFilter();
+
         // Incoming ACL
         if (in != null) {
-          BDDAcl x = BDDAcl.create(in);
+          BDDAcl x = BDDAcl.create(conf, in, true);
           _inAcls.put(ge, x);
         }
         // Outgoing ACL
         if (out != null) {
-          BDDAcl x = BDDAcl.create(out);
+          BDDAcl x = BDDAcl.create(conf, out, true);
           _outAcls.put(ge, x);
         }
       }
@@ -99,6 +123,11 @@ public class BDDNetwork {
 
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
+      // Skip if doesn't match the node regex
+      Matcher m = _nodeSpecifier.getRegex().matcher(router);
+      if (!m.matches()) {
+        continue;
+      }
       List<GraphEdge> edges = entry.getValue();
       Configuration conf = _graph.getConfigurations().get(router);
       for (GraphEdge ge : edges) {
@@ -107,12 +136,12 @@ public class BDDNetwork {
         BDDAcl aclIn = _inAcls.get(ge);
         BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
-        SortedSet<Pair<Prefix, Integer>> staticPrefixes = new TreeSet<>();
+        SortedSet<Pair<Prefix,Integer>> staticPrefixes = new TreeSet<>();
         SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
         for (StaticRoute sr : staticRoutes) {
           Prefix pfx = sr.getNetwork();
           Integer adminCost = sr.getAdministrativeCost();
-          Pair<Prefix, Integer> tup = new Pair<>(pfx, adminCost);
+          Pair<Prefix,Integer> tup = new Pair<>(pfx, adminCost);
           staticPrefixes.add(tup);
         }
         InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticPrefixes);

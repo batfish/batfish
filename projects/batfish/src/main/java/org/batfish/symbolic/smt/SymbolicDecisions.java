@@ -56,8 +56,7 @@ class SymbolicDecisions {
     return _dataForwarding;
   }
 
-  @Nullable
-  SymbolicRoute getBestVars(Optimizations opts, String router, Protocol proto) {
+  @Nullable SymbolicRoute getBestVars(Optimizations opts, String router, Protocol proto) {
     if (opts.getSliceHasSingleProtocol().contains(router)) {
       return _bestNeighbor.get(router);
     } else {

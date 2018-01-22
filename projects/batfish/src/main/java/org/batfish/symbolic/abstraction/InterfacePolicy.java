@@ -3,11 +3,13 @@ package org.batfish.symbolic.abstraction;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDRoute;
+import org.batfish.symbolic.utils.PrefixUtils;
 
 public class InterfacePolicy {
 
@@ -17,7 +19,7 @@ public class InterfacePolicy {
 
   private Integer _ospfCost;
 
-  private SortedSet<Pair<Prefix, Integer>> _staticRoutes;
+  private SortedSet<Pair<Prefix,Integer>> _staticRoutes;
 
   private int _hcode = 0;
 
@@ -27,7 +29,7 @@ public class InterfacePolicy {
       @Nullable BDDAcl acl,
       @Nullable BDDRoute bgpPolicy,
       @Nullable Integer ospfCost,
-      @Nullable SortedSet<Pair<Prefix, Integer>> staticRoutes) {
+      @Nullable SortedSet<Pair<Prefix,Integer>> staticRoutes) {
     this._acl = acl;
     this._bgpPolicy = bgpPolicy;
     this._ospfCost = ospfCost;
@@ -53,7 +55,7 @@ public class InterfacePolicy {
     return _ospfCost;
   }
 
-  public SortedSet<Pair<Prefix, Integer>> getStaticRoutes() {
+  public SortedSet<Pair<Prefix,Integer>> getStaticRoutes() {
     return _staticRoutes;
   }
 
@@ -79,6 +81,24 @@ public class InterfacePolicy {
         && Objects.equals(_bgpPolicy, other._bgpPolicy)
         && Objects.equals(_ospfCost, other._ospfCost)
         && Objects.equals(_staticRoutes, other._staticRoutes);
+  }
+
+  public InterfacePolicy restrictStatic(List<Prefix> prefixes) {
+    if (_staticRoutes == null) {
+      return this;
+    }
+    SortedSet<Pair<Prefix,Integer>> newStatic = new TreeSet<>();
+    for (Pair<Prefix, Integer> tup : _staticRoutes) {
+      if (prefixes == null || PrefixUtils.overlap(tup.getFirst(), prefixes)) {
+        newStatic.add(tup);
+      }
+    }
+    if (newStatic.size() == _staticRoutes.size()) {
+      return this;
+    }
+    InterfacePolicy pol = new InterfacePolicy(this);
+    pol._staticRoutes = newStatic;
+    return pol;
   }
 
   public InterfacePolicy restrict(Prefix pfx) {
