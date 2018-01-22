@@ -11,6 +11,7 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +37,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -870,6 +872,7 @@ public class WorkMgrService {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
 
+      // TODO: Use pojo.WorkStatus instead of this custom Json
       return successResponse(
           new JSONObject()
               .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
@@ -1066,6 +1069,52 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:listEnvironments exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * List incomplete work for the specified container
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container for which to list work
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_INCOMPLETE_WORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listIncompleteWork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+    try {
+      _logger.info("WMS:listIncompleteWork " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      List<WorkStatus> workList = new LinkedList<>();
+      for (QueuedWork work : Main.getWorkMgr().listIncompleteWork(containerName)) {
+        WorkStatus workStatus =
+            new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult());
+        workList.add(workStatus);
+      }
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return successResponse(
+          new JSONObject().put(CoordConsts.SVC_KEY_WORK_LIST, mapper.writeValueAsString(workList)));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.error("WMS:listIncompleteWork exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listIncompleteWork exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }

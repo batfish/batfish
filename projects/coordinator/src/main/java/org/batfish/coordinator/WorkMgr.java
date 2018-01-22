@@ -1055,6 +1055,10 @@ public class WorkMgr extends AbstractCoordinator {
     return environments;
   }
 
+  public List<QueuedWork> listIncompleteWork(String containerName) {
+    return _workQueueMgr.listIncompleteWork(containerName);
+  }
+
   public SortedSet<String> listQuestions(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);

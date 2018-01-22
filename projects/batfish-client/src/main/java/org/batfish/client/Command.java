@@ -49,6 +49,7 @@ public enum Command {
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
   LIST_ENVIRONMENTS("list-environments"),
+  LIST_INCOMPLETE_WORK("list-incomplete-work"),
   LIST_QUESTIONS("list-questions"),
   LIST_TESTRIGS("list-testrigs"),
   LOAD_QUESTIONS("load-questions"),
@@ -243,6 +244,8 @@ public enum Command {
             "Initialize the testrig with default environment"));
     descs.put(LIST_ANALYSES, new Pair<>("", "List the analyses and their configuration"));
     descs.put(LIST_CONTAINERS, new Pair<>("", "List the containers to which you have access"));
+    descs.put(
+        LIST_INCOMPLETE_WORK, new Pair<>("", "List all incomplete works for the active container"));
     descs.put(
         LIST_ENVIRONMENTS,
         new Pair<>("", "List the environments under current container and testrig"));
