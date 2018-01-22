@@ -11558,6 +11558,7 @@
                       "authenticationKey" : "this-is-key",
                       "authenticationKeyChainName" : "bgp-auth"
                     },
+                    "clusterId" : 0,
                     "defaultMetric" : 0,
                     "dynamic" : false,
                     "ebgpMultihop" : false,
@@ -11585,6 +11586,7 @@
                       "authenticationAlgorithm" : "AES_128_CMAC_96",
                       "authenticationKey" : "this-is-key"
                     },
+                    "clusterId" : 0,
                     "defaultMetric" : 0,
                     "dynamic" : false,
                     "ebgpMultihop" : false,

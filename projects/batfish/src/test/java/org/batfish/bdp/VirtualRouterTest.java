@@ -209,7 +209,10 @@ public class VirtualRouterTest {
         .build();
 
     _testVirtualRouter._ebgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
+        _bgpRouteBuilder
+            .setNextHopIp(TEST_NEXT_HOP_IP1)
+            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
+            .build());
 
     /* checking that the route in EBGP Best Path Rib got advertised */
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(1));
@@ -237,10 +240,16 @@ public class VirtualRouterTest {
         .build();
 
     _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
+        _bgpRouteBuilder
+            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
+            .setNextHopIp(TEST_NEXT_HOP_IP1)
+            .build());
     // adding second similar route in the Multipath rib with a different Next Hop IP
     _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP2).build());
+        _bgpRouteBuilder
+            .setReceivedFromIp(TEST_NEXT_HOP_IP2)
+            .setNextHopIp(TEST_NEXT_HOP_IP2)
+            .build());
 
     // checking that both the routes in BGP Multipath Rib got advertised
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(2));
@@ -281,6 +290,7 @@ public class VirtualRouterTest {
     _testVirtualRouter._bgpBestPathRib.mergeRoute(
         _bgpRouteBuilder
             .setNextHopIp(TEST_NEXT_HOP_IP1)
+            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
             .setAsPath(AsPath.ofSingletonAsSets(TEST_AS3).getAsSets())
             .build());
 
@@ -325,9 +335,11 @@ public class VirtualRouterTest {
         .build();
 
     _testVirtualRouter._ebgpBestPathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
-    _testVirtualRouter._bgpMultipathRib.mergeRoute(
-        _bgpRouteBuilder.setNextHopIp(TEST_NEXT_HOP_IP1).build());
+        _bgpRouteBuilder
+            .setNextHopIp(TEST_NEXT_HOP_IP1)
+            .setReceivedFromIp(TEST_NEXT_HOP_IP1)
+            .build());
+    _testVirtualRouter._bgpMultipathRib.mergeRoute(_bgpRouteBuilder.build());
 
     // number of BGP advertisements should be zero given the reject all export policy
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(0));

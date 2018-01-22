@@ -151,7 +151,11 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
       return res;
     }
 
-    /** TODO: Prefer the path with the minimum cluster list length. */
+    /** Prefer the path with the minimum cluster list length. */
+    res = Integer.compare(rhs.getClusterList().size(), lhs.getClusterList().size());
+    if (res != 0) {
+      return res;
+    }
 
     /** TODO: Prefer the path that comes from the lowest neighbor address. */
     return res;
