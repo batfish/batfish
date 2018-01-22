@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 /**
@@ -58,6 +59,157 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     }
   }
 
+  public static class Builder {
+
+    private AsPath _asPath;
+
+    private SortedSet<Long> _clusterList;
+
+    private SortedSet<Long> _communities;
+
+    private Ip _dstIp;
+
+    private String _dstNode;
+
+    private String _dstVrf;
+
+    private int _localPreference;
+
+    private long _med;
+
+    private Prefix _network;
+
+    private Ip _nextHopIp;
+
+    private Ip _originatorIp;
+
+    private OriginType _originType;
+
+    private Ip _srcIp;
+
+    private String _srcNode;
+
+    private RoutingProtocol _srcProtocol;
+
+    private String _srcVrf;
+
+    private BgpAdvertisementType _type;
+
+    private int _weight;
+
+    public BgpAdvertisement build() {
+      return new BgpAdvertisement(
+          _type,
+          _network,
+          _nextHopIp,
+          _srcNode,
+          _srcVrf,
+          _srcIp,
+          _dstNode,
+          _dstVrf,
+          _dstIp,
+          _srcProtocol,
+          _originType,
+          _localPreference,
+          _med,
+          _originatorIp,
+          _asPath,
+          _communities,
+          _clusterList,
+          _weight);
+    }
+
+    public Builder setAsPath(AsPath asPath) {
+      _asPath = asPath;
+      return this;
+    }
+
+    public Builder setClusterList(SortedSet<Long> clusterList) {
+      _clusterList = clusterList;
+      return this;
+    }
+
+    public Builder setCommunities(SortedSet<Long> communities) {
+      _communities = communities;
+      return this;
+    }
+
+    public Builder setDstIp(Ip dstIp) {
+      _dstIp = dstIp;
+      return this;
+    }
+
+    public Builder setDstNode(String dstNode) {
+      _dstNode = dstNode;
+      return this;
+    }
+
+    public Builder setDstVrf(String dstVrf) {
+      _dstVrf = dstVrf;
+      return this;
+    }
+
+    public Builder setLocalPreference(int localPreference) {
+      _localPreference = localPreference;
+      return this;
+    }
+
+    public Builder setMed(long med) {
+      _med = med;
+      return this;
+    }
+
+    public Builder setNetwork(Prefix network) {
+      _network = network;
+      return this;
+    }
+
+    public Builder setNextHopIp(Ip nextHopIp) {
+      _nextHopIp = nextHopIp;
+      return this;
+    }
+
+    public Builder setOriginatorIp(Ip originatorIp) {
+      _originatorIp = originatorIp;
+      return this;
+    }
+
+    public Builder setOriginType(OriginType originType) {
+      _originType = originType;
+      return this;
+    }
+
+    public Builder setSrcIp(Ip srcIp) {
+      _srcIp = srcIp;
+      return this;
+    }
+
+    public Builder setSrcNode(String srcNode) {
+      _srcNode = srcNode;
+      return this;
+    }
+
+    public Builder setSrcProtocol(RoutingProtocol srcProtocol) {
+      _srcProtocol = srcProtocol;
+      return this;
+    }
+
+    public Builder setSrcVrf(String srcVrf) {
+      _srcVrf = srcVrf;
+      return this;
+    }
+
+    public Builder setType(BgpAdvertisementType type) {
+      _type = type;
+      return this;
+    }
+
+    public Builder setWeight(int weight) {
+      _weight = weight;
+      return this;
+    }
+  }
+
   private static final String PROP_AS_PATH = "asPath";
 
   private static final String PROP_CLUSTER_LIST = "clusterList";
@@ -82,9 +234,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private static final String PROP_ORIGINATOR_IP = "originatorIp";
 
-  /** */
-  private static final long serialVersionUID = 1L;
-
   private static final String PROP_SRC_IP = "srcIp";
 
   private static final String PROP_SRC_NODE = "srcNode";
@@ -95,13 +244,16 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private static final String PROP_TYPE = "type";
 
+  private static final String PROP_WEIGHT = "weight";
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
   public static final int UNSET_LOCAL_PREFERENCE = 0;
 
   public static final Ip UNSET_ORIGINATOR_IP = Ip.AUTO;
 
   public static final int UNSET_WEIGHT = 0;
-
-  private static final String PROP_WEIGHT = "weight";
 
   private final AsPath _asPath;
 
@@ -142,22 +294,22 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   @JsonCreator
   public BgpAdvertisement(
       @JsonProperty(PROP_TYPE) BgpAdvertisementType type,
-      @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_SRC_NODE) String srcNode,
-      @JsonProperty(PROP_SRC_VRF) String srcVrf,
-      @JsonProperty(PROP_SRC_IP) Ip srcIp,
-      @JsonProperty(PROP_DST_NODE) String dstNode,
-      @JsonProperty(PROP_DST_VRF) String dstVrf,
-      @JsonProperty(PROP_DST_IP) Ip dstIp,
-      @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
-      @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @JsonProperty(PROP_NETWORK) @Nonnull Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nonnull Ip nextHopIp,
+      @JsonProperty(PROP_SRC_NODE) @Nonnull String srcNode,
+      @JsonProperty(PROP_SRC_VRF) @Nonnull String srcVrf,
+      @JsonProperty(PROP_SRC_IP) @Nonnull Ip srcIp,
+      @JsonProperty(PROP_DST_NODE) @Nonnull String dstNode,
+      @JsonProperty(PROP_DST_VRF) @Nonnull String dstVrf,
+      @JsonProperty(PROP_DST_IP) @Nonnull Ip dstIp,
+      @JsonProperty(PROP_SRC_PROTOCOL) @Nonnull RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_ORIGIN_TYPE) @Nonnull OriginType originType,
       @JsonProperty(PROP_LOCAL_PREFERENCE) int localPreference,
       @JsonProperty(PROP_MED) long med,
       @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
-      @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
-      @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
+      @JsonProperty(PROP_AS_PATH) @Nonnull AsPath asPath,
+      @JsonProperty(PROP_COMMUNITIES) @Nonnull SortedSet<Long> communities,
+      @JsonProperty(PROP_CLUSTER_LIST) @Nonnull SortedSet<Long> clusterList,
       @JsonProperty(PROP_WEIGHT) int weight) {
     _type = type;
     _network = network;
