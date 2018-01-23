@@ -2374,16 +2374,13 @@ public class Client extends AbstractClient implements IClient {
       // when log level is INFO, we only print the last batch
       // else print all
       for (int i = 0; i < batches.size(); i++) {
-        if (i == batches.size() - 1
-            || status == WorkStatusCode.TERMINATEDNORMALLY
-            || status == WorkStatusCode.TERMINATEDABNORMALLY) {
+        if (i == batches.size() - 1 || status.isTerminated()) {
           _logger.outputf(".... %s\n", batches.get(i));
         } else {
           _logger.debugf(".... %s\n", batches.get(i));
         }
       }
-      if (status == WorkStatusCode.TERMINATEDNORMALLY
-          || status == WorkStatusCode.TERMINATEDABNORMALLY) {
+      if (status.isTerminated()) {
         _logger.outputf(".... %s: %s\n", task.getTerminated(), status);
       }
     }

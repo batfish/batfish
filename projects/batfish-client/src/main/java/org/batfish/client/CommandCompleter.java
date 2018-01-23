@@ -46,34 +46,4 @@ public class CommandCompleter implements Completer {
               " " + Command.getUsageMap().get(Command.getNameMap().get(buffer)).getFirst()));
     }
   }
-
-  //  @Override
-  //  public int complete(String buffer, int cursor, List<CharSequence> candidates) {
-  //    checkNotNull(candidates);
-  //
-  //    if (buffer == null) {
-  //      candidates.addAll(_commandStrs);
-  //    } else {
-  //      String trimmedBuffer = buffer.trim();
-  //
-  //      for (String match : _commandStrs.tailSet(buffer)) {
-  //        if (!match.startsWith(trimmedBuffer)) {
-  //          break;
-  //        }
-  //
-  //        candidates.add(match);
-  //      }
-  //    }
-  //
-  //    // if the match was unique and the complete command was specified, print
-  //    // the command usage
-  //    if (candidates.size() == 1 && candidates.get(0).equals(buffer)) {
-  //      candidates.clear();
-  //      candidates.add(
-  //          buffer + " " +
-  // Command.getUsageMap().get(Command.getNameMap().get(buffer)).getFirst());
-  //    }
-  //
-  //    return candidates.isEmpty() ? -1 : 0;
-  //  }
 }
