@@ -86,6 +86,8 @@ public class WorkQueueMgr {
       if (getIncompleteWork(container, testrig, environment, WorkType.DATAPLANING) == null) {
         TestrigMetadataMgr.updateEnvironmentStatus(
             container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL);
+      } else {
+        // make PMD happy
       }
     }
   }
