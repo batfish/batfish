@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -1074,18 +1075,22 @@ public class WorkMgr extends AbstractCoordinator {
     return questions;
   }
 
-  public SortedSet<String> listTestrigs(String containerName) {
+  public List<String> listTestrigs(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
     if (!Files.exists(testrigsDir)) {
-      return new TreeSet<>();
+      return new ArrayList<>();
     }
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(testrigsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+    List<String> testrigs =
+        CommonUtil.getSubdirectories(testrigsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .sorted(
+                (t1, t2) -> // reverse sorting by creation time
+                TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t2)
+                        .compareTo(
+                            TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t1)))
+            .collect(Collectors.toList());
     return testrigs;
   }
 
