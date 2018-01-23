@@ -212,7 +212,6 @@ public class Graph {
     throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
   }
 
-
   public static Set<Prefix> getOriginatedNetworks(Configuration conf) {
     Set<Prefix> allNetworks = new HashSet<>();
     Vrf vrf = conf.getDefaultVrf();
@@ -256,7 +255,7 @@ public class Graph {
         v.visit(
             conf,
             defaultPol.getStatements(),
-            stmt -> { },
+            stmt -> {},
             expr -> {
               if (expr instanceof Conjunction) {
                 Conjunction c = (Conjunction) expr;
@@ -778,7 +777,6 @@ public class Graph {
     return _domainMapInverse.get(idx);
   }
 
-
   private void initAllCommunities() {
     _allCommunities = findAllCommunities();
   }
@@ -808,8 +806,7 @@ public class Graph {
               list.add(c2);
             }
           }
-          if (c2.getType() == CommunityVar.Type.OTHER
-              && c1.getValue().equals(c2.getValue())) {
+          if (c2.getType() == CommunityVar.Type.OTHER && c1.getValue().equals(c2.getValue())) {
             list.add(c2);
           }
         }
@@ -825,7 +822,7 @@ public class Graph {
   private void initNamedCommunities() {
     _namedCommunities = new HashMap<>();
     for (Configuration conf : getConfigurations().values()) {
-      for (Entry<String,CommunityList> entry : conf.getCommunityLists().entrySet()) {
+      for (Entry<String, CommunityList> entry : conf.getCommunityLists().entrySet()) {
         String name = entry.getKey();
         CommunityList cl = entry.getValue();
         if (cl != null && cl.getLines().size() == 1) {
@@ -836,7 +833,6 @@ public class Graph {
     }
   }
 
-
   public Set<CommunityVar> getAllCommunities() {
     return _allCommunities;
   }
@@ -845,7 +841,7 @@ public class Graph {
     return _communityDependencies;
   }
 
-  public Map<String,String> getNamedCommunities() {
+  public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
   }
 

@@ -7,13 +7,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A simple data structure that maintains a set of sets that partition
- * some initial collection of elements.
+ * A simple data structure that maintains a set of sets that partition some initial collection of
+ * elements.
  */
-
 public class UnionSplit<T> {
 
-  private Map<T,Integer> _partitionMap;
+  private Map<T, Integer> _partitionMap;
 
   private Map<Integer, Set<T>> _reverseMap;
 
@@ -55,7 +54,6 @@ public class UnionSplit<T> {
     _nextCount++;
   }
 
-
   public Integer getHandle(T element) {
     return _partitionMap.get(element);
   }
@@ -76,7 +74,8 @@ public class UnionSplit<T> {
     return _partitionMap;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "UnionSplit{" + _reverseMap + '}';
   }
 }

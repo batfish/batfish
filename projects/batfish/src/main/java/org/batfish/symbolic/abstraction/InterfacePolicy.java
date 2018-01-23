@@ -19,7 +19,7 @@ public class InterfacePolicy {
 
   private Integer _ospfCost;
 
-  private SortedSet<Pair<Prefix,Integer>> _staticRoutes;
+  private SortedSet<Pair<Prefix, Integer>> _staticRoutes;
 
   private int _hcode = 0;
 
@@ -29,7 +29,7 @@ public class InterfacePolicy {
       @Nullable BDDAcl acl,
       @Nullable BDDRoute bgpPolicy,
       @Nullable Integer ospfCost,
-      @Nullable SortedSet<Pair<Prefix,Integer>> staticRoutes) {
+      @Nullable SortedSet<Pair<Prefix, Integer>> staticRoutes) {
     this._acl = acl;
     this._bgpPolicy = bgpPolicy;
     this._ospfCost = ospfCost;
@@ -55,7 +55,7 @@ public class InterfacePolicy {
     return _ospfCost;
   }
 
-  public SortedSet<Pair<Prefix,Integer>> getStaticRoutes() {
+  public SortedSet<Pair<Prefix, Integer>> getStaticRoutes() {
     return _staticRoutes;
   }
 
@@ -87,7 +87,7 @@ public class InterfacePolicy {
     if (_staticRoutes == null) {
       return this;
     }
-    SortedSet<Pair<Prefix,Integer>> newStatic = new TreeSet<>();
+    SortedSet<Pair<Prefix, Integer>> newStatic = new TreeSet<>();
     for (Pair<Prefix, Integer> tup : _staticRoutes) {
       if (prefixes == null || PrefixUtils.overlap(tup.getFirst(), prefixes)) {
         newStatic.add(tup);

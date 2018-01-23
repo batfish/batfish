@@ -1135,7 +1135,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return prunedTopology;
   }
 
-  private Topology computeTestrigTopology(Path testRigPath, Map<String, Configuration> configurations) {
+  private Topology computeTestrigTopology(
+      Path testRigPath, Map<String, Configuration> configurations) {
     Path topologyFilePath = testRigPath.resolve(TOPOLOGY_FILENAME);
     Topology topology;
     // Get generated facts from topology file

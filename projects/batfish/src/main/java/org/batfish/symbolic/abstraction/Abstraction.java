@@ -9,7 +9,7 @@ public class Abstraction {
 
   private AbstractionMap _abstractionMap;
 
-  public Abstraction(Graph graph, @Nullable AbstractionMap abstractionMap)  {
+  public Abstraction(Graph graph, @Nullable AbstractionMap abstractionMap) {
     this._graph = graph;
     this._abstractionMap = abstractionMap;
   }

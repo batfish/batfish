@@ -39,7 +39,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private int _hcode = 0;
 
-
   static {
     allMetricTypes = new ArrayList<>();
     allMetricTypes.add(OspfType.O);
@@ -181,7 +180,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return new BDDRoute(this);
   }
 
-
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */
@@ -289,7 +287,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _protocolHistory;
   }
 
-
   @Override
   public int hashCode() {
     if (_hcode == 0) {
@@ -383,7 +380,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i] = ospfMet[i].veccompose(pairing);
     }
-    rec.getCommunities().replaceAll((k,v) -> v.veccompose(pairing));
+    rec.getCommunities().replaceAll((k, v) -> v.veccompose(pairing));
     return rec;
   }
 

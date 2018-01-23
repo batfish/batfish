@@ -458,24 +458,10 @@ class CounterExample {
         SortedSet<BgpAdvertisement> envRoutesBase = buildEnvRoutingTable(enc2);
         Environment baseEnv =
             new Environment(
-                "BASE",
-                testRigName,
-                failedLinksBase,
-                null,
-                null,
-                null,
-                null,
-                envRoutesBase);
+                "BASE", testRigName, failedLinksBase, null, null, null, null, envRoutesBase);
         Environment failedEnv =
             new Environment(
-                "DELTA",
-                testRigName,
-                failedLinksDiff,
-                null,
-                null,
-                null,
-                null,
-                envRoutesDiff);
+                "DELTA", testRigName, failedLinksDiff, null, null, null, null, envRoutesDiff);
         fh.addFlowTrace(base.getFirst(), "BASE", baseEnv, base.getSecond());
         fh.addFlowTrace(diff.getFirst(), "DELTA", failedEnv, diff.getSecond());
       }

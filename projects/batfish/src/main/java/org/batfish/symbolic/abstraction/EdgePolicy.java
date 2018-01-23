@@ -35,5 +35,4 @@ class EdgePolicy {
     }
     return _hcode;
   }
-
 }

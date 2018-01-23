@@ -777,9 +777,9 @@ class TransferBDD {
               ret.getCommunities().put(c, ite(guard, var1, var2));
             });
 
-    //BDDInteger i =
+    // BDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
-    //ret.getProtocolHistory().setInteger(i);
+    // ret.getProtocolHistory().setInteger(i);
 
     return ret;
   }

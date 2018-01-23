@@ -147,7 +147,7 @@ class AbstractionBuilder {
         // Helps the next iteration to use the newly reflected information.
         // if (todo.size() > 0) {
         //  break;
-        //}
+        // }
       }
 
       // Now refine the abstraction further
@@ -157,15 +157,15 @@ class AbstractionBuilder {
 
     } while (!todo.isEmpty());
 
-    //System.out.println("EC Devices: " + _destinations);
-    //System.out.println("EC Prefixes: " + _prefixes);
-    //System.out.println("Groups: \n" + _abstractGroups.partitions());
-    //System.out.println("New graph: \n" + abstractGraph);
-    //System.out.println("Num Groups: " + workset.partitions().size());
+    // System.out.println("EC Devices: " + _destinations);
+    // System.out.println("EC Prefixes: " + _prefixes);
+    // System.out.println("Groups: \n" + _abstractGroups.partitions());
+    // System.out.println("New graph: \n" + abstractGraph);
+    // System.out.println("Num Groups: " + workset.partitions().size());
     Tuple<Graph, AbstractionMap> abstractNetwork = createAbstractNetwork();
     Graph abstractGraph = abstractNetwork.getFirst();
     AbstractionMap abstractionMap = abstractNetwork.getSecond();
-    //System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
+    // System.out.println("Num configs: " + abstractGraph.getConfigurations().size());
     Abstraction a = new Abstraction(abstractGraph, abstractionMap);
     return new NetworkSlice(_headerspace, a);
   }
@@ -272,7 +272,6 @@ class AbstractionBuilder {
       }
     }
   }
-
 
   private void collectInterfaceInformation(Set<String> partition, boolean isUniversal) {
     for (String router : partition) {
@@ -423,7 +422,6 @@ class AbstractionBuilder {
 
     return chosen;
   }
-
 
   /*
    * Creates a new Configuration from an old one for an abstract router

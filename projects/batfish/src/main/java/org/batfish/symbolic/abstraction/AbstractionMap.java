@@ -23,6 +23,4 @@ public class AbstractionMap {
     }
     return result;
   }
-
-
 }
