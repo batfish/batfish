@@ -69,7 +69,6 @@ import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 

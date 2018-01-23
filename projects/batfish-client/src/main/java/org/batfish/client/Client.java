@@ -96,7 +96,6 @@ import org.codehaus.jettison.json.JSONTokener;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReader.Option;
 import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.Terminal.Signal;
