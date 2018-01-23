@@ -1192,7 +1192,7 @@ public class WorkMgrService {
 
       JSONArray retArray = new JSONArray();
 
-      SortedSet<String> testrigList = Main.getWorkMgr().listTestrigs(containerName);
+      List<String> testrigList = Main.getWorkMgr().listTestrigs(containerName);
 
       for (String testrig : testrigList) {
         String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
