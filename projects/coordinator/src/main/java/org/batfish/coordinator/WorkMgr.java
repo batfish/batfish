@@ -1087,8 +1087,8 @@ public class WorkMgr extends AbstractCoordinator {
                 .stream()
                 .map(dir -> dir.getFileName().toString())
                 .sorted(
-                    (t1, t2) ->  // reverse sorting by creation time
-                        TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t2)
+                    (t1, t2) -> // reverse sorting by creation time
+                    TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t2)
                             .compareTo(
                                 TestrigMetadataMgr.getTestrigCreationTimestampOrMin(
                                     containerName, t1)))
