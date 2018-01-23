@@ -70,6 +70,7 @@ public class CoordConsts {
   public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
   public static final String SVC_KEY_VERSION = "version";
+  public static final String SVC_KEY_WORK_LIST = "worklist";
   public static final String SVC_KEY_WORKID = "workid";
   public static final String SVC_KEY_WORKITEM = "workitem";
   public static final String SVC_KEY_WORKSPACE_NAME = "workspace";
@@ -97,6 +98,7 @@ public class CoordConsts {
   public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
   public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
   public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
+  public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";

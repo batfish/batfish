@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -252,6 +253,18 @@ public class WorkQueueMgrTest {
     QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem3, QueueType.INCOMPLETE);
 
     assertThat(matchingWork, equalTo(work1));
+  }
+
+  @Test
+  public void listIncompleteWork() throws Exception {
+    QueuedWork work1 = new QueuedWork(new WorkItem(CONTAINER, "testrig"), new WorkDetails());
+    QueuedWork work2 = new QueuedWork(new WorkItem("other", "testrig"), new WorkDetails());
+    _workQueueMgr.queueUnassignedWork(work1);
+    _workQueueMgr.queueUnassignedWork(work2);
+
+    List<QueuedWork> works = _workQueueMgr.listIncompleteWork(CONTAINER);
+
+    assertThat(works, equalTo(Collections.singletonList(work1)));
   }
 
   // BEGIN: DATAPLANE_INDEPENDENT_ANSWERING TESTS

@@ -189,6 +189,12 @@ public class Task {
     _terminated = terminated;
   }
 
+  public String toString() {
+    return String.format(
+        "[Status: %s LastBatch: %s]",
+        _status, _batches.isEmpty() ? "None" : _batches.get(_batches.size() - 1));
+  }
+
   public synchronized String updateAndWrite() throws JsonProcessingException {
     _obtained = new Date();
     BatfishObjectMapper mapper = new BatfishObjectMapper();
