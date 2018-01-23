@@ -77,18 +77,14 @@ public class WorkQueueMgr {
       throws IOException {
     EnvironmentMetadata envMetadata =
         TestrigMetadataMgr.getEnvironmentMetadata(container, testrig, environment);
-    if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING) {
-      if (getIncompleteWork(container, testrig, environment, WorkType.PARSING) == null) {
-        TestrigMetadataMgr.updateEnvironmentStatus(
-            container, testrig, environment, ProcessingStatus.PARSING_FAIL);
-      }
-    } else if (envMetadata.getProcessingStatus() == ProcessingStatus.DATAPLANING) {
-      if (getIncompleteWork(container, testrig, environment, WorkType.DATAPLANING) == null) {
-        TestrigMetadataMgr.updateEnvironmentStatus(
-            container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL);
-      } else {
-        // make PMD happy
-      }
+    if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING
+        && getIncompleteWork(container, testrig, environment, WorkType.PARSING) == null) {
+      TestrigMetadataMgr.updateEnvironmentStatus(
+          container, testrig, environment, ProcessingStatus.PARSING_FAIL);
+    } else if (envMetadata.getProcessingStatus() == ProcessingStatus.DATAPLANING
+        && getIncompleteWork(container, testrig, environment, WorkType.DATAPLANING) == null) {
+      TestrigMetadataMgr.updateEnvironmentStatus(
+          container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL);
     }
   }
 
