@@ -1070,4 +1070,20 @@ public class WorkQueueMgrTest {
 
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
   }
+
+  @Test
+  public void processTaskCheckTerminatedByUser() throws Exception {
+    initTestrigMetadata("testrig", "env_default", ProcessingStatus.UNINITIALIZED);
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env_default", WorkType.PARSING));
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedByUser, "Fake"));
+
+    assertThat(work1.getStatus(), equalTo(WorkStatusCode.TERMINATEDBYUSER));
+    assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
+  }
 }

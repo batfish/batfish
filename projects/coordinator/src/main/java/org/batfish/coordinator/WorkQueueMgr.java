@@ -384,7 +384,7 @@ public class WorkQueueMgr {
 
   public synchronized void processTaskCheckResult(QueuedWork work, Task task) throws Exception {
 
-    // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally,
+    // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally, TerminatedByUser
     // Unknown, UnreachableOrBadResponse}
 
     switch (task.getStatus()) {

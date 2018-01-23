@@ -4058,15 +4058,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
-    //    int i = 0;
-    //    while (i < 1000) {
-    //      try {
-    //        Thread.sleep(1000);
-    //      } catch (InterruptedException e) {
-    //        e.printStackTrace();
-    //      }
-    //      i++;
-    //    }
     Answer answer = new Answer();
     boolean configsFound = false;
 
