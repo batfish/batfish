@@ -1082,17 +1082,15 @@ public class WorkMgr extends AbstractCoordinator {
       return new ArrayList<>();
     }
     List<String> testrigs =
-        new ArrayList<>(
-            CommonUtil.getSubdirectories(testrigsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .sorted(
-                    (t1, t2) -> // reverse sorting by creation time
-                    TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t2)
-                            .compareTo(
-                                TestrigMetadataMgr.getTestrigCreationTimestampOrMin(
-                                    containerName, t1)))
-                .collect(Collectors.toList()));
+        CommonUtil.getSubdirectories(testrigsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .sorted(
+                (t1, t2) -> // reverse sorting by creation time
+                TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t2)
+                        .compareTo(
+                            TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t1)))
+            .collect(Collectors.toList());
     return testrigs;
   }
 
