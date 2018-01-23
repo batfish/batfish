@@ -49,10 +49,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
-import jline.console.ConsoleReader;
-import jline.console.UserInterruptException;
-import jline.console.completer.Completer;
-import jline.console.history.FileHistory;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
@@ -97,6 +93,15 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReader.Option;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.Reference;
+import org.jline.reader.UserInterruptException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.Terminal.Signal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.InfoCmp.Capability;
 
 public class Client extends AbstractClient implements IClient {
 
@@ -445,10 +450,12 @@ public class Client extends AbstractClient implements IClient {
 
   BatfishLogger _logger;
 
+  WorkItem _polledWorkItem = null;
+
   @SuppressWarnings("unused")
   private BfCoordPoolHelper _poolHelper;
 
-  private ConsoleReader _reader;
+  private LineReader _reader;
 
   private Settings _settings;
 
@@ -490,23 +497,19 @@ public class Client extends AbstractClient implements IClient {
         break;
       case interactive:
         try {
-          _reader = new ConsoleReader();
+          Terminal terminal = TerminalBuilder.builder().build();
+          _reader =
+              LineReaderBuilder.builder()
+                  .terminal(terminal)
+                  .completer(new CommandCompleter())
+                  .build();
           Path historyPath = Paths.get(System.getenv(ENV_HOME), HISTORY_FILE);
           historyPath.toFile().createNewFile();
-          FileHistory history = new FileHistory(historyPath.toFile());
-          _reader.setHistory(history);
-          _reader.setPrompt("batfish> ");
-          _reader.setExpandEvents(false);
-          _reader.setHandleUserInterrupt(true);
+          _reader.setVariable(LineReader.HISTORY_FILE, historyPath.toAbsolutePath().toString());
+          _reader.getTerminal().handle(Signal.INT, signal -> handleSigInt());
+          _reader.unsetOpt(Option.INSERT_TAB); // supports completion with nothing entered
 
-          List<Completer> completors = new LinkedList<>();
-          completors.add(new CommandCompleter());
-
-          for (Completer c : completors) {
-            _reader.addCompleter(c);
-          }
-
-          PrintWriter pWriter = new PrintWriter(_reader.getOutput(), true);
+          PrintWriter pWriter = new PrintWriter(_reader.getTerminal().output(), true);
           OutputStream os = new WriterOutputStream(pWriter);
           PrintStream ps = new PrintStream(os, true);
           _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
@@ -774,7 +777,8 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.CLEAR_SCREEN)) {
       return false;
     }
-    _reader.clearScreen();
+    _reader.getTerminal().puts(Capability.clear_screen);
+    _reader.getTerminal().flush();
     return false;
   }
 
@@ -948,112 +952,15 @@ public class Client extends AbstractClient implements IClient {
       return queueWorkResult;
     }
 
-    if (_backgroundExecution) {
-      return true;
+    boolean result = true;
+
+    if (!_backgroundExecution) {
+      _polledWorkItem = wItem;
+      result = pollWork(wItem, outWriter);
+      _polledWorkItem = null;
     }
 
-    Pair<WorkStatusCode, String> response;
-    try (ActiveSpan workStatusSpan =
-        GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
-      assert workStatusSpan != null; // avoid unused warning
-      // Poll the work item until it finishes or fails.
-      response = _workHelper.getWorkStatus(wItem.getId());
-      if (response == null) {
-        return false;
-      }
-
-      WorkStatusCode status = response.getFirst();
-      Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
-      while (status != WorkStatusCode.TERMINATEDABNORMALLY
-          && status != WorkStatusCode.TERMINATEDNORMALLY
-          && status != WorkStatusCode.ASSIGNMENTERROR
-          && backoff.hasNext()) {
-        printWorkStatusResponse(response, false);
-        try {
-          Thread.sleep(backoff.nextBackoff().toMillis());
-        } catch (InterruptedException e) {
-          throw new BatfishException("Interrupted while waiting for work item to complete", e);
-        }
-        response = _workHelper.getWorkStatus(wItem.getId());
-        if (response == null) {
-          return false;
-        }
-        status = response.getFirst();
-      }
-      printWorkStatusResponse(response, false);
-    }
-    // get the answer
-    String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
-    String downloadedAnsFile =
-        _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), ansFileName);
-    if (downloadedAnsFile == null) {
-      _logger.errorf(
-          "Failed to get answer file %s. Fix batfish and remove the statement below this line\n",
-          ansFileName);
-      // return false;
-    } else {
-      String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
-
-      // Check if we need to make things pretty
-      // Don't if we are writing to FileWriter, because we need valid JSON in
-      // that case
-      String answerStringToPrint = answerString;
-      if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-        ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
-        Answer answer;
-        try {
-          answer = mapper.readValue(answerString, Answer.class);
-        } catch (IOException e) {
-          throw new BatfishException(
-              "Response does not appear to be valid JSON representation of "
-                  + Answer.class.getSimpleName(),
-              e);
-        }
-        answerStringToPrint = answer.prettyPrint();
-      }
-
-      logOutput(outWriter, answerStringToPrint);
-
-      // tests serialization/deserialization when running in debug mode
-      if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
-        try {
-          ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
-          Answer answer = mapper.readValue(answerString, Answer.class);
-
-          String newAnswerString = mapper.writeValueAsString(answer);
-          JsonNode tree = mapper.readTree(answerString);
-          JsonNode newTree = mapper.readTree(newAnswerString);
-          if (!CommonUtil.checkJsonEqual(tree, newTree)) {
-            // if (!tree.equals(newTree)) {
-            _logger.errorf(
-                "Original and recovered Json are different. Recovered = %s\n", newAnswerString);
-          }
-        } catch (Exception e) {
-          _logger.outputf("Could NOT deserialize Json to Answer: %s\n", e.getMessage());
-        }
-      }
-    }
-    // get and print the log when in debugging mode
-    if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
-      _logger.output("---------------- Service Log --------------\n");
-      String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
-      String downloadedFileStr =
-          _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), logFileName);
-
-      if (downloadedFileStr == null) {
-        _logger.errorf("Failed to get log file %s\n", logFileName);
-        return false;
-      } else {
-        Path downloadedFile = Paths.get(downloadedFileStr);
-        CommonUtil.outputFileLines(downloadedFile, _logger::output);
-      }
-    }
-    if (response.getFirst() == WorkStatusCode.TERMINATEDNORMALLY) {
-      return true;
-    } else {
-      // _logger.errorf("WorkItem failed: %s", wItem);
-      return false;
-    }
+    return result;
   }
 
   private boolean exit(List<String> options, List<String> parameters) {
@@ -1501,6 +1408,18 @@ public class Client extends AbstractClient implements IClient {
     return _settings;
   }
 
+  public void handleSigInt() {
+    _logger.info("Got SIGINT\n");
+    WorkItem wItem = _polledWorkItem;
+    if (wItem != null) {
+      _logger.outputf("Killing %s\n", wItem.getId());
+      boolean result = _workHelper.killWork(_polledWorkItem.getId());
+      _logger.outputf("Result of killing %s: %s\n", wItem.getId(), result);
+    } else {
+      _logger.output("No work being polled\n");
+    }
+  }
+
   private boolean help(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, Integer.MAX_VALUE, Command.HELP)) {
       return false;
@@ -1921,7 +1840,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.KILL_WORK)) {
       return false;
     }
-    String workId = parameters.get(0);
+    UUID workId = UUID.fromString(parameters.get(0));
     boolean killed = _workHelper.killWork(workId);
     _logger.outputf("Killed: %s\n", killed);
     return killed;
@@ -2317,6 +2236,105 @@ public class Client extends AbstractClient implements IClient {
           "Failed to parse parameters. (Are all key-value pairs separated by commas? Are all "
               + "values valid JSON?)",
           e);
+    }
+  }
+
+  private boolean pollWork(WorkItem wItem, @Nullable FileWriter outWriter) {
+
+    Pair<WorkStatusCode, String> response;
+    try (ActiveSpan workStatusSpan =
+        GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
+      assert workStatusSpan != null; // avoid unused warning
+      // Poll the work item until it finishes or fails.
+      response = _workHelper.getWorkStatus(wItem.getId());
+      if (response == null) {
+        return false;
+      }
+
+      WorkStatusCode status = response.getFirst();
+      Backoff backoff = Backoff.builder().withMaximumBackoff(Duration.ofSeconds(1)).build();
+      while (!status.isTerminated() && backoff.hasNext()) {
+        printWorkStatusResponse(response, false);
+        try {
+          Thread.sleep(backoff.nextBackoff().toMillis());
+        } catch (InterruptedException e) {
+          throw new BatfishException("Interrupted while waiting for work item to complete", e);
+        }
+        response = _workHelper.getWorkStatus(wItem.getId());
+        if (response == null) {
+          return false;
+        }
+        status = response.getFirst();
+      }
+      printWorkStatusResponse(response, false);
+    }
+    // get the answer
+    String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
+    String downloadedAnsFile =
+        _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), ansFileName);
+    if (downloadedAnsFile == null) {
+      _logger.errorf("Failed to get answer file %s. (Was work killed?)\n", ansFileName);
+    } else {
+      String answerString = CommonUtil.readFile(Paths.get(downloadedAnsFile));
+
+      // Check if we need to make things pretty
+      // Don't if we are writing to FileWriter, because we need valid JSON in
+      // that case
+      String answerStringToPrint = answerString;
+      if (outWriter == null && _settings.getPrettyPrintAnswers()) {
+        ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+        Answer answer;
+        try {
+          answer = mapper.readValue(answerString, Answer.class);
+        } catch (IOException e) {
+          throw new BatfishException(
+              "Response does not appear to be valid JSON representation of "
+                  + Answer.class.getSimpleName(),
+              e);
+        }
+        answerStringToPrint = answer.prettyPrint();
+      }
+
+      logOutput(outWriter, answerStringToPrint);
+
+      // tests serialization/deserialization when running in debug mode
+      if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
+        try {
+          ObjectMapper mapper = new BatfishObjectMapper(getCurrentClassLoader());
+          Answer answer = mapper.readValue(answerString, Answer.class);
+
+          String newAnswerString = mapper.writeValueAsString(answer);
+          JsonNode tree = mapper.readTree(answerString);
+          JsonNode newTree = mapper.readTree(newAnswerString);
+          if (!CommonUtil.checkJsonEqual(tree, newTree)) {
+            // if (!tree.equals(newTree)) {
+            _logger.errorf(
+                "Original and recovered Json are different. Recovered = %s\n", newAnswerString);
+          }
+        } catch (Exception e) {
+          _logger.outputf("Could NOT deserialize Json to Answer: %s\n", e.getMessage());
+        }
+      }
+    }
+    // get and print the log when in debugging mode
+    if (_logger.getLogLevel() >= BatfishLogger.LEVEL_DEBUG) {
+      _logger.output("---------------- Service Log --------------\n");
+      String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
+      String downloadedFileStr =
+          _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), logFileName);
+
+      if (downloadedFileStr == null) {
+        _logger.errorf("Failed to get log file %s\n", logFileName);
+        return false;
+      } else {
+        Path downloadedFile = Paths.get(downloadedFileStr);
+        CommonUtil.outputFileLines(downloadedFile, _logger::output);
+      }
+    }
+    if (response.getFirst() == WorkStatusCode.TERMINATEDNORMALLY) {
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -2759,7 +2777,7 @@ public class Client extends AbstractClient implements IClient {
     try {
       while (!_exit) {
         try {
-          String rawLine = _reader.readLine();
+          String rawLine = _reader.readLine("batfish> ");
           if (rawLine == null) {
             break;
           }
@@ -2771,9 +2789,8 @@ public class Client extends AbstractClient implements IClient {
     } catch (Throwable t) {
       t.printStackTrace();
     } finally {
-      FileHistory history = (FileHistory) _reader.getHistory();
       try {
-        history.flush();
+        _reader.getHistory().save();
       } catch (IOException e) {
         e.printStackTrace();
       }

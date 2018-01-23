@@ -4,6 +4,8 @@ package org.batfish.common;
 // If you change the values of any of these constants,
 // make sure that the javascript, python clients is updated too
 
+import org.batfish.common.BfConsts.TaskStatus;
+
 public class CoordConsts {
 
   public enum WorkStatusCode {
@@ -12,9 +14,31 @@ public class CoordConsts {
     BLOCKED,
     CHECKINGSTATUS,
     TERMINATEDABNORMALLY,
+    TERMINATEDBYUSER,
     TERMINATEDNORMALLY,
     TRYINGTOASSIGN,
     UNASSIGNED;
+
+    public static WorkStatusCode fromTerminatedTaskStatus(TaskStatus status) {
+      switch (status) {
+        case TerminatedAbnormally:
+          return TERMINATEDABNORMALLY;
+        case TerminatedByUser:
+          return TERMINATEDBYUSER;
+        case TerminatedNormally:
+          return TERMINATEDNORMALLY;
+        default:
+          throw new IllegalArgumentException(
+              "Cannot convert from " + status + " to WorkStatusCode");
+      }
+    }
+
+    public boolean isTerminated() {
+      return (this == ASSIGNMENTERROR // because we don't attempt assignment of this work
+          || this == WorkStatusCode.TERMINATEDABNORMALLY
+          || this == WorkStatusCode.TERMINATEDBYUSER
+          || this == WorkStatusCode.TERMINATEDNORMALLY);
+    }
   }
 
   public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";

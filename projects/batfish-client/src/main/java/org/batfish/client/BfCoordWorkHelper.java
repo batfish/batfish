@@ -540,7 +540,9 @@ public class BfCoordWorkHelper {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetObject: Did not get an OK response\n");
+        _logger.debugf(
+            "GetObject: Did not get an OK response for %s -> %s->%s\n",
+            containerName, testrigName, objectName);
         return null;
       }
 
@@ -746,7 +748,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  public boolean killWork(String workId) {
+  public boolean killWork(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_KILL_WORK);
 

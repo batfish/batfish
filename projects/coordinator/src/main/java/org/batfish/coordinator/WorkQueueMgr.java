@@ -395,14 +395,12 @@ public class WorkQueueMgr {
         break;
       case TerminatedNormally:
       case TerminatedAbnormally:
+      case TerminatedByUser:
         {
           // move the work to completed queue
           _queueIncompleteWork.delete(work);
           _queueCompletedWork.enque(work);
-          work.setStatus(
-              (task.getStatus() == TaskStatus.TerminatedNormally)
-                  ? WorkStatusCode.TERMINATEDNORMALLY
-                  : WorkStatusCode.TERMINATEDABNORMALLY);
+          work.setStatus(WorkStatusCode.fromTerminatedTaskStatus(task.getStatus()));
           work.recordTaskCheckResult(task);
 
           // update testrig metadata

@@ -17,7 +17,6 @@ import java.lang.ProcessBuilder.Redirect;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,6 +69,9 @@ import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 public class Driver {
 
@@ -244,13 +246,12 @@ public class Driver {
     Task task = _taskLog.get(taskId);
     if (task == null) {
       throw new BatfishException("Task with provided id not found: " + taskId);
-    } else if (task.getStatus() == TaskStatus.TerminatedNormally
-        || task.getStatus() == TaskStatus.TerminatedAbnormally) {
+    } else if (task.getStatus().isTerminated()) {
       throw new BatfishException("Task with provided id already terminated " + taskId);
     } else {
       // update task details in case a new query for status check comes in
       task.newBatch("Got kill request");
-      task.setStatus(TaskStatus.TerminatedAbnormally);
+      task.setStatus(TaskStatus.TerminatedByUser);
       task.setTerminated(new Date());
 
       // we die after a little bit, to allow for the response making it back to the coordinator
@@ -331,32 +332,20 @@ public class Driver {
 
   private static void mainRunWatchdog() {
     while (true) {
-      Process process;
-      String path = null;
-      try {
-        path = Driver.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-      } catch (URISyntaxException e) {
-        _mainLogger.errorf(
-            "Exiting: Couldn't find classpath: %s.", ExceptionUtils.getFullStackTrace(e));
-        System.exit(1);
-      }
+      RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+      String classPath = runtimeMxBean.getClassPath();
+      List<String> jvmArguments = new LinkedList<>(runtimeMxBean.getInputArguments());
+      jvmArguments.removeIf(arg -> arg.startsWith("-agentlib:")); // remove what IntelliJ adds
+      int myPid = Integer.parseInt(runtimeMxBean.getName().split("@")[0]);
 
       List<String> command = new LinkedList<>();
       command.add(
           Paths.get(System.getProperty("java.home"), "bin", "java").toAbsolutePath().toString());
-
-      RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-      List<String> jvmArguments = new LinkedList<>(runtimeMxBean.getInputArguments());
-      // remove the argument that IntelliJ adds
-      jvmArguments.removeIf(arg -> arg.startsWith("-agentlib:"));
       command.addAll(jvmArguments);
-
-      int myPid = Integer.parseInt(runtimeMxBean.getName().split("@")[0]);
-
       command.addAll(
           Arrays.asList(
               "-cp",
-              path,
+              classPath,
               Driver.class.getCanonicalName(),
               // if we add the runmode argument here, any runmode argument in mainArgs is ignored
               "-" + Settings.ARG_RUN_MODE,
@@ -371,6 +360,7 @@ public class Driver {
       builder.redirectErrorStream(true);
       builder.redirectInput(Redirect.INHERIT);
 
+      Process process;
       try {
         process = builder.start();
       } catch (IOException e) {
@@ -415,6 +405,14 @@ public class Driver {
     if (_mainSettings.getTracingEnable() && !GlobalTracer.isRegistered()) {
       initTracer();
     }
+    SignalHandler handler =
+        new SignalHandler() {
+          @Override
+          public void handle(Signal signal) {
+            _mainLogger.debugf("WorkService: Ignoring signal: %s\n", signal);
+          }
+        };
+    Signal.handle(new Signal("INT"), handler);
     String protocol = _mainSettings.getSslDisable() ? "http" : "https";
     String baseUrl = String.format("%s://%s", protocol, _mainSettings.getServiceBindHost());
     URI baseUri = UriBuilder.fromUri(baseUrl).port(_mainSettings.getServicePort()).build();

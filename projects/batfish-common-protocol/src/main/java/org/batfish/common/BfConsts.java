@@ -11,10 +11,17 @@ public class BfConsts {
   public enum TaskStatus {
     InProgress,
     TerminatedAbnormally,
+    TerminatedByUser,
     TerminatedNormally,
     Unknown,
     UnreachableOrBadResponse,
     Unscheduled;
+
+    public boolean isTerminated() {
+      return (this == TaskStatus.TerminatedAbnormally
+          || this == TaskStatus.TerminatedByUser
+          || this == TaskStatus.TerminatedNormally);
+    }
   }
 
   public static final String ABSPATH_CONFIG_FILE_NAME_ALLINONE =

@@ -37,6 +37,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
@@ -217,6 +218,13 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
+    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
+      if (assigned) {
+        killWork(work, worker);
+      }
+      return;
+    }
+
     // mark the assignment results for both work and worker
     if (assignmentError) {
       try {
@@ -325,17 +333,18 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
+    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
+      return;
+    }
+
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.errorf("exception: %s\n", stackTrace);
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
 
-    // if the task ended, send a hint to the pool manager to look up worker
-    // status
-    if (task.getStatus() == TaskStatus.TerminatedAbnormally
-        || task.getStatus() == TaskStatus.TerminatedNormally) {
+    // if the task ended, send a hint to the pool manager to look up worker status
+    if (task.getStatus().isTerminated()) {
       Main.getPoolMgr().refreshWorkerStatus(worker);
     }
   }
@@ -989,19 +998,23 @@ public class WorkMgr extends AbstractCoordinator {
   public boolean killWork(QueuedWork work) {
     String worker = work.getAssignedWorker();
 
-    if (worker == null) {
-      // this work was not assigned in the first place
-      boolean killed = false;
-      Task fakeTask = new Task(TaskStatus.TerminatedAbnormally, "Killed unassigned work");
-      try {
-        _workQueueMgr.processTaskCheckResult(work, fakeTask);
-        killed = true;
-      } catch (Exception e) {
-        _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
-      }
-      return killed;
+    if (worker != null) {
+      return killWork(work, worker);
     }
 
+    // (worker = null) => this work was not assigned in the first place
+    boolean killed = false;
+    Task fakeTask = new Task(TaskStatus.TerminatedByUser, "Killed unassigned work");
+    try {
+      _workQueueMgr.processTaskCheckResult(work, fakeTask);
+      killed = true;
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+    }
+    return killed;
+  }
+
+  private boolean killWork(QueuedWork work, String worker) {
     Client client = null;
     boolean killed = false;
 
@@ -1053,7 +1066,7 @@ public class WorkMgr extends AbstractCoordinator {
           // can happen if the worker dies before we could finish reading; lets assume success
           _logger.infof("worker appears dead before response completion\n");
           Task fakeTask =
-              new Task(TaskStatus.TerminatedAbnormally, "Worker appears dead before responding");
+              new Task(TaskStatus.TerminatedByUser, "Worker appears dead before responding");
           _workQueueMgr.processTaskCheckResult(work, fakeTask);
           killed = true;
         }
