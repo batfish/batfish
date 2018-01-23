@@ -191,5 +191,4 @@ public interface IBatfish extends IPluginConsumer {
       Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
-
 }

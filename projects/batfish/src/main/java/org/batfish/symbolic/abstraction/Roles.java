@@ -47,9 +47,7 @@ public class Roles {
   private List<SortedSet<String>> _nodeEcs = null;
 
   public static Roles create(
-      IBatfish batfish,
-      List<Prefix> prefixes,
-      NodesSpecifier nodesSpecifier) {
+      IBatfish batfish, List<Prefix> prefixes, NodesSpecifier nodesSpecifier) {
     Roles rf = new Roles(batfish, nodesSpecifier);
     rf.computeRoles(prefixes);
     return rf;
@@ -120,8 +118,7 @@ public class Roles {
           importBgpNull.add(s);
         } else {
           x1 = (prefixes == null ? x1 : x1.restrict(prefixes));
-          SortedSet<String> ec =
-              importBgpEcs.computeIfAbsent(x1, k -> new TreeSet<>());
+          SortedSet<String> ec = importBgpEcs.computeIfAbsent(x1, k -> new TreeSet<>());
           ec.add(s);
         }
 
@@ -130,8 +127,7 @@ public class Roles {
           exportBgpNull.add(s);
         } else {
           x2 = (prefixes == null ? x2 : x2.restrict(prefixes));
-          SortedSet<String> ec =
-              exportBgpEcs.computeIfAbsent(x2, k -> new TreeSet<>());
+          SortedSet<String> ec = exportBgpEcs.computeIfAbsent(x2, k -> new TreeSet<>());
           ec.add(s);
         }
 
@@ -140,8 +136,7 @@ public class Roles {
           incomingAclNull.add(s);
         } else {
           x4 = (prefixes == null ? x4 : x4.restrict(prefixes));
-          SortedSet<String> ec =
-              incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
+          SortedSet<String> ec = incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
           ec.add(s);
         }
 
@@ -150,8 +145,7 @@ public class Roles {
           outgoingAclNull.add(s);
         } else {
           x5 = (prefixes == null ? x5 : x5.restrict(prefixes));
-          SortedSet<String> ec =
-              outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
+          SortedSet<String> ec = outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
           ec.add(s);
         }
 

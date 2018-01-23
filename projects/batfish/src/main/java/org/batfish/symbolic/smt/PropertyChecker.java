@@ -327,11 +327,10 @@ public class PropertyChecker {
     return new SmtOneAnswerElement(result);
   }
 
-
   /*
- * General purpose logic for checking a property that holds that
- * handles the various flags and parameters for a query with endpoints
- */
+   * General purpose logic for checking a property that holds that
+   * handles the various flags and parameters for a query with endpoints
+   */
   private AnswerElement checkPropertyTest(
       HeaderLocationQuestion q,
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
@@ -351,7 +350,7 @@ public class PropertyChecker {
     }
 
     inferDestinationHeaderSpace(graph, destPorts, q);
-    //Set<GraphEdge> failOptions = failLinkSet(graph, q);
+    // Set<GraphEdge> failOptions = failLinkSet(graph, q);
     Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
     Long timeAbstraction = ecs.getSecond();
@@ -452,7 +451,6 @@ public class PropertyChecker {
     }
     return ae;
   }
-
 
   /*
    * General purpose logic for checking a property that holds that
@@ -558,17 +556,17 @@ public class PropertyChecker {
                     BoolExpr sourceProp2 = prop2.get(source);
                     BoolExpr val;
                     switch (q.getDiffType()) {
-                    case INCREASED:
-                      val = enc.mkImplies(sourceProp1, sourceProp2);
-                      break;
-                    case REDUCED:
-                      val = enc.mkImplies(sourceProp2, sourceProp1);
-                      break;
-                    case ANY:
-                      val = enc.mkEq(sourceProp1, sourceProp2);
-                      break;
-                    default:
-                      throw new BatfishException("Missing case: " + q.getDiffType());
+                      case INCREASED:
+                        val = enc.mkImplies(sourceProp1, sourceProp2);
+                        break;
+                      case REDUCED:
+                        val = enc.mkImplies(sourceProp2, sourceProp1);
+                        break;
+                      case ANY:
+                        val = enc.mkEq(sourceProp1, sourceProp2);
+                        break;
+                      default:
+                        throw new BatfishException("Missing case: " + q.getDiffType());
                     }
                     required = enc.mkAnd(required, val);
                   }

@@ -51,7 +51,6 @@ public class BDDNetwork {
     return network;
   }
 
-
   private BDDNetwork(Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
@@ -136,12 +135,12 @@ public class BDDNetwork {
         BDDAcl aclIn = _inAcls.get(ge);
         BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
-        SortedSet<Pair<Prefix,Integer>> staticPrefixes = new TreeSet<>();
+        SortedSet<Pair<Prefix, Integer>> staticPrefixes = new TreeSet<>();
         SortedSet<StaticRoute> staticRoutes = conf.getDefaultVrf().getStaticRoutes();
         for (StaticRoute sr : staticRoutes) {
           Prefix pfx = sr.getNetwork();
           Integer adminCost = sr.getAdministrativeCost();
-          Pair<Prefix,Integer> tup = new Pair<>(pfx, adminCost);
+          Pair<Prefix, Integer> tup = new Pair<>(pfx, adminCost);
           staticPrefixes.add(tup);
         }
         InterfacePolicy ipol = new InterfacePolicy(aclIn, bgpIn, null, staticPrefixes);

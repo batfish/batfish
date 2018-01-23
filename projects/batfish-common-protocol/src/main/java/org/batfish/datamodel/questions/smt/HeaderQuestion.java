@@ -14,7 +14,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.IQuestion;
 import org.batfish.datamodel.questions.Question;
 
-
 public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_DST_IPS = "dstIps";

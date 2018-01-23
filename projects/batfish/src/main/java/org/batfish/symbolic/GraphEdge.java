@@ -86,7 +86,8 @@ public class GraphEdge {
     return _isNullEdge;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (!(o instanceof GraphEdge)) {
       return false;
     }

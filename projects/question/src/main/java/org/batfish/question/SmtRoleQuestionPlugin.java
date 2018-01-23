@@ -25,7 +25,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer() {
       RoleQuestion q = (RoleQuestion) _question;
       return _batfish.smtRoles(q);
-      //return _batfish.smtRoles(q.getType(), q.getNodeRegex());
+      // return _batfish.smtRoles(q.getType(), q.getNodeRegex());
     }
   }
 
