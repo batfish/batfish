@@ -48,7 +48,7 @@ b_as_override
 
 b_cluster
 :
-   CLUSTER IP_ADDRESS
+   CLUSTER id = IP_ADDRESS
 ;
 
 b_common

@@ -60,6 +60,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_peer_asCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_key_chainContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_clusterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
@@ -2311,6 +2312,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         ctx.name.getText(),
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY,
         line);
+  }
+
+  @Override
+  public void exitB_cluster(B_clusterContext ctx) {
+    Ip clusterId = new Ip(ctx.id.getText());
+    _currentBgpGroup.setClusterId(clusterId);
   }
 
   @Override
