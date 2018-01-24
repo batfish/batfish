@@ -1,8 +1,6 @@
 package org.batfish.allinone.config;
 
-import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
