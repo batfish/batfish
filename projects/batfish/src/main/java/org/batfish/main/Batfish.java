@@ -440,8 +440,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       _cachedEnvironmentRoutingTables;
 
-  private DataPlanePlugin _dataPlanePlugin;
-
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -459,6 +457,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final List<TestrigSettings> _testrigSettingsStack;
 
   private boolean _monotonicCache;
+
+  private Map<String, DataPlanePlugin> _dataPlanePlugins;
 
   public Batfish(
       Settings settings,
@@ -482,6 +482,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _terminatedWithException = false;
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
+    _dataPlanePlugins = new HashMap<>();
   }
 
   private Answer analyze() {
@@ -907,7 +908,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer computeDataPlane(boolean differentialContext) {
     checkEnvironmentExists();
-    return _dataPlanePlugin.computeDataPlane(differentialContext);
+    return getDataPlanePlugin().computeDataPlane(differentialContext);
   }
 
   private void computeEnvironmentBgpTables() {
@@ -1609,7 +1610,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public DataPlanePlugin getDataPlanePlugin() {
-    return _dataPlanePlugin;
+    DataPlanePlugin plugin = _dataPlanePlugins.get(_settings.getDataPlaneEngineName());
+    if (plugin == null) {
+      throw new BatfishException(
+          String.format(
+              "Dataplane engine %s is unavailable or unsupported",
+              _settings.getDataPlaneEngineName()));
+    }
+    return plugin;
   }
 
   @Override
@@ -1850,7 +1858,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
-    return _dataPlanePlugin.getRoutes();
+    return getDataPlanePlugin().getRoutes();
   }
 
   public Settings getSettings() {
@@ -1945,7 +1953,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    Set<BgpAdvertisement> globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
+    Set<BgpAdvertisement> globalBgpAdvertisements = getDataPlanePlugin().getAdvertisements();
     for (Configuration node : configurations.values()) {
       node.initBgpAdvertisements();
       for (Vrf vrf : node.getVrfs().values()) {
@@ -3042,8 +3050,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void populateFlowHistory(
       FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
-    List<Flow> flows = _dataPlanePlugin.getHistoryFlows();
-    List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces();
+    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
+    List<Flow> flows = dataPlanePlugin.getHistoryFlows();
+    List<FlowTrace> flowTraces = dataPlanePlugin.getHistoryFlowTraces();
     int numEntries = flows.size();
     for (int i = 0; i < numEntries; i++) {
       Flow flow = flows.get(i);
@@ -3179,7 +3188,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void processFlows(Set<Flow> flows) {
-    _dataPlanePlugin.processFlows(flows);
+    getDataPlanePlugin().processFlows(flows);
   }
 
   /**
@@ -4101,8 +4110,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
-    _dataPlanePlugin = dataPlanePlugin;
+  public void registerDataPlanePlugin(DataPlanePlugin plugin, String name) {
+    _dataPlanePlugins.put(name, plugin);
   }
 
   public void setMonotonicCache(boolean monotonicCache) {

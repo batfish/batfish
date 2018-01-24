@@ -27,6 +27,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
 
+  public static final String PLUGIN_NAME = "bdp";
+
   private final Map<BdpDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
   private BdpEngine _engine;
@@ -146,5 +148,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   public void processFlows(Set<Flow> flows) {
     BdpDataPlane dp = loadDataPlane();
     _flowTraces.put(dp, _engine.processFlows(dp, flows));
+  }
+
+  @Override
+  public String getName() {
+    return PLUGIN_NAME;
   }
 }

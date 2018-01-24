@@ -36,7 +36,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   @Override
   protected final void batfishPluginInitialize() {
-    _batfish.setDataPlanePlugin(this);
+    _batfish.registerDataPlanePlugin(this, getName());
     dataPlanePluginInitialize();
   }
 
@@ -55,4 +55,6 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
 
   public abstract void processFlows(Set<Flow> flows);
+
+  public abstract String getName();
 }
