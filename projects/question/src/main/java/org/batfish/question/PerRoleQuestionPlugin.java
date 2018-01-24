@@ -12,7 +12,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -162,7 +161,6 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
 
     private List<String> _roles;
 
-    @Nullable
     private NodeRoleSpecifier _roleSpecifier;
 
     public PerRoleQuestion() {

@@ -9,7 +9,6 @@ import java.util.NavigableSet;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -134,7 +133,6 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_HYPOTHESIS = "hypothesis";
 
-    @Nullable
     private NodeRoleSpecifier _roleSpecifier;
 
     private String _propertyName;
