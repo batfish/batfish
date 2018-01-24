@@ -79,8 +79,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
       PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleQuestion outerQ = outerPlugin.createQuestion();
       outerQ.setRoleSpecifier(
-          question.getRoleSpecifier().orElse(_batfish.getNodeRoleSpecifier(false))
-      );
+          question.getRoleSpecifier().orElse(_batfish.getNodeRoleSpecifier(false)));
       outerQ.setQuestion(innerQ);
 
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
@@ -102,19 +101,17 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
 
   // <question_page_comment>
   /**
-   * Checks a role-based consistency policy requiring that all nodes of the same role have the
-   * same value for some particular configuration property (e.g., DnsServers).
+   * Checks a role-based consistency policy requiring that all nodes of the same role have the same
+   * value for some particular configuration property (e.g., DnsServers).
    *
    * @type NamedStructureRoleConsistency multifile
-   * @param roleSpecifier A NodeRoleSpecifier that specifies the role(s) of each node.  If
-   *      not specified then by default the currently installed NodeRoleSpecifier is used.
-   *
+   * @param roleSpecifier A NodeRoleSpecifier that specifies the role(s) of each node. If not
+   *     specified then by default the currently installed NodeRoleSpecifier is used.
    * @param structType A string representing the type of named structure to check.
-   *
-   * @param hypothesis The hypothesis to check.  Allowed values are "sameName" and "sameDefinition".
+   * @param hypothesis The hypothesis to check. Allowed values are "sameName" and "sameDefinition".
    */
-  public static final class NamedStructureRoleConsistencyQuestion extends Question implements
-      IRoleConsistencyQuestion {
+  public static final class NamedStructureRoleConsistencyQuestion extends Question
+      implements IRoleConsistencyQuestion {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
@@ -128,8 +125,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
 
     private OutliersHypothesis _hypothesis;
 
-    public NamedStructureRoleConsistencyQuestion() {
-    }
+    public NamedStructureRoleConsistencyQuestion() {}
 
     @Override
     public boolean getDataPlane() {
@@ -170,7 +166,6 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
     public void setStructType(String structType) {
       _structType = structType;
     }
-
   }
 
   @Override

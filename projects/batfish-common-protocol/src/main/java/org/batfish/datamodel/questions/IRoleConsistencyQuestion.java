@@ -9,5 +9,4 @@ public interface IRoleConsistencyQuestion extends IQuestion {
   OutliersHypothesis getHypothesis();
 
   Optional<NodeRoleSpecifier> getRoleSpecifier();
-
 }

@@ -56,8 +56,8 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           case SAME_DEFINITION:
             NamedStructureRoleConsistencyQuestion nsrcq =
                 (NamedStructureRoleConsistencyQuestion) question;
-            sb.append("the same definition for same-named structures of type "
-                + nsrcq.getStructType());
+            sb.append(
+                "the same definition for same-named structures of type " + nsrcq.getStructType());
             break;
           case SAME_NAME:
             NamedStructureRoleConsistencyQuestion nsrcq2 =
@@ -216,8 +216,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       return outliersPerProperty;
     }
 
-    private <T extends RoleBasedOutlierSet> List<IRoleConsistencyQuestion>
-    policiesAboveThreshold(
+    private <T extends RoleBasedOutlierSet> List<IRoleConsistencyQuestion> policiesAboveThreshold(
         Multimap<String, T> outliersPerPropertyName, OutliersHypothesis hypothesis) {
       NodeRoleSpecifier nodeRoleSpecifier = _batfish.getNodeRoleSpecifier(false);
       List<IRoleConsistencyQuestion> policies = new LinkedList<>();
@@ -228,23 +227,23 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
         double all = (double) conformers + outliers;
         if (conformers / all >= CONFORMERS_THRESHOLD) {
           switch (hypothesis) {
-          case SAME_DEFINITION:
-          case SAME_NAME:
-            NamedStructureRoleConsistencyQuestion policy =
-                new NamedStructureRoleConsistencyQuestion();
-            policy.setHypothesis(hypothesis);
-            policy.setRoleSpecifier(nodeRoleSpecifier);
-            policy.setStructType(name);
-            policies.add(policy);
-            break;
-          case SAME_SERVERS:
-            RoleConsistencyQuestion rcpolicy = new RoleConsistencyQuestion();
-            rcpolicy.setRoleSpecifier(nodeRoleSpecifier);
-            rcpolicy.setPropertyName(name);
-            policies.add(rcpolicy);
-            break;
-          default:
-            throw new BatfishException("Unrecognized hypothesis " + hypothesis);
+            case SAME_DEFINITION:
+            case SAME_NAME:
+              NamedStructureRoleConsistencyQuestion policy =
+                  new NamedStructureRoleConsistencyQuestion();
+              policy.setHypothesis(hypothesis);
+              policy.setRoleSpecifier(nodeRoleSpecifier);
+              policy.setStructType(name);
+              policies.add(policy);
+              break;
+            case SAME_SERVERS:
+              RoleConsistencyQuestion rcpolicy = new RoleConsistencyQuestion();
+              rcpolicy.setRoleSpecifier(nodeRoleSpecifier);
+              rcpolicy.setPropertyName(name);
+              policies.add(rcpolicy);
+              break;
+            default:
+              throw new BatfishException("Unrecognized hypothesis " + hypothesis);
           }
         }
       }
