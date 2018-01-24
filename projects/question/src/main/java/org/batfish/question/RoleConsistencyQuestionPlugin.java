@@ -90,8 +90,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
       PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleQuestion outerQ = outerPlugin.createQuestion();
       outerQ.setRoleSpecifier(
-          question.getRoleSpecifier().orElse(_batfish.getNodeRoleSpecifier(false))
-      );
+          question.getRoleSpecifier().orElse(_batfish.getNodeRoleSpecifier(false)));
       outerQ.setQuestion(innerQ);
 
       // find all outliers for protocol-specific servers, on a per-role basis
@@ -114,18 +113,17 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
   /**
-   * Checks a role-based consistency policy requiring that all nodes of the same role have the
-   * same value for some particular configuration property (e.g., DnsServers).
+   * Checks a role-based consistency policy requiring that all nodes of the same role have the same
+   * value for some particular configuration property (e.g., DnsServers).
    *
    * @type RoleConsistency multifile
-   * @param roleSpecifier A NodeRoleSpecifier that specifies the role(s) of each node.  If
-   *      not specified then by default the currently installed NodeRoleSpecifier is used.
-   *
+   * @param roleSpecifier A NodeRoleSpecifier that specifies the role(s) of each node. If not
+   *     specified then by default the currently installed NodeRoleSpecifier is used.
    * @param propertyName A string representing the name of the configuration property to check.
    *     Allowed values are DnsServers, LoggingServers, NtpServers, SnmpTrapServers, TacacsServers.
    */
-  public static final class RoleConsistencyQuestion extends Question implements
-      IRoleConsistencyQuestion {
+  public static final class RoleConsistencyQuestion extends Question
+      implements IRoleConsistencyQuestion {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
@@ -137,8 +135,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
     private String _propertyName;
 
-    public RoleConsistencyQuestion() {
-    }
+    public RoleConsistencyQuestion() {}
 
     @Override
     public boolean getDataPlane() {

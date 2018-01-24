@@ -295,8 +295,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return outliers;
     }
 
-    private SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers(
-        OutliersQuestion question) {
+    private SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers(OutliersQuestion question) {
       SortedSet<String> serverSets = question.getServerSets();
 
       SortedMap<String, Function<Configuration, NavigableSet<String>>> serverSetAccessors =
@@ -313,8 +312,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
       SortedSet<OutlierSet<NavigableSet<String>>> rankedOutliers = new TreeSet<>();
       for (String serverSet : serverSets) {
-        Function<Configuration, NavigableSet<String>> accessorF =
-            serverSetAccessors.get(serverSet);
+        Function<Configuration, NavigableSet<String>> accessorF = serverSetAccessors.get(serverSet);
         if (accessorF != null) {
           addPropertyOutliers(serverSet, accessorF, rankedOutliers);
         }
@@ -391,7 +389,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    * @type Outliers multifile
    * @param serverSets Set of server-set names to analyze drawn from ( DnsServers, LoggingServers,
    *     NtpServers, SnmpTrapServers, TacacsServers) Default value is '[]' (which denotes all
-   *     server-set names).  This option is applicable to the "sameServers" hypothesis.
+   *     server-set names). This option is applicable to the "sameServers" hypothesis.
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
    *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicy, IkeProposal, IpAccessList,
    *     IpsecPolicy, IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]'

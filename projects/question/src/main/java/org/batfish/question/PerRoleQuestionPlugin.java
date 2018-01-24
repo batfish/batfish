@@ -142,8 +142,8 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
    * @param roles List of the role names to include in the answer. Default is to use all role names.
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes). *
-   * @param roleSpecifier Specifies the mapping from roles to nodes.  If not provided, the default
-   *    is to use the role specifier that was installed when the test rig was initialized.
+   * @param roleSpecifier Specifies the mapping from roles to nodes. If not provided, the default is
+   *     to use the role specifier that was installed when the test rig was initialized.
    */
   public static final class PerRoleQuestion extends Question {
 
@@ -216,7 +216,6 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
       _roleSpecifier = roleSpecifier;
     }
-
   }
 
   @Override
