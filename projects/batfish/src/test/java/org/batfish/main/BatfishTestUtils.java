@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
+import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -103,6 +104,7 @@ public class BatfishTestUtils {
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
+    settings.setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
     Batfish.initTestrigSettings(settings);
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
