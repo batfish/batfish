@@ -149,8 +149,6 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
-
   AnswerElement smtBlackhole(HeaderQuestion q);
 
   AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
@@ -184,4 +182,6 @@ public interface IBatfish extends IPluginConsumer {
       Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
+
+  void registerDataPlanePlugin(DataPlanePlugin plugin, String name);
 }
