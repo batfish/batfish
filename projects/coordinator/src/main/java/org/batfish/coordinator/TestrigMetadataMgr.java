@@ -22,7 +22,7 @@ public class TestrigMetadataMgr {
     return trMetadata.getEnvironments().get(envName);
   }
 
-  public static Instant getTestrigCreationTimestampOrMin(String container, String testrig) {
+  public static Instant getTestrigCreationTimeOrMin(String container, String testrig) {
     try {
       return readMetadata(container, testrig).getCreationTimestamp();
     } catch (IOException e) {
