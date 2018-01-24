@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.LinkedList;
@@ -129,8 +130,6 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_PROPERTY_NAME = "propertyName";
 
-    private static final String PROP_HYPOTHESIS = "hypothesis";
-
     private NodeRoleSpecifier _roleSpecifier;
 
     private String _propertyName;
@@ -147,7 +146,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
       return Optional.ofNullable(_roleSpecifier);
     }
 
-    @JsonProperty(PROP_HYPOTHESIS)
+    @JsonIgnore
     public OutliersHypothesis getHypothesis() {
       return OutliersHypothesis.SAME_SERVERS;
     }

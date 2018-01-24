@@ -296,7 +296,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers(OutliersQuestion question) {
-      SortedSet<String> serverSets = question.getServerSets();
+      SortedSet<String> serverSets = new TreeSet<>(question.getServerSets());
 
       SortedMap<String, Function<Configuration, NavigableSet<String>>> serverSetAccessors =
           new TreeMap<>();
