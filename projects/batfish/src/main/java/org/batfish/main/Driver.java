@@ -42,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -221,7 +222,7 @@ public class Driver {
   private static boolean isProcessRunning(int pid) throws IOException {
     // all of this would be a lot simpler in Java 9, using processHandle
 
-    if (System.getProperty("os.name").startsWith("Windows")) {
+    if (SystemUtils.IS_OS_WINDOWS) {
       throw new UnsupportedOperationException("Process monitoring is not supported on Windows");
     } else {
       ProcessBuilder builder = new ProcessBuilder("ps", "-x", String.valueOf(pid));
@@ -452,8 +453,9 @@ public class Driver {
       }
 
       if (_mainSettings.getParentPid() > 0) {
-        if (System.getProperty("os.name").startsWith("Windows")) {
-          _mainLogger.errorf("Parent process monitoring is not supported on Windows");
+        if (SystemUtils.IS_OS_WINDOWS) {
+          _mainLogger.errorf(
+              "Parent process monitoring is not supported on Windows. Will live without it.");
         } else {
           Executors.newScheduledThreadPool(1)
               .scheduleAtFixedRate(
