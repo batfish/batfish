@@ -1086,10 +1086,13 @@ public class WorkMgr extends AbstractCoordinator {
             .stream()
             .map(dir -> dir.getFileName().toString())
             .sorted(
-                (t1, t2) -> // reverse sorting by creation time
-                TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t2)
-                        .compareTo(
-                            TestrigMetadataMgr.getTestrigCreationTimestampOrMin(containerName, t1)))
+                (t1, t2) -> { // reverse sorting by creation-time, name
+                  String key1 =
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t1) + t1;
+                  String key2 =
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t2) + t2;
+                  return key2.compareTo(key1);
+                })
             .collect(Collectors.toList());
     return testrigs;
   }
