@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
 import com.uber.jaeger.samplers.ConstSampler;
@@ -22,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -221,18 +221,21 @@ public class Driver {
   private static boolean isProcessRunning(int pid) throws IOException {
     // all of this would be a lot simpler in Java 9, using processHandle
 
-    // this should work on POSIX systems; double check on cygwin
-    ProcessBuilder builder = new ProcessBuilder("ps", "-x", String.valueOf(pid));
-    builder.redirectErrorStream(true);
-    Process process = builder.start();
+    if (System.getProperty("os.name").startsWith("Windows")) {
+      throw new UnsupportedOperationException("Process monitoring is not supported on Windows");
+    } else {
+      ProcessBuilder builder = new ProcessBuilder("ps", "-x", String.valueOf(pid));
+      builder.redirectErrorStream(true);
+      Process process = builder.start();
 
-    try (BufferedReader reader =
-        new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        String[] columns = line.trim().split("\\s+");
-        if (String.valueOf(pid).equals(columns[0])) {
-          return true;
+      try (BufferedReader reader =
+          new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          String[] columns = line.trim().split("\\s+");
+          if (String.valueOf(pid).equals(columns[0])) {
+            return true;
+          }
         }
       }
     }
@@ -333,25 +336,33 @@ public class Driver {
     while (true) {
       RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
       String classPath = runtimeMxBean.getClassPath();
-      List<String> jvmArguments = new LinkedList<>(runtimeMxBean.getInputArguments());
-      jvmArguments.removeIf(arg -> arg.startsWith("-agentlib:")); // remove what IntelliJ adds
+      List<String> jvmArguments =
+          runtimeMxBean
+              .getInputArguments()
+              .stream()
+              .filter(arg -> !arg.startsWith("-agentlib:")) // remove IntelliJ hooks
+              .collect(ImmutableList.toImmutableList());
       int myPid = Integer.parseInt(runtimeMxBean.getName().split("@")[0]);
 
-      List<String> command = new LinkedList<>();
-      command.add(
-          Paths.get(System.getProperty("java.home"), "bin", "java").toAbsolutePath().toString());
-      command.addAll(jvmArguments);
-      command.addAll(
-          Arrays.asList(
-              "-cp",
-              classPath,
-              Driver.class.getCanonicalName(),
-              // if we add the runmode argument here, any runmode argument in mainArgs is ignored
-              "-" + Settings.ARG_RUN_MODE,
-              RunMode.WORKSERVICE.toString(),
-              "-" + Settings.ARG_PARENT_PID,
-              Integer.toString(myPid)));
-      command.addAll(Arrays.asList(_mainArgs));
+      List<String> command =
+          new ImmutableList.Builder<String>()
+              .add(
+                  Paths.get(System.getProperty("java.home"), "bin", "java")
+                      .toAbsolutePath()
+                      .toString())
+              .addAll(jvmArguments)
+              .addAll(
+                  Arrays.asList(
+                      "-cp",
+                      classPath,
+                      Driver.class.getCanonicalName(),
+                      // if we add runmode here, any runmode argument in mainArgs is ignored
+                      "-" + Settings.ARG_RUN_MODE,
+                      RunMode.WORKSERVICE.toString(),
+                      "-" + Settings.ARG_PARENT_PID,
+                      Integer.toString(myPid)))
+              .addAll(Arrays.asList(_mainArgs))
+              .build();
 
       _mainLogger.debugf("Will start workservice with arguments: %s\n", command);
 
@@ -441,20 +452,25 @@ public class Driver {
       }
 
       if (_mainSettings.getParentPid() > 0) {
-        Executors.newScheduledThreadPool(1)
-            .scheduleAtFixedRate(
-                new CheckParentProcessTask(_mainSettings.getParentPid()),
-                0,
-                PARENT_CHECK_INTERVAL_MS,
-                TimeUnit.MILLISECONDS);
+        if (System.getProperty("os.name").startsWith("Windows")) {
+          _mainLogger.errorf("Parent process monitoring is not supported on Windows");
+        } else {
+          Executors.newScheduledThreadPool(1)
+              .scheduleAtFixedRate(
+                  new CheckParentProcessTask(_mainSettings.getParentPid()),
+                  0,
+                  PARENT_CHECK_INTERVAL_MS,
+                  TimeUnit.MILLISECONDS);
+        }
       }
 
       // sleep indefinitely, check for parent pid and coordinator each time
       while (true) {
         Thread.sleep(COORDINATOR_CHECK_INTERVAL_MS);
-
-        // every time we wake up, we check if the coordinator has polled us recently
-        // if not, re-register the service. the coordinator might have died and come back.
+        /*
+         * every time we wake up, we check if the coordinator has polled us recently
+         * if not, re-register the service. the coordinator might have died and come back.
+         */
         if (_mainSettings.getCoordinatorRegister()
             && new Date().getTime() - _lastPollFromCoordinator.getTime()
                 > COORDINATOR_POLL_TIMEOUT_MS) {

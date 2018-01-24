@@ -1,5 +1,9 @@
 package org.batfish.allinone.config;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -139,7 +143,13 @@ public class Settings extends BaseSettings {
 
     addOption(ARG_BATFISH_ARGS, "arguments for batfish process", "batfish_args");
 
-    addOption(ARG_BATFISH_RUN_MODE, "mode in which to start batfish", "(watchdog|workerservice)");
+    addOption(
+        ARG_BATFISH_RUN_MODE,
+        "mode in which to start batfish",
+        Arrays.stream(RunMode.values())
+            .filter(v -> v != RunMode.WORKER)
+            .map(v -> v.toString())
+            .collect(Collectors.joining("|")));
 
     addOption(ARG_CLIENT_ARGS, "arguments for the client process", "client_args");
 
@@ -180,6 +190,9 @@ public class Settings extends BaseSettings {
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
     _batfishArgs = getStringOptionValue(ARG_BATFISH_ARGS);
     _batfishRunMode = RunMode.valueOf(getStringOptionValue(ARG_BATFISH_RUN_MODE).toUpperCase());
+    if (_batfishRunMode == RunMode.WORKER) {
+      throw new IllegalArgumentException("Cannot start batfish in worker mode");
+    }
     _clientArgs = getStringOptionValue(ARG_CLIENT_ARGS);
     _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
     _runClient = getBooleanOptionValue(ARG_RUN_CLIENT);

@@ -1,7 +1,9 @@
 package org.batfish.config;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.bdp.BdpSettings;
 import org.batfish.common.BaseSettings;
@@ -486,8 +488,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
   private static final String ARGNAME_AS = "as";
-
-  private static final String ARGNAME_ENUM = "enum";
 
   private static final String ARGNAME_HOSTNAME = "hostname";
 
@@ -1415,7 +1415,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS, "suppresses red-flag warnings");
 
-    addOption(ARG_RUN_MODE, "mode to run in (service|worker|watchdog)", ARGNAME_ENUM);
+    addOption(
+        ARG_RUN_MODE,
+        "mode to run in",
+        Arrays.stream(RunMode.values()).map(v -> v.toString()).collect(Collectors.joining("|")));
 
     addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 

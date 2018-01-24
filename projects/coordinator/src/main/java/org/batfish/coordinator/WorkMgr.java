@@ -1063,10 +1063,10 @@ public class WorkMgr extends AbstractCoordinator {
             killed = true;
           }
         } catch (IllegalStateException e) {
-          // can happen if the worker dies before we could finish reading; lets assume success
+          // can happen if the worker dies before we could finish reading; let's assume success
           _logger.infof("worker appears dead before response completion\n");
           Task fakeTask =
-              new Task(TaskStatus.TerminatedByUser, "Worker appears dead before responding");
+              new Task(TaskStatus.TerminatedByUser, "worker appears dead before responding");
           _workQueueMgr.processTaskCheckResult(work, fakeTask);
           killed = true;
         }

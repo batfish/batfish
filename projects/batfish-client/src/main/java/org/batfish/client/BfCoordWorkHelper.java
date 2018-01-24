@@ -770,8 +770,7 @@ public class BfCoordWorkHelper {
 
       return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
     } catch (Exception e) {
-      _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
       return false;
     }
   }

@@ -1083,6 +1083,11 @@ public class WorkQueueMgrTest {
     doAction(new Action(ActionType.QUEUE, work1));
     _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedByUser, "Fake"));
 
+    /*
+     * after processing the termination task,
+     *  1) the status of work should be terminatedbyuser
+     *  2) incomplete queue should be empty
+     */
     assertThat(work1.getStatus(), equalTo(WorkStatusCode.TERMINATEDBYUSER));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
   }
