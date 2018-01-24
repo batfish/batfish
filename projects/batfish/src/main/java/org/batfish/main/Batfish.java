@@ -1612,7 +1612,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public DataPlanePlugin getDataPlanePlugin() {
     DataPlanePlugin plugin = _dataPlanePlugins.get(_settings.getDataPlaneEngineName());
     if (plugin == null) {
-      throw new BatfishException("Dataplane engine is unavailable or unsupported");
+      throw new BatfishException(
+          String.format(
+              "Dataplane engine %s is unavailable or unsupported",
+              _settings.getDataPlaneEngineName()));
     }
     return plugin;
   }
