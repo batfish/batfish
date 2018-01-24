@@ -504,6 +504,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String EXECUTABLE_NAME = "batfish";
 
+  private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
+
   private TestrigSettings _activeTestrigSettings;
 
   private String _analysisName;
@@ -701,6 +703,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private boolean _verboseParse;
 
   private int _z3timeout;
+
+  private String _dataPlaneEngineName;
 
   public Settings() {
     this(new String[] {});
@@ -1114,6 +1118,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _z3timeout;
   }
 
+  public String getDataPlaneEngineName() {
+    return _dataPlaneEngineName;
+  }
+
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
@@ -1202,6 +1210,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
+    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "bdp");
   }
 
   private void initOptions() {
@@ -1482,6 +1491,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
 
     addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
+
+    addOption(
+        ARG_DATAPLANE_ENGINE_NAME,
+        "name of the dataplane generation engine to use.",
+        "dataplane engine name");
   }
 
   private void parseCommandLine(String[] args) {
@@ -1589,6 +1603,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _validateEnvironment = getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
     _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
     _z3timeout = getIntegerOptionValue(ARG_Z3_TIMEOUT);
+    _dataPlaneEngineName = getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
   }
 
   public boolean prettyPrintAnswer() {
@@ -1761,5 +1776,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setZ3Timeout(int z3Timeout) {
     _z3timeout = z3Timeout;
+  }
+
+  public void setDataplaneEngineName(String name) {
+    _dataPlaneEngineName = name;
   }
 }
