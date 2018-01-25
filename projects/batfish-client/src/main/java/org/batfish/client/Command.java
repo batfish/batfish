@@ -55,6 +55,7 @@ public enum Command {
   LIST_QUESTIONS("list-questions"),
   LIST_TESTRIGS("list-testrigs"),
   LOAD_QUESTIONS("load-questions"),
+  POLL_WORK("poll-work"),
   PROMPT("prompt"),
   PWD("pwd"),
   QUIT("quit"),
@@ -69,6 +70,7 @@ public enum Command {
   SET_DELTA_ENV("set-delta-environment"),
   SET_DELTA_TESTRIG("set-delta-testrig"),
   SET_ENV("set-environment"),
+  SET_FIXED_WORKITEM_ID("set-fixed-workitem-id"),
   SET_LOGLEVEL("set-loglevel"),
   SET_PRETTY_PRINT("set-pretty-print"),
   SET_TESTRIG("set-testrig"),
@@ -266,6 +268,7 @@ public enum Command {
             "Load questions from local directory, -loadremote loads questions from coordinator, "
                 + "if both are specified, questions from local directory overwrite the remote "
                 + "questions"));
+    descs.put(POLL_WORK, new Pair<>("<guid>", "Poll work with the given GUID until done"));
     descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
     descs.put(PWD, new Pair<>("", "Prints the working directory"));
     descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
@@ -287,6 +290,9 @@ public enum Command {
         SET_DELTA_TESTRIG,
         new Pair<>("<testrig-name> [environment name]", "Set the delta testrig"));
     descs.put(SET_ENV, new Pair<>("<environment-name>", "Set the current base environment"));
+    descs.put(
+        SET_FIXED_WORKITEM_ID,
+        new Pair<>("<uuid>", "Fix the UUID for WorkItems. Useful for testing; use carefully"));
     descs.put(
         SET_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the client loglevel. Default is output"));

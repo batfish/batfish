@@ -955,7 +955,7 @@ public class Client extends AbstractClient implements IClient {
 
     if (!_backgroundExecution) {
       _polledWorkItem = wItem;
-      result = pollWork(wItem, outWriter);
+      result = pollWorkAndGetAnswer(wItem, outWriter);
       _polledWorkItem = null;
     }
 
@@ -1386,7 +1386,8 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean getWorkStatus(List<String> options, List<String> parameters) {
+  private boolean getWorkStatus(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.GET_WORK_STATUS)) {
       return false;
     }
@@ -1399,6 +1400,8 @@ public class Client extends AbstractClient implements IClient {
     }
 
     printWorkStatusResponse(response, true);
+
+    logOutput(outWriter, "status: " + response.getFirst());
 
     return true;
   }
@@ -2238,14 +2241,23 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean pollWork(WorkItem wItem, @Nullable FileWriter outWriter) {
+  private boolean pollWork(
+      @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.POLL_WORK)) {
+      return false;
+    }
+    UUID workId = UUID.fromString(parameters.get(0));
+    return pollWork(workId, outWriter);
+  }
+
+  private boolean pollWork(UUID wItemId, @Nullable FileWriter outWriter) {
 
     Pair<WorkStatusCode, String> response;
     try (ActiveSpan workStatusSpan =
         GlobalTracer.get().buildSpan("Waiting for work status").startActive()) {
       assert workStatusSpan != null; // avoid unused warning
       // Poll the work item until it finishes or fails.
-      response = _workHelper.getWorkStatus(wItem.getId());
+      response = _workHelper.getWorkStatus(wItemId);
       if (response == null) {
         return false;
       }
@@ -2259,13 +2271,22 @@ public class Client extends AbstractClient implements IClient {
         } catch (InterruptedException e) {
           throw new BatfishException("Interrupted while waiting for work item to complete", e);
         }
-        response = _workHelper.getWorkStatus(wItem.getId());
+        response = _workHelper.getWorkStatus(wItemId);
         if (response == null) {
           return false;
         }
         status = response.getFirst();
       }
       printWorkStatusResponse(response, false);
+    }
+    return true;
+  }
+
+  private boolean pollWorkAndGetAnswer(WorkItem wItem, @Nullable FileWriter outWriter) {
+
+    boolean pollResult = pollWork(wItem.getId(), outWriter);
+    if (!pollResult) {
+      return false;
     }
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
@@ -2330,11 +2351,7 @@ public class Client extends AbstractClient implements IClient {
         CommonUtil.outputFileLines(downloadedFile, _logger::output);
       }
     }
-    if (response.getFirst() == WorkStatusCode.TERMINATEDNORMALLY) {
-      return true;
-    } else {
-      return false;
-    }
+    return true;
   }
 
   private void printUsage() {
@@ -2493,7 +2510,7 @@ public class Client extends AbstractClient implements IClient {
       case GET_QUESTION_TEMPLATES:
         return getQuestionTemplates(options, parameters);
       case GET_WORK_STATUS:
-        return getWorkStatus(options, parameters);
+        return getWorkStatus(outWriter, options, parameters);
       case HELP:
         return help(options, parameters);
       case INIT_ANALYSIS:
@@ -2522,6 +2539,8 @@ public class Client extends AbstractClient implements IClient {
         return listTestrigs(outWriter, options, parameters);
       case LOAD_QUESTIONS:
         return loadQuestions(outWriter, options, parameters, _bfq);
+      case POLL_WORK:
+        return pollWork(outWriter, options, parameters);
       case PROMPT:
         return prompt(options, parameters);
       case PWD:
@@ -2546,6 +2565,8 @@ public class Client extends AbstractClient implements IClient {
         return setDeltaEnv(options, parameters);
       case SET_ENV:
         return setEnv(options, parameters);
+      case SET_FIXED_WORKITEM_ID:
+        return setFixedWorkItemId(options, parameters);
       case SET_DELTA_TESTRIG:
         return setDeltaTestrig(options, parameters);
       case SET_LOGLEVEL:
@@ -2868,6 +2889,16 @@ public class Client extends AbstractClient implements IClient {
     }
     _currEnv = parameters.get(0);
     _logger.outputf("Base testrig->env is now %s->%s\n", _currTestrig, _currEnv);
+    return true;
+  }
+
+  private boolean setFixedWorkItemId(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, 1, Command.SET_FIXED_WORKITEM_ID)) {
+      return false;
+    }
+    UUID uuid = UUID.fromString(parameters.get(0));
+    WorkItem.setFixedUuid(uuid);
+    _logger.outputf("Fixed WorkItem UUID to %s\n", uuid);
     return true;
   }
 

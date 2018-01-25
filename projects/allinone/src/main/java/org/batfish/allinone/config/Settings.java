@@ -119,7 +119,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
     setDefaultProperty(ARG_BATFISH_ARGS, "");
-    setDefaultProperty(ARG_BATFISH_RUN_MODE, RunMode.WATCHDOG.toString());
+    setDefaultProperty(ARG_BATFISH_RUN_MODE, RunMode.WORKSERVICE.toString());
     setDefaultProperty(ARG_CLIENT_ARGS, "");
     setDefaultProperty(ARG_COORDINATOR_ARGS, "");
     setDefaultProperty(ARG_RUN_CLIENT, true);
