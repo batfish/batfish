@@ -2,10 +2,10 @@
   "answerElements" : [
     {
       "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
-      "roleConsistencyPolicies" : [
+      "roleConsistencyQuestions" : [
         {
-          "hypothesis" : "sameServers",
-          "name" : "LoggingServers",
+          "differential" : false,
+          "propertyName" : "LoggingServers",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -32,8 +32,8 @@
           }
         },
         {
+          "differential" : false,
           "hypothesis" : "sameName",
-          "name" : "CommunityList",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -57,11 +57,12 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "CommunityList"
         },
         {
+          "differential" : false,
           "hypothesis" : "sameName",
-          "name" : "Interface",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -85,11 +86,12 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "Interface"
         },
         {
+          "differential" : false,
           "hypothesis" : "sameName",
-          "name" : "IpAccessList",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -113,11 +115,12 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "IpAccessList"
         },
         {
+          "differential" : false,
           "hypothesis" : "sameName",
-          "name" : "RouteFilterList",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -141,11 +144,12 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "RouteFilterList"
         },
         {
+          "differential" : false,
           "hypothesis" : "sameName",
-          "name" : "Vrf",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -169,11 +173,12 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "Vrf"
         },
         {
+          "differential" : false,
           "hypothesis" : "sameDefinition",
-          "name" : "CommunityList",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -197,11 +202,12 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "CommunityList"
         },
         {
+          "differential" : false,
           "hypothesis" : "sameDefinition",
-          "name" : "IpAccessList",
           "roleSpecifier" : {
             "inferred" : false,
             "roleMap" : {
@@ -225,7 +231,8 @@
               "[a-z]*\\d([a-z]+).*",
               "([a-z]+)\\d"
             ]
-          }
+          },
+          "structType" : "IpAccessList"
         }
       ]
     }

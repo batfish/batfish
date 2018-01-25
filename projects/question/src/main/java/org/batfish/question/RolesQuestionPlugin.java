@@ -29,7 +29,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
     private Set<String> _nodes;
 
-    public RolesAnswerElement() {}
+    public RolesAnswerElement() {
+      _nodes = new TreeSet<>();
+    }
 
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public NodeRoleSpecifier getRoleSpecifier() {
