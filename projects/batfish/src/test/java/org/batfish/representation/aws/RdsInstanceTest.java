@@ -16,17 +16,19 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -100,36 +102,21 @@ public class RdsInstanceTest {
   @Test
   public void testUniqueIps() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
-    assertThat(configurations, hasKey("test-instance"));
-    assertThat(configurations, hasKey("test-rds"));
-    Set<Ip> ips = new HashSet<>();
-    configurations
-        .get("test-instance")
-        .getInterfaces()
-        .values()
-        .forEach(
-            intfc ->
-                ips.addAll(
-                    intfc
-                        .getAllAddresses()
-                        .stream()
-                        .map(interfaceAddress -> interfaceAddress.getIp())
-                        .collect(Collectors.toSet())));
-    configurations
-        .get("test-rds")
-        .getInterfaces()
-        .values()
-        .forEach(
-            intfc ->
-                ips.addAll(
-                    intfc
-                        .getAllAddresses()
-                        .stream()
-                        .map(interfaceAddress -> interfaceAddress.getIp())
-                        .collect(Collectors.toSet())));
 
     // check that  IPs are unique for all the interfaces
-    assertThat(ips, hasSize(3));
+    List<Ip> ipsAsList =
+        configurations
+            .values()
+            .stream()
+            .map(Configuration::getInterfaces)
+            .map(Map::values)
+            .flatMap(Collection::stream)
+            .map(Interface::getAllAddresses)
+            .flatMap(Collection::stream)
+            .map(InterfaceAddress::getIp)
+            .collect(ImmutableList.toImmutableList());
+    Set<Ip> ipsAsSet = ImmutableSet.copyOf(ipsAsList);
+    assertThat(ipsAsList, hasSize(ipsAsSet.size()));
   }
 
   @Test
