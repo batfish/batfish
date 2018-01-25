@@ -1,7 +1,11 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
+import static org.batfish.representation.aws.matchers.SubnetMatchers.hasCidrBlock;
+import static org.batfish.representation.aws.matchers.SubnetMatchers.hasId;
+import static org.batfish.representation.aws.matchers.SubnetMatchers.hasVpcId;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import java.util.LinkedList;
@@ -33,19 +37,19 @@ public class SubnetTest {
   @Test
   public void testSubnet() throws JSONException {
     // checking the count of subnets initialized
-    assertThat(_subnetList.size(), equalTo(1));
+    assertThat(_subnetList, hasSize(1));
 
     // checking the different attributes of subnet
     Subnet subnet = _subnetList.get(0);
-    assertThat(subnet.getCidrBlock(), equalTo(Prefix.parse("172.31.0.0/20")));
-    assertThat(subnet.getId(), equalTo("subnet-1"));
-    assertThat(subnet.getVpcId(), equalTo("vpc-1"));
+    assertThat(subnet, hasCidrBlock(Prefix.parse("172.31.0.0/20")));
+    assertThat(subnet, hasId("subnet-1"));
+    assertThat(subnet, hasVpcId("vpc-1"));
   }
 
   @Test
   public void testGetNextIp() {
     // checking the count of subnets initialized
-    assertThat(_subnetList.size(), equalTo(1));
+    assertThat(_subnetList, hasSize(1));
 
     // test getNextIp()
     Subnet subnet = _subnetList.get(0);

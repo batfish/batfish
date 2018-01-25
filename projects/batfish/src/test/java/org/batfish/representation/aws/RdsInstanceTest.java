@@ -1,6 +1,13 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasAvailabilityZone;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasAzSubnetIds;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasDbInstanceStatus;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasId;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasMultiAz;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasSecurityGroups;
+import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasVpcId;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -35,14 +42,14 @@ public class RdsInstanceTest {
     RdsInstance rdsInstance = rdsList.get(0);
 
     // checking the attributes of this RDS instance
-    assertThat(rdsInstance.getId(), equalTo("test-db"));
-    assertThat(rdsInstance.getDbInstanceStatus(), equalTo(Status.AVAILABLE));
-    assertThat(rdsInstance.getAvailabilityZone(), equalTo("us-west-2b"));
+    assertThat(rdsInstance, hasId("test-db"));
+    assertThat(rdsInstance, hasDbInstanceStatus(Status.AVAILABLE));
+    assertThat(rdsInstance, hasAvailabilityZone("us-west-2b"));
     Multimap<String, String> testMap = ArrayListMultimap.create();
     testMap.put("us-west-2b", "subnet-1");
-    assertThat(rdsInstance.getAzSubnetIds(), equalTo(testMap));
-    assertThat(rdsInstance.getSecurityGroups(), equalTo(ImmutableList.of("sg-12345")));
-    assertThat(rdsInstance.getMultiAz(), equalTo(false));
-    assertThat(rdsInstance.getVpcId(), equalTo("vpc-1"));
+    assertThat(rdsInstance, hasAzSubnetIds(testMap));
+    assertThat(rdsInstance, hasSecurityGroups(ImmutableList.of("sg-12345")));
+    assertThat(rdsInstance, hasMultiAz(false));
+    assertThat(rdsInstance, hasVpcId("vpc-1"));
   }
 }

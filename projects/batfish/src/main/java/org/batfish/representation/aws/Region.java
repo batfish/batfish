@@ -4,12 +4,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
@@ -245,7 +245,7 @@ public class Region implements Serializable {
   public void toConfigurationNodes(
       AwsConfiguration awsConfiguration, Map<String, Configuration> configurationNodes) {
 
-    // updating the list of allocated IPs in the subnet
+    // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
 
     for (Vpc vpc : getVpcs().values()) {
@@ -301,21 +301,20 @@ public class Region implements Serializable {
     }
   }
 
-  // updates the Ips which have been allocated already in the subnet
   private void updateAllocatedIps() {
     _networkInterfaces
         .values()
-        .stream()
         .forEach(
-            networkInterface -> {
-              Set<Long> privateIpsLong =
-                  networkInterface
-                      .getIpAddressAssociations()
-                      .keySet()
-                      .stream()
-                      .map(ip -> ip.asLong())
-                      .collect(Collectors.toSet());
-              _subnets.get(networkInterface.getSubnetId()).getAllocatedIps().addAll(privateIpsLong);
-            });
+            networkInterface ->
+                _subnets
+                    .get(networkInterface.getSubnetId())
+                    .getAllocatedIps()
+                    .addAll(
+                        networkInterface
+                            .getIpAddressAssociations()
+                            .keySet()
+                            .stream()
+                            .map(Ip::asLong)
+                            .collect(Collectors.toSet())));
   }
 }

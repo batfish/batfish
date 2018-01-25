@@ -29,6 +29,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   private transient String _internetGatewayId;
 
+  private long _lastGeneratedIp;
+
   private String _subnetId;
 
   private String _vpcId;
@@ -39,6 +41,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
     _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+    // skipping (startIp+1) as it is used as the default gateway for instances in this subnet
+    _lastGeneratedIp = _cidrBlock.getStartIp().asLong() + 1;
   }
 
   public Set<Long> getAllocatedIps() {
@@ -46,12 +50,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   Ip getNextIp() {
-    // skipping (startIp+1) as it is used as the default gateway for instances in this subnet
-    for (Long ipAsLong = _cidrBlock.getStartIp().asLong() + 2;
+    for (Long ipAsLong = _lastGeneratedIp + 1;
         ipAsLong < _cidrBlock.getEndIp().asLong();
         ipAsLong++) {
       if (!_allocatedIps.contains(ipAsLong)) {
         _allocatedIps.add(ipAsLong);
+        _lastGeneratedIp = ipAsLong;
         return new Ip(ipAsLong);
       }
     }
@@ -62,6 +66,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   Ip computeInstancesIfaceIp() {
     Long generatedIp = _cidrBlock.getStartIp().asLong() + 1L;
     _allocatedIps.add(generatedIp);
+    _lastGeneratedIp = generatedIp;
     return new Ip(generatedIp);
   }
 
