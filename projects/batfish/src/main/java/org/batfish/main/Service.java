@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -13,6 +14,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Task;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -58,10 +60,26 @@ public class Service {
 
       Task task = Driver.getTaskFromLog(taskId);
       if (task == null) {
-        task = new Task(null);
-        task.setStatus(TaskStatus.Unknown);
+        task = new Task(TaskStatus.Unknown);
       }
-      String taskStr = task.updateAndWrite();
+      String taskStr = new BatfishObjectMapper().writeValueAsString(task);
+      return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
+    } catch (Exception e) {
+      return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));
+    }
+  }
+
+  @GET
+  @Path(BfConsts.SVC_KILL_TASK_RSC)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray killTask(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
+    _logger.info("BFS:killTask " + taskId + "\n");
+    try {
+      if (Strings.isNullOrEmpty(taskId)) {
+        return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
+      }
+      Task task = Driver.killTask(taskId);
+      String taskStr = new BatfishObjectMapper().writeValueAsString(task);
       return new JSONArray(Arrays.asList(BfConsts.SVC_SUCCESS_KEY, taskStr));
     } catch (Exception e) {
       return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, e.getMessage()));

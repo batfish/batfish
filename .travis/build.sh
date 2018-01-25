@@ -34,9 +34,12 @@ allinone -cmdfile tests/aws/commands || exit 1
 echo -e "\n  ..... Running java-smt client tests"
 allinone -cmdfile tests/java-smt/commands || exit 1
 
+echo -e "\n  ..... Running watchdog tests"
+allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit 1
+
 #Test running separately
 coordinator &
-batfish -servicemode -register -coordinatorhost localhost -loglevel output &
+batfish -runmode workservice -register -coordinatorhost localhost -loglevel output &
 
 echo -e "\n  ..... Running java demo tests"
 if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then

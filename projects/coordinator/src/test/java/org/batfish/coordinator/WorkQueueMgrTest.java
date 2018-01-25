@@ -95,29 +95,25 @@ public class WorkQueueMgrTest {
         break;
       case STATUS_INPROGRESS:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.InProgress);
+          Task task = new Task(TaskStatus.InProgress);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
       case STATUS_TERMINATED_ABNORMALLY:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.TerminatedAbnormally);
+          Task task = new Task(TaskStatus.TerminatedAbnormally);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
       case STATUS_TERMINATED_NORMALLY:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.TerminatedNormally);
+          Task task = new Task(TaskStatus.TerminatedNormally);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
       case STATUS_UNREACHABLE:
         {
-          Task task = new Task();
-          task.setStatus(TaskStatus.UnreachableOrBadResponse);
+          Task task = new Task(TaskStatus.UnreachableOrBadResponse);
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
@@ -1112,6 +1108,27 @@ public class WorkQueueMgrTest {
     QueuedWork aWork4 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork4));
 
+    assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
+  }
+
+  @Test
+  public void processTaskCheckTerminatedByUser() throws Exception {
+    initTestrigMetadata("testrig", "env_default", ProcessingStatus.UNINITIALIZED);
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env_default", WorkType.PARSING));
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedByUser, "Fake"));
+
+    /*
+     * after processing the termination task,
+     *  1) the status of work should be terminatedbyuser
+     *  2) incomplete queue should be empty
+     */
+    assertThat(work1.getStatus(), equalTo(WorkStatusCode.TERMINATEDBYUSER));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
   }
 }
