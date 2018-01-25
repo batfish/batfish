@@ -5,15 +5,13 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-import java.util.Set;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.function.Function;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -21,15 +19,17 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.RoleConsistencyPolicy;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.collections.OutlierSet;
 import org.batfish.datamodel.collections.RoleBasedOutlierSet;
+import org.batfish.datamodel.questions.IRoleConsistencyQuestion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin.NamedStructureRoleConsistencyQuestion;
 import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleAnswerElement;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleQuestion;
+import org.batfish.question.RoleConsistencyQuestionPlugin.RoleConsistencyQuestion;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -37,64 +37,74 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
   public static class InferPoliciesAnswerElement implements AnswerElement {
 
-    private static final String PROP_ROLE_CONSISTENCY_POLICIES = "roleConsistencyPolicies";
+    private static final String PROP_ROLE_CONSISTENCY_QUESTIONS = "roleConsistencyQuestions";
 
-    private List<RoleConsistencyPolicy> _roleConsistencyPolicies;
+    private List<IRoleConsistencyQuestion> _roleConsistencyQuestions;
 
     public InferPoliciesAnswerElement() {
-      _roleConsistencyPolicies = new LinkedList<>();
+      _roleConsistencyQuestions = new LinkedList<>();
     }
 
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for infer policies\n");
 
-      for (RoleConsistencyPolicy policy : _roleConsistencyPolicies) {
-        NodeRoleSpecifier specifier = policy.getNodeRoleSpecifier();
-        List<String> roleRegexes = specifier.getRoleRegexes();
-        SortedMap<String, SortedSet<String>> roleMap = specifier.getRoleMap();
+      for (IRoleConsistencyQuestion question : _roleConsistencyQuestions) {
 
         sb.append("Policy: nodes in the same role should have ");
-        switch (policy.getHypothesis()) {
+        switch (question.getHypothesis()) {
           case SAME_DEFINITION:
-            sb.append("the same definition for same-named structures of type " + policy.getName());
+            NamedStructureRoleConsistencyQuestion nsrcq =
+                (NamedStructureRoleConsistencyQuestion) question;
+            sb.append(
+                "the same definition for same-named structures of type " + nsrcq.getStructType());
             break;
           case SAME_NAME:
-            sb.append("same-named structures of type " + policy.getName());
+            NamedStructureRoleConsistencyQuestion nsrcq2 =
+                (NamedStructureRoleConsistencyQuestion) question;
+            sb.append("same-named structures of type " + nsrcq2.getStructType());
             break;
           case SAME_SERVERS:
-            sb.append("the same " + policy.getName());
+            RoleConsistencyQuestion rcq = (RoleConsistencyQuestion) question;
+            sb.append("the same " + rcq.getPropertyName());
             break;
           default:
-            throw new BatfishException("Unrecognized hypothesis " + policy.getHypothesis());
+            throw new BatfishException("Unrecognized hypothesis " + question.getHypothesis());
         }
         sb.append("\n");
-        sb.append("Role specifier:\n");
-        if (!roleRegexes.isEmpty()) {
-          sb.append("  Role regexes: \n");
-          for (String regex : roleRegexes) {
-            sb.append("    " + regex + "\n");
+        Optional<NodeRoleSpecifier> specifierOpt = question.getRoleSpecifier();
+        if (specifierOpt.isPresent()) {
+          NodeRoleSpecifier specifier = specifierOpt.get();
+          List<String> roleRegexes = specifier.getRoleRegexes();
+          SortedMap<String, SortedSet<String>> roleMap = specifier.getRoleMap();
+
+          sb.append("Role specifier:\n");
+          if (!roleRegexes.isEmpty()) {
+            sb.append("  Role regexes: \n");
+            for (String regex : roleRegexes) {
+              sb.append("    " + regex + "\n");
+            }
+          }
+          if (!roleMap.isEmpty()) {
+            sb.append("  Role map: \n");
+            for (Map.Entry<String, SortedSet<String>> entry : specifier.getRoleMap().entrySet()) {
+              sb.append("    " + entry + "\n");
+            }
           }
         }
-        if (!roleMap.isEmpty()) {
-          sb.append("  Role map: \n");
-          for (Map.Entry<String, SortedSet<String>> entry : specifier.getRoleMap().entrySet()) {
-            sb.append("    " + entry + "\n");
-          }
-        }
-        sb.append("\n\n");
       }
 
       return sb.toString();
     }
 
-    @JsonProperty(PROP_ROLE_CONSISTENCY_POLICIES)
-    public List<RoleConsistencyPolicy> getRoleConsistencyPolicies() {
-      return _roleConsistencyPolicies;
+    @JsonProperty(PROP_ROLE_CONSISTENCY_QUESTIONS)
+    public List<IRoleConsistencyQuestion> getRoleConsistencyQuestions() {
+      return _roleConsistencyQuestions;
     }
 
-    public void addRoleConsistencyPolicies(Set<RoleConsistencyPolicy> roleConsistencyPolicies) {
-      _roleConsistencyPolicies.addAll(roleConsistencyPolicies);
+    public void addRoleConsistencyQuestions(
+        List<IRoleConsistencyQuestion> roleConsistencyQuestions) {
+      _roleConsistencyQuestions.addAll(roleConsistencyQuestions);
     }
   }
 
@@ -115,16 +125,16 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
       _answerElement = new InferPoliciesAnswerElement();
 
-      _answerElement.addRoleConsistencyPolicies(serverConsistencyPolicies());
-      _answerElement.addRoleConsistencyPolicies(
+      _answerElement.addRoleConsistencyQuestions(serverConsistencyPolicies());
+      _answerElement.addRoleConsistencyQuestions(
           namedStructureConsistencyPolicies(OutliersHypothesis.SAME_NAME));
-      _answerElement.addRoleConsistencyPolicies(
+      _answerElement.addRoleConsistencyQuestions(
           namedStructureConsistencyPolicies(OutliersHypothesis.SAME_DEFINITION));
 
       return _answerElement;
     }
 
-    private SortedSet<RoleConsistencyPolicy> serverConsistencyPolicies() {
+    private List<IRoleConsistencyQuestion> serverConsistencyPolicies() {
 
       OutliersHypothesis hypothesis = OutliersHypothesis.SAME_SERVERS;
 
@@ -152,7 +162,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       return policiesAboveThreshold(outliersPerPropertyName, hypothesis);
     }
 
-    private SortedSet<RoleConsistencyPolicy> namedStructureConsistencyPolicies(
+    private List<IRoleConsistencyQuestion> namedStructureConsistencyPolicies(
         OutliersHypothesis hypothesis) {
 
       SortedMap<String, AnswerElement> roleAnswers = perRoleOutlierInfo(hypothesis);
@@ -206,18 +216,35 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       return outliersPerProperty;
     }
 
-    private <T extends RoleBasedOutlierSet> SortedSet<RoleConsistencyPolicy> policiesAboveThreshold(
+    private <T extends RoleBasedOutlierSet> List<IRoleConsistencyQuestion> policiesAboveThreshold(
         Multimap<String, T> outliersPerPropertyName, OutliersHypothesis hypothesis) {
       NodeRoleSpecifier nodeRoleSpecifier = _batfish.getNodeRoleSpecifier(false);
-      SortedSet<RoleConsistencyPolicy> policies =
-          new TreeSet<>(Comparator.comparing(RoleConsistencyPolicy::getName));
+      List<IRoleConsistencyQuestion> policies = new LinkedList<>();
       for (String name : outliersPerPropertyName.keySet()) {
         Collection<T> outlierSets = outliersPerPropertyName.get(name);
         int conformers = outlierSets.stream().mapToInt(oset -> oset.getConformers().size()).sum();
         int outliers = outlierSets.stream().mapToInt(oset -> oset.getOutliers().size()).sum();
         double all = (double) conformers + outliers;
         if (conformers / all >= CONFORMERS_THRESHOLD) {
-          policies.add(new RoleConsistencyPolicy(nodeRoleSpecifier, name, hypothesis));
+          switch (hypothesis) {
+            case SAME_DEFINITION:
+            case SAME_NAME:
+              NamedStructureRoleConsistencyQuestion policy =
+                  new NamedStructureRoleConsistencyQuestion();
+              policy.setHypothesis(hypothesis);
+              policy.setRoleSpecifier(nodeRoleSpecifier);
+              policy.setStructType(name);
+              policies.add(policy);
+              break;
+            case SAME_SERVERS:
+              RoleConsistencyQuestion rcpolicy = new RoleConsistencyQuestion();
+              rcpolicy.setRoleSpecifier(nodeRoleSpecifier);
+              rcpolicy.setPropertyName(name);
+              policies.add(rcpolicy);
+              break;
+            default:
+              throw new BatfishException("Unrecognized hypothesis " + hypothesis);
+          }
         }
       }
       return policies;
