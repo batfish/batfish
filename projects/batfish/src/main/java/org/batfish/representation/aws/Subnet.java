@@ -1,8 +1,10 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -21,9 +23,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private Set<Long> _allocatedIps = new HashSet<>();
+
   private Prefix _cidrBlock;
 
   private transient String _internetGatewayId;
+
+  private long _lastGeneratedIp;
 
   private String _subnetId;
 
@@ -35,10 +41,33 @@ public class Subnet implements AwsVpcEntity, Serializable {
     _cidrBlock = Prefix.parse(jObj.getString(JSON_KEY_CIDR_BLOCK));
     _subnetId = jObj.getString(JSON_KEY_SUBNET_ID);
     _vpcId = jObj.getString(JSON_KEY_VPC_ID);
+    // skipping (startIp+1) as it is used as the default gateway for instances in this subnet
+    _lastGeneratedIp = _cidrBlock.getStartIp().asLong() + 1;
+  }
+
+  public Set<Long> getAllocatedIps() {
+    return _allocatedIps;
+  }
+
+  Ip getNextIp() {
+    for (Long ipAsLong = _lastGeneratedIp + 1;
+        ipAsLong < _cidrBlock.getEndIp().asLong();
+        ipAsLong++) {
+      if (!_allocatedIps.contains(ipAsLong)) {
+        _allocatedIps.add(ipAsLong);
+        _lastGeneratedIp = ipAsLong;
+        return new Ip(ipAsLong);
+      }
+    }
+    // subnet's CIDR block out of IPs
+    throw new BatfishException(String.format("%s subnet ran out of IPs", _subnetId));
   }
 
   Ip computeInstancesIfaceIp() {
-    return new Ip(_cidrBlock.getStartIp().asLong() + 1L);
+    Long generatedIp = _cidrBlock.getStartIp().asLong() + 1L;
+    _allocatedIps.add(generatedIp);
+    _lastGeneratedIp = generatedIp;
+    return new Ip(generatedIp);
   }
 
   private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
