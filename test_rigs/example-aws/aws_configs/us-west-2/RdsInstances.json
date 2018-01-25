@@ -34,7 +34,7 @@
       "SubnetStatus": "Active"
      }
     ],
-    "VpcId": "vpc-1"
+    "VpcId": "vpc-b390fad5"
    },
    "DbInstancePort": 0,
    "DbiResourceId": "db-12345",
