@@ -40,6 +40,7 @@
   "question" : {
     "class" : "org.batfish.question.SmtDeterministicQuestionPlugin$DeterministicQuestion",
     "baseEnvType" : "any",
+    "benchmark" : false,
     "deltaEnvType" : "any",
     "differential" : false,
     "envDiff" : false,
@@ -47,7 +48,6 @@
     "fullModel" : false,
     "minimize" : false,
     "modelOverflow" : false,
-    "stats" : false,
     "useAbstraction" : false
   },
   "status" : "SUCCESS",
