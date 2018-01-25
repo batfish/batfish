@@ -352,16 +352,14 @@ public class Driver {
                       .toAbsolutePath()
                       .toString())
               .addAll(jvmArguments)
-              .addAll(
-                  Arrays.asList(
-                      "-cp",
-                      classPath,
-                      Driver.class.getCanonicalName(),
-                      // if we add runmode here, any runmode argument in mainArgs is ignored
-                      "-" + Settings.ARG_RUN_MODE,
-                      RunMode.WORKSERVICE.toString(),
-                      "-" + Settings.ARG_PARENT_PID,
-                      Integer.toString(myPid)))
+              .add("-cp")
+              .add(classPath)
+              .add(Driver.class.getCanonicalName())
+              // if we add runmode here, any runmode argument in mainArgs is ignored
+              .add("-" + Settings.ARG_RUN_MODE)
+              .add(RunMode.WORKSERVICE.toString())
+              .add("-" + Settings.ARG_PARENT_PID)
+              .add(Integer.toString(myPid))
               .addAll(Arrays.asList(_mainArgs))
               .build();
 
@@ -455,7 +453,7 @@ public class Driver {
       if (_mainSettings.getParentPid() > 0) {
         if (SystemUtils.IS_OS_WINDOWS) {
           _mainLogger.errorf(
-              "Parent process monitoring is not supported on Windows. Will live without it.");
+              "Parent process monitoring is not supported on Windows. We'll live without it.");
         } else {
           Executors.newScheduledThreadPool(1)
               .scheduleAtFixedRate(
