@@ -4288,16 +4288,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return p.checkReachability(q);
   }
 
-  /*
-  @Override
-  public AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex) {
-    Roles roles = Roles.create(this, nodeRegex);
-    return roles.asAnswer(t);
-    PropertyChecker p = new PropertyChecker(this);
-    return p.checkReachability(q);
-  }
-  */
-
   @Override
   public AnswerElement smtRoles(RoleQuestion q) {
     Roles roles = Roles.create(this, q.getDstIps(), new NodesSpecifier(q.getNodeRegex()));
