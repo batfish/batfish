@@ -399,7 +399,7 @@ public class WorkQueueMgr {
 
   public synchronized void processTaskCheckResult(QueuedWork work, Task task) throws Exception {
 
-    // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally,
+    // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally, TerminatedByUser
     // Unknown, UnreachableOrBadResponse}
 
     switch (task.getStatus()) {
@@ -410,14 +410,12 @@ public class WorkQueueMgr {
         break;
       case TerminatedNormally:
       case TerminatedAbnormally:
+      case TerminatedByUser:
         {
           // move the work to completed queue
           _queueIncompleteWork.delete(work);
           _queueCompletedWork.enque(work);
-          work.setStatus(
-              (task.getStatus() == TaskStatus.TerminatedNormally)
-                  ? WorkStatusCode.TERMINATEDNORMALLY
-                  : WorkStatusCode.TERMINATEDABNORMALLY);
+          work.setStatus(WorkStatusCode.fromTerminatedTaskStatus(task.getStatus()));
           work.recordTaskCheckResult(task);
 
           // update testrig metadata
@@ -466,8 +464,8 @@ public class WorkQueueMgr {
                 // put this work back on incomplete queue and process as if it terminatedabnormally
                 // people may be checking its status and this work may be blocking others
                 _queueIncompleteWork.enque(requeueWork);
-                Task fakeTask = new Task();
-                fakeTask.setStatus(TaskStatus.TerminatedAbnormally);
+                Task fakeTask =
+                    new Task(TaskStatus.TerminatedAbnormally, "Couldn't requeue after unblocking");
                 processTaskCheckResult(requeueWork, fakeTask);
               }
             }

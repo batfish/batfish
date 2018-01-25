@@ -540,7 +540,9 @@ public class BfCoordWorkHelper {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetObject: Did not get an OK response\n");
+        _logger.debugf(
+            "GetObject: Did not get an OK response for %s -> %s->%s\n",
+            containerName, testrigName, objectName);
         return null;
       }
 
@@ -634,7 +636,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
+  public Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -642,7 +644,7 @@ public class BfCoordWorkHelper {
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, parseWorkUUID.toString());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
@@ -743,6 +745,33 @@ public class BfCoordWorkHelper {
         return false;
       }
       throw e;
+    }
+  }
+
+  public boolean killWork(UUID workId) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_KILL_WORK);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return false;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_RESULT)) {
+        _logger.errorf("result key not found in: %s\n", jObj);
+        return false;
+      }
+
+      return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      return false;
     }
   }
 

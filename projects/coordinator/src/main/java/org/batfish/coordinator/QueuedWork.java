@@ -74,6 +74,13 @@ public class QueuedWork {
   }
 
   public void setStatus(WorkStatusCode status) {
+    if (_status.isTerminated()) {
+      throw new IllegalStateException(
+          "Status of terminated work shouldn't be updated. Current: "
+              + _status
+              + ". Desired = "
+              + status);
+    }
     _status = status;
   }
 

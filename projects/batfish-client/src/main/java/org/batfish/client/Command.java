@@ -40,12 +40,14 @@ public enum Command {
   GET_OBJECT_DELTA("get-delta-object"),
   GET_QUESTION("get-question"),
   GET_QUESTION_TEMPLATES("get-question-templates"),
+  GET_WORK_STATUS("get-work-status"),
   HELP("help"),
   INIT_ANALYSIS("init-analysis"),
   INIT_CONTAINER("init-container"),
   INIT_DELTA_TESTRIG("init-delta-testrig"),
   INIT_ENVIRONMENT("init-environment"),
   INIT_TESTRIG("init-testrig"),
+  KILL_WORK("kill-work"),
   LIST_ANALYSES("list-analyses"),
   LIST_CONTAINERS("list-containers"),
   LIST_ENVIRONMENTS("list-environments"),
@@ -53,6 +55,7 @@ public enum Command {
   LIST_QUESTIONS("list-questions"),
   LIST_TESTRIGS("list-testrigs"),
   LOAD_QUESTIONS("load-questions"),
+  POLL_WORK("poll-work"),
   PROMPT("prompt"),
   PWD("pwd"),
   QUIT("quit"),
@@ -61,11 +64,13 @@ public enum Command {
   RUN_ANALYSIS("run-analysis"),
   RUN_ANALYSIS_DELTA("run-analysis-delta"),
   RUN_ANALYSIS_DIFFERENTIAL("run-analysis-differential"),
+  SET_BACKGROUND_EXECUCTION("set-background-execution"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_CONTAINER("set-container"),
   SET_DELTA_ENV("set-delta-environment"),
   SET_DELTA_TESTRIG("set-delta-testrig"),
   SET_ENV("set-environment"),
+  SET_FIXED_WORKITEM_ID("set-fixed-workitem-id"),
   SET_LOGLEVEL("set-loglevel"),
   SET_PRETTY_PRINT("set-pretty-print"),
   SET_TESTRIG("set-testrig"),
@@ -168,6 +173,7 @@ public enum Command {
     descs.put(GET_OBJECT_DELTA, new Pair<>("<object path>", "Get the object from delta testrig"));
     descs.put(GET_QUESTION, new Pair<>("<question-name>", "Get the question and parameter files"));
     descs.put(GET_QUESTION_TEMPLATES, new Pair<>("", "Get question templates from coordinator"));
+    descs.put(GET_WORK_STATUS, new Pair<>("<work-id>", "Get the status of the specified work id"));
     descs.put(HELP, new Pair<>("[command]", "Print the list of supported commands"));
     descs.put(
         INIT_ANALYSIS,
@@ -242,6 +248,7 @@ public enum Command {
         new Pair<>(
             "[-autoanalyze] <testrig zipfile or directory> [<testrig-name>]",
             "Initialize the testrig with default environment"));
+    descs.put(KILL_WORK, new Pair<>("<guid>", "Kill work with the given GUID"));
     descs.put(LIST_ANALYSES, new Pair<>("", "List the analyses and their configuration"));
     descs.put(LIST_CONTAINERS, new Pair<>("", "List the containers to which you have access"));
     descs.put(
@@ -261,6 +268,7 @@ public enum Command {
             "Load questions from local directory, -loadremote loads questions from coordinator, "
                 + "if both are specified, questions from local directory overwrite the remote "
                 + "questions"));
+    descs.put(POLL_WORK, new Pair<>("<guid>", "Poll work with the given GUID until done"));
     descs.put(PROMPT, new Pair<>("", "Prompts for user to press enter"));
     descs.put(PWD, new Pair<>("", "Prints the working directory"));
     descs.put(QUIT, new Pair<>("", "Terminate interactive client session"));
@@ -271,6 +279,9 @@ public enum Command {
     descs.put(
         RUN_ANALYSIS, new Pair<>("<analysis-name>", "Run the (previously configured) analysis"));
     descs.put(
+        SET_BACKGROUND_EXECUCTION,
+        new Pair<>("<true|false>", "Whether to wait for commands to finish before returning"));
+    descs.put(
         SET_BATFISH_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the batfish loglevel. Default is warn"));
     descs.put(SET_CONTAINER, new Pair<>("<container-name>", "Set the current container"));
@@ -279,6 +290,9 @@ public enum Command {
         SET_DELTA_TESTRIG,
         new Pair<>("<testrig-name> [environment name]", "Set the delta testrig"));
     descs.put(SET_ENV, new Pair<>("<environment-name>", "Set the current base environment"));
+    descs.put(
+        SET_FIXED_WORKITEM_ID,
+        new Pair<>("<uuid>", "Fix the UUID for WorkItems. Useful for testing; use carefully"));
     descs.put(
         SET_LOGLEVEL,
         new Pair<>("<debug|info|output|warn|error>", "Set the client loglevel. Default is output"));
