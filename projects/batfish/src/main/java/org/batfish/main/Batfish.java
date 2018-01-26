@@ -43,7 +43,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -623,10 +622,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
 
     Pattern aclNameRegex;
@@ -2619,10 +2614,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
     Map<String, Configuration> configurations = loadConfigurations();
@@ -2931,10 +2922,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement pathDiff(HeaderSpace headerSpace) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3410,10 +3397,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement reducedReachability(
       HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -4201,10 +4184,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
     Map<String, Configuration> configurations = loadConfigurations();
