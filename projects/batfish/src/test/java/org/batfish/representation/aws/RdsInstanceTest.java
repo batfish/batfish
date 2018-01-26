@@ -73,7 +73,7 @@ public class RdsInstanceTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText("org/batfish/representation/aws/rds-instance", awsFilenames)
+                .setAwsText("org/batfish/representation/aws/testrigs", awsFilenames)
                 .build(),
             _folder);
     return batfish.loadConfigurations();
