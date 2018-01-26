@@ -208,12 +208,12 @@ public class Region implements Serializable {
     return _networkInterfaces;
   }
 
-  public Map<String, RouteTable> getRouteTables() {
-    return _routeTables;
-  }
-
   public Map<String, RdsInstance> getRdsInstances() {
     return _rdsInstances;
+  }
+
+  public Map<String, RouteTable> getRouteTables() {
+    return _routeTables;
   }
 
   public Map<String, SecurityGroup> getSecurityGroups() {
