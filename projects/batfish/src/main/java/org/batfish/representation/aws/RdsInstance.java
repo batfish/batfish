@@ -65,6 +65,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     return serialVersionUID;
   }
 
+  @Override
   public String getId() {
     return _dbInstanceIdentifier;
   }

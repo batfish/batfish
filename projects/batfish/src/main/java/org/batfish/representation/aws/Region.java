@@ -24,8 +24,6 @@ public class Region implements Serializable {
 
   private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
 
-  private Map<String, RdsInstance> _rdsInstances = new HashMap<>();
-
   private Map<String, Instance> _instances = new HashMap<>();
 
   private Map<String, InternetGateway> _internetGateways = new HashMap<>();
@@ -37,6 +35,8 @@ public class Region implements Serializable {
   private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
 
   private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
+
+  private Map<String, RdsInstance> _rdsInstances = new HashMap<>();
 
   private Map<String, RouteTable> _routeTables = new HashMap<>();
 
@@ -195,12 +195,12 @@ public class Region implements Serializable {
     return _networkInterfaces;
   }
 
-  public Map<String, RouteTable> getRouteTables() {
-    return _routeTables;
-  }
-
   public Map<String, RdsInstance> getRdsInstances() {
     return _rdsInstances;
+  }
+
+  public Map<String, RouteTable> getRouteTables() {
+    return _routeTables;
   }
 
   public Map<String, SecurityGroup> getSecurityGroups() {
