@@ -16,6 +16,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET = "CidrBlockAssociationSet";
   String JSON_KEY_CIDR_IP = "CidrIp";
   String JSON_KEY_CODE = "Code";
+  String JSON_KEY_CREATED = "Created";
   String JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION = "CustomerGatewayConfiguration";
   String JSON_KEY_CUSTOMER_GATEWAY_ID = "CustomerGatewayId";
   String JSON_KEY_CUSTOMER_GATEWAYS = "CustomerGateways";
@@ -23,8 +24,11 @@ public interface AwsVpcEntity {
   String JSON_KEY_DB_INSTANCE_IDENTIFIER = "DBInstanceIdentifier";
   String JSON_KEY_DB_INSTANCE_STATUS = "DBInstanceStatus";
   String JSON_KEY_DB_SUBNET_GROUP = "DBSubnetGroup";
+  String JSON_KEY_DELETED = "Deleted";
   String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
   String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
+  String JSON_KEY_DOMAIN_NAME = "DomainName";
+  String JSON_KEY_DOMAIN_STATUS_LIST = "DomainStatusList";
   String JSON_KEY_EGRESS = "Egress";
   String JSON_KEY_ENTRIES = "Entries";
   String JSON_KEY_FROM = "From";
@@ -70,6 +74,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_RULE_ACTION = "RuleAction";
   String JSON_KEY_RULE_NUMBER = "RuleNumber";
   String JSON_KEY_SECURITY_GROUPS = "SecurityGroups";
+  String JSON_KEY_SECURITY_GROUP_IDS = "SecurityGroupIds";
   String JSON_KEY_SERVICE_NAMES = "ServiceNames";
   String JSON_KEY_STATE = "State";
   String JSON_KEY_STATIC_ROUTES_ONLY = "StaticRoutesOnly";
@@ -77,6 +82,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_STATUS_MESSAGE = "StatusMessage";
   String JSON_KEY_SUBNET_AVAILABILITY_ZONE = "SubnetAvailabilityZone";
   String JSON_KEY_SUBNET_ID = "SubnetId";
+  String JSON_KEY_SUBNET_IDS = "SubnetIds";
   String JSON_KEY_SUBNET_IDENTIFIER = "SubnetIdentifier";
   String JSON_KEY_SUBNET_STATUS = "SubnetStatus";
   String JSON_KEY_SUBNETS = "Subnets";
@@ -87,6 +93,8 @@ public interface AwsVpcEntity {
   String JSON_KEY_VGW_TELEMETRY = "VgwTelemetry";
   String JSON_KEY_VPC_ATTACHMENTS = "VpcAttachments";
   String JSON_KEY_VPC_ID = "VpcId";
+  String JSON_KEY_ES_VPC_ID = "VPCId";
+  String JSON_KEY_VPC_OPTIONS = "VPCOptions";
   String JSON_KEY_VPC_PEERING_CONNECTION_ID = "VpcPeeringConnectionId";
   String JSON_KEY_VPC_PEERING_CONNECTIONS = "VpcPeeringConnections";
   String JSON_KEY_VPC_SECURITY_GROUPS = "VpcSecurityGroups";
