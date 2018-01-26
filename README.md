@@ -1,7 +1,5 @@
 
-## **NEW** 
-
-You can stay in touch via Slack: [batfish-org.slack.com](https://batfish-org.slack.com)
+**NEW**: Stay in touch via Slack: [batfish-org.slack.com](https://batfish-org.slack.com)
 
 ## What is Batfish?
 
