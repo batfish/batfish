@@ -47,6 +47,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -534,7 +535,7 @@ class TransferSSA {
           throw new BatfishException(
               "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
       }
-    } else if (expr instanceof MatchTag) {
+    } else if (expr instanceof MatchTag || expr instanceof MatchAsPath) {
       // TODO: implement me
       p.debug("MatchTag");
       TransferResult<BoolExpr, BoolExpr> result = new TransferResult<>();
