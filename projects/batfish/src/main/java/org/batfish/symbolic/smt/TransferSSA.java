@@ -750,19 +750,23 @@ class TransferSSA {
     if (result.isChanged("OSPF-TYPE")) {
       type = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
     } else {
-      boolean hasAreaIface = _iface.getOspfAreaName() != null;
-      boolean hasArea = p.getData().getOspfArea() != null;
-      boolean hasType = p.getData().getOspfType() != null;
-      boolean areaPossiblyChanged = hasType && hasArea && hasAreaIface;
-      // Check if area changed
-      if (areaPossiblyChanged) {
-        BoolExpr internal = p.getData().getOspfType().isInternal();
-        BoolExpr same = p.getData().getOspfArea().checkIfValue(_iface.getOspfAreaName());
-        BoolExpr update = _enc.mkAnd(internal, _enc.mkNot(same));
-        BoolExpr copyOld = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
-        type = _enc.mkIf(update, _current.getOspfType().checkIfValue(OspfType.OIA), copyOld);
+      if (_current.getOspfType() == null) {
+        type = _enc.mkTrue();
       } else {
-        type = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
+        boolean hasAreaIface = _iface.getOspfAreaName() != null;
+        boolean hasArea = p.getData().getOspfArea() != null;
+        boolean hasType = p.getData().getOspfType() != null;
+        boolean areaPossiblyChanged = hasType && hasArea && hasAreaIface;
+        // Check if area changed
+        if (areaPossiblyChanged) {
+          BoolExpr internal = p.getData().getOspfType().isInternal();
+          BoolExpr same = p.getData().getOspfArea().checkIfValue(_iface.getOspfAreaName());
+          BoolExpr update = _enc.mkAnd(internal, _enc.mkNot(same));
+          BoolExpr copyOld = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
+          type = _enc.mkIf(update, _current.getOspfType().checkIfValue(OspfType.OIA), copyOld);
+        } else {
+          type = _enc.safeEqEnum(_current.getOspfType(), p.getData().getOspfType());
+        }
       }
     }
 
