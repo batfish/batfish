@@ -53,6 +53,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -64,6 +65,7 @@ import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -532,6 +534,11 @@ class TransferSSA {
           throw new BatfishException(
               "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
       }
+    } else if (expr instanceof MatchTag) {
+      // TODO: implement me
+      p.debug("MatchTag");
+      TransferResult<BoolExpr, BoolExpr> result = new TransferResult<>();
+      return result.setReturnValue(_enc.mkFalse());
     }
 
     String s = (_isExport ? "export" : "import");
@@ -1167,6 +1174,19 @@ class TransferSSA {
         p.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
         Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, ac.getExpr());
+        for (CommunityVar cvar : comms) {
+          BoolExpr newValue = _enc.mkIf(result.getReturnAssignedValue(),
+              p.getData().getCommunities().get(cvar),
+              _enc.mkTrue());
+          BoolExpr x = createBoolVariableWith(p, cvar.getValue(), newValue);
+          p.getData().getCommunities().put(cvar, x);
+          result = result.addChangedVariable(cvar.getValue(), x);
+        }
+
+      } else if (stmt instanceof SetCommunity) {
+        p.debug("SetCommunity");
+        SetCommunity sc = (SetCommunity) stmt;
+        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
           BoolExpr newValue =
               _enc.mkIf(
