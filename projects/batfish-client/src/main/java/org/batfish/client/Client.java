@@ -93,10 +93,13 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReader.Option;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.Terminal.Signal;
 import org.jline.terminal.TerminalBuilder;
@@ -500,7 +503,7 @@ public class Client extends AbstractClient implements IClient {
           _reader =
               LineReaderBuilder.builder()
                   .terminal(terminal)
-                  .completer(new CommandCompleter())
+                  .completer(new ArgumentCompleter(new CommandCompleter(), new NullCompleter()))
                   .build();
           Path historyPath = Paths.get(System.getenv(ENV_HOME), HISTORY_FILE);
           historyPath.toFile().createNewFile();
@@ -2803,6 +2806,8 @@ public class Client extends AbstractClient implements IClient {
           continue;
         }
       }
+    } catch (EndOfFileException e) {
+      // ignored
     } catch (Throwable t) {
       t.printStackTrace();
     } finally {
