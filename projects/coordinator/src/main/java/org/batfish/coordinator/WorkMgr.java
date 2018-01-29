@@ -122,14 +122,13 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("Got exception in assignWork: " + stackTrace);
+      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
   }
 
   private void assignWork(QueuedWork work, String worker) {
 
-    _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
+    _logger.infof("WM:AssignWork: Trying to assign %s to %s\n", work, worker);
 
     boolean assignmentError = false;
     boolean assigned = false;
@@ -189,7 +188,7 @@ public class WorkMgr extends AbstractCoordinator {
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("WM:AssignWork: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);
@@ -255,19 +254,19 @@ public class WorkMgr extends AbstractCoordinator {
       for (QueuedWork work : workToCheck) {
         String assignedWorker = work.getAssignedWorker();
         if (assignedWorker == null) {
-          _logger.error("WM:CheckWork no assigned worker for " + work + "\n");
+          _logger.errorf("WM:CheckWork no assigned worker for %s\n", work);
           _workQueueMgr.makeWorkUnassigned(work);
           continue;
         }
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.error("Got exception in checkTasks: " + e.getMessage());
+      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
   }
 
   private void checkTask(QueuedWork work, String worker) {
-    _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
+    _logger.infof("WM:CheckWork: Trying to check %s on %s\n", work, worker);
 
     Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
@@ -303,7 +302,7 @@ public class WorkMgr extends AbstractCoordinator {
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("WM:CheckTask: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("WM:CheckTask: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);

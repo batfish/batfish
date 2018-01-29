@@ -135,18 +135,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
       @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
     try {
-      _logger.info(
-          "WMS:configureAnalysis "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + newAnalysisStr
-              + " "
-              + analysisName
-              + " "
-              + delQuestions
-              + "\n");
+      _logger.infof(
+          "WMS:configureAnalysis %s %s %s %s %s\n",
+          apiKey, containerName, newAnalysisStr, analysisName, delQuestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -440,16 +431,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
-      _logger.info(
-          "WMS:getAnalysisAnswers "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " "
-              + analysisName
-              + "\n");
+      _logger.infof(
+          "WMS:getAnalysisAnswers %s %s %s %s\n", apiKey, containerName, testrigName, analysisName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -527,16 +510,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
-      _logger.info(
-          "WMS:getAnswer "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " "
-              + questionName
-              + "\n");
+      _logger.infof(
+          "WMS:getAnswer %s %s %s %s\n", apiKey, containerName, testrigName, questionName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1386,8 +1361,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
     try {
-      _logger.info(
-          "WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " " + pluginId + "\n");
+      _logger.infof("WMS:syncTestrigsSyncNow %s %s %s\n", apiKey, containerName, pluginId);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1433,16 +1407,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
     try {
-      _logger.info(
-          "WMS:syncTestrigsUpdateSettings "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + pluginId
-              + " "
-              + settingsStr
-              + "\n");
+      _logger.infof(
+          "WMS:syncTestrigsUpdateSettings %s %s %s %s\n",
+          apiKey, containerName, pluginId, settingsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1525,16 +1492,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String envName,
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
     try {
-      _logger.info(
-          "WMS:uploadEnvironment "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " / "
-              + envName
-              + "\n");
+      _logger.infof(
+          "WMS:uploadEnvironment %s %s %s/%s\n", apiKey, containerName, testrigName, envName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1587,16 +1546,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_FILE2) InputStream paramFileStream) {
     try {
-      _logger.info(
-          "WMS:uploadQuestion "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " / "
-              + qName
-              + "\n");
+      _logger.infof("WMS:uploadQuestion %s %s %s/%s\n", apiKey, containerName, testrigName, qName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
