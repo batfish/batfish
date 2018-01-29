@@ -20,7 +20,7 @@ public class CommandCompleter implements Completer {
 
   @Override
   public void complete(LineReader lineReader, ParsedLine parsedLine, List<Candidate> candidates) {
-    String buffer = parsedLine.line().trim();
+    String buffer = parsedLine.word().trim();
 
     if (Strings.isNullOrEmpty(buffer)) {
       candidates.addAll(
