@@ -51,7 +51,7 @@ public class Service {
   @Path(BfConsts.SVC_GET_TASKSTATUS_RSC)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getTaskStatus(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
-    _logger.info("BFS:getTaskStatus " + taskId + "\n");
+    _logger.infof("BFS:getTaskStatus %s\n", taskId);
     try {
 
       if (taskId == null || taskId.equals("")) {
@@ -73,7 +73,7 @@ public class Service {
   @Path(BfConsts.SVC_KILL_TASK_RSC)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray killTask(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
-    _logger.info("BFS:killTask " + taskId + "\n");
+    _logger.infof("BFS:killTask %s\n", taskId);
     try {
       if (Strings.isNullOrEmpty(taskId)) {
         return new JSONArray(Arrays.asList(BfConsts.SVC_FAILURE_KEY, "taskid not supplied"));
@@ -92,7 +92,7 @@ public class Service {
   public JSONArray runTask(
       @QueryParam(BfConsts.SVC_TASKID_KEY) String taskId,
       @QueryParam(BfConsts.SVC_TASK_KEY) String task) {
-    _logger.info("BFS:runTask(" + taskId + ", " + task + ")\n");
+    _logger.infof("BFS:runTask(%s,%s)\n", taskId, task);
     try {
 
       if (taskId == null || taskId.equals("")) {
@@ -122,7 +122,7 @@ public class Service {
 
       String[] args = argsList.toArray(new String[argsList.size()]);
 
-      _logger.info("Will run with args: " + Arrays.toString(args) + "\n");
+      _logger.infof("Will run with args: %s\n", Arrays.toString(args));
 
       return new JSONArray(Driver.runBatfishThroughService(taskId, args));
     } catch (Exception e) {

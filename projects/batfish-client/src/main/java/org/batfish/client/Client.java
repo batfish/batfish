@@ -756,7 +756,7 @@ public class Client extends AbstractClient implements IClient {
     try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
       String line = null;
       while ((line = br.readLine()) != null) {
-        _logger.output(line + "\n");
+        _logger.outputf("%s\n", line);
       }
     }
 
@@ -936,7 +936,7 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private boolean execute(WorkItem wItem, @Nullable FileWriter outWriter) {
-    _logger.info("work-id is " + wItem.getId() + "\n");
+    _logger.infof("work-id is %s\n", wItem.getId());
     ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
     if (activeSpan != null) {
       activeSpan.setTag("work-id", wItem.getId().toString());
@@ -946,7 +946,7 @@ public class Client extends AbstractClient implements IClient {
       wItem.addRequestParam(option, _additionalBatfishOptions.get(option));
     }
     boolean queueWorkResult = _workHelper.queueWork(wItem);
-    _logger.info("Queuing result: " + queueWorkResult + "\n");
+    _logger.infof("Queuing result: %s\n", queueWorkResult);
     if (!queueWorkResult) {
       return queueWorkResult;
     }
@@ -1019,7 +1019,7 @@ public class Client extends AbstractClient implements IClient {
       // schemaGenNew.generateJsonSchema(SchemaTest.Parent.class);
       // _logger.output(mapper.writeValueAsString(schemaNew2));
     } catch (Exception e) {
-      _logger.errorf("Could not generate data model: " + e.getMessage());
+      _logger.errorf("Could not generate data model: %s", e.getMessage());
       e.printStackTrace();
     }
   }
@@ -1255,7 +1255,7 @@ public class Client extends AbstractClient implements IClient {
     String configName = parameters.get(2);
     String configContent = _workHelper.getConFiguration(containerName, testrigName, configName);
     if (configContent != null) {
-      _logger.output(configContent + "\n");
+      _logger.outputf("%s\n", configContent);
       return true;
     }
     return false;
@@ -2408,7 +2408,7 @@ public class Client extends AbstractClient implements IClient {
     if (line.length() == 0 || line.startsWith("#")) {
       return true;
     }
-    _logger.debug("Doing command: " + line + "\n");
+    _logger.debugf("Doing command: %s\n", line);
     String[] words = line.split("\\s+");
     if (words.length > 0 && !validCommandUsage(words)) {
       return false;
@@ -2607,7 +2607,7 @@ public class Client extends AbstractClient implements IClient {
         return exit(options, parameters);
 
       default:
-        _logger.error("Unsupported command " + words[0] + "\n");
+        _logger.errorf("Unsupported command %s\n", words[0]);
         _logger.error("Type 'help' to see the list of valid commands\n");
         return false;
     }
@@ -2639,7 +2639,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     final String dir = System.getProperty("user.dir");
-    _logger.output("working directory = " + dir + "\n");
+    _logger.outputf("working directory = %s\n", dir);
     return true;
   }
 
@@ -2830,7 +2830,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     _backgroundExecution = Boolean.valueOf(parameters.get(0));
-    _logger.output("Changed background execution to " + _backgroundExecution + "\n");
+    _logger.outputf("Changed background execution to %s\n", _backgroundExecution);
     return true;
   }
 
@@ -2844,7 +2844,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     _settings.setBatfishLogLevel(logLevelStr);
-    _logger.output("Changed batfish loglevel to " + logLevelStr + "\n");
+    _logger.outputf("Changed batfish loglevel to %s\n", logLevelStr);
     return true;
   }
 
@@ -2913,7 +2913,7 @@ public class Client extends AbstractClient implements IClient {
     }
     _logger.setLogLevel(logLevelStr);
     _settings.setLogLevel(logLevelStr);
-    _logger.output("Changed client loglevel to " + logLevelStr + "\n");
+    _logger.outputf("Changed client loglevel to %s\n", logLevelStr);
     return true;
   }
 
@@ -2924,7 +2924,7 @@ public class Client extends AbstractClient implements IClient {
     String ppStr = parameters.get(0).toLowerCase();
     boolean prettyPrint = Boolean.parseBoolean(ppStr);
     _settings.setPrettyPrintAnswers(prettyPrint);
-    _logger.output("Set pretty printing answers to " + ppStr + "\n");
+    _logger.outputf("Set pretty printing answers to %s\n", ppStr);
     return true;
   }
 
@@ -3083,10 +3083,8 @@ public class Client extends AbstractClient implements IClient {
     } catch (JSONException | IOException e) {
       _logger.errorf(
           "Failed to parse parameters. "
-              + "(Are all key-value pairs separated by commas? Are all "
-              + "values strings?)\n"
-              + e
-              + "\n");
+              + "(Are all key-value pairs separated by commas? Are all values strings?)\n%s\n",
+          e);
       return false;
     }
 
@@ -3173,7 +3171,8 @@ public class Client extends AbstractClient implements IClient {
           }
         }
       } catch (Exception e) {
-        _logger.error("Exception in comparing test results: " + ExceptionUtils.getStackTrace(e));
+        _logger.errorf(
+            "Exception in comparing test results: %s\n", ExceptionUtils.getStackTrace(e));
       }
     } else if (failingTest) {
       testPassed = !testCommandSucceeded;

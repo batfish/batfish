@@ -1318,7 +1318,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path outputFile = e.getKey();
       String flatConfigText = e.getValue();
       String outputFileAsString = outputFile.toString();
-      _logger.debug("Writing config to \"" + outputFileAsString + "\"...");
+      _logger.debugf("Writing config to \"%s\"...", outputFileAsString);
       CommonUtil.writeFile(outputFile, flatConfigText);
       _logger.debug("OK\n");
     }
@@ -1921,7 +1921,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("OK\n");
     for (String feature : histogram.elements()) {
       int count = histogram.count(feature);
-      _logger.output(feature + ": " + count + "\n");
+      _logger.outputf("%s: %s\n", feature, count);
     }
   }
 
@@ -2686,7 +2686,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public ParserRuleContext parse(BatfishCombinedParser<?, ?> parser, String filename) {
-    _logger.info("Parsing: \"" + filename + "\"...");
+    _logger.infof("Parsing: \"%s\"...", filename);
     return parse(parser);
   }
 
@@ -2846,7 +2846,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
-    _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath() + "\"");
+    _logger.infof("Parsing: \"%s\"\n", nodeRolesPath.toAbsolutePath());
     String roleFileText = CommonUtil.readFile(nodeRolesPath);
     NodeRoleSpecifier specifier;
     try {
@@ -2864,7 +2864,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     _logger.resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath() + "\" ...");
+    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
     Topology topology = null;
     if (topologyFileText.equals("")) {
       throw new BatfishException("ERROR: empty topology\n");
@@ -3281,7 +3281,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AtomicInteger completed =
         newBatch("Reading network configuration files", configFilePaths.size());
     for (Path file : configFilePaths) {
-      _logger.debug("Reading: \"" + file + "\"\n");
+      _logger.debugf("Reading: \"%s\"\n", file);
       String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
       String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
       configurationData.put(file, fileText);
@@ -3319,7 +3319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     AtomicInteger completed = newBatch("Reading files: " + description, filePaths.size());
     for (Path file : filePaths) {
-      _logger.debug("Reading: \"" + file + "\"\n");
+      _logger.debugf("Reading: \"%s\"\n", file);
       String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
       String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
       fileData.put(file, fileText);
@@ -3772,7 +3772,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     outputPath.toFile().mkdirs();
     Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_FILE);
-    _logger.debug("Serializing AWS to " + currentOutputPath + "\"...");
+    _logger.debugf("Serializing AWS to \"%s\"...", currentOutputPath);
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
