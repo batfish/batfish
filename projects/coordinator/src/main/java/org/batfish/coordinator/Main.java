@@ -184,7 +184,6 @@ public class Main {
   }
 
   private static void initPoolManager() {
-
     ResourceConfig rcPool =
         new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature())
@@ -197,7 +196,7 @@ public class Main {
               .port(_settings.getServicePoolPort())
               .build();
 
-      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+      _logger.infof("Starting pool manager at %s\n", poolMgrUri);
 
       GrizzlyHttpServerFactory.createHttpServer(poolMgrUri, rcPool);
     } else {
@@ -206,7 +205,7 @@ public class Main {
               .port(_settings.getServicePoolPort())
               .build();
 
-      _logger.info("Starting pool manager at " + poolMgrUri + "\n");
+      _logger.infof("Starting pool manager at %s\n", poolMgrUri);
 
       CommonUtil.startSslServer(
           rcPool,
@@ -241,14 +240,14 @@ public class Main {
       URI workMgrUri =
           UriBuilder.fromUri("http://" + _settings.getWorkBindHost()).port(port).build();
 
-      _logger.info("Starting work manager " + serviceClass + " at " + workMgrUri + "\n");
+      _logger.infof("Starting work manager %s at %s\n", serviceClass, workMgrUri);
 
       GrizzlyHttpServerFactory.createHttpServer(workMgrUri, rcWork);
     } else {
       URI workMgrUri =
           UriBuilder.fromUri("https://" + _settings.getWorkBindHost()).port(port).build();
 
-      _logger.info("Starting work manager at " + workMgrUri + "\n");
+      _logger.infof("Starting work manager at %s\n", workMgrUri);
       CommonUtil.startSslServer(
           rcWork,
           workMgrUri,

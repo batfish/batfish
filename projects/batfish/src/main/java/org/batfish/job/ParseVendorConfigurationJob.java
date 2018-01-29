@@ -96,7 +96,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     ParserRuleContext tree = null;
     ControlPlaneExtractor extractor = null;
     ConfigurationFormat format = _format;
-    _logger.info("Processing: '" + currentPath + "'\n");
+    _logger.infof("Processing: '%s'\n", currentPath);
 
     for (String s : _settings.ignoreFilesWithStrings()) {
       if (_fileText.contains(s)) {
