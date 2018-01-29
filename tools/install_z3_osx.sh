@@ -20,7 +20,7 @@ curl -L "${Z3_ZIP_URL}" -o "${Z3_ZIP}" || exit 1
 unzip "${Z3_ZIP}" || exit 1
 cd "${Z3_DIR}" || exit 1
 mkdir -p "${LIBDIR}" "${EXTDIR}" "${BINDIR}"
-cp "bin/libz3.dylib" "bin/libz3java.dylib" "${LIBDIR}/" || exit 1
+cp "lib/libz3.dylib" "lib/libz3java.dylib" "lib/libomp.dylib" "${LIBDIR}/" || exit 1
 ln -s "${LIBDIR}/libz3.dylib" "${EXTDIR}/libz3.dylib"
 ln -s "${LIBDIR}/libz3java.dylib" "${EXTDIR}/libz3java.dylib"
 cp "bin/z3" "${BINDIR}/"
