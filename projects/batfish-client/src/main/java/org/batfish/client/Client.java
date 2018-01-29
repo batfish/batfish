@@ -93,6 +93,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReader.Option;
 import org.jline.reader.LineReaderBuilder;
@@ -2803,6 +2804,8 @@ public class Client extends AbstractClient implements IClient {
           continue;
         }
       }
+    } catch (EndOfFileException e) {
+      // ignored
     } catch (Throwable t) {
       t.printStackTrace();
     } finally {
