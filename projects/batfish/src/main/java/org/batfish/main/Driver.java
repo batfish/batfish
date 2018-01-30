@@ -673,6 +673,7 @@ public class Driver {
           settings.setLogger(jobLogger);
 
           settings.setMaxRuntimeMs(_mainSettings.getMaxRuntimeMs());
+          settings.setDataplaneEngineName(_mainSettings.getDataPlaneEngineName());
 
           final Task task = new Task(args);
 
