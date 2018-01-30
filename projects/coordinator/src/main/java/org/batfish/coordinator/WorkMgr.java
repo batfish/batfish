@@ -1151,8 +1151,9 @@ public class WorkMgr extends AbstractCoordinator {
     return environments;
   }
 
-  public List<QueuedWork> listIncompleteWork(String containerName) {
-    return _workQueueMgr.listIncompleteWork(containerName);
+  public List<QueuedWork> listIncompleteWork(
+      String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
+    return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
   }
 
   public SortedSet<String> listQuestions(String containerName) {
