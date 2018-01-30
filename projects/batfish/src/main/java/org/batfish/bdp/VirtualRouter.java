@@ -231,8 +231,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         Prefix matchingRoutePrefix = matchingRoute.getNetwork();
         // check to make sure matching route's prefix does not totally
         // contain this static route's prefix
-        if (matchingRoutePrefix.getStartIp().asLong() > staticRoutePrefix.getStartIp().asLong()
-            || matchingRoutePrefix.getEndIp().asLong() < staticRoutePrefix.getEndIp().asLong()) {
+        if (!matchingRoutePrefix.containsPrefix(staticRoutePrefix)) {
           changed |= _mainRib.mergeRoute(sr);
           break; // break out of the inner loop but continue processing static routes
         }
