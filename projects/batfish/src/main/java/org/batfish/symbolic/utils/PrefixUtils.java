@@ -45,13 +45,4 @@ public class PrefixUtils {
     }
     return false;
   }
-
-  public static boolean containsAny(Prefix p, Collection<Prefix> ps) {
-    for (Prefix p2 : ps) {
-      if (p.containsPrefix(p2)) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
