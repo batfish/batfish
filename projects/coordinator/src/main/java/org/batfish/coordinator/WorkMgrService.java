@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -191,7 +190,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Add exceptions and/or assertions to question template
+   * Add/replace exceptions and assertions to question template
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -207,8 +206,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION) String questionTemplate,
-      @FormDataParam(CoordConsts.SVC_KEY_EXCEPTIONS) @Nullable String exceptions,
-      @FormDataParam(CoordConsts.SVC_KEY_ASSERTION) @Nullable String assertion) {
+      @FormDataParam(CoordConsts.SVC_KEY_EXCEPTIONS) String exceptions,
+      @FormDataParam(CoordConsts.SVC_KEY_ASSERTION) String assertion) {
     try {
       _logger.infof(
           "WMS:configureQuestionTemplate: q: %s e: %s a: %s\n",
