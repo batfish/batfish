@@ -1,0 +1,49 @@
+{
+ "DomainStatusList": [
+  {
+   "ARN": "arn:aws:es:us-west-2:118292266645:domain/es-domain",
+   "AccessPolicies": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"es:*\",\"Resource\":\"arn:aws:es:us-west-2:118292266645:domain/es-domain/*\"}]}",
+   "AdvancedOptions": {
+    "rest.action.multi.allow_explicit_index": "true"
+   },
+   "Created": true,
+   "Deleted": false,
+   "DomainId": "118292266645/es-domain",
+   "DomainName": "es-domain",
+   "EBSOptions": {
+    "EBSEnabled": true,
+    "VolumeSize": 10,
+    "VolumeType": "gp2"
+   },
+   "ElasticsearchClusterConfig": {
+    "DedicatedMasterEnabled": false,
+    "InstanceCount": 2,
+    "InstanceType": "m4.large.elasticsearch",
+    "ZoneAwarenessEnabled": true
+   },
+   "ElasticsearchVersion": "6.0",
+   "EncryptionAtRestOptions": {
+    "Enabled": false
+   },
+   "Endpoints": {
+    "vpc": "vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com"
+   },
+   "Processing": false,
+   "SnapshotOptions": {
+    "AutomatedSnapshotStartHour": 0
+   },
+   "VPCOptions": {
+    "AvailabilityZones": [
+     "us-west-2a"
+    ],
+    "SecurityGroupIds": [
+     "sg-55510831"
+    ],
+    "SubnetIds": [
+     "subnet-7044ff16"
+    ],
+    "VPCId": "vpc-b390fad5"
+   }
+  }
+ ]
+}
