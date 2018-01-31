@@ -311,10 +311,10 @@ public class WorkQueueMgrTest {
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig"),
-            new WorkDetails("testrig", "env", WorkType.PARSING));
+            new WorkDetails("testrig", "env", WorkType.UNKNOWN));
     QueuedWork work2 =
         new QueuedWork(
-            new WorkItem(CONTAINER, "testrig"),
+            new WorkItem(CONTAINER, "testrig2"),
             new WorkDetails("testrig2", "env", WorkType.UNKNOWN));
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
