@@ -1113,8 +1113,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) @Nullable String testrigName, /* optional */
-      @FormDataParam(CoordConsts.SVC_KEY_WORK_TYPE) @Nullable WorkType workType /* optional */) {
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName, /* optional */
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_WORK_TYPE) WorkType workType /* optional */) {
     try {
       _logger.info("WMS:listIncompleteWork " + apiKey + " " + containerName + "\n");
 
