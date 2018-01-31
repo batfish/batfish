@@ -7,6 +7,7 @@ package org.batfish.coordinator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.EnvironmentMetadata;
@@ -19,6 +20,14 @@ public class TestrigMetadataMgr {
       String container, String testrig, String envName) throws IOException {
     TestrigMetadata trMetadata = readMetadata(container, testrig);
     return trMetadata.getEnvironments().get(envName);
+  }
+
+  public static Instant getTestrigCreationTimeOrMin(String container, String testrig) {
+    try {
+      return readMetadata(container, testrig).getCreationTimestamp();
+    } catch (IOException e) {
+      return Instant.MIN;
+    }
   }
 
   public static synchronized void initializeEnvironment(

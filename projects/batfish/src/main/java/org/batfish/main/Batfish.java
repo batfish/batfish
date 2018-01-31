@@ -44,7 +44,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -443,8 +442,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       _cachedEnvironmentRoutingTables;
 
-  private DataPlanePlugin _dataPlanePlugin;
-
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -462,6 +459,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final List<TestrigSettings> _testrigSettingsStack;
 
   private boolean _monotonicCache;
+
+  private Map<String, DataPlanePlugin> _dataPlanePlugins;
 
   public Batfish(
       Settings settings,
@@ -485,6 +484,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _terminatedWithException = false;
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
+    _dataPlanePlugins = new HashMap<>();
   }
 
   private Answer analyze() {
@@ -625,10 +625,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
 
     Pattern aclNameRegex;
@@ -910,7 +906,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer computeDataPlane(boolean differentialContext) {
     checkEnvironmentExists();
-    return _dataPlanePlugin.computeDataPlane(differentialContext);
+    return getDataPlanePlugin().computeDataPlane(differentialContext);
   }
 
   private void computeEnvironmentBgpTables() {
@@ -1440,7 +1436,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path outputFile = e.getKey();
       String flatConfigText = e.getValue();
       String outputFileAsString = outputFile.toString();
-      _logger.debug("Writing config to \"" + outputFileAsString + "\"...");
+      _logger.debugf("Writing config to \"%s\"...", outputFileAsString);
       CommonUtil.writeFile(outputFile, flatConfigText);
       _logger.debug("OK\n");
     }
@@ -1727,7 +1723,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public DataPlanePlugin getDataPlanePlugin() {
-    return _dataPlanePlugin;
+    DataPlanePlugin plugin = _dataPlanePlugins.get(_settings.getDataPlaneEngineName());
+    if (plugin == null) {
+      throw new BatfishException(
+          String.format(
+              "Dataplane engine %s is unavailable or unsupported",
+              _settings.getDataPlaneEngineName()));
+    }
+    return plugin;
   }
 
   @Override
@@ -1968,7 +1971,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
-    return _dataPlanePlugin.getRoutes();
+    return getDataPlanePlugin().getRoutes();
   }
 
   public Settings getSettings() {
@@ -2036,7 +2039,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("OK\n");
     for (String feature : histogram.elements()) {
       int count = histogram.count(feature);
-      _logger.output(feature + ": " + count + "\n");
+      _logger.outputf("%s: %s\n", feature, count);
     }
   }
 
@@ -2063,7 +2066,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void initBgpAdvertisements(Map<String, Configuration> configurations) {
-    Set<BgpAdvertisement> globalBgpAdvertisements = _dataPlanePlugin.getAdvertisements();
+    Set<BgpAdvertisement> globalBgpAdvertisements = getDataPlanePlugin().getAdvertisements();
     for (Configuration node : configurations.values()) {
       node.initBgpAdvertisements();
       for (Vrf vrf : node.getVrfs().values()) {
@@ -2729,10 +2732,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
     Map<String, Configuration> configurations = loadConfigurations();
@@ -2805,7 +2804,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public ParserRuleContext parse(BatfishCombinedParser<?, ?> parser, String filename) {
-    _logger.info("Parsing: \"" + filename + "\"...");
+    _logger.infof("Parsing: \"%s\"...", filename);
     return parse(parser);
   }
 
@@ -2965,7 +2964,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
-    _logger.info("Parsing: \"" + nodeRolesPath.toAbsolutePath() + "\"");
+    _logger.infof("Parsing: \"%s\"\n", nodeRolesPath.toAbsolutePath());
     String roleFileText = CommonUtil.readFile(nodeRolesPath);
     NodeRoleSpecifier specifier;
     try {
@@ -2983,7 +2982,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     _logger.resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    _logger.info("Parsing: \"" + topologyFilePath.toAbsolutePath() + "\" ...");
+    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
     Topology topology = null;
     if (topologyFileText.equals("")) {
       throw new BatfishException("ERROR: empty topology\n");
@@ -3041,10 +3040,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement pathDiff(HeaderSpace headerSpace) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3160,8 +3155,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void populateFlowHistory(
       FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
-    List<Flow> flows = _dataPlanePlugin.getHistoryFlows();
-    List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces();
+    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
+    List<Flow> flows = dataPlanePlugin.getHistoryFlows();
+    List<FlowTrace> flowTraces = dataPlanePlugin.getHistoryFlowTraces();
     int numEntries = flows.size();
     for (int i = 0; i < numEntries; i++) {
       Flow flow = flows.get(i);
@@ -3297,7 +3293,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void processFlows(Set<Flow> flows) {
-    _dataPlanePlugin.processFlows(flows);
+    getDataPlanePlugin().processFlows(flows);
   }
 
   /**
@@ -3403,7 +3399,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AtomicInteger completed =
         newBatch("Reading network configuration files", configFilePaths.size());
     for (Path file : configFilePaths) {
-      _logger.debug("Reading: \"" + file + "\"\n");
+      _logger.debugf("Reading: \"%s\"\n", file);
       String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
       String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
       configurationData.put(file, fileText);
@@ -3441,7 +3437,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     AtomicInteger completed = newBatch("Reading files: " + description, filePaths.size());
     for (Path file : filePaths) {
-      _logger.debug("Reading: \"" + file + "\"\n");
+      _logger.debugf("Reading: \"%s\"\n", file);
       String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
       String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
       fileData.put(file, fileText);
@@ -3519,10 +3515,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement reducedReachability(
       HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3898,7 +3890,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     outputPath.toFile().mkdirs();
     Path currentOutputPath = outputPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_FILE);
-    _logger.debug("Serializing AWS to " + currentOutputPath + "\"...");
+    _logger.debugf("Serializing AWS to \"%s\"...", currentOutputPath);
     serializeObject(config, currentOutputPath);
     _logger.debug("OK\n");
     _logger.printElapsedTime();
@@ -4219,8 +4211,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin) {
-    _dataPlanePlugin = dataPlanePlugin;
+  public void registerDataPlanePlugin(DataPlanePlugin plugin, String name) {
+    _dataPlanePlugins.put(name, plugin);
   }
 
   public void setMonotonicCache(boolean monotonicCache) {
@@ -4310,10 +4302,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes) {
-    if (SystemUtils.IS_OS_MAC_OSX) {
-      // TODO: remove when z3 parallelism bug on OSX is fixed
-      _settings.setSequential(true);
-    }
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
     Map<String, Configuration> configurations = loadConfigurations();

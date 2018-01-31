@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.SortedSet;
 
 /* An abstract superclass of outlier sets for various hypotheses. */
-public abstract class AbstractOutlierSet {
+public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
 
   protected static final String PROP_CONFORMERS = "conformers";
 

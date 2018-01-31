@@ -256,15 +256,36 @@ public class BdpDataPlanePluginTest {
     /*
      * Instantiate routes
      */
-    BgpRoute route2 = b.setAsPath(asPath2).setNextHopIp(nextHop2).setOriginatorIp(nextHop2).build();
+    BgpRoute route2 =
+        b.setAsPath(asPath2)
+            .setNextHopIp(nextHop2)
+            .setOriginatorIp(nextHop2)
+            .setReceivedFromIp(nextHop2)
+            .build();
     BgpRoute route3a =
-        b.setAsPath(asPath3a).setNextHopIp(nextHop3a).setOriginatorIp(nextHop3a).build();
+        b.setAsPath(asPath3a)
+            .setNextHopIp(nextHop3a)
+            .setOriginatorIp(nextHop3a)
+            .setReceivedFromIp(nextHop3a)
+            .build();
     BgpRoute route3b =
-        b.setAsPath(asPath3b).setNextHopIp(nextHop3b).setOriginatorIp(nextHop3b).build();
+        b.setAsPath(asPath3b)
+            .setNextHopIp(nextHop3b)
+            .setOriginatorIp(nextHop3b)
+            .setReceivedFromIp(nextHop3b)
+            .build();
     BgpRoute route3c =
-        b.setAsPath(asPath3c).setNextHopIp(nextHop3c).setOriginatorIp(nextHop3c).build();
+        b.setAsPath(asPath3c)
+            .setNextHopIp(nextHop3c)
+            .setOriginatorIp(nextHop3c)
+            .setReceivedFromIp(nextHop3c)
+            .build();
     BgpRoute route3d =
-        b.setAsPath(asPath3d).setNextHopIp(nextHop3d).setOriginatorIp(nextHop3d).build();
+        b.setAsPath(asPath3d)
+            .setNextHopIp(nextHop3d)
+            .setOriginatorIp(nextHop3d)
+            .setReceivedFromIp(nextHop3d)
+            .build();
 
     /*
      * Set the as-path match mode prior to instantiating bgp multipath RIB
@@ -368,8 +389,10 @@ public class BdpDataPlanePluginTest {
     for (OriginType originType : OriginType.values()) {
       List<BgpRoute> routes =
           routesByOriginType.computeIfAbsent(originType, o -> new ArrayList<>());
-      routes.add(b.setOriginatorIp(Ip.ZERO).setOriginType(originType).build());
-      routes.add(b.setOriginatorIp(Ip.MAX).setOriginType(originType).build());
+      routes.add(
+          b.setOriginatorIp(Ip.ZERO).setReceivedFromIp(Ip.ZERO).setOriginType(originType).build());
+      routes.add(
+          b.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.MAX).setOriginType(originType).build());
     }
 
     /*
@@ -610,7 +633,8 @@ public class BdpDataPlanePluginTest {
             .setNetwork(Prefix.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
-            .setProtocol(RoutingProtocol.BGP);
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(Ip.ZERO);
     BgpRoute ebgpOlderHigherOriginator = ebgpBuilder.setOriginatorIp(Ip.MAX).build();
     BgpRoute ebgpNewerHigherOriginator = ebgpBuilder.setOriginatorIp(Ip.MAX).build();
     BgpRoute ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
@@ -622,7 +646,8 @@ public class BdpDataPlanePluginTest {
             .setNetwork(Prefix.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
-            .setProtocol(RoutingProtocol.IBGP);
+            .setProtocol(RoutingProtocol.IBGP)
+            .setReceivedFromIp(Ip.ZERO);
     BgpRoute ibgpOlderHigherOriginator = ibgpBuilder.setOriginatorIp(Ip.MAX).build();
     BgpRoute ibgpNewerHigherOriginator = ibgpBuilder.setOriginatorIp(Ip.MAX).build();
     BgpRoute ibgpLowerOriginator = ibgpBuilder.setOriginatorIp(Ip.ZERO).build();
@@ -699,13 +724,15 @@ public class BdpDataPlanePluginTest {
             .setNextHopIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
-            .setProtocol(RoutingProtocol.BGP);
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(Ip.ZERO);
     BgpRoute.Builder b2 =
         new BgpRoute.Builder()
             .setNextHopIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.MAX)
-            .setProtocol(RoutingProtocol.BGP);
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(Ip.ZERO);
 
     /*
      * Toss a bunch of different routes in each RIB. In the best-path rib, only lower originatorIp

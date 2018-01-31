@@ -33,7 +33,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   public ConvertConfigurationResult call() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
-    _logger.info("Processing: \"" + _name + "\"");
+    _logger.infof("Processing: \"%s\"", _name);
     Map<String, Configuration> configurations = new HashMap<>();
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     try {

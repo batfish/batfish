@@ -1,5 +1,6 @@
 package org.batfish.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.File;
@@ -31,6 +32,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -538,7 +540,9 @@ public class BfCoordWorkHelper {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetObject: Did not get an OK response\n");
+        _logger.debugf(
+            "GetObject: Did not get an OK response for %s -> %s->%s\n",
+            containerName, testrigName, objectName);
         return null;
       }
 
@@ -632,7 +636,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
+  public Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -640,7 +644,7 @@ public class BfCoordWorkHelper {
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, parseWorkUUID.toString());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
@@ -744,6 +748,33 @@ public class BfCoordWorkHelper {
     }
   }
 
+  public boolean killWork(UUID workId) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_KILL_WORK);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return false;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_RESULT)) {
+        _logger.errorf("result key not found in: %s\n", jObj);
+        return false;
+      }
+
+      return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      return false;
+    }
+  }
+
   @Nullable
   public JSONObject listAnalyses(String containerName) {
     try {
@@ -841,6 +872,41 @@ public class BfCoordWorkHelper {
       }
 
       return environmentList;
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
+  }
+
+  @Nullable
+  public List<WorkStatus> listIncompleteWork(String containerName) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_INCOMPLETE_WORK);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_WORK_LIST)) {
+        _logger.errorf("work list key not found in: %s\n", jObj);
+        return null;
+      }
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String result = jObj.getString(CoordConsts.SVC_KEY_WORK_LIST);
+
+      List<WorkStatus> workList =
+          mapper.readValue(result, new TypeReference<List<WorkStatus>>() {});
+
+      return workList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");

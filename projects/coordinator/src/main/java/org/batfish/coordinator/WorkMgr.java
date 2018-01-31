@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
@@ -120,14 +122,13 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("Got exception in assignWork: " + stackTrace);
+      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
   }
 
   private void assignWork(QueuedWork work, String worker) {
 
-    _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
+    _logger.infof("WM:AssignWork: Trying to assign %s to %s\n", work, worker);
 
     boolean assignmentError = false;
     boolean assigned = false;
@@ -187,7 +188,7 @@ public class WorkMgr extends AbstractCoordinator {
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("WM:AssignWork: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);
@@ -215,6 +216,13 @@ public class WorkMgr extends AbstractCoordinator {
       if (client != null) {
         client.close();
       }
+    }
+
+    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
+      if (assigned) {
+        killWork(work, worker);
+      }
+      return;
     }
 
     // mark the assignment results for both work and worker
@@ -246,22 +254,21 @@ public class WorkMgr extends AbstractCoordinator {
       for (QueuedWork work : workToCheck) {
         String assignedWorker = work.getAssignedWorker();
         if (assignedWorker == null) {
-          _logger.error("WM:CheckWork no assigned worker for " + work + "\n");
+          _logger.errorf("WM:CheckWork no assigned worker for %s\n", work);
           _workQueueMgr.makeWorkUnassigned(work);
           continue;
         }
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.error("Got exception in checkTasks: " + e.getMessage());
+      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
   }
 
   private void checkTask(QueuedWork work, String worker) {
-    _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
+    _logger.infof("WM:CheckWork: Trying to check %s on %s\n", work, worker);
 
-    Task task = new Task();
-    task.setStatus(TaskStatus.UnreachableOrBadResponse);
+    Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
     SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
@@ -295,7 +302,7 @@ public class WorkMgr extends AbstractCoordinator {
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("WM:CheckTask: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("WM:CheckTask: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);
@@ -326,17 +333,18 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
+    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
+      return;
+    }
+
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.errorf("exception: %s\n", stackTrace);
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
 
-    // if the task ended, send a hint to the pool manager to look up worker
-    // status
-    if (task.getStatus() == TaskStatus.TerminatedAbnormally
-        || task.getStatus() == TaskStatus.TerminatedNormally) {
+    // if the task ended, send a hint to the pool manager to look up worker status
+    if (task.getStatus().isTerminated()) {
       Main.getPoolMgr().refreshWorkerStatus(worker);
     }
   }
@@ -987,6 +995,94 @@ public class WorkMgr extends AbstractCoordinator {
     return ENV_FILENAMES.contains(name);
   }
 
+  public boolean killWork(QueuedWork work) {
+    String worker = work.getAssignedWorker();
+
+    if (worker != null) {
+      return killWork(work, worker);
+    }
+
+    // (worker = null) => this work was not assigned in the first place
+    boolean killed = false;
+    Task fakeTask = new Task(TaskStatus.TerminatedByUser, "Killed unassigned work");
+    try {
+      _workQueueMgr.processTaskCheckResult(work, fakeTask);
+      killed = true;
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+    }
+    return killed;
+  }
+
+  private boolean killWork(QueuedWork work, String worker) {
+    Client client = null;
+    boolean killed = false;
+
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan killTaskSpan =
+        GlobalTracer.get()
+            .buildSpan("Checking Task Status")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert killTaskSpan != null; // avoid unused warning
+      client =
+          CommonUtil.createHttpClientBuilder(
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
+              .build();
+
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
+      WebTarget webTarget =
+          client
+              .target(
+                  String.format(
+                      "%s://%s%s/%s",
+                      protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_KILL_TASK_RSC))
+              .queryParam(
+                  BfConsts.SVC_TASKID_KEY,
+                  UriComponent.encode(
+                      work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
+
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
+      } else {
+        try {
+          String sobj = response.readEntity(String.class);
+          JSONArray array = new JSONArray(sobj);
+          _logger.infof("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
+          if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+            _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
+          } else {
+            Task task = new BatfishObjectMapper().readValue(array.getString(1), Task.class);
+            _workQueueMgr.processTaskCheckResult(work, task);
+            killed = true;
+          }
+        } catch (IllegalStateException e) {
+          // can happen if the worker dies before we could finish reading; let's assume success
+          _logger.infof("worker appears dead before response completion\n");
+          Task fakeTask =
+              new Task(TaskStatus.TerminatedByUser, "worker appears dead before responding");
+          _workQueueMgr.processTaskCheckResult(work, fakeTask);
+          killed = true;
+        }
+      }
+    } catch (ProcessingException e) {
+      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getFullStackTrace(e));
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
+    }
+    return killed;
+  }
+
   public SortedSet<String> listAnalyses(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
@@ -1055,6 +1151,11 @@ public class WorkMgr extends AbstractCoordinator {
     return environments;
   }
 
+  public List<QueuedWork> listIncompleteWork(
+      String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
+    return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
+  }
+
   public SortedSet<String> listQuestions(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -1070,18 +1171,25 @@ public class WorkMgr extends AbstractCoordinator {
     return questions;
   }
 
-  public SortedSet<String> listTestrigs(String containerName) {
+  public List<String> listTestrigs(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
     if (!Files.exists(testrigsDir)) {
-      return new TreeSet<>();
+      return new ArrayList<>();
     }
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(testrigsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+    List<String> testrigs =
+        CommonUtil.getSubdirectories(testrigsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .sorted(
+                (t1, t2) -> { // reverse sorting by creation-time, name
+                  String key1 =
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t1) + t1;
+                  String key2 =
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t2) + t2;
+                  return key2.compareTo(key1);
+                })
+            .collect(Collectors.toList());
     return testrigs;
   }
 

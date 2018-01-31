@@ -1,14 +1,19 @@
 package org.batfish.allinone.config;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.main.Driver;
+import org.batfish.main.Driver.RunMode;
 
 public class Settings extends BaseSettings {
 
   private static final String ARG_BATFISH_ARGS = "batfishargs";
+  private static final String ARG_BATFISH_RUN_MODE = "batfishmode";
   private static final String ARG_CLIENT_ARGS = "clientargs";
   private static final String ARG_COMMAND_FILE =
       org.batfish.client.config.Settings.ARG_COMMAND_FILE;
@@ -27,6 +32,7 @@ public class Settings extends BaseSettings {
   private static final String EXECUTABLE_NAME = "allinone";
 
   private String _batfishArgs;
+  private Driver.RunMode _batfishRunMode;
   private String _clientArgs;
   private String _commandFile;
   private String _coordinatorArgs;
@@ -54,6 +60,10 @@ public class Settings extends BaseSettings {
 
   public String getBatfishArgs() {
     return _batfishArgs;
+  }
+
+  public RunMode getBatfishRunMode() {
+    return _batfishRunMode;
   }
 
   public String getClientArgs() {
@@ -109,6 +119,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
     setDefaultProperty(ARG_BATFISH_ARGS, "");
+    setDefaultProperty(ARG_BATFISH_RUN_MODE, RunMode.WORKSERVICE.toString());
     setDefaultProperty(ARG_CLIENT_ARGS, "");
     setDefaultProperty(ARG_COORDINATOR_ARGS, "");
     setDefaultProperty(ARG_RUN_CLIENT, true);
@@ -129,6 +140,14 @@ public class Settings extends BaseSettings {
     addOption(ARG_LOG_LEVEL, "log level", "loglevel");
 
     addOption(ARG_BATFISH_ARGS, "arguments for batfish process", "batfish_args");
+
+    addOption(
+        ARG_BATFISH_RUN_MODE,
+        "mode in which to start batfish",
+        Arrays.stream(RunMode.values())
+            .filter(v -> v != RunMode.WORKER)
+            .map(v -> v.toString())
+            .collect(Collectors.joining("|")));
 
     addOption(ARG_CLIENT_ARGS, "arguments for the client process", "client_args");
 
@@ -168,6 +187,10 @@ public class Settings extends BaseSettings {
     _logFile = getStringOptionValue(ARG_LOG_FILE);
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
     _batfishArgs = getStringOptionValue(ARG_BATFISH_ARGS);
+    _batfishRunMode = RunMode.valueOf(getStringOptionValue(ARG_BATFISH_RUN_MODE).toUpperCase());
+    if (_batfishRunMode == RunMode.WORKER) {
+      throw new IllegalArgumentException("Cannot start batfish in worker mode");
+    }
     _clientArgs = getStringOptionValue(ARG_CLIENT_ARGS);
     _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
     _runClient = getBooleanOptionValue(ARG_RUN_CLIENT);

@@ -5,6 +5,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -141,6 +142,8 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
    * @param roles List of the role names to include in the answer. Default is to use all role names.
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes). *
+   * @param roleSpecifier Specifies the mapping from roles to nodes. If not provided, the default is
+   *     to use the role specifier that was installed when the test rig was initialized.
    */
   public static final class PerRoleQuestion extends Question {
 
@@ -150,11 +153,15 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ROLES = "roles";
 
+    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
+
     private NodesSpecifier _nodeRegex;
 
     private Question _question;
 
     private List<String> _roles;
+
+    private NodeRoleSpecifier _roleSpecifier;
 
     public PerRoleQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
@@ -185,6 +192,11 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       return _roles;
     }
 
+    @JsonProperty(PROP_ROLE_SPECIFIER)
+    public Optional<NodeRoleSpecifier> getRoleSpecifier() {
+      return Optional.ofNullable(_roleSpecifier);
+    }
+
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
@@ -198,6 +210,11 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ROLES)
     public void setRoles(List<String> roles) {
       _roles = roles;
+    }
+
+    @JsonProperty(PROP_ROLE_SPECIFIER)
+    public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
+      _roleSpecifier = roleSpecifier;
     }
   }
 

@@ -4,6 +4,8 @@ package org.batfish.common;
 // If you change the values of any of these constants,
 // make sure that the javascript, python clients is updated too
 
+import org.batfish.common.BfConsts.TaskStatus;
+
 public class CoordConsts {
 
   public enum WorkStatusCode {
@@ -12,9 +14,31 @@ public class CoordConsts {
     BLOCKED,
     CHECKINGSTATUS,
     TERMINATEDABNORMALLY,
+    TERMINATEDBYUSER,
     TERMINATEDNORMALLY,
     TRYINGTOASSIGN,
     UNASSIGNED;
+
+    public static WorkStatusCode fromTerminatedTaskStatus(TaskStatus status) {
+      switch (status) {
+        case TerminatedAbnormally:
+          return TERMINATEDABNORMALLY;
+        case TerminatedByUser:
+          return TERMINATEDBYUSER;
+        case TerminatedNormally:
+          return TERMINATEDNORMALLY;
+        default:
+          throw new IllegalArgumentException(
+              "Cannot convert from " + status + " to WorkStatusCode");
+      }
+    }
+
+    public boolean isTerminated() {
+      return (this == ASSIGNMENTERROR // because we don't attempt assignment of this work
+          || this == WorkStatusCode.TERMINATEDABNORMALLY
+          || this == WorkStatusCode.TERMINATEDBYUSER
+          || this == WorkStatusCode.TERMINATEDNORMALLY);
+    }
   }
 
   public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";
@@ -62,6 +86,7 @@ public class CoordConsts {
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
+  public static final String SVC_KEY_RESULT = "result";
   public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
@@ -70,6 +95,8 @@ public class CoordConsts {
   public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
   public static final String SVC_KEY_VERSION = "version";
+  public static final String SVC_KEY_WORK_LIST = "worklist";
+  public static final String SVC_KEY_WORK_TYPE = "worktype";
   public static final String SVC_KEY_WORKID = "workid";
   public static final String SVC_KEY_WORKITEM = "workitem";
   public static final String SVC_KEY_WORKSPACE_NAME = "workspace";
@@ -89,14 +116,18 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
+  public static final String SVC_RSC_GET_DATAPLANING_WORK = "getdataplaningwork";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
+  public static final String SVC_RSC_GET_PARSING_WORK = "getparsingwork";
   public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";
   public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
+  public static final String SVC_RSC_KILL_WORK = "killwork";
   public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
   public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
   public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
+  public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";

@@ -11,11 +11,13 @@ import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -33,9 +35,11 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -133,18 +137,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
       @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
     try {
-      _logger.info(
-          "WMS:configureAnalysis "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + newAnalysisStr
-              + " "
-              + analysisName
-              + " "
-              + delQuestions
-              + "\n");
+      _logger.infof(
+          "WMS:configureAnalysis %s %s %s %s %s\n",
+          apiKey, containerName, newAnalysisStr, analysisName, delQuestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -438,16 +433,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
-      _logger.info(
-          "WMS:getAnalysisAnswers "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " "
-              + analysisName
-              + "\n");
+      _logger.infof(
+          "WMS:getAnalysisAnswers %s %s %s %s\n", apiKey, containerName, testrigName, analysisName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -525,16 +512,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String questionName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
     try {
-      _logger.info(
-          "WMS:getAnswer "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " "
-              + questionName
-              + "\n");
+      _logger.infof(
+          "WMS:getAnswer %s %s %s %s\n", apiKey, containerName, testrigName, questionName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -870,6 +849,7 @@ public class WorkMgrService {
       BatfishObjectMapper mapper = new BatfishObjectMapper();
       String taskStr = mapper.writeValueAsString(work.getLastTaskCheckResult());
 
+      // TODO: Use pojo.WorkStatus instead of this custom Json
       return successResponse(
           new JSONObject()
               .put(CoordConsts.SVC_KEY_WORKSTATUS, work.getStatus().toString())
@@ -927,6 +907,52 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:initContainer exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
+   * Kill the specified work
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param workId The work ID to kill
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_KILL_WORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray killWork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_WORKID) String workId) {
+    try {
+      _logger.info("WMS:killWork " + workId + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(workId, "work id");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
+
+      if (work == null) {
+        return failureResponse("work with the specified id does not exist or is not inaccessible");
+      }
+
+      checkContainerAccessibility(apiKey, work.getWorkItem().getContainerName());
+
+      boolean killed = Main.getWorkMgr().killWork(work);
+
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_RESULT, killed));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.error("WMS:killWork exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:killWork exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -1071,6 +1097,60 @@ public class WorkMgrService {
   }
 
   /**
+   * List incomplete work of the specified type for the specified container and testrig
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param containerName The name of the container for which to list work
+   * @param testrigName (optional) The name of the testrig for which to list work
+   * @param workType (optional) The type of work to list
+   * @return TODO: document JSON response
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_LIST_INCOMPLETE_WORK)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray listIncompleteWork(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName, /* optional */
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_WORK_TYPE) WorkType workType /* optional */) {
+    try {
+      _logger.info("WMS:listIncompleteWork " + apiKey + " " + containerName + "\n");
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      if (testrigName != null) {
+        checkStringParam(testrigName, "Base testrig name");
+      }
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      List<WorkStatus> workList = new LinkedList<>();
+      for (QueuedWork work :
+          Main.getWorkMgr().listIncompleteWork(containerName, testrigName, workType)) {
+        WorkStatus workStatus =
+            new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult());
+        workList.add(workStatus);
+      }
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      return successResponse(
+          new JSONObject().put(CoordConsts.SVC_KEY_WORK_LIST, mapper.writeValueAsString(workList)));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.error("WMS:listIncompleteWork exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:listIncompleteWork exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * List the questions under the specified container, testrig
    *
    * @param apiKey The API key of the client
@@ -1143,7 +1223,7 @@ public class WorkMgrService {
 
       JSONArray retArray = new JSONArray();
 
-      SortedSet<String> testrigList = Main.getWorkMgr().listTestrigs(containerName);
+      List<String> testrigList = Main.getWorkMgr().listTestrigs(containerName);
 
       for (String testrig : testrigList) {
         String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
@@ -1291,8 +1371,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
     try {
-      _logger.info(
-          "WMS:syncTestrigsSyncNow " + apiKey + " " + containerName + " " + pluginId + "\n");
+      _logger.infof("WMS:syncTestrigsSyncNow %s %s %s\n", apiKey, containerName, pluginId);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1338,16 +1417,9 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
       @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
     try {
-      _logger.info(
-          "WMS:syncTestrigsUpdateSettings "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + pluginId
-              + " "
-              + settingsStr
-              + "\n");
+      _logger.infof(
+          "WMS:syncTestrigsUpdateSettings %s %s %s %s\n",
+          apiKey, containerName, pluginId, settingsStr);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1430,16 +1502,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ENV_NAME) String envName,
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream) {
     try {
-      _logger.info(
-          "WMS:uploadEnvironment "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " / "
-              + envName
-              + "\n");
+      _logger.infof(
+          "WMS:uploadEnvironment %s %s %s/%s\n", apiKey, containerName, testrigName, envName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
@@ -1492,16 +1556,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_FILE2) InputStream paramFileStream) {
     try {
-      _logger.info(
-          "WMS:uploadQuestion "
-              + apiKey
-              + " "
-              + containerName
-              + " "
-              + testrigName
-              + " / "
-              + qName
-              + "\n");
+      _logger.infof("WMS:uploadQuestion %s %s %s/%s\n", apiKey, containerName, testrigName, qName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
