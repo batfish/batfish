@@ -1,8 +1,10 @@
 package org.batfish.question.jsonpath;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import java.io.IOException;
@@ -21,6 +23,24 @@ public class JsonPathAssertion {
   private JsonPathAssertionType _assertionType;
 
   private JsonNode _expect;
+
+  @JsonCreator
+  public JsonPathAssertion(
+      @JsonProperty(PROP_TYPE) JsonPathAssertionType assertionType,
+      @JsonProperty(PROP_EXPECT) JsonNode expect) {
+    _assertionType = assertionType;
+    _expect = expect;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof JsonPathAssertion)) {
+      return false;
+    }
+    JsonPathAssertion other = (JsonPathAssertion) o;
+    return Objects.equal(_assertionType, other.getType())
+        && Objects.equal(_expect, other.getExpect());
+  }
 
   public boolean evaluate(Set<JsonPathResultEntry> resultEntries) {
     switch (getType()) {
@@ -52,8 +72,6 @@ public class JsonPathAssertion {
         SetView<JsonPathResultEntry> difference1 = Sets.difference(expectedEntries, resultEntries);
         SetView<JsonPathResultEntry> difference2 = Sets.difference(resultEntries, expectedEntries);
         return difference1.isEmpty() && difference2.isEmpty();
-      case none:
-        throw new BatfishException("Cannot evaluate assertion type none");
       default:
         throw new BatfishException("Unhandled assertion type: " + getType());
     }
@@ -69,23 +87,12 @@ public class JsonPathAssertion {
     return _expect;
   }
 
-  @JsonProperty(PROP_TYPE)
-  public void setType(JsonPathAssertionType assertionType) {
-    _assertionType = assertionType;
-  }
-
-  @JsonProperty(PROP_EXPECT)
-  public void setExpect(JsonNode expect) {
-    _expect = expect;
-  }
-
   @Override
   public String toString() {
-    BatfishObjectMapper mapper = new BatfishObjectMapper(false);
     try {
-      return mapper.writeValueAsString(this);
+      return new BatfishObjectMapper().writeValueAsString(this);
     } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not map JsonPathAssertion to JSON string", e);
+      throw new BatfishException("Cannot serialize to Json", e);
     }
   }
 }

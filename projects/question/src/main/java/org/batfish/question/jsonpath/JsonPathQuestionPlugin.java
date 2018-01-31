@@ -2,6 +2,7 @@ package org.batfish.question.jsonpath;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -143,6 +144,16 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       super(question, batfish);
     }
 
+    /**
+     * This procedure proceeds as follows:
+     *
+     * <ul>
+     *   <li>Compute the inner answer
+     *   <li>Then, for each path query, do computeResult which returns JsonPathResult
+     *   <li>The result is a list of JsonPathResultEntry minus exception entries
+     *   <li>It also contains the result of evaluating the assertion on the result
+     * </ul>
+     */
     @Override
     public JsonPathAnswerElement answer() {
 
@@ -294,7 +305,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         }
       }
 
-      if (query.hasValidAssertion()) {
+      if (query.getAssertion() != null) {
         boolean assertion = query.getAssertion().evaluate(resultEntries);
         jsonPathResult.setAssertionResult(assertion);
       }
@@ -407,6 +418,31 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     public JsonPathQuestion() {
       _paths = Collections.emptyList();
+    }
+
+    @Override
+    public Question configureTemplate(String exceptions, String assertion) {
+      try {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        JsonPathQuestion question =
+            mapper.readValue(mapper.writeValueAsString(this), JsonPathQuestion.class); // deep copy
+
+        Set<JsonPathException> jpExceptions =
+            (exceptions == null)
+                ? null
+                : mapper.readValue(exceptions, new TypeReference<Set<JsonPathException>>() {});
+        JsonPathAssertion jpAssertion =
+            (assertion == null) ? null : mapper.readValue(assertion, JsonPathAssertion.class);
+
+        for (JsonPathQuery query : question.getPaths()) {
+          query.setExceptions(jpExceptions);
+          query.setAssertion(jpAssertion);
+        }
+
+        return question;
+      } catch (IOException e) {
+        throw new BatfishException("Could not clone the question", e);
+      }
     }
 
     @Override

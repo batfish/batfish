@@ -267,6 +267,11 @@ public abstract class Question implements IQuestion {
     _differential = false;
   }
 
+  public Question configureTemplate(String exceptions, String assertion) {
+    throw new UnsupportedOperationException(
+        "extendTemplate is not supported for type: " + this.getClass().getName());
+  }
+
   /** Returns {@code true} iff this question requires a computed data plane as input. */
   @JsonIgnore
   public abstract boolean getDataPlane();

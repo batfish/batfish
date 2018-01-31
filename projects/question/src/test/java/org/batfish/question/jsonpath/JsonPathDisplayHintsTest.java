@@ -45,9 +45,7 @@ public class JsonPathDisplayHintsTest {
     String jsonStr = CommonUtil.readResource(jsonFile);
     Object jsonObject = JsonPath.parse(jsonStr, baseConfiguration).json();
 
-    JsonPathQuery query = new JsonPathQuery();
-    query.setPath(path);
-    query.setSuffix(includeSuffix);
+    JsonPathQuery query = new JsonPathQuery(path, includeSuffix);
 
     JsonPathResult result = JsonPathAnswerer.computeResult(jsonObject, query);
 
