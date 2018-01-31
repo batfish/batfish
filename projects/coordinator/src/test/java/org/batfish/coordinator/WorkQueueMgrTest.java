@@ -279,9 +279,49 @@ public class WorkQueueMgrTest {
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
-    List<QueuedWork> works = _workQueueMgr.listIncompleteWork(CONTAINER);
+    List<QueuedWork> works = _workQueueMgr.listIncompleteWork(CONTAINER, null, null);
 
     assertThat(works, equalTo(Collections.singletonList(work1)));
+  }
+
+  @Test
+  public void listIncompleteWorkForSpecificStatus() throws Exception {
+    initTestrigMetadata("testrig", "env", ProcessingStatus.UNINITIALIZED);
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env", WorkType.PARSING));
+    QueuedWork work2 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env", WorkType.UNKNOWN));
+    _workQueueMgr.queueUnassignedWork(work1);
+    _workQueueMgr.queueUnassignedWork(work2);
+
+    List<QueuedWork> parsingWorks =
+        _workQueueMgr.listIncompleteWork(CONTAINER, null, WorkType.PARSING);
+
+    assertThat(parsingWorks, equalTo(Collections.singletonList(work1)));
+  }
+
+  @Test
+  public void listIncompleteWorkForSpecificTestrig() throws Exception {
+    initTestrigMetadata("testrig", "env", ProcessingStatus.UNINITIALIZED);
+    initTestrigMetadata("testrig2", "env", ProcessingStatus.UNINITIALIZED);
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig"),
+            new WorkDetails("testrig", "env", WorkType.UNKNOWN));
+    QueuedWork work2 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "testrig2"),
+            new WorkDetails("testrig2", "env", WorkType.UNKNOWN));
+    _workQueueMgr.queueUnassignedWork(work1);
+    _workQueueMgr.queueUnassignedWork(work2);
+
+    List<QueuedWork> parsingWorks = _workQueueMgr.listIncompleteWork(CONTAINER, "testrig", null);
+
+    assertThat(parsingWorks, equalTo(Collections.singletonList(work1)));
   }
 
   // BEGIN: DATAPLANE_INDEPENDENT_ANSWERING TESTS

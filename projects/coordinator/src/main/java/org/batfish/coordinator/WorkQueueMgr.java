@@ -350,10 +350,14 @@ public class WorkQueueMgr {
     return workToCheck;
   }
 
-  public synchronized List<QueuedWork> listIncompleteWork(String containerName) {
+  public synchronized List<QueuedWork> listIncompleteWork(
+      String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
     List<QueuedWork> retList = new LinkedList<>();
     for (QueuedWork work : _queueIncompleteWork) {
-      if (work.getWorkItem().getContainerName().equals(containerName)) {
+      // Add to queue if it matches container, testrig if provided, and work type if provided
+      if (work.getWorkItem().getContainerName().equals(containerName)
+          && (testrigName == null || work.getDetails().baseTestrig.equals(testrigName))
+          && (workType == null || work.getDetails().workType == workType)) {
         retList.add(work);
       }
     }
