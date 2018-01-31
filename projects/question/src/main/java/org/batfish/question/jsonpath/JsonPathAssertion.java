@@ -88,6 +88,11 @@ public class JsonPathAssertion {
   }
 
   @Override
+  public int hashCode() {
+    return java.util.Objects.hash(_assertionType, _expect);
+  }
+
+  @Override
   public String toString() {
     try {
       return new BatfishObjectMapper().writeValueAsString(this);

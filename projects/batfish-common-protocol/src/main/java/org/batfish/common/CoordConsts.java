@@ -114,7 +114,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
-  public static final String SVC_RSC_EXTEND_QUESTION_TEMPLATE = "extendquestiontemplate";
+  public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";

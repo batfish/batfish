@@ -191,6 +191,54 @@ public class WorkMgrService {
   }
 
   /**
+   * Add exceptions and/or assertions to question template
+   *
+   * @param apiKey The API key of the client
+   * @param clientVersion The version of the client
+   * @param questionTemplate The template to extend (JSON string)
+   * @param exceptions The exceptions to add (JSON string
+   * @param assertion The assertions to add (JSON string)
+   * @return packages the JSON of the resulting template
+   */
+  @POST
+  @Path(CoordConsts.SVC_RSC_CONFIGURE_QUESTION_TEMPLATE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray configureQuestionTemplate(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_QUESTION) String questionTemplate,
+      @FormDataParam(CoordConsts.SVC_KEY_EXCEPTIONS) @Nullable String exceptions,
+      @FormDataParam(CoordConsts.SVC_KEY_ASSERTION) @Nullable String assertion) {
+    try {
+      _logger.infof(
+          "WMS:configureQuestionTemplate: q: %s e: %s a: %s\n",
+          questionTemplate, exceptions, assertion);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(questionTemplate, "Question template");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      Question inputQuestion = mapper.readValue(questionTemplate, Question.class);
+      Question outputQuestion = inputQuestion.configureTemplate(exceptions, assertion);
+
+      return successResponse(
+          new JSONObject()
+              .put(CoordConsts.SVC_KEY_QUESTION, mapper.writeValueAsString(outputQuestion)));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.error("WMS:getWorkStatus exception: " + e.getMessage() + "\n");
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.error("WMS:getWorkStatus exception: " + stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  /**
    * Delete an analysis from the container
    *
    * @param apiKey The API key of the requester
@@ -402,54 +450,6 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error("WMS:delTestrig exception: " + stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * Add exceptions and/or assertions to question template
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param questionTemplate The template to extend (JSON string)
-   * @param exceptions The exceptions to add (JSON string
-   * @param assertion The assertions to add (JSON string)
-   * @return packages the JSON of the resulting template
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_EXTEND_QUESTION_TEMPLATE)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray extendQuestionTemplate(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_QUESTION) String questionTemplate,
-      @FormDataParam(CoordConsts.SVC_KEY_EXCEPTIONS) @Nullable String exceptions,
-      @FormDataParam(CoordConsts.SVC_KEY_ASSERTION) @Nullable String assertion) {
-    try {
-      _logger.infof(
-          "WMS:configureQuestionTemplate: q: %s e: %s a: %s\n",
-          questionTemplate, exceptions, assertion);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(questionTemplate, "Question template");
-
-      checkApiKeyValidity(apiKey);
-      checkClientVersion(clientVersion);
-
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
-      Question inputQuestion = mapper.readValue(questionTemplate, Question.class);
-      Question outputQuestion = inputQuestion.configureTemplate(exceptions, assertion);
-
-      return successResponse(
-          new JSONObject()
-              .put(CoordConsts.SVC_KEY_QUESTION, mapper.writeValueAsString(outputQuestion)));
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.error("WMS:getWorkStatus exception: " + e.getMessage() + "\n");
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:getWorkStatus exception: " + stackTrace);
       return failureResponse(e.getMessage());
     }
   }
