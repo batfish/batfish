@@ -805,6 +805,43 @@ public class Client extends AbstractClient implements IClient {
     return tempFilePath;
   }
 
+  private boolean configureTemplate(
+      String[] words,
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters) {
+    if (!isValidArgument(
+        options, parameters, 0, 2, Integer.MAX_VALUE, Command.CONFIGURE_TEMPLATE)) {
+      return false;
+    }
+
+    String newTemplateName = parameters.get(0);
+    String oldTemplateName = parameters.get(1);
+    String paramsLine =
+        String.join(" ", Arrays.copyOfRange(words, 3 + options.size(), words.length));
+    Map<String, JsonNode> params = parseParams(paramsLine);
+    JsonNode exceptions = params.get("exceptions");
+    JsonNode assertion = params.get("assertion");
+
+    String oldTemplate = _bfq.get(oldTemplateName.toLowerCase());
+    if (oldTemplate == null) {
+      throw new BatfishException("Template not found: '" + oldTemplateName + "'");
+    }
+    if (exceptions == null && assertion == null && params.size() > 0) {
+      throw new BatfishException("Unknown parameter(s): " + params.keySet());
+    }
+
+    String newTemplate = _workHelper.configureTemplate(oldTemplate, exceptions, assertion);
+
+    if (newTemplate == null) {
+      return false;
+    }
+
+    _bfq.put(newTemplateName.toLowerCase(), newTemplate);
+    logOutput(outWriter, newTemplate);
+    return true;
+  }
+
   private boolean delAnalysis(
       @Nullable FileWriter outWriter, List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 1, 1, Command.DEL_ANALYSIS)) {
@@ -2462,6 +2499,8 @@ public class Client extends AbstractClient implements IClient {
         return checkApiKey(options, parameters);
       case CLEAR_SCREEN:
         return clearScreen(options, parameters);
+      case CONFIGURE_TEMPLATE:
+        return configureTemplate(words, outWriter, options, parameters);
       case DEL_ANALYSIS:
         return delAnalysis(outWriter, options, parameters);
       case DEL_ANALYSIS_QUESTIONS:

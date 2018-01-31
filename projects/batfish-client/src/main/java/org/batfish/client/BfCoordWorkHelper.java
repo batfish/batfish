@@ -1,6 +1,7 @@
 package org.batfish.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.File;
@@ -133,6 +134,45 @@ public class BfCoordWorkHelper {
             ExceptionUtils.getStackTrace(e));
       }
       return false;
+    }
+  }
+
+  @Nullable
+  public String configureTemplate(String inTemplate, JsonNode exceptions, JsonNode assertion) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_QUESTION_TEMPLATE);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION, inTemplate);
+      if (exceptions != null) {
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_EXCEPTIONS, exceptions.toString());
+      }
+      if (assertion != null) {
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ASSERTION, assertion.toString());
+      }
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_QUESTION)) {
+        _logger.errorf("question key not found in: %s\n", jObj);
+        return null;
+      }
+
+      String outTemplate = jObj.getString(CoordConsts.SVC_KEY_QUESTION);
+
+      return outTemplate;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Exception in configureTemplate from %s using (%s, %s, %s)\n",
+          _coordWorkMgr, inTemplate, exceptions, assertion);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
     }
   }
 

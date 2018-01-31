@@ -222,7 +222,9 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
 
       BatfishObjectMapper mapper = new BatfishObjectMapper();
-      Question inputQuestion = mapper.readValue(questionTemplate, Question.class);
+      //      Question inputQuestion = mapper.readValue(questionTemplate, Question.class);
+      Question inputQuestion =
+          Question.parseQuestion(questionTemplate, Main.getWorkMgr().getCurrentClassLoader());
       Question outputQuestion = inputQuestion.configureTemplate(exceptions, assertion);
 
       return successResponse(

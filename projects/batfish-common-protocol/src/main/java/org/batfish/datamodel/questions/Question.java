@@ -318,7 +318,10 @@ public abstract class Question implements IQuestion {
   }
 
   public static Question parseQuestion(Path questionPath, ClassLoader classLoader) {
-    String rawQuestionText = CommonUtil.readFile(questionPath);
+    return parseQuestion(CommonUtil.readFile(questionPath), classLoader);
+  }
+
+  public static Question parseQuestion(String rawQuestionText, ClassLoader classLoader) {
     String questionText = Question.preprocessQuestion(rawQuestionText);
     try {
       ObjectMapper mapper =
