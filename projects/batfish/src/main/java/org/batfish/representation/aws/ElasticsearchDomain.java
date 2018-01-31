@@ -28,10 +28,6 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
   private List<String> _subnets;
 
-  private transient IpAccessList _inAcl;
-
-  private transient IpAccessList _outAcl;
-
   private boolean _available;
 
   public boolean getAvailable() {
@@ -98,10 +94,10 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     }
 
     // create ACLs from inboundRules and outboundRules
-    _inAcl = new IpAccessList(sgIngressAclName, inboundRules);
-    _outAcl = new IpAccessList(sgEgressAclName, outboundRules);
-    cfgNode.getIpAccessLists().put(sgIngressAclName, _inAcl);
-    cfgNode.getIpAccessLists().put(sgEgressAclName, _outAcl);
+    IpAccessList inAcl = new IpAccessList(sgIngressAclName, inboundRules);
+    IpAccessList outAcl = new IpAccessList(sgEgressAclName, outboundRules);
+    cfgNode.getIpAccessLists().put(sgIngressAclName, inAcl);
+    cfgNode.getIpAccessLists().put(sgEgressAclName, outAcl);
 
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());

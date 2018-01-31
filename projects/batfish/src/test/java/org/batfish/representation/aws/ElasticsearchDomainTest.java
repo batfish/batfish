@@ -68,7 +68,7 @@ public class ElasticsearchDomainTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText("org/batfish/representation/aws/testrigs", awsFilenames)
+                .setAwsText("org/batfish/representation/aws/test", awsFilenames)
                 .build(),
             _folder);
     return batfish.loadConfigurations();
