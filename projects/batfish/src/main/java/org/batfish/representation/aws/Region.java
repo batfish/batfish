@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
@@ -33,6 +35,8 @@ public class Region implements Serializable {
   private Map<String, NetworkAcl> _networkAcls = new HashMap<>();
 
   private Map<String, NetworkInterface> _networkInterfaces = new HashMap<>();
+
+  private Map<String, RdsInstance> _rdsInstances = new HashMap<>();
 
   private Map<String, RouteTable> _routeTables = new HashMap<>();
 
@@ -88,6 +92,12 @@ public class Region implements Serializable {
       case AwsVpcEntity.JSON_KEY_CUSTOMER_GATEWAYS:
         CustomerGateway cGateway = new CustomerGateway(jsonObject, logger);
         _customerGateways.put(cGateway.getId(), cGateway);
+        break;
+      case AwsVpcEntity.JSON_KEY_DB_INSTANCES:
+        RdsInstance rdsInstance = new RdsInstance(jsonObject, logger);
+        if (rdsInstance.getDbInstanceStatus() == RdsInstance.Status.AVAILABLE) {
+          _rdsInstances.put(rdsInstance.getId(), rdsInstance);
+        }
         break;
       case AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS:
         InternetGateway iGateway = new InternetGateway(jsonObject, logger);
@@ -185,6 +195,10 @@ public class Region implements Serializable {
     return _networkInterfaces;
   }
 
+  public Map<String, RdsInstance> getRdsInstances() {
+    return _rdsInstances;
+  }
+
   public Map<String, RouteTable> getRouteTables() {
     return _routeTables;
   }
@@ -231,6 +245,9 @@ public class Region implements Serializable {
   public void toConfigurationNodes(
       AwsConfiguration awsConfiguration, Map<String, Configuration> configurationNodes) {
 
+    // updates the Ips which have been allocated already in subnets of all interfaces
+    updateAllocatedIps();
+
     for (Vpc vpc : getVpcs().values()) {
       Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
       configurationNodes.put(cfgNode.getName(), cfgNode);
@@ -260,6 +277,11 @@ public class Region implements Serializable {
       configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
+    for (RdsInstance rdsInstance : getRdsInstances().values()) {
+      Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
+    }
+
     for (Subnet subnet : getSubnets().values()) {
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this);
       configurationNodes.put(cfgNode.getName(), cfgNode);
@@ -277,5 +299,22 @@ public class Region implements Serializable {
         }
       }
     }
+  }
+
+  private void updateAllocatedIps() {
+    _networkInterfaces
+        .values()
+        .forEach(
+            networkInterface ->
+                _subnets
+                    .get(networkInterface.getSubnetId())
+                    .getAllocatedIps()
+                    .addAll(
+                        networkInterface
+                            .getIpAddressAssociations()
+                            .keySet()
+                            .stream()
+                            .map(Ip::asLong)
+                            .collect(Collectors.toSet())));
   }
 }

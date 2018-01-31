@@ -73,6 +73,21 @@ public class WorkQueueMgr {
     }
   }
 
+  private void cleanUpEnvMetaDataIfNeeded(String container, String testrig, String environment)
+      throws IOException {
+    EnvironmentMetadata envMetadata =
+        TestrigMetadataMgr.getEnvironmentMetadata(container, testrig, environment);
+    if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING
+        && getIncompleteWork(container, testrig, environment, WorkType.PARSING) == null) {
+      TestrigMetadataMgr.updateEnvironmentStatus(
+          container, testrig, environment, ProcessingStatus.PARSING_FAIL);
+    } else if (envMetadata.getProcessingStatus() == ProcessingStatus.DATAPLANING
+        && getIncompleteWork(container, testrig, environment, WorkType.DATAPLANING) == null) {
+      TestrigMetadataMgr.updateEnvironmentStatus(
+          container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL);
+    }
+  }
+
   private QueuedWork generateAndQueueDataplaneWork(
       String container, String testrig, String environment) throws Exception {
     WorkItem newWItem =
@@ -335,6 +350,20 @@ public class WorkQueueMgr {
     return workToCheck;
   }
 
+  public synchronized List<QueuedWork> listIncompleteWork(
+      String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
+    List<QueuedWork> retList = new LinkedList<>();
+    for (QueuedWork work : _queueIncompleteWork) {
+      // Add to queue if it matches container, testrig if provided, and work type if provided
+      if (work.getWorkItem().getContainerName().equals(containerName)
+          && (testrigName == null || work.getDetails().baseTestrig.equals(testrigName))
+          && (workType == null || work.getDetails().workType == workType)) {
+        retList.add(work);
+      }
+    }
+    return retList;
+  }
+
   public synchronized void makeWorkUnassigned(QueuedWork work) {
     work.setStatus(WorkStatusCode.UNASSIGNED);
   }
@@ -374,7 +403,7 @@ public class WorkQueueMgr {
 
   public synchronized void processTaskCheckResult(QueuedWork work, Task task) throws Exception {
 
-    // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally,
+    // {Unscheduled, InProgress, TerminatedNormally, TerminatedAbnormally, TerminatedByUser
     // Unknown, UnreachableOrBadResponse}
 
     switch (task.getStatus()) {
@@ -385,14 +414,12 @@ public class WorkQueueMgr {
         break;
       case TerminatedNormally:
       case TerminatedAbnormally:
+      case TerminatedByUser:
         {
           // move the work to completed queue
           _queueIncompleteWork.delete(work);
           _queueCompletedWork.enque(work);
-          work.setStatus(
-              (task.getStatus() == TaskStatus.TerminatedNormally)
-                  ? WorkStatusCode.TERMINATEDNORMALLY
-                  : WorkStatusCode.TERMINATEDABNORMALLY);
+          work.setStatus(WorkStatusCode.fromTerminatedTaskStatus(task.getStatus()));
           work.recordTaskCheckResult(task);
 
           // update testrig metadata
@@ -441,8 +468,8 @@ public class WorkQueueMgr {
                 // put this work back on incomplete queue and process as if it terminatedabnormally
                 // people may be checking its status and this work may be blocking others
                 _queueIncompleteWork.enque(requeueWork);
-                Task fakeTask = new Task();
-                fakeTask.setStatus(TaskStatus.TerminatedAbnormally);
+                Task fakeTask =
+                    new Task(TaskStatus.TerminatedAbnormally, "Couldn't requeue after unblocking");
                 processTaskCheckResult(requeueWork, fakeTask);
               }
             }
@@ -608,7 +635,13 @@ public class WorkQueueMgr {
     if (previouslyQueuedWork != null) {
       throw new BatfishException("Duplicate work item");
     }
-
+    WorkDetails wDetails = work.getDetails();
+    cleanUpEnvMetaDataIfNeeded(
+        work.getWorkItem().getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
+    if (work.getDetails().isDifferential) {
+      cleanUpEnvMetaDataIfNeeded(
+          work.getWorkItem().getContainerName(), wDetails.deltaTestrig, wDetails.deltaEnv);
+    }
     switch (work.getDetails().workType) {
       case PARSING:
         return queueParsingWork(work);

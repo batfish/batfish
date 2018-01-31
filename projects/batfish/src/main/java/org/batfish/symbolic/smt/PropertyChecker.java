@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -455,6 +456,11 @@ public class PropertyChecker {
   /*
    * General purpose logic for checking a property that holds that
    * handles the various flags and parameters for a query with endpoints
+   *
+   * q is the question from the user.
+   * instrument instruments each router in the graph as needed to check the property.
+   * answer takes the result from Z3 and produces the answer for the user.
+   *
    */
   private AnswerElement checkProperty(
       HeaderLocationQuestion q,
@@ -576,9 +582,13 @@ public class PropertyChecker {
                   enc.add(enc.mkNot(required));
 
                 } else {
+                  // Not a differential query; just a query on a single version of the network.
                   BoolExpr allProp = enc.mkTrue();
                   for (String router : srcRouters) {
                     BoolExpr r = prop.get(router);
+                    if (q.getNegate()) {
+                      r = enc.mkNot(r);
+                    }
                     allProp = enc.mkAnd(allProp, r);
                   }
                   enc.add(enc.mkNot(allProp));
@@ -668,7 +678,15 @@ public class PropertyChecker {
                       vp.getProp(),
                       vp.getPropDiff());
             } else {
-              fh = ce.buildFlowHistory(testrigName, vp.getSrcRouters(), vp.getEnc(), vp.getProp());
+              Map<String, Boolean> reachVals =
+                  vp.getProp()
+                      .entrySet()
+                      .stream()
+                      .collect(
+                          Collectors.toMap(
+                              Map.Entry::getKey,
+                              entry -> ce.isTrue(entry.getValue()) ^ q.getNegate()));
+              fh = ce.buildFlowHistory(testrigName, vp.getSrcRouters(), vp.getEnc(), reachVals);
             }
             return new SmtReachabilityAnswerElement(vp.getResult(), fh);
           }
@@ -876,6 +894,10 @@ public class PropertyChecker {
    * (i.e., dropped or accepted by each).
    */
   public AnswerElement checkMultipathConsistency(HeaderLocationQuestion q) {
+    if (q.getNegate()) {
+      throw new BatfishException("Negation not implemented for smt-multipath-consistency.");
+    }
+
     PathRegexes p = new PathRegexes(q);
     Graph graph = new Graph(_batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);

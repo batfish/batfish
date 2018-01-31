@@ -55,8 +55,8 @@ public class PoolMgrService {
                 new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates)));
       }
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:getQuestionTemplates exception: " + stackTrace);
+      _logger.errorf(
+          "WMS:getQuestionTemplates exception: %s\n", ExceptionUtils.getFullStackTrace(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
@@ -71,8 +71,7 @@ public class PoolMgrService {
       JSONObject obj = new JSONObject(poolStatus);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, obj.toString()));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("PMS:getStatus exception: " + stackTrace);
+      _logger.errorf("PMS:getStatus exception: %s\n", ExceptionUtils.getFullStackTrace(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
@@ -149,8 +148,7 @@ public class PoolMgrService {
         }
       }
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("PMS:updatePool exception: " + stackTrace);
+      _logger.errorf("PMS:updatePool exception: %s\n", ExceptionUtils.getFullStackTrace(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
 

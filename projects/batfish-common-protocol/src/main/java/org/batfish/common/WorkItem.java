@@ -22,6 +22,9 @@ public class WorkItem {
   private static final String PROP_REQUEST_PARAMS = "requestParams";
   private static final String PROP_TESTRIG_NAME = "testrigName";
 
+  // used for testing to force an UUID
+  private static UUID FIXED_UUID = null;
+
   private final String _containerName;
   private final UUID _id;
   private Map<String, String> _requestParams;
@@ -29,7 +32,11 @@ public class WorkItem {
   private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
   public WorkItem(String containerName, String testrigName) {
-    this(UUID.randomUUID(), containerName, testrigName, new HashMap<>());
+    this(
+        (FIXED_UUID == null) ? UUID.randomUUID() : FIXED_UUID,
+        containerName,
+        testrigName,
+        new HashMap<>());
   }
 
   @JsonCreator
@@ -97,6 +104,10 @@ public class WorkItem {
         && workItem._containerName.equals(_containerName)
         && workItem._testrigName.equals(_testrigName)
         && workItem._requestParams.equals(_requestParams));
+  }
+
+  public static void setFixedUuid(UUID value) {
+    FIXED_UUID = value;
   }
 
   /**

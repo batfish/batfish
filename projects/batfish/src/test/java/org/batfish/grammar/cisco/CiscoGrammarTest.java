@@ -506,10 +506,6 @@ public class CiscoGrammarTest {
     assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
   }
 
-  public String readTestConfig(String name) {
-    return CommonUtil.readResource(TESTCONFIGS_PREFIX + "/" + name);
-  }
-
   @Test
   public void testRfc1583Compatible() throws IOException {
     SortedMap<String, String> configurationTextMap = new TreeMap<>();
