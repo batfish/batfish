@@ -730,6 +730,119 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     parseCommandLine(args);
   }
 
+  /**
+   * Creates a new settings object based on an existing settings object, then parses args.
+   *
+   * <p>This ignores some of the fields that are not applicable for task-level settings (e.g., the
+   * runMode).
+   *
+   * @param other the {@link Settings} object to copy values from
+   */
+  public Settings(Settings other, String[] args) {
+    this(new String[] {});
+    _activeTestrigSettings = other._activeTestrigSettings;
+    _analysisName = other._analysisName;
+    _analyze = other._analyze;
+    _answer = other._answer;
+    _answerJsonPath = other._answerJsonPath;
+    _baseTestrigSettings = other._baseTestrigSettings;
+    _bdpDetail = other._bdpDetail;
+    _bdpMaxOscillationRecoveryAttempts = other._bdpMaxOscillationRecoveryAttempts;
+    _bdpMaxRecordedIterations = other._bdpMaxRecordedIterations;
+    _bdpPrintAllIterations = other._bdpPrintAllIterations;
+    _bdpPrintOscillatingIterations = other._bdpPrintOscillatingIterations;
+    _bdpRecordAllIterations = other._bdpRecordAllIterations;
+    _blockNames = other._blockNames;
+    _canExecute = other._canExecute;
+    _compileDiffEnvironment = other._compileDiffEnvironment;
+    _containerDir = other._containerDir;
+    _coordinatorHost = other._coordinatorHost;
+    _coordinatorPoolPort = other._coordinatorPoolPort;
+    _coordinatorRegister = other._coordinatorRegister;
+    _coordinatorWorkPort = other._coordinatorWorkPort;
+    _dataPlane = other._dataPlane;
+    _deltaEnvironmentName = other._deltaEnvironmentName;
+    _deltaTestrig = other._deltaTestrig;
+    _deltaTestrigSettings = other._deltaTestrigSettings;
+    _diffActive = other._diffActive;
+    _differential = other._differential;
+    _diffQuestion = other._diffQuestion;
+    _disableUnrecognized = other._disableUnrecognized;
+    _environmentName = other._environmentName;
+    _exitOnFirstError = other._exitOnFirstError;
+    _flatten = other._flatten;
+    _flattenDestination = other._flattenDestination;
+    _flattenOnTheFly = other._flattenOnTheFly;
+    _generateStubs = other._generateStubs;
+    _generateStubsInputRole = other._generateStubsInputRole;
+    _generateStubsInterfaceDescriptionRegex = other._generateStubsInterfaceDescriptionRegex;
+    _generateStubsRemoteAs = other._generateStubsRemoteAs;
+    _genOspfTopologyPath = other._genOspfTopologyPath;
+    _haltOnConvertError = other._haltOnConvertError;
+    _haltOnParseError = other._haltOnParseError;
+    _helpPredicates = other._helpPredicates;
+    _histogram = other._histogram;
+    _ignoreFilesWithStrings = other._ignoreFilesWithStrings;
+    _ignoreUnknown = other._ignoreUnknown;
+    _ignoreUnsupported = other._ignoreUnsupported;
+    _initInfo = other._initInfo;
+    _jobs = other._jobs;
+    _logFile = other._logFile;
+    _logger = other._logger;
+    _logLevel = other._logLevel;
+    _logTee = other._logTee;
+    _maxParserContextLines = other._maxParserContextLines;
+    _maxParserContextTokens = other._maxParserContextTokens;
+    _maxParseTreePrintLength = other._maxParseTreePrintLength;
+    _maxRuntimeMs = other._maxRuntimeMs;
+    _outputEnvironmentName = other._outputEnvironmentName;
+    _parentPid = other._parentPid;
+    _pedanticAsError = other._pedanticAsError;
+    _pedanticRecord = other._pedanticRecord;
+    _predicates = other._predicates;
+    _prettyPrintAnswer = other._prettyPrintAnswer;
+    _printParseTree = other._printParseTree;
+    _printSymmetricEdges = other._printSymmetricEdges;
+    _questionName = other._questionName;
+    _questionPath = other._questionPath;
+    _redFlagAsError = other._redFlagAsError;
+    _redFlagRecord = other._redFlagRecord;
+    _report = other._report;
+    _sequential = other._sequential;
+    _serializeIndependent = other._serializeIndependent;
+    _serializeToText = other._serializeToText;
+    _serializeVendor = other._serializeVendor;
+    _serviceBindHost = other._serviceBindHost;
+    _serviceHost = other._serviceHost;
+    _servicePort = other._servicePort;
+    _shuffleJobs = other._shuffleJobs;
+    _simplify = other._simplify;
+    _sslDisable = other._sslDisable;
+    _sslKeystoreFile = other._sslKeystoreFile;
+    _sslKeystorePassword = other._sslKeystorePassword;
+    _sslTrustAllCerts = other._sslTrustAllCerts;
+    _sslTruststoreFile = other._sslTruststoreFile;
+    _sslTruststorePassword = other._sslTruststorePassword;
+    _synthesizeJsonTopology = other._synthesizeJsonTopology;
+    _taskId = other._taskId;
+    _taskPlugin = other._taskPlugin;
+    _testrig = other._testrig;
+    _throwOnLexerError = other._throwOnLexerError;
+    _throwOnParserError = other._throwOnParserError;
+    _timestamp = other._timestamp;
+    _tracingAgentHost = other._tracingAgentHost;
+    _tracingAgentPort = other._tracingAgentPort;
+    _tracingEnable = other._tracingEnable;
+    _unimplementedAsError = other._unimplementedAsError;
+    _unimplementedRecord = other._unimplementedRecord;
+    _unrecognizedAsRedFlag = other._unrecognizedAsRedFlag;
+    _validateEnvironment = other._validateEnvironment;
+    _verboseParse = other._verboseParse;
+    _z3timeout = other._z3timeout;
+    _dataPlaneEngineName = other._dataPlaneEngineName;
+    parseCommandLine(args);
+  }
+
   public boolean canExecute() {
     return _canExecute;
   }

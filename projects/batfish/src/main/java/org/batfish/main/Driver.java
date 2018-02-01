@@ -639,7 +639,7 @@ public class Driver {
   public static List<String> runBatfishThroughService(final String taskId, String[] args) {
     final Settings settings;
     try {
-      settings = new Settings(args);
+      settings = new Settings(_mainSettings, args);
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
@@ -671,9 +671,6 @@ public class Driver {
                   settings.getLogTee(),
                   false);
           settings.setLogger(jobLogger);
-
-          settings.setMaxRuntimeMs(_mainSettings.getMaxRuntimeMs());
-          settings.setDataplaneEngineName(_mainSettings.getDataPlaneEngineName());
 
           final Task task = new Task(args);
 
