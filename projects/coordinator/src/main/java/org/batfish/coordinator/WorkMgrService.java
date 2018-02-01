@@ -196,7 +196,7 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param questionTemplate The template to extend (JSON string)
-   * @param exceptions The exceptions to add (JSON string
+   * @param exceptions The exceptions to add (JSON string)
    * @param assertion The assertions to add (JSON string)
    * @return packages the JSON of the resulting template
    */

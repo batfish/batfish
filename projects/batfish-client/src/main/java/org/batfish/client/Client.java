@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.kjetland.jackson.jsonSchema.JsonSchemaGenerator;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
@@ -827,7 +828,7 @@ public class Client extends AbstractClient implements IClient {
     if (oldTemplate == null) {
       throw new BatfishException("Template not found: '" + oldTemplateName + "'");
     }
-    if (exceptions == null && assertion == null && params.size() > 0) {
+    if (!Sets.difference(params.keySet(), Sets.newHashSet("exceptions", "assertion")).isEmpty()) {
       throw new BatfishException("Unknown parameter(s): " + params.keySet());
     }
 

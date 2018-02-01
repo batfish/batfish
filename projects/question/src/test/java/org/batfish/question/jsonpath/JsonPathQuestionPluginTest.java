@@ -70,10 +70,9 @@ public class JsonPathQuestionPluginTest {
         (JsonPathQuestion)
             oldQuestion.configureTemplate(null, mapper.writeValueAsString(newAssertion));
 
-    // check if null values mapped to proper wiping out
-    assertThat(nullAssertionQuestion.getPaths().get(0).getAssertion(), equalTo(null));
-    assertThat(
-        nullExceptionQuestion.getPaths().get(0).getExceptions(), equalTo(Collections.emptySet()));
+    // check if null values retained the original values
+    assertThat(nullAssertionQuestion.getPaths().get(0).getAssertion(), equalTo(oldAssertion));
+    assertThat(nullExceptionQuestion.getPaths().get(0).getExceptions(), equalTo(oldExceptions));
   }
 
   @Test
