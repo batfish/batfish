@@ -54,12 +54,7 @@ public interface IBatfish extends IPluginConsumer {
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
-  Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive);
-
-  Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners);
-
-  Topology computeTopology(Map<String, Configuration> configurations);
+  Topology computeEnvironmentTopology(Map<String, Configuration> configurations);
 
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 

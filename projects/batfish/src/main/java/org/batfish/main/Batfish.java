@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -98,11 +97,9 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.Answer;
@@ -923,7 +920,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
-  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
+  @Override
+  public Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
@@ -983,94 +981,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flowSinksBuilder.build();
   }
 
-  @Override
-  public Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    // TODO: confirm VRFs are handled correctly
-    Map<Ip, Set<String>> ipOwners = new HashMap<>();
-    Map<Pair<Prefix, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    configurations.forEach(
-        (hostname, c) -> {
-          for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
-              // collect vrrp info
-              i.getVrrpGroups()
-                  .forEach(
-                      (groupNum, vrrpGroup) -> {
-                        Prefix prefix = vrrpGroup.getVirtualAddress().getPrefix();
-                        if (prefix == null) {
-                          // This Vlan Interface has invalid configuration. The VRRP has no source
-                          // IP address that would be used for VRRP election. This interface could
-                          // never win the election, so is not a candidate.
-                          return;
-                        }
-                        Pair<Prefix, Integer> key = new Pair<>(prefix, groupNum);
-                        Set<Interface> candidates =
-                            vrrpGroups.computeIfAbsent(
-                                key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                        candidates.add(i);
-                      });
-              // collect prefixes
-              i.getAllAddresses()
-                  .stream()
-                  .map(a -> a.getIp())
-                  .forEach(
-                      ip -> {
-                        Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                        owners.add(hostname);
-                      });
-            }
-          }
-        });
-    vrrpGroups.forEach(
-        (p, candidates) -> {
-          int groupNum = p.getSecond();
-          Prefix prefix = p.getFirst();
-          Ip ip = prefix.getStartIp();
-          int lowestPriority = Integer.MAX_VALUE;
-          String bestCandidate = null;
-          SortedSet<String> bestCandidates = new TreeSet<>();
-          for (Interface candidate : candidates) {
-            VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
-            int currentPriority = group.getPriority();
-            if (currentPriority < lowestPriority) {
-              lowestPriority = currentPriority;
-              bestCandidates.clear();
-              bestCandidate = candidate.getOwner().getHostname();
-            }
-            if (currentPriority == lowestPriority) {
-              bestCandidates.add(candidate.getOwner().getHostname());
-            }
-          }
-          if (bestCandidates.size() != 1) {
-            String deterministicBestCandidate = bestCandidates.first();
-            bestCandidate = deterministicBestCandidate;
-            _logger.redflag(
-                "Arbitrarily choosing best vrrp candidate: '"
-                    + deterministicBestCandidate
-                    + " for prefix/groupNumber: '"
-                    + p.toString()
-                    + "' among multiple best candidates: "
-                    + bestCandidates);
-          }
-          Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-          owners.add(bestCandidate);
-        });
-    return ipOwners;
-  }
-
-  @Override
-  public Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
-    Map<Ip, String> ipOwnersSimple = new HashMap<>();
-    ipOwners.forEach(
-        (ip, owners) -> {
-          String hostname =
-              owners.size() == 1 ? owners.iterator().next() : Route.AMBIGUOUS_NEXT_HOP;
-          ipOwnersSimple.put(ip, hostname);
-        });
-    return ipOwnersSimple;
-  }
-
   public <KeyT, ResultT> void computeNodFirstUnsatOutput(
       List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
     _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");
@@ -1102,33 +1012,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BatfishJobExecutor.runJobsInExecutor(
         _settings, _logger, jobs, output, new NodSatAnswerElement(), true, "NOD SAT");
     _logger.printElapsedTime();
-  }
-
-  // TODO: should this be moved out of batfish class?
-  @Override
-  public Topology computeTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(_testrigSettings.getTestRigPath(), configurations);
-    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    if (blacklistEdges != null) {
-      SortedSet<Edge> edges = topology.getEdges();
-      edges.removeAll(blacklistEdges);
-    }
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    if (blacklistNodes != null) {
-      for (String blacklistNode : blacklistNodes) {
-        topology.removeNode(blacklistNode);
-      }
-    }
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    if (blacklistInterfaces != null) {
-      for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-        topology.removeInterface(blacklistInterface);
-      }
-    }
-    Topology prunedTopology = new Topology(topology.getEdges());
-    _logger.printElapsedTime();
-    return prunedTopology;
   }
 
   private Topology computeTestrigTopology(

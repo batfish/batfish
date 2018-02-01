@@ -145,9 +145,11 @@ public class Graph {
     }
     _routers = _configurations.keySet();
 
+    Topology topology = _batfish.getEnvironmentTopology();
+
     // Remove the routers we don't want to model
     if (routers != null) {
-      List<String> toRemove = new ArrayList<>();
+      Set<String> toRemove = new HashSet<>();
       for (String router : _configurations.keySet()) {
         if (!routers.contains(router)) {
           toRemove.add(router);
@@ -156,6 +158,7 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
+      topology.prune(null, toRemove, null);
     }
 
     initGraph();
@@ -313,7 +316,7 @@ public class Graph {
    * create the opposite edge mapping.
    */
   private void initGraph() {
-    Topology topology = _batfish.computeTopology(_configurations);
+    Topology topology = _batfish.computeEnvironmentTopology(_configurations);
     Map<NodeInterfacePair, Interface> ifaceMap = new HashMap<>();
     Map<String, Set<NodeInterfacePair>> routerIfaceMap = new HashMap<>();
 

@@ -52,8 +52,7 @@ public class PrefixUtils {
       return false;
     }
     for (Prefix p2 : ps) {
-      // TODO shouldn't p2.equals(p) imply p2.containsPrefix(p)? Add unit tests.
-      if (p2.containsPrefix(p) || p2.equals(p)) {
+      if (p2.containsPrefix(p)) {
         return true;
       }
     }
