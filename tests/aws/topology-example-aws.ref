@@ -142,6 +142,7 @@
         "aggregate-subnet-30398256",
         "aggregate-subnet-073b8061",
         "aggregate-subnet-1641fa70",
+        "node-es-domain",
         "node-test-rds"
       ],
       "id" : "aggregate-vpc-b390fad5",
@@ -154,6 +155,18 @@
       "name" : "igw-068fee63",
       "nodeId" : "node-vpc-f8fad69d",
       "id" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "subnet-1641fa70",
+      "nodeId" : "node-es-domain",
+      "id" : "interface-node-es-domain-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "es-domain-subnet-7044ff16",
+      "nodeId" : "node-es-domain",
+      "id" : "interface-node-es-domain-es-domain-subnet-7044ff16",
       "type" : "UNKNOWN"
     },
     {
@@ -247,6 +260,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "es-domain-subnet-7044ff16",
+      "nodeId" : "node-subnet-7044ff16",
+      "id" : "interface-node-subnet-7044ff16-es-domain-subnet-7044ff16",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "vpc-b390fad5",
       "nodeId" : "node-subnet-f73a8191",
       "id" : "interface-node-subnet-f73a8191-vpc-b390fad5",
@@ -277,6 +296,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "test-rds-subnet-1641fa70",
+      "nodeId" : "node-es-domain",
+      "id" : "interface-node-es-domain-test-rds-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "subnet-073b8061",
       "nodeId" : "node-subnet-073b8061",
       "id" : "interface-node-subnet-073b8061-subnet-073b8061",
@@ -286,6 +311,12 @@
       "name" : "vpc-815775e7",
       "nodeId" : "node-vpc-815775e7",
       "id" : "interface-node-vpc-815775e7-vpc-815775e7",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "es-domain-subnet-1641fa70",
+      "nodeId" : "node-es-domain",
+      "id" : "interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "UNKNOWN"
     },
     {
@@ -307,15 +338,15 @@
       "type" : "UNKNOWN"
     },
     {
-      "name" : "subnet-1641fa70",
-      "nodeId" : "node-subnet-1641fa70",
-      "id" : "interface-node-subnet-1641fa70-subnet-1641fa70",
-      "type" : "UNKNOWN"
-    },
-    {
       "name" : "vpn2",
       "nodeId" : "node-vgw-81fd279f",
       "id" : "interface-node-vgw-81fd279f-vpn2",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "subnet-1641fa70",
+      "nodeId" : "node-subnet-1641fa70",
+      "id" : "interface-node-subnet-1641fa70-subnet-1641fa70",
       "type" : "UNKNOWN"
     },
     {
@@ -367,6 +398,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "es-domain-subnet-1641fa70",
+      "nodeId" : "node-subnet-1641fa70",
+      "id" : "interface-node-subnet-1641fa70-es-domain-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "Tunnel1",
       "nodeId" : "node-vgw-81fd279f",
       "id" : "interface-node-vgw-81fd279f-Tunnel1",
@@ -406,6 +443,12 @@
       "name" : "subnet-1641fa70",
       "nodeId" : "node-test-rds",
       "id" : "interface-node-test-rds-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "name" : "subnet-7044ff16",
+      "nodeId" : "node-es-domain",
+      "id" : "interface-node-es-domain-subnet-7044ff16",
       "type" : "UNKNOWN"
     },
     {
@@ -481,6 +524,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "name" : "es-domain-subnet-1641fa70",
+      "nodeId" : "node-test-rds",
+      "id" : "interface-node-test-rds-es-domain-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
       "name" : "subnet-62f14104",
       "nodeId" : "node-subnet-62f14104",
       "id" : "interface-node-subnet-62f14104-subnet-62f14104",
@@ -525,6 +574,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "srcId" : "interface-node-es-domain-test-rds-subnet-1641fa70",
+      "id" : "link-interface-node-es-domain-test-rds-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-igw-068fee63-vpc-f8fad69d",
       "srcId" : "interface-node-igw-068fee63-igw-068fee63",
       "id" : "link-interface-node-igw-068fee63-igw-068fee63-interface-node-igw-068fee63-vpc-f8fad69d",
@@ -552,6 +607,18 @@
       "dstId" : "interface-node-vpc-b390fad5-subnet-1641fa70",
       "srcId" : "interface-node-vpc-b390fad5-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "srcId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
+      "id" : "link-interface-node-subnet-7044ff16-subnet-7044ff16-interface-node-es-domain-es-domain-subnet-7044ff16",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "srcId" : "interface-node-es-domain-subnet-1641fa70",
+      "id" : "link-interface-node-es-domain-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "UNKNOWN"
     },
     {
@@ -606,6 +673,18 @@
       "dstId" : "interface-node-subnet-62f14104-vpc-925131f4",
       "srcId" : "interface-node-subnet-62f14104-subnet-62f14104",
       "id" : "link-interface-node-subnet-62f14104-subnet-62f14104-interface-node-subnet-62f14104-vpc-925131f4",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
+      "srcId" : "interface-node-test-rds-es-domain-subnet-1641fa70",
+      "id" : "link-interface-node-test-rds-es-domain-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "srcId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
+      "id" : "link-interface-node-subnet-1641fa70-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "UNKNOWN"
     },
     {
@@ -765,6 +844,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
+      "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-subnet-7044ff16",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-vpc-b390fad5-subnet-30398256",
       "srcId" : "interface-node-vpc-b390fad5-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-30398256",
@@ -810,6 +895,12 @@
       "dstId" : "interface-node-vpc-925131f4-subnet-62f14104",
       "srcId" : "interface-node-vpc-925131f4-vpc-925131f4",
       "id" : "link-interface-node-vpc-925131f4-vpc-925131f4-interface-node-vpc-925131f4-subnet-62f14104",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
+      "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
       "type" : "UNKNOWN"
     },
     {
@@ -861,6 +952,12 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
+      "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-vpc-925131f4-subnet-8d0cbdeb",
       "srcId" : "interface-node-vpc-925131f4-vpc-925131f4",
       "id" : "link-interface-node-vpc-925131f4-vpc-925131f4-interface-node-vpc-925131f4-subnet-8d0cbdeb",
@@ -870,6 +967,18 @@
       "dstId" : "interface-node-vpc-b390fad5-subnet-1641fa70",
       "srcId" : "interface-node-subnet-1641fa70-vpc-b390fad5",
       "id" : "link-interface-node-subnet-1641fa70-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-1641fa70",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-subnet-7044ff16-subnet-7044ff16",
+      "srcId" : "interface-node-subnet-7044ff16-es-domain-subnet-7044ff16",
+      "id" : "link-interface-node-subnet-7044ff16-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-subnet-7044ff16",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
+      "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
+      "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
       "type" : "UNKNOWN"
     },
     {
@@ -897,9 +1006,21 @@
       "type" : "UNKNOWN"
     },
     {
+      "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
+      "srcId" : "interface-node-es-domain-subnet-7044ff16",
+      "id" : "link-interface-node-es-domain-subnet-7044ff16-interface-node-es-domain-es-domain-subnet-7044ff16",
+      "type" : "UNKNOWN"
+    },
+    {
       "dstId" : "interface-node-subnet-30398256-vpc-b390fad5",
       "srcId" : "interface-node-subnet-30398256-subnet-30398256",
       "id" : "link-interface-node-subnet-30398256-subnet-30398256-interface-node-subnet-30398256-vpc-b390fad5",
+      "type" : "UNKNOWN"
+    },
+    {
+      "dstId" : "interface-node-subnet-1641fa70-subnet-1641fa70",
+      "srcId" : "interface-node-subnet-1641fa70-es-domain-subnet-1641fa70",
+      "id" : "link-interface-node-subnet-1641fa70-es-domain-subnet-1641fa70-interface-node-subnet-1641fa70-subnet-1641fa70",
       "type" : "UNKNOWN"
     }
   ],
@@ -922,6 +1043,11 @@
     {
       "name" : "subnet-30398256",
       "id" : "node-subnet-30398256",
+      "type" : "SWITCH"
+    },
+    {
+      "name" : "es-domain",
+      "id" : "node-es-domain",
       "type" : "SWITCH"
     },
     {
