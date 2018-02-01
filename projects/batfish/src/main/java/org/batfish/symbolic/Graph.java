@@ -161,7 +161,7 @@ public class Graph {
       topology.prune(null, toRemove, null);
     }
 
-    initGraph();
+    initGraph(topology);
     initOspfCosts();
     initStaticRoutes();
     addNullRouteEdges();
@@ -315,8 +315,7 @@ public class Graph {
    * Initialize the topology by inferring interface pairs and
    * create the opposite edge mapping.
    */
-  private void initGraph() {
-    Topology topology = _batfish.computeEnvironmentTopology(_configurations);
+  private void initGraph(Topology topology) {
     Map<NodeInterfacePair, Interface> ifaceMap = new HashMap<>();
     Map<String, Set<NodeInterfacePair>> routerIfaceMap = new HashMap<>();
 
