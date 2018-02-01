@@ -2,6 +2,7 @@ package org.batfish.question.jsonpath;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -27,6 +28,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -143,6 +145,16 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       super(question, batfish);
     }
 
+    /**
+     * This procedure proceeds as follows:
+     *
+     * <ul>
+     *   <li>Compute the inner answer
+     *   <li>Then, for each path query, do computeResult which returns JsonPathResult
+     *   <li>The result is a list of JsonPathResultEntry minus exception entries
+     *   <li>It also contains the result of evaluating the assertion on the result
+     * </ul>
+     */
     @Override
     public JsonPathAnswerElement answer() {
 
@@ -294,7 +306,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
         }
       }
 
-      if (query.hasValidAssertion()) {
+      if (query.getAssertion() != null) {
         boolean assertion = query.getAssertion().evaluate(resultEntries);
         jsonPathResult.setAssertionResult(assertion);
       }
@@ -407,6 +419,37 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     public JsonPathQuestion() {
       _paths = Collections.emptyList();
+    }
+
+    @Override
+    public Question configureTemplate(@Nullable String exceptions, @Nullable String assertion) {
+      try {
+        BatfishObjectMapper mapper = new BatfishObjectMapper();
+        JsonPathQuestion question =
+            mapper.readValue(mapper.writeValueAsString(this), JsonPathQuestion.class); // deep copy
+
+        if (exceptions != null) {
+          Set<JsonPathException> jpExceptions =
+              mapper.readValue(exceptions, new TypeReference<Set<JsonPathException>>() {});
+          for (JsonPathQuery query : question.getPaths()) {
+            query.setExceptions(jpExceptions);
+          }
+        }
+        if (assertion != null) {
+          JsonPathAssertion jpAssertion =
+              // indicates a desire to remove the assertion
+              (assertion.equals("") || assertion.equals("{}"))
+                  ? null
+                  : mapper.readValue(assertion, JsonPathAssertion.class);
+
+          for (JsonPathQuery query : question.getPaths()) {
+            query.setAssertion(jpAssertion);
+          }
+        }
+        return question;
+      } catch (IOException e) {
+        throw new BatfishException("Could not clone the question", e);
+      }
     }
 
     @Override

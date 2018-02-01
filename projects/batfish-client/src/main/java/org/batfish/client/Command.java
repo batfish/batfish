@@ -14,6 +14,7 @@ public enum Command {
   CAT("cat"),
   CHECK_API_KEY("checkapikey"),
   CLEAR_SCREEN("cls"),
+  CONFIGURE_TEMPLATE("configure-template"),
   DEL_ANALYSIS("del-analysis"),
   DEL_ANALYSIS_QUESTIONS("del-analysis-questions"),
   DEL_BATFISH_OPTION("del-batfish-option"),
@@ -129,6 +130,11 @@ public enum Command {
     // + " <dirname>\n"
     // + "\t Change the working directory");
     descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
+    descs.put(
+        CONFIGURE_TEMPLATE,
+        new Pair<>(
+            "<new-template-name> <old-template-name> [exceptions=[...],] [assertion={..}]",
+            "Create a new template from the old template with provided exceptions and assertion"));
     descs.put(DEL_ANALYSIS, new Pair<>("<analysis-name>", "Delete the analysis completely"));
     descs.put(
         DEL_ANALYSIS_QUESTIONS,

@@ -64,6 +64,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ANSWER = "answer";
   public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
+  public static final String SVC_KEY_ASSERTION = "assertion";
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
@@ -77,6 +78,7 @@ public class CoordConsts {
   public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
   public static final String SVC_KEY_ENV_NAME = "envname";
   public static final String SVC_KEY_ENVIRONMENT_LIST = "environmentlist";
+  public static final String SVC_KEY_EXCEPTIONS = "exceptions";
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";
@@ -84,6 +86,7 @@ public class CoordConsts {
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
+  public static final String SVC_KEY_QUESTION = "question";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
   public static final String SVC_KEY_RESULT = "result";
@@ -112,6 +115,7 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
+  public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
