@@ -52,7 +52,7 @@ public class BatfishTestUtils {
     final Cache<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
     if (!configurations.isEmpty()) {
-      Path containerDir = tempFolder.newFolder("container").toPath();
+      Path containerDir = tempFolder.newFolder().toPath();
       settings.setContainerDir(containerDir);
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
@@ -100,7 +100,7 @@ public class BatfishTestUtils {
     settings.setThrowOnLexerError(true);
     settings.setThrowOnParserError(true);
     settings.setVerboseParse(true);
-    Path containerDir = tempFolder.newFolder("container").toPath();
+    Path containerDir = tempFolder.newFolder().toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
