@@ -1,7 +1,6 @@
 package org.batfish.datamodel.collections;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.SortedSet;
@@ -94,7 +93,7 @@ public class NamedStructureOutlierSet<T> extends AbstractOutlierSet
   }
 
   // ignore for now to avoid encoding large amounts of information in answer
-  @JsonIgnore
+  @JsonProperty(PROP_STRUCT_DEFINITION)
   public T getNamedStructure() {
     return _namedStructure;
   }
