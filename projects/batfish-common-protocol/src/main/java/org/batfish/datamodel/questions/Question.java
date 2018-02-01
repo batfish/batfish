@@ -267,6 +267,11 @@ public abstract class Question implements IQuestion {
     _differential = false;
   }
 
+  public Question configureTemplate(String exceptions, String assertion) {
+    throw new UnsupportedOperationException(
+        "configureTemplate is not supported for question type: " + this.getClass().getName());
+  }
+
   /** Returns {@code true} iff this question requires a computed data plane as input. */
   @JsonIgnore
   public abstract boolean getDataPlane();
@@ -313,7 +318,10 @@ public abstract class Question implements IQuestion {
   }
 
   public static Question parseQuestion(Path questionPath, ClassLoader classLoader) {
-    String rawQuestionText = CommonUtil.readFile(questionPath);
+    return parseQuestion(CommonUtil.readFile(questionPath), classLoader);
+  }
+
+  public static Question parseQuestion(String rawQuestionText, ClassLoader classLoader) {
     String questionText = Question.preprocessQuestion(rawQuestionText);
     try {
       ObjectMapper mapper =
