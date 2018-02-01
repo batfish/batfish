@@ -1,23 +1,19 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasAvailabilityZone;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasAzSubnetIds;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasDbInstanceStatus;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasId;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasMultiAz;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasSecurityGroups;
-import static org.batfish.representation.aws.matchers.RdsInstanceMatchers.hasVpcId;
+import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
+import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasAvailable;
+import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasId;
+import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasSecurityGroups;
+import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasSubnets;
+import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasVpcId;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -37,7 +33,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.aws.RdsInstance.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -46,7 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class RdsInstanceTest {
+public class ElasticsearchDomainTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   private StaticRoute.Builder _staticRouteBuilder;
@@ -63,7 +58,7 @@ public class RdsInstanceTest {
   public Map<String, Configuration> loadAwsConfigurations() throws IOException {
     List<String> awsFilenames =
         ImmutableList.of(
-            "RdsInstances.json",
+            "ElasticsearchDomains.json",
             "SecurityGroups.json",
             "Subnets.json",
             "Vpcs.json",
@@ -80,23 +75,23 @@ public class RdsInstanceTest {
   }
 
   @Test
-  public void testRdsSubnetEdge() throws IOException {
+  public void testEsSubnetEdge() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
     Topology topology = CommonUtil.synthesizeTopology(configurations);
 
-    // check that RDS instance is a neighbor of both  subnets in which its interfaces are
+    // check that ES instance is a neighbor of both  subnets in which its interfaces are
     assertThat(
         topology.getEdges(),
         hasItem(
             new Edge(
                 new NodeInterfacePair("subnet-073b8061", "subnet-073b8061"),
-                new NodeInterfacePair("test-rds", "test-rds-subnet-073b8061"))));
+                new NodeInterfacePair("es-domain", "es-domain-subnet-073b8061"))));
     assertThat(
         topology.getEdges(),
         hasItem(
             new Edge(
                 new NodeInterfacePair("subnet-1f315846", "subnet-1f315846"),
-                new NodeInterfacePair("test-rds", "test-rds-subnet-1f315846"))));
+                new NodeInterfacePair("es-domain", "es-domain-subnet-1f315846"))));
   }
 
   @Test
@@ -126,37 +121,34 @@ public class RdsInstanceTest {
     StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(new Ip("192.168.2.17")).build();
 
     // checking that both default routes exist(to both the subnets) in RDS instance
-    assertThat(configurations, hasKey("test-rds"));
+    assertThat(configurations, hasKey("es-domain"));
     assertThat(
-        configurations.get("test-rds").getDefaultVrf().getStaticRoutes(),
+        configurations.get("es-domain").getDefaultVrf().getStaticRoutes(),
         containsInAnyOrder(defaultRoute1, defaultRoute2));
   }
 
   @Test
-  public void testRdsInstance() throws JSONException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RdsInstanceTest.json");
+  public void testElasticsearchDomain() throws JSONException {
+    String text =
+        CommonUtil.readResource("org/batfish/representation/aws/ElasticsearchDomainTest.json");
 
     JSONObject jObj = new JSONObject(text);
-    JSONArray rdsArray = jObj.getJSONArray(JSON_KEY_DB_INSTANCES);
-    List<RdsInstance> rdsList = new LinkedList<>();
-    for (int i = 0; i < rdsArray.length(); i++) {
-      rdsList.add(new RdsInstance(rdsArray.getJSONObject(i), null));
+    JSONArray esArray = jObj.getJSONArray(JSON_KEY_DOMAIN_STATUS_LIST);
+    List<ElasticsearchDomain> esList = new LinkedList<>();
+    for (int i = 0; i < esArray.length(); i++) {
+      esList.add(new ElasticsearchDomain(esArray.getJSONObject(i), null));
     }
 
-    // checking the count of RDS initialized
-    assertThat(rdsList, hasSize(1));
+    // checking the count of ES instance initialized
+    assertThat(esList, hasSize(1));
 
-    RdsInstance rdsInstance = rdsList.get(0);
+    ElasticsearchDomain elasticsearchDomain = esList.get(0);
 
-    // checking the attributes of this RDS instance
-    assertThat(rdsInstance, hasId("test-db"));
-    assertThat(rdsInstance, hasDbInstanceStatus(Status.AVAILABLE));
-    assertThat(rdsInstance, hasAvailabilityZone("us-west-2b"));
-    Multimap<String, String> testMap = ArrayListMultimap.create();
-    testMap.put("us-west-2b", "subnet-1");
-    assertThat(rdsInstance, hasAzSubnetIds(testMap));
-    assertThat(rdsInstance, hasSecurityGroups(ImmutableList.of("sg-12345")));
-    assertThat(rdsInstance, hasMultiAz(false));
-    assertThat(rdsInstance, hasVpcId("vpc-1"));
+    // checking the attributes of this ES instance
+    assertThat(elasticsearchDomain, hasId("es-domain"));
+    assertThat(elasticsearchDomain, hasAvailable(true));
+    assertThat(elasticsearchDomain, hasVpcId("vpc-b390fad5"));
+    assertThat(elasticsearchDomain, hasSubnets(ImmutableList.of("subnet-7044ff16")));
+    assertThat(elasticsearchDomain, hasSecurityGroups(ImmutableList.of("sg-55510831")));
   }
 }
