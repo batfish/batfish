@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -34,6 +35,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
@@ -1095,11 +1097,13 @@ public class WorkMgrService {
   }
 
   /**
-   * List incomplete work for the specified container
+   * List incomplete work of the specified type for the specified container and testrig
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container for which to list work
+   * @param testrigName (optional) The name of the testrig for which to list work
+   * @param workType (optional) The type of work to list
    * @return TODO: document JSON response
    */
   @POST
@@ -1108,20 +1112,26 @@ public class WorkMgrService {
   public JSONArray listIncompleteWork(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName, /* optional */
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_WORK_TYPE) WorkType workType /* optional */) {
     try {
       _logger.info("WMS:listIncompleteWork " + apiKey + " " + containerName + "\n");
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(containerName, "Container name");
+      if (testrigName != null) {
+        checkStringParam(testrigName, "Base testrig name");
+      }
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
       List<WorkStatus> workList = new LinkedList<>();
-      for (QueuedWork work : Main.getWorkMgr().listIncompleteWork(containerName)) {
+      for (QueuedWork work :
+          Main.getWorkMgr().listIncompleteWork(containerName, testrigName, workType)) {
         WorkStatus workStatus =
             new WorkStatus(work.getWorkItem(), work.getStatus(), work.getLastTaskCheckResult());
         workList.add(workStatus);

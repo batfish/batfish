@@ -24,6 +24,8 @@ public class Region implements Serializable {
 
   private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
 
+  private Map<String, ElasticsearchDomain> _elasticsearchDomains = new HashMap<>();
+
   private Map<String, Instance> _instances = new HashMap<>();
 
   private Map<String, InternetGateway> _internetGateways = new HashMap<>();
@@ -99,6 +101,13 @@ public class Region implements Serializable {
           _rdsInstances.put(rdsInstance.getId(), rdsInstance);
         }
         break;
+      case AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST:
+        ElasticsearchDomain elasticsearchDomain = new ElasticsearchDomain(jsonObject, logger);
+        // we cannot represent an elasticsearch domain without vpc and subnets as a node
+        if (elasticsearchDomain.getAvailable() && elasticsearchDomain.getVpcId() != null) {
+          _elasticsearchDomains.put(elasticsearchDomain.getId(), elasticsearchDomain);
+        }
+        break;
       case AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS:
         InternetGateway iGateway = new InternetGateway(jsonObject, logger);
         _internetGateways.put(iGateway.getId(), iGateway);
@@ -169,6 +178,10 @@ public class Region implements Serializable {
 
   public Map<String, CustomerGateway> getCustomerGateways() {
     return _customerGateways;
+  }
+
+  public Map<String, ElasticsearchDomain> getElasticSearchDomains() {
+    return _elasticsearchDomains;
   }
 
   public Map<String, Instance> getInstances() {
@@ -250,6 +263,11 @@ public class Region implements Serializable {
 
     for (Vpc vpc : getVpcs().values()) {
       Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
+    }
+
+    for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
+      Configuration cfgNode = elasticsearchDomain.toConfigurationNode(awsConfiguration, this);
       configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
