@@ -1,7 +1,9 @@
 package org.batfish.question.jsonpath;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.HashSet;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -28,11 +30,31 @@ public class JsonPathQuery {
 
   private DisplayHints _displayHints;
 
-  private Set<JsonPathResultEntry> _exceptions;
+  private Set<JsonPathException> _exceptions;
 
   private String _path;
 
   private boolean _suffix;
+
+  public JsonPathQuery(String path, boolean suffix) {
+    this(path, suffix, null, null, null, null);
+  }
+
+  @JsonCreator
+  public JsonPathQuery(
+      @JsonProperty(PROP_PATH) String path,
+      @JsonProperty(PROP_SUFFIX) boolean suffix,
+      @JsonProperty(PROP_DESCRIPTION) String description,
+      @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints,
+      @JsonProperty(PROP_EXCEPTIONS) Set<JsonPathException> exceptions,
+      @JsonProperty(PROP_ASSERTION) JsonPathAssertion assertion) {
+    _path = path;
+    _suffix = suffix;
+    _description = description;
+    _displayHints = displayHints;
+    _exceptions = (exceptions == null) ? new HashSet<>() : exceptions;
+    _assertion = assertion;
+  }
 
   @JsonProperty(PROP_ASSERTION)
   public JsonPathAssertion getAssertion() {
@@ -50,7 +72,7 @@ public class JsonPathQuery {
   }
 
   @JsonProperty(PROP_EXCEPTIONS)
-  public Set<JsonPathResultEntry> getExceptions() {
+  public Set<JsonPathException> getExceptions() {
     return _exceptions;
   }
 
@@ -64,54 +86,24 @@ public class JsonPathQuery {
     return _suffix;
   }
 
-  public boolean hasValidAssertion() {
-    return _assertion != null && _assertion.getType() != JsonPathAssertionType.none;
+  public boolean isException(JsonPathResultEntry resultEntry) {
+    return _exceptions.contains(resultEntry);
   }
 
-  @JsonProperty(PROP_ASSERTION)
   public void setAssertion(JsonPathAssertion assertion) {
     _assertion = assertion;
   }
 
-  @JsonProperty(PROP_DESCRIPTION)
-  public void setDescription(String description) {
-    _description = description;
-  }
-
-  @JsonProperty(PROP_DISPLAY_HINTS)
-  public void setDisplayHints(DisplayHints displayHints) {
-    _displayHints = displayHints;
-  }
-
-  @JsonProperty(PROP_EXCEPTIONS)
-  public void setExceptions(Set<JsonPathResultEntry> exceptions) {
-    _exceptions = exceptions;
-  }
-
-  @JsonProperty(PROP_PATH)
-  public void setPath(String path) {
-    _path = path;
-  }
-
-  @JsonProperty(PROP_SUFFIX)
-  public void setSuffix(boolean suffix) {
-    _suffix = suffix;
+  public void setExceptions(Set<JsonPathException> exceptions) {
+    _exceptions = (exceptions == null) ? new HashSet<>() : exceptions;
   }
 
   @Override
   public String toString() {
-    BatfishObjectMapper mapper = new BatfishObjectMapper(false);
     try {
-      return mapper.writeValueAsString(this);
+      return new BatfishObjectMapper().writeValueAsString(this);
     } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not map to JSON string", e);
+      throw new BatfishException("Cannot serialize to Json", e);
     }
-  }
-
-  public boolean isException(JsonPathResultEntry resultEntry) {
-    if (_exceptions == null) {
-      return false;
-    }
-    return _exceptions.contains(resultEntry);
   }
 }

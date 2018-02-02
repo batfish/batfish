@@ -8,8 +8,7 @@ import org.batfish.common.BatfishException;
 
 public enum JsonPathAssertionType {
   count("count"),
-  equals("equals"),
-  none("none");
+  equals("equals");
 
   private static final Map<String, JsonPathAssertionType> _map = buildMap();
 
