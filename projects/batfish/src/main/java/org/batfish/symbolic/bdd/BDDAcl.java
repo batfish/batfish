@@ -6,9 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -17,6 +19,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.symbolic.Graph;
 
 public class BDDAcl {
 
@@ -42,9 +45,13 @@ public class BDDAcl {
     _pkt = other._pkt;
   }
 
-  public static BDDAcl create(IpAccessList acl) {
+  public static BDDAcl create(Configuration conf, IpAccessList acl, boolean ignoreNetworks) {
+    Set<Prefix> networks = null;
+    if (ignoreNetworks) {
+      networks = Graph.getOriginatedNetworks(conf);
+    }
     BDDAcl abdd = new BDDAcl(acl);
-    abdd.computeACL();
+    abdd.computeACL(networks);
     return abdd;
   }
 
@@ -52,7 +59,7 @@ public class BDDAcl {
    * Convert an Access Control List (ACL) to a symbolic boolean expression.
    * The default action in an ACL is to deny all traffic.
    */
-  private void computeACL() {
+  private void computeACL(@Nullable Set<Prefix> networks) {
     // Check if there is an ACL first
     if (_acl == null) {
       _bdd = _factory.one();
@@ -69,13 +76,13 @@ public class BDDAcl {
       BDD local = null;
 
       if (l.getDstIps() != null) {
-        BDD val = computeWildcardMatch(l.getDstIps(), _pkt.getDstIp());
+        BDD val = computeWildcardMatch(l.getDstIps(), _pkt.getDstIp(), networks);
         val = l.getDstIps().isEmpty() ? _factory.one() : val;
         local = val;
       }
 
       if (l.getSrcIps() != null) {
-        BDD val = computeWildcardMatch(l.getSrcIps(), _pkt.getSrcIp());
+        BDD val = computeWildcardMatch(l.getSrcIps(), _pkt.getSrcIp(), null);
         val = l.getDstIps().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
@@ -275,13 +282,17 @@ public class BDDAcl {
   /*
    * Convert a set of wildcards and a packet field to a symbolic boolean expression
    */
-  private BDD computeWildcardMatch(Set<IpWildcard> wcs, BDDInteger field) {
+  private BDD computeWildcardMatch(
+      Set<IpWildcard> wcs, BDDInteger field, @Nullable Set<Prefix> ignored) {
     BDD acc = _factory.zero();
     for (IpWildcard wc : wcs) {
       if (!wc.isPrefix()) {
         throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
       }
-      acc = acc.or(isRelevantFor(wc.toPrefix(), field));
+      Prefix p = wc.toPrefix();
+      // if (!PrefixUtils.isContainedBy(p, ignored)) {
+      acc = acc.or(isRelevantFor(p, field));
+      // }
     }
     return acc;
   }

@@ -21,7 +21,7 @@ public class BDDDomain<T> {
     int bits = numBits(values);
     _factory = factory;
     _values = values;
-    _integer = BDDInteger.makeFromIndex(_factory, bits, index);
+    _integer = BDDInteger.makeFromIndex(_factory, bits, index, false);
   }
 
   public BDDDomain(BDDDomain<T> other) {

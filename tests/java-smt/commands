@@ -81,7 +81,7 @@ test tests/java-smt/stable3-nondeterministic.ref get smt-deterministic
 
 # Check proper dropping behavior when the metric has overflow
 init-testrig test_rigs/smt-examples/OVERFLOW1 tr-smt-overflow1
-test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], fullModel=True
+test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], modelOverflow=True, fullModel=True
 
 # Check correct handling of OSPF areas
 init-testrig test_rigs/smt-examples/AREA1 tr-smt-area1

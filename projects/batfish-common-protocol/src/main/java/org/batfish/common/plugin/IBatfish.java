@@ -36,9 +36,9 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 
@@ -167,7 +167,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
-  AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex);
+  AnswerElement smtRoles(RoleQuestion q);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 

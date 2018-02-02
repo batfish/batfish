@@ -113,9 +113,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.SmtRoleQuestionPlugin$RoleQuestion",
+    "class" : "org.batfish.datamodel.questions.smt.RoleQuestion",
     "differential" : false,
-    "equivType" : "policy"
+    "equivType" : "policy",
+    "nodeRegex" : ".*"
   },
   "status" : "SUCCESS",
   "summary" : {

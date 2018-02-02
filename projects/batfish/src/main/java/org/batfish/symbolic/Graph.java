@@ -33,6 +33,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -67,6 +68,13 @@ import org.batfish.symbolic.collections.Table2;
  */
 public class Graph {
 
+  public enum BgpSendType {
+    TO_EBGP,
+    TO_NONCLIENT,
+    TO_CLIENT,
+    TO_RR
+  }
+
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
   private static final String NULL_INTERFACE_NAME = "null_interface";
@@ -88,6 +96,12 @@ public class Graph {
   private Map<String, Integer> _originatorId;
   private Map<String, Integer> _domainMap;
   private Map<Integer, Set<String>> _domainMapInverse;
+
+  private Set<CommunityVar> _allCommunities;
+
+  private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
+
+  private Map<String, String> _namedCommunities;
 
   /*
    * Create a graph from a Batfish object
@@ -124,6 +138,7 @@ public class Graph {
     _domainMap = new HashMap<>();
     _domainMapInverse = new HashMap<>();
     _configurations = configs;
+    _communityDependencies = new TreeMap<>();
 
     if (_configurations == null) {
       _configurations = new HashMap<>(_batfish.loadConfigurations());
@@ -154,6 +169,9 @@ public class Graph {
     initIbgpNeighbors();
     initAreaIds();
     initDomains();
+    initAllCommunities();
+    initCommDependencies();
+    initNamedCommunities();
   }
 
   /*
@@ -161,6 +179,13 @@ public class Graph {
    */
   private static boolean isNullRouted(StaticRoute sr) {
     return sr.getNextHopInterface().equals(NULL_INTERFACE_NAME);
+  }
+
+  /*
+   * Is a graph edge external facing (can receive BGP advertisements)
+   */
+  public boolean isExternal(GraphEdge ge) {
+    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
   }
 
   /*
@@ -188,6 +213,22 @@ public class Graph {
       return null;
     }
     throw new BatfishException("TODO: findCommonRoutingPolicy for " + proto.name());
+  }
+
+  public static Set<Prefix> getOriginatedNetworks(Configuration conf) {
+    Set<Prefix> allNetworks = new HashSet<>();
+    Vrf vrf = conf.getDefaultVrf();
+    if (vrf.getOspfProcess() != null) {
+      allNetworks.addAll(getOriginatedNetworks(conf, Protocol.OSPF));
+    }
+    if (vrf.getBgpProcess() != null) {
+      allNetworks.addAll(getOriginatedNetworks(conf, Protocol.BGP));
+    }
+    if (vrf.getStaticRoutes() != null) {
+      allNetworks.addAll(getOriginatedNetworks(conf, Protocol.STATIC));
+    }
+    allNetworks.addAll(getOriginatedNetworks(conf, Protocol.CONNECTED));
+    return allNetworks;
   }
 
   /*
@@ -268,13 +309,6 @@ public class Graph {
     }
 
     throw new BatfishException("ERROR: getOriginatedNetworks: " + proto.name());
-  }
-
-  /*
-   * Is a graph edge external facing (can receive BGP advertisements)
-   */
-  public boolean isExternal(GraphEdge ge) {
-    return ge.getPeer() == null && _ebgpNeighbors.containsKey(ge);
   }
 
   /*
@@ -695,25 +729,6 @@ public class Graph {
   }
 
   /*
-   * Conservatively check if an edge may be used by an IGP protocol
-   * such as OSPF, static routes etc. We can do better possibly
-   * by taking into account constraints on the packet header.
-   */
-  private boolean maybeIgpEdge(GraphEdge ge) {
-    String peer = ge.getPeer();
-    if (peer == null) {
-      return true;
-    }
-    String router = ge.getRouter();
-    Interface i = ge.getStart();
-    List<StaticRoute> srs = _staticRoutes.get(router, peer);
-    BgpNeighbor n = _ibgpNeighbors.get(ge);
-    boolean mightUseStatic = (srs != null && !srs.isEmpty());
-    boolean mightUseOspf = i.getOspfEnabled() && i.getActive();
-    return (mightUseOspf || mightUseStatic || n != null);
-  }
-
-  /*
    * Determines the collection of routers within the same AS
    * as the router provided as a parameter
    */
@@ -726,7 +741,8 @@ public class Graph {
       sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        if (peer != null && maybeIgpEdge(ge) && !sameDomain.contains(peer)) {
+        BgpNeighbor n = _ebgpNeighbors.get(ge);
+        if (peer != null && n == null && !sameDomain.contains(peer)) {
           todo.add(peer);
         }
       }
@@ -763,32 +779,29 @@ public class Graph {
     return _domainMapInverse.get(idx);
   }
 
-  /*
-   * Create a community dependency mapping. Each community regex will
-   * map to zero or more actual community values
-   */
-  public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
-    Set<CommunityVar> allComms = findAllCommunities();
+  private void initAllCommunities() {
+    _allCommunities = findAllCommunities();
+  }
 
+  private void initCommDependencies() {
     // Map community regex matches to Java regex
     Map<CommunityVar, java.util.regex.Pattern> regexes = new HashMap<>();
-    for (CommunityVar c : allComms) {
+    for (CommunityVar c : _allCommunities) {
       if (c.getType() == CommunityVar.Type.REGEX) {
         java.util.regex.Pattern p = java.util.regex.Pattern.compile(c.getValue());
         regexes.put(c, p);
       }
     }
 
-    SortedMap<CommunityVar, List<CommunityVar>> deps = new TreeMap<>();
-    for (CommunityVar c1 : allComms) {
+    for (CommunityVar c1 : _allCommunities) {
       // map exact match to corresponding regexes
       if (c1.getType() == CommunityVar.Type.REGEX) {
 
         List<CommunityVar> list = new ArrayList<>();
-        deps.put(c1, list);
+        _communityDependencies.put(c1, list);
         java.util.regex.Pattern p = regexes.get(c1);
 
-        for (CommunityVar c2 : allComms) {
+        for (CommunityVar c2 : _allCommunities) {
           if (c2.getType() == CommunityVar.Type.EXACT) {
             Matcher m = p.matcher(c2.getValue());
             if (m.find()) {
@@ -801,8 +814,37 @@ public class Graph {
         }
       }
     }
+  }
 
-    return deps;
+  /*
+   * Map named community sets that contain a single match
+   * back to the community/regex value. This makes it
+   * easier to provide intuitive counter examples.
+   */
+  private void initNamedCommunities() {
+    _namedCommunities = new HashMap<>();
+    for (Configuration conf : getConfigurations().values()) {
+      for (Entry<String, CommunityList> entry : conf.getCommunityLists().entrySet()) {
+        String name = entry.getKey();
+        CommunityList cl = entry.getValue();
+        if (cl != null && cl.getLines().size() == 1) {
+          CommunityListLine line = cl.getLines().get(0);
+          _namedCommunities.put(line.getRegex(), name);
+        }
+      }
+    }
+  }
+
+  public Set<CommunityVar> getAllCommunities() {
+    return _allCommunities;
+  }
+
+  public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
+    return _communityDependencies;
+  }
+
+  public Map<String, String> getNamedCommunities() {
+    return _namedCommunities;
   }
 
   /*
@@ -826,7 +868,7 @@ public class Graph {
     return comms;
   }
 
-  private Set<CommunityVar> findAllCommunities(String router) {
+  public Set<CommunityVar> findAllCommunities(String router) {
     Set<CommunityVar> comms = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
 
@@ -1063,10 +1105,8 @@ public class Graph {
    * Determine if an edge is potentially attached to a host
    */
   public boolean isHost(String router) {
-    Configuration conf = _configurations.get(router);
-    // System.out.println("Router: " + router);
-    // System.out.println("Conf: " + conf);
-    String vendor = conf.getConfigurationFormat().getVendorString();
+    Configuration peerConf = _configurations.get(router);
+    String vendor = peerConf.getConfigurationFormat().getVendorString();
     return "host".equals(vendor);
   }
 
@@ -1213,13 +1253,13 @@ public class Graph {
     return _routeReflectorParent;
   }
 
-  public Map<String, Set<String>> getRouteReflectorClients() {
-    return _routeReflectorClients;
-  }
-
   /*
    * Getters and setters
    */
+
+  public Map<String, Set<String>> getRouteReflectorClients() {
+    return _routeReflectorClients;
+  }
 
   public Map<String, Integer> getOriginatorId() {
     return _originatorId;
@@ -1271,12 +1311,5 @@ public class Graph {
 
   public Set<String> getRouters() {
     return _routers;
-  }
-
-  public enum BgpSendType {
-    TO_EBGP,
-    TO_NONCLIENT,
-    TO_CLIENT,
-    TO_RR
   }
 }

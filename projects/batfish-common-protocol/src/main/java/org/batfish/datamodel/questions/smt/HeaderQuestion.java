@@ -66,6 +66,8 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private static final String PROP_DIFF_ENV_TYPE = "deltaEnvType";
 
+  private static final String PROP_MODEL_OVERFLOW = "modelOverflow";
+
   private static final String PROP_USE_ABSTRACTION = "useAbstraction";
 
   private static final String PROP_BENCHMARK = "benchmark";
@@ -90,7 +92,11 @@ public class HeaderQuestion extends Question implements IQuestion {
 
   private EnvironmentType _deltaEnvType;
 
+  private boolean _modelOverflow;
+
   private boolean _useAbstraction;
+
+  private boolean _stats;
 
   private boolean _benchmark;
 
@@ -105,6 +111,9 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = false;
     _baseEnvType = EnvironmentType.ANY;
     _deltaEnvType = EnvironmentType.ANY;
+    _modelOverflow = false;
+    _useAbstraction = false;
+    _stats = false;
     _useAbstraction = false;
     _benchmark = false;
   }
@@ -120,6 +129,9 @@ public class HeaderQuestion extends Question implements IQuestion {
     _envDiff = q._envDiff;
     _baseEnvType = q._baseEnvType;
     _deltaEnvType = q._deltaEnvType;
+    _modelOverflow = q._modelOverflow;
+    _useAbstraction = q._useAbstraction;
+    _stats = q._stats;
     _useAbstraction = q._useAbstraction;
     _benchmark = q._benchmark;
   }
@@ -267,6 +279,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_DIFF_ENV_TYPE)
   public EnvironmentType getDeltaEnvironmentType() {
     return _deltaEnvType;
+  }
+
+  @JsonProperty(PROP_MODEL_OVERFLOW)
+  public boolean getModelOverflow() {
+    return _modelOverflow;
   }
 
   @JsonProperty(PROP_USE_ABSTRACTION)
@@ -460,6 +477,11 @@ public class HeaderQuestion extends Question implements IQuestion {
   @JsonProperty(PROP_DIFF_ENV_TYPE)
   public void setDeltaEnvironmentType(EnvironmentType e) {
     _deltaEnvType = e;
+  }
+
+  @JsonProperty(PROP_MODEL_OVERFLOW)
+  public void setModelOverflow(boolean x) {
+    _modelOverflow = x;
   }
 
   @JsonProperty(PROP_USE_ABSTRACTION)

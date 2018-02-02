@@ -1,6 +1,5 @@
 package org.batfish.symbolic.bdd;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
+import org.batfish.symbolic.IDeepCopy;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 
@@ -27,7 +27,7 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-public class BDDRoute {
+public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   static BDDFactory factory;
 
@@ -37,7 +37,7 @@ public class BDDRoute {
 
   private static BDDPairing pairing;
 
-  private static final int prefixIndex = 135;
+  private int _hcode = 0;
 
   static {
     allMetricTypes = new ArrayList<>();
@@ -52,19 +52,22 @@ public class BDDRoute {
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
 
-    CallbackHandler handler = new CallbackHandler();
+    factory = JFactory.init(100000, 10000);
+    // factory.disableReorder();
+    factory.setCacheRatio(64);
+    /*
     try {
-      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory = JFactory.init(100000, 10000);
-      factory.disableReorder();
       // Disables printing
+      CallbackHandler handler = new CallbackHandler();
+      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
       factory.registerGCCallback(handler, m);
-      // factory.registerResizeCallback(handler, m);
-      // factory.registerReorderCallback(handler, m);
-      pairing = factory.makePair();
+      factory.registerResizeCallback(handler, m);
+      factory.registerReorderCallback(handler, m);
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
+    */
+    pairing = factory.makePair();
   }
 
   private BDDInteger _adminDist;
@@ -102,26 +105,26 @@ public class BDDRoute {
     int idx = 0;
     _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
     int len = _protocolHistory.getInteger().getBitvec().length;
-    addBitNames("proto", len, idx);
+    addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
-    _metric = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("metric", 32, idx);
+    _metric = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("metric", 32, idx, false);
     idx += 32;
-    _med = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("med", 32, idx);
+    _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("med", 32, idx, false);
     idx += 32;
-    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("ad", 32, idx);
+    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("ad", 32, idx, false);
     idx += 32;
-    _localPref = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("lp", 32, idx);
+    _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("lp", 32, idx, false);
     idx += 32;
-    _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx);
-    addBitNames("pfxLen", 32, idx);
+    _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx, true);
+    addBitNames("pfxLen", 5, idx, true);
     idx += 5;
-    _prefix = BDDInteger.makeFromIndex(factory, 32, idx);
-    addBitNames("pfx", 32, idx);
+    _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
+    addBitNames("pfx", 32, idx, true);
     idx += 32;
     // Initialize communities
     _communities = new TreeMap<>();
@@ -135,7 +138,7 @@ public class BDDRoute {
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().getBitvec().length;
-    addBitNames("ospfMetric", len, idx);
+    addBitNames("ospfMetric", len, idx, false);
   }
 
   /*
@@ -159,23 +162,28 @@ public class BDDRoute {
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
    */
-  private void addBitNames(String s, int length, int index) {
+  private void addBitNames(String s, int length, int index, boolean reverse) {
     for (int i = index; i < index + length; i++) {
-      _bitNames.put(i, s + (i - index));
+      if (reverse) {
+        _bitNames.put(i, s + (length - 1 - (i - index)));
+      } else {
+        _bitNames.put(i, s + (i - index + 1));
+      }
     }
   }
 
   /*
    * Convenience method for the copy constructor
    */
-  public BDDRoute copy() {
+  @Override
+  public BDDRoute deepCopy() {
     return new BDDRoute(this);
   }
 
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */
-  public String dot(BDD bdd) {
+  String dot(BDD bdd) {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph G {\n");
     sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
@@ -281,13 +289,16 @@ public class BDDRoute {
 
   @Override
   public int hashCode() {
-    int result = _adminDist != null ? _adminDist.hashCode() : 0;
-    result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
-    result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
-    result = 31 * result + (_med != null ? _med.hashCode() : 0);
-    result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-    result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
-    return result;
+    if (_hcode == 0) {
+      int result = _adminDist != null ? _adminDist.hashCode() : 0;
+      result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
+      result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
+      result = 31 * result + (_med != null ? _med.hashCode() : 0);
+      result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
+      result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+      _hcode = result;
+    }
+    return _hcode;
   }
 
   @Override
@@ -347,7 +358,7 @@ public class BDDRoute {
     // JavaBDD will start to memory leak
     pairing.reset();
     for (int i = 0; i < len; i++) {
-      int var = prefixIndex + i;
+      int var = _prefix.getBitvec()[i].var(); // prefixIndex + i;
       BDD subst = bits.get(i) ? factory.one() : factory.zero();
       vars[i] = var;
       vals[i] = subst;
