@@ -114,7 +114,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
     // the minimum percentage of nodes that must conform to a policy, in order for
     // the policy to be returned
-    private static final double CONFORMERS_THRESHOLD = 0.9;
+    private static final double CONFORMERS_THRESHOLD = 0.75;
 
     public InferPoliciesAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
