@@ -115,7 +115,7 @@ public class GraphEdge {
   public String toString() {
     return _router
         + ","
-        + _start.getName()
+        + (_start == null ? "_" : _start.getName())
         + " --> "
         + (_peer == null ? "_" : _peer)
         + ","

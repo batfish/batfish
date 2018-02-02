@@ -16,17 +16,19 @@ import javax.annotation.Nullable;
  */
 public class VerificationResult {
 
-  private static final String VERIFIED_VAR = "verified";
+  private static final String PROP_VERIFIED = "verified";
 
-  private static final String MODEL_VAR = "model";
+  private static final String PROP_MODEL = "model";
 
-  private static final String PACKET_MODEL_VAR = "packetModel";
+  private static final String PROP_PACKET_MODEL = "packetModel";
 
-  private static final String ENV_MODEL_VAR = "environmentModel";
+  private static final String PROP_ENV_MODEL = "environmentModel";
 
-  private static final String FWD_MODEL_VAR = "forwardingModel";
+  private static final String PROP_FWD_MODEL = "forwardingModel";
 
-  private static final String FAILURE_MODEL_VAR = "failuresModel";
+  private static final String PROP_FAILURE_MODEL = "failuresModel";
+
+  private static final String PROP_STATS = "statistics";
 
   private boolean _verified;
 
@@ -40,50 +42,64 @@ public class VerificationResult {
 
   private SortedSet<String> _failures;
 
+  private VerificationStats _stats;
+
   @JsonCreator
   public VerificationResult(
-      @JsonProperty(VERIFIED_VAR) boolean verified,
-      @Nullable @JsonProperty(MODEL_VAR) SortedMap<String, String> model,
-      @Nullable @JsonProperty(PACKET_MODEL_VAR) SortedMap<String, String> packetModel,
-      @Nullable @JsonProperty(ENV_MODEL_VAR) SortedMap<String, SortedMap<String, String>> envModel,
-      @Nullable @JsonProperty(FWD_MODEL_VAR) SortedSet<String> fwdModel,
-      @Nullable @JsonProperty(FAILURE_MODEL_VAR) SortedSet<String> failures) {
+      @JsonProperty(PROP_VERIFIED) boolean verified,
+      @Nullable @JsonProperty(PROP_MODEL) SortedMap<String, String> model,
+      @Nullable @JsonProperty(PROP_PACKET_MODEL) SortedMap<String, String> packetModel,
+      @Nullable @JsonProperty(PROP_ENV_MODEL) SortedMap<String, SortedMap<String, String>> envModel,
+      @Nullable @JsonProperty(PROP_FWD_MODEL) SortedSet<String> fwdModel,
+      @Nullable @JsonProperty(PROP_FAILURE_MODEL) SortedSet<String> failures,
+      @Nullable @JsonProperty(PROP_STATS) VerificationStats stats) {
     _verified = verified;
     _model = model;
     _packetModel = packetModel;
     _envModel = envModel;
     _fwdModel = fwdModel;
     _failures = failures;
+    _stats = stats;
   }
 
-  @JsonProperty(VERIFIED_VAR)
+  @JsonProperty(PROP_VERIFIED)
   public boolean isVerified() {
     return _verified;
   }
 
-  @JsonProperty(MODEL_VAR)
+  @JsonProperty(PROP_MODEL)
   public SortedMap<String, String> getModel() {
     return _model;
   }
 
-  @JsonProperty(PACKET_MODEL_VAR)
+  @JsonProperty(PROP_PACKET_MODEL)
   public SortedMap<String, String> getPacketModel() {
     return _packetModel;
   }
 
-  @JsonProperty(ENV_MODEL_VAR)
+  @JsonProperty(PROP_ENV_MODEL)
   public SortedMap<String, SortedMap<String, String>> getEnvModel() {
     return _envModel;
   }
 
-  @JsonProperty(FWD_MODEL_VAR)
+  @JsonProperty(PROP_FWD_MODEL)
   public SortedSet<String> getFwdModel() {
     return _fwdModel;
   }
 
-  @JsonProperty(FAILURE_MODEL_VAR)
+  @JsonProperty(PROP_FAILURE_MODEL)
   public SortedSet<String> getFailures() {
     return _failures;
+  }
+
+  @JsonProperty(PROP_STATS)
+  public VerificationStats getStats() {
+    return _stats;
+  }
+
+  @JsonProperty(PROP_STATS)
+  public void setStats(VerificationStats x) {
+    this._stats = x;
   }
 
   private String prettyPrintEnv() {
@@ -151,6 +167,9 @@ public class VerificationResult {
       sb.append(prettyPrintEnv());
       sb.append(prettyPrintForwarding());
       sb.append(prettyPrintFailures());
+      if (_stats != null) {
+        sb.append(_stats.prettyPrint());
+      }
       sb.append("==========================================\n");
     }
     return sb.toString();

@@ -1,6 +1,7 @@
 package org.batfish.symbolic.utils;
 
 import java.util.Collection;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -40,6 +41,18 @@ public class PrefixUtils {
   public static boolean overlap(Prefix p, Collection<Prefix> ps) {
     for (Prefix p2 : ps) {
       if (overlap(p, p2)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean isContainedBy(Prefix p, @Nullable Collection<Prefix> ps) {
+    if (ps == null) {
+      return false;
+    }
+    for (Prefix p2 : ps) {
+      if (p2.containsPrefix(p)) {
         return true;
       }
     }

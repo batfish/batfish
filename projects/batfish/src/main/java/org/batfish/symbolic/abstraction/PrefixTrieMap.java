@@ -100,10 +100,8 @@ public class PrefixTrieMap implements Serializable {
     }
 
     private boolean hasUniqueDevice(@Nullable Set<String> devices) {
-      if (devices == null) {
-        return true;
-      }
-      return _devices != null && !devices.containsAll(_devices)
+      return devices == null
+          || _devices != null && !devices.containsAll(_devices)
           || _left != null && _left.hasUniqueDevice(devices)
           || _right != null && _right.hasUniqueDevice(devices);
     }
@@ -117,7 +115,7 @@ public class PrefixTrieMap implements Serializable {
       if (_left == null && _right == null) {
         addEntry(map, devices, prefix);
       } else {
-        // Optimization to avoid creating huge numbers of prefixes:
+        // PolicyQuotient to avoid creating huge numbers of prefixes:
         // Check if at least one of the branches has a different device in the leaf
         if (hasUniqueDevice(devices)) {
           Prefix left = prefix == null ? null : extendPrefixWith(prefix, false);

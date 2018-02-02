@@ -12,28 +12,6 @@ public class BDDInteger {
   private BDD[] _bitvec;
 
   /*
-   * Create an integer, and initialize its values as "don't care"
-   * This requires knowing the start index variables the bitvector
-   * will use.
-   */
-  public static BDDInteger makeFromIndex(BDDFactory factory, int length, int start) {
-    BDDInteger bdd = new BDDInteger(factory, length);
-    for (int i = 0; i < length; i++) {
-      bdd._bitvec[i] = bdd._factory.ithVar(start + i);
-    }
-    return bdd;
-  }
-
-  /*
-   * Create an integer and initialize it to a concrete value
-   */
-  public static BDDInteger makeFromValue(BDDFactory factory, int length, long value) {
-    BDDInteger bdd = new BDDInteger(factory, length);
-    bdd.setValue(value);
-    return bdd;
-  }
-
-  /*
    * Create an integer, but don't initialize its bit values
    */
   private BDDInteger(BDDFactory factory, int length) {
@@ -47,6 +25,35 @@ public class BDDInteger {
     for (int i = 0; i < _bitvec.length; i++) {
       _bitvec[i] = other._bitvec[i].id();
     }
+  }
+
+  /*
+   * Create an integer, and initialize its values as "don't care"
+   * This requires knowing the start index variables the bitvector
+   * will use.
+   */
+  public static BDDInteger makeFromIndex(
+      BDDFactory factory, int length, int start, boolean reverse) {
+    BDDInteger bdd = new BDDInteger(factory, length);
+    for (int i = 0; i < length; i++) {
+      int idx;
+      if (reverse) {
+        idx = start + length - i - 1;
+      } else {
+        idx = start + i;
+      }
+      bdd._bitvec[i] = bdd._factory.ithVar(idx);
+    }
+    return bdd;
+  }
+
+  /*
+   * Create an integer and initialize it to a concrete value
+   */
+  public static BDDInteger makeFromValue(BDDFactory factory, int length, long value) {
+    BDDInteger bdd = new BDDInteger(factory, length);
+    bdd.setValue(value);
+    return bdd;
   }
 
   /*

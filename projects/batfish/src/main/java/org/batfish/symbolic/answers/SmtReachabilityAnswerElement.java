@@ -40,6 +40,9 @@ public class SmtReachabilityAnswerElement implements AnswerElement {
     if (_result.isVerified()) {
       sb.append("\nVerified");
     }
+    if (_result.getStats() != null) {
+      sb.append("\n\n").append(_result.getStats().prettyPrint());
+    }
     return sb + _flowHistory.prettyPrint();
   }
 }
