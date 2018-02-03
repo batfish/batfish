@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -134,6 +135,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
     private String _propertyName;
 
+    @JsonCreator
     public RoleConsistencyQuestion() {}
 
     @Override
