@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.LinkedList;
@@ -125,6 +126,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
 
     private OutliersHypothesis _hypothesis;
 
+    @JsonCreator
     public NamedStructureRoleConsistencyQuestion() {}
 
     @Override

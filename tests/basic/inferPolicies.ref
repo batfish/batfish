@@ -4,6 +4,7 @@
       "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
       "roleConsistencyQuestions" : [
         {
+          "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
           "differential" : false,
           "propertyName" : "LoggingServers",
           "roleSpecifier" : {
@@ -32,6 +33,36 @@
           }
         },
         {
+          "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
+          "differential" : false,
+          "propertyName" : "NtpServers",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          }
+        },
+        {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
           "roleSpecifier" : {
@@ -61,6 +92,7 @@
           "structType" : "CommunityList"
         },
         {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
           "roleSpecifier" : {
@@ -90,6 +122,7 @@
           "structType" : "Interface"
         },
         {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
           "roleSpecifier" : {
@@ -119,6 +152,7 @@
           "structType" : "IpAccessList"
         },
         {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
           "roleSpecifier" : {
@@ -148,6 +182,7 @@
           "structType" : "RouteFilterList"
         },
         {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
           "roleSpecifier" : {
@@ -177,6 +212,7 @@
           "structType" : "Vrf"
         },
         {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameDefinition",
           "roleSpecifier" : {
@@ -206,6 +242,7 @@
           "structType" : "CommunityList"
         },
         {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameDefinition",
           "roleSpecifier" : {
@@ -233,6 +270,36 @@
             ]
           },
           "structType" : "IpAccessList"
+        },
+        {
+          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+          "differential" : false,
+          "hypothesis" : "sameDefinition",
+          "roleSpecifier" : {
+            "inferred" : false,
+            "roleMap" : {
+              "border" : [
+                "as2border1",
+                "as2border2"
+              ],
+              "core" : [
+                "as2core1",
+                "as2core2"
+              ],
+              "dept" : [
+                "as2dept1"
+              ],
+              "dist" : [
+                "as2dist1",
+                "as2dist2"
+              ]
+            },
+            "roleRegexes" : [
+              "[a-z]*\\d([a-z]+).*",
+              "([a-z]+)\\d"
+            ]
+          },
+          "structType" : "RouteFilterList"
         }
       ]
     }
