@@ -283,12 +283,12 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       SortedSet<NamedStructureOutlierSet<?>> outliers =
           rankNamedStructureOutliers(hypothesis, equivalenceSets);
 
-      // remove outlier sets where the hypothesis is that a particular named structure
-      // should *not* exist (this  happens when more nodes lack such a structure than contain
-      // such a structure).  such hypotheses do not seem to be useful in general.
-      outliers.removeIf(oset -> oset.getNamedStructure() == null);
-
       if (!_verbose) {
+        // remove outlier sets where the hypothesis is that a particular named structure
+        // should *not* exist (this  happens when more nodes lack such a structure than contain
+        // such a structure).  such hypotheses do not seem to be useful in general.
+        outliers.removeIf(oset -> oset.getNamedStructure() == null);
+
         // remove outlier sets that don't meet our threshold
         outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers()));
       }
@@ -316,6 +316,12 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         if (accessorF != null) {
           addPropertyOutliers(serverSet, accessorF, rankedOutliers);
         }
+      }
+
+      if (!_verbose) {
+        // remove outlier sets where the hypothesis is that a particular server set
+        // should be empty. such hypotheses do not seem to be useful in general.
+        rankedOutliers.removeIf(oset -> oset.getDefinition().isEmpty());
       }
 
       return rankedOutliers;

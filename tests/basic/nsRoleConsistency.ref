@@ -14,6 +14,16 @@
           ],
           "hypothesis" : "sameName",
           "name" : "as1_community",
+          "structDefinition" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "(,|\\{|\\}|^|$| )1:"
+              }
+            ],
+            "name" : "as1_community",
+            "invertMatch" : false
+          },
           "structType" : "CommunityList",
           "role" : "border"
         },
@@ -28,6 +38,16 @@
           ],
           "hypothesis" : "sameName",
           "name" : "as2_community",
+          "structDefinition" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "(,|\\{|\\}|^|$| )2:"
+              }
+            ],
+            "name" : "as2_community",
+            "invertMatch" : false
+          },
           "structType" : "CommunityList",
           "role" : "border"
         },
@@ -42,6 +62,32 @@
           ],
           "hypothesis" : "sameName",
           "name" : "as3_community",
+          "structDefinition" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "(,|\\{|\\}|^|$| )3:"
+              }
+            ],
+            "name" : "as3_community",
+            "invertMatch" : false
+          },
+          "structType" : "CommunityList",
+          "role" : "border"
+        },
+        {
+          "conformers" : [
+            "as1border1",
+            "as2border1",
+            "as2border2",
+            "as3border1",
+            "as3border2"
+          ],
+          "hypothesis" : "sameName",
+          "name" : "as4_community",
+          "outliers" : [
+            "as1border2"
+          ],
           "structType" : "CommunityList",
           "role" : "border"
         },
@@ -51,6 +97,16 @@
           ],
           "hypothesis" : "sameName",
           "name" : "as2_community",
+          "structDefinition" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "(,|\\{|\\}|^|$| )2:"
+              }
+            ],
+            "name" : "as2_community",
+            "invertMatch" : false
+          },
           "structType" : "CommunityList",
           "role" : "dept"
         },
@@ -61,6 +117,16 @@
           ],
           "hypothesis" : "sameName",
           "name" : "dept_community",
+          "structDefinition" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "(,|\\{|\\}|^|$| )65001:"
+              }
+            ],
+            "name" : "dept_community",
+            "invertMatch" : false
+          },
           "structType" : "CommunityList",
           "role" : "dist"
         }

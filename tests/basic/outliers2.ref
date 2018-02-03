@@ -25,6 +25,39 @@
             "host1",
             "host2"
           ],
+          "structDefinition" : {
+            "name" : "GigabitEthernet0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "1.0.1.1/24"
+            ],
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/0"
+            ],
+            "isisL1InterfaceMode" : "unset",
+            "isisL2InterfaceMode" : "unset",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfArea" : 1,
+            "ospfCost" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.0.1.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "structType" : "Interface"
         },
         {
@@ -49,6 +82,37 @@
             "host1",
             "host2"
           ],
+          "structDefinition" : {
+            "name" : "GigabitEthernet1/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "10.12.11.1/24"
+            ],
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet1/0"
+            ],
+            "isisL1InterfaceMode" : "unset",
+            "isisL2InterfaceMode" : "unset",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "10.12.11.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "structType" : "Interface"
         },
         {
@@ -73,6 +137,39 @@
             "host1",
             "host2"
           ],
+          "structDefinition" : {
+            "name" : "Loopback0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "1.1.1.1/32"
+            ],
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "Loopback0"
+            ],
+            "isisL1InterfaceMode" : "unset",
+            "isisL2InterfaceMode" : "unset",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfArea" : 1,
+            "ospfCost" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : true,
+            "ospfPointToPoint" : false,
+            "prefix" : "1.1.1.1/32",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
           "structType" : "Interface"
         }
       ]
@@ -82,7 +179,8 @@
     "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersQuestion",
     "differential" : false,
     "hypothesis" : "sameName",
-    "nodeRegex" : ".*"
+    "nodeRegex" : ".*",
+    "verbose" : false
   },
   "status" : "SUCCESS",
   "summary" : {

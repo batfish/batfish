@@ -16,6 +16,33 @@
           "outliers" : [
             "as1border2"
           ],
+          "structDefinition" : {
+            "name" : "103",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.255.255.0"
+                ],
+                "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
+                "negate" : false,
+                "srcIps" : [
+                  "3.0.1.0"
+                ]
+              },
+              {
+                "action" : "ACCEPT",
+                "dstIps" : [
+                  "255.255.255.0"
+                ],
+                "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
+                "negate" : false,
+                "srcIps" : [
+                  "3.0.2.0"
+                ]
+              }
+            ]
+          },
           "structType" : "IpAccessList"
         },
         {
@@ -31,6 +58,21 @@
           "outliers" : [
             "as1border2"
           ],
+          "structDefinition" : {
+            "name" : "103",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "24-24",
+                "prefix" : "3.0.1.0/24"
+              },
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "24-24",
+                "prefix" : "3.0.2.0/24"
+              }
+            ]
+          },
           "structType" : "RouteFilterList"
         },
         {
@@ -45,6 +87,21 @@
           "outliers" : [
             "as2dept1"
           ],
+          "structDefinition" : {
+            "name" : "102",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "8-8",
+                "prefix" : "2.0.0.0/8"
+              },
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "16-16",
+                "prefix" : "2.128.0.0/16"
+              }
+            ]
+          },
           "structType" : "RouteFilterList"
         }
       ]
@@ -54,7 +111,8 @@
     "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersQuestion",
     "differential" : false,
     "hypothesis" : "sameDefinition",
-    "nodeRegex" : ".*"
+    "nodeRegex" : ".*",
+    "verbose" : false
   },
   "status" : "SUCCESS",
   "summary" : {
