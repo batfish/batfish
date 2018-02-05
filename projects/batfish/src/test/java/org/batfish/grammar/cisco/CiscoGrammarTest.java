@@ -37,6 +37,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -100,6 +101,33 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
+  }
+
+  @Test
+  public void testSummaryMetricCost() throws IOException {
+    Configuration manual = parseConfig("iosOspfCost");
+    OspfAreaSummary summary =
+        manual
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(1L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary.getAdvertise(), is(false));
+    assertThat(summary.getMetric(), equalTo(100L));
+
+    Configuration defaults = parseConfig("iosOspfCostDefaults");
+    summary =
+        defaults
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(1L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary.getAdvertise(), is(true));
+    assertThat(summary.getMetric(), nullValue());
   }
 
   @Test

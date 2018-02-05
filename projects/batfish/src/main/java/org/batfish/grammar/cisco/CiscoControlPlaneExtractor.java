@@ -55,6 +55,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -1773,7 +1774,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterRo_area(Ro_areaContext ctx) {
     long area;
     if (ctx.area_int != null) {
-      area = toInteger(ctx.area_int);
+      area = toLong(ctx.area_int);
     } else if (ctx.area_ip != null) {
       area = toIp(ctx.area_ip).asLong();
     } else {
@@ -4989,13 +4990,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    int area = (ctx.area_int != null) ? toInteger(ctx.area_int) : (int) toIp(ctx.area_ip).asLong();
+    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
     boolean noSummary = ctx.NO_SUMMARY() != null;
     boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
     if (defaultOriginate) {
       todo(ctx, F_OSPF_AREA_NSSA);
     }
     proc.getNssas().put(area, noSummary);
+  }
+
+  @Override
+  public void exitRo_area_range(CiscoParser.Ro_area_rangeContext ctx) {
+    long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    Prefix prefix = Prefix.parse(ctx.area_range.getText());
+    boolean advertise = ctx.NOT_ADVERTISE() == null;
+    Long cost = ctx.cost == null ? null : toLong(ctx.cost);
+
+    Map<Prefix, OspfAreaSummary> area =
+        currentVrf().getOspfProcess().getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
+    area.put(prefix, new OspfAreaSummary(advertise, cost));
   }
 
   @Override
@@ -5188,12 +5201,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRoa_range(Roa_rangeContext ctx) {
-    OspfProcess proc = currentVrf().getOspfProcess();
     Prefix prefix = Prefix.parse(ctx.prefix.getText());
     boolean advertise = ctx.NOT_ADVERTISE() == null;
-    Map<Prefix, Boolean> area =
-        proc.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
-    area.put(prefix, advertise);
+    Long cost = ctx.cost == null ? null : toLong(ctx.cost);
+
+    Map<Prefix, OspfAreaSummary> area =
+        currentVrf()
+            .getOspfProcess()
+            .getSummaries()
+            .computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
+    area.put(prefix, new OspfAreaSummary(advertise, cost));
   }
 
   @Override
