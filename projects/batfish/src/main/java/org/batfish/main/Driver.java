@@ -71,7 +71,6 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
-@SuppressWarnings("restriction")
 public class Driver {
 
   public enum RunMode {

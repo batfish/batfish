@@ -107,6 +107,7 @@ import org.jline.utils.InfoCmp.Capability;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
+@SuppressWarnings("restriction")
 public class Client extends AbstractClient implements IClient {
 
   private static final Set<String> COMPARATORS =
