@@ -599,16 +599,7 @@ public class WorkQueueMgr {
 
     QueuedWork blocker = getBlockerForDataplaningWork(work);
     if (blocker == null) {
-      //      EnvironmentMetadata envMetadata =
-      //          TestrigMetadataMgr.getEnvironmentMetadata(
-      //              wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
-      //      if (envMetadata.getProcessingStatus() == ProcessingStatus.UNINITIALIZED
-      //          || envMetadata.getProcessingStatus() == ProcessingStatus.PARSING_FAIL) {
-      //        throw new BatfishException(
-      //            "Cannot queue dataplaning work while other dependent work exists");
-      //      } else {
       return _queueIncompleteWork.enque(work);
-      //      }
     } else {
       return queueBlockedWork(work, blocker);
     }
