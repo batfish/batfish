@@ -51,6 +51,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -423,13 +424,15 @@ public class WorkMgr extends AbstractCoordinator {
    * @param questionsToAdd The questions to be added to or initially populate the analysis.
    * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
    *     with {@code newAnalysis}.
+   * @param suggested An optional Boolean indicating whether analysis is suggested (default: false).
    */
   public void configureAnalysis(
       String containerName,
       boolean newAnalysis,
       String aName,
       Map<String, String> questionsToAdd,
-      List<String> questionsToDelete) {
+      List<String> questionsToDelete,
+      @Nullable Boolean suggested) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
     if (Files.exists(aDir) && newAnalysis) {
@@ -445,6 +448,32 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
       }
     }
+
+    // Create metadata if it's a new analysis, or update it if suggested is not null
+    if (newAnalysis || suggested != null) {
+      AnalysisMetadata metadata;
+      if (newAnalysis) {
+        metadata = new AnalysisMetadata(Instant.now(), (suggested != null) && suggested);
+      } else if (!Files.exists(getpathAnalysisMetadata(containerName, aName))) {
+        // Configuring an old analysis with no metadata file; create one. Know suggested != null
+        metadata = new AnalysisMetadata(Instant.MIN, suggested);
+      } else {
+        try {
+          metadata = AnalysisMetadataMgr.readMetadata(containerName, aName);
+          metadata.setSuggested(suggested);
+        } catch (IOException e) {
+          throw new BatfishException(
+              "Unable to read metadata file for analysis '" + aName + "'", e);
+        }
+      }
+      // Write metadata to file
+      try {
+        AnalysisMetadataMgr.writeMetadata(metadata, containerName, aName);
+      } catch (JsonProcessingException e) {
+        throw new BatfishException("Could not write analysisMetadata", e);
+      }
+    }
+
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
       Path qDir = questionsDir.resolve(entry.getKey());
@@ -763,6 +792,17 @@ public class WorkMgr extends AbstractCoordinator {
   public Path getpathContainerQuestion(String containerName, String questionName) {
     Path questionDir = getdirContainerQuestion(containerName, questionName);
     return questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+  }
+
+  // this function should build on others but some overrides are getting in the way
+  // TODO: cleanup later
+  public static Path getpathAnalysisMetadata(String container, String analysis) {
+    return Main.getSettings()
+        .getContainersLocation()
+        .resolve(container)
+        .resolve(BfConsts.RELPATH_ANALYSES_DIR)
+        .resolve(analysis)
+        .resolve(BfConsts.RELPATH_METADATA_FILE);
   }
 
   // this function should build on others but some overrides are getting in the way
