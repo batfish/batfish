@@ -106,7 +106,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testSummaryMetricCost() throws IOException {
+  public void testOspfSummaryRouteMetric() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     OspfAreaSummary summary =
         manual
