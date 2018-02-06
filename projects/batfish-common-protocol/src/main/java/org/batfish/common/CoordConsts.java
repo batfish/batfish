@@ -96,6 +96,7 @@ public class CoordConsts {
   public static final String SVC_KEY_RESULT = "result";
   public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SUCCESS = "success";
+  public static final String SVC_KEY_SUGGESTED = "suggested";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
   public static final String SVC_KEY_TESTRIG_INFO = "testriginfo";
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
