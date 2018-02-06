@@ -412,9 +412,10 @@ public class WorkQueueMgr {
         work.setStatus(WorkStatusCode.ASSIGNED);
         work.recordTaskCheckResult(task);
         break;
-      case TerminatedNormally:
       case TerminatedAbnormally:
       case TerminatedByUser:
+      case TerminatedNormally:
+      case TerminatedQueueFail:
         {
           // move the work to completed queue
           _queueIncompleteWork.delete(work);
@@ -433,12 +434,21 @@ public class WorkQueueMgr {
             TestrigMetadataMgr.updateEnvironmentStatus(
                 wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv, status);
           } else if (wDetails.workType == WorkType.DATAPLANING) {
-            ProcessingStatus status =
-                (task.getStatus() == TaskStatus.TerminatedNormally)
-                    ? ProcessingStatus.DATAPLANED
-                    : ProcessingStatus.DATAPLANING_FAIL;
-            TestrigMetadataMgr.updateEnvironmentStatus(
-                wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv, status);
+            // no change in status needed if task.getStatus() is TerminatedQueueFail
+            if (task.getStatus() == TaskStatus.TerminatedAbnormally
+                || task.getStatus() == TaskStatus.TerminatedByUser) {
+              TestrigMetadataMgr.updateEnvironmentStatus(
+                  wItem.getContainerName(),
+                  wDetails.baseTestrig,
+                  wDetails.baseEnv,
+                  ProcessingStatus.DATAPLANING_FAIL);
+            } else if (task.getStatus() == TaskStatus.TerminatedNormally) {
+              TestrigMetadataMgr.updateEnvironmentStatus(
+                  wItem.getContainerName(),
+                  wDetails.baseTestrig,
+                  wDetails.baseEnv,
+                  ProcessingStatus.DATAPLANED);
+            }
           }
 
           // check if we unblocked anything
@@ -469,7 +479,7 @@ public class WorkQueueMgr {
                 // people may be checking its status and this work may be blocking others
                 _queueIncompleteWork.enque(requeueWork);
                 Task fakeTask =
-                    new Task(TaskStatus.TerminatedAbnormally, "Couldn't requeue after unblocking");
+                    new Task(TaskStatus.TerminatedQueueFail, "Couldn't requeue after unblocking");
                 processTaskCheckResult(requeueWork, fakeTask);
               }
             }
@@ -589,7 +599,16 @@ public class WorkQueueMgr {
 
     QueuedWork blocker = getBlockerForDataplaningWork(work);
     if (blocker == null) {
+      //      EnvironmentMetadata envMetadata =
+      //          TestrigMetadataMgr.getEnvironmentMetadata(
+      //              wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv);
+      //      if (envMetadata.getProcessingStatus() == ProcessingStatus.UNINITIALIZED
+      //          || envMetadata.getProcessingStatus() == ProcessingStatus.PARSING_FAIL) {
+      //        throw new BatfishException(
+      //            "Cannot queue dataplaning work while other dependent work exists");
+      //      } else {
       return _queueIncompleteWork.enque(work);
+      //      }
     } else {
       return queueBlockedWork(work, blocker);
     }

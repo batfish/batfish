@@ -13,6 +13,7 @@ public class BfConsts {
     TerminatedAbnormally,
     TerminatedByUser,
     TerminatedNormally,
+    TerminatedQueueFail,
     Unknown,
     UnreachableOrBadResponse,
     Unscheduled;
@@ -20,7 +21,8 @@ public class BfConsts {
     public boolean isTerminated() {
       return (this == TaskStatus.TerminatedAbnormally
           || this == TaskStatus.TerminatedByUser
-          || this == TaskStatus.TerminatedNormally);
+          || this == TaskStatus.TerminatedNormally
+          || this == TaskStatus.TerminatedQueueFail);
     }
   }
 
