@@ -18,7 +18,7 @@ router ospf abcdefg
 router ospf 1
   address-family ipv4
   area 0.0.0.0 authentication message-digest
-  area 0.0.0.0 range 1.2.3.0/24
+  area 0.0.0.0 range 1.2.3.0/24 cost 17
   auto-cost reference-bandwidth 40 Gbps
   discard-route external
   discard-route internal

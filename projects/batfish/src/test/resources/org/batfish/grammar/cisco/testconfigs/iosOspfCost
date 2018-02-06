@@ -10,4 +10,7 @@ router ospf 1
 
   ! In IOS, should be interpreted as 10 Mbps.
   auto-cost reference-bandwidth 10
+
+  ! Force the summary metric to be not advertised and have a cost of 100.
+  area 1 range 10.0.0.0/16 not-advertise cost 100
 !

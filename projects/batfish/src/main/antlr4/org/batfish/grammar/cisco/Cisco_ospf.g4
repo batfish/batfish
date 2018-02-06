@@ -26,7 +26,20 @@ ro_area_nssa
 
 ro_area_range
 :
-   AREA area = IP_ADDRESS RANGE area_range = IP_PREFIX NEWLINE
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   )
+   RANGE area_range = IP_PREFIX
+   (
+      ADVERTISE
+      | NOT_ADVERTISE
+   )?
+   (
+      COST cost=DEC
+   )?
+   NEWLINE
 ;
 
 ro_area_stub
@@ -428,7 +441,11 @@ roa_range
    (
       ADVERTISE
       | NOT_ADVERTISE
-   ) NEWLINE
+   )?
+   (
+      COST cost=DEC
+   )?
+   NEWLINE
 ;
 
 roa_network_null

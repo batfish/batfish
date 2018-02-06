@@ -14,6 +14,7 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -64,7 +65,7 @@ public class OspfProcess extends ComparableStructure<String> {
 
   private Set<OspfNetwork> _networks;
 
-  private Map<Integer, Boolean> _nssas;
+  private Map<Long, Boolean> _nssas;
 
   private boolean _passiveInterfaceDefault;
 
@@ -76,7 +77,7 @@ public class OspfProcess extends ComparableStructure<String> {
 
   private Ip _routerId;
 
-  private Map<Long, Map<Prefix, Boolean>> _summaries;
+  private Map<Long, Map<Prefix, OspfAreaSummary>> _summaries;
 
   private Set<OspfWildcardNetwork> _wildcardNetworks;
 
@@ -188,7 +189,7 @@ public class OspfProcess extends ComparableStructure<String> {
     return _networks;
   }
 
-  public Map<Integer, Boolean> getNssas() {
+  public Map<Long, Boolean> getNssas() {
     return _nssas;
   }
 
@@ -216,7 +217,7 @@ public class OspfProcess extends ComparableStructure<String> {
     return _routerId;
   }
 
-  public Map<Long, Map<Prefix, Boolean>> getSummaries() {
+  public Map<Long, Map<Prefix, OspfAreaSummary>> getSummaries() {
     return _summaries;
   }
 
