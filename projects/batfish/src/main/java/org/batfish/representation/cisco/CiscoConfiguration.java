@@ -59,6 +59,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -2717,9 +2718,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // create summarization filters for inter-area routes
-    for (Entry<Long, Map<Prefix, Boolean>> e1 : proc.getSummaries().entrySet()) {
+    for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
       long areaLong = e1.getKey();
-      Map<Prefix, Boolean> summaries = e1.getValue();
+      Map<Prefix, OspfAreaSummary> summaries = e1.getValue();
       OspfArea area = areas.get(areaLong);
       String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + areaLong + "~";
       RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
@@ -2729,18 +2730,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
         areas.put(areaLong, area);
       }
       area.setSummaryFilter(summaryFilterName);
-      for (Entry<Prefix, Boolean> e2 : summaries.entrySet()) {
+      for (Entry<Prefix, OspfAreaSummary> e2 : summaries.entrySet()) {
         Prefix prefix = e2.getKey();
-        boolean advertise = e2.getValue();
+        OspfAreaSummary summary = e2.getValue();
         int prefixLength = prefix.getPrefixLength();
         int filterMinPrefixLength =
-            advertise ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1) : prefixLength;
+            summary.getAdvertise()
+                ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                : prefixLength;
         summaryFilter.addLine(
             new RouteFilterLine(
                 LineAction.REJECT,
                 prefix,
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
-        area.getSummaries().put(prefix, advertise);
+        area.getSummaries().put(prefix, summary);
       }
       summaryFilter.addLine(
           new RouteFilterLine(

@@ -30,6 +30,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -304,24 +305,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
       long areaNum = e.getKey();
       OspfArea area = e.getValue();
-      for (Entry<Prefix, Boolean> e2 : area.getSummaries().entrySet()) {
+      for (Entry<Prefix, OspfAreaSummary> e2 : area.getSummaries().entrySet()) {
         Prefix prefix = e2.getKey();
-        boolean advertise = e2.getValue();
+        OspfAreaSummary summary = e2.getValue();
 
         // Only advertised summaries can contribute
-        if (!advertise) {
+        if (!summary.getAdvertise()) {
           continue;
         }
 
-        // Compute the metric from any possible contributing routes
-        Long metric = null;
-        for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
-          metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
-        }
-        for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
-          metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+        Long metric = summary.getMetric();
+        if (summary.getMetric() == null) {
+          // No metric was configured; compute it from any possible contributing routes.
+          for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
+            metric =
+                computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+          }
+          for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
+            metric =
+                computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+          }
         }
 
         // No routes contributed to the summary, nothing to construct

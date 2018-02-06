@@ -7126,6 +7126,23 @@
           "roles" : [
             "cisco-ospf"
           ],
+          "routeFilterLists" : {
+            "~OSPF_SUMMARY_FILTER:default:0~" : {
+              "name" : "~OSPF_SUMMARY_FILTER:default:0~",
+              "lines" : [
+                {
+                  "action" : "REJECT",
+                  "lengthRange" : "25-32",
+                  "prefix" : "1.2.3.0/24"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "0-32",
+                  "prefix" : "0.0.0.0/0"
+                }
+              ]
+            }
+          },
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
               "name" : "~OSPF_EXPORT_POLICY:default~",
@@ -7176,7 +7193,14 @@
                     "name" : 0,
                     "interfaces" : [
                       "Ethernet0/0"
-                    ]
+                    ],
+                    "summaries" : {
+                      "1.2.3.0/24" : {
+                        "advertise" : true,
+                        "metric" : 17
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -10585,7 +10609,9 @@
                   "0" : {
                     "name" : 0,
                     "summaries" : {
-                      "10.0.0.0/15" : true
+                      "10.0.0.0/15" : {
+                        "advertise" : true
+                      }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
