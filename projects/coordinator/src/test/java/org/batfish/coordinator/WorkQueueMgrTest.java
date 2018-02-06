@@ -976,6 +976,31 @@ public class WorkQueueMgrTest {
     workIsQueued(ProcessingStatus.PARSED, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 2);
   }
 
+  @Test
+  public void dataplaningAfterParsingFailure() throws Exception {
+    initTestrigMetadata("other", "other", ProcessingStatus.UNINITIALIZED);
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "other"), new WorkDetails("other", "other", WorkType.PARSING));
+    _workQueueMgr.queueUnassignedWork(work1);
+    QueuedWork work2 =
+        new QueuedWork(
+            new WorkItem(CONTAINER, "other"),
+            new WorkDetails("other", "other", WorkType.DATAPLANING));
+    _workQueueMgr.queueUnassignedWork(work2);
+
+    QueuedWork aWork1 =
+        doAction(new Action(ActionType.ASSIGN_SUCCESS, null)); // should be parsing work (work1)
+    doAction(new Action(ActionType.STATUS_TERMINATED_ABNORMALLY, aWork1));
+
+    // work2 should be left with terminatedqueuefail status and the testrig in parsing_fail state
+    assertThat(work2.getStatus(), equalTo(WorkStatusCode.REQUEUEFAILURE));
+    assertThat(
+        TestrigMetadataMgr.getEnvironmentMetadata(CONTAINER, "other", "other")
+            .getProcessingStatus(),
+        equalTo(ProcessingStatus.PARSING_FAIL));
+  }
+
   // END: DATAPLANING work tests
 
   @Test
