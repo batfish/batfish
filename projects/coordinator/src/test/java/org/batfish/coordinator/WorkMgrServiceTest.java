@@ -119,7 +119,8 @@ public class WorkMgrServiceTest {
         "new",
         "analysis",
         new FileInputStream(analysisFile),
-        "");
+        "",
+        null);
     Path questionPath =
         _containersFolder
             .getRoot()
@@ -141,7 +142,8 @@ public class WorkMgrServiceTest {
         "",
         "analysis",
         null,
-        questionsToDelete);
+        questionsToDelete,
+        null);
     assertFalse(Files.exists(questionPath));
     JSONArray result =
         _service.configureAnalysis(
@@ -151,7 +153,8 @@ public class WorkMgrServiceTest {
             "",
             "analysis",
             null,
-            questionsToDelete);
+            questionsToDelete,
+            null);
     assertThat(result.getString(0), equalTo(CoordConsts.SVC_KEY_FAILURE));
   }
 

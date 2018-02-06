@@ -123,6 +123,7 @@ public class WorkMgrService {
    * @param analysisName The name of the analysis to configure
    * @param addQuestionsStream A stream providing the questions for the analysis
    * @param delQuestions A list of questions to delete from the analysis
+   * @param suggested An optional boolean indicating whether analysis is suggested (default: false).
    * @return TODO: document JSON response
    */
   @POST
@@ -136,7 +137,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_NEW_ANALYSIS) String newAnalysisStr,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream addQuestionsStream,
-      @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions) {
+      @FormDataParam(CoordConsts.SVC_KEY_DEL_ANALYSIS_QUESTIONS) String delQuestions,
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_SUGGESTED) Boolean suggested) {
     try {
       _logger.infof(
           "WMS:configureAnalysis %s %s %s %s %s\n",
@@ -177,7 +179,12 @@ public class WorkMgrService {
 
       Main.getWorkMgr()
           .configureAnalysis(
-              containerName, newAnalysis, analysisName, questionsToAdd, questionsToDelete);
+              containerName,
+              newAnalysis,
+              analysisName,
+              questionsToAdd,
+              questionsToDelete,
+              suggested);
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
