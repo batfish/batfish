@@ -1007,7 +1007,7 @@ public class WorkMgr extends AbstractCoordinator {
       WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
       autoWorkQueue.add(parseWork);
 
-      Set<String> analysisNames = listAnalyses(containerName);
+      Set<String> analysisNames = listAnalyses(containerName, null);
       for (String analysis : analysisNames) {
         WorkItem analyzeWork =
             WorkItemBuilder.getWorkItemRunAnalysis(
@@ -1123,7 +1123,7 @@ public class WorkMgr extends AbstractCoordinator {
     return killed;
   }
 
-  public SortedSet<String> listAnalyses(String containerName) {
+  public SortedSet<String> listAnalyses(String containerName, @Nullable Boolean suggested) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
@@ -1134,6 +1134,13 @@ public class WorkMgr extends AbstractCoordinator {
             CommonUtil.getSubdirectories(analysesDir)
                 .stream()
                 .map(subdir -> subdir.getFileName().toString())
+                .filter(
+                    aName -> {
+                      // Include the analysis if suggested is null or matches metadata.suggested
+                      return suggested == null
+                          || AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName)
+                              == suggested;
+                    })
                 .collect(Collectors.toSet()));
     return analyses;
   }
