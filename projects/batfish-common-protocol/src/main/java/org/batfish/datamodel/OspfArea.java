@@ -58,7 +58,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   private SortedMap<String, Interface> _interfaces;
 
-  private SortedMap<Prefix, Boolean> _summaries;
+  private SortedMap<Prefix, OspfAreaSummary> _summaries;
 
   private String _summaryFilter;
 
@@ -85,7 +85,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   }
 
   @JsonProperty(PROP_SUMMARIES)
-  public SortedMap<Prefix, Boolean> getSummaries() {
+  public SortedMap<Prefix, OspfAreaSummary> getSummaries() {
     return _summaries;
   }
 
@@ -117,7 +117,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   }
 
   @JsonProperty(PROP_SUMMARIES)
-  public void setSummaries(SortedMap<Prefix, Boolean> summaries) {
+  public void setSummaries(SortedMap<Prefix, OspfAreaSummary> summaries) {
     _summaries = summaries;
   }
 

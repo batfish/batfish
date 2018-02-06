@@ -1,6 +1,8 @@
 package org.batfish.grammar.cisco;
 
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -14,13 +16,13 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.CompositeBatfishException;
@@ -37,6 +39,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -100,6 +103,33 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
+  }
+
+  @Test
+  public void testOspfSummaryRouteMetric() throws IOException {
+    Configuration manual = parseConfig("iosOspfCost");
+    OspfAreaSummary summary =
+        manual
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(1L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary, not(isAdvertised()));
+    assertThat(summary, hasMetric(100L));
+
+    Configuration defaults = parseConfig("iosOspfCostDefaults");
+    summary =
+        defaults
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(1L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary, isAdvertised());
+    assertThat(summary, hasMetric(nullValue()));
   }
 
   @Test
@@ -553,15 +583,9 @@ public class CiscoGrammarTest {
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    SortedMap<String, String> configurationTextMap = new TreeMap<>();
-    for (String configName : configurationNames) {
-      String configurationText = CommonUtil.readResource(TESTCONFIGS_PREFIX + configName);
-      configurationTextMap.put(configName, configurationText);
-    }
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setConfigurationText(configurationTextMap).build(), _folder);
-    return batfish.loadConfigurations();
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+    return BatfishTestUtils.parseTextConfigs(_folder, names);
   }
 
   @Test

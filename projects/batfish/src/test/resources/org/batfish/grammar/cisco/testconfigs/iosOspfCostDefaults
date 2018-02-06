@@ -9,4 +9,7 @@ router ospf 1
   router-id 1.1.1.1
 
   ! Use default reference bandwidth
+
+  ! Set up summary metrics using defaults (advertised, no set cost).
+  area 1 range 10.0.0.0/16
 !
