@@ -10,10 +10,10 @@ public class BfConsts {
 
   public enum TaskStatus {
     InProgress,
+    RequeueFailure,
     TerminatedAbnormally,
     TerminatedByUser,
     TerminatedNormally,
-    TerminatedQueueFail,
     Unknown,
     UnreachableOrBadResponse,
     Unscheduled;
@@ -22,7 +22,7 @@ public class BfConsts {
       return (this == TaskStatus.TerminatedAbnormally
           || this == TaskStatus.TerminatedByUser
           || this == TaskStatus.TerminatedNormally
-          || this == TaskStatus.TerminatedQueueFail);
+          || this == TaskStatus.RequeueFailure);
     }
   }
 

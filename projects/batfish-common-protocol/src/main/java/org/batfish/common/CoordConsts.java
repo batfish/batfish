@@ -13,10 +13,10 @@ public class CoordConsts {
     ASSIGNMENTERROR,
     BLOCKED,
     CHECKINGSTATUS,
+    REQUEUEFAILURE,
     TERMINATEDABNORMALLY,
     TERMINATEDBYUSER,
     TERMINATEDNORMALLY,
-    TERMINATEDQUEUEFAIL,
     TRYINGTOASSIGN,
     UNASSIGNED;
 
@@ -28,8 +28,8 @@ public class CoordConsts {
           return TERMINATEDBYUSER;
         case TerminatedNormally:
           return TERMINATEDNORMALLY;
-        case TerminatedQueueFail:
-          return TERMINATEDQUEUEFAIL;
+        case RequeueFailure:
+          return REQUEUEFAILURE;
         default:
           throw new IllegalArgumentException(
               "Cannot convert from " + status + " to WorkStatusCode");
@@ -41,7 +41,7 @@ public class CoordConsts {
           || this == WorkStatusCode.TERMINATEDABNORMALLY
           || this == WorkStatusCode.TERMINATEDBYUSER
           || this == WorkStatusCode.TERMINATEDNORMALLY
-          || this == WorkStatusCode.TERMINATEDQUEUEFAIL);
+          || this == WorkStatusCode.REQUEUEFAILURE);
     }
   }
 

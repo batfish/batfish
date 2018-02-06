@@ -994,7 +994,7 @@ public class WorkQueueMgrTest {
     doAction(new Action(ActionType.STATUS_TERMINATED_ABNORMALLY, aWork1));
 
     // work2 should be left with terminatedqueuefail status and the testrig in parsing_fail state
-    assertThat(work2.getStatus(), equalTo(WorkStatusCode.TERMINATEDQUEUEFAIL));
+    assertThat(work2.getStatus(), equalTo(WorkStatusCode.REQUEUEFAILURE));
     assertThat(
         TestrigMetadataMgr.getEnvironmentMetadata(CONTAINER, "other", "other")
             .getProcessingStatus(),

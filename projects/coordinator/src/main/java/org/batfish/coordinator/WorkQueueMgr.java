@@ -415,7 +415,7 @@ public class WorkQueueMgr {
       case TerminatedAbnormally:
       case TerminatedByUser:
       case TerminatedNormally:
-      case TerminatedQueueFail:
+      case RequeueFailure:
         {
           // move the work to completed queue
           _queueIncompleteWork.delete(work);
@@ -434,7 +434,7 @@ public class WorkQueueMgr {
             TestrigMetadataMgr.updateEnvironmentStatus(
                 wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv, status);
           } else if (wDetails.workType == WorkType.DATAPLANING) {
-            // no change in status needed if task.getStatus() is TerminatedQueueFail
+            // no change in status needed if task.getStatus() is RequeueFailure
             if (task.getStatus() == TaskStatus.TerminatedAbnormally
                 || task.getStatus() == TaskStatus.TerminatedByUser) {
               TestrigMetadataMgr.updateEnvironmentStatus(
@@ -479,7 +479,7 @@ public class WorkQueueMgr {
                 // people may be checking its status and this work may be blocking others
                 _queueIncompleteWork.enque(requeueWork);
                 Task fakeTask =
-                    new Task(TaskStatus.TerminatedQueueFail, "Couldn't requeue after unblocking");
+                    new Task(TaskStatus.RequeueFailure, "Couldn't requeue after unblocking");
                 processTaskCheckResult(requeueWork, fakeTask);
               }
             }
