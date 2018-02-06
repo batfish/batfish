@@ -1,4 +1,4 @@
-package org.batfish.deltanet;
+package org.batfish.geometry;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.collections.FibRow;
