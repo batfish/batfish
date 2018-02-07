@@ -3,6 +3,8 @@ package org.batfish.grammar.flatjuniper;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -139,8 +141,20 @@ public class FlatJuniperGrammarTest {
             .get(1L)
             .getSummaries()
             .get(Prefix.parse("10.0.0.0/16"));
-    assertThat(summary, isAdvertised());
+    assertThat(summary, not(isAdvertised()));
     assertThat(summary, hasMetric(123L));
+
+    // Defaults
+    summary =
+        config
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(2L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary, isAdvertised());
+    assertThat(summary, hasMetric(nullValue()));
   }
 
   @Test
