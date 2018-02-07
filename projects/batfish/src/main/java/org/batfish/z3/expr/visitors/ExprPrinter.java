@@ -33,19 +33,141 @@ import org.batfish.z3.state.StateParameterization;
 
 public class ExprPrinter implements ExprVisitor {
 
-  private static boolean isComplexExpr(Expr expr) {
-    return expr instanceof AndExpr
-        || expr instanceof BitVecExpr
-        || expr instanceof DeclareRelExpr
-        || expr instanceof DeclareVarExpr
-        || expr instanceof EqExpr
-        || expr instanceof ExtractExpr
-        || expr instanceof IfExpr
-        || expr instanceof NotExpr
-        || expr instanceof OrExpr
-        || expr instanceof QueryExpr
-        || expr instanceof RuleExpr
-        || expr instanceof StateExpr;
+  private static class IsComplexVisitor implements ExprVisitor {
+
+    private static boolean isComplexExpr(Expr expr) {
+      IsComplexVisitor visitor = new IsComplexVisitor();
+      expr.accept(visitor);
+      return visitor._isComplex;
+    }
+
+    private boolean _isComplex;
+
+    @Override
+    public void visitAndExpr(AndExpr andExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitBitVecExpr(BitVecExpr bitVecExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitComment(Comment comment) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitDeclareRelExpr(DeclareRelExpr declareRelExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitDeclareVarExpr(DeclareVarExpr declareVarExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitEqExpr(EqExpr eqExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitExpr(Expr expr) {
+      expr.accept(this);
+    }
+
+    @Override
+    public void visitExtractExpr(ExtractExpr extractExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitFalseExpr(FalseExpr falseExpr) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
+      headerSpaceMatchExpr.getExpr().accept(this);
+    }
+
+    @Override
+    public void visitIdExpr(IdExpr idExpr) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitIfExpr(IfExpr ifExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitLitIntExpr(LitIntExpr litIntExpr) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitNotExpr(NotExpr notExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitOrExpr(OrExpr orExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
+      prefixMatchExpr.getExpr().accept(this);
+    }
+
+    @Override
+    public void visitQueryExpr(QueryExpr queryExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
+      rangeMatchExpr.getExpr().accept(this);
+    }
+
+    @Override
+    public void visitRuleExpr(RuleExpr ruleExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitSaneExpr(SaneExpr saneExpr) {
+      saneExpr.getExpr().accept(this);
+    }
+
+    @Override
+    public <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
+        StateExpr<T, P> stateExpr) {
+      _isComplex = true;
+    }
+
+    @Override
+    public void visitTrueExpr(TrueExpr trueExpr) {
+      _isComplex = false;
+    }
+
+    @Override
+    public void visitVarIntExpr(VarIntExpr varIntExpr) {
+      _isComplex = false;
+    }
   }
 
   public static String print(Expr expr) {
@@ -78,7 +200,7 @@ public class ExprPrinter implements ExprVisitor {
         printExpr(subExpressions.get(i));
       }
       Expr lastSubExpression = subExpressions.get(size - 1);
-      if (isComplexExpr(lastSubExpression)) {
+      if (IsComplexVisitor.isComplexExpr(lastSubExpression)) {
         _sb.append(" ");
       }
     }
@@ -98,7 +220,7 @@ public class ExprPrinter implements ExprVisitor {
         printExpr(subExpressions.get(i), _indent + 1);
       }
       Expr lastSubExpression = subExpressions.get(size - 1);
-      if (isComplexExpr(lastSubExpression)) {
+      if (IsComplexVisitor.isComplexExpr(lastSubExpression)) {
         _sb.append(" ");
       }
     }
