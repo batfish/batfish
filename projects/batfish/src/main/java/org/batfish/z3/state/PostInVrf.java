@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
@@ -21,19 +20,17 @@ public class PostInVrf extends State<PostInVrf, org.batfish.z3.state.PostInVrf.P
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .flatMap(
               e -> {
                 String hostname = e.getKey();
-                Configuration c = e.getValue();
-                Set<String> disabledVrfs = input.getDisabledVrfs().get(hostname);
-                return c.getVrfs()
+                return input
+                    .getEnabledVrfs()
+                    .get(hostname)
                     .keySet()
                     .stream()
-                    .filter(vrf -> disabledVrfs == null || !disabledVrfs.contains(vrf))
                     .map(
                         vrf ->
                             new RuleExpr(
@@ -77,26 +74,17 @@ public class PostInVrf extends State<PostInVrf, org.batfish.z3.state.PostInVrf.P
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .flatMap(
               e -> {
                 String hostname = e.getKey();
-                Configuration c = e.getValue();
-                Set<String> disabledInterfaces = input.getDisabledInterfaces().get(hostname);
-                Set<String> disabledVrfs = input.getDisabledVrfs().get(hostname);
-                return c.getInterfaces()
+                return input
+                    .getEnabledInterfaces()
+                    .get(hostname)
                     .entrySet()
                     .stream()
-                    .filter(
-                        ei ->
-                            disabledInterfaces == null || !disabledInterfaces.contains(ei.getKey()))
-                    .filter(
-                        ei ->
-                            disabledVrfs == null
-                                || !disabledVrfs.contains(ei.getValue().getVrfName()))
                     .map(
                         ei ->
                             new RuleExpr(

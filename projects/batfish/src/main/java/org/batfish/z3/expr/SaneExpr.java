@@ -5,6 +5,8 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.z3.HeaderField;
+import org.batfish.z3.expr.visitors.BooleanExprVisitor;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class SaneExpr extends BooleanExpr {
 

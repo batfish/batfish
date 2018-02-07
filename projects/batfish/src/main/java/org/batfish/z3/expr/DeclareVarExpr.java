@@ -1,6 +1,7 @@
 package org.batfish.z3.expr;
 
 import org.batfish.z3.HeaderField;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class DeclareVarExpr extends Statement {
 

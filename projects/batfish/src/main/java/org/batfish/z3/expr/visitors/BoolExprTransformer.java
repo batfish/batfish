@@ -7,7 +7,6 @@ import org.batfish.z3.HeaderField;
 import org.batfish.z3.NodProgram;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.BooleanExprVisitor;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;

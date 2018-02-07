@@ -1,5 +1,7 @@
 package org.batfish.z3.expr;
 
+import org.batfish.z3.expr.visitors.ExprVisitor;
+
 public class BitVecExpr extends TypeExpr {
 
   private final int _size;

@@ -1,5 +1,8 @@
 package org.batfish.z3.expr;
 
+import org.batfish.z3.expr.visitors.BooleanExprVisitor;
+import org.batfish.z3.expr.visitors.ExprVisitor;
+
 public class EqExpr extends BooleanExpr {
 
   private final IntExpr _lhs;

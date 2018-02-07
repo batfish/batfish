@@ -42,10 +42,9 @@ public class NodeAccept
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .map(
               e ->
                   new RuleExpr(
@@ -74,16 +73,8 @@ public class NodeAccept
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getFlowSinks()
+          .getEnabledFlowSinks()
           .stream()
-          .filter(niPair -> !input.getDisabledNodes().contains(niPair.getHostname()))
-          .filter(
-              niPair ->
-                  !input.getDisabledInterfaces().containsKey(niPair.getHostname())
-                      || !input
-                          .getDisabledInterfaces()
-                          .get(niPair.getHostname())
-                          .contains(niPair.getInterface()))
           .map(
               niPair ->
                   new RuleExpr(

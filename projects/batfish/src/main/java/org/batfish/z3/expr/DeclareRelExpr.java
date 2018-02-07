@@ -8,6 +8,7 @@ import com.microsoft.z3.Z3Exception;
 import java.util.Arrays;
 import java.util.List;
 import org.batfish.z3.HeaderField;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class DeclareRelExpr extends Statement {
 

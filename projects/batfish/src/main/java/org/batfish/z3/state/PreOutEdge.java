@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -33,22 +32,20 @@ public class PreOutEdge
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .filter(e -> input.getFibs().containsKey(e.getKey()))
           .flatMap(
               e -> {
                 String hostname = e.getKey();
-                Configuration c = e.getValue();
-                Set<String> disabledVrfs = input.getDisabledVrfs().get(hostname);
                 Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>> fibConditionsByVrf =
                     input.getFibConditions().get(hostname);
-                return c.getVrfs()
+                return input
+                    .getEnabledVrfs()
+                    .get(hostname)
                     .keySet()
                     .stream()
-                    .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
                     .filter(input.getFibs().get(hostname)::containsKey)
                     .flatMap(
                         vrfName -> {
@@ -62,7 +59,7 @@ public class PreOutEdge
                                     String outInterface = e2.getKey();
                                     return !isLoopbackInterface(outInterface)
                                         && !CommonUtil.isNullInterface(outInterface)
-                                        && !outInterface.equals(FibRow.DROP_INTERFACE);
+                                        && !outInterface.equals(FibRow.DROP_NO_ROUTE);
                                   })
                               .flatMap(
                                   e2 -> {

@@ -1,6 +1,7 @@
 package org.batfish.z3.expr;
 
 import java.util.List;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class CollapsedListExpr extends ListExpr {
 

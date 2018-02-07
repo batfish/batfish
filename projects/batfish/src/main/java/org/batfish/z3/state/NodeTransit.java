@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
@@ -40,21 +39,17 @@ public class NodeTransit
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .flatMap(
               e -> {
                 String hostname = e.getKey();
-                Configuration c = e.getValue();
-                Set<String> disabledInterfaces = input.getDisabledInterfaces().get(hostname);
-                return c.getInterfaces()
+                return input
+                    .getEnabledInterfaces()
+                    .get(hostname)
                     .keySet()
                     .stream()
-                    .filter(
-                        ifaceName ->
-                            disabledInterfaces == null || !disabledInterfaces.contains(ifaceName))
                     .map(
                         ifaceName ->
                             new RuleExpr(

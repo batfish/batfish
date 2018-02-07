@@ -49,7 +49,7 @@ public class PreOutInterface
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getFlowSinks()
+          .getEnabledFlowSinks()
           .stream()
           .map(
               flowSink ->
@@ -75,7 +75,7 @@ public class PreOutInterface
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getEdges()
+          .getEnabledEdges()
           .stream()
           .map(
               edge ->

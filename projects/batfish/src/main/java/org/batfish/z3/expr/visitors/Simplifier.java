@@ -15,7 +15,6 @@ import org.batfish.z3.expr.DeclareVarExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExpandedListExpr;
 import org.batfish.z3.expr.Expr;
-import org.batfish.z3.expr.ExprVisitor;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;

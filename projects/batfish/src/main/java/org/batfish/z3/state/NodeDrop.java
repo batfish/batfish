@@ -1,6 +1,5 @@
 package org.batfish.z3.state;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -21,10 +20,9 @@ public class NodeDrop extends State<NodeDrop, org.batfish.z3.state.NodeDrop.Para
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .keySet()
           .stream()
-          .filter(Predicates.not(input.getDisabledNodes()::contains))
           .map(hostname -> new RuleExpr(new IfExpr(NodeDropAcl.expr(hostname), expr(hostname))))
           .collect(ImmutableList.toImmutableList());
     }
@@ -39,10 +37,9 @@ public class NodeDrop extends State<NodeDrop, org.batfish.z3.state.NodeDrop.Para
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .keySet()
           .stream()
-          .filter(Predicates.not(input.getDisabledNodes()::contains))
           .map(hostname -> new RuleExpr(new IfExpr(NodeDropNoRoute.expr(hostname), expr(hostname))))
           .collect(ImmutableList.toImmutableList());
     }
@@ -57,10 +54,9 @@ public class NodeDrop extends State<NodeDrop, org.batfish.z3.state.NodeDrop.Para
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .keySet()
           .stream()
-          .filter(Predicates.not(input.getDisabledNodes()::contains))
           .map(
               hostname ->
                   new RuleExpr(new IfExpr(NodeDropNullRoute.expr(hostname), expr(hostname))))

@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
@@ -204,26 +205,25 @@ public class CommonUtil {
   }
 
   public static Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations,
-      boolean excludeInactive,
-      Map<String, Set<String>> disabledInterfaces,
-      Set<String> disabledNodes,
-      Map<String, Set<String>> disabledVrfs) {
+      Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeIpOwners(
+        excludeInactive,
+        configurations
+            .entrySet()
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
+  }
+
+  public static Map<Ip, Set<String>> computeIpOwners(
+      boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
     // TODO: confirm VRFs are handled correctly
     Map<Ip, Set<String>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    configurations.forEach(
-        (hostname, c) -> {
-          if (disabledNodes.contains(hostname)) {
-            return;
-          }
-          Set<String> currentDisabledVrfs = disabledVrfs.get(hostname);
-          Set<String> currentDisabledInterfaces = disabledInterfaces.get(hostname);
-          for (Interface i : c.getInterfaces().values()) {
-            if ((currentDisabledInterfaces != null
-                    && currentDisabledInterfaces.contains(i.getName()))
-                || (currentDisabledVrfs != null && currentDisabledVrfs.contains(i.getVrfName()))
-                || (!i.getActive() && (excludeInactive || !i.getBlacklisted()))) {
+    enabledInterfaces.forEach(
+        (hostname, currentEnabledInterfaces) -> {
+          for (Interface i : currentEnabledInterfaces.values()) {
+            if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
               continue;
             }
             // collect vrrp info
@@ -289,16 +289,6 @@ public class CommonUtil {
           owners.add(bestCandidate);
         });
     return ipOwners;
-  }
-
-  public static Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpOwners(
-        configurations,
-        excludeInactive,
-        Collections.emptyMap(),
-        Collections.emptySet(),
-        Collections.emptyMap());
   }
 
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {

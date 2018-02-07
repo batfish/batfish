@@ -6,7 +6,6 @@ import org.batfish.z3.HeaderField;
 import org.batfish.z3.NodProgram;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.IntExpr;
-import org.batfish.z3.expr.IntExprVisitor;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.VarIntExpr;
 

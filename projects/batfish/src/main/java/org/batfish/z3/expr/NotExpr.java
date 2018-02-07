@@ -1,5 +1,8 @@
 package org.batfish.z3.expr;
 
+import org.batfish.z3.expr.visitors.BooleanExprVisitor;
+import org.batfish.z3.expr.visitors.ExprVisitor;
+
 public class NotExpr extends BooleanExpr {
 
   private final BooleanExpr _arg;

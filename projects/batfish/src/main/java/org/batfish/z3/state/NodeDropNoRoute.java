@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
@@ -27,22 +26,20 @@ public class NodeDropNoRoute
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .filter(e -> input.getFibs().containsKey(e.getKey()))
           .flatMap(
               e -> {
                 String hostname = e.getKey();
-                Configuration c = e.getValue();
-                Set<String> disabledVrfs = input.getDisabledVrfs().get(hostname);
                 Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>> fibConditionsByVrf =
                     input.getFibConditions().get(hostname);
-                return c.getVrfs()
+                return input
+                    .getEnabledVrfs()
+                    .get(hostname)
                     .keySet()
                     .stream()
-                    .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
                     .filter(Predicates.not(input.getFibs().get(hostname)::containsKey))
                     .flatMap(
                         vrfName -> {
@@ -51,7 +48,7 @@ public class NodeDropNoRoute
                           return fibConditionsByInterface
                               .entrySet()
                               .stream()
-                              .filter(e2 -> e2.getKey().equals(FibRow.DROP_INTERFACE))
+                              .filter(e2 -> e2.getKey().equals(FibRow.DROP_NO_ROUTE))
                               .map(
                                   e2 -> {
                                     String outInterface = e2.getKey();

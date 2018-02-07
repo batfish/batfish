@@ -137,7 +137,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                           });
                     }
                     if (!hasDefaultRoute) {
-                      fibs.add(new FibRow(Prefix.ZERO, FibRow.DROP_INTERFACE, "", ""));
+                      fibs.add(new FibRow(Prefix.ZERO, FibRow.DROP_NO_ROUTE, "", ""));
                     }
                     fibsByVrf.put(vrName, fibs.build());
                   });

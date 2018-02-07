@@ -47,10 +47,10 @@ public class PreInInterface
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getEdges()
+          .getEnabledEdges()
           .stream()
-          .filter(e -> !input.getFlowSinks().contains(e.getInterface1()))
-          .filter(e -> !input.getFlowSinks().contains(e.getInterface2()))
+          .filter(e -> !input.getEnabledFlowSinks().contains(e.getInterface1()))
+          .filter(e -> !input.getEnabledFlowSinks().contains(e.getInterface2()))
           .map(
               edge ->
                   new RuleExpr(

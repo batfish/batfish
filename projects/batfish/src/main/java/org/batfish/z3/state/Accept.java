@@ -1,6 +1,5 @@
 package org.batfish.z3.state;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -36,10 +35,9 @@ public class Accept extends State<Accept, org.batfish.z3.state.Accept.Parameteri
               new IfExpr(
                   new OrExpr(
                       input
-                          .getConfigurations()
+                          .getEnabledNodes()
                           .keySet()
                           .stream()
-                          .filter(Predicates.not(input.getDisabledNodes()::contains))
                           .map(NodeAccept::expr)
                           .collect(ImmutableList.toImmutableList())),
                   Accept.EXPR)));

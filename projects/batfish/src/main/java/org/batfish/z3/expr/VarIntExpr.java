@@ -1,6 +1,8 @@
 package org.batfish.z3.expr;
 
 import org.batfish.z3.HeaderField;
+import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.IntExprVisitor;
 
 public class VarIntExpr extends IntExpr {
 

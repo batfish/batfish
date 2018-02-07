@@ -1,6 +1,5 @@
 package org.batfish.z3.state;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -44,10 +43,9 @@ public class PreOut extends State<PreOut, org.batfish.z3.state.PreOut.Parameteri
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .keySet()
           .stream()
-          .filter(Predicates.not(input.getDisabledNodes()::contains))
           .map(
               hostname -> {
                 BooleanExpr ipForeignToCurrentNode =

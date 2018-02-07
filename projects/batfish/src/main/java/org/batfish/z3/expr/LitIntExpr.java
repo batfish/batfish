@@ -1,6 +1,8 @@
 package org.batfish.z3.expr;
 
 import org.batfish.datamodel.Ip;
+import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.IntExprVisitor;
 
 public class LitIntExpr extends IntExpr {
 

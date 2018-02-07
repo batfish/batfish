@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.BooleanExprVisitor;
 import org.batfish.z3.expr.Expr;
-import org.batfish.z3.expr.ExprVisitor;
 import org.batfish.z3.expr.VarIntExpr;
+import org.batfish.z3.expr.visitors.BooleanExprVisitor;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public abstract class State<T extends State<T, ?>, P extends StateParameterization<T>> {
 

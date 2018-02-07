@@ -1,6 +1,5 @@
 package org.batfish.z3.state;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -22,10 +21,9 @@ public class NodeDropAcl
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .keySet()
           .stream()
-          .filter(Predicates.not(input.getDisabledNodes()::contains))
           .map(hostname -> new RuleExpr(new IfExpr(NodeDropAclIn.expr(hostname), expr(hostname))))
           .collect(ImmutableList.toImmutableList());
     }
@@ -40,10 +38,9 @@ public class NodeDropAcl
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .keySet()
           .stream()
-          .filter(Predicates.not(input.getDisabledNodes()::contains))
           .map(hostname -> new RuleExpr(new IfExpr(NodeDropAclOut.expr(hostname), expr(hostname))))
           .collect(ImmutableList.toImmutableList());
     }

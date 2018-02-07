@@ -1,5 +1,7 @@
 package org.batfish.z3.expr;
 
+import org.batfish.z3.expr.visitors.ExprVisitor;
+
 public class QueryExpr extends Statement {
 
   private final BooleanExpr _subExpression;

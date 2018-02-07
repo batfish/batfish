@@ -23,7 +23,7 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getAclMap()
+          .getEnabledAcls()
           .entrySet()
           .stream()
           .flatMap(
@@ -62,7 +62,7 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getAclMap()
+          .getEnabledAcls()
           .entrySet()
           .stream()
           .flatMap(

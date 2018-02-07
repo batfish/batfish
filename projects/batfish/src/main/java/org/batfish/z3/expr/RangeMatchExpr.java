@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Set;
 import org.batfish.datamodel.SubRange;
 import org.batfish.z3.HeaderField;
+import org.batfish.z3.expr.visitors.BooleanExprVisitor;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class RangeMatchExpr extends BooleanExpr {
 

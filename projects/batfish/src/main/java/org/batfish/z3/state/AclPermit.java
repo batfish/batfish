@@ -22,7 +22,7 @@ public class AclPermit extends State<AclPermit, org.batfish.z3.state.AclPermit.P
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getAclMap()
+          .getEnabledAcls()
           .entrySet()
           .stream()
           .flatMap(

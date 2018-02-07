@@ -12,7 +12,6 @@ import org.batfish.z3.expr.DeclareVarExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExpandedListExpr;
 import org.batfish.z3.expr.Expr;
-import org.batfish.z3.expr.ExprVisitor;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -34,6 +33,21 @@ import org.batfish.z3.state.StateParameterization;
 
 public class ExprPrinter implements ExprVisitor {
 
+  private static boolean isComplexExpr(Expr expr) {
+    return expr instanceof AndExpr
+        || expr instanceof BitVecExpr
+        || expr instanceof DeclareRelExpr
+        || expr instanceof DeclareVarExpr
+        || expr instanceof EqExpr
+        || expr instanceof ExtractExpr
+        || expr instanceof IfExpr
+        || expr instanceof NotExpr
+        || expr instanceof OrExpr
+        || expr instanceof QueryExpr
+        || expr instanceof RuleExpr
+        || expr instanceof StateExpr;
+  }
+
   public static String print(Expr expr) {
     ExprPrinter printer = new ExprPrinter();
     expr.accept(printer);
@@ -52,21 +66,6 @@ public class ExprPrinter implements ExprVisitor {
   private ExprPrinter(StringBuilder sb, int indent) {
     _sb = sb;
     _indent = indent;
-  }
-
-  private boolean isComplexExpr(Expr expr) {
-    return expr instanceof AndExpr
-        || expr instanceof BitVecExpr
-        || expr instanceof DeclareRelExpr
-        || expr instanceof DeclareVarExpr
-        || expr instanceof EqExpr
-        || expr instanceof ExtractExpr
-        || expr instanceof IfExpr
-        || expr instanceof NotExpr
-        || expr instanceof OrExpr
-        || expr instanceof QueryExpr
-        || expr instanceof RuleExpr
-        || expr instanceof StateExpr;
   }
 
   private void printCollapsedComplexExpr(List<Expr> subExpressions) {

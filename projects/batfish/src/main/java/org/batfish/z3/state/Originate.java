@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
@@ -39,19 +38,17 @@ public class Originate extends State<Originate, org.batfish.z3.state.Originate.P
     @Override
     public List<RuleExpr> generate(SynthesizerInput input) {
       return input
-          .getConfigurations()
+          .getEnabledNodes()
           .entrySet()
           .stream()
-          .filter(e -> !input.getDisabledNodes().contains(e.getKey()))
           .flatMap(
               e -> {
                 String hostname = e.getKey();
-                Configuration c = e.getValue();
-                Set<String> disabledVrfs = input.getDisabledVrfs().get(hostname);
-                return c.getVrfs()
+                return input
+                    .getEnabledVrfs()
+                    .get(hostname)
                     .keySet()
                     .stream()
-                    .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
                     .map(
                         vrfName ->
                             new RuleExpr(

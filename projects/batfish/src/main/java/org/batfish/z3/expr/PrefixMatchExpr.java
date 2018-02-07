@@ -2,6 +2,8 @@ package org.batfish.z3.expr;
 
 import org.batfish.datamodel.Prefix;
 import org.batfish.z3.HeaderField;
+import org.batfish.z3.expr.visitors.BooleanExprVisitor;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class PrefixMatchExpr extends BooleanExpr {
 
