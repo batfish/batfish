@@ -186,6 +186,31 @@ public class WorkMgrTest {
   }
 
   @Test
+  public void testListAnalysesSuggested() {
+    String containerName = "myContainer";
+    _manager.initContainer(containerName, null);
+
+    // Create analysis1 (user analysis) and analysis2 (suggested analysis)
+    _manager.configureAnalysis(
+        containerName, true, "analysis1", Maps.newHashMap(), Lists.newArrayList(), false);
+    _manager.configureAnalysis(
+        containerName, true, "analysis2", Maps.newHashMap(), Lists.newArrayList(), true);
+
+    SortedSet<String> analyses = _manager.listAnalyses(containerName, null);
+    assertTrue("User analyses listed if suggested is null", analyses.contains("analysis1"));
+    assertTrue("Suggested analyses listed if suggested is null", analyses.contains("analysis2"));
+
+    analyses = _manager.listAnalyses(containerName, false);
+    assertTrue("User analyses listed if suggested is false", analyses.contains("analysis1"));
+    assertFalse(
+        "Suggested analyses not listed if suggested is false", analyses.contains("analysis2"));
+
+    analyses = _manager.listAnalyses(containerName, true);
+    assertFalse("User analyses not listed if suggested is true", analyses.contains("analysis1"));
+    assertTrue("Suggested analyses listed if suggested is true", analyses.contains("analysis2"));
+  }
+
+  @Test
   public void testConfigureAnalysis() {
     String containerName = "myContainer";
     _manager.initContainer(containerName, null);
