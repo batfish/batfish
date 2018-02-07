@@ -27,15 +27,15 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
           .entrySet()
           .stream()
           .flatMap(
-              e -> {
-                String hostname = e.getKey();
-                return e.getValue()
+              enabledAclsEntryByNode -> {
+                String hostname = enabledAclsEntryByNode.getKey();
+                return enabledAclsEntryByNode.getValue()
                     .entrySet()
                     .stream()
                     .flatMap(
-                        e2 -> {
-                          String acl = e2.getKey();
-                          List<IpAccessListLine> lines = e2.getValue().getLines();
+                        enabledAclsEntryByAclName -> {
+                          String acl = enabledAclsEntryByAclName.getKey();
+                          List<IpAccessListLine> lines = enabledAclsEntryByAclName.getValue().getLines();
                           ImmutableList.Builder<RuleExpr> denyLineRules = ImmutableList.builder();
                           for (int line = 0; line < lines.size(); line++) {
                             if (lines.get(line).getAction() == LineAction.REJECT) {
@@ -66,15 +66,15 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
           .entrySet()
           .stream()
           .flatMap(
-              e -> {
-                String hostname = e.getKey();
-                return e.getValue()
+              enabledAclsEntryByNode -> {
+                String hostname = enabledAclsEntryByNode.getKey();
+                return enabledAclsEntryByNode.getValue()
                     .entrySet()
                     .stream()
                     .map(
-                        e2 -> {
-                          String acl = e2.getKey();
-                          List<IpAccessListLine> lines = e2.getValue().getLines();
+                        enabledAclsEntryByAclName -> {
+                          String acl = enabledAclsEntryByAclName.getKey();
+                          List<IpAccessListLine> lines = enabledAclsEntryByAclName.getValue().getLines();
                           BooleanExpr ruleInterior;
                           BooleanExpr deny = expr(hostname, acl);
                           if (lines.isEmpty()) {

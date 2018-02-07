@@ -28,21 +28,21 @@ public class AclLineMatch
           .entrySet()
           .stream()
           .flatMap(
-              e -> {
-                String hostname = e.getKey();
-                return e.getValue()
+              aclConditionsEntryByNode -> {
+                String hostname = aclConditionsEntryByNode.getKey();
+                return aclConditionsEntryByNode.getValue()
                     .entrySet()
                     .stream()
                     .flatMap(
-                        e2 -> {
-                          String acl = e2.getKey();
-                          return e2.getValue()
+                        aclConditionsEntryByAclName -> {
+                          String acl = aclConditionsEntryByAclName.getKey();
+                          return aclConditionsEntryByAclName.getValue()
                               .entrySet()
                               .stream()
                               .map(
-                                  e3 -> {
-                                    int line = e3.getKey();
-                                    BooleanExpr lineCriteria = e3.getValue();
+                                  aclConditionsEntryByLine -> {
+                                    int line = aclConditionsEntryByLine.getKey();
+                                    BooleanExpr lineCriteria = aclConditionsEntryByLine.getValue();
                                     BooleanExpr antecedent =
                                         line > 0
                                             ? new AndExpr(
