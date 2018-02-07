@@ -1131,7 +1131,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, byte[]> dataByName = new TreeMap<>();
     AtomicInteger readCompleted =
         newBatch(
-            "Reading and unpacking files containg '" + outputClassName + "' instances",
+            "Reading and unpacking files containing '" + outputClassName + "' instances",
             namesByPath.size());
     namesByPath.forEach(
         (inputPath, name) -> {
