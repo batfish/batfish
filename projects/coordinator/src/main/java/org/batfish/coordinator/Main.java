@@ -323,10 +323,10 @@ public class Main {
   private static void mainRun() {
     try {
       initAuthorizer();
-      initPoolManager();
       if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
         initTracer();
       }
+      initPoolManager();
       initWorkManager();
     } catch (Exception e) {
       System.err.println(

@@ -15,6 +15,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
@@ -31,6 +32,8 @@ public class PoolMgr {
     }
   }
 
+  private final Client _client;
+
   private final BatfishLogger _logger;
 
   private final Settings _settings;
@@ -42,6 +45,21 @@ public class PoolMgr {
     _settings = settings;
     _logger = logger;
     _workerPool = new HashMap<>();
+    try {
+      _client =
+          CommonUtil.createHttpClientBuilder(
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
+              .build();
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      throw new BatfishException("Failed to create HTTP client", e);
+    }
   }
 
   public synchronized void addToPool(final String worker) {
@@ -119,21 +137,11 @@ public class PoolMgr {
   public void refreshWorkerStatus(String worker) {
     // _logger.debug("PM:RefreshWorkerStatus: refreshing status of " + worker
     // +"\n");
-    Client client = null;
     try {
       // Client client = ClientBuilder.newClient();
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
-              .build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
-          client.target(
+          _client.target(
               String.format(
                   "%s://%s%s/%s",
                   protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_GET_STATUS_RSC));
@@ -183,10 +191,6 @@ public class PoolMgr {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
       updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
-    } finally {
-      if (client != null) {
-        client.close();
-      }
     }
   }
 
