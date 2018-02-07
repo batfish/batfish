@@ -98,9 +98,6 @@ public class CommonUtil {
     }
   }
 
-  public static final String FACT_BLOCK_FOOTER =
-      "\n//FACTS END HERE\n" + "   }) // clauses\n" + "} <-- .\n";
-
   private static String SALT;
 
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
