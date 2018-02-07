@@ -204,41 +204,54 @@ public class CommonUtil {
   }
 
   public static Map<Ip, Set<String>> computeIpOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
+      Map<String, Configuration> configurations,
+      boolean excludeInactive,
+      Map<String, Set<String>> disabledInterfaces,
+      Set<String> disabledNodes,
+      Map<String, Set<String>> disabledVrfs) {
     // TODO: confirm VRFs are handled correctly
     Map<Ip, Set<String>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
     configurations.forEach(
         (hostname, c) -> {
+          if (disabledNodes.contains(hostname)) {
+            return;
+          }
+          Set<String> currentDisabledVrfs = disabledVrfs.get(hostname);
+          Set<String> currentDisabledInterfaces = disabledInterfaces.get(hostname);
           for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
-              // collect vrrp info
-              i.getVrrpGroups()
-                  .forEach(
-                      (groupNum, vrrpGroup) -> {
-                        InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                        if (address == null) {
-                          // This Vlan Interface has invalid configuration. The VRRP has no source
-                          // IP address that would be used for VRRP election. This interface could
-                          // never win the election, so is not a candidate.
-                          return;
-                        }
-                        Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                        Set<Interface> candidates =
-                            vrrpGroups.computeIfAbsent(
-                                key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                        candidates.add(i);
-                      });
-              // collect prefixes
-              i.getAllAddresses()
-                  .stream()
-                  .map(InterfaceAddress::getIp)
-                  .forEach(
-                      ip -> {
-                        Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                        owners.add(hostname);
-                      });
+            if ((currentDisabledInterfaces != null
+                    && currentDisabledInterfaces.contains(i.getName()))
+                || (currentDisabledVrfs != null && currentDisabledVrfs.contains(i.getVrfName()))
+                || (!i.getActive() && (excludeInactive || !i.getBlacklisted()))) {
+              continue;
             }
+            // collect vrrp info
+            i.getVrrpGroups()
+                .forEach(
+                    (groupNum, vrrpGroup) -> {
+                      InterfaceAddress address = vrrpGroup.getVirtualAddress();
+                      if (address == null) {
+                        // This Vlan Interface has invalid configuration. The VRRP has no source
+                        // IP address that would be used for VRRP election. This interface could
+                        // never win the election, so is not a candidate.
+                        return;
+                      }
+                      Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
+                      Set<Interface> candidates =
+                          vrrpGroups.computeIfAbsent(
+                              key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                      candidates.add(i);
+                    });
+            // collect prefixes
+            i.getAllAddresses()
+                .stream()
+                .map(InterfaceAddress::getIp)
+                .forEach(
+                    ip -> {
+                      Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
+                      owners.add(hostname);
+                    });
           }
         });
     vrrpGroups.forEach(
@@ -276,6 +289,16 @@ public class CommonUtil {
           owners.add(bestCandidate);
         });
     return ipOwners;
+  }
+
+  public static Map<Ip, Set<String>> computeIpOwners(
+      Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeIpOwners(
+        configurations,
+        excludeInactive,
+        Collections.emptyMap(),
+        Collections.emptySet(),
+        Collections.emptyMap());
   }
 
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {

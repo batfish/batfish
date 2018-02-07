@@ -1,17 +1,20 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
-import java.util.ArrayList;
 import java.util.List;
-import org.batfish.z3.node.AclMatchExpr;
-import org.batfish.z3.node.AndExpr;
-import org.batfish.z3.node.DeclareRelExpr;
-import org.batfish.z3.node.NumberedQueryExpr;
-import org.batfish.z3.node.QueryExpr;
-import org.batfish.z3.node.RuleExpr;
-import org.batfish.z3.node.SaneExpr;
+import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.DeclareRelExpr;
+import org.batfish.z3.expr.QueryExpr;
+import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.visitors.BoolExprTransformer;
+import org.batfish.z3.expr.visitors.RelationCollector;
+import org.batfish.z3.state.AclLineMatch;
+import org.batfish.z3.state.NumberedQuery;
 
 public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<AclLine> {
 
@@ -32,21 +35,18 @@ public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<A
     Context ctx = baseProgram.getContext();
     NodProgram program = new NodProgram(ctx);
     for (int line = 0; line < _numLines; line++) {
-      AclMatchExpr matchAclLine = new AclMatchExpr(_hostname, _aclName, line);
-      AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(matchAclLine);
-      queryConditions.addConjunct(SaneExpr.INSTANCE);
-      NumberedQueryExpr queryRel = new NumberedQueryExpr(line);
-      String queryRelName = queryRel.getRelations().toArray(new String[] {})[0];
-      List<Integer> sizes = new ArrayList<>();
-      sizes.addAll(Synthesizer.PACKET_VAR_SIZES.values());
-      DeclareRelExpr declaration = new DeclareRelExpr(queryRelName, sizes);
+      BooleanExpr matchAclLine = AclLineMatch.expr(_hostname, _aclName, line);
+      AndExpr queryConditions = new AndExpr(ImmutableList.of(matchAclLine, SaneExpr.INSTANCE));
+      BooleanExpr queryRel = NumberedQuery.expr(line);
+      String queryRelName = RelationCollector.collectRelations(queryRel).iterator().next();
+      DeclareRelExpr declaration = new DeclareRelExpr(queryRelName);
       baseProgram.getRelationDeclarations().put(queryRelName, declaration.toFuncDecl(ctx));
       RuleExpr queryRule = new RuleExpr(queryConditions, queryRel);
       List<BoolExpr> rules = program.getRules();
-      rules.add(queryRule.toBoolExpr(baseProgram));
+      rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), baseProgram));
       QueryExpr query = new QueryExpr(queryRel);
-      BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
+      BoolExpr queryBoolExpr =
+          BoolExprTransformer.toBoolExpr(query.getSubExpression(), baseProgram);
       program.getQueries().add(queryBoolExpr);
       _keys.add(new AclLine(_hostname, _aclName, line));
     }

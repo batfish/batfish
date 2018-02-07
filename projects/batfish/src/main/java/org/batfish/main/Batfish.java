@@ -177,6 +177,7 @@ import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
+import org.batfish.z3.SynthesizerInput;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -4266,7 +4267,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 ACL logic...");
-    Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
+    Synthesizer s =
+        new Synthesizer(
+            SynthesizerInput.builder()
+                .setConfigurations(configurations)
+                .setSimplify(_settings.getSimplify())
+                .build());
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4290,7 +4296,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.info("Synthesizing Z3 logic...");
     Map<String, Configuration> configurations = loadConfigurations();
-    Synthesizer s = new Synthesizer(configurations, dataPlane, _settings.getSimplify());
+    Synthesizer s =
+        new Synthesizer(
+            SynthesizerInput.builder()
+                .setConfigurations(configurations)
+                .setDataPlane(dataPlane)
+                .setSimplify(_settings.getSimplify())
+                .build());
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();

@@ -1,6 +1,6 @@
 package org.batfish.z3;
 
-import com.microsoft.z3.BitVecExpr;
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -13,14 +13,15 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.config.Settings;
@@ -33,97 +34,97 @@ import org.batfish.job.BatfishJob;
 public final class NodJob extends BatfishJob<NodJobResult> {
 
   public static Flow createFlow(
-      String node, String vrf, Map<String, Long> constraints, String tag) {
+      String node, String vrf, Map<HeaderField, Long> constraints, String tag) {
     Flow.Builder flowBuilder = new Flow.Builder();
     flowBuilder.setIngressNode(node);
     flowBuilder.setTag(tag);
-    for (String varName : constraints.keySet()) {
-      Long value = constraints.get(varName);
-      switch (varName) {
-        case Synthesizer.SRC_IP_VAR:
-          flowBuilder.setSrcIp(new Ip(value));
-          break;
+    constraints.forEach(
+        (varName, value) -> {
+          switch (varName) {
+            case SRC_IP:
+              flowBuilder.setSrcIp(new Ip(value));
+              break;
 
-        case Synthesizer.DST_IP_VAR:
-          flowBuilder.setDstIp(new Ip(value));
-          break;
+            case DST_IP:
+              flowBuilder.setDstIp(new Ip(value));
+              break;
 
-        case Synthesizer.SRC_PORT_VAR:
-          flowBuilder.setSrcPort(value.intValue());
-          break;
+            case SRC_PORT:
+              flowBuilder.setSrcPort(value.intValue());
+              break;
 
-        case Synthesizer.DST_PORT_VAR:
-          flowBuilder.setDstPort(value.intValue());
-          break;
+            case DST_PORT:
+              flowBuilder.setDstPort(value.intValue());
+              break;
 
-        case Synthesizer.FRAGMENT_OFFSET_VAR:
-          flowBuilder.setFragmentOffset(value.intValue());
-          break;
+            case FRAGMENT_OFFSET:
+              flowBuilder.setFragmentOffset(value.intValue());
+              break;
 
-        case Synthesizer.IP_PROTOCOL_VAR:
-          flowBuilder.setIpProtocol(IpProtocol.fromNumber(value.intValue()));
-          break;
+            case IP_PROTOCOL:
+              flowBuilder.setIpProtocol(IpProtocol.fromNumber(value.intValue()));
+              break;
 
-        case Synthesizer.DSCP_VAR:
-          flowBuilder.setDscp(value.intValue());
-          break;
+            case DSCP:
+              flowBuilder.setDscp(value.intValue());
+              break;
 
-        case Synthesizer.ECN_VAR:
-          flowBuilder.setEcn(value.intValue());
-          break;
+            case ECN:
+              flowBuilder.setEcn(value.intValue());
+              break;
 
-        case Synthesizer.STATE_VAR:
-          flowBuilder.setState(State.fromNum(value.intValue()));
-          break;
+            case STATE:
+              flowBuilder.setState(State.fromNum(value.intValue()));
+              break;
 
-        case Synthesizer.ICMP_TYPE_VAR:
-          flowBuilder.setIcmpType(value.intValue());
-          break;
+            case ICMP_TYPE:
+              flowBuilder.setIcmpType(value.intValue());
+              break;
 
-        case Synthesizer.ICMP_CODE_VAR:
-          flowBuilder.setIcmpCode(value.intValue());
-          break;
+            case ICMP_CODE:
+              flowBuilder.setIcmpCode(value.intValue());
+              break;
 
-        case Synthesizer.PACKET_LENGTH_VAR:
-          flowBuilder.setPacketLength(value.intValue());
-          break;
+            case PACKET_LENGTH:
+              flowBuilder.setPacketLength(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_CWR_VAR:
-          flowBuilder.setTcpFlagsCwr(value.intValue());
-          break;
+            case TCP_FLAGS_CWR:
+              flowBuilder.setTcpFlagsCwr(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_ECE_VAR:
-          flowBuilder.setTcpFlagsEce(value.intValue());
-          break;
+            case TCP_FLAGS_ECE:
+              flowBuilder.setTcpFlagsEce(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_URG_VAR:
-          flowBuilder.setTcpFlagsUrg(value.intValue());
-          break;
+            case TCP_FLAGS_URG:
+              flowBuilder.setTcpFlagsUrg(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_ACK_VAR:
-          flowBuilder.setTcpFlagsAck(value.intValue());
-          break;
+            case TCP_FLAGS_ACK:
+              flowBuilder.setTcpFlagsAck(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_PSH_VAR:
-          flowBuilder.setTcpFlagsPsh(value.intValue());
-          break;
+            case TCP_FLAGS_PSH:
+              flowBuilder.setTcpFlagsPsh(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_RST_VAR:
-          flowBuilder.setTcpFlagsRst(value.intValue());
-          break;
+            case TCP_FLAGS_RST:
+              flowBuilder.setTcpFlagsRst(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_SYN_VAR:
-          flowBuilder.setTcpFlagsSyn(value.intValue());
-          break;
+            case TCP_FLAGS_SYN:
+              flowBuilder.setTcpFlagsSyn(value.intValue());
+              break;
 
-        case Synthesizer.TCP_FLAGS_FIN_VAR:
-          flowBuilder.setTcpFlagsFin(value.intValue());
-          break;
+            case TCP_FLAGS_FIN:
+              flowBuilder.setTcpFlagsFin(value.intValue());
+              break;
 
-        default:
-          throw new BatfishException("invalid variable name");
-      }
-    }
+            default:
+              throw new BatfishException("invalid variable name");
+          }
+        });
     return flowBuilder.build();
   }
 
@@ -216,13 +217,19 @@ public final class NodJob extends BatfishJob<NodJobResult> {
           throw new BatfishException("invalid status");
       }
       Model model = solver.getModel();
-      Map<String, Long> constraints = new LinkedHashMap<>();
-      for (FuncDecl constDecl : model.getConstDecls()) {
-        String name = constDecl.getName().toString();
-        BitVecExpr varConstExpr = program.getVariablesAsConsts().get(name);
-        long val = ((BitVecNum) model.getConstInterp(varConstExpr)).getLong();
-        constraints.put(name, val);
-      }
+      Map<HeaderField, Long> constraints =
+          Arrays.stream(model.getConstDecls())
+              .map(FuncDecl::getName)
+              .map(Object::toString)
+              .map(HeaderField::valueOf)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      headerField ->
+                          ((BitVecNum)
+                                  model.getConstInterp(
+                                      program.getVariablesAsConsts().get(headerField)))
+                              .getLong()));
       Set<Flow> flows = new HashSet<>();
       for (Pair<String, String> nodeVrf : _nodeVrfSet) {
         String node = nodeVrf.getFirst();
@@ -241,7 +248,7 @@ public final class NodJob extends BatfishJob<NodJobResult> {
     }
   }
 
-  private Flow createFlow(String node, String vrf, Map<String, Long> constraints) {
+  private Flow createFlow(String node, String vrf, Map<HeaderField, Long> constraints) {
     return createFlow(node, vrf, constraints, _tag);
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Z3Exception;
 import java.util.List;
@@ -14,16 +15,17 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.node.AndExpr;
-import org.batfish.z3.node.BooleanExpr;
-import org.batfish.z3.node.EqExpr;
-import org.batfish.z3.node.LitIntExpr;
-import org.batfish.z3.node.NotExpr;
-import org.batfish.z3.node.QueryExpr;
-import org.batfish.z3.node.QueryRelationExpr;
-import org.batfish.z3.node.RuleExpr;
-import org.batfish.z3.node.SaneExpr;
-import org.batfish.z3.node.VarIntExpr;
+import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.EqExpr;
+import org.batfish.z3.expr.LitIntExpr;
+import org.batfish.z3.expr.NotExpr;
+import org.batfish.z3.expr.QueryExpr;
+import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.VarIntExpr;
+import org.batfish.z3.expr.visitors.BoolExprTransformer;
+import org.batfish.z3.state.Query;
 
 public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
 
@@ -91,19 +93,19 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
   @Override
   public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
     NodProgram program = new NodProgram(baseProgram.getContext());
-    AndExpr queryConditions = new AndExpr();
-    queryConditions.addConjunct(SaneExpr.INSTANCE);
+    ImmutableList.Builder<BooleanExpr> queryConditionsBuilder = ImmutableList.builder();
+    queryConditionsBuilder.add(SaneExpr.INSTANCE);
     for (Ip blacklistIp : _blacklistIps) {
       BooleanExpr blacklistIpCondition =
-          new NotExpr(
-              new EqExpr(new VarIntExpr(Synthesizer.DST_IP_VAR), new LitIntExpr(blacklistIp)));
-      queryConditions.addConjunct(blacklistIpCondition);
+          new NotExpr(new EqExpr(new VarIntExpr(HeaderField.DST_IP), new LitIntExpr(blacklistIp)));
+      queryConditionsBuilder.add(blacklistIpCondition);
     }
-    RuleExpr queryRule = new RuleExpr(queryConditions, QueryRelationExpr.INSTANCE);
+    AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
+    RuleExpr queryRule = new RuleExpr(queryConditions, Query.EXPR);
     List<BoolExpr> rules = program.getRules();
-    rules.add(queryRule.toBoolExpr(baseProgram));
-    QueryExpr query = new QueryExpr(QueryRelationExpr.INSTANCE);
-    BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
+    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), baseProgram));
+    QueryExpr query = new QueryExpr(Query.EXPR);
+    BoolExpr queryBoolExpr = BoolExprTransformer.toBoolExpr(query.getSubExpression(), baseProgram);
     program.getQueries().add(queryBoolExpr);
     return program;
   }
