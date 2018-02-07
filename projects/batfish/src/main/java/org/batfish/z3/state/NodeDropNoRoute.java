@@ -13,6 +13,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class NodeDropNoRoute
     extends State<NodeDropNoRoute, org.batfish.z3.state.NodeDropNoRoute.Parameterization> {
@@ -95,6 +96,11 @@ public class NodeDropNoRoute
 
   private NodeDropNoRoute() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitNodeDropNoRoute(this);
   }
 
   @Override

@@ -12,6 +12,7 @@ import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public abstract class State<T extends State<T, ?>, P extends StateParameterization<T>> {
 
@@ -56,6 +57,8 @@ public abstract class State<T extends State<T, ?>, P extends StateParameterizati
   public State(String baseName) {
     _baseName = baseName;
   }
+
+  public abstract void accept(StateVisitor visitor);
 
   protected final StateExpr<T, P> buildStateExpr(P parameterization) {
     return new StateExpr<>(_baseName, parameterization);

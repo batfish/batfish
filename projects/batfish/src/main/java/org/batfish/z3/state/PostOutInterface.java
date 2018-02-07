@@ -10,6 +10,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostOutInterface
     extends State<PostOutInterface, org.batfish.z3.state.PostOutInterface.Parameterization> {
@@ -90,6 +91,11 @@ public class PostOutInterface
 
   private PostOutInterface() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitPostOutInterface(this);
   }
 
   @Override

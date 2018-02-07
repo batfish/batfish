@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostInVrf extends State<PostInVrf, org.batfish.z3.state.PostInVrf.Parameterization> {
 
@@ -109,6 +110,11 @@ public class PostInVrf extends State<PostInVrf, org.batfish.z3.state.PostInVrf.P
 
   private PostInVrf() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitPostInVrf(this);
   }
 
   @Override

@@ -11,6 +11,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Parameterization> {
 
@@ -29,13 +30,15 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
           .flatMap(
               enabledAclsEntryByNode -> {
                 String hostname = enabledAclsEntryByNode.getKey();
-                return enabledAclsEntryByNode.getValue()
+                return enabledAclsEntryByNode
+                    .getValue()
                     .entrySet()
                     .stream()
                     .flatMap(
                         enabledAclsEntryByAclName -> {
                           String acl = enabledAclsEntryByAclName.getKey();
-                          List<IpAccessListLine> lines = enabledAclsEntryByAclName.getValue().getLines();
+                          List<IpAccessListLine> lines =
+                              enabledAclsEntryByAclName.getValue().getLines();
                           ImmutableList.Builder<RuleExpr> denyLineRules = ImmutableList.builder();
                           for (int line = 0; line < lines.size(); line++) {
                             if (lines.get(line).getAction() == LineAction.REJECT) {
@@ -68,13 +71,15 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
           .flatMap(
               enabledAclsEntryByNode -> {
                 String hostname = enabledAclsEntryByNode.getKey();
-                return enabledAclsEntryByNode.getValue()
+                return enabledAclsEntryByNode
+                    .getValue()
                     .entrySet()
                     .stream()
                     .map(
                         enabledAclsEntryByAclName -> {
                           String acl = enabledAclsEntryByAclName.getKey();
-                          List<IpAccessListLine> lines = enabledAclsEntryByAclName.getValue().getLines();
+                          List<IpAccessListLine> lines =
+                              enabledAclsEntryByAclName.getValue().getLines();
                           BooleanExpr ruleInterior;
                           BooleanExpr deny = expr(hostname, acl);
                           if (lines.isEmpty()) {
@@ -130,6 +135,11 @@ public class AclDeny extends State<AclDeny, org.batfish.z3.state.AclDeny.Paramet
 
   private AclDeny() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitAclDeny(this);
   }
 
   @Override

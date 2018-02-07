@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class DropAcl extends State<DropAcl, org.batfish.z3.state.DropAcl.Parameterization> {
 
@@ -85,6 +86,11 @@ public class DropAcl extends State<DropAcl, org.batfish.z3.state.DropAcl.Paramet
 
   private DropAcl() {
     super(NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitDropAcl(this);
   }
 
   @Override

@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class Originate extends State<Originate, org.batfish.z3.state.Originate.Parameterization> {
 
@@ -71,6 +72,11 @@ public class Originate extends State<Originate, org.batfish.z3.state.Originate.P
 
   private Originate() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitOriginate(this);
   }
 
   @Override

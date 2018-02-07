@@ -13,6 +13,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class NodeDropNullRoute
     extends State<NodeDropNullRoute, org.batfish.z3.state.NodeDropNullRoute.Parameterization> {
@@ -105,6 +106,11 @@ public class NodeDropNullRoute
 
   private NodeDropNullRoute() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitNodeDropNullRoute(this);
   }
 
   @Override

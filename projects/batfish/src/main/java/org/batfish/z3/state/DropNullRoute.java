@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class DropNullRoute
     extends State<DropNullRoute, org.batfish.z3.state.DropNullRoute.Parameterization> {
@@ -61,6 +62,11 @@ public class DropNullRoute
 
   private DropNullRoute() {
     super(NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitDropNullRoute(this);
   }
 
   @Override

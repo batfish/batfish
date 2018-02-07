@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class DropAclOut
     extends State<DropAclOut, org.batfish.z3.state.DropAclOut.Parameterization> {
@@ -61,6 +62,11 @@ public class DropAclOut
 
   private DropAclOut() {
     super(NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitDropAclOut(this);
   }
 
   @Override

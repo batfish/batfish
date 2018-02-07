@@ -13,6 +13,7 @@ import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PreOut extends State<PreOut, org.batfish.z3.state.PreOut.Parameterization> {
 
@@ -80,6 +81,11 @@ public class PreOut extends State<PreOut, org.batfish.z3.state.PreOut.Parameteri
 
   private PreOut() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitPreOut(this);
   }
 
   @Override

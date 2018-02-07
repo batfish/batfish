@@ -55,6 +55,7 @@ import org.batfish.z3.state.PreOutInterface;
 import org.batfish.z3.state.Query;
 import org.batfish.z3.state.State;
 import org.batfish.z3.state.Transition;
+import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class Synthesizer {
 
@@ -104,30 +105,19 @@ public class Synthesizer {
 
   public NodProgram synthesizeNodAclProgram(String hostname, String aclName, Context ctx)
       throws Z3Exception {
-    Map<String, Set<Class<? extends Transition<?>>>> disabledTransitions =
-        _input.getDisabledTransitions();
-    List<Statement> rules =
-        ImmutableSet.of(
+    return synthesizeNodProgram(
+        ctx,
+        DefaultTransitionGenerator.generateTransitions(
+            ImmutableSet.of(
                 AclDeny.INSTANCE,
                 AclLineMatch.INSTANCE,
                 AclLineNoMatch.INSTANCE,
-                AclPermit.INSTANCE)
-            .stream()
-            .flatMap(
-                state ->
-                    state
-                        .getEnabledTransitions(disabledTransitions.get(state))
-                        .stream()
-                        .map(transition -> transition.generate(_input))
-                        .flatMap(Collection::stream))
-            .collect(ImmutableList.toImmutableList());
-    return synthesizeNodProgram(ctx, rules);
+                AclPermit.INSTANCE),
+            _input));
   }
 
   public NodProgram synthesizeNodDataPlaneProgram(Context ctx) throws Z3Exception {
-    Map<String, Set<Class<? extends Transition<?>>>> disabledTransitions =
-        _input.getDisabledTransitions();
-    Set<State<?, ?>> states =
+    return synthesizeNodProgram(ctx, DefaultTransitionGenerator.generateTransitions(
         ImmutableSet.of(
             Accept.INSTANCE,
             AclDeny.INSTANCE,
@@ -157,19 +147,8 @@ public class Synthesizer {
             PreInInterface.INSTANCE,
             PreOut.INSTANCE,
             PreOutEdge.INSTANCE,
-            PreOutInterface.INSTANCE);
-    List<Statement> rules =
-        states
-            .stream()
-            .flatMap(
-                state ->
-                    state
-                        .getEnabledTransitions(disabledTransitions.get(state))
-                        .stream()
-                        .map(transition -> transition.generate(_input))
-                        .flatMap(Collection::stream))
-            .collect(ImmutableList.toImmutableList());
-    return synthesizeNodProgram(ctx, rules);
+            PreOutInterface.INSTANCE),
+        _input));
   }
 
   private NodProgram synthesizeNodProgram(Context ctx, List<Statement> ruleStatements) {

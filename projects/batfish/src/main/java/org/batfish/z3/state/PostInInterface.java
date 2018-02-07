@@ -10,6 +10,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostInInterface
     extends State<PostInInterface, org.batfish.z3.state.PostInInterface.Parameterization> {
@@ -89,6 +90,11 @@ public class PostInInterface
 
   private PostInInterface() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitPostInInterface(this);
   }
 
   @Override

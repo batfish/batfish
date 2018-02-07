@@ -9,6 +9,7 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class NodeDropAclOut
     extends State<NodeDropAclOut, org.batfish.z3.state.NodeDropAclOut.Parameterization> {
@@ -79,6 +80,11 @@ public class NodeDropAclOut
 
   private NodeDropAclOut() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitNodeDropAclOut(this);
   }
 
   @Override

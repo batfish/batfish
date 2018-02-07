@@ -2,6 +2,7 @@ package org.batfish.z3.state;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class Query extends State<Query, org.batfish.z3.state.Query.Parameterization> {
 
@@ -31,6 +32,11 @@ public class Query extends State<Query, org.batfish.z3.state.Query.Parameterizat
 
   private Query() {
     super(NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitQuery(this);
   }
 
   @Override

@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class NodeTransit
     extends State<NodeTransit, org.batfish.z3.state.NodeTransit.Parameterization> {
@@ -73,6 +74,11 @@ public class NodeTransit
 
   private NodeTransit() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitNodeTransit(this);
   }
 
   @Override

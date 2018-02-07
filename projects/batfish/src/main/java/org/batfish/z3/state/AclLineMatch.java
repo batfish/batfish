@@ -10,6 +10,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class AclLineMatch
     extends State<AclLineMatch, org.batfish.z3.state.AclLineMatch.Parameterization> {
@@ -30,13 +31,15 @@ public class AclLineMatch
           .flatMap(
               aclConditionsEntryByNode -> {
                 String hostname = aclConditionsEntryByNode.getKey();
-                return aclConditionsEntryByNode.getValue()
+                return aclConditionsEntryByNode
+                    .getValue()
                     .entrySet()
                     .stream()
                     .flatMap(
                         aclConditionsEntryByAclName -> {
                           String acl = aclConditionsEntryByAclName.getKey();
-                          return aclConditionsEntryByAclName.getValue()
+                          return aclConditionsEntryByAclName
+                              .getValue()
                               .entrySet()
                               .stream()
                               .map(
@@ -98,6 +101,11 @@ public class AclLineMatch
 
   private AclLineMatch() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitAclLineMatch(this);
   }
 
   @Override

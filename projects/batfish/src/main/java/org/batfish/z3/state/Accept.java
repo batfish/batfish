@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class Accept extends State<Accept, org.batfish.z3.state.Accept.Parameterization> {
 
@@ -60,6 +61,11 @@ public class Accept extends State<Accept, org.batfish.z3.state.Accept.Parameteri
 
   private Accept() {
     super(NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitAccept(this);
   }
 
   @Override

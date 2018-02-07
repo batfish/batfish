@@ -2,6 +2,7 @@ package org.batfish.z3.state;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class Debug extends State<Debug, org.batfish.z3.state.Debug.Parameterization> {
 
@@ -31,6 +32,11 @@ public class Debug extends State<Debug, org.batfish.z3.state.Debug.Parameterizat
 
   private Debug() {
     super(NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitDebug(this);
   }
 
   @Override

@@ -8,6 +8,7 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostIn extends State<PostIn, org.batfish.z3.state.PostIn.Parameterization> {
 
@@ -89,6 +90,11 @@ public class PostIn extends State<PostIn, org.batfish.z3.state.PostIn.Parameteri
 
   private PostIn() {
     super(BASE_NAME);
+  }
+
+  @Override
+  public void accept(StateVisitor visitor) {
+    visitor.visitPostIn(this);
   }
 
   @Override
