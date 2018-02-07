@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
 
 /*
  * High-dimensional hyperrectangle.
@@ -16,6 +19,11 @@ class HyperRectangle implements Comparable<HyperRectangle> {
 
   private long[] _bounds;
   private int _alphaIndex;
+
+  HyperRectangle(long[] bounds) {
+    this._bounds = bounds;
+    this._alphaIndex = -1;
+  }
 
   HyperRectangle(long[] bounds, int alphaIndex) {
     this._bounds = bounds;
@@ -38,6 +46,17 @@ class HyperRectangle implements Comparable<HyperRectangle> {
     this._bounds = bounds;
   }
 
+  static Collection<HyperRectangle> fromHeaderSpace(HeaderSpace h) {
+    List<HyperRectangle> space = new ArrayList<>();
+    for (IpWildcard wc : h.getDstIps()) {
+      Prefix p = wc.toPrefix();
+      long[] bounds = {p.getStartIp().asLong(), p.getEndIp().asLong() + 1};
+      HyperRectangle r = new HyperRectangle(bounds);
+      space.add(r);
+    }
+    return space;
+  }
+
   @Nullable
   HyperRectangle overlap(HyperRectangle other) {
     long[] bounds = new long[_bounds.length];
@@ -52,14 +71,14 @@ class HyperRectangle implements Comparable<HyperRectangle> {
       bounds[i] = Math.max(x1, ox1);
       bounds[i + 1] = Math.min(x2, ox2);
     }
-    return new HyperRectangle(bounds, -1);
+    return new HyperRectangle(bounds);
   }
 
   private void divideRec(
       HyperRectangle other, int i, long[] boundsSoFar, Collection<HyperRectangle> added) {
 
     if (i >= boundsSoFar.length) {
-      HyperRectangle r = new HyperRectangle(boundsSoFar.clone(), -1);
+      HyperRectangle r = new HyperRectangle(boundsSoFar.clone());
       added.add(r);
       return;
     }
