@@ -1779,9 +1779,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentAreaRangeRestrict = false;
 
     if (ctx.IP_PREFIX() != null) {
-      /* TODO: handle ipv6 */
       Prefix range = Prefix.parse(ctx.IP_PREFIX().getText());
       _currentAreaRangePrefix = range;
+    } else {
+      todo(ctx, F_IPV6);
     }
   }
 
@@ -2972,11 +2973,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
     if (_currentAreaRangePrefix != null) {
-      /* TODO: handle ipv6 */
       OspfAreaSummary summary =
           new OspfAreaSummary(!_currentAreaRangeRestrict, _currentAreaRangeMetric);
       Map<Prefix, OspfAreaSummary> summaries = _currentArea.getSummaries();
       summaries.put(_currentAreaRangePrefix, summary);
+    } else {
+      todo(ctx, F_IPV6);
     }
   }
 
