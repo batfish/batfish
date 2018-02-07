@@ -14250,6 +14250,33 @@
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
+            },
+            "nve1" : {
+              "name" : "nve1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "nve1"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -14267,7 +14294,8 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "Ethernet0/0"
+                "Ethernet0/0",
+                "nve1"
               ]
             }
           }
