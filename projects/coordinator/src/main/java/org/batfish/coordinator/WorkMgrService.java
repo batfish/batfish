@@ -1021,6 +1021,8 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container whose analyses are to be listed
+   * @param suggested Optional Boolean indicating which analyses to list: true = only suggested
+   *     analyses, false = only user's analyses, null = all analyses
    * @return TODO: document JSON response
    */
   @POST
@@ -1029,7 +1031,8 @@ public class WorkMgrService {
   public JSONArray listAnalyses(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_SUGGESTED) Boolean suggested) {
     try {
       _logger.info("WMS:listAnalyses " + apiKey + " " + containerName + "\n");
 
@@ -1043,7 +1046,7 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
-      for (String analysisName : Main.getWorkMgr().listAnalyses(containerName)) {
+      for (String analysisName : Main.getWorkMgr().listAnalyses(containerName, suggested)) {
 
         JSONObject analysisJson = new JSONObject();
 
