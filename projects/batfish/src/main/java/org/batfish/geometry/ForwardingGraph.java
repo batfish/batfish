@@ -16,9 +16,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -106,14 +103,14 @@ public class ForwardingGraph {
     //  System.out.println("  num classes: " + entry.getValue().cardinality());
     // }
 
-    HeaderSpace h = new HeaderSpace();
+    /* HeaderSpace h = new HeaderSpace();
     List<IpWildcard> wcs = new ArrayList<>();
     Ip ip = new Ip("70.0.100.0");
     Prefix p = new Prefix(ip, 32);
     IpWildcard wc = new IpWildcard(p);
     wcs.add(wc);
     h.setDstIps(wcs);
-    showForwarding(h);
+    showForwarding(h); */
   }
 
   private void showStatus() {
@@ -125,7 +122,7 @@ public class ForwardingGraph {
     System.out.println("=====================");
   }
 
-  public void showForwarding(HeaderSpace h) {
+  /* public void showForwarding(HeaderSpace h) {
     Collection<HyperRectangle> space = HyperRectangle.fromHeaderSpace(h);
     System.out.println("Got rectangles for headerspace: " + space);
     for (HyperRectangle rect : space) {
@@ -141,7 +138,7 @@ public class ForwardingGraph {
             });
       }
     }
-  }
+  } */
 
   private Map<String, NavigableSet<Rule>> copyMap(Map<String, NavigableSet<Rule>> map) {
     Map<String, NavigableSet<Rule>> newMap = new HashMap<>(map.size());
