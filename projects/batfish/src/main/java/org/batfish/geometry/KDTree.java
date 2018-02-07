@@ -21,7 +21,7 @@ class KDTree {
   }
 
   private long getDim(HyperRectangle r, int dim) {
-    return dim == 0 ? r.getX1() : r.getX2();
+    return r.getBounds()[dim];
   }
 
   // A utility function to find minimum of three integers
@@ -47,8 +47,8 @@ class KDTree {
     if (y == null) {
       return x;
     }
-    long xx = dim == 0 ? x.getX1() : x.getX2();
-    long yy = dim == 0 ? y.getX1() : y.getX2();
+    long xx = getDim(x, dim);
+    long yy = getDim(y, dim);
     if (xx < yy) {
       return x;
     } else {
@@ -60,8 +60,8 @@ class KDTree {
     if (t == null) {
       return new KNode(r, null, null);
     }
-    long x1 = cd == 0 ? r.getX1() : r.getX2();
-    long x2 = cd == 0 ? t._rectangle.getX1() : t._rectangle.getX2();
+    long x1 = getDim(r, cd);
+    long x2 = getDim(t._rectangle, cd);
     if (r.equals(t._rectangle)) {
       System.out.println("ADDING DUPLICATE: " + r);
     } else if (x1 < x2) {
@@ -127,19 +127,26 @@ class KDTree {
       result.add(t._rectangle);
     }
 
-    if (cd == 0) {
+    boolean low = (cd % 2 == 0);
+    int idx1 = low ? cd : cd - 1;
+    int idx2 = low ? cd + 1 : cd;
+
+    long rx1 = getDim(r, idx1);
+    long rx2 = getDim(r, idx2);
+    long tx1 = getDim(t._rectangle, idx1);
+    long tx2 = getDim(t._rectangle, idx2);
+
+    if (low) {
       // branching on low, so if search rect has high lower than low, we skip
-      if (r.getX2() < t._rectangle.getX1()) {
+      if (rx2 < tx1) {
         intersect(r, t._left, nextCd, result);
       } else {
         intersect(r, t._left, nextCd, result);
         intersect(r, t._right, nextCd, result);
       }
-    }
-
-    if (cd == 1) {
+    } else {
       // branching on high, so if seach rect has low higher than high, we skip
-      if (r.getX1() > t._rectangle.getX2()) {
+      if (rx1 > tx2) {
         intersect(r, t._right, nextCd, result);
       } else {
         intersect(r, t._left, nextCd, result);
@@ -155,6 +162,13 @@ class KDTree {
     return 1 + size(t._left) + size(t._right);
   }
 
+  private int depth(KNode t) {
+    if (t == null) {
+      return 0;
+    }
+    return 1 + Math.max(depth(t._left), depth(t._right));
+  }
+
   private void elements(KNode t, List<HyperRectangle> elems) {
     if (t == null) {
       return;
@@ -166,6 +180,10 @@ class KDTree {
 
   int size() {
     return size(_root);
+  }
+
+  int depth() {
+    return depth(_root);
   }
 
   List<HyperRectangle> elements() {

@@ -47,6 +47,6 @@ public class Rule implements Comparable<Rule> {
 
   @Override
   public int compareTo(@Nonnull Rule that) {
-    return _fib.getPrefix().getPrefixLength() -  that._fib.getPrefix().getPrefixLength();
+    return _fib.getPrefix().getPrefixLength() - that._fib.getPrefix().getPrefixLength();
   }
 }

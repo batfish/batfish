@@ -1,20 +1,24 @@
 package org.batfish.geometry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/*
+ * High-dimensional hyperrectangle.
+ * For a 2D version of the rectangle, the bounds will be
+ * (xlow, xhigh, ylow, yhigh)
+ */
 class HyperRectangle implements Comparable<HyperRectangle> {
 
-  private long _x1;
-  private long _x2;
+  private long[] _bounds;
   private int _alphaIndex;
 
-  HyperRectangle(long x1, long x2, int alphaIndex) {
-    this._x1 = x1;
-    this._x2 = x2;
+  HyperRectangle(long[] bounds, int alphaIndex) {
+    this._bounds = bounds;
     this._alphaIndex = alphaIndex;
   }
 
@@ -26,30 +30,60 @@ class HyperRectangle implements Comparable<HyperRectangle> {
     this._alphaIndex = alphaIndex;
   }
 
-  long getX1() {
-    return _x1;
+  long[] getBounds() {
+    return _bounds;
   }
 
-  long getX2() {
-    return _x2;
-  }
-
-  void setX1(long x1) {
-    this._x1 = x1;
-  }
-
-  void setX2(long x2) {
-    this._x2 = x2;
+  void setBounds(long[] bounds) {
+    this._bounds = bounds;
   }
 
   @Nullable
   HyperRectangle overlap(HyperRectangle other) {
-    if (other._x2 <= _x1 || other._x1 >= _x2) {
-      return null;
+    long[] bounds = new long[_bounds.length];
+    for (int i = 0; i < _bounds.length; i += 2) {
+      long x1 = _bounds[i];
+      long x2 = _bounds[i + 1];
+      long ox1 = other._bounds[i];
+      long ox2 = other._bounds[i + 1];
+      if (ox2 <= x1 || ox1 >= x2) {
+        return null;
+      }
+      bounds[i] = Math.max(x1, ox1);
+      bounds[i + 1] = Math.min(x2, ox2);
     }
-    long x1 = Math.max(_x1, other._x1);
-    long x2 = Math.min(_x2, other._x2);
-    return new HyperRectangle(x1, x2, -1);
+    return new HyperRectangle(bounds, -1);
+  }
+
+  private void divideRec(
+      HyperRectangle other, int i, long[] boundsSoFar, Collection<HyperRectangle> added) {
+
+    if (i >= boundsSoFar.length) {
+      HyperRectangle r = new HyperRectangle(boundsSoFar.clone(), -1);
+      added.add(r);
+      return;
+    }
+
+    long x1 = _bounds[i];
+    long x2 = _bounds[i + 1];
+    long ox1 = other._bounds[i];
+    long ox2 = other._bounds[i + 1];
+
+    if (x1 != ox1) {
+      boundsSoFar[i] = x1;
+      boundsSoFar[i + 1] = ox1;
+      divideRec(other, i + 2, boundsSoFar, added);
+    }
+
+    boundsSoFar[i] = ox1;
+    boundsSoFar[i + 1] = ox2;
+    divideRec(other, i + 2, boundsSoFar, added);
+
+    if (x2 != ox2) {
+      boundsSoFar[i] = ox2;
+      boundsSoFar[i + 1] = x2;
+      divideRec(other, i + 2, boundsSoFar, added);
+    }
   }
 
   /*
@@ -60,29 +94,42 @@ class HyperRectangle implements Comparable<HyperRectangle> {
     // in each dimension we would do this:
     List<HyperRectangle> newRects = new ArrayList<>();
     if (this.equals(other)) {
-      return new ArrayList<>();
+      return newRects;
     }
-    if (_x1 != other._x1) {
-      HyperRectangle r = new HyperRectangle(_x1, other._x1, -1);
-      newRects.add(r);
-    }
-    newRects.add(other);
-    if (_x2 != other._x2) {
-      HyperRectangle r = new HyperRectangle(other._x2, _x2, -1);
-      newRects.add(r);
-    }
+    long[] boundsSoFar = new long[_bounds.length];
+    divideRec(other, 0, boundsSoFar, newRects);
     return newRects;
   }
 
   boolean isSubsumedBy(HyperRectangle other) {
-    return (other._x1 <= _x1) && (other._x2 >= _x2);
+    for (int i = 0; i < _bounds.length; i += 2) {
+      long x1 = _bounds[i];
+      long x2 = _bounds[i + 1];
+      long ox1 = other._bounds[i];
+      long ox2 = other._bounds[i + 1];
+      boolean subsumed = (ox1 <= x1 && ox2 >= x2);
+      if (!subsumed) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  @Override public String toString() {
-    return "HyperRectangle{" + _x1 + "," + _x2 + " with " + _alphaIndex + '}';
+  @Override
+  public String toString() {
+    String s = "HyperRectangle(";
+    for (int i = 0; i < _bounds.length; i++) {
+      s += _bounds[i];
+      if (i != _bounds.length - 1) {
+        s += ",";
+      }
+    }
+    s += " with " + _alphaIndex + ")";
+    return s;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -90,25 +137,24 @@ class HyperRectangle implements Comparable<HyperRectangle> {
       return false;
     }
     HyperRectangle that = (HyperRectangle) o;
-    return _x1 == that._x1 && _x2 == that._x2;
+    return Arrays.equals(_bounds, that._bounds);
   }
 
-  @Override public int hashCode() {
-    int result = (int) (_x1 ^ (_x1 >>> 32));
-    result = 31 * result + (int) (_x2 ^ (_x2 >>> 32));
-    return result;
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(_bounds);
   }
 
-  @Override public int compareTo(@Nonnull HyperRectangle that) {
-    if (this._x1 < that._x1) {
-      return -1;
-    } else if (this._x1 > that._x1) {
-      return 1;
-    }
-    if (this._x2 < that._x2) {
-      return -1;
-    } else if (this._x2 > that._x2) {
-      return 1;
+  @Override
+  public int compareTo(@Nonnull HyperRectangle that) {
+    for (int i = 0; i < _bounds.length; i++) {
+      long cmp = _bounds[i] - that._bounds[i];
+      if (cmp < 0) {
+        return -1;
+      }
+      if (cmp > 0) {
+        return 1;
+      }
     }
     return 0;
   }

@@ -19,16 +19,14 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.symbolic.utils.Tuple;
 
-
 /*
  * Attempt to encode the dataplane rules as a collection of
  * hyper-rectangles in a high-dimensional space.
- *
  */
 public class ForwardingGraph {
 
-  private static long LOWER_VALUE = 0;
-  private static long UPPER_VALUE = (long) Math.pow(2, 32);
+  private static long DSTIP_LOW = 0;
+  private static long DSTIP_HIGH = (long) Math.pow(2, 32);
 
   private ArrayList<HyperRectangle> _ecs;
 
@@ -41,7 +39,8 @@ public class ForwardingGraph {
   public ForwardingGraph(DataPlane dp) {
     long t = System.currentTimeMillis();
     // initialize
-    HyperRectangle fullRange = new HyperRectangle(LOWER_VALUE, UPPER_VALUE, 0);
+    long[] bounds = {DSTIP_LOW, DSTIP_HIGH};
+    HyperRectangle fullRange = new HyperRectangle(bounds, 0);
     _ecs = new ArrayList<>();
     _ecs.add(fullRange);
     _labels = new HashMap<>();
@@ -75,6 +74,7 @@ public class ForwardingGraph {
     _ownerMap.put(0, map);
 
     // add the rules
+    List<Rule> rules = new ArrayList<>();
     for (Entry<String, Map<String, SortedSet<FibRow>>> entry : dp.getFibs().entrySet()) {
       String router = entry.getKey();
       for (Entry<String, SortedSet<FibRow>> entry2 : entry.getValue().entrySet()) {
@@ -82,22 +82,26 @@ public class ForwardingGraph {
         for (FibRow fib : fibs) {
           NodeInterfacePair nip = new NodeInterfacePair(router, fib.getInterface());
           Rule r = new Rule(nip, fib);
-          addRule(r);
+          rules.add(r);
         }
       }
     }
 
+    for (Rule rule : rules) {
+      addRule(rule);
+    }
+
     System.out.println("Total time was: " + (System.currentTimeMillis() - t));
     System.out.println("Number of classes: " + (_ecs.size()));
-    //for (Entry<NodeInterfacePair, BitSet> entry : _labels.entrySet()) {
+    // for (Entry<NodeInterfacePair, BitSet> entry : _labels.entrySet()) {
     //  System.out.println("Link: " + entry.getKey());
     //  System.out.println("  num classes: " + entry.getValue().cardinality());
-    //}
+    // }
   }
 
   private void showStatus() {
     System.out.println("=====================");
-    for (int i = 0; i <_ecs.size(); i++) {
+    for (int i = 0; i < _ecs.size(); i++) {
       HyperRectangle r = _ecs.get(i);
       System.out.println(i + " --> " + r);
     }
@@ -105,12 +109,13 @@ public class ForwardingGraph {
   }
 
   public void addRule(Rule r) {
-    //System.out.println(
+    // System.out.println(
     //    "Adding rule: " + r.getFib().getPrefix() + " at " + r.getFib().getInterface());
     Prefix p = r.getFib().getPrefix();
     long start = p.getStartIp().asLong();
     long end = p.getEndIp().asLong() + 1;
-    HyperRectangle hr = new HyperRectangle(start, end, -1);
+    long[] bounds = {start, end};
+    HyperRectangle hr = new HyperRectangle(bounds, -1);
 
     // showStatus();
     // System.out.println("Adding rule for: " + r.getFib().getPrefix());
@@ -141,8 +146,7 @@ public class ForwardingGraph {
           // System.out.println("  divided out: " + rect);
           // modify the other rectangle to reuse the atom number
           if (first && !rect.equals(other)) {
-            other.setX1(rect.getX1());
-            other.setX2(rect.getX2());
+            other.setBounds(rect.getBounds());
             first = false;
             rect = other;
           } else {
