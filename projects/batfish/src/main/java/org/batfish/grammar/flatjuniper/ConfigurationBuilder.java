@@ -1382,7 +1382,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private OspfArea _currentArea;
 
-  private Prefix _currentAreaRange;
+  private Prefix _currentAreaRangePrefix;
+
+  @Nullable private Long _currentAreaRangeMetric;
+
+  private boolean _currentAreaRangeRestrict;
 
   private JuniperAuthenticationKey _currentAuthenticationKey;
 
@@ -1769,10 +1773,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
+    // Set up defaults: no overridden metric, routes advertised.
+    _currentAreaRangeMetric = null;
+    _currentAreaRangePrefix = null;
+    _currentAreaRangeRestrict = false;
+
     if (ctx.IP_PREFIX() != null) {
       /* TODO: handle ipv6 */
       Prefix range = Prefix.parse(ctx.IP_PREFIX().getText());
-      _currentAreaRange = range;
+      _currentAreaRangePrefix = range;
     }
   }
 
@@ -2962,7 +2971,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
-    _currentAreaRange = null;
+    if (_currentAreaRangePrefix != null) {
+      /* TODO: handle ipv6 */
+      OspfAreaSummary summary =
+          new OspfAreaSummary(!_currentAreaRangeRestrict, _currentAreaRangeMetric);
+      Map<Prefix, OspfAreaSummary> summaries = _currentArea.getSummaries();
+      summaries.put(_currentAreaRangePrefix, summary);
+    }
   }
 
   @Override
@@ -2972,15 +2987,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOaa_override_metric(FlatJuniperParser.Oaa_override_metricContext ctx) {
-    long metric = Long.parseLong(ctx.DEC().getText());
-    if (_currentAreaRange != null) {
-      /* TODO: handle ipv6 */
-      Map<Prefix, OspfAreaSummary> summaries = _currentArea.getSummaries();
-      @Nullable OspfAreaSummary summary = summaries.get(_currentAreaRange);
-      OspfAreaSummary newSummary =
-          new OspfAreaSummary(summary == null || summary.getAdvertise(), metric);
-      summaries.put(_currentAreaRange, newSummary);
-    }
+    _currentAreaRangeMetric = Long.parseLong(ctx.DEC().getText());
+  }
+
+  @Override
+  public void exitOaa_restrict(FlatJuniperParser.Oaa_restrictContext ctx) {
+    _currentAreaRangeRestrict = true;
   }
 
   @Override
