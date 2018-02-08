@@ -11,8 +11,8 @@ class KDTree {
   private int _dimensions;
   private KNode _root;
 
-  KDTree() {
-    _dimensions = 1;
+  KDTree(int dim) {
+    _dimensions = dim;
     _root = null;
   }
 

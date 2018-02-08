@@ -27,9 +27,6 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class ForwardingGraph {
 
-  private static long DSTIP_LOW = 0;
-  private static long DSTIP_HIGH = (long) Math.pow(2, 32);
-
   private ArrayList<HyperRectangle> _ecs;
 
   private Map<NodeInterfacePair, BitSet> _labels;
@@ -40,14 +37,14 @@ public class ForwardingGraph {
 
   public ForwardingGraph(DataPlane dp) {
     long t = System.currentTimeMillis();
-    // initialize
-    long[] bounds = {DSTIP_LOW, DSTIP_HIGH};
-    HyperRectangle fullRange = new HyperRectangle(bounds, 0);
+
+    HyperRectangle fullRange = GeometricSpace.one().rectangles().iterator().next();
+    fullRange.setAlphaIndex(0);
     _ecs = new ArrayList<>();
     _ecs.add(fullRange);
     _labels = new HashMap<>();
     _ownerMap = new HashMap<>();
-    _kdtree = new KDTree();
+    _kdtree = new KDTree(GeometricSpace.NUM_FIELDS);
     _kdtree.insert(fullRange);
 
     // get all the links
@@ -98,10 +95,6 @@ public class ForwardingGraph {
 
     System.out.println("Total time was: " + (System.currentTimeMillis() - t));
     System.out.println("Number of classes: " + (_ecs.size()));
-    // for (Entry<NodeInterfacePair, BitSet> entry : _labels.entrySet()) {
-    //  System.out.println("Link: " + entry.getKey());
-    //  System.out.println("  num classes: " + entry.getValue().cardinality());
-    // }
 
     /* HeaderSpace h = new HeaderSpace();
     List<IpWildcard> wcs = new ArrayList<>();
@@ -113,14 +106,14 @@ public class ForwardingGraph {
     showForwarding(h); */
   }
 
-  private void showStatus() {
+  /* private void showStatus() {
     System.out.println("=====================");
     for (int i = 0; i < _ecs.size(); i++) {
       HyperRectangle r = _ecs.get(i);
       System.out.println(i + " --> " + r);
     }
     System.out.println("=====================");
-  }
+  } */
 
   /* public void showForwarding(HeaderSpace h) {
     Collection<HyperRectangle> space = HyperRectangle.fromHeaderSpace(h);
@@ -154,38 +147,26 @@ public class ForwardingGraph {
     Prefix p = r.getFib().getPrefix();
     long start = p.getStartIp().asLong();
     long end = p.getEndIp().asLong() + 1;
-    long[] bounds = {start, end};
-    HyperRectangle hr = new HyperRectangle(bounds);
+
+    HyperRectangle hr = GeometricSpace.fullSpace();
+    hr.getBounds()[0] = start;
+    hr.getBounds()[1] = end;
 
     // showStatus();
 
-    // System.out.println("Adding rule for: " + r.getFib().getPrefix() + " out " + r.getLink());
-    // System.out.println("Rectangle: " + hr);
-
-    // Find all of the overlapping intervals
     List<HyperRectangle> overlapping = new ArrayList<>();
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
 
-    // System.out.println("Looking for overlapping rectangles...");
     for (HyperRectangle other : _kdtree.intersect(hr)) {
       HyperRectangle overlap = hr.overlap(other);
-      // If there is an overlap
-      if (overlap != null) {
-        // System.out.println("  found overlap with: " + other);
-        // System.out.println("  overlap is: " + overlap);
-        Collection<HyperRectangle> newRects = other.divide(overlap);
-
-        // If empty, then it is an exact match
-        if (newRects.isEmpty()) {
-          overlapping.add(other);
-        } else {
-          _kdtree.delete(other);
-        }
-
+      assert(overlap != null);
+      Collection<HyperRectangle> newRects = other.divide(overlap);
+      if (newRects == null) {
+        overlapping.add(other);
+      } else {
+        _kdtree.delete(other);
         boolean first = true;
         for (HyperRectangle rect : newRects) {
-          // System.out.println("  divided out: " + rect);
-          // modify the other rectangle to reuse the atom number
           if (first && !rect.equals(other)) {
             other.setBounds(rect.getBounds());
             first = false;
@@ -215,7 +196,6 @@ public class ForwardingGraph {
       _ownerMap.put(alphaPrime.getAlphaIndex(), copyMap(existing));
       for (Entry<String, NavigableSet<Rule>> entry : existing.entrySet()) {
         NavigableSet<Rule> bst = entry.getValue();
-        // TODO: what is the right thing here? E.g., when there is no rule?
         if (!bst.isEmpty()) {
           Rule highestPriority = bst.descendingIterator().next();
           NodeInterfacePair link = highestPriority.getLink();
@@ -224,8 +204,6 @@ public class ForwardingGraph {
         }
       }
     }
-
-    // showStatus();
 
     // Update data structures
     // System.out.println("Updating labels");

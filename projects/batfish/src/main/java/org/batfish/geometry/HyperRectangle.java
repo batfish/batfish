@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
@@ -25,9 +26,9 @@ class HyperRectangle implements Comparable<HyperRectangle> {
     this._alphaIndex = -1;
   }
 
-  HyperRectangle(long[] bounds, int alphaIndex) {
-    this._bounds = bounds;
-    this._alphaIndex = alphaIndex;
+  HyperRectangle(HyperRectangle other) {
+    this._bounds = other._bounds.clone();
+    this._alphaIndex = other._alphaIndex;
   }
 
   int getAlphaIndex() {
@@ -109,12 +110,13 @@ class HyperRectangle implements Comparable<HyperRectangle> {
    * Assume that they already overlap
    * That is, the other can not go outside this shape's bounds
    */
+  @Nullable
   Collection<HyperRectangle> divide(HyperRectangle other) {
     // in each dimension we would do this:
-    List<HyperRectangle> newRects = new ArrayList<>();
     if (this.equals(other)) {
-      return newRects;
+      return null;
     }
+    List<HyperRectangle> newRects = new ArrayList<>();
     long[] boundsSoFar = new long[_bounds.length];
     divideRec(other, 0, boundsSoFar, newRects);
     return newRects;

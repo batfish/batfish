@@ -137,6 +137,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.geometry.ForwardingGraph;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -4291,8 +4292,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("Synthesizing Z3 logic...");
     Map<String, Configuration> configurations = loadConfigurations();
     Synthesizer s = new Synthesizer(configurations, dataPlane, _settings.getSimplify());
-
-    // ForwardingGraph fg = new ForwardingGraph(dataPlane);
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
