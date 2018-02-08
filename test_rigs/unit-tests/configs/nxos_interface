@@ -7,4 +7,6 @@ interface Ethernet0/0
  linkdebounce time 100
  mdix auto
 !
-
+interface nve1
+ no shutdown
+!

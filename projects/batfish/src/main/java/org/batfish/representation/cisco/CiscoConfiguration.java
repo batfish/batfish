@@ -169,6 +169,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("MgmtEth", "ManagementEthernet")
           .put("Modular-Cable", "Modular-Cable")
           .put("Null", "Null")
+          .put("nve", "nve")
           .put("Port-channel", "Port-Channel")
           .put("POS", "POS")
           .put("PTP", "PTP")
