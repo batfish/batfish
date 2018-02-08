@@ -30,7 +30,7 @@ public class QueuedWork {
     _details = details;
   }
 
-  public void clearAssignment() {
+  public synchronized void clearAssignment() {
     _dateAssigned = null;
     _assignedWorker = null;
 
@@ -62,21 +62,21 @@ public class QueuedWork {
     return _workItem;
   }
 
-  public void recordTaskCheckResult(Task task) {
+  public synchronized void recordTaskCheckResult(Task task) {
     _lastTaskCheckResult = task;
     _dateLastTaskCheckedStatus = new Date();
   }
 
-  public void setAssignment(String assignedWorker) {
+  public synchronized void setAssignment(String assignedWorker) {
     _status = WorkStatusCode.ASSIGNED;
     _assignedWorker = assignedWorker;
     _dateAssigned = new Date();
   }
 
-  public void setStatus(WorkStatusCode status) {
-    if (_status.isTerminated()) {
+  public synchronized void setStatus(WorkStatusCode status) {
+    if (_status.isTerminated() && !status.isTerminated()) {
       throw new IllegalStateException(
-          "Status of terminated work shouldn't be updated. Current: "
+          "Status of terminated work shouldn't be updated to non-terminated. Current: "
               + _status
               + ". Desired = "
               + status);
