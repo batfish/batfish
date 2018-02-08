@@ -1,23 +1,31 @@
 package org.batfish.geometry;
 
 import com.google.common.base.Objects;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -46,18 +54,23 @@ public class ForwardingGraph {
   private Map<String, GraphNode> _nodeMap;
 
   // Map from ACLs to graph nodes in this extended graph
-  private Map<String, GraphNode> _aclMap;
+  private Map<String, AclGraphNode> _aclMap;
 
   // Map from interfaces to links in this extened graph
   private Map<NodeInterfacePair, GraphLink> _linkMap;
+
+  // All the nodes in the graph
+  private List<GraphNode> _allNodes;
+
+  // All the links in the graph
+  private List<GraphLink> _allLinks;
 
   // Adjacency list for the graph
   private Map<GraphNode, List<GraphLink>> _adjacencyLists;
 
   public ForwardingGraph(Batfish batfish, DataPlane dp) {
-    initGraph(batfish, dp);
-
     long t = System.currentTimeMillis();
+    initGraph(batfish, dp);
 
     HyperRectangle fullRange = GeometricSpace.fullSpace();
     fullRange.setAlphaIndex(0);
@@ -69,31 +82,43 @@ public class ForwardingGraph {
     _kdtree.insert(fullRange);
 
     // initialize the labels
-    for (GraphLink link : _linkMap.values()) {
+    for (GraphLink link : _allLinks) {
       _labels.put(link, new BitSet());
     }
 
     // initialize owners
     Map<GraphNode, NavigableSet<Rule>> map = new HashMap<>();
-    _nodeMap.values().forEach(r -> map.put(r, new TreeSet<>()));
-    _aclMap.values().forEach(r -> map.put(r, new TreeSet<>()));
+    _allNodes.forEach(r -> map.put(r, new TreeSet<>()));
     _ownerMap.put(0, map);
 
-    // add the rules
+    // add the FIB rules
     List<Rule> rules = new ArrayList<>();
     for (Entry<String, Map<String, SortedSet<FibRow>>> entry : dp.getFibs().entrySet()) {
       String router = entry.getKey();
       for (Entry<String, SortedSet<FibRow>> entry2 : entry.getValue().entrySet()) {
         SortedSet<FibRow> fibs = entry2.getValue();
         for (FibRow fib : fibs) {
-          NodeInterfacePair nip = new NodeInterfacePair(router, fib.getInterface());
-          Rule r = new Rule(nip, fib);
+          Rule r = createFibRule(router, fib);
           rules.add(r);
         }
       }
     }
 
-    // Deterministically shuffle to input to get a better balanced KD tree
+    // add the ACL rules
+    for (AclGraphNode aclNode : _aclMap.values()) {
+      List<GraphLink> links = _adjacencyLists.get(aclNode);
+      GraphLink drop = links.get(0);
+      GraphLink accept = links.get(1);
+      List<IpAccessListLine> lines = aclNode.getAcl().getLines();
+      int i = lines.size();
+      for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
+        Rule r = createAclRule(aclLine, drop, accept, i);
+        rules.add(r);
+        i--;
+      }
+    }
+
+    // Deterministically shuffle the input to get a better balanced KD tree
     Random rand = new Random(7);
     Collections.shuffle(rules, rand);
     for (Rule rule : rules) {
@@ -105,12 +130,32 @@ public class ForwardingGraph {
 
     /* HeaderSpace h = new HeaderSpace();
     List<IpWildcard> wcs = new ArrayList<>();
-    Ip ip = new Ip("70.0.100.0");
+    Ip ip = new Ip("70.0.2.0");
     Prefix p = new Prefix(ip, 32);
     IpWildcard wc = new IpWildcard(p);
     wcs.add(wc);
     h.setDstIps(wcs);
-    showForwarding(h); */
+    HyperRectangle counterExample = reachable(h, "edge-4", "edge-2");
+    System.out.println("Counter Example: " + counterExample); */
+  }
+
+  private Rule createFibRule(String router, FibRow fib) {
+    NodeInterfacePair nip = new NodeInterfacePair(router, fib.getInterface());
+    GraphLink link = _linkMap.get(nip);
+    Prefix p = fib.getPrefix();
+    long start = p.getStartIp().asLong();
+    long end = p.getEndIp().asLong() + 1;
+    HyperRectangle hr = GeometricSpace.fullSpace();
+    hr.getBounds()[0] = start;
+    hr.getBounds()[1] = end;
+    return new Rule(link, hr, fib.getPrefix().getPrefixLength());
+  }
+
+  private Rule createAclRule(
+      IpAccessListLine aclLine, GraphLink drop, GraphLink accept, int priority) {
+    HyperRectangle rect = GeometricSpace.fromAcl(aclLine);
+    GraphLink link = (aclLine.getAction() == LineAction.ACCEPT ? accept : drop);
+    return new Rule(link, rect, priority);
   }
 
   private String getAclName(String router, String ifaceName, IpAccessList acl, boolean in) {
@@ -122,15 +167,20 @@ public class ForwardingGraph {
     _aclMap = new HashMap<>();
     _linkMap = new HashMap<>();
     _adjacencyLists = new HashMap<>();
+    _allNodes = new ArrayList<>();
+    _allLinks = new ArrayList<>();
 
     Map<String, Configuration> configs = batfish.loadConfigurations();
 
     // Create the nodes
-    _nodeMap.put("(none)", new GraphNode("(none)"));
+    GraphNode dropNode = new GraphNode("(none)");
+    _nodeMap.put("(none)", dropNode);
     for (Entry<String, Configuration> entry : configs.entrySet()) {
       String router = entry.getKey();
       Configuration config = entry.getValue();
-      _nodeMap.put(router, new GraphNode(router));
+      GraphNode node = new GraphNode(router);
+      _nodeMap.put(router, node);
+      _allNodes.add(node);
       // Create ACL nodes
       for (Entry<String, Interface> e : config.getInterfaces().entrySet()) {
         String ifaceName = e.getKey();
@@ -138,12 +188,16 @@ public class ForwardingGraph {
         IpAccessList outAcl = iface.getOutgoingFilter();
         if (outAcl != null) {
           String aclName = getAclName(router, ifaceName, outAcl, false);
-          _aclMap.put(aclName, new AclGraphNode(aclName, outAcl));
+          AclGraphNode aclNode = new AclGraphNode(aclName, outAcl);
+          _aclMap.put(aclName, aclNode);
+          _allNodes.add(aclNode);
         }
         IpAccessList inAcl = iface.getIncomingFilter();
         if (inAcl != null) {
           String aclName = getAclName(router, ifaceName, inAcl, true);
-          _aclMap.put(aclName, new AclGraphNode(aclName, inAcl));
+          AclGraphNode aclNode = new AclGraphNode(aclName, inAcl);
+          _aclMap.put(aclName, aclNode);
+          _allNodes.add(aclNode);
         }
       }
     }
@@ -176,14 +230,20 @@ public class ForwardingGraph {
     }
 
     // Create the edges
+    for (GraphNode aclNode : _aclMap.values()) {
+      GraphLink nullLink = new GraphLink(aclNode, "null_interface", dropNode, "null_interface");
+      _adjacencyLists.get(aclNode).add(nullLink);
+      _allLinks.add(nullLink);
+    }
     for (Entry<NodeInterfacePair, NodeInterfacePair> entry : edgeMap.entrySet()) {
       NodeInterfacePair nip1 = entry.getKey();
       NodeInterfacePair nip2 = entry.getValue();
 
       // Add a special null edge
       GraphNode src = _nodeMap.get(nip1.getHostname());
-      GraphLink nullLink = new GraphLink(src, "null_interface", null, null);
+      GraphLink nullLink = new GraphLink(src, "null_interface", dropNode, "null_interface");
       _linkMap.put(new NodeInterfacePair(nip1.getHostname(), "null_interface"), nullLink);
+      _allLinks.add(nullLink);
 
       String router1 = nip1.getHostname();
       String router2 = nip2.getHostname();
@@ -203,21 +263,25 @@ public class ForwardingGraph {
         GraphLink l1 = new GraphLink(src, ifaceName1, tgt1, "enter-outbound-acl");
         _linkMap.put(nip1, l1);
         _adjacencyLists.get(src).add(l1);
+        _allLinks.add(l1);
         // if inbound acl, then add that
         if (inAcl != null) {
           String inAclName = getAclName(router2, ifaceName2, inAcl, true);
           GraphNode tgt2 = _aclMap.get(inAclName);
           GraphLink l2 = new GraphLink(tgt1, "exit-outbound-acl", tgt2, "enter-inbound-acl");
           _adjacencyLists.get(tgt1).add(l2);
+          _allLinks.add(l2);
           // add a link from ACL to peer
           GraphNode tgt3 = _nodeMap.get(router2);
           GraphLink l3 = new GraphLink(tgt2, "exit-inbound-acl", tgt3, ifaceName2);
           _adjacencyLists.get(tgt2).add(l3);
+          _allLinks.add(l3);
         } else {
           // add a link from ACL to peer
           GraphNode tgt2 = _nodeMap.get(router2);
           GraphLink l2 = new GraphLink(tgt1, "exit-outbound-acl", tgt2, ifaceName2);
           _adjacencyLists.get(tgt1).add(l2);
+          _allLinks.add(l2);
         }
       } else {
         if (inAcl != null) {
@@ -226,15 +290,18 @@ public class ForwardingGraph {
           GraphLink l1 = new GraphLink(src, ifaceName1, tgt1, "enter-inbound-acl");
           _linkMap.put(nip1, l1);
           _adjacencyLists.get(src).add(l1);
+          _allLinks.add(l1);
           // add a link from ACL to peer
           GraphNode tgt2 = _nodeMap.get(router2);
           GraphLink l2 = new GraphLink(tgt1, "exit-inbound-acl", tgt2, ifaceName2);
           _adjacencyLists.get(tgt1).add(l2);
+          _allLinks.add(l2);
         } else {
           GraphNode tgt = _nodeMap.get(router2);
           GraphLink l = new GraphLink(src, ifaceName1, tgt, ifaceName2);
           _linkMap.put(nip1, l);
           _adjacencyLists.get(src).add(l);
+          _allLinks.add(l);
         }
       }
     }
@@ -249,23 +316,48 @@ public class ForwardingGraph {
     System.out.println("=====================");
   } */
 
-  /* public void showForwarding(HeaderSpace h) {
+  /*
+   * Check reachability and possibly return a
+   * counterexample or null if all reachable
+   */
+  @Nullable
+  private HyperRectangle reachable(HeaderSpace h, String src, String dst) {
+    GraphNode source = _nodeMap.get(src);
+    GraphNode sink = _nodeMap.get(dst);
     Collection<HyperRectangle> space = HyperRectangle.fromHeaderSpace(h);
-    System.out.println("Got rectangles for headerspace: " + space);
     for (HyperRectangle rect : space) {
-      System.out.println("From headerspace for 70.0.100.0: " + rect);
       List<HyperRectangle> relevant = _kdtree.intersect(rect);
       for (HyperRectangle r : relevant) {
-        System.out.println("Relevant: " + r);
-        _labels.forEach(
-            (nip, labels) -> {
-              if (labels.get(r.getAlphaIndex())) {
-                System.out.println("Forwards: " + nip);
-              }
-            });
+        boolean b = reachable(r.getAlphaIndex(), source, sink);
+        if (!b) {
+          return r;
+        }
       }
     }
-  } */
+    return null;
+  }
+
+  private boolean reachable(int alphaIdx, GraphNode source, GraphNode destination) {
+    Queue<GraphNode> todo = new ArrayDeque<>();
+    Set<GraphNode> visited = new HashSet<>();
+    todo.add(source);
+    while (!todo.isEmpty()) {
+      GraphNode current = todo.remove();
+      if (current.equals(destination)) {
+        return true;
+      }
+      visited.add(current);
+      for (GraphLink link : _adjacencyLists.get(current)) {
+        if (_labels.get(link).get(alphaIdx)) {
+          GraphNode neighbor = link.getTarget();
+          if (!visited.contains(neighbor)) {
+            todo.add(neighbor);
+          }
+        }
+      }
+    }
+    return false;
+  }
 
   private Map<GraphNode, NavigableSet<Rule>> copyMap(Map<GraphNode, NavigableSet<Rule>> map) {
     Map<GraphNode, NavigableSet<Rule>> newMap = new HashMap<>(map.size());
@@ -275,23 +367,8 @@ public class ForwardingGraph {
     return newMap;
   }
 
-  private GraphLink getLink(NodeInterfacePair nip) {
-    // System.out.println("Get link: " + nip);
-    return _linkMap.get(nip);
-  }
-
-  private GraphNode getNode(String router) {
-    return _nodeMap.get(router);
-  }
-
   public void addRule(Rule r) {
-    Prefix p = r.getFib().getPrefix();
-    long start = p.getStartIp().asLong();
-    long end = p.getEndIp().asLong() + 1;
-
-    HyperRectangle hr = GeometricSpace.fullSpace();
-    hr.getBounds()[0] = start;
-    hr.getBounds()[1] = end;
+    HyperRectangle hr = r.getRectangle();
 
     // showStatus();
     List<HyperRectangle> overlapping = new ArrayList<>();
@@ -333,8 +410,8 @@ public class ForwardingGraph {
         NavigableSet<Rule> bst = entry.getValue();
         if (!bst.isEmpty()) {
           Rule highestPriority = bst.descendingIterator().next();
-          NodeInterfacePair nip = highestPriority.getLink();
-          _labels.get(getLink(nip)).set(alphaPrime.getAlphaIndex());
+          GraphLink link = highestPriority.getLink();
+          _labels.get(link).set(alphaPrime.getAlphaIndex());
         }
       }
     }
@@ -342,15 +419,14 @@ public class ForwardingGraph {
     // Update data structures
     for (HyperRectangle alpha : overlapping) {
       Rule rPrime = null;
-      NavigableSet<Rule> bst =
-          _ownerMap.get(alpha.getAlphaIndex()).get(getNode(r.getLink().getHostname()));
+      NavigableSet<Rule> bst = _ownerMap.get(alpha.getAlphaIndex()).get(r.getLink().getSource());
       if (!bst.isEmpty()) {
         rPrime = bst.descendingIterator().next();
       }
-      if (rPrime == null || rPrime.compareTo(r) > 0) {
-        _labels.get(getLink(r.getLink())).set(alpha.getAlphaIndex());
+      if (rPrime == null || rPrime.compareTo(r) < 0) {
+        _labels.get(r.getLink()).set(alpha.getAlphaIndex());
         if (rPrime != null && !(Objects.equal(r.getLink(), rPrime.getLink()))) {
-          _labels.get(getLink(rPrime.getLink())).set(alpha.getAlphaIndex(), false);
+          _labels.get(rPrime.getLink()).set(alpha.getAlphaIndex(), false);
         }
       }
       bst.add(r);

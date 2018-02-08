@@ -50,8 +50,9 @@ class HyperRectangle implements Comparable<HyperRectangle> {
     List<HyperRectangle> space = new ArrayList<>();
     for (IpWildcard wc : h.getDstIps()) {
       Prefix p = wc.toPrefix();
-      long[] bounds = {p.getStartIp().asLong(), p.getEndIp().asLong() + 1};
-      HyperRectangle r = new HyperRectangle(bounds);
+      HyperRectangle r = GeometricSpace.fullSpace();
+      r._bounds[0] = p.getStartIp().asLong();
+      r._bounds[1] = p.getEndIp().asLong() + 1;
       space.add(r);
     }
     return space;

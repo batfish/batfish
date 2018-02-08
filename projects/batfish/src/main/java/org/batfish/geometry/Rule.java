@@ -1,26 +1,25 @@
 package org.batfish.geometry;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.collections.FibRow;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class Rule implements Comparable<Rule> {
 
-  private NodeInterfacePair _link;
+  private GraphLink _link;
+  private HyperRectangle _rectangle;
+  private int _priority;
 
-  private FibRow _fib;
-
-  public Rule(NodeInterfacePair source, FibRow fib) {
-    this._link = source;
-    this._fib = fib;
+  public Rule(GraphLink link, HyperRectangle rectangle, int priority) {
+    this._link = link;
+    this._rectangle = rectangle;
+    this._priority = priority;
   }
 
-  public NodeInterfacePair getLink() {
+  public GraphLink getLink() {
     return _link;
   }
 
-  public FibRow getFib() {
-    return _fib;
+  public HyperRectangle getRectangle() {
+    return _rectangle;
   }
 
   @Override
@@ -34,19 +33,25 @@ public class Rule implements Comparable<Rule> {
 
     Rule rule = (Rule) o;
 
-    return (_link != null ? _link.equals(rule._link) : rule._link == null)
-        && (_fib != null ? _fib.equals(rule._fib) : rule._fib == null);
+    if (_priority != rule._priority) {
+      return false;
+    }
+    if (!_link.equals(rule._link)) {
+      return false;
+    }
+    return _rectangle.equals(rule._rectangle);
   }
 
   @Override
   public int hashCode() {
-    int result = _link != null ? _link.hashCode() : 0;
-    result = 31 * result + (_fib != null ? _fib.hashCode() : 0);
+    int result = _link.hashCode();
+    result = 31 * result + _rectangle.hashCode();
+    result = 31 * result + _priority;
     return result;
   }
 
   @Override
   public int compareTo(@Nonnull Rule that) {
-    return _fib.getPrefix().getPrefixLength() - that._fib.getPrefix().getPrefixLength();
+    return _priority - that._priority;
   }
 }
