@@ -401,7 +401,6 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
-import org.batfish.grammar.cisco.CiscoParser.Pim_ssmContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -4718,17 +4717,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           name,
           CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
           line);
-    }
-  }
-
-  @Override
-  public void exitPim_ssm(Pim_ssmContext ctx) {
-    if (ctx.name != null) {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
-      _configuration.referenceStructure(
-          CiscoStructureType.IPV4_ACCESS_LIST, name, CiscoStructureUsage.PIM_SSM_ACL, line);
     }
   }
 

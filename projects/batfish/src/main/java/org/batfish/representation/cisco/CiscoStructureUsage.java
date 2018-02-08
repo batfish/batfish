@@ -64,7 +64,6 @@ public enum CiscoStructureUsage implements StructureUsage {
   PIM_RP_CANDIDATE_ACL("pim rp candidate acl"),
   PIM_SEND_RP_ANNOUNCE_ACL("pim send rp announce acl"),
   PIM_SPT_THRESHOLD_ACL("pim spt threshold acl"),
-  PIM_SSM_ACL("pim ssl acl"),
   QOS_ENFORCE_RULE_SERVICE_CLASS("cable qos enforce-rule service-class"),
   RIP_DEFAULT_ORIGINATE_ROUTE_MAP("rip default-information originate route-map"),
   RIP_DISTRIBUTE_LIST("router rip distribute-list"),
