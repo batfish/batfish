@@ -8,10 +8,14 @@ fi
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
-export ALLINONE_JAVA_ARGS="-enableassertions $ALLINONE_JAVA_ARGS"
-
 . tools/batfish_functions.sh
+
+
+# Build batfish and run the Maven unit tests.
 batfish_test_all || exit 1
+
+# Configure arguments for allinone throughout later runs.
+export ALLINONE_JAVA_ARGS="-enableassertions -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties"
 
 echo -e "\n  ..... Running parsing tests"
 allinone -cmdfile test_rigs/parsing-tests/commands || exit 1
