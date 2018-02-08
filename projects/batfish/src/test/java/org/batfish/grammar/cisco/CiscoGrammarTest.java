@@ -8,6 +8,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -544,8 +546,8 @@ public class CiscoGrammarTest {
   @Test
   public void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
-    String iosRecoveryName = "ios-recovery";
-    List<String> configurationNames = ImmutableList.of(iosRecoveryName);
+    String hostname = "ios-recovery";
+    List<String> configurationNames = ImmutableList.of(hostname);
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -560,7 +562,7 @@ public class CiscoGrammarTest {
     } catch (CompositeBatfishException e) {
       throw e.asSingleException();
     }
-    Configuration iosRecovery = configurations.get(iosRecoveryName);
+    Configuration iosRecovery = configurations.get(hostname);
     SortedMap<String, Interface> iosRecoveryInterfaces = iosRecovery.getInterfaces();
     Set<String> iosRecoveryInterfaceNames = iosRecoveryInterfaces.keySet();
     Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
@@ -575,6 +577,54 @@ public class CiscoGrammarTest {
     assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
     assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
+  }
+
+  @Test
+  public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
+    String testrigName = "parsing-recovery";
+    String hostname = "ios-blankish-file";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+
+    /* Hostname is unknown, but a file should be generated nonetheless */
+    assertThat(configurations.entrySet(), hasSize(1));
+  }
+
+  @Test
+  public void testParsingUnrecognizedInterfaceName() throws IOException {
+    String testrigName = "parsing-recovery";
+    String hostname = "ios-bad-interface-name";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    SortedMap<String, Configuration> configurations;
+    try {
+      configurations = batfish.loadConfigurations();
+    } catch (CompositeBatfishException e) {
+      throw e.asSingleException();
+    }
+
+    /* Parser should not crash, and configuration with hostname from file should be generated */
+    assertThat(configurations, hasKey(hostname));
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
