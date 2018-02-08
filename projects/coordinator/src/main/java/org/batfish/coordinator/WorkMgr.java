@@ -944,13 +944,12 @@ public class WorkMgr extends AbstractCoordinator {
       String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
     Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
-    /*-
+    /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
      */
     SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(testrigDir);
       throw new BatfishException(
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
