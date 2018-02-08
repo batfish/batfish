@@ -954,15 +954,6 @@ public class WorkMgr extends AbstractCoordinator {
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    TestrigMetadata metadata =
-        new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
-    try {
-      TestrigMetadataMgr.writeMetadata(
-          metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write testrigMetadata", e);
-    }
-
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
 
@@ -1448,6 +1439,21 @@ public class WorkMgr extends AbstractCoordinator {
 
     if (!testrigDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
+    }
+
+    // Now that the directory exists, we must also create the metadata.
+    try {
+      TestrigMetadataMgr.writeMetadata(
+          new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+          testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
+    } catch (Exception e) {
+      BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
+      try {
+        CommonUtil.deleteDirectory(testrigDir);
+      } catch (Exception inner) {
+        metadataError.addSuppressed(inner);
+      }
+      throw metadataError;
     }
 
     // Write the user's upload to a directory inside the testrig where we save the original upload.
