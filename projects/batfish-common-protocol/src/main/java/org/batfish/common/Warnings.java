@@ -284,7 +284,7 @@ public class Warnings implements Serializable {
     int startLine = ctx.start.getLine();
     int end = ctx.stop.getStopIndex();
     String ruleText = text.substring(start, end + 1);
-    String[] ruleTextLines = ruleText.split("\\n");
+    String[] ruleTextLines = ruleText.split("\\n", -1);
     for (int line = startLine, i = 0; i < ruleTextLines.length; line++, i++) {
       String contextPrefix = prefix + " line " + line + ": ";
       sb.append(contextPrefix + ruleTextLines[i] + "\n");
@@ -293,7 +293,7 @@ public class Warnings implements Serializable {
       sb.append(prefix + "Parse tree follows:\n");
       String parseTreePrefix = prefix + "PARSE TREE: ";
       String parseTreeText = ParseTreePrettyPrinter.print(ctx, parser);
-      String[] parseTreeLines = parseTreeText.split("\n");
+      String[] parseTreeLines = parseTreeText.split("\n", -1);
       for (String parseTreeLine : parseTreeLines) {
         sb.append(parseTreePrefix + parseTreeLine + "\n");
       }

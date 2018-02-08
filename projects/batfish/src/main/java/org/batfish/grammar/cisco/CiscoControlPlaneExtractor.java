@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1893,8 +1894,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     try {
       canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     } catch (BatfishException e) {
-      throw new BatfishException(
-          "Error fetching interface name at: " + getLocation(ctx) + getFullText(ctx), e);
+      _w.redFlag(
+          "Error fetching interface name at: "
+              + getLocation(ctx)
+              + getFullText(ctx)
+              + " : "
+              + e.getMessage());
+      _currentInterfaces = ImmutableList.of();
+      return;
     }
     String namePrefix = canonicalNamePrefix;
     for (Token part : ctx.iname.name_middle_parts) {
@@ -3932,7 +3939,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       nextHopIp = nextHopPrefix.getStartIp();
     }
     if (ctx.nexthopint != null) {
-      nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      try {
+        nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      } catch (BatfishException e) {
+        _w.redFlag(
+            "Error fetching interface name at: "
+                + getLocation(ctx)
+                + getFullText(ctx)
+                + " : "
+                + e.getMessage());
+        _currentInterfaces = ImmutableList.of();
+        return;
+      }
     }
     if (ctx.distance != null) {
       distance = toInteger(ctx.distance);
