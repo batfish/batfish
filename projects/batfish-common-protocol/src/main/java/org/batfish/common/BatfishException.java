@@ -30,7 +30,7 @@ public class BatfishException extends RuntimeException {
 
     public BatfishStackTrace(BatfishException exception) {
       String stackTrace = ExceptionUtils.getFullStackTrace(exception).replace("\t", "   ");
-      _lines = Arrays.asList(stackTrace.split("\\n", 1));
+      _lines = Arrays.asList(stackTrace.split("\\n", -1));
       _exception = exception;
     }
 

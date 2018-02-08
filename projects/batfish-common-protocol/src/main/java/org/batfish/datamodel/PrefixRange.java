@@ -30,7 +30,7 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
 
   @JsonCreator
   public static PrefixRange fromString(String prefixRangeStr) {
-    String[] parts = prefixRangeStr.split(":", -1);
+    String[] parts = prefixRangeStr.split(":");
     if (parts.length == 1) {
       return fromPrefix(Prefix.parse(parts[0]));
     } else if (parts.length == 2) {

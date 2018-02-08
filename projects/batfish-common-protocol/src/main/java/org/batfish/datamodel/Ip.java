@@ -35,12 +35,12 @@ public class Ip implements Comparable<Ip>, Serializable {
   public static final Ip ZERO = new Ip(0L);
 
   private static long ipStrToLong(String addr) {
-    String[] addrArray = addr.split("\\.", -1);
+    String[] addrArray = addr.split("\\.");
     if (addrArray.length != 4) {
       if (addr.startsWith("INVALID_IP") || addr.startsWith("AUTO/NONE")) {
-        String[] tail = addr.split("\\(", -1);
+        String[] tail = addr.split("\\(");
         if (tail.length == 2) {
-          String[] longStrParts = tail[1].split("l", -1);
+          String[] longStrParts = tail[1].split("l");
           if (longStrParts.length == 2) {
             String longStr = longStrParts[0];
             return Long.parseLong(longStr);

@@ -54,7 +54,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
   @JsonCreator
   public Prefix6(String text) {
-    String[] parts = text.split("/", -1);
+    String[] parts = text.split("/");
     if (parts.length != 2) {
       throw new BatfishException("Invalid Prefix6 string: \"" + text + "\"");
     }

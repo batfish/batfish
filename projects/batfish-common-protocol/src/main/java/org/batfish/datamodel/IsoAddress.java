@@ -24,7 +24,7 @@ public final class IsoAddress implements Serializable {
   @JsonCreator
   public IsoAddress(String isoAddressStr) {
     _str = isoAddressStr;
-    String[] parts = isoAddressStr.split("\\.", -1);
+    String[] parts = isoAddressStr.split("\\.");
     int areaEndOffset = parts.length - 5;
     BigInteger areaId = BigInteger.ZERO;
     for (int i = areaEndOffset, shift = 0; i >= 1; i--) {

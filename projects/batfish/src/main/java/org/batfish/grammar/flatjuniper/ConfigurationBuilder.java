@@ -3997,7 +3997,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private long toCommunityLong(Ec_literalContext ctx) {
-    String[] parts = ctx.getText().split(":", -1);
+    String[] parts = ctx.getText().split(":");
     int part1 = Integer.parseInt(parts[0]);
     long part2 = Long.parseLong(parts[1]);
     int part3 = Integer.parseInt(parts[2]);
