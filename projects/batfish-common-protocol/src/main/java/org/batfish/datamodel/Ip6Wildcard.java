@@ -15,14 +15,14 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
 
   private static Ip6 parseAddress(String str) {
     if (str.contains(";")) {
-      String[] parts = str.split(";");
+      String[] parts = str.split(";", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {
         return new Ip6(parts[0]);
       }
     } else if (str.contains("/")) {
-      String[] parts = str.split("/");
+      String[] parts = str.split("/", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {
@@ -35,14 +35,14 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
 
   private static Ip6 parseMask(String str) {
     if (str.contains(";")) {
-      String[] parts = str.split(";");
+      String[] parts = str.split(";", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {
         return new Ip6(parts[1]);
       }
     } else if (str.contains("/")) {
-      String[] parts = str.split("/");
+      String[] parts = str.split("/", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {

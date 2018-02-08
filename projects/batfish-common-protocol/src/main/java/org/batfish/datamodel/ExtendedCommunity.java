@@ -25,7 +25,7 @@ public class ExtendedCommunity implements Serializable {
     long gaLong;
     long laLong;
     int gaBytes;
-    String[] parts = communityStr.split(":");
+    String[] parts = communityStr.split(":", -1);
     String subType = parts[0].toLowerCase();
     String globalAdministrator = parts[1].toLowerCase();
     String localAdministrator = parts[2].toLowerCase();
@@ -47,7 +47,7 @@ public class ExtendedCommunity implements Serializable {
                 + communityStr
                 + "\"");
     }
-    String[] gaParts = globalAdministrator.split("\\.");
+    String[] gaParts = globalAdministrator.split("\\.", -1);
     laLong = Long.parseLong(localAdministrator);
     if (gaParts.length == 4) {
       // type 0x01, 1-byte subtype, 4-byte ip address, 2-byte number la

@@ -85,7 +85,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
       int separatorToken, String minimumRequiredSeparatorText, String text) {
     _lines =
         Collections.unmodifiableList(
-            Arrays.asList(text.split(Pattern.quote(minimumRequiredSeparatorText))));
+            Arrays.asList(text.split(Pattern.quote(minimumRequiredSeparatorText), -1)));
     _separatorToken = separatorToken;
   }
 

@@ -40,7 +40,7 @@ public final class InterfaceAddress implements Comparable<InterfaceAddress>, Ser
     if (text == null) {
       throw new BatfishException("Cannot create InterfaceAddress from null string");
     }
-    String[] parts = text.split("/");
+    String[] parts = text.split("/", -1);
     if (parts.length != 2) {
       throw new BatfishException(
           String.format("Invalid %s string: \"%s\"", InterfaceAddress.class.getSimpleName(), text));

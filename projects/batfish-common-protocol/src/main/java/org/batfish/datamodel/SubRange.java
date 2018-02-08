@@ -35,7 +35,7 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
   public SubRange(Object o) {
     if (o instanceof String) {
       String s = (String) o;
-      String[] parts = s.split("-");
+      String[] parts = s.split("-", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid subrange: \"" + s + "\"");
       }

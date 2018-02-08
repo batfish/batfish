@@ -14,14 +14,14 @@ public class IpWildcard extends Pair<Ip, Ip> {
 
   private static Ip parseAddress(String str) {
     if (str.contains(":")) {
-      String[] parts = str.split(":");
+      String[] parts = str.split(":", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {
         return new Ip(parts[0]);
       }
     } else if (str.contains("/")) {
-      String[] parts = str.split("/");
+      String[] parts = str.split("/", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {
@@ -34,14 +34,14 @@ public class IpWildcard extends Pair<Ip, Ip> {
 
   private static Ip parseMask(String str) {
     if (str.contains(":")) {
-      String[] parts = str.split(":");
+      String[] parts = str.split(":", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {
         return new Ip(parts[1]);
       }
     } else if (str.contains("/")) {
-      String[] parts = str.split("/");
+      String[] parts = str.split("/", -1);
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {

@@ -6764,7 +6764,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public long toLong(CommunityContext ctx) {
     if (ctx.COMMUNITY_NUMBER() != null) {
       String numberText = ctx.com.getText();
-      String[] parts = numberText.split(":");
+      String[] parts = numberText.split(":", -1);
       String leftStr = parts[0];
       String rightStr = parts[1];
       long left = Long.parseLong(leftStr);

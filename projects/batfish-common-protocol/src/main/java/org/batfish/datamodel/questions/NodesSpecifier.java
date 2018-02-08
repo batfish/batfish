@@ -41,7 +41,7 @@ public class NodesSpecifier {
   public NodesSpecifier(String expression) {
     _expression = expression;
 
-    String[] parts = expression.split(":");
+    String[] parts = expression.split(":", -1);
 
     if (parts.length == 1) {
       _type = Type.NAME;

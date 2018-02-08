@@ -103,7 +103,7 @@ public class CommonUtil {
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   public static String applyPrefix(String prefix, String msg) {
-    String[] lines = msg.split("\n");
+    String[] lines = msg.split("\n", -1);
     StringBuilder sb = new StringBuilder();
     for (String line : lines) {
       sb.append(prefix + line + "\n");
@@ -172,7 +172,7 @@ public class CommonUtil {
   }
 
   public static long communityStringToLong(String str) {
-    String[] parts = str.split(":");
+    String[] parts = str.split(":", 1);
     long high = Long.parseLong(parts[0]);
     long low = Long.parseLong(parts[1]);
     long result = low + (high << 16);
@@ -516,7 +516,7 @@ public class CommonUtil {
   public static String getIndentedString(String str, int indentLevel) {
     String indent = getIndentString(indentLevel);
     StringBuilder sb = new StringBuilder();
-    String[] lines = str.split("\n");
+    String[] lines = str.split("\n", 1);
     for (String line : lines) {
       sb.append(indent + line + "\n");
     }
@@ -954,7 +954,7 @@ public class CommonUtil {
 
   public static SortedMap<Integer, String> toLineMap(String str) {
     SortedMap<Integer, String> map = new TreeMap<>();
-    String[] lines = str.split("\n");
+    String[] lines = str.split("\n", 1);
     for (int i = 0; i < lines.length; i++) {
       String line = lines[i];
       map.put(i, line);

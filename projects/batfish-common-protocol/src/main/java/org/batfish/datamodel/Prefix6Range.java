@@ -18,7 +18,7 @@ public class Prefix6Range extends Pair<Prefix6, SubRange> {
 
   private static SubRange lengthRangeFromStr(String str) {
     Prefix6 prefix6;
-    String[] mainParts = str.split(";");
+    String[] mainParts = str.split(";", -1);
     int numMainParts = mainParts.length;
     if (numMainParts < 1 || numMainParts > 2) {
       throw new BatfishException("Invalid Prefix6Range string: '" + str + "'");
@@ -35,7 +35,7 @@ public class Prefix6Range extends Pair<Prefix6, SubRange> {
 
   private static Prefix6 prefix6FromStr(String str) {
     Prefix6 prefix6;
-    String[] mainParts = str.split(";");
+    String[] mainParts = str.split(";", -1);
     int numMainParts = mainParts.length;
     if (numMainParts < 1 || numMainParts > 2) {
       throw new BatfishException("Invalid Prefix6Range string: '" + str + "'");

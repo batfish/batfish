@@ -58,7 +58,7 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
     HierarchyPath applyPathPath = new HierarchyPath();
     String pathQuoted = ctx.path.getText();
     String pathWithoutQuotes = pathQuoted.substring(1, pathQuoted.length() - 1);
-    String[] pathComponents = pathWithoutQuotes.split(" ");
+    String[] pathComponents = pathWithoutQuotes.split("\\s+");
     for (String pathComponent : pathComponents) {
       boolean isWildcard = pathComponent.charAt(0) == '<';
       if (isWildcard) {
