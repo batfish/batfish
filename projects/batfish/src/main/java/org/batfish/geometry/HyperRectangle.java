@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
