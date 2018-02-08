@@ -8,6 +8,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -545,7 +547,8 @@ public class CiscoGrammarTest {
   public void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
     String iosRecoveryName = "ios-recovery";
-    List<String> configurationNames = ImmutableList.of(iosRecoveryName);
+    List<String> configurationNames =
+        ImmutableList.of(iosRecoveryName, "ios-blankish-file", "ios-bad-interface-name");
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -575,6 +578,8 @@ public class CiscoGrammarTest {
     assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
     assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
+    assertThat(configurations, hasKey("ios-bad-interface-name"));
+    assertThat(configurations.entrySet(), hasSize(3));
   }
 
   private Configuration parseConfig(String hostname) throws IOException {

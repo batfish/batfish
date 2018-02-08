@@ -71,6 +71,8 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
   private int _separatorToken;
 
+  private boolean _thrownAtEndInRecover;
+
   /**
    * Construct a {@link BatfishANTLRErrorStrategy} that throws out invalid lines from as delimited
    * by {@link separatorToken}. The {@link minimumRequiredSeparatorText} is used to split {@link
@@ -118,7 +120,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
       recognizer.consume();
 
       nextToken = recognizer.getInputStream().LA(1);
-    } while (!whatFollowsLoopIterationOrRule.contains(nextToken));
+    } while (!whatFollowsLoopIterationOrRule.contains(nextToken) && nextToken != Lexer.EOF);
   }
 
   private void consumeUntilEndOfLine(Parser parser) {
@@ -156,11 +158,12 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
   /**
    * Attempt to get {@link recognizer} into a state where parsing can continue by throwing away the
    * current line and abandoning the current rule if possible. If at root already, the current line
-   * is placed into an {@link ErrorNode} at the root and parsing continues at the next line (first
-   * base case). If in a child rule with a parent that A) has its own parent and B) started on the
-   * same line; then an exception is thrown to defer cleanup to the parent (recursive case). In any
-   * other case, this rule is removed from its parent, and the current line is inserted as an {@link
-   * ErrorNode} in its place as a child of that parent (second base case).
+   * is placed into an {@link ErrorNode} at the root and parsing continues at the next line if there
+   * is one, or stops if there is none (first base case). If in a child rule with a parent that A)
+   * has its own parent and B) started on the same line; then an exception is thrown to defer
+   * cleanup to the parent (recursive case). In any other case, this rule is removed from its
+   * parent, and the current line is inserted as an {@link ErrorNode} in its place as a child of
+   * that parent (second base case).
    *
    * @param recognizer The {@link Parser} needing to perform recovery
    * @return If base case applies, returns a {@link Token} whose containing the text of the
@@ -193,6 +196,11 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
     if (parent == null) {
       // First base case
+      if (separatorToken.getType() == Lexer.EOF && !_thrownAtEndInRecover) {
+        // Throw once to pop out of adaptive prediction loop
+        _thrownAtEndInRecover = true;
+        throw new BatfishRecognitionException(parser, parser.getInputStream(), ctx);
+      }
       parser.consume();
       return createErrorNode(parser, ctx, lineIndex, separator);
     } else {
@@ -236,6 +244,9 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     recognizer.consume();
     createErrorNode(recognizer, ctx, lineIndex, separator);
     endErrorCondition(recognizer);
+    if (recognizer.getInputStream().LA(1) == Lexer.EOF) {
+      recover(recognizer);
+    }
   }
 
   @Override
