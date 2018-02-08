@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SnmpServer;
 
 public class RoutingInstance implements Serializable {
@@ -47,7 +48,7 @@ public class RoutingInstance implements Serializable {
 
   private final Map<String, NodeDevice> _nodeDevices;
 
-  private Map<Ip, OspfArea> _ospfAreas;
+  private Map<Long, OspfArea> _ospfAreas;
 
   private Map<String, Integer> _ospfExportPolicies;
 
@@ -160,7 +161,7 @@ public class RoutingInstance implements Serializable {
     return _nodeDevices;
   }
 
-  public Map<Ip, OspfArea> getOspfAreas() {
+  public Map<Long, OspfArea> getOspfAreas() {
     return _ospfAreas;
   }
 
