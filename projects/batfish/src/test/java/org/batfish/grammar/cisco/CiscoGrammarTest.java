@@ -577,8 +577,6 @@ public class CiscoGrammarTest {
     assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
     assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
-    assertThat(configurations, hasKey("ios-bad-interface-name"));
-    assertThat(configurations.entrySet(), hasSize(3));
   }
 
   @Test
