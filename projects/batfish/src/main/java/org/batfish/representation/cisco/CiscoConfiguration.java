@@ -169,6 +169,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("MgmtEth", "ManagementEthernet")
           .put("Modular-Cable", "Modular-Cable")
           .put("Null", "Null")
+          .put("nve", "nve")
           .put("Port-channel", "Port-Channel")
           .put("POS", "POS")
           .put("PTP", "PTP")
@@ -3808,7 +3809,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL);
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL);
     markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
     markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);

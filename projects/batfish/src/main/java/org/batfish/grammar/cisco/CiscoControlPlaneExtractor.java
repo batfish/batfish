@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -401,7 +402,6 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
-import org.batfish.grammar.cisco.CiscoParser.Pim_ssmContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -1894,8 +1894,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     try {
       canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     } catch (BatfishException e) {
-      throw new BatfishException(
-          "Error fetching interface name at: " + getLocation(ctx) + getFullText(ctx), e);
+      _w.redFlag(
+          "Error fetching interface name at: "
+              + getLocation(ctx)
+              + getFullText(ctx)
+              + " : "
+              + e.getMessage());
+      _currentInterfaces = ImmutableList.of();
+      return;
     }
     String namePrefix = canonicalNamePrefix;
     for (Token part : ctx.iname.name_middle_parts) {
@@ -3933,7 +3939,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       nextHopIp = nextHopPrefix.getStartIp();
     }
     if (ctx.nexthopint != null) {
-      nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      try {
+        nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      } catch (BatfishException e) {
+        _w.redFlag(
+            "Error fetching interface name at: "
+                + getLocation(ctx)
+                + getFullText(ctx)
+                + " : "
+                + e.getMessage());
+        _currentInterfaces = ImmutableList.of();
+        return;
+      }
     }
     if (ctx.distance != null) {
       distance = toInteger(ctx.distance);
@@ -4718,17 +4735,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           name,
           CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
           line);
-    }
-  }
-
-  @Override
-  public void exitPim_ssm(Pim_ssmContext ctx) {
-    if (ctx.name != null) {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
-      _configuration.referenceStructure(
-          CiscoStructureType.IPV4_ACCESS_LIST, name, CiscoStructureUsage.PIM_SSM_ACL, line);
     }
   }
 

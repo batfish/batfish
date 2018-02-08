@@ -273,6 +273,8 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Null")) {
       return InterfaceType.NULL;
+    } else if (name.startsWith("nve")) {
+      return InterfaceType.VLAN;
     } else if (name.startsWith("Port-Channel")) {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("POS")) {

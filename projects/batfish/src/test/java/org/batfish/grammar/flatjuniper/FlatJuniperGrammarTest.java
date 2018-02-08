@@ -1,6 +1,10 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -8,7 +12,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedMap;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
@@ -16,6 +19,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -70,11 +74,8 @@ public class FlatJuniperGrammarTest {
                 .build(),
             _folder);
     SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
+    configurations = batfish.loadConfigurations();
+
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
     BgpNeighbor neighbor1 =
@@ -121,6 +122,35 @@ public class FlatJuniperGrammarTest {
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+  }
+
+  @Test
+  public void testOspf() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(_folder, "org/batfish/grammar/juniper/testconfigs/ospf")
+            .get("ospf");
+    OspfAreaSummary summary =
+        config
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(1L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary, not(isAdvertised()));
+    assertThat(summary, hasMetric(123L));
+
+    // Defaults
+    summary =
+        config
+            .getDefaultVrf()
+            .getOspfProcess()
+            .getAreas()
+            .get(2L)
+            .getSummaries()
+            .get(Prefix.parse("10.0.0.0/16"));
+    assertThat(summary, isAdvertised());
+    assertThat(summary, hasMetric(nullValue()));
   }
 
   @Test

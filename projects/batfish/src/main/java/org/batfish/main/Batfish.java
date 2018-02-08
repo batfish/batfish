@@ -3,8 +3,12 @@ package org.batfish.main;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Predicates;
 import com.google.common.cache.Cache;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -50,7 +54,6 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
-import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
 import org.batfish.common.Pair;
@@ -1132,7 +1135,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, byte[]> dataByName = new TreeMap<>();
     AtomicInteger readCompleted =
         newBatch(
-            "Reading and unpacking files containg '" + outputClassName + "' instances",
+            "Reading and unpacking files containing '" + outputClassName + "' instances",
             namesByPath.size());
     namesByPath.forEach(
         (inputPath, name) -> {
@@ -2621,28 +2624,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = loadConfigurations();
     Set<Flow> flows = null;
     Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
-    List<NodJob> jobs = new ArrayList<>();
     Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
-    configurations.forEach(
-        (node, configuration) -> {
-          if (!ingressNodes.contains(node)) {
-            // Skip nodes that don't match the ingress node regex.
-            return;
-          }
-          for (String vrf : configuration.getVrfs().keySet()) {
-            MultipathInconsistencyQuerySynthesizer query =
-                new MultipathInconsistencyQuerySynthesizer(node, vrf, headerSpace);
-            SortedSet<Pair<String, String>> nodes = new TreeSet<>();
-            nodes.add(new Pair<>(node, vrf));
-            NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
-            jobs.add(job);
-          }
-        });
-
+    List<NodJob> jobs =
+        configurations
+            .entrySet()
+            .stream()
+            .filter(e -> !ingressNodes.contains(e.getKey()))
+            .flatMap(
+                e -> {
+                  String node = e.getKey();
+                  Configuration c = e.getValue();
+                  return c.getVrfs()
+                      .keySet()
+                      .stream()
+                      .map(
+                          vrf -> {
+                            MultipathInconsistencyQuerySynthesizer query =
+                                new MultipathInconsistencyQuerySynthesizer(node, vrf, headerSpace);
+                            SortedSet<Pair<String, String>> nodes =
+                                ImmutableSortedSet.of(new Pair<>(node, vrf));
+                            return new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
+                          });
+                })
+            .collect(Collectors.toList());
     flows = computeNodOutput(jobs);
-
     getDataPlanePlugin().processFlows(flows);
-
     AnswerElement answerElement = getHistory();
     return answerElement;
   }
@@ -2953,10 +2959,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             null, blacklistNodes, blacklistInterfaces, blacklistEdges, baseConfigurations);
 
     // compute composite program and flows
-    List<Synthesizer> commonEdgeSynthesizers = new ArrayList<>();
-    commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    commonEdgeSynthesizers.add(diffDataPlaneSynthesizer);
-    commonEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+    List<Synthesizer> commonEdgeSynthesizers =
+        ImmutableList.of(
+            baseDataPlaneSynthesizer, diffDataPlaneSynthesizer, baseDataPlaneSynthesizer);
 
     List<CompositeNodJob> jobs = new ArrayList<>();
 
@@ -2972,12 +2977,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ReachEdgeQuerySynthesizer noReachQuery =
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
-      List<QuerySynthesizer> queries = new ArrayList<>();
-      queries.add(reachQuery);
-      queries.add(noReachQuery);
-      queries.add(blacklistQuery);
-      SortedSet<Pair<String, String>> nodes = new TreeSet<>();
-      nodes.add(new Pair<>(ingressNode, vrf));
+      List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
+      SortedSet<Pair<String, String>> nodes = ImmutableSortedSet.of(new Pair<>(ingressNode, vrf));
       CompositeNodJob job =
           new CompositeNodJob(settings, commonEdgeSynthesizers, queries, nodes, tag);
       jobs.add(job);
@@ -2985,13 +2986,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // we also need queries for nodes next to edges that are now missing,
     // in the case that those nodes still exist
-    List<Synthesizer> missingEdgeSynthesizers = new ArrayList<>();
-    missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
-    missingEdgeSynthesizers.add(baseDataPlaneSynthesizer);
+    List<Synthesizer> missingEdgeSynthesizers =
+        ImmutableList.of(baseDataPlaneSynthesizer, baseDataPlaneSynthesizer);
     SortedSet<Edge> baseEdges = baseTopology.getEdges();
-    SortedSet<Edge> missingEdges = new TreeSet<>();
-    missingEdges.addAll(baseEdges);
-    missingEdges.removeAll(diffEdges);
+    SortedSet<Edge> missingEdges = ImmutableSortedSet.copyOf(Sets.difference(baseEdges, diffEdges));
     for (Edge missingEdge : missingEdges) {
       String ingressNode = missingEdge.getNode1();
       String outInterface = missingEdge.getInt1();
@@ -3006,11 +3004,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(ingressNode, vrf, missingEdge, true, headerSpace);
-        List<QuerySynthesizer> queries = new ArrayList<>();
-        queries.add(reachQuery);
-        queries.add(blacklistQuery);
-        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
-        nodes.add(new Pair<>(ingressNode, vrf));
+        List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
+        SortedSet<Pair<String, String>> nodes = ImmutableSortedSet.of(new Pair<>(ingressNode, vrf));
         CompositeNodJob job =
             new CompositeNodJob(settings, missingEdgeSynthesizers, queries, nodes, tag);
         jobs.add(job);
@@ -3336,9 +3331,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * contents in {@code iptablesDate}. Each task fails if the Iptable file specified by host is not
    * under {@code testRigPath} or does not exist.
    *
-   * @throws BatfishException if there is a failed task and {@code _exitOnFirstError} is set
-   * @throws CompositeBatfishException if there is at least one failed task, {@code
-   *     _exitOnFirstError} is not set, and {@code _haltOnParseError} is set.
+   * @throws BatfishException if there is a failed task and either {@link
+   *     Settings#getExitOnFirstError()} or {@link Settings#getHaltOnParseError()} is set.
    */
   void readIptableFiles(
       Path testRigPath,
@@ -3388,11 +3382,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getHaltOnParseError() && !failureCauses.isEmpty()) {
-      throw new CompositeBatfishException(
+      BatfishException e =
           new BatfishException(
-              "Fatal exception due to at least one Iptables file is not contained"
-                  + " within the testrig"),
-          failureCauses);
+              "Fatal exception due to at least one Iptables file is"
+                  + " not contained within the testrig");
+      failureCauses.forEach(e::addSuppressed);
+      throw e;
     }
   }
 
@@ -3415,9 +3410,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
     popEnvironment();
 
-    Set<String> commonNodes = new TreeSet<>();
-    commonNodes.addAll(baseConfigurations.keySet());
-    commonNodes.retainAll(diffConfigurations.keySet());
+    Set<String> commonNodes =
+        ImmutableSet.copyOf(
+            Sets.intersection(baseConfigurations.keySet(), diffConfigurations.keySet()));
 
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
@@ -3430,48 +3425,50 @@ public class Batfish extends PluginConsumer implements IBatfish {
             null, blacklistNodes, blacklistInterfaces, blacklistEdges, baseConfigurations);
 
     // compute composite program and flows
-    List<Synthesizer> synthesizers = new ArrayList<>();
-    synthesizers.add(baseDataPlaneSynthesizer);
-    synthesizers.add(diffDataPlaneSynthesizer);
-    synthesizers.add(baseDataPlaneSynthesizer);
-
-    List<CompositeNodJob> jobs = new ArrayList<>();
+    List<Synthesizer> synthesizers =
+        ImmutableList.of(
+            baseDataPlaneSynthesizer, diffDataPlaneSynthesizer, baseDataPlaneSynthesizer);
 
     Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(baseConfigurations);
 
     // generate base reachability and diff blackhole and blacklist queries
-    for (String node : commonNodes) {
-      if (!ingressNodes.contains(node)) {
-        // Skip nodes that don't match the ingress node regex.
-        continue;
-      }
-      for (String vrf : baseConfigurations.get(node).getVrfs().keySet()) {
-        Map<String, Set<String>> nodeVrfs = new TreeMap<>();
-        nodeVrfs.put(node, Collections.singleton(vrf));
-        ReachabilityQuerySynthesizer acceptQuery =
-            new ReachabilityQuerySynthesizer(
-                Collections.singleton(ForwardingAction.ACCEPT), headerSpace,
-                Collections.<String>emptySet(), nodeVrfs,
-                Collections.<String>emptySet(), Collections.<String>emptySet());
-        ReachabilityQuerySynthesizer notAcceptQuery =
-            new ReachabilityQuerySynthesizer(
-                Collections.singleton(ForwardingAction.ACCEPT),
-                new HeaderSpace(),
-                Collections.<String>emptySet(),
-                nodeVrfs,
-                Collections.<String>emptySet(),
-                Collections.<String>emptySet());
-        notAcceptQuery.setNegate(true);
-        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
-        nodes.add(new Pair<>(node, vrf));
-        List<QuerySynthesizer> queries = new ArrayList<>();
-        queries.add(acceptQuery);
-        queries.add(notAcceptQuery);
-        queries.add(blacklistQuery);
-        CompositeNodJob job = new CompositeNodJob(settings, synthesizers, queries, nodes, tag);
-        jobs.add(job);
-      }
-    }
+    List<CompositeNodJob> jobs =
+        commonNodes
+            .stream()
+            .filter(Predicates.not(ingressNodes::contains))
+            .flatMap(
+                node ->
+                    baseConfigurations
+                        .get(node)
+                        .getVrfs()
+                        .keySet()
+                        .stream()
+                        .map(
+                            vrf -> {
+                              Map<String, Set<String>> ingressNodeVrfs =
+                                  ImmutableMap.of(node, ImmutableSet.of(vrf));
+                              ReachabilityQuerySynthesizer acceptQuery =
+                                  new ReachabilityQuerySynthesizer(
+                                      ImmutableSet.of(ForwardingAction.ACCEPT), headerSpace,
+                                      ImmutableSet.of(), ingressNodeVrfs,
+                                      ImmutableSet.of(), ImmutableSet.of());
+                              ReachabilityQuerySynthesizer notAcceptQuery =
+                                  new ReachabilityQuerySynthesizer(
+                                      Collections.singleton(ForwardingAction.ACCEPT),
+                                      new HeaderSpace(),
+                                      ImmutableSet.of(),
+                                      ingressNodeVrfs,
+                                      ImmutableSet.of(),
+                                      ImmutableSet.of());
+                              notAcceptQuery.setNegate(true);
+                              SortedSet<Pair<String, String>> nodes =
+                                  ImmutableSortedSet.of(new Pair<>(node, vrf));
+                              List<QuerySynthesizer> queries =
+                                  ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
+                              return new CompositeNodJob(
+                                  settings, synthesizers, queries, nodes, tag);
+                            }))
+            .collect(Collectors.toList());
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
@@ -4238,20 +4235,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     // build query jobs
-    List<NodJob> jobs = new ArrayList<>();
-    for (String ingressNode : activeIngressNodes) {
-      for (String ingressVrf : configurations.get(ingressNode).getVrfs().keySet()) {
-        Map<String, Set<String>> nodeVrfs = new TreeMap<>();
-        nodeVrfs.put(ingressNode, Collections.singleton(ingressVrf));
-        ReachabilityQuerySynthesizer query =
-            new ReachabilityQuerySynthesizer(
-                actions, headerSpace, activeFinalNodes, nodeVrfs, transitNodes, notTransitNodes);
-        SortedSet<Pair<String, String>> nodes = new TreeSet<>();
-        nodes.add(new Pair<>(ingressNode, ingressVrf));
-        NodJob job = new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
-        jobs.add(job);
-      }
-    }
+    List<NodJob> jobs =
+        activeIngressNodes
+            .stream()
+            .flatMap(
+                ingressNode ->
+                    configurations
+                        .get(ingressNode)
+                        .getVrfs()
+                        .keySet()
+                        .stream()
+                        .map(
+                            ingressVrf -> {
+                              Map<String, Set<String>> nodeVrfs =
+                                  ImmutableMap.of(ingressNode, ImmutableSet.of(ingressVrf));
+                              ReachabilityQuerySynthesizer query =
+                                  new ReachabilityQuerySynthesizer(
+                                      actions,
+                                      headerSpace,
+                                      activeFinalNodes,
+                                      nodeVrfs,
+                                      transitNodes,
+                                      notTransitNodes);
+                              SortedSet<Pair<String, String>> nodes =
+                                  ImmutableSortedSet.of(new Pair<>(ingressNode, ingressVrf));
+                              return new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
+                            }))
+            .collect(Collectors.toList());
 
     // run jobs and get resulting flows
     flows = computeNodOutput(jobs);

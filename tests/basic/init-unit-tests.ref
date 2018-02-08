@@ -845,7 +845,7 @@
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
-                29
+                42
               ]
             }
           }
@@ -861,11 +861,6 @@
         },
         "cisco_pim" : {
           "ipv4 acl" : {
-            "232.0.0.0/8" : {
-              "pim ssl acl" : [
-                10
-              ]
-            },
             "foobar" : {
               "pim rp-address" : [
                 7
