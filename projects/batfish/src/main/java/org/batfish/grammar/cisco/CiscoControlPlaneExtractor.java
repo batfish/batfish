@@ -1898,6 +1898,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Error fetching interface name at: "
               + getLocation(ctx)
               + getFullText(ctx)
+              + " : "
               + e.getMessage());
       _currentInterfaces = ImmutableList.of();
       return;
@@ -3945,6 +3946,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             "Error fetching interface name at: "
                 + getLocation(ctx)
                 + getFullText(ctx)
+                + " : "
                 + e.getMessage());
         _currentInterfaces = ImmutableList.of();
         return;
