@@ -25,7 +25,7 @@ public class TestrigMetadataMgr {
   public static Instant getTestrigCreationTimeOrMin(String container, String testrig) {
     try {
       return readMetadata(container, testrig).getCreationTimestamp();
-    } catch (IOException e) {
+    } catch (Exception e) {
       return Instant.MIN;
     }
   }
