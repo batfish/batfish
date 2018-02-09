@@ -362,7 +362,6 @@ public class ForwardingGraph {
     System.out.println("=====================");
   } */
 
-
   /*
    * Does a deep copy of the map from one equivalence class to another.
    * This is slow and memory intensive, and could be replaced later if a bottleneck.
@@ -605,12 +604,12 @@ public class ForwardingGraph {
           if (neighbor.isDropNode()) {
             String name = current.getName();
             if ((actions.contains(ForwardingAction.DROP_ACL_IN)
-                || actions.contains(ForwardingAction.DROP_ACL))
+                    || actions.contains(ForwardingAction.DROP_ACL))
                 && name.startsWith("ACL-IN")) {
               return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.DENIED_IN);
             }
             if ((actions.contains(ForwardingAction.DROP_ACL_OUT)
-                || actions.contains(ForwardingAction.DROP_ACL))
+                    || actions.contains(ForwardingAction.DROP_ACL))
                 && name.startsWith("ACL-OUT")) {
               return new Tuple<>(
                   reconstructPath(predecessors, current), FlowDisposition.DENIED_OUT);
@@ -637,5 +636,4 @@ public class ForwardingGraph {
     }
     return null;
   }
-
 }
