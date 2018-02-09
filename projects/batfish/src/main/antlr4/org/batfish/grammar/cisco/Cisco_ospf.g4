@@ -78,7 +78,7 @@ ro_area_range
    (
       ADVERTISE
       | NOT_ADVERTISE
-   ) NEWLINE
+   )? ( COST cost = DEC )? NEWLINE
 ;
 
 ro_area_stub
