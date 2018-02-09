@@ -321,29 +321,35 @@ public class ForwardingGraph {
    * counterexample or null if all reachable
    */
   @Nullable
-  private HyperRectangle reachable(HeaderSpace h, String src, String dst) {
-    GraphNode source = _nodeMap.get(src);
-    GraphNode sink = _nodeMap.get(dst);
+  public HeaderSpace reachable(HeaderSpace h, Set<String> src, Set<String> dst) {
+    Set<GraphNode> sources = new HashSet<>();
+    Set<GraphNode> sinks = new HashSet<>();
+    for (String s : src) {
+      sources.add(_nodeMap.get(s));
+    }
+    for (String d : dst) {
+      sinks.add(_nodeMap.get(d));
+    }
     Collection<HyperRectangle> space = HyperRectangle.fromHeaderSpace(h);
     for (HyperRectangle rect : space) {
       List<HyperRectangle> relevant = _kdtree.intersect(rect);
       for (HyperRectangle r : relevant) {
-        boolean b = reachable(r.getAlphaIndex(), source, sink);
+        boolean b = reachable(r.getAlphaIndex(), sources, sinks);
         if (!b) {
-          return r;
+          return r.example();
         }
       }
     }
     return null;
   }
 
-  private boolean reachable(int alphaIdx, GraphNode source, GraphNode destination) {
+  private boolean reachable(int alphaIdx, Set<GraphNode> sources, Set<GraphNode> sinks) {
     Queue<GraphNode> todo = new ArrayDeque<>();
     Set<GraphNode> visited = new HashSet<>();
-    todo.add(source);
+    todo.addAll(sources);
     while (!todo.isEmpty()) {
       GraphNode current = todo.remove();
-      if (current.equals(destination)) {
+      if (sinks.contains(current)) {
         return true;
       }
       visited.add(current);

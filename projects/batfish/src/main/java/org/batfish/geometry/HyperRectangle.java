@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
@@ -15,7 +16,7 @@ import org.batfish.datamodel.Prefix;
  * For a 2D version of the rectangle, the bounds will be
  * (xlow, xhigh, ylow, yhigh)
  */
-class HyperRectangle implements Comparable<HyperRectangle> {
+public class HyperRectangle implements Comparable<HyperRectangle> {
 
   private long[] _bounds;
   private int _alphaIndex;
@@ -55,6 +56,14 @@ class HyperRectangle implements Comparable<HyperRectangle> {
       r._bounds[1] = p.getEndIp().asLong() + 1;
       space.add(r);
     }
+    return space;
+  }
+
+  HeaderSpace example() {
+    HeaderSpace space = new HeaderSpace();
+    Ip ip = new Ip(_bounds[0]);
+    IpWildcard wc = new IpWildcard(ip);
+    space.getDstIps().add(wc);
     return space;
   }
 
