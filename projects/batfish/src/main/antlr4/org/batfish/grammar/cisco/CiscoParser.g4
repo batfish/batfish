@@ -1966,10 +1966,6 @@ role_null
    NO?
    (
       DESCRIPTION
-      | PERMIT
-      | INTERFACE
-      | VLAN
-      | VRF
       | RULE
    ) ~NEWLINE* NEWLINE
 ;
