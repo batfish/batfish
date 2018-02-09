@@ -17,10 +17,11 @@ if_channel_group
    (
       MODE
       (
-         ON
-         | ACTIVE
-         | PASSIVE
+         ACTIVE
          | DESIRABLE
+         | AUTO
+         | ON
+         | PASSIVE
       )
    )? NEWLINE
 ;

@@ -11,5 +11,6 @@ router bgp 1
   inherit peer-policy p2
   inherit peer-policy p3 10
  exit-peer-policy
+ neighbor 10.0.0.1 disable-connected-check
 !
 

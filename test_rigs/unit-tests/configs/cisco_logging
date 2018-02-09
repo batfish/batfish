@@ -23,6 +23,7 @@ logging cmts ipc-cable log-level errors
 logging cmts sea syslog-level errors
 logging console warnings
 logging console disable
+logging count
 logging debug-trace
 logging discriminator AFLSEC severity drops 6 msg-body drops AFLSEC
 logging discriminator MPLS-NOL mnemonics drops NOLFDSB 
@@ -52,6 +53,11 @@ logging monitor errors
 logging linecard informational
 logging logfile aclfile 3
 logging message-counter syslog
+logging origin-id hostname
+logging origin-id ip
+logging origin-id ipv6
+logging origin-id string my_origin
+logging origin-id string "my origin"
 logging permit-hostdown
 logging queue-limit 100
 logging rate-limit 100
@@ -76,6 +82,7 @@ logging suppress apply rule BCD
 !
 logging timestamp milliseconds
 logging trap errors
+logging userinfo
 logging vrf mgmt host 11.2.3.4
 logging vrf mgmt source-interface Management0
 no logging console

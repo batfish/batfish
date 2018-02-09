@@ -21,6 +21,12 @@ interface Ethernet0
  cdp enable
  channel 2462
  channel width 80
+ channel-group 1
+ channel-group 1 mode active
+ channel-group 1 mode auto
+ channel-group 1 mode desirable
+ channel-group 1 mode on
+ channel-group 1 mode passive
  delay 1
  description description-goes-here
  no description
@@ -66,6 +72,8 @@ interface Ethernet0
  ip helper-address 172.17.0.1
  ip igmp access-group 1
  ip igmp group-timeout 260
+ ip igmp join-group 10.0.0.1
+ ip igmp join-group 10.0.0.1 source 10.0.0.2
  ip igmp last-member-query-response-time 1
  ip igmp query-interval 125
  ip igmp query-max-response-time 10
@@ -88,13 +96,16 @@ interface Ethernet0
  ip ospf priority 1
  ip ospf retransmit-interval 5
  ip ospf transmit-delay 1
+ ip pim dense-mode
  ip pim dr-priority 1
  ip pim hello-interval 30000
+ ip pim sparse-dense-mode
  ip pim sparse-mode
  no ip redirects
  no ip route-cache
  ip router isis
  ip router ospf 1 area 0.1.2.3
+ ip sap listen
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167
@@ -221,9 +232,13 @@ interface Ethernet0
  switchport trunk pruning vlan 2-3
  transceiver permit pid all
  transport-mode otn bit-transparent opu2e
+ tunnel bandwidth receive 1000000
+ tunnel bandwidth transmit 1000000
  tunnel destination 3.4.5.6
  tunnel mode gre ipv4
  tunnel source 2.3.4.5
+ tunnel source Ethernet0
+ tunnel source dynamic
  xconnect 1.2.3.4 649 encapsulation mpls
   backup peer 13.5.25.3 707
   remote circuit id 649
