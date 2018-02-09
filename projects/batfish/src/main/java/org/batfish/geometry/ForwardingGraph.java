@@ -78,6 +78,14 @@ import org.batfish.symbolic.utils.Tuple;
  */
 public class ForwardingGraph {
 
+  private static int ACCEPT_FLAG = 0;
+  private static int DROP_FLAG = 1;
+  private static int DROP_ACL_FLAG = 2;
+  private static int DROP_ACL_IN_FLAG = 3;
+  private static int DROP_ACL_OUT_FLAG = 4;
+  private static int DROP_NULL_ROUTE_FLAG = 5;
+  private static int DROP_NO_ROUTE_FLAG = 6;
+
   // Equivalence classes indexed from 0
   private ArrayList<HyperRectangle> _ecs;
 
@@ -302,7 +310,8 @@ public class ForwardingGraph {
 
     // Create the edges
     for (GraphNode aclNode : _aclMap.values()) {
-      GraphLink nullLink = new GraphLink(aclNode, "null_interface", dropNode, "null_interface", linkIndex);
+      GraphLink nullLink =
+          new GraphLink(aclNode, "null_interface", dropNode, "null_interface", linkIndex);
       linkIndex++;
       _adjacencyLists.get(aclNode.getIndex()).add(nullLink);
       _allLinks.add(nullLink);
@@ -313,7 +322,8 @@ public class ForwardingGraph {
 
       // Add a special null edge
       GraphNode src = _nodeMap.get(nip1.getHostname());
-      GraphLink nullLink = new GraphLink(src, "null_interface", dropNode, "null_interface", linkIndex);
+      GraphLink nullLink =
+          new GraphLink(src, "null_interface", dropNode, "null_interface", linkIndex);
       linkIndex++;
       _linkMap.put(new NodeInterfacePair(nip1.getHostname(), "null_interface"), nullLink);
       _allLinks.add(nullLink);
@@ -342,7 +352,8 @@ public class ForwardingGraph {
         if (inAcl != null) {
           String inAclName = getAclName(router2, ifaceName2, inAcl, true);
           GraphNode tgt2 = _aclMap.get(inAclName);
-          GraphLink l2 = new GraphLink(tgt1, "exit-outbound-acl", tgt2, "enter-inbound-acl", linkIndex);
+          GraphLink l2 =
+              new GraphLink(tgt1, "exit-outbound-acl", tgt2, "enter-inbound-acl", linkIndex);
           linkIndex++;
           _adjacencyLists.get(tgt1.getIndex()).add(l2);
           _allLinks.add(l2);
@@ -480,6 +491,42 @@ public class ForwardingGraph {
     }
   }
 
+  private BitSet actionFlags(Set<ForwardingAction> actions) {
+    BitSet actionFlags = new BitSet();
+
+    boolean accept = actions.contains(ForwardingAction.ACCEPT);
+    boolean drop = actions.contains(ForwardingAction.DROP);
+    boolean dropAclIn = actions.contains(ForwardingAction.DROP_ACL_IN);
+    boolean dropAclOut = actions.contains(ForwardingAction.DROP_ACL_OUT);
+    boolean dropAcl = actions.contains(ForwardingAction.DROP_ACL);
+    boolean dropNullRoute = actions.contains(ForwardingAction.DROP_NULL_ROUTE);
+    boolean dropNoRoute = actions.contains(ForwardingAction.DROP_NO_ROUTE);
+
+    if (accept) {
+      actionFlags.set(ACCEPT_FLAG);
+    }
+    if (drop) {
+      actionFlags.set(DROP_FLAG);
+    }
+    if (dropAcl) {
+      actionFlags.set(DROP_ACL_FLAG);
+    }
+    if (dropAclIn) {
+      actionFlags.set(DROP_ACL_IN_FLAG);
+    }
+    if (dropAclOut) {
+      actionFlags.set(DROP_ACL_OUT_FLAG);
+    }
+    if (dropNullRoute) {
+      actionFlags.set(DROP_NULL_ROUTE_FLAG);
+    }
+    if (dropNoRoute) {
+      actionFlags.set(DROP_NO_ROUTE_FLAG);
+    }
+
+    return actionFlags;
+  }
+
   /*
    * Return an example of a flow satisfying the user's query.
    * This will be the standard FlowHistory object for reachability.
@@ -500,6 +547,8 @@ public class ForwardingGraph {
       sinks.add(_nodeMap.get(d));
     }
 
+    BitSet flags = actionFlags(actions);
+
     // Pick out the relevant equivalence classes
     GeometricSpace space = GeometricSpace.fromHeaderSpace(h);
     Map<HyperRectangle, HyperRectangle> canonicalChoices = new HashMap<>();
@@ -516,7 +565,7 @@ public class ForwardingGraph {
       HyperRectangle equivClass = entry.getKey();
       HyperRectangle overlap = entry.getValue();
       Tuple<Path, FlowDisposition> tup =
-          reachable(equivClass.getAlphaIndex(), actions, sources, sinks);
+          reachable(equivClass.getAlphaIndex(), flags, sources, sinks);
       if (tup != null) {
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
         return createReachabilityAnswer(GeometricSpace.example(overlap), tup);
@@ -631,7 +680,7 @@ public class ForwardingGraph {
    */
   @Nullable
   private Tuple<Path, FlowDisposition> reachable(
-      int alphaIdx, Set<ForwardingAction> actions, Set<GraphNode> sources, Set<GraphNode> sinks) {
+      int alphaIdx, BitSet flags, Set<GraphNode> sources, Set<GraphNode> sinks) {
     Queue<GraphNode> todo = new ArrayDeque<>();
 
     GraphLink[] predecessors = new GraphLink[_allNodes.size()];
@@ -644,10 +693,11 @@ public class ForwardingGraph {
     while (!todo.isEmpty()) {
       GraphNode current = todo.remove();
       // packet accepted at a destination
-      if (sinks.contains(current) && actions.contains(ForwardingAction.ACCEPT)) {
+      if (sinks.contains(current) && flags.get(ACCEPT_FLAG)) {
         // TODO: handle difference between accepted and NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
         return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.ACCEPTED);
       }
+      
       visited.set(current.getIndex());
       int numLinks = 0;
       for (GraphLink link : _adjacencyLists.get(current.getIndex())) {
@@ -657,19 +707,16 @@ public class ForwardingGraph {
           // packet is dropped, figure out what went wrong
           if (neighbor.isDropNode()) {
             String name = current.getName();
-            if ((actions.contains(ForwardingAction.DROP_ACL_IN)
-                    || actions.contains(ForwardingAction.DROP_ACL))
+            if ((flags.get(DROP_ACL_IN_FLAG) || flags.get(DROP_ACL_FLAG))
                 && name.startsWith("ACL-IN")) {
               return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.DENIED_IN);
             }
-            if ((actions.contains(ForwardingAction.DROP_ACL_OUT)
-                    || actions.contains(ForwardingAction.DROP_ACL))
+            if ((flags.get(DROP_ACL_OUT_FLAG) || flags.get(DROP_ACL_FLAG))
                 && name.startsWith("ACL-OUT")) {
               return new Tuple<>(
                   reconstructPath(predecessors, current), FlowDisposition.DENIED_OUT);
             }
-            if (actions.contains(ForwardingAction.DROP_NULL_ROUTE)
-                && link.getSourceIface().equals("null_interface")) {
+            if (flags.get(DROP_NULL_ROUTE_FLAG) && link.getSourceIface().equals("null_interface")) {
               return new Tuple<>(
                   reconstructPath(predecessors, current), FlowDisposition.NULL_ROUTED);
             }
@@ -681,10 +728,10 @@ public class ForwardingGraph {
         }
       }
       // the router doesn't know how to forward the packet
-      if (actions.contains(ForwardingAction.DROP_NO_ROUTE) && numLinks == 0) {
+      if (flags.get(DROP_NO_ROUTE_FLAG) && numLinks == 0) {
         return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.NO_ROUTE);
       }
-      if (actions.contains(ForwardingAction.DROP) && numLinks == 0) {
+      if (flags.get(DROP_FLAG) && numLinks == 0) {
         return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.NO_ROUTE);
       }
     }
