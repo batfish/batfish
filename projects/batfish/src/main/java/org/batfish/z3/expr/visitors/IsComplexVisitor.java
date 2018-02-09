@@ -1,0 +1,158 @@
+package org.batfish.z3.expr.visitors;
+
+import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BitVecExpr;
+import org.batfish.z3.expr.CollapsedListExpr;
+import org.batfish.z3.expr.Comment;
+import org.batfish.z3.expr.DeclareRelExpr;
+import org.batfish.z3.expr.DeclareVarExpr;
+import org.batfish.z3.expr.EqExpr;
+import org.batfish.z3.expr.ExpandedListExpr;
+import org.batfish.z3.expr.Expr;
+import org.batfish.z3.expr.ExtractExpr;
+import org.batfish.z3.expr.FalseExpr;
+import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.IdExpr;
+import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.LitIntExpr;
+import org.batfish.z3.expr.NotExpr;
+import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.PrefixMatchExpr;
+import org.batfish.z3.expr.QueryExpr;
+import org.batfish.z3.expr.RangeMatchExpr;
+import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.VarIntExpr;
+
+public class IsComplexVisitor implements ExprVisitor {
+
+  public static boolean isComplexExpr(Expr expr) {
+    IsComplexVisitor visitor = new IsComplexVisitor();
+    expr.accept(visitor);
+    return visitor._isComplex;
+  }
+
+  private boolean _isComplex;
+
+  @Override
+  public void visitAndExpr(AndExpr andExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitBitVecExpr(BitVecExpr bitVecExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitComment(Comment comment) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitDeclareRelExpr(DeclareRelExpr declareRelExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitDeclareVarExpr(DeclareVarExpr declareVarExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitEqExpr(EqExpr eqExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitExtractExpr(ExtractExpr extractExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitFalseExpr(FalseExpr falseExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
+    headerSpaceMatchExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public void visitIdExpr(IdExpr idExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitIfExpr(IfExpr ifExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitLitIntExpr(LitIntExpr litIntExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitNotExpr(NotExpr notExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitOrExpr(OrExpr orExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
+    prefixMatchExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public void visitQueryExpr(QueryExpr queryExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
+    rangeMatchExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public void visitRuleExpr(RuleExpr ruleExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitSaneExpr(SaneExpr saneExpr) {
+    saneExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public void visitStateExpr(StateExpr stateExpr) {
+    _isComplex = true;
+  }
+
+  @Override
+  public void visitTrueExpr(TrueExpr trueExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitVarIntExpr(VarIntExpr varIntExpr) {
+    _isComplex = false;
+  }
+}
