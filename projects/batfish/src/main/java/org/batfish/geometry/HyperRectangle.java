@@ -6,9 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
+
 
 /*
  * High-dimensional hyperrectangle.
@@ -44,18 +42,6 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
 
   void setBounds(long[] bounds) {
     this._bounds = bounds;
-  }
-
-  static Collection<HyperRectangle> fromHeaderSpace(HeaderSpace h) {
-    List<HyperRectangle> space = new ArrayList<>();
-    for (IpWildcard wc : h.getDstIps()) {
-      Prefix p = wc.toPrefix();
-      HyperRectangle r = GeometricSpace.fullSpace();
-      r._bounds[0] = p.getStartIp().asLong();
-      r._bounds[1] = p.getEndIp().asLong() + 1;
-      space.add(r);
-    }
-    return space;
   }
 
   @Nullable

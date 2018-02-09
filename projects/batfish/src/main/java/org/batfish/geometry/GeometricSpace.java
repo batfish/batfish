@@ -2,10 +2,9 @@ package org.batfish.geometry;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeSet;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -150,16 +149,22 @@ public class GeometricSpace {
       TCPURG_HIGH
     };
     FULL_SPACE = new HyperRectangle(bounds);
-    Set<HyperRectangle> rects = new HashSet<>();
+    List<HyperRectangle> rects = new ArrayList<>();
     rects.add(FULL_SPACE);
     ONE = new GeometricSpace(rects);
-    ZERO = new GeometricSpace(new HashSet<>());
+    ZERO = new GeometricSpace(new ArrayList<>());
   }
 
-  private Set<HyperRectangle> _rectangles;
+  private List<HyperRectangle> _rectangles;
 
-  private GeometricSpace(Set<HyperRectangle> rectangles) {
+  private GeometricSpace(List<HyperRectangle> rectangles) {
     this._rectangles = rectangles;
+  }
+
+  public static GeometricSpace singleton(HyperRectangle r) {
+    List<HyperRectangle> rects = new ArrayList<>();
+    rects.add(r);
+    return new GeometricSpace(rects);
   }
 
   public static HyperRectangle fullSpace() {
@@ -175,7 +180,7 @@ public class GeometricSpace {
   }
 
   public static GeometricSpace and(GeometricSpace x, GeometricSpace y) {
-    Set<HyperRectangle> rects = new HashSet<>();
+    List<HyperRectangle> rects = new ArrayList<>();
     for (HyperRectangle r1 : x._rectangles) {
       for (HyperRectangle r2 : y._rectangles) {
         HyperRectangle overlap = r1.overlap(r2);
@@ -188,10 +193,36 @@ public class GeometricSpace {
   }
 
   public static GeometricSpace or(GeometricSpace x, GeometricSpace y) {
-    Set<HyperRectangle> rects = new HashSet<>();
-    rects.addAll(x._rectangles);
-    rects.addAll(y._rectangles);
-    return new GeometricSpace(rects);
+    List<HyperRectangle> z = new ArrayList<>();
+    Stack<HyperRectangle> workListX = new Stack<>();
+    Stack<HyperRectangle> workListY = new Stack<>();
+    workListX.addAll(x.rectangles());
+    workListY.addAll(y.rectangles());
+    while (!workListY.isEmpty()) {
+      HyperRectangle r1 = workListY.pop();
+      boolean disjoint = true;
+      for (HyperRectangle r2 : x.rectangles()) {
+        HyperRectangle overlap = r1.overlap(r2);
+        if (overlap != null) {
+          disjoint = false;
+          Collection<HyperRectangle> newRects1 = r1.divide(overlap);
+          Collection<HyperRectangle> newRects2 = r2.divide(overlap);
+          assert(newRects1 != null);
+          assert(newRects2 != null);
+          workListX.addAll(newRects2);
+          for (HyperRectangle newRect : newRects1) {
+            if (!newRect.equals(overlap)) {
+              workListY.push(newRect);
+            }
+          }
+        }
+      }
+      if (disjoint) {
+        z.add(r1);
+      }
+    }
+    z.addAll(workListX);
+    return new GeometricSpace(z);
   }
 
   public static GeometricSpace not(GeometricSpace x) {
@@ -202,7 +233,7 @@ public class GeometricSpace {
       Collection<HyperRectangle> divided = one.divide(r);
       assert (divided != null);
       divided.remove(r);
-      Set<HyperRectangle> negated = new HashSet<>(divided);
+      List<HyperRectangle> negated = new ArrayList<>(divided);
       GeometricSpace space = new GeometricSpace(negated);
       acc = GeometricSpace.or(acc, space);
     }
@@ -257,103 +288,125 @@ public class GeometricSpace {
     return space;
   }
 
-  // TODO: assume for now that there is only a single entry per line (is this true?)
-  static HyperRectangle fromAcl(IpAccessListLine aclLine) {
-    long dstIpStart = DSTIP_LOW;
-    long dstIpEnd = DSTIP_HIGH;
-    long srcIpStart = SRCIP_LOW;
-    long srcIpEnd = SRCIP_HIGH;
-    long dstPortStart = DSTPORT_LOW;
-    long dstPortEnd = DSTPORT_HIGH;
-    long srcPortStart = SRCPORT_LOW;
-    long srcPortEnd = SRCPORT_HIGH;
-    long ipProtoStart = IPPROTO_LOW;
-    long ipProtoEnd = IPPROTO_HIGH;
-    long icmpTypeStart = ICMPTYPE_LOW;
-    long icmpTypeEnd = ICMPTYPE_HIGH;
-    long icmpCodeStart = ICMPCODE_LOW;
-    long icmpCodeEnd = ICMPCODE_HIGH;
+  static GeometricSpace fromHeaderSpace(HeaderSpace h) {
+    GeometricSpace acc = GeometricSpace.one();
 
-    if (!aclLine.getDstIps().isEmpty()) {
-      IpWildcard wc = aclLine.getDstIps().first();
-      Prefix p = wc.toPrefix();
-      dstIpStart = p.getStartIp().asLong();
-      dstIpEnd = p.getEndIp().asLong() + 1;
+    SortedSet<IpWildcard> allDstIps = new TreeSet<>(h.getDstIps());
+    allDstIps.addAll(h.getSrcOrDstIps());
+    if (!allDstIps.isEmpty()) {
+      GeometricSpace dstIps = GeometricSpace.zero();
+      for (IpWildcard wc : allDstIps) {
+        Prefix p = wc.toPrefix();
+        long start = p.getStartIp().asLong();
+        long end = p.getEndIp().asLong() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * DSTIP_IDX] = start;
+        r.getBounds()[2 * DSTIP_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        dstIps = GeometricSpace.or(dstIps, space);
+      }
+      acc = GeometricSpace.and(acc, dstIps);
     }
 
-    if (!aclLine.getSrcIps().isEmpty()) {
-      IpWildcard wc = aclLine.getSrcIps().first();
-      Prefix p = wc.toPrefix();
-      srcIpStart = p.getStartIp().asLong();
-      srcIpEnd = p.getEndIp().asLong() + 1;
+    SortedSet<IpWildcard> allSrcIps = new TreeSet<>(h.getSrcIps());
+    allSrcIps.addAll(h.getSrcOrDstIps());
+    if (!allSrcIps.isEmpty()) {
+      GeometricSpace srcIps = GeometricSpace.zero();
+      for (IpWildcard wc : allSrcIps) {
+        Prefix p = wc.toPrefix();
+        long start = p.getStartIp().asLong();
+        long end = p.getEndIp().asLong() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * SRCIP_IDX] = start;
+        r.getBounds()[2 * SRCIP_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        srcIps = GeometricSpace.or(srcIps, space);
+      }
+      acc = GeometricSpace.and(acc, srcIps);
     }
 
-    if (!aclLine.getDstPorts().isEmpty()) {
-      SubRange sr = aclLine.getDstPorts().first();
-      dstPortStart = sr.getStart();
-      dstPortEnd = sr.getEnd() + 1;
+    SortedSet<SubRange> allDstPorts = new TreeSet<>(h.getDstPorts());
+    allDstPorts.addAll(h.getSrcOrDstPorts());
+    if (!allDstPorts.isEmpty()) {
+      GeometricSpace dstPorts = GeometricSpace.zero();
+      for (SubRange sr : allDstPorts) {
+        long start = sr.getStart();
+        long end = sr.getEnd() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * DSTPORT_IDX] = start;
+        r.getBounds()[2 * DSTPORT_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        dstPorts = GeometricSpace.or(dstPorts, space);
+      }
+      acc = GeometricSpace.and(acc, dstPorts);
     }
 
-    if (!aclLine.getSrcPorts().isEmpty()) {
-      SubRange sr = aclLine.getSrcPorts().first();
-      srcPortStart = sr.getStart();
-      srcPortEnd = sr.getEnd() + 1;
+    SortedSet<SubRange> allSrcPorts = new TreeSet<>(h.getSrcPorts());
+    allSrcPorts.addAll(h.getSrcOrDstPorts());
+    if (!allSrcPorts.isEmpty()) {
+      GeometricSpace srcPorts = GeometricSpace.zero();
+      for (SubRange sr : allSrcPorts) {
+        long start = sr.getStart();
+        long end = sr.getEnd() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * DSTPORT_IDX] = start;
+        r.getBounds()[2 * DSTPORT_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        srcPorts = GeometricSpace.or(srcPorts, space);
+      }
+      acc = GeometricSpace.and(acc, srcPorts);
     }
 
-    if (!aclLine.getIpProtocols().isEmpty()) {
-      IpProtocol proto = aclLine.getIpProtocols().first();
-      ipProtoStart = proto.number();
-      ipProtoEnd = proto.number() + 1;
+    if (!h.getIpProtocols().isEmpty()) {
+      GeometricSpace ipProtos = GeometricSpace.zero();
+      for (IpProtocol proto : h.getIpProtocols()) {
+        long start = proto.number();
+        long end = proto.number() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * IPPROTO_IDX] = start;
+        r.getBounds()[2 * IPPROTO_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        ipProtos = GeometricSpace.or(ipProtos, space);
+      }
+      acc = GeometricSpace.and(acc, ipProtos);
     }
 
-    if (!aclLine.getIcmpTypes().isEmpty()) {
-      SubRange sr = aclLine.getIcmpTypes().first();
-      icmpTypeStart = sr.getStart();
-      icmpTypeEnd = sr.getEnd() + 1;
+    if (!h.getIcmpTypes().isEmpty()) {
+      GeometricSpace icmpTypes = GeometricSpace.zero();
+      for (SubRange sr : h.getIcmpTypes()) {
+        long start = sr.getStart();
+        long end = sr.getEnd() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * ICMPTYPE_IDX] = start;
+        r.getBounds()[2 * ICMPTYPE_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        icmpTypes = GeometricSpace.or(icmpTypes, space);
+      }
+      acc = GeometricSpace.and(acc, icmpTypes);
     }
 
-    if (!aclLine.getIcmpCodes().isEmpty()) {
-      SubRange sr = aclLine.getIcmpCodes().first();
-      icmpCodeStart = sr.getStart();
-      icmpCodeEnd = sr.getEnd() + 1;
+    if (!h.getIcmpCodes().isEmpty()) {
+      GeometricSpace icmpCodes = GeometricSpace.zero();
+      for (SubRange sr : h.getIcmpCodes()) {
+        long start = sr.getStart();
+        long end = sr.getEnd() + 1;
+        HyperRectangle r = GeometricSpace.fullSpace();
+        r.getBounds()[2 * ICMPCODE_IDX] = start;
+        r.getBounds()[2 * ICMPCODE_IDX + 1] = end;
+        GeometricSpace space = GeometricSpace.singleton(r);
+        icmpCodes = GeometricSpace.or(icmpCodes, space);
+      }
+      acc = GeometricSpace.and(acc, icmpCodes);
     }
 
-    long[] bounds = {
-      dstIpStart,
-      dstIpEnd,
-      srcIpStart,
-      srcIpEnd,
-      dstPortStart,
-      dstPortEnd,
-      srcPortStart,
-      srcPortEnd,
-      ipProtoStart,
-      ipProtoEnd,
-      icmpTypeStart,
-      icmpTypeEnd,
-      icmpCodeStart,
-      icmpCodeEnd,
-      TCPACK_LOW,
-      TCPACK_HIGH,
-      TCPCWR_LOW,
-      TCPCWR_HIGH,
-      TCPECE_LOW,
-      TCPECE_HIGH,
-      TCPFIN_LOW,
-      TCPFIN_HIGH,
-      TCPPSH_LOW,
-      TCPPSH_HIGH,
-      TCPRST_LOW,
-      TCPRST_HIGH,
-      TCPSYN_LOW,
-      TCPSYN_HIGH,
-      TCPURG_LOW,
-      TCPURG_HIGH
-    };
-    return new HyperRectangle(bounds);
+    return acc;
   }
 
-  Set<HyperRectangle> rectangles() {
+  static GeometricSpace fromAcl(IpAccessListLine aclLine) {
+    return fromHeaderSpace(aclLine);
+  }
+
+  List<HyperRectangle> rectangles() {
     return this._rectangles;
   }
 }

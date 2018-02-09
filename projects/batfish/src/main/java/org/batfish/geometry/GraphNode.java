@@ -4,20 +4,26 @@ public class GraphNode {
 
   private String _name;
 
-  public GraphNode(String name) {
+  private int _index;
+
+  public GraphNode(String name, int index) {
     this._name = name;
+    this._index = index;
   }
 
   public String getName() {
     return _name;
   }
 
+  public int getIndex() {
+    return _index;
+  }
+
   public boolean isDropNode() {
     return _name.equals("(none)");
   }
 
-  @Override
-  public boolean equals(Object o) {
+  @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -27,12 +33,11 @@ public class GraphNode {
 
     GraphNode graphNode = (GraphNode) o;
 
-    return _name != null ? _name.equals(graphNode._name) : graphNode._name == null;
+    return _index == graphNode._index;
   }
 
-  @Override
-  public int hashCode() {
-    return _name != null ? _name.hashCode() : 0;
+  @Override public int hashCode() {
+    return _index;
   }
 
   @Override

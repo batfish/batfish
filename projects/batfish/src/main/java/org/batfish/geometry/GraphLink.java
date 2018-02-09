@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 
 public class GraphLink {
 
+  private int _index;
+
   private GraphNode _source;
 
   private String _sourceIface;
@@ -13,7 +15,12 @@ public class GraphLink {
   private String _targetIface;
 
   public GraphLink(
-      GraphNode src, String srcIface, @Nullable GraphNode tgt, @Nullable String tgtIface) {
+      GraphNode src,
+      String srcIface,
+      @Nullable GraphNode tgt,
+      @Nullable String tgtIface,
+      int index) {
+    this._index = index;
     this._source = src;
     this._sourceIface = srcIface;
     this._target = tgt;
@@ -36,8 +43,11 @@ public class GraphLink {
     return _targetIface;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  public int getIndex() {
+    return _index;
+  }
+
+  @Override public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -47,27 +57,11 @@ public class GraphLink {
 
     GraphLink graphLink = (GraphLink) o;
 
-    if (!_source.equals(graphLink._source)) {
-      return false;
-    }
-    if (!_sourceIface.equals(graphLink._sourceIface)) {
-      return false;
-    }
-    if (_target != null ? !_target.equals(graphLink._target) : graphLink._target != null) {
-      return false;
-    }
-    return _targetIface != null
-        ? _targetIface.equals(graphLink._targetIface)
-        : graphLink._targetIface == null;
+    return _index == graphLink._index;
   }
 
-  @Override
-  public int hashCode() {
-    int result = _source.hashCode();
-    result = 31 * result + _sourceIface.hashCode();
-    result = 31 * result + (_target != null ? _target.hashCode() : 0);
-    result = 31 * result + (_targetIface != null ? _targetIface.hashCode() : 0);
-    return result;
+  @Override public int hashCode() {
+    return _index;
   }
 
   @Override
