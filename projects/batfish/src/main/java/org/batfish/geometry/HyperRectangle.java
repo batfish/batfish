@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
@@ -56,14 +55,6 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
       r._bounds[1] = p.getEndIp().asLong() + 1;
       space.add(r);
     }
-    return space;
-  }
-
-  HeaderSpace example() {
-    HeaderSpace space = new HeaderSpace();
-    Ip ip = new Ip(_bounds[0]);
-    IpWildcard wc = new IpWildcard(ip);
-    space.getDstIps().add(wc);
     return space;
   }
 

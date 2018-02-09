@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -172,6 +173,7 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   AnswerElement standard(
+      BackendType backendType,
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
       NodesSpecifier ingressNodeRegex,

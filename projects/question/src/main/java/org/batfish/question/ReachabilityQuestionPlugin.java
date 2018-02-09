@@ -10,6 +10,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -84,6 +85,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private AnswerElement standard(ReachabilityQuestion question) {
       return _batfish.standard(
+          question.getBackendType(),
           question.getHeaderSpace(),
           question.getActions(),
           question.getIngressNodeRegex(),
@@ -197,6 +199,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NOT_TRANSIT_NODES = "notTransitNodes";
 
+    private static final String PROP_BACKEND_TYPE = "backend";
+
     private SortedSet<ForwardingAction> _actions;
 
     private NodesSpecifier _finalNodeRegex;
@@ -215,12 +219,15 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private ReachabilityType _reachabilityType;
 
+    private BackendType _backendType;
+
     public ReachabilityQuestion() {
       _actions = new TreeSet<>(Collections.singleton(ForwardingAction.ACCEPT));
       _finalNodeRegex = new NodesSpecifier(DEFAULT_FINAL_NODE_REGEX);
       _headerSpace = new HeaderSpace();
       _ingressNodeRegex = new NodesSpecifier(DEFAULT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
+      _backendType = BackendType.NOD;
       _notFinalNodeRegex = new NodesSpecifier(DEFAULT_NOT_FINAL_NODE_REGEX);
       _notIngressNodeRegex = new NodesSpecifier(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _transitNodes = DEFAULT_TRANSIT_NODES;
@@ -380,6 +387,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_REACHABILITY_TYPE)
     public ReachabilityType getReachabilityType() {
       return _reachabilityType;
+    }
+
+    @JsonProperty(PROP_BACKEND_TYPE)
+    public BackendType getBackendType() {
+      return _backendType;
     }
 
     @JsonProperty(PROP_SRC_IPS)
@@ -674,6 +686,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           throw new BatfishException(
               "Invalid reachability type: " + reachabilityType.reachabilityTypeName());
       }
+    }
+
+    @JsonProperty(PROP_BACKEND_TYPE)
+    public void setBackendType(BackendType backendType) {
+      _backendType = backendType;
     }
 
     @JsonProperty(PROP_SRC_IPS)

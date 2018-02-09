@@ -73,6 +73,7 @@ import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
@@ -4173,55 +4174,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return p.checkRoutingLoop(q);
   }
 
-  private AnswerElement standardGeometry(
+  private AnswerElement standardDeltanet(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
-      NodesSpecifier ingressNodeRegex,
-      NodesSpecifier notIngressNodeRegex,
-      NodesSpecifier finalNodeRegex,
-      NodesSpecifier notFinalNodeRegex,
-      Set<String> transitNodes,
-      Set<String> notTransitNodes) {
-    String tag = getFlowTag(_testrigSettings);
-    Map<String, Configuration> configurations = loadConfigurations();
-
-    // collect ingress nodes
-    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
-    Set<String> notIngressNodes = notIngressNodeRegex.getMatchingNodes(configurations);
-    Set<String> activeIngressNodes = Sets.difference(ingressNodes, notIngressNodes);
-    if (activeIngressNodes.isEmpty()) {
-      return new StringAnswerElement(
-          "NOTHING TO DO: No nodes both match ingressNodeRegex: '"
-              + ingressNodeRegex
-              + "' and fail to match notIngressNodeRegex: '"
-              + notIngressNodeRegex
-              + "'");
-    }
-
-    // collect final nodes
-    Set<String> finalNodes = finalNodeRegex.getMatchingNodes(configurations);
-    Set<String> notFinalNodes = notFinalNodeRegex.getMatchingNodes(configurations);
-    Set<String> activeFinalNodes = Sets.difference(finalNodes, notFinalNodes);
-    if (activeFinalNodes.isEmpty()) {
-      return new StringAnswerElement(
-          "NOTHING TO DO: No nodes both match finalNodeRegex: '"
-              + finalNodeRegex
-              + "' and fail to match notFinalNodeRegex: '"
-              + notFinalNodeRegex
-              + "'");
-    }
-
+      Set<String> ingressNodes,
+      Set<String> finalNodes) {
+    // String tag = getFlowTag(_testrigSettings);
     DataPlane dp = loadDataPlane();
     System.out.println("Create forwarding graph");
     ForwardingGraph fg = new ForwardingGraph(this, dp);
-    HeaderSpace space = fg.reachable(headerSpace, activeIngressNodes, activeFinalNodes);
-    AnswerElement answerElement =
-        new StringAnswerElement(space == null ? "reachable" : space.toString());
-    return answerElement;
+    return fg.reachable(headerSpace, actions, ingressNodes, finalNodes);
   }
 
   @Override
   public AnswerElement standard(
+      BackendType backendType,
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
       NodesSpecifier ingressNodeRegex,
@@ -4280,6 +4247,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return new StringAnswerElement(
           String.format(
               "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
+    }
+
+    if (backendType == BackendType.DELTANET) {
+      return standardDeltanet(headerSpace, actions, activeIngressNodes, activeFinalNodes);
     }
 
     // build query jobs

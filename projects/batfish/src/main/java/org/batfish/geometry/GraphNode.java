@@ -12,6 +12,10 @@ public class GraphNode {
     return _name;
   }
 
+  public boolean isDropNode() {
+    return _name.equals("(none)");
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
