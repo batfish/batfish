@@ -142,6 +142,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -915,15 +916,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flows;
   }
 
-  private ComputeDataPlaneResult computeCompressedDataPlane() {
-    ComputeDataPlaneResult result = computeCompressedDataPlane(new HeaderSpace());
-    saveDataPlane(result, true);
+  private CompressDataPlaneResult computeCompressedDataPlane() {
+    CompressDataPlaneResult result = computeCompressedDataPlane(new HeaderSpace());
+    saveDataPlane(result._compressedDataPlane, result._answerElement, true);
     return result;
   }
 
-  private ComputeDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
-    // Make sure to get a fresh set of configs. Something is modifying them in a bad way
-    // that breaks compression
+  public class CompressDataPlaneResult {
+    public final Map<String, Configuration> _compressedConfigs;
+    public final DataPlane _compressedDataPlane;
+    public final DataPlaneAnswerElement _answerElement;
+
+    public CompressDataPlaneResult(
+        Map<String, Configuration> compressedConfigs,
+        DataPlane compressedDataPlane,
+        DataPlaneAnswerElement answerElement) {
+      _compressedConfigs = compressedConfigs;
+      _compressedDataPlane = compressedDataPlane;
+      _answerElement = answerElement;
+    }
+  }
+
+  private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
+    // Compression is going to mutate the configs, so make sure we have a fresh copy
+    // nobody is pointing to.
     _cachedConfigurations.invalidate(_testrigSettings);
     loadConfigurations();
 
@@ -932,12 +948,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
-    // Make sure to get a fresh set of configs. Compression still seems to be mutating
-    // them.
+    // Throw the mutated configurations away.
     _cachedConfigurations.invalidate(_testrigSettings);
-    loadConfigurations();
 
-    return result;
+    return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
+  }
+
+  private void isCompressedConfig(Configuration config) {
+    config
+        .getRoutingPolicies()
+        .values()
+        .forEach(
+            p -> {
+              assert p.getStatements().size() == 1;
+              assert p.getStatements().get(0) instanceof If;
+              If i = (If) p.getStatements().get(0);
+              assert i.getGuard() != null;
+            });
   }
 
   @Override
@@ -951,6 +978,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
   private void saveDataPlane(ComputeDataPlaneResult result, boolean compressed) {
+    saveDataPlane(result._dataPlane, result._answerElement, compressed);
+  }
+
+  private void saveDataPlane(
+      DataPlane dataPlane, DataPlaneAnswerElement answerElement, boolean compressed) {
     Path dataPlanePath =
         compressed
             ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
@@ -964,15 +996,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Cache<TestrigSettings, DataPlane> cache =
         compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
 
-    cache.put(_testrigSettings, result._dataPlane);
+    cache.put(_testrigSettings, dataPlane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
     try (ActiveSpan writeDataplane =
         GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
       assert writeDataplane != null; // avoid unused warning
-      serializeObject(result._dataPlane, dataPlanePath);
-      serializeObject(result._answerElement, answerElementPath);
+      serializeObject(dataPlane, dataPlanePath);
+      serializeObject(answerElement, answerElementPath);
     }
     _logger.printElapsedTime();
   }
@@ -1930,7 +1962,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
-    return getDataPlanePlugin().getRoutes();
+    return getRoutes(false);
+  }
+
+  @Override
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+      boolean useCompression) {
+    return getDataPlanePlugin().getRoutes(loadDataPlane(useCompression));
   }
 
   public Settings getSettings() {
@@ -4290,13 +4328,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean useCompression) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
-    Map<String, Configuration> configurations = loadConfigurations();
     Set<Flow> flows = null;
 
-    // Use a compressed network specialized to the current headerspace.
-    DataPlane dataPlane =
-        useCompression ? computeCompressedDataPlane(headerSpace)._dataPlane : loadDataPlane();
-    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(dataPlane);
+    CompressDataPlaneResult compressionResult =
+        useCompression ? computeCompressedDataPlane(headerSpace) : null;
+    Map<String, Configuration> configurations =
+        useCompression ? compressionResult._compressedConfigs : loadConfigurations();
+    DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
+
+    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
 
     // collect ingress nodes
     Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
@@ -4402,18 +4442,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Synthesizer synthesizeDataPlane() {
-    DataPlane dataPlane = loadDataPlane();
-
-    return synthesizeDataPlane(dataPlane);
+    return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
   }
 
   @Nonnull
-  public Synthesizer synthesizeDataPlane(DataPlane dataPlane) {
+  public Synthesizer synthesizeDataPlane(
+      Map<String, Configuration> configurations, DataPlane dataPlane) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 logic...");
-    Map<String, Configuration> configurations = loadConfigurations();
     Synthesizer s = new Synthesizer(configurations, dataPlane, _settings.getSimplify());
 
     List<String> warnings = s.getWarnings();

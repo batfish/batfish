@@ -14,6 +14,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
@@ -95,7 +96,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public List<Flow> getHistoryFlows() {
-    BdpDataPlane dp = loadDataPlane();
+    return getHistoryFlows(loadDataPlane());
+  }
+
+  @Override
+  public List<Flow> getHistoryFlows(DataPlane dataPlane) {
+    BdpDataPlane dp = (BdpDataPlane) dataPlane;
     List<Flow> flowList = new ArrayList<>();
     _flowTraces
         .get(dp)
@@ -110,7 +116,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public List<FlowTrace> getHistoryFlowTraces() {
-    BdpDataPlane dp = loadDataPlane();
+    return getHistoryFlowTraces(loadDataPlane());
+  }
+
+  @Override
+  public List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane) {
+    BdpDataPlane dp = (BdpDataPlane) dataPlane;
     List<FlowTrace> flowTraceList = new ArrayList<>();
     _flowTraces
         .get(dp)
@@ -129,7 +140,13 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
-    BdpDataPlane dp = loadDataPlane();
+    return getRoutes(loadDataPlane());
+  }
+
+  @Override
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+      DataPlane dataPlane) {
+    BdpDataPlane dp = (BdpDataPlane) dataPlane;
     return _engine.getRoutes(dp);
   }
 
@@ -139,7 +156,12 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public void processFlows(Set<Flow> flows) {
-    BdpDataPlane dp = loadDataPlane();
+    processFlows(flows, loadDataPlane());
+  }
+
+  @Override
+  public void processFlows(Set<Flow> flows, DataPlane dataPlane) {
+    BdpDataPlane dp = (BdpDataPlane) dataPlane;
     _flowTraces.put(dp, _engine.processFlows(dp, flows));
   }
 

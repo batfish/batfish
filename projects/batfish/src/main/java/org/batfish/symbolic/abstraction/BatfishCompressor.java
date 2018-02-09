@@ -199,27 +199,26 @@ public class BatfishCompressor {
       String router = entry.getKey();
       Map<GraphEdge, Tuple<PrefixTrie, Boolean>> filters = filtersByRouter.get(router);
       if (filters != null) {
-        Configuration newConfig = new Configuration(entry.getValue());
-        newConfigs.put(router, entry.getValue());
+        Configuration config = entry.getValue();
+        // Include this config in the compressed network.
+        newConfigs.put(router, config);
+
+        // Mutate the config by adding import/export filters
         for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
           Tuple<PrefixTrie, Boolean> tup = filters.get(ge);
-          RoutingPolicy ipol = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
 
+          RoutingPolicy ipol = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
           if (ipol != null) {
-            RoutingPolicy newIpol = new RoutingPolicy(ipol.getName(), newConfig);
+            RoutingPolicy newIpol = new RoutingPolicy(ipol.getName(), config);
             newIpol.setStatements(applyFilters(ipol.getStatements(), tup));
-            newConfig
-                .getRoutingPolicies()
-                .put(_graph.findBgpNeighbor(ge).getImportPolicy(), newIpol);
+            config.getRoutingPolicies().put(newIpol.getName(), newIpol);
           }
 
           RoutingPolicy epol = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
           if (epol != null) {
-            RoutingPolicy newEpol = new RoutingPolicy(epol.getName(), newConfig);
+            RoutingPolicy newEpol = new RoutingPolicy(epol.getName(), config);
             newEpol.setStatements(applyFilters(epol.getStatements(), tup));
-            newConfig
-                .getRoutingPolicies()
-                .put(_graph.findBgpNeighbor(ge).getExportPolicy(), newEpol);
+            config.getRoutingPolicies().put(newEpol.getName(), newEpol);
           }
         }
       }

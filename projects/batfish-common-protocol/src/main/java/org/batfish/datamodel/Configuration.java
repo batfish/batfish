@@ -270,35 +270,6 @@ public final class Configuration extends ComparableStructure<String> {
     _zones = new TreeMap<>();
   }
 
-  public Configuration(Configuration cfg) {
-    this(cfg.getHostname(), cfg.getConfigurationFormat());
-    _asPathAccessLists.putAll(cfg._asPathAccessLists);
-    _authenticationKeyChains.putAll(cfg._authenticationKeyChains);
-    _communityLists.putAll(cfg._communityLists);
-    _dnsServers.addAll(cfg._dnsServers);
-    _ikeGateways.putAll(cfg._ikeGateways);
-    _ikePolicies.putAll(cfg._ikePolicies);
-    _ikeProposals.putAll(cfg._ikeProposals);
-    _interfaces.putAll(cfg._interfaces);
-    _ipAccessLists.putAll(cfg._ipAccessLists);
-    _ip6AccessLists.putAll(cfg._ip6AccessLists);
-    _ipsecPolicies.putAll(cfg._ipsecPolicies);
-    _ipsecProposals.putAll(cfg._ipsecProposals);
-    _ipsecVpns.putAll(cfg._ipsecVpns);
-    _loggingServers.addAll(cfg._loggingServers);
-    _normalVlanRange = cfg._normalVlanRange;
-    _ntpServers.addAll(cfg._ntpServers);
-    _roles.addAll(cfg._roles);
-    _routeFilterLists.putAll(cfg._routeFilterLists);
-    _route6FilterLists.putAll(cfg._route6FilterLists);
-    _routingPolicies.putAll(cfg._routingPolicies);
-    _snmpTrapServers.addAll(cfg._snmpTrapServers);
-    _tacacsServers.addAll(cfg._tacacsServers);
-    _vendorFamily = cfg._vendorFamily;
-    _vrfs.putAll(cfg._vrfs);
-    _zones.putAll(cfg._zones);
-  }
-
   private void computeRoutingPolicySources(String routingPolicyName, Warnings w) {
     if (routingPolicyName == null) {
       return;
