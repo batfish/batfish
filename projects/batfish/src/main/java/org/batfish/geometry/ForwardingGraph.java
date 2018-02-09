@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -67,10 +67,8 @@ import org.batfish.symbolic.utils.Tuple;
  * - Use a persistent map for _owner to avoid all the deep copies and
  *   reduce space consumption dramatically.
  *
- * - We only need to keep a set of rules if we want to support remove.
+ * - We only need to keep all the rules if we want to support remove.
  *   otherwise, we can just keep a single highest priority rule.
- *
- * - Owner map could be a growable array rather than a map
  *
  * - There are better datastructures than KD trees for collision detection.
  *   Are any easy to implement?
@@ -93,7 +91,7 @@ public class ForwardingGraph {
   private BitSet[] _labels;
 
   // EC index to graph node, to set of rules for that EC on that node.
-  private ArrayList<Map<GraphNode, NavigableSet<Rule>>> _ownerMap;
+  private ArrayList<Map<GraphNode, PriorityQueue<Rule>>> _ownerMap;
 
   // Efficient searching for equivalence class overlap
   private KDTree _kdtree;
@@ -114,7 +112,7 @@ public class ForwardingGraph {
   private List<GraphLink> _allLinks;
 
   // Adjacency list for the graph indexed by GraphNode index
-  private List<List<GraphLink>> _adjacencyLists;
+  private ArrayList<List<GraphLink>> _adjacencyLists;
 
   private Batfish _batfish;
 
@@ -142,8 +140,8 @@ public class ForwardingGraph {
     }
 
     // initialize owners
-    Map<GraphNode, NavigableSet<Rule>> map = new HashMap<>();
-    _allNodes.forEach(r -> map.put(r, new TreeSet<>()));
+    Map<GraphNode, PriorityQueue<Rule>> map = new HashMap<>();
+    _allNodes.forEach(r -> map.put(r, new PriorityQueue<>()));
     _ownerMap.add(map);
 
     // add the FIB rules
@@ -411,10 +409,10 @@ public class ForwardingGraph {
    * Does a deep copy of the map from one equivalence class to another.
    * This is slow and memory intensive, and could be replaced later if a bottleneck.
    */
-  private Map<GraphNode, NavigableSet<Rule>> copyMap(Map<GraphNode, NavigableSet<Rule>> map) {
-    Map<GraphNode, NavigableSet<Rule>> newMap = new HashMap<>(map.size());
-    for (Entry<GraphNode, NavigableSet<Rule>> entry : map.entrySet()) {
-      newMap.put(entry.getKey(), new TreeSet<>(entry.getValue()));
+  private Map<GraphNode, PriorityQueue<Rule>> copyMap(Map<GraphNode, PriorityQueue<Rule>> map) {
+    Map<GraphNode, PriorityQueue<Rule>> newMap = new HashMap<>(map.size());
+    for (Entry<GraphNode, PriorityQueue<Rule>> entry : map.entrySet()) {
+      newMap.put(entry.getKey(), new PriorityQueue<>(entry.getValue()));
     }
     return newMap;
   }
@@ -462,12 +460,12 @@ public class ForwardingGraph {
     for (Tuple<HyperRectangle, HyperRectangle> d : delta) {
       HyperRectangle alpha = d.getFirst();
       HyperRectangle alphaPrime = d.getSecond();
-      Map<GraphNode, NavigableSet<Rule>> existing = _ownerMap.get(alpha.getAlphaIndex());
+      Map<GraphNode, PriorityQueue<Rule>> existing = _ownerMap.get(alpha.getAlphaIndex());
       _ownerMap.set(alphaPrime.getAlphaIndex(), copyMap(existing));
-      for (Entry<GraphNode, NavigableSet<Rule>> entry : existing.entrySet()) {
-        NavigableSet<Rule> bst = entry.getValue();
-        if (!bst.isEmpty()) {
-          Rule highestPriority = bst.descendingIterator().next();
+      for (Entry<GraphNode, PriorityQueue<Rule>> entry : existing.entrySet()) {
+        PriorityQueue<Rule> pq = entry.getValue();
+        if (!pq.isEmpty()) {
+          Rule highestPriority = pq.peek();
           GraphLink link = highestPriority.getLink();
           _labels[link.getIndex()].set(alphaPrime.getAlphaIndex());
         }
@@ -477,9 +475,9 @@ public class ForwardingGraph {
     // Update data structures
     for (HyperRectangle alpha : overlapping) {
       Rule rPrime = null;
-      NavigableSet<Rule> bst = _ownerMap.get(alpha.getAlphaIndex()).get(r.getLink().getSource());
-      if (!bst.isEmpty()) {
-        rPrime = bst.descendingIterator().next();
+      PriorityQueue<Rule> pq = _ownerMap.get(alpha.getAlphaIndex()).get(r.getLink().getSource());
+      if (!pq.isEmpty()) {
+        rPrime = pq.peek();
       }
       if (rPrime == null || rPrime.compareTo(r) < 0) {
         _labels[r.getLink().getIndex()].set(alpha.getAlphaIndex());
@@ -487,7 +485,7 @@ public class ForwardingGraph {
           _labels[rPrime.getLink().getIndex()].set(alpha.getAlphaIndex(), false);
         }
       }
-      bst.add(r);
+      pq.add(r);
     }
   }
 
@@ -697,7 +695,7 @@ public class ForwardingGraph {
         // TODO: handle difference between accepted and NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
         return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.ACCEPTED);
       }
-      
+
       visited.set(current.getIndex());
       int numLinks = 0;
       for (GraphLink link : _adjacencyLists.get(current.getIndex())) {
