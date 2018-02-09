@@ -1,75 +1,29 @@
 package org.batfish.z3.state;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import java.util.Set;
-import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.expr.IfExpr;
-import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class DropAclIn extends State<DropAclIn, org.batfish.z3.state.DropAclIn.Parameterization> {
+public class DropAclIn extends StateExpr {
 
-  public static class Parameterization implements StateParameterization<DropAclIn> {
-    private static final Parameterization INSTANCE = new Parameterization();
+  public static class State extends StateExpr.State {
 
-    private Parameterization() {}
+    public static final State INSTANCE = new State();
+
+    private State() {}
 
     @Override
-    public String getNodName(String baseName) {
-      return NAME;
+    public void accept(StateVisitor visitor) {
+      visitor.visitDropAclIn(this);
     }
   }
 
-  public static class ProjectNodeDropAclIn implements Transition<DropAclIn> {
+  public static final DropAclIn INSTANCE = new DropAclIn();
 
-    public static final ProjectNodeDropAclIn INSTANCE = new ProjectNodeDropAclIn();
-
-    private ProjectNodeDropAclIn() {}
-
-    @Override
-    public List<RuleExpr> generate(SynthesizerInput input) {
-      return ImmutableList.of(
-          new RuleExpr(
-              new IfExpr(
-                  new OrExpr(
-                      input
-                          .getEnabledNodes()
-                          .keySet()
-                          .stream()
-                          .map(NodeDropAclIn::expr)
-                          .collect(ImmutableList.toImmutableList())),
-                  DropAclIn.EXPR)));
-    }
-  }
-
-  private static final Set<Transition<DropAclIn>> DEFAULT_TRANSITIONS =
-      ImmutableSet.of(ProjectNodeDropAclIn.INSTANCE);
-
-  public static final StateExpr<DropAclIn, Parameterization> EXPR;
-
-  public static final DropAclIn INSTANCE;
-
-  public static final String NAME = String.format("S_%s", DropAclIn.class.getSimpleName());
-
-  static {
-    INSTANCE = new DropAclIn();
-    EXPR = INSTANCE.buildStateExpr(Parameterization.INSTANCE);
-  }
-
-  private DropAclIn() {
-    super(NAME);
-  }
+  private DropAclIn() {}
 
   @Override
-  public void accept(StateVisitor visitor) {
+  public void accept(StateExprVisitor visitor) {
     visitor.visitDropAclIn(this);
-  }
-
-  @Override
-  protected Set<Transition<DropAclIn>> getDefaultTransitions() {
-    return DEFAULT_TRANSITIONS;
   }
 }

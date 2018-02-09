@@ -43,9 +43,9 @@ public class FibRowMatchExpr {
       }
     }
     ImmutableList.Builder<BooleanExpr> conditionsBuilder = ImmutableList.builder();
-    BooleanExpr postInVrf = PostInVrf.expr(hostname, vrfName);
+    BooleanExpr postInVrf = new PostInVrf(hostname, vrfName);
     conditionsBuilder.add(postInVrf);
-    BooleanExpr destRoute = PreOut.expr(hostname);
+    BooleanExpr destRoute = new PreOut(hostname);
     conditionsBuilder.add(destRoute);
 
     // must not match more specific routes

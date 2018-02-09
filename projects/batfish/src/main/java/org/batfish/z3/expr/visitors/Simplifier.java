@@ -29,12 +29,10 @@ import org.batfish.z3.expr.QueryExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.State.StateExpr;
-import org.batfish.z3.state.StateParameterization;
 
 public class Simplifier implements ExprVisitor {
 
@@ -296,8 +294,12 @@ public class Simplifier implements ExprVisitor {
         _simplifiedStatement = VACUOUS_RULE;
       } else if (newExpr == FalseExpr.INSTANCE) {
         throw new BatfishException("Unsatisfiable!");
+      } else if (newExpr instanceof StateExpr) {
+        _simplifiedStatement = new RuleExpr((StateExpr) newExpr);
       } else {
-        _simplifiedStatement = new RuleExpr(newExpr);
+        IfExpr newInterior = (IfExpr) newExpr;
+        _simplifiedStatement =
+            new RuleExpr(newInterior.getAntecedent(), (StateExpr) newInterior.getConsequent());
       }
     } else {
       _simplifiedStatement = ruleExpr;
@@ -310,8 +312,7 @@ public class Simplifier implements ExprVisitor {
   }
 
   @Override
-  public <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-      StateExpr<T, P> stateExpr) {
+  public void visitStateExpr(StateExpr stateExpr) {
     _simplifiedBooleanExpr = stateExpr;
   }
 

@@ -2,7 +2,7 @@ package org.batfish.z3.state;
 
 public class StateParameter {
 
-  enum Type {
+  public enum Type {
     ACL,
     ACL_LINE,
     INTERFACE,

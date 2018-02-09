@@ -91,7 +91,8 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
   }
 
   @Override
-  public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+  public NodProgram getNodProgram(SynthesizerInput input, NodProgram baseProgram)
+      throws Z3Exception {
     NodProgram program = new NodProgram(baseProgram.getContext());
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder = ImmutableList.builder();
     queryConditionsBuilder.add(SaneExpr.INSTANCE);
@@ -101,11 +102,12 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
       queryConditionsBuilder.add(blacklistIpCondition);
     }
     AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.EXPR);
+    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
-    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), baseProgram));
-    QueryExpr query = new QueryExpr(Query.EXPR);
-    BoolExpr queryBoolExpr = BoolExprTransformer.toBoolExpr(query.getSubExpression(), baseProgram);
+    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
+    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    BoolExpr queryBoolExpr =
+        BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);
     return program;
   }

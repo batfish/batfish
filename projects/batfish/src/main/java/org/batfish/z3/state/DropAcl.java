@@ -1,100 +1,29 @@
 package org.batfish.z3.state;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import java.util.Set;
-import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.expr.IfExpr;
-import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class DropAcl extends State<DropAcl, org.batfish.z3.state.DropAcl.Parameterization> {
+public class DropAcl extends StateExpr {
 
-  public static class CopyDropAclIn implements Transition<DropAcl> {
+  public static class State extends StateExpr.State {
 
-    public static final CopyDropAclIn INSTANCE = new CopyDropAclIn();
+    public static final State INSTANCE = new State();
 
-    private CopyDropAclIn() {}
+    private State() {}
 
     @Override
-    public List<RuleExpr> generate(SynthesizerInput input) {
-      return ImmutableList.of(new RuleExpr(DropAclIn.EXPR, DropAcl.EXPR));
+    public void accept(StateVisitor visitor) {
+      visitor.visitDropAcl(this);
     }
   }
 
-  public static class CopyDropAclOut implements Transition<DropAcl> {
+  public static final DropAcl INSTANCE = new DropAcl();
 
-    public static final CopyDropAclOut INSTANCE = new CopyDropAclOut();
-
-    private CopyDropAclOut() {}
-
-    @Override
-    public List<RuleExpr> generate(SynthesizerInput input) {
-      return ImmutableList.of(new RuleExpr(DropAclOut.EXPR, DropAcl.EXPR));
-    }
-  }
-
-  public static class Parameterization implements StateParameterization<DropAcl> {
-    private static final Parameterization INSTANCE = new Parameterization();
-
-    private Parameterization() {}
-
-    @Override
-    public String getNodName(String baseName) {
-      return NAME;
-    }
-  }
-
-  /** Use instead of {@link CopyDropAclIn} and {@link CopyDropAclOut} when they are disabled */
-  public static class ProjectNodeDropAcl implements Transition<DropAcl> {
-
-    public static final ProjectNodeDropAcl INSTANCE = new ProjectNodeDropAcl();
-
-    private ProjectNodeDropAcl() {}
-
-    @Override
-    public List<RuleExpr> generate(SynthesizerInput input) {
-      return ImmutableList.of(
-          new RuleExpr(
-              new IfExpr(
-                  new OrExpr(
-                      input
-                          .getEnabledNodes()
-                          .keySet()
-                          .stream()
-                          .map(NodeDropAcl::expr)
-                          .collect(ImmutableList.toImmutableList())),
-                  DropAcl.EXPR)));
-    }
-  }
-
-  private static final Set<Transition<DropAcl>> DEFAULT_TRANSITIONS =
-      ImmutableSet.of(CopyDropAclIn.INSTANCE, CopyDropAclOut.INSTANCE);
-
-  public static final StateExpr<DropAcl, Parameterization> EXPR;
-
-  public static final DropAcl INSTANCE;
-
-  public static final String NAME = String.format("S_%s", DropAcl.class.getSimpleName());
-
-  static {
-    INSTANCE = new DropAcl();
-    EXPR = INSTANCE.buildStateExpr(Parameterization.INSTANCE);
-  }
-
-  private DropAcl() {
-    super(NAME);
-  }
+  private DropAcl() {}
 
   @Override
-  public void accept(StateVisitor visitor) {
+  public void accept(StateExprVisitor visitor) {
     visitor.visitDropAcl(this);
-  }
-
-  @Override
-  protected Set<Transition<DropAcl>> getDefaultTransitions() {
-    return DEFAULT_TRANSITIONS;
   }
 }

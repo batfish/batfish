@@ -1,52 +1,35 @@
 package org.batfish.z3.state;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
-import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class NumberedQuery
-    extends State<NumberedQuery, org.batfish.z3.state.NumberedQuery.Parameterization> {
+public class NumberedQuery extends StateExpr {
 
-  public static class Parameterization implements StateParameterization<NumberedQuery> {
+  public static class State extends StateExpr.State {
 
-    private final StateParameter _queryNumber;
+    public static final State INSTANCE = new State();
 
-    public Parameterization(int queryNumber) {
-      _queryNumber = new StateParameter(Integer.toString(queryNumber), Type.QUERY_NUMBER);
-    }
-
-    public StateParameter getHostname() {
-      return _queryNumber;
-    }
+    private State() {}
 
     @Override
-    public String getNodName(String baseName) {
-      return String.format("%s_%s", BASE_NAME, _queryNumber.getId());
+    public void accept(StateVisitor visitor) {
+      visitor.visitNumberedQuery(this);
     }
   }
 
-  public static final String BASE_NAME = String.format("S_%s", NumberedQuery.class.getSimpleName());
+  private final int _line;
 
-  private static final Set<Transition<NumberedQuery>> DEFAULT_TRANSITIONS = ImmutableSet.of();
-
-  public static final NumberedQuery INSTANCE = new NumberedQuery();
-
-  public static StateExpr<NumberedQuery, Parameterization> expr(int line) {
-    return INSTANCE.buildStateExpr(new Parameterization(line));
-  }
-
-  private NumberedQuery() {
-    super(BASE_NAME);
+  public NumberedQuery(int line) {
+    _line = line;
   }
 
   @Override
-  public void accept(StateVisitor visitor) {
+  public void accept(StateExprVisitor visitor) {
     visitor.visitNumberedQuery(this);
   }
 
-  @Override
-  protected Set<Transition<NumberedQuery>> getDefaultTransitions() {
-    return DEFAULT_TRANSITIONS;
+  public int getLine() {
+    return _line;
   }
 }

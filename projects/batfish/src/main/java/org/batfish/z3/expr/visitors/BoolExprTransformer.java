@@ -1,10 +1,13 @@
 package org.batfish.z3.expr.visitors;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
 import java.util.Arrays;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.NodProgram;
+import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
@@ -16,26 +19,53 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.State.StateExpr;
-import org.batfish.z3.state.StateParameterization;
+import org.batfish.z3.state.visitors.Parameterizer;
 
 public class BoolExprTransformer implements BooleanExprVisitor {
 
-  public static BoolExpr toBoolExpr(BooleanExpr booleanExpr, NodProgram nodProgram) {
-    BoolExprTransformer boolExprTransformer = new BoolExprTransformer(nodProgram);
+  public static String getNodName(SynthesizerInput input, StateExpr stateExpr) {
+    StringBuilder name = new StringBuilder();
+    name.append(String.format("S_%s", stateExpr.getClass().getSimpleName()));
+    Parameterizer.getParameters(stateExpr)
+        .stream()
+        .filter(parameter -> !input.getVectorizedParameters().contains(parameter.getType()))
+        .forEach(parameter -> name.append(String.format("_%s", parameter.getId())));
+    return name.toString();
+  }
+
+  public static BoolExpr toBoolExpr(
+      BooleanExpr booleanExpr, SynthesizerInput input, NodProgram nodProgram) {
+    BoolExprTransformer boolExprTransformer = new BoolExprTransformer(input, nodProgram);
     booleanExpr.accept(boolExprTransformer);
     return boolExprTransformer._boolExpr;
   }
 
   private BoolExpr _boolExpr;
 
+  private final Supplier<Expr[]> _headerFieldArgs;
+
+  private final SynthesizerInput _input;
+
   private final NodProgram _nodProgram;
 
-  private BoolExprTransformer(NodProgram nodProgram) {
+  private BoolExprTransformer(SynthesizerInput input, NodProgram nodProgram) {
+    _input = input;
     _nodProgram = nodProgram;
+    _headerFieldArgs =
+        Suppliers.memoize(
+            () ->
+                Arrays.stream(HeaderField.values())
+                    .map(VarIntExpr::new)
+                    .map(e -> BitVecExprTransformer.toBitVecExpr(e, _nodProgram))
+                    .toArray(Expr[]::new));
+  }
+
+  private Expr[] getNodRelationArgs(SynthesizerInput input, StateExpr stateExpr) {
+    /* TODO: support vectorized state parameters */
+    return _headerFieldArgs.get();
   }
 
   @Override
@@ -47,7 +77,7 @@ public class BoolExprTransformer implements BooleanExprVisitor {
                 andExpr
                     .getConjuncts()
                     .stream()
-                    .map(conjunct -> toBoolExpr(conjunct, _nodProgram))
+                    .map(conjunct -> toBoolExpr(conjunct, _input, _nodProgram))
                     .toArray(BoolExpr[]::new));
   }
 
@@ -77,13 +107,13 @@ public class BoolExprTransformer implements BooleanExprVisitor {
         _nodProgram
             .getContext()
             .mkImplies(
-                BoolExprTransformer.toBoolExpr(ifExpr.getAntecedent(), _nodProgram),
-                BoolExprTransformer.toBoolExpr(ifExpr.getConsequent(), _nodProgram));
+                BoolExprTransformer.toBoolExpr(ifExpr.getAntecedent(), _input, _nodProgram),
+                BoolExprTransformer.toBoolExpr(ifExpr.getConsequent(), _input, _nodProgram));
   }
 
   @Override
   public void visitNotExpr(NotExpr notExpr) {
-    _boolExpr = _nodProgram.getContext().mkNot(toBoolExpr(notExpr.getArg(), _nodProgram));
+    _boolExpr = _nodProgram.getContext().mkNot(toBoolExpr(notExpr.getArg(), _input, _nodProgram));
   }
 
   @Override
@@ -95,7 +125,7 @@ public class BoolExprTransformer implements BooleanExprVisitor {
                 orExpr
                     .getDisjuncts()
                     .stream()
-                    .map(disjunct -> toBoolExpr(disjunct, _nodProgram))
+                    .map(disjunct -> toBoolExpr(disjunct, _input, _nodProgram))
                     .toArray(BoolExpr[]::new));
   }
 
@@ -115,20 +145,15 @@ public class BoolExprTransformer implements BooleanExprVisitor {
   }
 
   @Override
-  public <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-      StateExpr<T, P> stateExpr) {
+  public void visitStateExpr(StateExpr stateExpr) {
+    /* TODO: allow vectorized variables */
     _boolExpr =
         (BoolExpr)
             _nodProgram
                 .getContext()
                 .mkApp(
-                    _nodProgram
-                        .getRelationDeclarations()
-                        .get(stateExpr.getParameterization().getNodName(stateExpr.getBaseName())),
-                    Arrays.stream(HeaderField.values())
-                        .map(VarIntExpr::new)
-                        .map(e -> BitVecExprTransformer.toBitVecExpr(e, _nodProgram))
-                        .toArray(Expr[]::new));
+                    _nodProgram.getRelationDeclarations().get(getNodName(_input, stateExpr)),
+                    getNodRelationArgs(_input, stateExpr));
   }
 
   @Override

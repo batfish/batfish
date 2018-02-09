@@ -45,28 +45,31 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
   }
 
   @Override
-  public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+  public NodProgram getNodProgram(SynthesizerInput input, NodProgram baseProgram)
+      throws Z3Exception {
     NodProgram program = new NodProgram(baseProgram.getContext());
-    BooleanExpr originate = OriginateVrf.expr(_originationNode, _ingressVrf);
+    OriginateVrf originate = new OriginateVrf(_originationNode, _ingressVrf);
     RuleExpr injectSymbolicPackets = new RuleExpr(originate);
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder =
         ImmutableList.<BooleanExpr>builder()
-            .add(PreOutEdge.expr(_edge))
-            .add(PreInInterface.expr(_edge.getNode2(), _edge.getInt2()))
+            .add(new PreOutEdge(_edge))
+            .add(new PreInInterface(_edge.getNode2(), _edge.getInt2()))
             .add(new HeaderSpaceMatchExpr(_headerSpace));
     if (_requireAcceptance) {
-      queryConditionsBuilder.add(Accept.EXPR);
+      queryConditionsBuilder.add(Accept.INSTANCE);
     }
     queryConditionsBuilder.add(SaneExpr.INSTANCE);
     AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.EXPR);
+    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
     BoolExpr injectSymbolicPacketsBoolExpr =
-        BoolExprTransformer.toBoolExpr(injectSymbolicPackets.getSubExpression(), baseProgram);
+        BoolExprTransformer.toBoolExpr(
+            injectSymbolicPackets.getSubExpression(), input, baseProgram);
     rules.add(injectSymbolicPacketsBoolExpr);
-    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), baseProgram));
-    QueryExpr query = new QueryExpr(Query.EXPR);
-    BoolExpr queryBoolExpr = BoolExprTransformer.toBoolExpr(query.getSubExpression(), baseProgram);
+    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
+    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    BoolExpr queryBoolExpr =
+        BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);
     return program;
   }

@@ -35,67 +35,67 @@ import org.batfish.z3.state.Query;
 
 public interface StateVisitor {
 
-  void visitAccept(Accept accept);
+  void visitAccept(Accept.State accept);
 
-  void visitAclDeny(AclDeny aclDeny);
+  void visitAclDeny(AclDeny.State aclDeny);
 
-  void visitAclLineMatch(AclLineMatch aclLineMatch);
+  void visitAclLineMatch(AclLineMatch.State aclLineMatch);
 
-  void visitAclLineNoMatch(AclLineNoMatch aclLineNoMatch);
+  void visitAclLineNoMatch(AclLineNoMatch.State aclLineNoMatch);
 
-  void visitAclPermit(AclPermit aclPermit);
+  void visitAclPermit(AclPermit.State aclPermit);
 
-  void visitDebug(Debug debug);
+  void visitDebug(Debug.State debug);
 
-  void visitDrop(Drop drop);
+  void visitDrop(Drop.State drop);
 
-  void visitDropAcl(DropAcl dropAcl);
+  void visitDropAcl(DropAcl.State dropAcl);
 
-  void visitDropAclIn(DropAclIn dropAclIn);
+  void visitDropAclIn(DropAclIn.State dropAclIn);
 
-  void visitDropAclOut(DropAclOut dropAclOut);
+  void visitDropAclOut(DropAclOut.State dropAclOut);
 
-  void visitDropNoRoute(DropNoRoute dropNoRoute);
+  void visitDropNoRoute(DropNoRoute.State dropNoRoute);
 
-  void visitDropNullRoute(DropNullRoute dropNullRoute);
+  void visitDropNullRoute(DropNullRoute.State dropNullRoute);
 
-  void visitNodeAccept(NodeAccept nodeAccept);
+  void visitNodeAccept(NodeAccept.State nodeAccept);
 
-  void visitNodeDrop(NodeDrop nodeDrop);
+  void visitNodeDrop(NodeDrop.State nodeDrop);
 
-  void visitNodeDropAcl(NodeDropAcl nodeDropAcl);
+  void visitNodeDropAcl(NodeDropAcl.State nodeDropAcl);
 
-  void visitNodeDropAclIn(NodeDropAclIn nodeDropAclIn);
+  void visitNodeDropAclIn(NodeDropAclIn.State nodeDropAclIn);
 
-  void visitNodeDropAclOut(NodeDropAclOut nodeDropAclOut);
+  void visitNodeDropAclOut(NodeDropAclOut.State nodeDropAclOut);
 
-  void visitNodeDropNoRoute(NodeDropNoRoute nodeDropNoRoute);
+  void visitNodeDropNoRoute(NodeDropNoRoute.State nodeDropNoRoute);
 
-  void visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute);
+  void visitNodeDropNullRoute(NodeDropNullRoute.State nodeDropNullRoute);
 
-  void visitNodeTransit(NodeTransit nodeTransit);
+  void visitNodeTransit(NodeTransit.State nodeTransit);
 
-  void visitNumberedQuery(NumberedQuery numberedQuery);
+  void visitNumberedQuery(NumberedQuery.State numberedQuery);
 
-  void visitOriginate(Originate originate);
+  void visitOriginate(Originate.State originate);
 
-  void visitOriginateVrf(OriginateVrf originateVrf);
+  void visitOriginateVrf(OriginateVrf.State originateVrf);
 
-  void visitPostIn(PostIn postIn);
+  void visitPostIn(PostIn.State postIn);
 
-  void visitPostInInterface(PostInInterface postInInterface);
+  void visitPostInInterface(PostInInterface.State postInInterface);
 
-  void visitPostInVrf(PostInVrf postInVrf);
+  void visitPostInVrf(PostInVrf.State postInVrf);
 
-  void visitPostOutInterface(PostOutInterface postOutInterface);
+  void visitPostOutInterface(PostOutInterface.State postOutInterface);
 
-  void visitPreInInterface(PreInInterface preInInterface);
+  void visitPreInInterface(PreInInterface.State preInInterface);
 
-  void visitPreOut(PreOut preOut);
+  void visitPreOut(PreOut.State preOut);
 
-  void visitPreOutEdge(PreOutEdge preOutEdge);
+  void visitPreOutEdge(PreOutEdge.State preOutEdge);
 
-  void visitPreOutInterface(PreOutInterface preOutInterface);
+  void visitPreOutInterface(PreOutInterface.State preOutInterface);
 
-  void visitQuery(Query query);
+  void visitQuery(Query.State query);
 }

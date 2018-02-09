@@ -27,6 +27,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.Transition;
 
 public class SynthesizerInput {
@@ -48,6 +49,8 @@ public class SynthesizerInput {
 
     private boolean _simplify;
 
+    private Set<Type> _vectorizedParameters;
+
     private Builder() {
       _disabledAcls = ImmutableMap.of();
       _disabledInterfaces = ImmutableMap.of();
@@ -55,6 +58,7 @@ public class SynthesizerInput {
       _disabledTransitions = ImmutableMap.of();
       _disabledVrfs = ImmutableMap.of();
       _simplify = false;
+      _vectorizedParameters = ImmutableSet.of();
     }
 
     public SynthesizerInput build() {
@@ -66,7 +70,8 @@ public class SynthesizerInput {
           _disabledNodes,
           _disabledTransitions,
           _disabledVrfs,
-          _simplify);
+          _simplify,
+          _vectorizedParameters);
     }
 
     public Builder setConfigurations(Map<String, Configuration> configurations) {
@@ -107,6 +112,11 @@ public class SynthesizerInput {
 
     public Builder setSimplify(boolean simplify) {
       _simplify = simplify;
+      return this;
+    }
+
+    public Builder setVectorizedParameters(Set<Type> vectorizedParameters) {
+      _vectorizedParameters = vectorizedParameters;
       return this;
     }
   }
@@ -161,6 +171,8 @@ public class SynthesizerInput {
 
   private final Map<String, Set<Interface>> _topologyInterfaces;
 
+  private final Set<Type> _vectorizedParameters;
+
   public SynthesizerInput(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
@@ -169,20 +181,22 @@ public class SynthesizerInput {
       Set<String> disabledNodes,
       Map<String, Set<Class<? extends Transition<?>>>> disabledTransitions,
       Map<String, Set<String>> disabledVrfs,
-      boolean simplify) {
+      boolean simplify,
+      Set<Type> vectorizedParameters) {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
     }
     _configurations = ImmutableMap.copyOf(configurations);
-    _enabledNodes = computeEnabledNodes();
-    _enabledVrfs = computeEnabledVrfs();
-    _enabledInterfaces = computeEnabledInterfaces();
     _disabledAcls = ImmutableMap.copyOf(disabledAcls);
     _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
     _disabledNodes = ImmutableSet.copyOf(disabledNodes);
     _disabledVrfs = ImmutableMap.copyOf(disabledVrfs);
     _disabledTransitions = ImmutableMap.copyOf(disabledTransitions);
+    _enabledNodes = computeEnabledNodes();
+    _enabledVrfs = computeEnabledVrfs();
+    _enabledInterfaces = computeEnabledInterfaces();
     _simplify = simplify;
+    _vectorizedParameters = vectorizedParameters;
     if (dataPlane != null) {
       _fibs = ImmutableMap.copyOf(dataPlane.getFibs());
       _flowSinks = ImmutableSet.copyOf(dataPlane.getFlowSinks());
@@ -530,5 +544,9 @@ public class SynthesizerInput {
 
   public Map<String, Set<Interface>> getTopologyInterfaces() {
     return _topologyInterfaces;
+  }
+
+  public Set<Type> getVectorizedParameters() {
+    return _vectorizedParameters;
   }
 }

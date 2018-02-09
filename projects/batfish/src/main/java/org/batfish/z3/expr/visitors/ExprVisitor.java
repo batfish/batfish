@@ -22,11 +22,9 @@ import org.batfish.z3.expr.QueryExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.State.StateExpr;
-import org.batfish.z3.state.StateParameterization;
 
 public interface ExprVisitor {
   void visitAndExpr(AndExpr andExpr);
@@ -73,8 +71,7 @@ public interface ExprVisitor {
 
   void visitSaneExpr(SaneExpr saneExpr);
 
-  <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-      StateExpr<T, P> stateExpr);
+  void visitStateExpr(StateExpr stateExpr);
 
   void visitTrueExpr(TrueExpr trueExpr);
 

@@ -1,104 +1,42 @@
 package org.batfish.z3.state;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import java.util.List;
-import java.util.Set;
-import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.IfExpr;
-import org.batfish.z3.expr.RuleExpr;
-import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class PostInInterface
-    extends State<PostInInterface, org.batfish.z3.state.PostInInterface.Parameterization> {
+public class PostInInterface extends StateExpr {
 
-  public static class Parameterization implements StateParameterization<PostInInterface> {
+  public static class State extends StateExpr.State {
 
-    private final StateParameter _hostname;
+    public static final State INSTANCE = new State();
 
-    private final StateParameter _interface;
-
-    public Parameterization(String hostname, String iface) {
-      _hostname = new StateParameter(hostname, Type.NODE);
-      _interface = new StateParameter(iface, Type.INTERFACE);
-    }
-
-    public StateParameter getHostname() {
-      return _hostname;
-    }
-
-    public StateParameter getInterface() {
-      return _interface;
-    }
+    private State() {}
 
     @Override
-    public String getNodName(String baseName) {
-      return String.format("%s_%s_%s", BASE_NAME, _hostname.getId(), _interface.getId());
+    public void accept(StateVisitor visitor) {
+      visitor.visitPostInInterface(this);
     }
   }
 
-  public static class PassIncomingAcl implements Transition<PostInInterface> {
+  private final String _hostname;
 
-    public static final PassIncomingAcl INSTANCE = new PassIncomingAcl();
+  private final String _iface;
 
-    private PassIncomingAcl() {}
-
-    @Override
-    public List<RuleExpr> generate(SynthesizerInput input) {
-      return input
-          .getTopologyInterfaces()
-          .entrySet()
-          .stream()
-          .flatMap(
-              e -> {
-                String hostname = e.getKey();
-                return e.getValue()
-                    .stream()
-                    .map(
-                        i -> {
-                          String inAcl = i.getIncomingFilterName();
-                          BooleanExpr antecedent;
-                          BooleanExpr preIn = PreInInterface.expr(hostname, i.getName());
-                          if (inAcl != null) {
-                            antecedent =
-                                new AndExpr(
-                                    ImmutableList.of(AclPermit.expr(hostname, inAcl), preIn));
-                          } else {
-                            antecedent = preIn;
-                          }
-                          return new RuleExpr(new IfExpr(antecedent, expr(hostname, i.getName())));
-                        });
-              })
-          .collect(ImmutableList.toImmutableList());
-    }
-  }
-
-  public static final String BASE_NAME =
-      String.format("S_%s", PostInInterface.class.getSimpleName());
-
-  private static final Set<Transition<PostInInterface>> DEFAULT_TRANSITIONS =
-      ImmutableSet.of(PassIncomingAcl.INSTANCE);
-
-  public static final PostInInterface INSTANCE = new PostInInterface();
-
-  public static StateExpr<PostInInterface, Parameterization> expr(String hostname, String iface) {
-    return INSTANCE.buildStateExpr(new Parameterization(hostname, iface));
-  }
-
-  private PostInInterface() {
-    super(BASE_NAME);
+  public PostInInterface(String hostname, String iface) {
+    _hostname = hostname;
+    _iface = iface;
   }
 
   @Override
-  public void accept(StateVisitor visitor) {
+  public void accept(StateExprVisitor visitor) {
     visitor.visitPostInInterface(this);
   }
 
-  @Override
-  protected Set<Transition<PostInInterface>> getDefaultTransitions() {
-    return DEFAULT_TRANSITIONS;
+  public String getHostname() {
+    return _hostname;
+  }
+
+  public String getIface() {
+    return _iface;
   }
 }

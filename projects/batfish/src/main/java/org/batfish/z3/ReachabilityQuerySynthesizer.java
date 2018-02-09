@@ -68,14 +68,15 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
   }
 
   @Override
-  public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+  public NodProgram getNodProgram(SynthesizerInput input, NodProgram baseProgram)
+      throws Z3Exception {
     NodProgram program = new NodProgram(baseProgram.getContext());
 
     // create rules for injecting symbolic packets into ingress node(s)
     List<RuleExpr> originateRules = new ArrayList<>();
     for (String ingressNode : _ingressNodeVrfs.keySet()) {
       for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
-        BooleanExpr originate = OriginateVrf.expr(ingressNode, ingressVrf);
+        OriginateVrf originate = new OriginateVrf(ingressNode, ingressVrf);
         RuleExpr originateRule = new RuleExpr(originate);
         originateRules.add(originateRule);
       }
@@ -90,81 +91,81 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case ACCEPT:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr accept = NodeAccept.expr(finalNode);
+              BooleanExpr accept = new NodeAccept(finalNode);
               finalActionsBuilder.add(accept);
             }
           } else {
-            finalActionsBuilder.add(Accept.EXPR);
+            finalActionsBuilder.add(Accept.INSTANCE);
           }
           break;
 
         case DEBUG:
-          finalActionsBuilder.add(Debug.EXPR);
+          finalActionsBuilder.add(Debug.INSTANCE);
           break;
 
         case DROP:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = NodeDrop.expr(finalNode);
+              BooleanExpr drop = new NodeDrop(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(Drop.EXPR);
+            finalActionsBuilder.add(Drop.INSTANCE);
           }
           break;
 
         case DROP_ACL:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = NodeDropAcl.expr(finalNode);
+              BooleanExpr drop = new NodeDropAcl(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropAcl.EXPR);
+            finalActionsBuilder.add(DropAcl.INSTANCE);
           }
           break;
 
         case DROP_ACL_IN:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = NodeDropAclIn.expr(finalNode);
+              BooleanExpr drop = new NodeDropAclIn(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropAclIn.EXPR);
+            finalActionsBuilder.add(DropAclIn.INSTANCE);
           }
           break;
 
         case DROP_ACL_OUT:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = NodeDropAclOut.expr(finalNode);
+              BooleanExpr drop = new NodeDropAclOut(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropAclOut.EXPR);
+            finalActionsBuilder.add(DropAclOut.INSTANCE);
           }
           break;
 
         case DROP_NO_ROUTE:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = NodeDropNoRoute.expr(finalNode);
+              BooleanExpr drop = new NodeDropNoRoute(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropNoRoute.EXPR);
+            finalActionsBuilder.add(DropNoRoute.INSTANCE);
           }
           break;
 
         case DROP_NULL_ROUTE:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = NodeDropNullRoute.expr(finalNode);
+              BooleanExpr drop = new NodeDropNullRoute(finalNode);
               finalActionsBuilder.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropNullRoute.EXPR);
+            finalActionsBuilder.add(DropNullRoute.INSTANCE);
           }
           break;
 
@@ -180,11 +181,11 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     // check transit constraints (unordered)
     BooleanExpr transitExpr = null;
     for (String nodeName : _transitNodes) {
-      transitExpr = NodeTransit.expr(nodeName);
+      transitExpr = new NodeTransit(nodeName);
       queryConditionsBuilder.add(transitExpr);
     }
     for (String nodeName : _notTransitNodes) {
-      transitExpr = NodeTransit.expr(nodeName);
+      transitExpr = new NodeTransit(nodeName);
       queryConditionsBuilder.add(new NotExpr(transitExpr));
     }
 
@@ -193,16 +194,17 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     queryConditionsBuilder.add(matchHeaderSpace);
     AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
 
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.EXPR);
+    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
     for (RuleExpr originateRule : originateRules) {
       BoolExpr originateBoolExpr =
-          BoolExprTransformer.toBoolExpr(originateRule.getSubExpression(), baseProgram);
+          BoolExprTransformer.toBoolExpr(originateRule.getSubExpression(), input, baseProgram);
       rules.add(originateBoolExpr);
     }
-    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), baseProgram));
-    QueryExpr query = new QueryExpr(Query.EXPR);
-    BoolExpr queryBoolExpr = BoolExprTransformer.toBoolExpr(query.getSubExpression(), baseProgram);
+    rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
+    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    BoolExpr queryBoolExpr =
+        BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);
     return program;
   }

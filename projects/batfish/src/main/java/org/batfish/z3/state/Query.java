@@ -1,46 +1,29 @@
 package org.batfish.z3.state;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class Query extends State<Query, org.batfish.z3.state.Query.Parameterization> {
+public class Query extends StateExpr {
 
-  public static class Parameterization implements StateParameterization<Query> {
-    private static final Parameterization INSTANCE = new Parameterization();
+  public static class State extends StateExpr.State {
 
-    private Parameterization() {}
+    public static final State INSTANCE = new State();
+
+    private State() {}
 
     @Override
-    public String getNodName(String baseName) {
-      return NAME;
+    public void accept(StateVisitor visitor) {
+      visitor.visitQuery(this);
     }
   }
 
-  private static final Set<Transition<Query>> DEFAULT_TRANSITIONS = ImmutableSet.of();
+  public static final Query INSTANCE = new Query();
 
-  public static final StateExpr<Query, Parameterization> EXPR;
-
-  public static final Query INSTANCE;
-
-  public static final String NAME = String.format("S_%s", Query.class.getSimpleName());
-
-  static {
-    INSTANCE = new Query();
-    EXPR = INSTANCE.buildStateExpr(Parameterization.INSTANCE);
-  }
-
-  private Query() {
-    super(NAME);
-  }
+  private Query() {}
 
   @Override
-  public void accept(StateVisitor visitor) {
+  public void accept(StateExprVisitor visitor) {
     visitor.visitQuery(this);
-  }
-
-  @Override
-  protected Set<Transition<Query>> getDefaultTransitions() {
-    return DEFAULT_TRANSITIONS;
   }
 }

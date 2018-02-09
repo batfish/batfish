@@ -10,10 +10,8 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.State.StateExpr;
-import org.batfish.z3.state.StateParameterization;
 
 public interface BooleanExprVisitor {
 
@@ -37,8 +35,7 @@ public interface BooleanExprVisitor {
 
   void visitSaneExpr(SaneExpr saneExpr);
 
-  <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-      StateExpr<T, P> stateExpr);
+  void visitStateExpr(StateExpr stateExpr);
 
   void visitTrueExpr(TrueExpr trueExpr);
 }

@@ -1,6 +1,7 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
 import java.util.List;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.AndExpr;
@@ -25,11 +26,9 @@ import org.batfish.z3.expr.QueryExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.State.StateExpr;
-import org.batfish.z3.state.StateParameterization;
 
 public class ExprPrinter implements ExprVisitor {
 
@@ -154,8 +153,7 @@ public class ExprPrinter implements ExprVisitor {
     }
 
     @Override
-    public <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-        StateExpr<T, P> stateExpr) {
+    public void visitStateExpr(StateExpr stateExpr) {
       _isComplex = true;
     }
 
@@ -170,6 +168,11 @@ public class ExprPrinter implements ExprVisitor {
     }
   }
 
+  private static final List<Expr> HEADER_VARIABLE_EXPRS =
+      Arrays.stream(HeaderField.values())
+          .map(hf -> new IdExpr(hf.name()))
+          .collect(ImmutableList.toImmutableList());
+
   public static String print(Expr expr) {
     ExprPrinter printer = new ExprPrinter();
     expr.accept(printer);
@@ -181,8 +184,7 @@ public class ExprPrinter implements ExprVisitor {
   private final StringBuilder _sb;
 
   private ExprPrinter() {
-    _sb = new StringBuilder();
-    _indent = 0;
+    this(new StringBuilder(), 0);
   }
 
   private ExprPrinter(StringBuilder sb, int indent) {
@@ -394,12 +396,12 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-      StateExpr<T, P> stateExpr) {
+  public void visitStateExpr(StateExpr stateExpr) {
+    /* TODO: handle vectorized state parameters as variables */
     printCollapsedComplexExpr(
         ImmutableList.<Expr>builder()
-            .add(new IdExpr(stateExpr.getParameterization().getNodName(stateExpr.getBaseName())))
-            .addAll(StateExpr.VARIABLES)
+            .add(new IdExpr(stateExpr.getClass().getSimpleName()))
+            .addAll(HEADER_VARIABLE_EXPRS)
             .build());
   }
 

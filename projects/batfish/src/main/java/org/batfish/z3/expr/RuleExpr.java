@@ -6,12 +6,12 @@ public class RuleExpr extends Statement {
 
   private final BooleanExpr _subExpression;
 
-  public RuleExpr(BooleanExpr subExpression) {
-    _subExpression = subExpression;
+  public RuleExpr(BooleanExpr antecedent, StateExpr consequent) {
+    _subExpression = new IfExpr(antecedent, consequent);
   }
 
-  public RuleExpr(BooleanExpr antecedent, BooleanExpr consequent) {
-    _subExpression = new IfExpr(antecedent, consequent);
+  public RuleExpr(StateExpr subExpression) {
+    _subExpression = subExpression;
   }
 
   @Override

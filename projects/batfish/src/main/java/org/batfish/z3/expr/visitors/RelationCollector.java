@@ -2,6 +2,7 @@ package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.CollapsedListExpr;
@@ -24,23 +25,24 @@ import org.batfish.z3.expr.QueryExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.State.StateExpr;
-import org.batfish.z3.state.StateParameterization;
 
 public class RelationCollector implements ExprVisitor {
 
-  public static Set<String> collectRelations(Expr expr) {
-    RelationCollector relationCollector = new RelationCollector();
+  public static Set<String> collectRelations(SynthesizerInput input, Expr expr) {
+    RelationCollector relationCollector = new RelationCollector(input);
     expr.accept(relationCollector);
     return relationCollector._relations.build();
   }
 
-  private ImmutableSet.Builder<String> _relations;
+  private final SynthesizerInput _input;
 
-  private RelationCollector() {
+  private final ImmutableSet.Builder<String> _relations;
+
+  private RelationCollector(SynthesizerInput input) {
+    _input = input;
     _relations = ImmutableSet.builder();
   }
 
@@ -141,9 +143,8 @@ public class RelationCollector implements ExprVisitor {
   }
 
   @Override
-  public <T extends State<T, ?>, P extends StateParameterization<T>> void visitStateExpr(
-      StateExpr<T, P> stateExpr) {
-    _relations.add(stateExpr.getParameterization().getNodName(stateExpr.getBaseName()));
+  public void visitStateExpr(StateExpr stateExpr) {
+    _relations.add(BoolExprTransformer.getNodName(_input, stateExpr));
   }
 
   @Override

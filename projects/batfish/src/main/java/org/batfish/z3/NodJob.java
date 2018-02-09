@@ -156,7 +156,8 @@ public final class NodJob extends BatfishJob<NodJobResult> {
     long elapsedTime;
     try (Context ctx = new Context()) {
       NodProgram baseProgram = _dataPlaneSynthesizer.synthesizeNodDataPlaneProgram(ctx);
-      NodProgram queryProgram = _querySynthesizer.getNodProgram(baseProgram);
+      NodProgram queryProgram =
+          _querySynthesizer.getNodProgram(_dataPlaneSynthesizer.getInput(), baseProgram);
       NodProgram program = baseProgram.append(queryProgram);
       Params p = ctx.mkParams();
       p.add("timeout", _settings.getZ3timeout());

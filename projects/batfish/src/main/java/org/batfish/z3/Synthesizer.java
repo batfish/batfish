@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import org.batfish.z3.expr.DeclareRelExpr;
 import org.batfish.z3.expr.DeclareVarExpr;
@@ -53,28 +52,9 @@ import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutInterface;
 import org.batfish.z3.state.Query;
-import org.batfish.z3.state.State;
-import org.batfish.z3.state.Transition;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class Synthesizer {
-
-  public static Map<String, FuncDecl> getRelDeclFuncDecls(
-      List<Statement> existingStatements, Context ctx) throws Z3Exception {
-    return ImmutableSet.<String>builder()
-        .addAll(
-            existingStatements
-                .stream()
-                .map(RelationCollector::collectRelations)
-                .flatMap(Collection::stream)
-                .collect(ImmutableSet.toImmutableSet()))
-        .add(Query.NAME)
-        .build()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(), packetRel -> new DeclareRelExpr(packetRel).toFuncDecl(ctx)));
-  }
 
   public static List<Statement> getVarDeclExprs() {
     return Arrays.stream(HeaderField.values())
@@ -99,6 +79,27 @@ public class Synthesizer {
     _warnings = new ArrayList<>();
   }
 
+  public SynthesizerInput getInput() {
+    return _input;
+  }
+
+  public Map<String, FuncDecl> getRelDeclFuncDecls(List<Statement> existingStatements, Context ctx)
+      throws Z3Exception {
+    return ImmutableSet.<String>builder()
+        .addAll(
+            existingStatements
+                .stream()
+                .map(s -> RelationCollector.collectRelations(_input, s))
+                .flatMap(Collection::stream)
+                .collect(ImmutableSet.toImmutableSet()))
+        .add(BoolExprTransformer.getNodName(_input, Query.INSTANCE))
+        .build()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(), packetRel -> new DeclareRelExpr(packetRel).toFuncDecl(ctx)));
+  }
+
   public List<String> getWarnings() {
     return _warnings;
   }
@@ -107,48 +108,52 @@ public class Synthesizer {
       throws Z3Exception {
     return synthesizeNodProgram(
         ctx,
-        DefaultTransitionGenerator.generateTransitions(
-            ImmutableSet.of(
-                AclDeny.INSTANCE,
-                AclLineMatch.INSTANCE,
-                AclLineNoMatch.INSTANCE,
-                AclPermit.INSTANCE),
-            _input));
+        ImmutableList.<Statement>copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                _input,
+                ImmutableSet.of(
+                    AclDeny.State.INSTANCE,
+                    AclLineMatch.State.INSTANCE,
+                    AclLineNoMatch.State.INSTANCE,
+                    AclPermit.State.INSTANCE))));
   }
 
   public NodProgram synthesizeNodDataPlaneProgram(Context ctx) throws Z3Exception {
-    return synthesizeNodProgram(ctx, DefaultTransitionGenerator.generateTransitions(
-        ImmutableSet.of(
-            Accept.INSTANCE,
-            AclDeny.INSTANCE,
-            AclLineMatch.INSTANCE,
-            AclLineNoMatch.INSTANCE,
-            AclPermit.INSTANCE,
-            Drop.INSTANCE,
-            DropAcl.INSTANCE,
-            DropAclIn.INSTANCE,
-            DropAclOut.INSTANCE,
-            DropNoRoute.INSTANCE,
-            DropNullRoute.INSTANCE,
-            NodeAccept.INSTANCE,
-            NodeDrop.INSTANCE,
-            NodeDropAcl.INSTANCE,
-            NodeDropAclIn.INSTANCE,
-            NodeDropAclOut.INSTANCE,
-            NodeDropNoRoute.INSTANCE,
-            NodeDropNullRoute.INSTANCE,
-            NodeTransit.INSTANCE,
-            Originate.INSTANCE,
-            OriginateVrf.INSTANCE,
-            PostIn.INSTANCE,
-            PostInInterface.INSTANCE,
-            PostInVrf.INSTANCE,
-            PostOutInterface.INSTANCE,
-            PreInInterface.INSTANCE,
-            PreOut.INSTANCE,
-            PreOutEdge.INSTANCE,
-            PreOutInterface.INSTANCE),
-        _input));
+    return synthesizeNodProgram(
+        ctx,
+        ImmutableList.<Statement>copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                _input,
+                ImmutableSet.of(
+                    Accept.State.INSTANCE,
+                    AclDeny.State.INSTANCE,
+                    AclLineMatch.State.INSTANCE,
+                    AclLineNoMatch.State.INSTANCE,
+                    AclPermit.State.INSTANCE,
+                    Drop.State.INSTANCE,
+                    DropAcl.State.INSTANCE,
+                    DropAclIn.State.INSTANCE,
+                    DropAclOut.State.INSTANCE,
+                    DropNoRoute.State.INSTANCE,
+                    DropNullRoute.State.INSTANCE,
+                    NodeAccept.State.INSTANCE,
+                    NodeDrop.State.INSTANCE,
+                    NodeDropAcl.State.INSTANCE,
+                    NodeDropAclIn.State.INSTANCE,
+                    NodeDropAclOut.State.INSTANCE,
+                    NodeDropNoRoute.State.INSTANCE,
+                    NodeDropNullRoute.State.INSTANCE,
+                    NodeTransit.State.INSTANCE,
+                    Originate.State.INSTANCE,
+                    OriginateVrf.State.INSTANCE,
+                    PostIn.State.INSTANCE,
+                    PostInInterface.State.INSTANCE,
+                    PostInVrf.State.INSTANCE,
+                    PostOutInterface.State.INSTANCE,
+                    PreInInterface.State.INSTANCE,
+                    PreOut.State.INSTANCE,
+                    PreOutEdge.State.INSTANCE,
+                    PreOutInterface.State.INSTANCE))));
   }
 
   private NodProgram synthesizeNodProgram(Context ctx, List<Statement> ruleStatements) {
@@ -178,7 +183,7 @@ public class Synthesizer {
       if (statement instanceof RuleExpr) {
         RuleExpr ruleExpr = (RuleExpr) statement;
         BoolExpr ruleBoolExpr =
-            BoolExprTransformer.toBoolExpr(ruleExpr.getSubExpression(), nodProgram);
+            BoolExprTransformer.toBoolExpr(ruleExpr.getSubExpression(), _input, nodProgram);
         rules.add(ruleBoolExpr);
       }
     }

@@ -1,59 +1,42 @@
 package org.batfish.z3.state;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
-import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class OriginateVrf
-    extends State<OriginateVrf, org.batfish.z3.state.OriginateVrf.Parameterization> {
+public class OriginateVrf extends StateExpr {
 
-  public static class Parameterization implements StateParameterization<OriginateVrf> {
+  public static class State extends StateExpr.State {
 
-    private final StateParameter _hostname;
+    public static final State INSTANCE = new State();
 
-    private final StateParameter _vrf;
-
-    public Parameterization(String hostname, String vrf) {
-      _hostname = new StateParameter(hostname, Type.NODE);
-      _vrf = new StateParameter(vrf, Type.VRF);
-    }
-
-    public StateParameter getHostname() {
-      return _hostname;
-    }
+    private State() {}
 
     @Override
-    public String getNodName(String baseName) {
-      return String.format("%s_%s_%s", BASE_NAME, _hostname.getId(), _vrf.getId());
-    }
-
-    public StateParameter getVrf() {
-      return _vrf;
+    public void accept(StateVisitor visitor) {
+      visitor.visitOriginateVrf(this);
     }
   }
 
-  public static final String BASE_NAME = String.format("S_%s", OriginateVrf.class.getSimpleName());
+  private final String _hostname;
 
-  private static final Set<Transition<OriginateVrf>> DEFAULT_TRANSITIONS = ImmutableSet.of();
+  private final String _vrf;
 
-  public static final OriginateVrf INSTANCE = new OriginateVrf();
-
-  public static StateExpr<OriginateVrf, Parameterization> expr(String hostname, String vrf) {
-    return INSTANCE.buildStateExpr(new Parameterization(hostname, vrf));
-  }
-
-  private OriginateVrf() {
-    super(BASE_NAME);
+  public OriginateVrf(String hostname, String vrf) {
+    _hostname = hostname;
+    _vrf = vrf;
   }
 
   @Override
-  public void accept(StateVisitor visitor) {
+  public void accept(StateExprVisitor visitor) {
     visitor.visitOriginateVrf(this);
   }
 
-  @Override
-  protected Set<Transition<OriginateVrf>> getDefaultTransitions() {
-    return DEFAULT_TRANSITIONS;
+  public String getHostname() {
+    return _hostname;
+  }
+
+  public String getVrf() {
+    return _vrf;
   }
 }
