@@ -222,7 +222,7 @@ public class ForwardingGraph {
    * when mapping from the concrete name to the ACL's node.
    */
   private String getAclName(String router, String ifaceName, IpAccessList acl, boolean in) {
-    return "ACL-" + "-" + (in ? "IN-" : "OUT-") + router + ifaceName + "-" + acl.getName();
+    return "ACL-" + (in ? "IN-" : "OUT-") + router + "-" + ifaceName + "-" + acl.getName();
   }
 
   /*
@@ -663,8 +663,8 @@ public class ForwardingGraph {
     GraphNode current = dst;
     GraphLink prev = predecessors[dst.getIndex()];
     while (prev != null) {
-      list.add(prev);
       current = prev.getSource();
+      list.add(prev);
       prev = predecessors[current.getIndex()];
     }
     return new Path(list, current, dst);
