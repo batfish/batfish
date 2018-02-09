@@ -80,11 +80,6 @@ public class RelationCollector implements ExprVisitor {
   }
 
   @Override
-  public void visitExpr(Expr expr) {
-    expr.accept(this);
-  }
-
-  @Override
   public void visitExtractExpr(ExtractExpr extractExpr) {}
 
   @Override

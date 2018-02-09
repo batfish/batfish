@@ -83,11 +83,6 @@ public class ExprPrinter implements ExprVisitor {
     }
 
     @Override
-    public void visitExpr(Expr expr) {
-      expr.accept(this);
-    }
-
-    @Override
     public void visitExtractExpr(ExtractExpr extractExpr) {
       _isComplex = true;
     }
@@ -291,12 +286,6 @@ public class ExprPrinter implements ExprVisitor {
 
   @Override
   public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public void visitExpr(Expr expr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

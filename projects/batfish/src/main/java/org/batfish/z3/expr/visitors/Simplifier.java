@@ -14,7 +14,6 @@ import org.batfish.z3.expr.DeclareRelExpr;
 import org.batfish.z3.expr.DeclareVarExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExpandedListExpr;
-import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -147,12 +146,6 @@ public class Simplifier implements ExprVisitor {
 
   @Override
   public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public void visitExpr(Expr expr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
