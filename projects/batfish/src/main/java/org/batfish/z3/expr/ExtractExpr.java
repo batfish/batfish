@@ -52,4 +52,9 @@ public class ExtractExpr extends IntExpr {
   public VarIntExpr getVar() {
     return _var;
   }
+
+  @Override
+  public int numBits() {
+    return _high - _low + 1;
+  }
 }

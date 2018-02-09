@@ -39,4 +39,9 @@ public class VarIntExpr extends IntExpr {
   public int hashCode() {
     return _headerField.hashCode();
   }
+
+  @Override
+  public int numBits() {
+    return _headerField.getSize();
+  }
 }

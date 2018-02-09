@@ -60,4 +60,9 @@ public class LitIntExpr extends IntExpr {
     result = prime * result + Long.hashCode(_num);
     return result;
   }
+
+  @Override
+  public int numBits() {
+    return _bits;
+  }
 }

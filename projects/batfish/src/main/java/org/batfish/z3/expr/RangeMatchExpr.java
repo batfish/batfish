@@ -23,13 +23,14 @@ public class RangeMatchExpr extends BooleanExpr {
           continue;
         }
         int bvLowBit = offset;
-        int bvHighBit = bvLowBit + numTrailingOnes;
+        int bvHighBit = bvLowBit + highestRemainingBitToUse;
         LitIntExpr remainingBitsToMatch =
             new LitIntExpr(remainingNumber, 0, highestRemainingBitToUse);
         IntExpr extractExpr = newExtractExpr(bv, numBits, bvLowBit, bvHighBit);
         EqExpr eqExpr = new EqExpr(extractExpr, remainingBitsToMatch);
         currentExpr = new AndExpr(ImmutableList.of(currentExpr, eqExpr));
         remainingNumber >>= numTrailingOnes;
+        offset += numTrailingOnes;
       } else {
         int numTrailingZeros = Long.numberOfTrailingZeros(remainingNumber);
         int highestRemainingBitToUse = numTrailingZeros - 1;
@@ -37,13 +38,14 @@ public class RangeMatchExpr extends BooleanExpr {
           continue;
         }
         int bvLowBit = offset;
-        int bvHighBit = bvLowBit + numTrailingZeros;
+        int bvHighBit = bvLowBit + highestRemainingBitToUse;
         LitIntExpr remainingBitsToMatch = new LitIntExpr(0L, 0, highestRemainingBitToUse);
         IntExpr extractExpr = newExtractExpr(bv, numBits, bvLowBit, bvHighBit);
         EqExpr eqExpr = new EqExpr(extractExpr, remainingBitsToMatch);
         NotExpr notExpr = new NotExpr(eqExpr);
         currentExpr = new OrExpr(ImmutableList.of(currentExpr, notExpr));
         remainingNumber >>= numTrailingZeros;
+        offset += numTrailingZeros;
       }
     }
     return currentExpr;
