@@ -47,7 +47,8 @@ public class GraphLink {
     return _index;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -60,7 +61,8 @@ public class GraphLink {
     return _index == graphLink._index;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return _index;
   }
 

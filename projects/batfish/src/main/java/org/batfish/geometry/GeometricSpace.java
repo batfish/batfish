@@ -207,8 +207,8 @@ public class GeometricSpace {
           disjoint = false;
           Collection<HyperRectangle> newRects1 = r1.divide(overlap);
           Collection<HyperRectangle> newRects2 = r2.divide(overlap);
-          assert(newRects1 != null);
-          assert(newRects2 != null);
+          assert (newRects1 != null);
+          assert (newRects2 != null);
           workListX.addAll(newRects2);
           for (HyperRectangle newRect : newRects1) {
             if (!newRect.equals(overlap)) {

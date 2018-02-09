@@ -491,7 +491,6 @@ public class ForwardingGraph {
 
   private BitSet actionFlags(Set<ForwardingAction> actions) {
     BitSet actionFlags = new BitSet();
-
     boolean accept = actions.contains(ForwardingAction.ACCEPT);
     boolean drop = actions.contains(ForwardingAction.DROP);
     boolean dropAclIn = actions.contains(ForwardingAction.DROP_ACL_IN);

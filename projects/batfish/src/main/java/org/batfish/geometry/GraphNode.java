@@ -23,7 +23,8 @@ public class GraphNode {
     return _name.equals("(none)");
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -36,7 +37,8 @@ public class GraphNode {
     return _index == graphNode._index;
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return _index;
   }
 

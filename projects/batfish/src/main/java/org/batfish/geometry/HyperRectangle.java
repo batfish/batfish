@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-
 /*
  * High-dimensional hyperrectangle.
  * For a 2D version of the rectangle, the bounds will be
