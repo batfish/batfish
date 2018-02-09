@@ -365,6 +365,7 @@ import org.batfish.grammar.cisco.CiscoParser.Match_ip_access_list_rm_stanzaConte
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_prefix_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_prefix_list_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
@@ -420,6 +421,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContex
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
@@ -3653,12 +3655,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else if (ctx.IPSEC() != null) {
         tunnel.setMode(TunnelMode.IPSEC);
       } else {
-        throw new BatfishException("unknown tunnel mode in " + ctx.getText());
+        todo(ctx, "unknown tunnel mode");
       }
       if (ctx.IPV4() != null) {
         tunnel.setProtocol(IpProtocol.IP);
       } else if (ctx.IPV6() != null) {
         tunnel.setProtocol(IpProtocol.IPV6);
+      } else {
+        todo(ctx, "unknown tunnel protocol");
       }
     }
   }
@@ -3685,7 +3689,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         iface.getTunnelInitIfNull().setSource(source);
       }
     } else {
-      todo(ctx, "handle <tunnel source [interface]>");
+      _configuration.referenceStructure(
+          CiscoStructureType.INTERFACE,
+          ctx.interface_name().getText(),
+          CiscoStructureUsage.TUNNEL_SOURCE,
+          ctx.interface_name().getStart().getLine());
+      todo(ctx, "tunnel source [interface]");
     }
   }
 
@@ -4299,6 +4308,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     RouteMapMatchIpv6PrefixListLine line =
         new RouteMapMatchIpv6PrefixListLine(names, statementLine);
     _currentRouteMapClause.addMatchLine(line);
+  }
+
+  @Override
+  public void exitMatch_source_protocol_rm_stanza(Match_source_protocol_rm_stanzaContext ctx) {
+    todo(ctx, "match source-protocol");
   }
 
   @Override
@@ -4995,6 +5009,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_area(Ro_areaContext ctx) {
     _currentOspfArea = null;
+  }
+
+  @Override
+  public void exitRo_area_filterlist(Ro_area_filterlistContext ctx) {
+    String prefixListName = ctx.list.getText();
+    _configuration.referenceStructure(
+        CiscoStructureType.PREFIX_LIST,
+        prefixListName,
+        CiscoStructureUsage.OSPF_AREA_FILTER_LIST,
+        ctx.list.getStart().getLine());
+    todo(ctx, "ospf area filter-list");
   }
 
   @Override

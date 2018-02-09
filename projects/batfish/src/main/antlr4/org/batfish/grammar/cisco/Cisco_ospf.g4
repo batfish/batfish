@@ -34,7 +34,7 @@ ro_area_filterlist
       area_int = DEC
       | area_ip = IP_ADDRESS
    )
-   FILTER_LIST PREFIX list = VARIABLE (IN | OUT)
+   FILTER_LIST PREFIX list = variable (IN | OUT)
    NEWLINE
 ;
 
