@@ -28,7 +28,6 @@ import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.state.StateParameter.Type;
-import org.batfish.z3.state.Transition;
 
 public class SynthesizerInput {
 
@@ -43,8 +42,6 @@ public class SynthesizerInput {
 
     private Set<String> _disabledNodes;
 
-    private Map<String, Set<Class<? extends Transition<?>>>> _disabledTransitions;
-
     private Map<String, Set<String>> _disabledVrfs;
 
     private boolean _simplify;
@@ -55,7 +52,6 @@ public class SynthesizerInput {
       _disabledAcls = ImmutableMap.of();
       _disabledInterfaces = ImmutableMap.of();
       _disabledNodes = ImmutableSet.of();
-      _disabledTransitions = ImmutableMap.of();
       _disabledVrfs = ImmutableMap.of();
       _simplify = false;
       _vectorizedParameters = ImmutableSet.of();
@@ -68,7 +64,6 @@ public class SynthesizerInput {
           _disabledAcls,
           _disabledInterfaces,
           _disabledNodes,
-          _disabledTransitions,
           _disabledVrfs,
           _simplify,
           _vectorizedParameters);
@@ -96,12 +91,6 @@ public class SynthesizerInput {
 
     public Builder setDisabledNodes(Set<String> disabledNodes) {
       _disabledNodes = disabledNodes;
-      return this;
-    }
-
-    public Builder setDisabledTransitions(
-        Map<String, Set<Class<? extends Transition<?>>>> disabledTransitions) {
-      _disabledTransitions = disabledTransitions;
       return this;
     }
 
@@ -140,8 +129,6 @@ public class SynthesizerInput {
 
   private final Set<String> _disabledNodes;
 
-  private final Map<String, Set<Class<? extends Transition<?>>>> _disabledTransitions;
-
   private final Map<String, Set<String>> _disabledVrfs;
 
   private final Set<Edge> _edges;
@@ -179,7 +166,6 @@ public class SynthesizerInput {
       Map<String, Set<String>> disabledAcls,
       Map<String, Set<String>> disabledInterfaces,
       Set<String> disabledNodes,
-      Map<String, Set<Class<? extends Transition<?>>>> disabledTransitions,
       Map<String, Set<String>> disabledVrfs,
       boolean simplify,
       Set<Type> vectorizedParameters) {
@@ -191,7 +177,6 @@ public class SynthesizerInput {
     _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
     _disabledNodes = ImmutableSet.copyOf(disabledNodes);
     _disabledVrfs = ImmutableMap.copyOf(disabledVrfs);
-    _disabledTransitions = ImmutableMap.copyOf(disabledTransitions);
     _enabledNodes = computeEnabledNodes();
     _enabledVrfs = computeEnabledVrfs();
     _enabledInterfaces = computeEnabledInterfaces();
@@ -488,10 +473,6 @@ public class SynthesizerInput {
    */
   public Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions() {
     return _aclConditions;
-  }
-
-  public Map<String, Set<Class<? extends Transition<?>>>> getDisabledTransitions() {
-    return _disabledTransitions;
   }
 
   /**
