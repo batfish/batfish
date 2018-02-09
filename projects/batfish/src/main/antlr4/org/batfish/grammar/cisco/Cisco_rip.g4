@@ -13,7 +13,11 @@ rr_default_metric
 
 rr_default_information
 :
-   DEFAULT_INFORMATION ORIGINATE NEWLINE
+   DEFAULT_INFORMATION ORIGINATE 
+   (
+      ON_PASSIVE
+      | ROUTE_MAP map = variable
+   )? NEWLINE
 ;
 
 rr_distance

@@ -7343,6 +7343,11 @@ ON_FAILURE
    'on-failure'
 ;
 
+ON_PASSIVE
+:
+   'on-passive'
+;
+
 ON_STARTUP
 :
    'on-startup'
