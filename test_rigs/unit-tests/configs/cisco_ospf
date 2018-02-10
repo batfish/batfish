@@ -23,6 +23,7 @@ router ospf 1
   area 0.0.0.0 filter-list prefix filterName out
   area 0.0.0.0 nssa
   area 0.0.0.0 nssa default-information-originate
+  area 0.0.0.0 nssa default-information-originate metric 5
   area 0.0.0.0 nssa default-information-originate metric-type 1
   area 0.0.0.0 nssa no-redistribution
   area 0.0.0.0 nssa no-redistribution no-summary

@@ -219,7 +219,6 @@ extended_access_list_additional_feature
    | NEIGHBOR
    | NETWORK_UNKNOWN
    | NET_UNREACHABLE
-   | NO_ROUTE
    | PACKET_TOO_BIG
    | PARAMETER_PROBLEM
    | PORT_UNREACHABLE

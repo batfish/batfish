@@ -222,37 +222,12 @@ cops_listener
    LISTENER
    (
       copsl_access_list
-      | copsl_null
    )
 ;
 
 copsl_access_list
 :
    ACCESS_LIST name = variable_permissive NEWLINE
-;
-
-copsl_null
-:
-   NO?
-   (
-      ADMIN_STATE
-      | AIS_SHUT
-      | ALARM_REPORT
-      | CABLELENGTH
-      | CHANNEL_GROUP
-      | CLOCK
-      | DESCRIPTION
-      | FDL
-      | FRAMING
-      | G709
-      | LINECODE
-      | PM
-      | PRI_GROUP
-      | PROACTIVE
-      | SHUTDOWN
-      | STS_1
-      | WAVELENGTH
-   ) ~NEWLINE* NEWLINE
 ;
 
 cp_ip_access_group
@@ -1086,8 +1061,7 @@ ip_route_tail
       | prefix = IP_PREFIX
    )
    (
-      global = GLOBAL
-      | nexthopip = IP_ADDRESS
+      nexthopip = IP_ADDRESS
       | nexthopprefix = IP_PREFIX
       | GLOBAL
       | nexthopint = interface_name

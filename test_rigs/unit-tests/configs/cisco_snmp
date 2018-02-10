@@ -69,6 +69,7 @@ snmp-server group cenic-nms v2c IPv4 auth
 snmp-server host 10.1.2.3 xyx
 snmp-server host 10.1.2.3 use-vrf management
 snmp-server host 10.1.2.3 version 2c dummycommunity 
+snmp-server host 10.1.2.3 vrf mangement
 snmp-server host 10.1.2.3 informs version 2c dummycommunity
 snmp-server ifindex persist
 snmp-server ifmib stats cache
