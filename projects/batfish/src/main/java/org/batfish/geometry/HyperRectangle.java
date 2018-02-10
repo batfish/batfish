@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 public class HyperRectangle implements Comparable<HyperRectangle> {
 
   private long[] _bounds;
+
   private int _alphaIndex;
 
   HyperRectangle(long[] bounds) {

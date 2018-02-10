@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,6 +87,9 @@ public class ForwardingGraph {
   private static int DROP_NULL_ROUTE_FLAG = 5;
   private static int DROP_NO_ROUTE_FLAG = 6;
 
+  // Factory for creating shapes
+  private GeometricSpaceFactory _factory;
+
   // Equivalence classes indexed from 0
   private ArrayList<HyperRectangle> _ecs;
 
@@ -130,12 +134,16 @@ public class ForwardingGraph {
     _batfish = batfish;
     initGraph(batfish, dp);
 
-    HyperRectangle fullRange = GeometricSpace.fullSpace();
+    // only model fields that are used in the configs
+    EnumSet<PacketField> fields = findRelevantPacketFields(batfish);
+    _factory = new GeometricSpaceFactory(fields);
+
+    HyperRectangle fullRange = _factory.fullSpace();
     fullRange.setAlphaIndex(0);
     _ecs = new ArrayList<>();
     _ecs.add(fullRange);
     _ownerMap = new ArrayList<>();
-    _kdtree = new KDTree(GeometricSpace.NUM_FIELDS);
+    _kdtree = new KDTree(_factory.numFields());
     _kdtree.insert(fullRange);
     _dag = new HashMap<>();
     _dag.put(0, new HashSet<>());
@@ -197,43 +205,56 @@ public class ForwardingGraph {
   }
 
   /*
-   * Create a Rule from a FIB entry. The link corresponds to the
-   * FIB next hop, and the priority is just the prefix length.
+   * Finds what packet fields are actually matched somewhere in the configurations
    */
-  private Rule createFibRule(String router, FibRow fib) {
-    NodeInterfacePair nip = new NodeInterfacePair(router, fib.getInterface());
-    GraphLink link = _linkMap.get(nip);
-    Prefix p = fib.getPrefix();
-    long start = p.getStartIp().asLong();
-    long end = p.getEndIp().asLong() + 1;
-    HyperRectangle hr = GeometricSpace.fullSpace();
-    hr.getBounds()[0] = start;
-    hr.getBounds()[1] = end;
-    return new Rule(link, hr, fib.getPrefix().getPrefixLength());
-  }
-
-  /*
-   * Create a rule from an ACL line. The link is either to the drop
-   * node or to the neighbor. The priority the inverse of the line number
-   */
-  private Rule createAclRule(
-      @Nullable IpAccessListLine aclLine, GraphLink drop, GraphLink accept, int priority) {
-    if (aclLine == null) {
-      HyperRectangle rect = GeometricSpace.fullSpace();
-      return new Rule(drop, rect, priority);
-    } else {
-      GeometricSpace space = GeometricSpace.fromAcl(aclLine);
-      GraphLink link = (aclLine.getAction() == LineAction.ACCEPT ? accept : drop);
-      return new Rule(link, space.rectangles().get(0), priority);
+  private EnumSet<PacketField> findRelevantPacketFields(Batfish batfish) {
+    EnumSet<PacketField> fields = EnumSet.noneOf(PacketField.class);
+    fields.add(PacketField.DSTIP);
+    Map<String, Configuration> configs = batfish.loadConfigurations();
+    for (Configuration config : configs.values()) {
+      for (Interface iface : config.getInterfaces().values()) {
+        if (iface.getOutgoingFilter() != null) {
+          addFields(iface.getOutgoingFilter(), fields);
+        }
+        if (iface.getIncomingFilter() != null) {
+          addFields(iface.getIncomingFilter(), fields);
+        }
+      }
     }
+    return fields;
   }
 
-  /*
-   * Ensure that we make ACL names unique to avoid conflicts
-   * when mapping from the concrete name to the ACL's node.
-   */
-  private String getAclName(String router, String ifaceName, IpAccessList acl, boolean in) {
-    return "ACL-" + (in ? "IN-" : "OUT-") + router + "-" + ifaceName + "-" + acl.getName();
+  private void addFields(IpAccessList acl, EnumSet<PacketField> fields) {
+    for (IpAccessListLine aclLine : acl.getLines()) {
+      if (!aclLine.getSrcIps().isEmpty()) {
+        fields.add(PacketField.SRCIP);
+      }
+      if (!aclLine.getDstPorts().isEmpty()) {
+        fields.add(PacketField.DSTPORT);
+      }
+      if (!aclLine.getSrcPorts().isEmpty()) {
+        fields.add(PacketField.SRCPORT);
+      }
+      if (!aclLine.getIpProtocols().isEmpty()) {
+        fields.add(PacketField.IPPROTO);
+      }
+      if (!aclLine.getIcmpTypes().isEmpty()) {
+        fields.add(PacketField.ICMPTYPE);
+      }
+      if (!aclLine.getIcmpCodes().isEmpty()) {
+        fields.add(PacketField.ICMPCODE);
+      }
+      if (!aclLine.getTcpFlags().isEmpty()) {
+        fields.add(PacketField.TCPACK);
+        fields.add(PacketField.TCPCWR);
+        fields.add(PacketField.TCPECE);
+        fields.add(PacketField.TCPFIN);
+        fields.add(PacketField.TCPPSH);
+        fields.add(PacketField.TCPRST);
+        fields.add(PacketField.TCPSYN);
+        fields.add(PacketField.TCPURG);
+      }
+    }
   }
 
   /*
@@ -407,14 +428,54 @@ public class ForwardingGraph {
     }
   }
 
-  private void showStatus() {
+  /*
+   * Create a Rule from a FIB entry. The link corresponds to the
+   * FIB next hop, and the priority is just the prefix length.
+   */
+  private Rule createFibRule(String router, FibRow fib) {
+    NodeInterfacePair nip = new NodeInterfacePair(router, fib.getInterface());
+    GraphLink link = _linkMap.get(nip);
+    Prefix p = fib.getPrefix();
+    long start = p.getStartIp().asLong();
+    long end = p.getEndIp().asLong() + 1;
+    HyperRectangle hr = _factory.fullSpace();
+    hr.getBounds()[0] = start;
+    hr.getBounds()[1] = end;
+    return new Rule(link, hr, fib.getPrefix().getPrefixLength());
+  }
+
+  /*
+   * Create a rule from an ACL line. The link is either to the drop
+   * node or to the neighbor. The priority the inverse of the line number
+   */
+  private Rule createAclRule(
+      @Nullable IpAccessListLine aclLine, GraphLink drop, GraphLink accept, int priority) {
+    if (aclLine == null) {
+      HyperRectangle rect = _factory.fullSpace();
+      return new Rule(drop, rect, priority);
+    } else {
+      GeometricSpace space = _factory.fromAcl(aclLine);
+      GraphLink link = (aclLine.getAction() == LineAction.ACCEPT ? accept : drop);
+      return new Rule(link, space.rectangles().get(0), priority);
+    }
+  }
+
+  /*
+   * Ensure that we make ACL names unique to avoid conflicts
+   * when mapping from the concrete name to the ACL's node.
+   */
+  private String getAclName(String router, String ifaceName, IpAccessList acl, boolean in) {
+    return "ACL-" + (in ? "IN-" : "OUT-") + router + "-" + ifaceName + "-" + acl.getName();
+  }
+
+  /* private void showStatus() {
     System.out.println("=====================");
     for (int i = 0; i < _ecs.size(); i++) {
       HyperRectangle r = _ecs.get(i);
       System.out.println(i + " --> " + r);
     }
     System.out.println("=====================");
-  }
+  } */
 
   /*
    * Does a deep copy of the map from one equivalence class to another.
@@ -474,6 +535,18 @@ public class ForwardingGraph {
    * An alternative representation of ECs, which is similar to
    * the difference of cubes representation.
    */
+  private void addRuleDoc(Rule r) {
+    HyperRectangle hr = r.getRectangle();
+    List<HyperRectangle> overlapping = new ArrayList<>();
+    List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
+    Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
+    List<HyperRectangle> others = _kdtree.intersect(hr);
+    for (HyperRectangle other : others) {
+      addRuleDocRec(hr, other, others, cache, overlapping, delta);
+    }
+    updateRules(r, overlapping, delta);
+  }
+
   private Tuple<BigInteger, Integer> addRuleDocRec(
       HyperRectangle added,
       HyperRectangle other,
@@ -482,11 +555,8 @@ public class ForwardingGraph {
       List<HyperRectangle> overlapping,
       List<Tuple<HyperRectangle, HyperRectangle>> delta) {
 
-    // System.out.println("  Recursive call for " + other.getAlphaIndex());
-
     Tuple<BigInteger, Integer> cachedValue = cache.get(other.getAlphaIndex());
     if (cachedValue != null) {
-      // System.out.println("    is cached: " + cachedValue);
       return cachedValue;
     }
 
@@ -496,12 +566,10 @@ public class ForwardingGraph {
       Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
       if (childIndices != null && childIndices.contains(o.getAlphaIndex())) {
         HyperRectangle child = _ecs.get(o.getAlphaIndex());
-        // System.out.println("    got child: " + child);
         Tuple<BigInteger, Integer> tup =
             addRuleDocRec(added, child, others, cache, overlapping, delta);
         BigInteger vol = tup.getFirst();
         Integer ec = tup.getSecond();
-        // System.out.println("    child returned ec: " + (ec == null ? "null" : _ecs.get(ec)));
         childrenVolume = childrenVolume.add(vol);
         if (ec != null) {
           ecs.add(ec);
@@ -514,10 +582,7 @@ public class ForwardingGraph {
     BigInteger overlapVolume = overlap.volume();
     BigInteger volume = overlapVolume.subtract(childrenVolume);
 
-    // System.out.println("    overlap is: " + overlap);
-
     if (other.equals(overlap)) {
-      // System.out.println("    other equals overlap");
       overlapping.add(other);
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
       cache.put(other.getAlphaIndex(), ret);
@@ -525,54 +590,33 @@ public class ForwardingGraph {
     }
 
     if (volume.compareTo(BigInteger.ZERO) > 0) {
-      // System.out.println("    Non-zero volume here");
       overlap.setAlphaIndex(_ecs.size());
-      // System.out.println("    adding overlap with index: " + overlap.getAlphaIndex());
       _ecs.add(overlap);
       _ownerMap.add(null);
-      // System.out.println("    extending ownermap to have size: " + _ownerMap.size());
       overlapping.add(overlap);
       _kdtree.insert(overlap);
       Set<Integer> subsumes = new HashSet<>();
       _dag.put(overlap.getAlphaIndex(), subsumes);
       _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
       delta.add(new Tuple<>(other, overlap));
-      // System.out.println(
-      //    "    adding dag edge from: " + other.getAlphaIndex() + " to " +
-      // overlap.getAlphaIndex());
       for (Integer ec : ecs) {
         subsumes.add(ec);
         delta.add(new Tuple<>(overlap, _ecs.get(ec)));
-        // System.out.println("    adding dag edge from " + overlap.getAlphaIndex() + " to " + ec);
       }
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, overlap.getAlphaIndex());
       cache.put(other.getAlphaIndex(), ret);
       return ret;
     }
 
-    // System.out.println("    default return");
     Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, null);
     cache.put(other.getAlphaIndex(), ret);
     return ret;
   }
 
-  private void addRuleDoc(Rule r) {
-    // showStatus();
-    // System.out.println("Add rule DOC: " + r.getRectangle());
-    HyperRectangle hr = r.getRectangle();
-    // System.out.println("Rule: " + hr);
-    List<HyperRectangle> overlapping = new ArrayList<>();
-    List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
-    Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
-    List<HyperRectangle> others = _kdtree.intersect(hr);
-    for (HyperRectangle other : others) {
-      // System.out.println("  Possible overlap with: " + other);
-      addRuleDocRec(hr, other, others, cache, overlapping, delta);
-    }
-
-    updateRules(r, overlapping, delta);
-  }
-
+  /*
+   * Given a collection of new ECs and a set of overlapping ECs,
+   * and a Rule, it updates the edge labelled graph accordingly.
+   */
   private void updateRules(
       Rule r, List<HyperRectangle> overlapping, List<Tuple<HyperRectangle, HyperRectangle>> delta) {
     // Update new rules
@@ -666,7 +710,7 @@ public class ForwardingGraph {
     BitSet flags = actionFlags(actions);
 
     // Pick out the relevant equivalence classes
-    GeometricSpace space = GeometricSpace.fromHeaderSpace(h);
+    GeometricSpace space = _factory.fromHeaderSpace(h);
     Map<HyperRectangle, HyperRectangle> canonicalChoices = new HashMap<>();
     for (HyperRectangle rect : space.rectangles()) {
       List<HyperRectangle> relevant = _kdtree.intersect(rect);
@@ -684,7 +728,7 @@ public class ForwardingGraph {
           reachable(equivClass.getAlphaIndex(), flags, sources, sinks);
       if (tup != null) {
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
-        return createReachabilityAnswer(GeometricSpace.example(overlap), tup);
+        return createReachabilityAnswer(_factory.example(overlap), tup);
       }
     }
     System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
@@ -698,33 +742,50 @@ public class ForwardingGraph {
   private AnswerElement createReachabilityAnswer(HeaderSpace h, Tuple<Path, FlowDisposition> tup) {
     FlowHistory fh = new FlowHistory();
 
-    TcpFlags flags = h.getTcpFlags().get(0);
-    int tcpCwr = flags.getCwr() ? 1 : 0;
-    int tcpEce = flags.getEce() ? 1 : 0;
-    int tcpUrg = flags.getUrg() ? 1 : 0;
-    int tcpAck = flags.getAck() ? 1 : 0;
-    int tcpPsh = flags.getPsh() ? 1 : 0;
-    int tcpRst = flags.getRst() ? 1 : 0;
-    int tcpSyn = flags.getSyn() ? 1 : 0;
-    int tcpFin = flags.getFin() ? 1 : 0;
-
     Flow.Builder b = new Flow.Builder();
     b.setIngressNode(tup.getFirst().getSource().getName());
-    b.setSrcIp(h.getSrcIps().first().getIp());
-    b.setDstIp(h.getDstIps().first().getIp());
-    b.setSrcPort(h.getSrcPorts().first().getStart());
-    b.setDstPort(h.getDstPorts().first().getStart());
-    b.setIpProtocol(h.getIpProtocols().first());
-    b.setIcmpType(h.getIcmpTypes().first().getStart());
-    b.setIcmpCode(h.getIcmpCodes().first().getStart());
-    b.setTcpFlagsCwr(tcpCwr);
-    b.setTcpFlagsEce(tcpEce);
-    b.setTcpFlagsUrg(tcpUrg);
-    b.setTcpFlagsAck(tcpAck);
-    b.setTcpFlagsPsh(tcpPsh);
-    b.setTcpFlagsRst(tcpRst);
-    b.setTcpFlagsSyn(tcpSyn);
-    b.setTcpFlagsFin(tcpFin);
+    if (!h.getSrcIps().isEmpty()) {
+      b.setSrcIp(h.getSrcIps().first().getIp());
+    }
+    if (!h.getDstIps().isEmpty()) {
+      b.setDstIp(h.getDstIps().first().getIp());
+    }
+    if (!h.getSrcPorts().isEmpty()) {
+      b.setSrcPort(h.getSrcPorts().first().getStart());
+    }
+    if (!h.getDstPorts().isEmpty()) {
+      b.setDstPort(h.getDstPorts().first().getStart());
+    }
+    if (!h.getIpProtocols().isEmpty()) {
+      b.setIpProtocol(h.getIpProtocols().first());
+    }
+    if (!h.getIcmpTypes().isEmpty()) {
+      b.setIcmpType(h.getIcmpTypes().first().getStart());
+    }
+    if (!h.getIcmpCodes().isEmpty()) {
+      b.setIcmpCode(h.getIcmpCodes().first().getStart());
+    }
+
+    if (!h.getTcpFlags().isEmpty()) {
+      TcpFlags flags = h.getTcpFlags().get(0);
+      int tcpCwr = flags.getCwr() ? 1 : 0;
+      int tcpEce = flags.getEce() ? 1 : 0;
+      int tcpUrg = flags.getUrg() ? 1 : 0;
+      int tcpAck = flags.getAck() ? 1 : 0;
+      int tcpPsh = flags.getPsh() ? 1 : 0;
+      int tcpRst = flags.getRst() ? 1 : 0;
+      int tcpSyn = flags.getSyn() ? 1 : 0;
+      int tcpFin = flags.getFin() ? 1 : 0;
+      b.setTcpFlagsCwr(tcpCwr);
+      b.setTcpFlagsEce(tcpEce);
+      b.setTcpFlagsUrg(tcpUrg);
+      b.setTcpFlagsAck(tcpAck);
+      b.setTcpFlagsPsh(tcpPsh);
+      b.setTcpFlagsRst(tcpRst);
+      b.setTcpFlagsSyn(tcpSyn);
+      b.setTcpFlagsFin(tcpFin);
+    }
+
     b.setTag("DELTANET");
 
     Flow flow = b.build();
