@@ -2734,8 +2734,6 @@ public class Client extends AbstractClient implements IClient {
     if (_settings.getTracingEnable() && !GlobalTracer.isRegistered()) {
       initTracer();
     }
-    SignalHandler handler = signal -> _logger.debugf("Client: Ignoring signal: %s\n", signal);
-    Signal.handle(new Signal("INT"), handler);
     loadPlugins();
     initHelpers();
     _logger.debugf(
@@ -2840,6 +2838,8 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private void runInteractive() {
+    SignalHandler handler = signal -> _logger.debugf("Client: Ignoring signal: %s\n", signal);
+    Signal.handle(new Signal("INT"), handler);
     try {
       while (!_exit) {
         try {
