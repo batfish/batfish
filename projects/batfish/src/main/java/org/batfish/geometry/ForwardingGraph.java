@@ -537,12 +537,13 @@ public class ForwardingGraph {
       _dag.put(overlap.getAlphaIndex(), subsumes);
       _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
       delta.add(new Tuple<>(other, overlap));
-      //System.out.println(
-      //    "    adding dag edge from: " + other.getAlphaIndex() + " to " + overlap.getAlphaIndex());
+      // System.out.println(
+      //    "    adding dag edge from: " + other.getAlphaIndex() + " to " +
+      // overlap.getAlphaIndex());
       for (Integer ec : ecs) {
         subsumes.add(ec);
         delta.add(new Tuple<>(overlap, _ecs.get(ec)));
-        //System.out.println("    adding dag edge from " + overlap.getAlphaIndex() + " to " + ec);
+        // System.out.println("    adding dag edge from " + overlap.getAlphaIndex() + " to " + ec);
       }
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, overlap.getAlphaIndex());
       cache.put(other.getAlphaIndex(), ret);

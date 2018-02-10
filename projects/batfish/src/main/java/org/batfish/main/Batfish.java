@@ -197,6 +197,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
+
   private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
   private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
   private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
