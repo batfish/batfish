@@ -197,6 +197,51 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
+  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
+  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
+  private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+      _cachedEnvironmentBgpTables;
+  private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+      _cachedEnvironmentRoutingTables;
+  private final List<TestrigSettings> _testrigSettingsStack;
+  private TestrigSettings _baseTestrigSettings;
+  private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
+  private TestrigSettings _deltaTestrigSettings;
+  private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
+  private BatfishLogger _logger;
+  private Settings _settings;
+  // this variable is used communicate with parent thread on how the job
+  // finished
+  private boolean _terminatedWithException;
+  private TestrigSettings _testrigSettings;
+  private boolean _monotonicCache;
+  private Map<String, DataPlanePlugin> _dataPlanePlugins;
+
+  public Batfish(
+      Settings settings,
+      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
+      Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+          cachedEnvironmentBgpTables,
+      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
+    super(settings.getSerializeToText());
+    _settings = settings;
+    _bgpTablePlugins = new TreeMap<>();
+    _cachedConfigurations = cachedConfigurations;
+    _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
+    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
+    _cachedDataPlanes = cachedDataPlanes;
+    _externalBgpAdvertisementPlugins = new TreeSet<>();
+    _testrigSettings = settings.getActiveTestrigSettings();
+    _baseTestrigSettings = settings.getBaseTestrigSettings();
+    _logger = _settings.getLogger();
+    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
+    _terminatedWithException = false;
+    _answererCreators = new HashMap<>();
+    _testrigSettingsStack = new ArrayList<>();
+    _dataPlanePlugins = new HashMap<>();
+  }
 
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, String testrig, String envName) {
@@ -428,65 +473,42 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return tree;
   }
 
-  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
+  /**
+   * Helper function to disable a blacklisted interface and update the given {@link
+   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
+   */
+  private static void blacklistInterface(
+      Map<String, Configuration> configurations,
+      ValidateEnvironmentAnswerElement veae,
+      NodeInterfacePair iface) {
+    String hostname = iface.getHostname();
+    String ifaceName = iface.getInterface();
+    @Nullable Configuration node = configurations.get(hostname);
+    if (node == null) {
+      veae.setValid(false);
+      veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
+      return;
+    }
 
-  private TestrigSettings _baseTestrigSettings;
+    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
+    if (nodeIface == null) {
+      veae.setValid(false);
+      veae.getUndefinedInterfaceBlacklistInterfaces()
+          .computeIfAbsent(hostname, k -> new TreeSet<>())
+          .add(ifaceName);
+      return;
+    }
 
-  private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
+    nodeIface.setActive(false);
+    nodeIface.setBlacklisted(true);
+  }
 
-  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
-
-  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
-
-  private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-      _cachedEnvironmentBgpTables;
-
-  private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
-      _cachedEnvironmentRoutingTables;
-
-  private TestrigSettings _deltaTestrigSettings;
-
-  private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
-
-  private BatfishLogger _logger;
-
-  private Settings _settings;
-
-  // this variable is used communicate with parent thread on how the job
-  // finished
-  private boolean _terminatedWithException;
-
-  private TestrigSettings _testrigSettings;
-
-  private final List<TestrigSettings> _testrigSettingsStack;
-
-  private boolean _monotonicCache;
-
-  private Map<String, DataPlanePlugin> _dataPlanePlugins;
-
-  public Batfish(
-      Settings settings,
-      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
-      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
-      Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-          cachedEnvironmentBgpTables,
-      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
-    super(settings.getSerializeToText());
-    _settings = settings;
-    _bgpTablePlugins = new TreeMap<>();
-    _cachedConfigurations = cachedConfigurations;
-    _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
-    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
-    _cachedDataPlanes = cachedDataPlanes;
-    _externalBgpAdvertisementPlugins = new TreeSet<>();
-    _testrigSettings = settings.getActiveTestrigSettings();
-    _baseTestrigSettings = settings.getBaseTestrigSettings();
-    _logger = _settings.getLogger();
-    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
-    _terminatedWithException = false;
-    _answererCreators = new HashMap<>();
-    _testrigSettingsStack = new ArrayList<>();
-    _dataPlanePlugins = new HashMap<>();
+  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
+    try {
+      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
+    } catch (IOException e) {
+      throw new BatfishException("Could not serialize " + objectName + " ", e);
+    }
   }
 
   private Answer analyze() {
@@ -1888,6 +1910,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _terminatedWithException;
   }
 
+  public void setTerminatedWithException(boolean terminatedWithException) {
+    _terminatedWithException = terminatedWithException;
+  }
+
   @Override
   public Directory getTestrigFileTree() {
     Path trPath = _testrigSettings.getTestRigPath();
@@ -3176,36 +3202,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     getDataPlanePlugin().processFlows(flows);
   }
 
-  /**
-   * Helper function to disable a blacklisted interface and update the given {@link
-   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
-   */
-  private static void blacklistInterface(
-      Map<String, Configuration> configurations,
-      ValidateEnvironmentAnswerElement veae,
-      NodeInterfacePair iface) {
-    String hostname = iface.getHostname();
-    String ifaceName = iface.getInterface();
-    @Nullable Configuration node = configurations.get(hostname);
-    if (node == null) {
-      veae.setValid(false);
-      veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
-      return;
-    }
-
-    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
-    if (nodeIface == null) {
-      veae.setValid(false);
-      veae.getUndefinedInterfaceBlacklistInterfaces()
-          .computeIfAbsent(hostname, k -> new TreeSet<>())
-          .add(ifaceName);
-      return;
-    }
-
-    nodeIface.setActive(false);
-    nodeIface.setBlacklisted(true);
-  }
-
   private void processInterfaceBlacklist(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
@@ -3749,14 +3745,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
-    try {
-      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
-    } catch (IOException e) {
-      throw new BatfishException("Could not serialize " + objectName + " ", e);
-    }
-  }
-
   private Answer serializeAwsConfigs(Path testRigPath, Path outputPath) {
     Answer answer = new Answer();
     Map<Path, String> configurationData =
@@ -4101,10 +4089,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _monotonicCache = monotonicCache;
   }
 
-  public void setTerminatedWithException(boolean terminatedWithException) {
-    _terminatedWithException = terminatedWithException;
-  }
-
   @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this, _settings);
@@ -4175,6 +4159,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private AnswerElement standardDeltanet(
+      BackendType backendType,
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
       Set<String> ingressNodes,
@@ -4182,7 +4167,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // String tag = getFlowTag(_testrigSettings);
     DataPlane dp = loadDataPlane();
     System.out.println("Create forwarding graph");
-    ForwardingGraph fg = new ForwardingGraph(this, dp);
+    ForwardingGraph fg = new ForwardingGraph(this, dp, backendType);
     return fg.reachable(headerSpace, actions, ingressNodes, finalNodes);
   }
 
@@ -4249,8 +4234,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
               "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
     }
 
-    if (backendType == BackendType.DELTANET) {
-      return standardDeltanet(headerSpace, actions, activeIngressNodes, activeFinalNodes);
+    if (backendType != BackendType.NOD) {
+      return standardDeltanet(
+          backendType, headerSpace, actions, activeIngressNodes, activeFinalNodes);
     }
 
     // build query jobs

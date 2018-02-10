@@ -1,11 +1,13 @@
 package org.batfish.geometry;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import scala.math.BigInt;
 
 /*
  * High-dimensional hyperrectangle.
@@ -119,6 +121,16 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
       }
     }
     return true;
+  }
+
+  BigInteger volume() {
+    BigInteger acc = BigInteger.ONE;
+    for (int i = 0; i < _bounds.length; i+=2) {
+      BigInteger b1 = BigInteger.valueOf(_bounds[0]);
+      BigInteger b2 = BigInteger.valueOf(_bounds[1]);
+      acc = acc.multiply(b2.subtract(b1));
+    }
+    return acc;
   }
 
   @Override
