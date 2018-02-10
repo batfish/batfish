@@ -22,6 +22,10 @@ public class Rule implements Comparable<Rule> {
     return _rectangle;
   }
 
+  public int getPriority() {
+    return _priority;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

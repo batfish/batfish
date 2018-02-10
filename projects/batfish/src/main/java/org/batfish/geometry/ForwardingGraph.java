@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -93,7 +94,7 @@ public class ForwardingGraph {
   // Equivalence classes indexed from 0
   private ArrayList<HyperRectangle> _ecs;
 
-  // Edges labelled with equivalence classes, indexed by equivalence class
+  // Edges labelled with equivalence classes, indexed by link id
   private BitSet[] _labels;
 
   // EC index to graph node, to set of rules for that EC on that node.
@@ -121,7 +122,7 @@ public class ForwardingGraph {
   private ArrayList<List<GraphLink>> _adjacencyLists;
 
   // A dag used to represent difference of cubes dependencies
-  private Map<Integer, Set<Integer>> _dag;
+  private ArrayList<Set<Integer>> _dag;
 
   private Batfish _batfish;
 
@@ -145,8 +146,8 @@ public class ForwardingGraph {
     _ownerMap = new ArrayList<>();
     _kdtree = new KDTree(_factory.numFields());
     _kdtree.insert(fullRange);
-    _dag = new HashMap<>();
-    _dag.put(0, new HashSet<>());
+    _dag = new ArrayList<>();
+    _dag.add(new HashSet<>());
 
     // initialize the labels
     _labels = new BitSet[_allLinks.size()];
@@ -189,6 +190,8 @@ public class ForwardingGraph {
       rules.add(r);
     }
 
+    // Sort the rules to ensure a deterministic order since they were stored in a hashmap
+    rules.sort(Comparator.comparing(Rule::getRectangle));
     // Deterministically shuffle the input to get a better balanced KD tree
     Random rand = new Random(7);
     Collections.shuffle(rules, rand);
@@ -592,11 +595,13 @@ public class ForwardingGraph {
     if (volume.compareTo(BigInteger.ZERO) > 0) {
       overlap.setAlphaIndex(_ecs.size());
       _ecs.add(overlap);
+      // make sure they are the right size
       _ownerMap.add(null);
+      _dag.add(null);
       overlapping.add(overlap);
       _kdtree.insert(overlap);
       Set<Integer> subsumes = new HashSet<>();
-      _dag.put(overlap.getAlphaIndex(), subsumes);
+      _dag.set(overlap.getAlphaIndex(), subsumes);
       _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
       delta.add(new Tuple<>(other, overlap));
       for (Integer ec : ecs) {
@@ -854,6 +859,7 @@ public class ForwardingGraph {
    * Check reachability for an individual equivalence class.
    * Depending on the action requested from the query, it will
    * stop the search when it has found a relevant path and return it.
+   * Will return null if it found no path.
    */
   @Nullable
   private Tuple<Path, FlowDisposition> reachable(
@@ -878,6 +884,7 @@ public class ForwardingGraph {
       visited.set(current.getIndex());
       int numLinks = 0;
       for (GraphLink link : _adjacencyLists.get(current.getIndex())) {
+        // TODO: make sure the link is active
         if (_labels[link.getIndex()].get(alphaIdx)) {
           numLinks++;
           GraphNode neighbor = link.getTarget();
@@ -905,10 +912,7 @@ public class ForwardingGraph {
         }
       }
       // the router doesn't know how to forward the packet
-      if (flags.get(DROP_NO_ROUTE_FLAG) && numLinks == 0) {
-        return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.NO_ROUTE);
-      }
-      if (flags.get(DROP_FLAG) && numLinks == 0) {
+      if ((flags.get(DROP_NO_ROUTE_FLAG) || flags.get(DROP_FLAG)) && numLinks == 0) {
         return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.NO_ROUTE);
       }
     }
