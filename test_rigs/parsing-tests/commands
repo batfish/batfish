@@ -38,4 +38,4 @@ test test_rigs/parsing-tests/srx-testbed.ref init-testrig test_rigs/srx-testbed
 
 #unit-tests
 test test_rigs/parsing-tests/unit-tests.ref init-testrig test_rigs/unit-tests
-
+test test_rigs/parsing-tests/unit-tests-undefined.ref get undefinedreferences
