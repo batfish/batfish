@@ -1,8 +1,15 @@
 package org.batfish.grammar.cisco;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -12,6 +19,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +48,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -451,6 +460,36 @@ public class CiscoGrammarTest {
             .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
             .count(),
         equalTo(4L));
+  }
+
+  @Test
+  public void testNxosOspfAreaParameters() throws IOException {
+    String testrigName = "nxos-ospf";
+    String hostname = "nxos-ospf-area";
+    String ifaceName = "Ethernet1";
+    long areaNum = 1L;
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    SortedMap<String, Configuration> configurations;
+    configurations = batfish.loadConfigurations();
+
+    /* Ensure bidirectional references between OSPF area and interface */
+    assertThat(configurations, hasKey(hostname));
+    Configuration c = configurations.get(hostname);
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasAreas(hasKey(areaNum)))));
+    OspfArea area = c.getDefaultVrf().getOspfProcess().getAreas().get(areaNum);
+    assertThat(area, hasInterfaces(hasKey(ifaceName)));
+    Interface iface = area.getInterfaces().get(ifaceName);
+    assertThat(iface, hasOspfArea(sameInstance(area)));
+    assertThat(iface, isOspfPassive(equalTo(false)));
+    assertThat(iface, isOspfPointToPoint());
   }
 
   @Test
