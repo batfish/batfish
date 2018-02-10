@@ -20,6 +20,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BackendType;
@@ -128,6 +129,10 @@ public class ForwardingGraph {
   // Store the current volume for each EC when using DoC
   private ArrayList<BigInteger> _volumes;
 
+  // Which backed to use
+  private BackendType _backendType;
+
+  // Reference to the Batfish object so we can access the ACLs in the configs
   private Batfish _batfish;
 
   /*
@@ -137,6 +142,8 @@ public class ForwardingGraph {
   public ForwardingGraph(Batfish batfish, DataPlane dp, BackendType backendType) {
     long t = System.currentTimeMillis();
     _batfish = batfish;
+    _backendType = backendType;
+
     initGraph(batfish, dp);
 
     // only model fields that are used in the configs
@@ -735,23 +742,20 @@ public class ForwardingGraph {
 
     BitSet flags = actionFlags(actions);
 
-    // Pick out the relevant equivalence classes
-    GeometricSpace space = _factory.fromHeaderSpace(h);
-    Map<HyperRectangle, HyperRectangle> canonicalChoices = new HashMap<>();
-    for (HyperRectangle rect : space.rectangles()) {
-      List<HyperRectangle> relevant = _kdtree.intersect(rect);
-      for (HyperRectangle r : relevant) {
-        HyperRectangle overlap = rect.overlap(r);
-        canonicalChoices.put(r, overlap);
-      }
+    Map<Integer, HyperRectangle> relevant;
+    if (_backendType == BackendType.DELTANET) {
+      relevant = findRelevantEcs(h);
+    } else if (_backendType == BackendType.DELTANET_DOC) {
+      relevant = findRelevantEcsDoc(h);
+    } else {
+      throw new BatfishException("Invalid backend type: " + _backendType);
     }
 
     // Check each equivalence class for reachability
-    for (Entry<HyperRectangle, HyperRectangle> entry : canonicalChoices.entrySet()) {
-      HyperRectangle equivClass = entry.getKey();
+    for (Entry<Integer, HyperRectangle> entry : relevant.entrySet()) {
+      Integer equivClass = entry.getKey();
       HyperRectangle overlap = entry.getValue();
-      Tuple<Path, FlowDisposition> tup =
-          reachable(equivClass.getAlphaIndex(), flags, sources, sinks);
+      Tuple<Path, FlowDisposition> tup = reachable(equivClass, flags, sources, sinks);
       if (tup != null) {
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
         return createReachabilityAnswer(_factory.example(overlap), tup);
@@ -759,6 +763,73 @@ public class ForwardingGraph {
     }
     System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
     return new FlowHistory();
+  }
+
+  /*
+   * Given a query headerspace, pick out the relevant ECs to check
+   * and return the overlapping region for each so we can construct
+   * an example easily.
+   */
+  @Nonnull
+  private Map<Integer, HyperRectangle> findRelevantEcs(HeaderSpace h) {
+    // Pick out the relevant equivalence classes
+    GeometricSpace space = _factory.fromHeaderSpace(h);
+    Map<Integer, HyperRectangle> relevant = new HashMap<>();
+    for (HyperRectangle rect : space.rectangles()) {
+      List<HyperRectangle> intersecting = _kdtree.intersect(rect);
+      for (HyperRectangle r : intersecting) {
+        HyperRectangle overlap = rect.overlap(r);
+        relevant.put(r.getAlphaIndex(), overlap);
+      }
+    }
+    return relevant;
+  }
+
+  /*
+   * Given a query headerspace, pick out the relevant ECs to check
+   * and return the overlapping region for each so we can construct
+   * an example easily.
+   */
+  @Nonnull
+  private Map<Integer, HyperRectangle> findRelevantEcsDoc(HeaderSpace h) {
+    // Pick out the relevant equivalence classes
+    GeometricSpace space = _factory.fromHeaderSpace(h);
+    Map<Integer, HyperRectangle> relevant = new HashMap<>();
+    for (HyperRectangle rect : space.rectangles()) {
+      List<HyperRectangle> intersecting = _kdtree.intersect(rect);
+
+      // now we need to check if it actually is relevant, or not
+      Map<Integer, BigInteger> cache = new HashMap<>();
+      for (HyperRectangle r : intersecting) {
+        HyperRectangle overlap = rect.overlap(r);
+        assert (overlap != null);
+        // Check if this is a relevant EC
+        BigInteger overlapVolume = findRelevantEcsDocRec(cache, r, overlap);
+        if (overlapVolume.compareTo(BigInteger.ZERO) > 0) {
+          relevant.put(r.getAlphaIndex(), overlap);
+        }
+      }
+    }
+    return relevant;
+  }
+
+  private BigInteger findRelevantEcsDocRec(
+      Map<Integer, BigInteger> cache, HyperRectangle r, HyperRectangle overlap) {
+    BigInteger vol = cache.get(r.getAlphaIndex());
+    if (vol != null) {
+      return vol;
+    }
+    BigInteger childrenVolume = BigInteger.ZERO;
+    for (Integer childEc : _dag.get(r.getAlphaIndex())) {
+      HyperRectangle child = _ecs.get(childEc);
+      HyperRectangle co = child.overlap(overlap);
+      if (co != null) {
+        childrenVolume = childrenVolume.add(findRelevantEcsDocRec(cache, child, co));
+      }
+    }
+    vol = overlap.volume().subtract(childrenVolume);
+    cache.put(r.getAlphaIndex(), vol);
+    return vol;
   }
 
   /*
