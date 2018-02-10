@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -124,6 +125,9 @@ public class ForwardingGraph {
   // A dag used to represent difference of cubes dependencies
   private ArrayList<Set<Integer>> _dag;
 
+  // Store the current volume for each EC when using DoC
+  private ArrayList<BigInteger> _volumes;
+
   private Batfish _batfish;
 
   /*
@@ -148,6 +152,8 @@ public class ForwardingGraph {
     _kdtree.insert(fullRange);
     _dag = new ArrayList<>();
     _dag.add(new HashSet<>());
+    _volumes = new ArrayList<>();
+    _volumes.add(fullRange.volume());
 
     // initialize the labels
     _labels = new BitSet[_allLinks.size()];
@@ -198,8 +204,10 @@ public class ForwardingGraph {
     for (Rule rule : rules) {
       if (backendType == BackendType.DELTANET) {
         addRule(rule);
-      } else {
+      } else if (backendType == BackendType.DELTANET_DOC) {
         addRuleDoc(rule);
+      } else {
+        throw new BatfishException("Invalid backed type: " + backendType);
       }
     }
 
@@ -593,21 +601,34 @@ public class ForwardingGraph {
     }
 
     if (volume.compareTo(BigInteger.ZERO) > 0) {
-      overlap.setAlphaIndex(_ecs.size());
-      _ecs.add(overlap);
-      // make sure they are the right size
-      _ownerMap.add(null);
-      _dag.add(null);
-      overlapping.add(overlap);
-      _kdtree.insert(overlap);
-      Set<Integer> subsumes = new HashSet<>();
-      _dag.set(overlap.getAlphaIndex(), subsumes);
-      _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
-      delta.add(new Tuple<>(other, overlap));
-      for (Integer ec : ecs) {
-        subsumes.add(ec);
-        delta.add(new Tuple<>(overlap, _ecs.get(ec)));
+      BigInteger otherVolume = _volumes.get(other.getAlphaIndex());
+      BigInteger newOtherVolume = otherVolume.subtract(volume);
+      // No new region to create if we cover the old region
+      if (newOtherVolume.compareTo(BigInteger.ZERO) == 0) {
+        overlapping.add(other);
+        Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
+        cache.put(other.getAlphaIndex(), ret);
+        return ret;
+      } else {
+        _volumes.set(other.getAlphaIndex(), newOtherVolume);
+        overlap.setAlphaIndex(_ecs.size());
+        _volumes.add(volume);
+        _ecs.add(overlap);
+        // make sure they are the right size
+        _ownerMap.add(null);
+        _dag.add(null);
+        overlapping.add(overlap);
+        _kdtree.insert(overlap);
+        Set<Integer> subsumes = new HashSet<>();
+        _dag.set(overlap.getAlphaIndex(), subsumes);
+        _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
+        delta.add(new Tuple<>(other, overlap));
+        for (Integer ec : ecs) {
+          subsumes.add(ec);
+          delta.add(new Tuple<>(overlap, _ecs.get(ec)));
+        }
       }
+
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, overlap.getAlphaIndex());
       cache.put(other.getAlphaIndex(), ret);
       return ret;
