@@ -111,6 +111,7 @@ l_null
       | LOGGING
       | LOGOUT_WARNING
       | MODEM
+      | NO_VACANT_MESSAGE
       | NOTIFY
       | PASSWORD
       | PRIVILEGE

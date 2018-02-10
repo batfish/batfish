@@ -9,6 +9,9 @@ line vty 0 15
  exec-timeout 15 0
  login authentication blah
  timeout login response 120
+ vacant-message ^C
+    Unauthorized access prohibited
+^C
  no vacant-message
 !
 line console
