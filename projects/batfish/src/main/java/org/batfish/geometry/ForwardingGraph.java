@@ -96,7 +96,7 @@ public class ForwardingGraph {
   // Edges labelled with equivalence classes, indexed by link id
   private BitSet[] _labels;
 
-  // EC index to graph node, to set of rules for that EC on that node.
+  // EC index to graph node index to set of rules for that EC on that node.
   private ArrayList<Map<GraphNode, Rule>> _ownerMap;
 
   // Efficient searching for equivalence class overlap
@@ -217,6 +217,8 @@ public class ForwardingGraph {
 
     System.out.println("Time to build labelled graph: " + (System.currentTimeMillis() - t));
     System.out.println("Number of classes: " + (_ecs.size()));
+
+    System.out.println("Time for function: " + _time);
     // showStatus();
   }
 
@@ -533,15 +535,19 @@ public class ForwardingGraph {
     updateRules(r, overlapping, delta);
   }
 
+  private long _time = 0L;
+
   /*
    * An alternative representation of ECs, which is similar to
    * the difference of cubes representation.
    */
   private void addRuleDoc(Rule r) {
+    // long l = System.currentTimeMillis();
     HyperRectangle hr = r.getRectangle();
     List<HyperRectangle> overlapping = new ArrayList<>();
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
+    // _time += (System.currentTimeMillis() - l);
     List<HyperRectangle> others = _kdtree.intersect(hr);
     for (HyperRectangle other : others) {
       addRuleDocRec(hr, other, others, cache, overlapping, delta);
@@ -586,7 +592,6 @@ public class ForwardingGraph {
             addRuleDocRec(added, child, others, cache, overlapping, delta);
         BigInteger vol = tup.getFirst();
         Integer ec = tup.getSecond();
-
         childrenVolume = childrenVolume.add(vol);
         if (ec != null) {
           ecs.add(ec);

@@ -19,6 +19,8 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
 
   private int _alphaIndex;
 
+  private int _hashcode;
+
   HyperRectangle(long[] bounds) {
     this._bounds = bounds;
     this._alphaIndex = -1;
@@ -124,11 +126,10 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
   }
 
   BigInteger volume() {
-    BigInteger acc = BigInteger.ONE;
-    for (int i = 0; i < _bounds.length; i += 2) {
-      BigInteger b1 = BigInteger.valueOf(_bounds[i]);
-      BigInteger b2 = BigInteger.valueOf(_bounds[i + 1]);
-      acc = acc.multiply(b2.subtract(b1));
+    BigInteger acc = BigInteger.valueOf(_bounds[1] - _bounds[0]);
+    for (int i = 2; i < _bounds.length; i += 2) {
+      BigInteger x = BigInteger.valueOf(_bounds[i + 1] - _bounds[i]);
+      acc = acc.multiply(x);
     }
     return acc;
   }
@@ -160,7 +161,10 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(_bounds);
+    if (_hashcode == 0) {
+      _hashcode = Arrays.hashCode(_bounds);
+    }
+    return _hashcode;
   }
 
   @Override
