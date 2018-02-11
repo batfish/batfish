@@ -71,10 +71,7 @@ import org.batfish.symbolic.utils.Tuple;
  * List of possible further optimizations:
  *
  * - Use a persistent map for _owner to avoid all the deep copies and
- *   reduce space consumption dramatically.
- *
- * - We only need to keep all the rules if we want to support remove.
- *   otherwise, we can just keep a single highest priority rule.
+ *   reduce space consumption.
  *
  * - There are better datastructures than KD trees for collision detection.
  *   Are any easy to implement?
@@ -100,7 +97,7 @@ public class ForwardingGraph {
   private BitSet[] _labels;
 
   // EC index to graph node, to set of rules for that EC on that node.
-  private ArrayList<Map<GraphNode, NavigableSet<Rule>>> _ownerMap;
+  private ArrayList<Map<GraphNode, Rule>> _ownerMap;
 
   // Efficient searching for equivalence class overlap
   private KDTree _kdtree;
@@ -162,6 +159,8 @@ public class ForwardingGraph {
     _volumes = new ArrayList<>();
     _volumes.add(fullRange.volume());
 
+    _ownerMap.add(new HashMap<>());
+
     // initialize the labels
     _labels = new BitSet[_allLinks.size()];
     for (GraphLink link : _allLinks) {
@@ -170,8 +169,6 @@ public class ForwardingGraph {
 
     // initialize owners
     Map<GraphNode, NavigableSet<Rule>> map = new HashMap<>();
-    _allNodes.forEach(r -> map.put(r, new TreeSet<>()));
-    _ownerMap.add(map);
 
     // add the FIB rules
     List<Rule> rules = new ArrayList<>();
@@ -647,13 +644,12 @@ public class ForwardingGraph {
     for (Tuple<HyperRectangle, HyperRectangle> d : delta) {
       HyperRectangle alpha = d.getFirst();
       HyperRectangle alphaPrime = d.getSecond();
-      Map<GraphNode, NavigableSet<Rule>> existing = _ownerMap.get(alpha.getAlphaIndex());
-      _ownerMap.set(alphaPrime.getAlphaIndex(), copyMap(existing));
-      for (Entry<GraphNode, NavigableSet<Rule>> entry : existing.entrySet()) {
-        NavigableSet<Rule> pq = entry.getValue();
-        if (!pq.isEmpty()) {
-          Rule highestPriority = pq.descendingIterator().next();
-          GraphLink link = highestPriority.getLink();
+      Map<GraphNode, Rule> existing = _ownerMap.get(alpha.getAlphaIndex());
+      _ownerMap.set(alphaPrime.getAlphaIndex(), new HashMap<>(existing));
+      for (Entry<GraphNode, Rule> entry : existing.entrySet()) {
+        Rule rule = entry.getValue();
+        if (rule != null) {
+          GraphLink link = rule.getLink();
           _labels[link.getIndex()].set(alphaPrime.getAlphaIndex());
         }
       }
@@ -661,67 +657,21 @@ public class ForwardingGraph {
     // Update old, overlapping rules
     for (HyperRectangle alpha : overlapping) {
       Rule rPrime = null;
-      Map<GraphNode, NavigableSet<Rule>> map = _ownerMap.get(alpha.getAlphaIndex());
-      NavigableSet<Rule> pq = map.get(r.getLink().getSource());
-      if (!pq.isEmpty()) {
-        rPrime = pq.descendingIterator().next();
+      Map<GraphNode, Rule> map = _ownerMap.get(alpha.getAlphaIndex());
+      GraphNode source = r.getLink().getSource();
+      Rule rule = map.get(source);
+      if (rule != null) {
+        rPrime = rule;
       }
-      if (rPrime == null || rPrime.compareTo(r) < 0) {
+      boolean ruleUpdate = (rPrime == null || rPrime.compareTo(r) < 0);
+      if (ruleUpdate) {
         _labels[r.getLink().getIndex()].set(alpha.getAlphaIndex());
         if (rPrime != null && !(Objects.equal(r.getLink(), rPrime.getLink()))) {
           _labels[rPrime.getLink().getIndex()].clear(alpha.getAlphaIndex());
         }
+        _ownerMap.get(alpha.getAlphaIndex()).put(source, r);
       }
-
-      pq.add(r);
     }
-  }
-
-  /*
-   * Does a deep copy of the map from one equivalence class to another.
-   * This is slow and memory intensive, and could be replaced later if a bottleneck.
-   */
-  private Map<GraphNode, NavigableSet<Rule>> copyMap(Map<GraphNode, NavigableSet<Rule>> map) {
-    Map<GraphNode, NavigableSet<Rule>> newMap = new HashMap<>(map.size());
-    for (Entry<GraphNode, NavigableSet<Rule>> entry : map.entrySet()) {
-      newMap.put(entry.getKey(), new TreeSet<>(entry.getValue()));
-    }
-    return newMap;
-  }
-
-  private BitSet actionFlags(Set<ForwardingAction> actions) {
-    BitSet actionFlags = new BitSet();
-    boolean accept = actions.contains(ForwardingAction.ACCEPT);
-    boolean drop = actions.contains(ForwardingAction.DROP);
-    boolean dropAclIn = actions.contains(ForwardingAction.DROP_ACL_IN);
-    boolean dropAclOut = actions.contains(ForwardingAction.DROP_ACL_OUT);
-    boolean dropAcl = actions.contains(ForwardingAction.DROP_ACL);
-    boolean dropNullRoute = actions.contains(ForwardingAction.DROP_NULL_ROUTE);
-    boolean dropNoRoute = actions.contains(ForwardingAction.DROP_NO_ROUTE);
-
-    if (accept) {
-      actionFlags.set(ACCEPT_FLAG);
-    }
-    if (drop) {
-      actionFlags.set(DROP_FLAG);
-    }
-    if (dropAcl) {
-      actionFlags.set(DROP_ACL_FLAG);
-    }
-    if (dropAclIn) {
-      actionFlags.set(DROP_ACL_IN_FLAG);
-    }
-    if (dropAclOut) {
-      actionFlags.set(DROP_ACL_OUT_FLAG);
-    }
-    if (dropNullRoute) {
-      actionFlags.set(DROP_NULL_ROUTE_FLAG);
-    }
-    if (dropNoRoute) {
-      actionFlags.set(DROP_NO_ROUTE_FLAG);
-    }
-
-    return actionFlags;
   }
 
   /*
@@ -758,10 +708,6 @@ public class ForwardingGraph {
     // Check each equivalence class for reachability
     for (Entry<Integer, HyperRectangle> entry : relevant.entrySet()) {
       Integer equivClass = entry.getKey();
-
-      // System.out.println("Checking: " + equivClass);
-      // System.out.println("difference: " + _dag.get(equivClass));
-
       HyperRectangle overlap = entry.getValue();
       // System.out.println("Relevant: " + equivClass);
       // System.out.println("Difference: " + _dag.get(equivClass));
@@ -773,6 +719,46 @@ public class ForwardingGraph {
     }
     System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
     return new FlowHistory();
+  }
+
+  /*
+   * Convert a set of forwarding actions to a bitset, so that
+   * we can check if flags exist more quickly when traversing
+   * the forwarding graph.
+   */
+  private BitSet actionFlags(Set<ForwardingAction> actions) {
+    BitSet actionFlags = new BitSet();
+    boolean accept = actions.contains(ForwardingAction.ACCEPT);
+    boolean drop = actions.contains(ForwardingAction.DROP);
+    boolean dropAclIn = actions.contains(ForwardingAction.DROP_ACL_IN);
+    boolean dropAclOut = actions.contains(ForwardingAction.DROP_ACL_OUT);
+    boolean dropAcl = actions.contains(ForwardingAction.DROP_ACL);
+    boolean dropNullRoute = actions.contains(ForwardingAction.DROP_NULL_ROUTE);
+    boolean dropNoRoute = actions.contains(ForwardingAction.DROP_NO_ROUTE);
+
+    if (accept) {
+      actionFlags.set(ACCEPT_FLAG);
+    }
+    if (drop) {
+      actionFlags.set(DROP_FLAG);
+    }
+    if (dropAcl) {
+      actionFlags.set(DROP_ACL_FLAG);
+    }
+    if (dropAclIn) {
+      actionFlags.set(DROP_ACL_IN_FLAG);
+    }
+    if (dropAclOut) {
+      actionFlags.set(DROP_ACL_OUT_FLAG);
+    }
+    if (dropNullRoute) {
+      actionFlags.set(DROP_NULL_ROUTE_FLAG);
+    }
+    if (dropNoRoute) {
+      actionFlags.set(DROP_NO_ROUTE_FLAG);
+    }
+
+    return actionFlags;
   }
 
   /*
