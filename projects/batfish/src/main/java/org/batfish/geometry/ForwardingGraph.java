@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.PriorityQueue;
+import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -100,19 +100,10 @@ public class ForwardingGraph {
   private BitSet[] _labels;
 
   // EC index to graph node, to set of rules for that EC on that node.
-  private ArrayList<Map<GraphNode, PriorityQueue<Rule>>> _ownerMap;
+  private ArrayList<Map<GraphNode, NavigableSet<Rule>>> _ownerMap;
 
   // Efficient searching for equivalence class overlap
   private KDTree _kdtree;
-
-  // Map from routers to graph nodes in this extended graph
-  private Map<String, GraphNode> _nodeMap;
-
-  // Map from ACLs to graph nodes in this extended graph
-  private Map<String, AclGraphNode> _aclMap;
-
-  // Map from interfaces to links in this extened graph
-  private Map<NodeInterfacePair, GraphLink> _linkMap;
 
   // All the nodes in the graph
   private List<GraphNode> _allNodes;
@@ -122,6 +113,15 @@ public class ForwardingGraph {
 
   // Adjacency list for the graph indexed by GraphNode index
   private ArrayList<List<GraphLink>> _adjacencyLists;
+
+  // Map from routers to graph nodes in this extended graph
+  private Map<String, GraphNode> _nodeMap;
+
+  // Map from ACLs to graph nodes in this extended graph
+  private Map<String, AclGraphNode> _aclMap;
+
+  // Map from interfaces to links in this extened graph
+  private Map<NodeInterfacePair, GraphLink> _linkMap;
 
   // A dag used to represent difference of cubes dependencies
   private ArrayList<Set<Integer>> _dag;
@@ -169,8 +169,8 @@ public class ForwardingGraph {
     }
 
     // initialize owners
-    Map<GraphNode, PriorityQueue<Rule>> map = new HashMap<>();
-    _allNodes.forEach(r -> map.put(r, new PriorityQueue<>()));
+    Map<GraphNode, NavigableSet<Rule>> map = new HashMap<>();
+    _allNodes.forEach(r -> map.put(r, new TreeSet<>()));
     _ownerMap.add(map);
 
     // add the FIB rules
@@ -309,7 +309,7 @@ public class ForwardingGraph {
         IpAccessList outAcl = iface.getOutgoingFilter();
         if (outAcl != null) {
           String aclName = getAclName(router, ifaceName, outAcl, false);
-          AclGraphNode aclNode = new AclGraphNode(aclName, nodeIndex, outAcl);
+          AclGraphNode aclNode = new AclGraphNode(aclName, nodeIndex, outAcl, node);
           nodeIndex++;
           _aclMap.put(aclName, aclNode);
           _allNodes.add(aclNode);
@@ -317,7 +317,7 @@ public class ForwardingGraph {
         IpAccessList inAcl = iface.getIncomingFilter();
         if (inAcl != null) {
           String aclName = getAclName(router, ifaceName, inAcl, true);
-          AclGraphNode aclNode = new AclGraphNode(aclName, nodeIndex, inAcl);
+          AclGraphNode aclNode = new AclGraphNode(aclName, nodeIndex, inAcl, node);
           nodeIndex++;
           _aclMap.put(aclName, aclNode);
           _allNodes.add(aclNode);
@@ -497,32 +497,18 @@ public class ForwardingGraph {
   }
 
   /*
-   * Does a deep copy of the map from one equivalence class to another.
-   * This is slow and memory intensive, and could be replaced later if a bottleneck.
-   */
-  private Map<GraphNode, PriorityQueue<Rule>> copyMap(Map<GraphNode, PriorityQueue<Rule>> map) {
-    Map<GraphNode, PriorityQueue<Rule>> newMap = new HashMap<>(map.size());
-    for (Entry<GraphNode, PriorityQueue<Rule>> entry : map.entrySet()) {
-      newMap.put(entry.getKey(), new PriorityQueue<>(entry.getValue()));
-    }
-    return newMap;
-  }
-
-  /*
    * Add a rule to the edge-labelled graph by first refining
    * the equivalence classes, finding the relevant overlap,
    * and updating the edge labels accordingly.
    */
   private void addRule(Rule r) {
     HyperRectangle hr = r.getRectangle();
-
-    // showStatus();
     List<HyperRectangle> overlapping = new ArrayList<>();
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
     for (HyperRectangle other : _kdtree.intersect(hr)) {
       HyperRectangle overlap = hr.overlap(other);
       assert (overlap != null);
-      Collection<HyperRectangle> newRects = other.divide(overlap);
+      Collection<HyperRectangle> newRects = other.subtract(overlap);
       if (newRects == null) {
         overlapping.add(other);
       } else {
@@ -595,17 +581,15 @@ public class ForwardingGraph {
     BigInteger childrenVolume = BigInteger.ZERO;
     List<Integer> ecs = new ArrayList<>();
 
-    // System.out.println("others size: " + others.size());
-    // System.out.println("children size: " + _dag.get(other.getAlphaIndex()).size());
-
+    Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
     for (HyperRectangle o : others) {
-      Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
-      if (childIndices != null && childIndices.contains(o.getAlphaIndex())) {
+      if (childIndices.contains(o.getAlphaIndex())) {
         HyperRectangle child = _ecs.get(o.getAlphaIndex());
         Tuple<BigInteger, Integer> tup =
             addRuleDocRec(added, child, others, cache, overlapping, delta);
         BigInteger vol = tup.getFirst();
         Integer ec = tup.getSecond();
+
         childrenVolume = childrenVolume.add(vol);
         if (ec != null) {
           ecs.add(ec);
@@ -638,10 +622,8 @@ public class ForwardingGraph {
         _dag.set(overlap.getAlphaIndex(), subsumes);
         _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
         delta.add(new Tuple<>(other, overlap));
-        for (Integer ec : ecs) {
-          subsumes.add(ec);
-          delta.add(new Tuple<>(overlap, _ecs.get(ec)));
-        }
+        subsumes.addAll(ecs);
+        // delta.add(new Tuple<>(overlap, _ecs.get(ec)));
       }
 
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, overlap.getAlphaIndex());
@@ -660,16 +642,17 @@ public class ForwardingGraph {
    */
   private void updateRules(
       Rule r, List<HyperRectangle> overlapping, List<Tuple<HyperRectangle, HyperRectangle>> delta) {
+
     // Update new rules
     for (Tuple<HyperRectangle, HyperRectangle> d : delta) {
       HyperRectangle alpha = d.getFirst();
       HyperRectangle alphaPrime = d.getSecond();
-      Map<GraphNode, PriorityQueue<Rule>> existing = _ownerMap.get(alpha.getAlphaIndex());
+      Map<GraphNode, NavigableSet<Rule>> existing = _ownerMap.get(alpha.getAlphaIndex());
       _ownerMap.set(alphaPrime.getAlphaIndex(), copyMap(existing));
-      for (Entry<GraphNode, PriorityQueue<Rule>> entry : existing.entrySet()) {
-        PriorityQueue<Rule> pq = entry.getValue();
+      for (Entry<GraphNode, NavigableSet<Rule>> entry : existing.entrySet()) {
+        NavigableSet<Rule> pq = entry.getValue();
         if (!pq.isEmpty()) {
-          Rule highestPriority = pq.peek();
+          Rule highestPriority = pq.descendingIterator().next();
           GraphLink link = highestPriority.getLink();
           _labels[link.getIndex()].set(alphaPrime.getAlphaIndex());
         }
@@ -678,19 +661,32 @@ public class ForwardingGraph {
     // Update old, overlapping rules
     for (HyperRectangle alpha : overlapping) {
       Rule rPrime = null;
-      Map<GraphNode, PriorityQueue<Rule>> map = _ownerMap.get(alpha.getAlphaIndex());
-      PriorityQueue<Rule> pq = map.get(r.getLink().getSource());
+      Map<GraphNode, NavigableSet<Rule>> map = _ownerMap.get(alpha.getAlphaIndex());
+      NavigableSet<Rule> pq = map.get(r.getLink().getSource());
       if (!pq.isEmpty()) {
-        rPrime = pq.peek();
+        rPrime = pq.descendingIterator().next();
       }
       if (rPrime == null || rPrime.compareTo(r) < 0) {
         _labels[r.getLink().getIndex()].set(alpha.getAlphaIndex());
         if (rPrime != null && !(Objects.equal(r.getLink(), rPrime.getLink()))) {
-          _labels[rPrime.getLink().getIndex()].set(alpha.getAlphaIndex(), false);
+          _labels[rPrime.getLink().getIndex()].clear(alpha.getAlphaIndex());
         }
       }
+
       pq.add(r);
     }
+  }
+
+  /*
+   * Does a deep copy of the map from one equivalence class to another.
+   * This is slow and memory intensive, and could be replaced later if a bottleneck.
+   */
+  private Map<GraphNode, NavigableSet<Rule>> copyMap(Map<GraphNode, NavigableSet<Rule>> map) {
+    Map<GraphNode, NavigableSet<Rule>> newMap = new HashMap<>(map.size());
+    for (Entry<GraphNode, NavigableSet<Rule>> entry : map.entrySet()) {
+      newMap.put(entry.getKey(), new TreeSet<>(entry.getValue()));
+    }
+    return newMap;
   }
 
   private BitSet actionFlags(Set<ForwardingAction> actions) {
@@ -762,6 +758,10 @@ public class ForwardingGraph {
     // Check each equivalence class for reachability
     for (Entry<Integer, HyperRectangle> entry : relevant.entrySet()) {
       Integer equivClass = entry.getKey();
+
+      // System.out.println("Checking: " + equivClass);
+      // System.out.println("difference: " + _dag.get(equivClass));
+
       HyperRectangle overlap = entry.getValue();
       // System.out.println("Relevant: " + equivClass);
       // System.out.println("Difference: " + _dag.get(equivClass));
@@ -977,12 +977,7 @@ public class ForwardingGraph {
 
     while (!todo.isEmpty()) {
       GraphNode current = todo.remove();
-      // packet accepted at a destination
-      if (sinks.contains(current) && flags.get(ACCEPT_FLAG)) {
-        // TODO: handle difference between accepted and NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
-        return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.ACCEPTED);
-      }
-
+      boolean isSink = sinks.contains(current.owner());
       visited.set(current.getIndex());
       int numLinks = 0;
       for (GraphLink link : _adjacencyLists.get(current.getIndex())) {
@@ -991,20 +986,32 @@ public class ForwardingGraph {
           numLinks++;
           GraphNode neighbor = link.getTarget();
           // packet is dropped, figure out what went wrong
-          if (neighbor.isDropNode()) {
-            String name = current.getName();
-            if ((flags.get(DROP_ACL_IN_FLAG) || flags.get(DROP_ACL_FLAG))
-                && name.startsWith("ACL-IN")) {
-              return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.DENIED_IN);
+
+          if (isSink) {
+            // packet accepted at a destination
+            if (flags.get(ACCEPT_FLAG)) {
+              // TODO: what is the exact definition of accepted here?
+              // TODO: handle difference between accepted and NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+              return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.ACCEPTED);
             }
-            if ((flags.get(DROP_ACL_OUT_FLAG) || flags.get(DROP_ACL_FLAG))
-                && name.startsWith("ACL-OUT")) {
-              return new Tuple<>(
-                  reconstructPath(predecessors, current), FlowDisposition.DENIED_OUT);
-            }
-            if (flags.get(DROP_NULL_ROUTE_FLAG) && link.getSourceIface().equals("null_interface")) {
-              return new Tuple<>(
-                  reconstructPath(predecessors, current), FlowDisposition.NULL_ROUTED);
+            // Packet is dropped
+            if (neighbor.isDropNode()) {
+              String name = current.getName();
+              if ((flags.get(DROP_ACL_IN_FLAG) || flags.get(DROP_ACL_FLAG))
+                  && name.startsWith("ACL-IN")) {
+                return new Tuple<>(
+                    reconstructPath(predecessors, current), FlowDisposition.DENIED_IN);
+              }
+              if ((flags.get(DROP_ACL_OUT_FLAG) || flags.get(DROP_ACL_FLAG))
+                  && name.startsWith("ACL-OUT")) {
+                return new Tuple<>(
+                    reconstructPath(predecessors, current), FlowDisposition.DENIED_OUT);
+              }
+              if (flags.get(DROP_NULL_ROUTE_FLAG)
+                  && link.getSourceIface().equals("null_interface")) {
+                return new Tuple<>(
+                    reconstructPath(predecessors, current), FlowDisposition.NULL_ROUTED);
+              }
             }
           }
           if (!visited.get(neighbor.getIndex())) {
@@ -1014,7 +1021,7 @@ public class ForwardingGraph {
         }
       }
       // the router doesn't know how to forward the packet
-      if ((flags.get(DROP_NO_ROUTE_FLAG) || flags.get(DROP_FLAG)) && numLinks == 0) {
+      if (isSink && (flags.get(DROP_NO_ROUTE_FLAG) || flags.get(DROP_FLAG)) && numLinks == 0) {
         return new Tuple<>(reconstructPath(predecessors, current), FlowDisposition.NO_ROUTE);
       }
     }

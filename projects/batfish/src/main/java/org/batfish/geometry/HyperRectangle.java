@@ -98,7 +98,7 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
    * That is, the other can not go outside this shape's bounds
    */
   @Nullable
-  Collection<HyperRectangle> divide(HyperRectangle other) {
+  Collection<HyperRectangle> subtract(HyperRectangle other) {
     // in each dimension we would do this:
     if (this.equals(other)) {
       return null;

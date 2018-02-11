@@ -23,6 +23,10 @@ public class GraphNode {
     return _name.equals("(none)");
   }
 
+  public GraphNode owner() {
+    return this;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

@@ -153,8 +153,8 @@ class GeometricSpaceFactory {
         HyperRectangle overlap = r1.overlap(r2);
         if (overlap != null) {
           disjoint = false;
-          Collection<HyperRectangle> newRects1 = r1.divide(overlap);
-          Collection<HyperRectangle> newRects2 = r2.divide(overlap);
+          Collection<HyperRectangle> newRects1 = r1.subtract(overlap);
+          Collection<HyperRectangle> newRects2 = r2.subtract(overlap);
           assert (newRects1 != null);
           assert (newRects2 != null);
           workListX.addAll(newRects2);
@@ -178,7 +178,7 @@ class GeometricSpaceFactory {
     for (HyperRectangle r : x.rectangles()) {
       HyperRectangle one = _one.rectangles().iterator().next();
       assert (one != null);
-      Collection<HyperRectangle> divided = one.divide(r);
+      Collection<HyperRectangle> divided = one.subtract(r);
       assert (divided != null);
       divided.remove(r);
       List<HyperRectangle> negated = new ArrayList<>(divided);

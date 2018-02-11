@@ -51,7 +51,7 @@ enum PacketField {
   }
 
   @JsonValue
-  public String backendTypeName() {
+  public String packetFieldName() {
     return _name;
   }
 }
