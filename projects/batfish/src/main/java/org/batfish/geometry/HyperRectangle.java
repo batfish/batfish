@@ -126,8 +126,8 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
   BigInteger volume() {
     BigInteger acc = BigInteger.ONE;
     for (int i = 0; i < _bounds.length; i += 2) {
-      BigInteger b1 = BigInteger.valueOf(_bounds[0]);
-      BigInteger b2 = BigInteger.valueOf(_bounds[1]);
+      BigInteger b1 = BigInteger.valueOf(_bounds[i]);
+      BigInteger b2 = BigInteger.valueOf(_bounds[i + 1]);
       acc = acc.multiply(b2.subtract(b1));
     }
     return acc;

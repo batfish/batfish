@@ -220,6 +220,7 @@ public class ForwardingGraph {
 
     System.out.println("Time to build labelled graph: " + (System.currentTimeMillis() - t));
     System.out.println("Number of classes: " + (_ecs.size()));
+    // showStatus();
   }
 
   /*
@@ -486,14 +487,14 @@ public class ForwardingGraph {
     return "ACL-" + (in ? "IN-" : "OUT-") + router + "-" + ifaceName + "-" + acl.getName();
   }
 
-  /* private void showStatus() {
+  private void showStatus() {
     System.out.println("=====================");
     for (int i = 0; i < _ecs.size(); i++) {
       HyperRectangle r = _ecs.get(i);
       System.out.println(i + " --> " + r);
     }
     System.out.println("=====================");
-  } */
+  }
 
   /*
    * Does a deep copy of the map from one equivalence class to another.
@@ -562,6 +563,8 @@ public class ForwardingGraph {
     for (HyperRectangle other : others) {
       addRuleDocRec(hr, other, others, cache, overlapping, delta);
     }
+    // System.out.println("Number of others: " + others.size());
+    // System.out.println("Cache size was: " + cache.size());
     updateRules(r, overlapping, delta);
   }
 
@@ -578,8 +581,23 @@ public class ForwardingGraph {
       return cachedValue;
     }
 
+    HyperRectangle overlap = added.overlap(other);
+    assert (overlap != null);
+    BigInteger overlapVolume = overlap.volume();
+
+    if (other.equals(overlap)) {
+      overlapping.add(other);
+      Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
+      cache.put(other.getAlphaIndex(), ret);
+      return ret;
+    }
+
     BigInteger childrenVolume = BigInteger.ZERO;
     List<Integer> ecs = new ArrayList<>();
+
+    // System.out.println("others size: " + others.size());
+    // System.out.println("children size: " + _dag.get(other.getAlphaIndex()).size());
+
     for (HyperRectangle o : others) {
       Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
       if (childIndices != null && childIndices.contains(o.getAlphaIndex())) {
@@ -595,17 +613,7 @@ public class ForwardingGraph {
       }
     }
 
-    HyperRectangle overlap = added.overlap(other);
-    assert (overlap != null);
-    BigInteger overlapVolume = overlap.volume();
     BigInteger volume = overlapVolume.subtract(childrenVolume);
-
-    if (other.equals(overlap)) {
-      overlapping.add(other);
-      Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
-      cache.put(other.getAlphaIndex(), ret);
-      return ret;
-    }
 
     if (volume.compareTo(BigInteger.ZERO) > 0) {
       BigInteger otherVolume = _volumes.get(other.getAlphaIndex());
@@ -755,6 +763,8 @@ public class ForwardingGraph {
     for (Entry<Integer, HyperRectangle> entry : relevant.entrySet()) {
       Integer equivClass = entry.getKey();
       HyperRectangle overlap = entry.getValue();
+      // System.out.println("Relevant: " + equivClass);
+      // System.out.println("Difference: " + _dag.get(equivClass));
       Tuple<Path, FlowDisposition> tup = reachable(equivClass, flags, sources, sinks);
       if (tup != null) {
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
