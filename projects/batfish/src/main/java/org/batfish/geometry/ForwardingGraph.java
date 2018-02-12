@@ -220,6 +220,7 @@ public class ForwardingGraph {
       }
     }
 
+    System.out.println("Number of rules: " + rules.size());
     System.out.println("Time to build labelled graph: " + (System.currentTimeMillis() - t));
     System.out.println("Number of classes: " + (_ecs.size()));
 
@@ -551,7 +552,7 @@ public class ForwardingGraph {
     List<HyperRectangle> overlapping = new ArrayList<>();
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
-    List<HyperRectangle> others = _kdtree.intersect(hr);
+    Set<HyperRectangle> others = new HashSet<>(_kdtree.intersect(hr));
     for (HyperRectangle other : others) {
       addRuleDocRec(hr, other, others, cache, overlapping, delta);
     }
@@ -563,7 +564,7 @@ public class ForwardingGraph {
   private Tuple<BigInteger, Integer> addRuleDocRec(
       HyperRectangle added,
       HyperRectangle other,
-      List<HyperRectangle> others,
+      Set<HyperRectangle> others,
       Map<Integer, Tuple<BigInteger, Integer>> cache,
       List<HyperRectangle> overlapping,
       List<Tuple<HyperRectangle, HyperRectangle>> delta) {
@@ -588,7 +589,21 @@ public class ForwardingGraph {
     List<Integer> ecs = new ArrayList<>();
 
     Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
-    for (HyperRectangle o : others) {
+    for (Integer childIndex : childIndices) {
+      HyperRectangle child = _ecs.get(childIndex);
+      if (others.contains(child)) {
+        Tuple<BigInteger, Integer> tup =
+            addRuleDocRec(added, child, others, cache, overlapping, delta);
+        BigInteger vol = tup.getFirst();
+        Integer ec = tup.getSecond();
+        childrenVolume = childrenVolume.add(vol);
+        if (ec != null) {
+          ecs.add(ec);
+        }
+      }
+    }
+
+    /* for (HyperRectangle o : others) {
       if (childIndices.contains(o.getAlphaIndex())) {
         HyperRectangle child = _ecs.get(o.getAlphaIndex());
         Tuple<BigInteger, Integer> tup =
@@ -600,7 +615,7 @@ public class ForwardingGraph {
           ecs.add(ec);
         }
       }
-    }
+    } */
 
     BigInteger volume = overlapVolume.subtract(childrenVolume);
 
