@@ -11,7 +11,7 @@ final class OspfAreaMatchersImpl {
 
   static final class HasInterfaces extends FeatureMatcher<OspfArea, Map<String, Interface>> {
     HasInterfaces(@Nonnull Matcher<? super Map<String, Interface>> subMatcher) {
-      super(subMatcher, "interfaces", "interfaces");
+      super(subMatcher, "an OspfArea with interfaces", "interfaces");
     }
 
     @Override
