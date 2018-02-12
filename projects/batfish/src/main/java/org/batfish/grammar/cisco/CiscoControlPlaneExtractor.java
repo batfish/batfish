@@ -285,6 +285,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
@@ -297,7 +298,6 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_modeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
-import org.batfish.grammar.cisco.CiscoParser.If_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
@@ -436,6 +436,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Roi_costContext;
@@ -1786,6 +1787,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterRo_vrf(Ro_vrfContext ctx) {
+    Ip routerId = _currentOspfProcess.getRouterId();
+    _currentVrf = ctx.name.getText();
+    OspfProcess proc = currentVrf().getOspfProcess();
+    if (proc == null) {
+      proc = new OspfProcess(_currentOspfProcess.getName(), _format);
+      currentVrf().setOspfProcess(proc);
+      proc.setRouterId(routerId);
+    }
+    _currentOspfProcess = proc;
+  }
+
+  @Override
   public void enterRoa_interface(Roa_interfaceContext ctx) {
     String ifaceName = ctx.iname.getText();
     String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
@@ -2105,7 +2119,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
-    if (ctx.on_startup != null) {
+    if (ctx.on_startup != null || ctx.wait_for_bgp != null) {
       return;
     }
     _currentOspfProcess.setMaxMetricRouterLsa(true);
@@ -3456,6 +3470,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_vrf_forwarding(If_ip_vrf_forwardingContext ctx) {
+    String name = ctx.name.getText();
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setVrf(name);
+      initVrf(name);
+    }
+  }
+
+  @Override
   public void exitIf_isis_metric(If_isis_metricContext ctx) {
     int metric = toInteger(ctx.metric);
     for (Interface iface : _currentInterfaces) {
@@ -3574,15 +3597,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int vlan = toInteger(ctx.vlan);
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setNativeVlan(vlan);
-    }
-  }
-
-  @Override
-  public void exitIf_vrf_forwarding(If_vrf_forwardingContext ctx) {
-    String name = ctx.name.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
     }
   }
 
@@ -5227,6 +5241,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_router_id(Ro_router_idContext ctx) {
     Ip routerId = toIp(ctx.ip);
     _currentOspfProcess.setRouterId(routerId);
+  }
+
+  @Override
+  public void exitRo_vrf(Ro_vrfContext ctx) {
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentOspfProcess = currentVrf().getOspfProcess();
   }
 
   @Override

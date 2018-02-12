@@ -11832,6 +11832,11 @@ VXLAN
    'vxlan'
 ;
 
+WAIT_FOR
+:
+  'wait-for'
+;
+
 WAIT_START
 :
    'wait-start'
