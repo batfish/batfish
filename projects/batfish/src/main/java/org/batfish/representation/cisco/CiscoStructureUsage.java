@@ -52,6 +52,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
   NTP_ACCESS_GROUP("ntp access-group"),
+  OSPF_AREA_FILTER_LIST("ospf area filter-list"),
   OSPF_DEFAULT_ORIGINATE_ROUTE_MAP("ospf default-originate route-map"),
   OSPF_REDISTRIBUTE_BGP_MAP("ospf redistribute bgp route-map"),
   OSPF_REDISTRIBUTE_CONNECTED_MAP("ospf redistribute connected route-map"),
@@ -93,6 +94,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   SSH_IPV4_ACL("ssh ipv4 access-list"),
   SSH_IPV6_ACL("ssh ipv6 access-list"),
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
+  TUNNEL_SOURCE("tunnel source"),
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
   WCCP_SERVICE_LIST("ip wccp service-list");
