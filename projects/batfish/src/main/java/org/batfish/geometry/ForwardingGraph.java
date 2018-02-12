@@ -615,9 +615,8 @@ public class ForwardingGraph {
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
     List<HyperRectangle> others = _kdtree.intersect(hr);
-    for (HyperRectangle other : others) {
-      addRuleDocRec(hr, other, others, cache, overlapping, delta);
-    }
+    HyperRectangle root = _ecs.get(0);
+    addRuleDocRec(hr, root, others, cache, overlapping, delta);
     updateRules(r, overlapping, delta);
   }
 
