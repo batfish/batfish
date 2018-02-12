@@ -2886,7 +2886,7 @@
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
-              "vrf" : "default"
+              "vrf" : "bleepvrf"
             },
             "Ethernet6/1" : {
               "name" : "Ethernet6/1",
@@ -3055,7 +3055,7 @@
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "UNKNOWN",
-              "vrf" : "default"
+              "vrf" : "foovrf"
             },
             "cable-mac1.2" : {
               "name" : "cable-mac1.2",
@@ -3266,23 +3266,33 @@
             }
           },
           "vrfs" : {
+            "bleepvrf" : {
+              "name" : "bleepvrf",
+              "interfaces" : [
+                "Ethernet6/0.48"
+              ]
+            },
             "default" : {
               "name" : "default",
               "interfaces" : [
                 "Ethernet6/0.0",
-                "Ethernet6/0.48",
                 "Ethernet6/1",
                 "cable-downstream1/2",
                 "cable-downstream1/2/3",
                 "cable-downstream5/0/0",
                 "cable-mac1",
-                "cable-mac1.1",
                 "cable-mac1.2",
                 "cable-mac2",
                 "cable-mac3",
                 "cable-upstream1/0/0",
                 "cable-upstream1/0/0.0",
                 "cable-upstream1/0/10"
+              ]
+            },
+            "foovrf" : {
+              "name" : "foovrf",
+              "interfaces" : [
+                "cable-mac1.1"
               ]
             },
             "management" : {
