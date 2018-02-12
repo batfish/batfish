@@ -207,6 +207,7 @@
         "nxos_bgp" : "nxos_bgp",
         "nxos_interface" : "nxos_interface",
         "nxos_misc" : "nxos_misc",
+        "nxos_ospf" : "nxos_ospf",
         "nxos_route_map_continue" : "nxos_route_map_continue",
         "nxos_system" : "nxos_system",
         "openflow" : "openflow",
@@ -443,6 +444,7 @@
         "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_ospf" : "PASSED",
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
@@ -1191,6 +1193,20 @@
             "IN_BBB" : {
               "bgp inbound route-map" : [
                 28
+              ]
+            }
+          }
+        },
+        "nxos_ospf" : {
+          "route-map" : {
+            "RM_OSPF_DIRECT" : {
+              "ospf redistribute connected route-map" : [
+                9
+              ]
+            },
+            "RM_OSPF_STATIC" : {
+              "ospf redistribute static route-map" : [
+                10
               ]
             }
           }
@@ -2241,6 +2257,7 @@
         "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_ospf" : "PASSED",
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",

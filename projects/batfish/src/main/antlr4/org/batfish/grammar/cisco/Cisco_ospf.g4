@@ -144,6 +144,10 @@ ro_max_metric
       (
          summary_lsa = SUMMARY_LSA summary = DEC?
       )
+      |
+      (
+         wait_for_bgp = WAIT_FOR BGP bgptag = variable_max_metric
+      )
    )* NEWLINE
 ;
 
@@ -366,9 +370,7 @@ ro_vrf
    VRF name = variable NEWLINE
    (
       ro_max_metric
-      | ro_redistribute_bgp
       | ro_redistribute_connected
-      | ro_redistribute_rip
       | ro_redistribute_static
    )*
 ;
