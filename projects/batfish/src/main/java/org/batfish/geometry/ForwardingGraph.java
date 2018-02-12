@@ -126,7 +126,7 @@ public class ForwardingGraph {
   // Store the current volume for each EC when using DoC
   private ArrayList<BigInteger> _volumes;
 
-  // Which backed to use
+  // Which backend to use
   private BackendType _backendType;
 
   // Reference to the Batfish object so we can access the ACLs in the configs
@@ -184,6 +184,7 @@ public class ForwardingGraph {
     }
 
     // add the ACL rules
+    List<Rule> aclRules = new ArrayList<>();
     for (AclGraphNode aclNode : _aclMap.values()) {
       List<GraphLink> links = _adjacencyLists.get(aclNode.getIndex());
       GraphLink drop = links.get(0);
@@ -192,7 +193,7 @@ public class ForwardingGraph {
       int i = lines.size();
       for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
         Rule r = createAclRule(aclLine, drop, accept, i);
-        rules.add(r);
+        aclRules.add(r);
         i--;
       }
       // default drop rule
@@ -205,6 +206,10 @@ public class ForwardingGraph {
     // Deterministically shuffle the input to get a better balanced KD tree
     Random rand = new Random(7);
     Collections.shuffle(rules, rand);
+    // Adding acl rules first gives a better splitting of the KD tree
+    aclRules.addAll(rules);
+    rules = aclRules;
+
     for (Rule rule : rules) {
       if (backendType == BackendType.DELTANET) {
         addRule(rule);
@@ -218,7 +223,7 @@ public class ForwardingGraph {
     System.out.println("Time to build labelled graph: " + (System.currentTimeMillis() - t));
     System.out.println("Number of classes: " + (_ecs.size()));
 
-    System.out.println("Time for function: " + _time);
+    // System.out.println("Time for function: " + _time);
     // showStatus();
   }
 
@@ -542,12 +547,10 @@ public class ForwardingGraph {
    * the difference of cubes representation.
    */
   private void addRuleDoc(Rule r) {
-    // long l = System.currentTimeMillis();
     HyperRectangle hr = r.getRectangle();
     List<HyperRectangle> overlapping = new ArrayList<>();
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
-    // _time += (System.currentTimeMillis() - l);
     List<HyperRectangle> others = _kdtree.intersect(hr);
     for (HyperRectangle other : others) {
       addRuleDocRec(hr, other, others, cache, overlapping, delta);
