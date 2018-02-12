@@ -287,7 +287,7 @@ class GeometricSpaceFactory {
 
     SortedSet<IpWildcard> allDstIps = new TreeSet<>(h.getDstIps());
     allDstIps.addAll(h.getSrcOrDstIps());
-    if (!allDstIps.isEmpty()) {
+    if (!allDstIps.isEmpty() && _fields.contains(PacketField.DSTIP)) {
       GeometricSpace dstIps = zero();
       for (IpWildcard wc : allDstIps) {
         Prefix p = wc.toPrefix();
@@ -305,7 +305,7 @@ class GeometricSpaceFactory {
 
     SortedSet<IpWildcard> allSrcIps = new TreeSet<>(h.getSrcIps());
     allSrcIps.addAll(h.getSrcOrDstIps());
-    if (!allSrcIps.isEmpty()) {
+    if (!allSrcIps.isEmpty() && _fields.contains(PacketField.SRCIP)) {
       GeometricSpace srcIps = zero();
       for (IpWildcard wc : allSrcIps) {
         Prefix p = wc.toPrefix();
@@ -323,7 +323,7 @@ class GeometricSpaceFactory {
 
     SortedSet<SubRange> allDstPorts = new TreeSet<>(h.getDstPorts());
     allDstPorts.addAll(h.getSrcOrDstPorts());
-    if (!allDstPorts.isEmpty()) {
+    if (!allDstPorts.isEmpty() && _fields.contains(PacketField.DSTPORT)) {
       GeometricSpace dstPorts = zero();
       for (SubRange sr : allDstPorts) {
         long start = sr.getStart();
@@ -340,7 +340,7 @@ class GeometricSpaceFactory {
 
     SortedSet<SubRange> allSrcPorts = new TreeSet<>(h.getSrcPorts());
     allSrcPorts.addAll(h.getSrcOrDstPorts());
-    if (!allSrcPorts.isEmpty()) {
+    if (!allSrcPorts.isEmpty() && _fields.contains(PacketField.SRCPORT)) {
       GeometricSpace srcPorts = zero();
       for (SubRange sr : allSrcPorts) {
         long start = sr.getStart();
@@ -355,7 +355,7 @@ class GeometricSpaceFactory {
       acc = and(acc, srcPorts);
     }
 
-    if (!h.getIpProtocols().isEmpty()) {
+    if (!h.getIpProtocols().isEmpty() && _fields.contains(PacketField.IPPROTO)) {
       GeometricSpace ipProtos = zero();
       for (IpProtocol proto : h.getIpProtocols()) {
         long start = proto.number();
@@ -370,7 +370,7 @@ class GeometricSpaceFactory {
       acc = and(acc, ipProtos);
     }
 
-    if (!h.getIcmpTypes().isEmpty()) {
+    if (!h.getIcmpTypes().isEmpty() && _fields.contains(PacketField.ICMPTYPE)) {
       GeometricSpace icmpTypes = zero();
       for (SubRange sr : h.getIcmpTypes()) {
         long start = sr.getStart();
@@ -385,7 +385,7 @@ class GeometricSpaceFactory {
       acc = and(acc, icmpTypes);
     }
 
-    if (!h.getIcmpCodes().isEmpty()) {
+    if (!h.getIcmpCodes().isEmpty() && _fields.contains(PacketField.ICMPCODE)) {
       GeometricSpace icmpCodes = zero();
       for (SubRange sr : h.getIcmpCodes()) {
         long start = sr.getStart();
