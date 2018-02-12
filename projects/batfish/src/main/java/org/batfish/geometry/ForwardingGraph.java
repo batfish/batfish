@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -127,6 +128,9 @@ public class ForwardingGraph {
   // Store the current volume for each EC when using DoC
   private ArrayList<BigInteger> _volumes;
 
+  // Only used for the BDD backend
+  private NavigableSet<HyperRectangle> _intervalSet;
+
   // Which backend to use
   private BackendType _backendType;
 
@@ -152,22 +156,43 @@ public class ForwardingGraph {
     initGraph(batfish, dp);
 
     // only model fields that are used in the configs
-    EnumSet<PacketField> fields = findRelevantPacketFields(batfish);
+    EnumSet<PacketField> fields;
+    if (_backendType == BackendType.DELTANET_BDD) {
+      fields = EnumSet.of(PacketField.DSTIP);
+    } else {
+      fields = findRelevantPacketFields(batfish);
+    }
+
     _factory = new GeometricSpaceFactory(fields);
-
-    HyperRectangle fullRange = _factory.fullSpace();
-    fullRange.setAlphaIndex(0);
     _ecs = new ArrayList<>();
-    _ecs.add(fullRange);
     _ownerMap = new ArrayList<>();
-    _kdtree = new KDTree(_factory.numFields());
-    _kdtree.insert(fullRange);
-    _dag = new ArrayList<>();
-    _dag.add(new HashSet<>());
-    _volumes = new ArrayList<>();
-    _volumes.add(fullRange.volume());
 
-    _ownerMap.add(new HashMap<>());
+    if (_backendType == BackendType.DELTANET_BDD) {
+      _intervalSet = new TreeSet<>();
+      long[] lower = {0};
+      long[] upper = {(long) Math.pow(2, 32)};
+      HyperRectangle low = new HyperRectangle(lower);
+      HyperRectangle high = new HyperRectangle(upper);
+      low.setAlphaIndex(0);
+      high.setAlphaIndex(1);
+      _intervalSet.add(low);
+      _intervalSet.add(high);
+      _ecs.add(low);
+      _ecs.add(high);
+      _ownerMap.add(new HashMap<>());
+      _ownerMap.add(new HashMap<>());
+    } else {
+      HyperRectangle fullRange = _factory.fullSpace();
+      fullRange.setAlphaIndex(0);
+      _ecs.add(fullRange);
+      _kdtree = new KDTree(_factory.numFields());
+      _kdtree.insert(fullRange);
+      _dag = new ArrayList<>();
+      _dag.add(new HashSet<>());
+      _volumes = new ArrayList<>();
+      _volumes.add(fullRange.volume());
+      _ownerMap.add(new HashMap<>());
+    }
 
     // initialize the labels
     _labels = new BitSet[_allLinks.size()];
@@ -190,20 +215,22 @@ public class ForwardingGraph {
 
     // add the ACL rules
     List<Rule> aclRules = new ArrayList<>();
-    for (AclGraphNode aclNode : _aclMap.values()) {
-      List<GraphLink> links = _adjacencyLists.get(aclNode.getIndex());
-      GraphLink drop = links.get(0);
-      GraphLink accept = links.get(1);
-      List<IpAccessListLine> lines = aclNode.getAcl().getLines();
-      int i = lines.size();
-      for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
-        Rule r = createAclRule(aclLine, drop, accept, i);
-        aclRules.add(r);
-        i--;
+    if (_backendType != BackendType.DELTANET_BDD) {
+      for (AclGraphNode aclNode : _aclMap.values()) {
+        List<GraphLink> links = _adjacencyLists.get(aclNode.getIndex());
+        GraphLink drop = links.get(0);
+        GraphLink accept = links.get(1);
+        List<IpAccessListLine> lines = aclNode.getAcl().getLines();
+        int i = lines.size();
+        for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
+          Rule r = createAclRule(aclLine, drop, accept, i);
+          aclRules.add(r);
+          i--;
+        }
+        // default drop rule
+        Rule r = createAclRule(null, drop, accept, 0);
+        rules.add(r);
       }
-      // default drop rule
-      Rule r = createAclRule(null, drop, accept, 0);
-      rules.add(r);
     }
 
     // Sort the rules to ensure a deterministic order since they were stored in a hashmap
@@ -220,6 +247,8 @@ public class ForwardingGraph {
         addRule(rule);
       } else if (backendType == BackendType.DELTANET_DOC) {
         addRuleDoc(rule);
+      } else if (backendType == BackendType.DELTANET_BDD) {
+        addRuleBdd(rule);
       } else {
         throw new BatfishException("Invalid backed type: " + backendType);
       }
@@ -672,12 +701,47 @@ public class ForwardingGraph {
     return ret;
   }
 
+  private void addRuleBdd(Rule r) {
+    HyperRectangle hr = r.getRectangle();
+    long[] boundsFrom = {hr.getBounds()[0]};
+    long[] boundsTo = {hr.getBounds()[1]};
+    HyperRectangle from = new HyperRectangle(boundsFrom);
+    HyperRectangle to = new HyperRectangle(boundsTo);
+    List<Tuple<HyperRectangle, HyperRectangle>> delta = createAtoms(from, to);
+    SortedSet<HyperRectangle> overlapping = _intervalSet.subSet(from, to);
+    updateRules(r, overlapping, delta);
+  }
+
+  private List<Tuple<HyperRectangle, HyperRectangle>> createAtoms(
+      HyperRectangle from, HyperRectangle to) {
+    List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
+    if (!_intervalSet.contains(from)) {
+      from.setAlphaIndex(_ecs.size());
+      _ecs.add(from);
+      _ownerMap.add(null);
+      _intervalSet.add(from);
+      HyperRectangle alpha = _intervalSet.lower(from);
+      delta.add(new Tuple<>(alpha, from));
+    }
+    if (from.getBounds()[0] != to.getBounds()[0] && !_intervalSet.contains(to)) {
+      to.setAlphaIndex(_ecs.size());
+      _ecs.add(to);
+      _ownerMap.add(null);
+      _intervalSet.add(to);
+      HyperRectangle alpha = _intervalSet.lower(to);
+      delta.add(new Tuple<>(alpha, to));
+    }
+    return delta;
+  }
+
   /*
    * Given a collection of new ECs and a set of overlapping ECs,
    * and a Rule, it updates the edge labelled graph accordingly.
    */
   private void updateRules(
-      Rule r, List<HyperRectangle> overlapping, List<Tuple<HyperRectangle, HyperRectangle>> delta) {
+      Rule r,
+      Collection<HyperRectangle> overlapping,
+      Collection<Tuple<HyperRectangle, HyperRectangle>> delta) {
 
     // Update new rules
     for (Tuple<HyperRectangle, HyperRectangle> d : delta) {
@@ -740,6 +804,8 @@ public class ForwardingGraph {
       relevant = findRelevantEcs(h);
     } else if (_backendType == BackendType.DELTANET_DOC) {
       relevant = findRelevantEcsDoc(h);
+    } else if (_backendType == BackendType.DELTANET_BDD) {
+      relevant = findRelevantEcsBdd(h);
     } else {
       throw new BatfishException("Invalid backend type: " + _backendType);
     }
@@ -750,8 +816,11 @@ public class ForwardingGraph {
       HyperRectangle overlap = entry.getValue();
       Tuple<Path, FlowDisposition> tup = reachable(equivClass, flags, sources, sinks);
       if (tup != null) {
+        Tuple<Flow, FlowTrace> trace = createTrace(_factory.example(overlap), tup);
+        List<Tuple<Flow, FlowTrace>> traces = new ArrayList<>();
+        traces.add(trace);
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
-        return createReachabilityAnswer(_factory.example(overlap), tup);
+        return createReachabilityAnswer(traces);
       }
     }
     System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
@@ -866,12 +935,38 @@ public class ForwardingGraph {
   }
 
   /*
+   * Given a query headerspace, pick out the relevant ECs to check
+   * and return the overlapping region for each so we can construct
+   * an example easily.
+   */
+  @Nonnull
+  private Map<Integer, HyperRectangle> findRelevantEcsBdd(HeaderSpace h) {
+    // Pick out the relevant equivalence classes
+    GeometricSpace space = _factory.fromHeaderSpace(h);
+    Map<Integer, HyperRectangle> relevant = new HashMap<>();
+    for (HyperRectangle rect : space.rectangles()) {
+      long[] lower = {rect.getBounds()[0]};
+      long[] upper = {rect.getBounds()[1]};
+      HyperRectangle low = new HyperRectangle(lower);
+      HyperRectangle high = new HyperRectangle(upper);
+      SortedSet<HyperRectangle> overlapping = _intervalSet.subSet(low, high);
+      for (HyperRectangle r1 : overlapping) {
+        HyperRectangle r2 = _intervalSet.ceiling(r1);
+        assert (r2 != null);
+        long[] bounds = {r1.getBounds()[0], r2.getBounds()[0]};
+        HyperRectangle range = new HyperRectangle(bounds);
+        HyperRectangle overlap = rect.overlap(range);
+        relevant.put(r1.getAlphaIndex(), overlap);
+      }
+    }
+    return relevant;
+  }
+
+  /*
    * Create a reachability answer element for compatibility
    * with the standard Batfish reachability question.
    */
-  private AnswerElement createReachabilityAnswer(HeaderSpace h, Tuple<Path, FlowDisposition> tup) {
-    FlowHistory fh = new FlowHistory();
-
+  private Tuple<Flow, FlowTrace> createTrace(HeaderSpace h, Tuple<Path, FlowDisposition> tup) {
     Flow.Builder b = new Flow.Builder();
     b.setIngressNode(tup.getFirst().getSource().getName());
     if (!h.getSrcIps().isEmpty()) {
@@ -920,12 +1015,7 @@ public class ForwardingGraph {
 
     Flow flow = b.build();
 
-    String testRigName = _batfish.getTestrigName();
-    Environment environment =
-        new Environment(
-            "BASE", testRigName, new TreeSet<>(), null, null, null, null, new TreeSet<>());
-
-    String note = "";
+    String note;
     Path path = tup.getFirst();
     List<GraphLink> links = path.getLinks();
 
@@ -996,8 +1086,20 @@ public class ForwardingGraph {
       hops.add(hop);
     }
 
-    FlowTrace flowTrace = new FlowTrace(fd, hops, note);
-    fh.addFlowTrace(flow, "BASE", environment, flowTrace);
+    return new Tuple<>(flow, new FlowTrace(fd, hops, note));
+  }
+
+  private AnswerElement createReachabilityAnswer(List<Tuple<Flow, FlowTrace>> traces) {
+    FlowHistory fh = new FlowHistory();
+    String testRigName = _batfish.getTestrigName();
+    Environment environment =
+        new Environment(
+            "BASE", testRigName, new TreeSet<>(), null, null, null, null, new TreeSet<>());
+    for (Tuple<Flow, FlowTrace> tup : traces) {
+      Flow flow = tup.getFirst();
+      FlowTrace trace = tup.getSecond();
+      fh.addFlowTrace(flow, "BASE", environment, trace);
+    }
     return fh;
   }
 

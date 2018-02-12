@@ -9,7 +9,8 @@ import org.batfish.common.BatfishException;
 public enum BackendType {
   NOD("NoD"),
   DELTANET("deltanet"),
-  DELTANET_DOC("deltanet-doc");
+  DELTANET_DOC("deltanet-doc"),
+  DELTANET_BDD("deltanet-bdd");
 
   private static final Map<String, BackendType> _map = buildMap();
 
