@@ -22,6 +22,7 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -34,6 +35,7 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -131,6 +133,9 @@ public class ForwardingGraph {
   // Reference to the Batfish object so we can access the ACLs in the configs
   private Batfish _batfish;
 
+  // The dataplane computed by batfish
+  private DataPlane _dataPlane;
+
   @SuppressWarnings("unused")
   private long _time = 0L;
 
@@ -141,6 +146,7 @@ public class ForwardingGraph {
   public ForwardingGraph(Batfish batfish, DataPlane dp, BackendType backendType) {
     long t = System.currentTimeMillis();
     _batfish = batfish;
+    _dataPlane = dp;
     _backendType = backendType;
 
     initGraph(batfish, dp);
@@ -351,17 +357,22 @@ public class ForwardingGraph {
     for (Entry<String, Configuration> entry : configs.entrySet()) {
       String router = entry.getKey();
       Configuration config = entry.getValue();
-
-      // Add a null interface to the drop node for every router
-      NodeInterfacePair nip = new NodeInterfacePair(router, "null_interface");
-      edgeMap.put(nip, nullPair);
-
       for (Entry<String, Interface> e : config.getInterfaces().entrySet()) {
-        nip = new NodeInterfacePair(router, e.getKey());
+        NodeInterfacePair nip = new NodeInterfacePair(router, e.getKey());
         if (!edgeMap.containsKey(nip)) {
           edgeMap.put(nip, nullPair);
         }
       }
+    }
+
+    // Add null interface edges to the drop node for every router and ACL node
+    for (Configuration config : configs.values()) {
+      NodeInterfacePair nip = new NodeInterfacePair(config.getName(), "null_interface");
+      edgeMap.put(nip, nullPair);
+    }
+    for (AclGraphNode aclNode : _aclMap.values()) {
+      NodeInterfacePair nip = new NodeInterfacePair(aclNode.getName(), "null_interface");
+      edgeMap.put(nip, nullPair);
     }
 
     int linkIndex = 0;
@@ -380,6 +391,9 @@ public class ForwardingGraph {
       NodeInterfacePair nip2 = entry.getValue();
 
       GraphNode src = _nodeMap.get(nip1.getHostname());
+      if (src == null) {
+        src = _aclMap.get(nip1.getHostname());
+      }
 
       // Add a special null edge
       /* GraphLink nullLink =
@@ -414,7 +428,6 @@ public class ForwardingGraph {
         String outAclName = getAclName(router1, ifaceName1, outAcl, false);
         AclGraphNode tgt1 = _aclMap.get(outAclName);
         GraphLink l1 = new GraphLink(src, ifaceName1, tgt1, "enter-outbound-acl", linkIndex);
-        tgt1.setOwnerLink(l1);
         linkIndex++;
         _linkMap.put(nip1, l1);
         _adjacencyLists.get(src.getIndex()).add(l1);
@@ -425,7 +438,6 @@ public class ForwardingGraph {
           AclGraphNode tgt2 = _aclMap.get(inAclName);
           GraphLink l2 =
               new GraphLink(tgt1, "exit-outbound-acl", tgt2, "enter-inbound-acl", linkIndex);
-          tgt2.setOwnerLink(l2);
           linkIndex++;
           _adjacencyLists.get(tgt1.getIndex()).add(l2);
           _allLinks.add(l2);
@@ -435,6 +447,8 @@ public class ForwardingGraph {
           linkIndex++;
           _adjacencyLists.get(tgt2.getIndex()).add(l3);
           _allLinks.add(l3);
+          tgt1.setNeighbor(tgt3);
+          tgt2.setNeighbor(tgt3);
         } else {
           // add a link from ACL to peer
           GraphNode tgt2 = _nodeMap.get(router2);
@@ -442,13 +456,13 @@ public class ForwardingGraph {
           linkIndex++;
           _adjacencyLists.get(tgt1.getIndex()).add(l2);
           _allLinks.add(l2);
+          tgt1.setNeighbor(tgt2);
         }
       } else {
         if (inAcl != null) {
           String inAclName = getAclName(router2, ifaceName2, inAcl, true);
           AclGraphNode tgt1 = _aclMap.get(inAclName);
           GraphLink l1 = new GraphLink(src, ifaceName1, tgt1, "enter-inbound-acl", linkIndex);
-          tgt1.setOwnerLink(l1);
           linkIndex++;
           _linkMap.put(nip1, l1);
           _adjacencyLists.get(src.getIndex()).add(l1);
@@ -459,6 +473,7 @@ public class ForwardingGraph {
           linkIndex++;
           _adjacencyLists.get(tgt1.getIndex()).add(l2);
           _allLinks.add(l2);
+          tgt1.setNeighbor(tgt2);
         } else {
           GraphNode tgt = _nodeMap.get(router2);
           GraphLink l = new GraphLink(src, ifaceName1, tgt, ifaceName2, linkIndex);
@@ -912,18 +927,11 @@ public class ForwardingGraph {
 
     String note = "";
     Path path = tup.getFirst();
+    List<GraphLink> links = path.getLinks();
+
     FlowDisposition fd = tup.getSecond();
-    if (fd == FlowDisposition.NO_ROUTE) {
-      note = "NO_ROUTE";
-    }
-    if (fd == FlowDisposition.NULL_ROUTED) {
-      note = "NULL_ROUTED";
-    }
-    if (fd == FlowDisposition.ACCEPTED) {
-      note = "ACCEPTED";
-    }
     if (fd == FlowDisposition.DENIED_OUT || fd == FlowDisposition.DENIED_IN) {
-      AclGraphNode aclNode = (AclGraphNode) path.getDestination();
+      AclGraphNode aclNode = (AclGraphNode) links.get(links.size() - 1).getSource();
       IpAccessList acl = aclNode.getAcl();
       FilterResult fr = acl.filter(flow);
       String line = "default deny";
@@ -932,15 +940,59 @@ public class ForwardingGraph {
       }
       String type = (fd == FlowDisposition.DENIED_OUT) ? "OUT" : "IN";
       note = String.format("DENIED_%s{%s}{%s}", type, acl.getName(), line);
+    } else {
+      note = fd.name();
     }
 
+    Map<String, Configuration> configs = _batfish.loadConfigurations();
+
     List<FlowTraceHop> hops = new ArrayList<>();
+
+    // We want to skip over ACL nodes when displaying the path
+    List<GraphNode> routers = new ArrayList<>();
+    List<String> ifaces = new ArrayList<>();
     for (GraphLink link : path) {
       GraphNode src = link.getSource();
       GraphNode tgt = link.getTarget();
-      Edge edge =
-          new Edge(src.getName(), link.getSourceIface(), tgt.getName(), link.getTargetIface());
-      FlowTraceHop hop = new FlowTraceHop(edge, new TreeSet<>(), null);
+      String srcIface = link.getSourceIface();
+      String tgtIface = link.getTargetIface();
+      if (!(src instanceof AclGraphNode)) {
+        routers.add(src);
+        ifaces.add(srcIface);
+      }
+      if (!(tgt instanceof AclGraphNode)) {
+        routers.add(tgt);
+        ifaces.add(tgtIface);
+      }
+    }
+
+    for (int i = 0; i < routers.size() - 1; i++) {
+      GraphNode src = routers.get(i);
+      GraphNode tgt = routers.get(i + 1);
+      String srcIface = ifaces.get(i);
+      String tgtIface = ifaces.get(i + 1);
+      if (src.getName().equals(tgt.getName())) {
+        continue;
+      }
+      Edge edge = new Edge(src.getName(), srcIface, tgt.getName(), tgtIface);
+      SortedSet<String> routeStrings = new TreeSet<>();
+      Configuration config = configs.get(src.getName());
+      IRib<AbstractRoute> rib =
+          _dataPlane.getRibs().get(src.getName()).get(config.getDefaultVrf().getName());
+      Set<AbstractRoute> routes = rib.longestPrefixMatch(flow.getDstIp());
+      for (AbstractRoute route : routes) {
+        String protoName = route.getProtocol().protocolName();
+        protoName = Character.toString(protoName.charAt(0)).toUpperCase() + protoName.substring(1);
+        String s =
+            String.format(
+                "%sRoute<%s,nhip:%s,nhint:%s>_fnhip:???????",
+                protoName,
+                route.getNetwork(),
+                route.getNextHopIp().toString(),
+                route.getNextHopInterface());
+        routeStrings.add(s);
+      }
+      FlowTraceHop hop = new FlowTraceHop(edge, routeStrings, null);
       hops.add(hop);
     }
 
@@ -1017,6 +1069,7 @@ public class ForwardingGraph {
 
               if ((flags.get(DROP_ACL_IN_FLAG) || flags.get(DROP_ACL_FLAG) || flags.get(DROP_FLAG))
                   && name.startsWith("ACL-IN")) {
+                // AclGraphNode aclNode = (AclGraphNode) current;
                 return new Tuple<>(
                     reconstructPath(predecessors, neighbor), FlowDisposition.DENIED_IN);
               }

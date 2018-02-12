@@ -11,13 +11,13 @@ public class Path implements Iterable<GraphLink> {
 
   private GraphNode _target;
 
-  private List<GraphLink> _elements;
+  private List<GraphLink> _links;
 
   public Path(List<GraphLink> elements, GraphNode source, GraphNode target) {
-    this._elements = elements;
+    this._links = elements;
     this._source = source;
     this._target = target;
-    Collections.reverse(_elements);
+    Collections.reverse(_links);
   }
 
   public GraphNode getSource() {
@@ -28,9 +28,13 @@ public class Path implements Iterable<GraphLink> {
     return _target;
   }
 
+  public List<GraphLink> getLinks() {
+    return _links;
+  }
+
   @Nonnull
   @Override
   public Iterator<GraphLink> iterator() {
-    return _elements.iterator();
+    return _links.iterator();
   }
 }

@@ -6,7 +6,7 @@ public class AclGraphNode extends GraphNode {
 
   private GraphNode _owner;
 
-  private GraphLink _ownerLink;
+  private GraphNode _neighbor;
 
   private IpAccessList _acl;
 
@@ -21,12 +21,12 @@ public class AclGraphNode extends GraphNode {
     return _owner;
   }
 
-  public GraphLink getOwnerLink() {
-    return _ownerLink;
+  public GraphNode getNeighborLink() {
+    return _neighbor;
   }
 
-  public void setOwnerLink(GraphLink ownerLink) {
-    _ownerLink = ownerLink;
+  public void setNeighbor(GraphNode neighbor) {
+    _neighbor = neighbor;
   }
 
   public IpAccessList getAcl() {
