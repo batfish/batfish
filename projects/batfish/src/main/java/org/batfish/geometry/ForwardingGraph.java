@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -166,9 +165,6 @@ public class ForwardingGraph {
     for (GraphLink link : _allLinks) {
       _labels[link.getIndex()] = new BitSet();
     }
-
-    // initialize owners
-    Map<GraphNode, NavigableSet<Rule>> map = new HashMap<>();
 
     // add the FIB rules
     List<Rule> rules = new ArrayList<>();
@@ -492,6 +488,7 @@ public class ForwardingGraph {
     return "ACL-" + (in ? "IN-" : "OUT-") + router + "-" + ifaceName + "-" + acl.getName();
   }
 
+  @SuppressWarnings("unused")
   private void showStatus() {
     System.out.println("=====================");
     for (int i = 0; i < _ecs.size(); i++) {
@@ -541,6 +538,7 @@ public class ForwardingGraph {
     updateRules(r, overlapping, delta);
   }
 
+  @SuppressWarnings("unused")
   private long _time = 0L;
 
   /*
@@ -552,19 +550,17 @@ public class ForwardingGraph {
     List<HyperRectangle> overlapping = new ArrayList<>();
     List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
-    Set<HyperRectangle> others = new HashSet<>(_kdtree.intersect(hr));
+    List<HyperRectangle> others = _kdtree.intersect(hr);
     for (HyperRectangle other : others) {
       addRuleDocRec(hr, other, others, cache, overlapping, delta);
     }
-    // System.out.println("Number of others: " + others.size());
-    // System.out.println("Cache size was: " + cache.size());
     updateRules(r, overlapping, delta);
   }
 
   private Tuple<BigInteger, Integer> addRuleDocRec(
       HyperRectangle added,
       HyperRectangle other,
-      Set<HyperRectangle> others,
+      List<HyperRectangle> others,
       Map<Integer, Tuple<BigInteger, Integer>> cache,
       List<HyperRectangle> overlapping,
       List<Tuple<HyperRectangle, HyperRectangle>> delta) {
@@ -589,21 +585,7 @@ public class ForwardingGraph {
     List<Integer> ecs = new ArrayList<>();
 
     Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
-    for (Integer childIndex : childIndices) {
-      HyperRectangle child = _ecs.get(childIndex);
-      if (others.contains(child)) {
-        Tuple<BigInteger, Integer> tup =
-            addRuleDocRec(added, child, others, cache, overlapping, delta);
-        BigInteger vol = tup.getFirst();
-        Integer ec = tup.getSecond();
-        childrenVolume = childrenVolume.add(vol);
-        if (ec != null) {
-          ecs.add(ec);
-        }
-      }
-    }
-
-    /* for (HyperRectangle o : others) {
+    for (HyperRectangle o : others) {
       if (childIndices.contains(o.getAlphaIndex())) {
         HyperRectangle child = _ecs.get(o.getAlphaIndex());
         Tuple<BigInteger, Integer> tup =
@@ -615,7 +597,7 @@ public class ForwardingGraph {
           ecs.add(ec);
         }
       }
-    } */
+    }
 
     BigInteger volume = overlapVolume.subtract(childrenVolume);
 
@@ -643,7 +625,6 @@ public class ForwardingGraph {
         _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
         delta.add(new Tuple<>(other, overlap));
         subsumes.addAll(ecs);
-        // delta.add(new Tuple<>(overlap, _ecs.get(ec)));
       }
 
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, overlap.getAlphaIndex());
@@ -732,8 +713,6 @@ public class ForwardingGraph {
     for (Entry<Integer, HyperRectangle> entry : relevant.entrySet()) {
       Integer equivClass = entry.getKey();
       HyperRectangle overlap = entry.getValue();
-      // System.out.println("Relevant: " + equivClass);
-      // System.out.println("Difference: " + _dag.get(equivClass));
       Tuple<Path, FlowDisposition> tup = reachable(equivClass, flags, sources, sinks);
       if (tup != null) {
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
