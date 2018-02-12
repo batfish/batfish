@@ -361,6 +361,18 @@ ro_summary_address
    NEWLINE
 ;
 
+ro_vrf
+:
+   VRF name = variable NEWLINE
+   (
+      ro_max_metric
+      | ro_redistribute_bgp
+      | ro_redistribute_connected
+      | ro_redistribute_rip
+      | ro_redistribute_static
+   )*
+;
+
 ro6_area
 :
    AREA ~NEWLINE* NEWLINE
@@ -592,6 +604,7 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
+      | ro_vrf
    )*
 ;
 

@@ -724,7 +724,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteOspfNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-        batfish.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+        CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
         _remoteOspfNeighborsInitialized = true;
       }
     }
