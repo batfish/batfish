@@ -932,12 +932,28 @@
               32
             ]
           }
+        },
+        "undefined:route-map:usage:ospf redistribute connected route-map:RM_OSPF_DIRECT" : {
+          "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute connected route-map' named 'RM_OSPF_DIRECT'",
+          "files" : {
+            "nxos_ospf" : [
+              9
+            ]
+          }
+        },
+        "undefined:route-map:usage:ospf redistribute static route-map:RM_OSPF_STATIC" : {
+          "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute static route-map' named 'RM_OSPF_STATIC'",
+          "files" : {
+            "nxos_ospf" : [
+              10
+            ]
+          }
         }
       },
       "summary" : {
         "numFailed" : 0,
         "numPassed" : 0,
-        "numResults" : 116
+        "numResults" : 118
       },
       "undefinedReferences" : {
         "IosXrMultiCast" : {
@@ -1587,6 +1603,20 @@
             }
           }
         },
+        "nxos_ospf" : {
+          "route-map" : {
+            "RM_OSPF_DIRECT" : {
+              "ospf redistribute connected route-map" : [
+                9
+              ]
+            },
+            "RM_OSPF_STATIC" : {
+              "ospf redistribute static route-map" : [
+                10
+              ]
+            }
+          }
+        },
         "peer_template" : {
           "interface" : {
             "Loopback1" : {
@@ -1762,6 +1792,6 @@
   "summary" : {
     "numFailed" : 0,
     "numPassed" : 0,
-    "numResults" : 116
+    "numResults" : 118
   }
 }
