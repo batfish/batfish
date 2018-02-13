@@ -573,7 +573,7 @@ public class ForwardingGraph {
   private void addRule(Rule r) {
     HyperRectangle hr = r.getRectangle();
     List<HyperRectangle> overlapping = new ArrayList<>();
-    List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
+    List<Delta> delta = new ArrayList<>();
     for (HyperRectangle other : _kdtree.intersect(hr)) {
       HyperRectangle overlap = hr.overlap(other);
       assert (overlap != null);
@@ -592,7 +592,7 @@ public class ForwardingGraph {
             rect.setAlphaIndex(_ecs.size());
             _ecs.add(rect);
             _ownerMap.add(null);
-            delta.add(new Tuple<>(other, rect));
+            delta.add(new Delta(other, rect));
           }
           _kdtree.insert(rect);
           if (rect.equals(overlap)) {
@@ -612,16 +612,11 @@ public class ForwardingGraph {
   private void addRuleDoc(Rule r) {
     HyperRectangle hr = r.getRectangle();
     List<HyperRectangle> overlapping = new ArrayList<>();
-    List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
+    List<Delta> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
     List<HyperRectangle> others = _kdtree.intersect(hr);
     HyperRectangle root = _ecs.get(0);
     addRuleDocRec(hr, root, others, cache, overlapping, delta);
-    /* for (HyperRectangle other : others) {
-      if (!root.equals(other)) {
-        addRuleDocRec(hr, other, others, cache, overlapping, delta);
-      }
-    } */
     updateRules(r, overlapping, delta);
   }
 
@@ -631,7 +626,7 @@ public class ForwardingGraph {
       List<HyperRectangle> others,
       Map<Integer, Tuple<BigInteger, Integer>> cache,
       List<HyperRectangle> overlapping,
-      List<Tuple<HyperRectangle, HyperRectangle>> delta) {
+      List<Delta> delta) {
 
     Tuple<BigInteger, Integer> cachedValue = cache.get(other.getAlphaIndex());
     if (cachedValue != null) {
@@ -658,26 +653,6 @@ public class ForwardingGraph {
 
     BigInteger childrenVolume = BigInteger.ZERO;
     List<Integer> ecs = new ArrayList<>();
-
-    // Get only the relvant overlaps
-    /* List<HyperRectangle> newOthers = new ArrayList<>();
-    for (HyperRectangle o : others) {
-      if (childIndices.contains(o.getAlphaIndex())) {
-        newOthers.add(o);
-      }
-    }
-
-    for (HyperRectangle o : newOthers) {
-      HyperRectangle child = _ecs.get(o.getAlphaIndex());
-      Tuple<BigInteger, Integer> tup =
-          addRuleDocRec(added, child, newOthers, cache, overlapping, delta);
-      BigInteger vol = tup.getFirst();
-      Integer ec = tup.getSecond();
-      childrenVolume = childrenVolume.add(vol);
-      if (ec != null) {
-        ecs.add(ec);
-      }
-    } */
 
     for (HyperRectangle o : others) {
       if (childIndices.contains(o.getAlphaIndex())) {
@@ -717,7 +692,7 @@ public class ForwardingGraph {
         Set<Integer> subsumes = new HashSet<>();
         _dag.set(overlap.getAlphaIndex(), subsumes);
         _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
-        delta.add(new Tuple<>(other, overlap));
+        delta.add(new Delta(other, overlap));
         subsumes.addAll(ecs);
       }
 
@@ -737,21 +712,21 @@ public class ForwardingGraph {
     long[] boundsTo = {hr.getBounds()[1]};
     HyperRectangle from = new HyperRectangle(boundsFrom);
     HyperRectangle to = new HyperRectangle(boundsTo);
-    List<Tuple<HyperRectangle, HyperRectangle>> delta = createAtoms(from, to);
+    List<Delta> delta = createAtoms(from, to);
     SortedSet<HyperRectangle> overlapping = _intervalSet.subSet(from, to);
     updateRules(r, overlapping, delta);
   }
 
-  private List<Tuple<HyperRectangle, HyperRectangle>> createAtoms(
+  private List<Delta> createAtoms(
       HyperRectangle from, HyperRectangle to) {
-    List<Tuple<HyperRectangle, HyperRectangle>> delta = new ArrayList<>();
+    List<Delta> delta = new ArrayList<>();
     if (!_intervalSet.contains(from)) {
       from.setAlphaIndex(_ecs.size());
       _ecs.add(from);
       _ownerMap.add(null);
       _intervalSet.add(from);
       HyperRectangle alpha = _intervalSet.lower(from);
-      delta.add(new Tuple<>(alpha, from));
+      delta.add(new Delta(alpha, from));
     }
     if (from.getBounds()[0] != to.getBounds()[0] && !_intervalSet.contains(to)) {
       to.setAlphaIndex(_ecs.size());
@@ -759,7 +734,7 @@ public class ForwardingGraph {
       _ownerMap.add(null);
       _intervalSet.add(to);
       HyperRectangle alpha = _intervalSet.lower(to);
-      delta.add(new Tuple<>(alpha, to));
+      delta.add(new Delta(alpha, to));
     }
     return delta;
   }
@@ -771,12 +746,12 @@ public class ForwardingGraph {
   private void updateRules(
       Rule r,
       Collection<HyperRectangle> overlapping,
-      Collection<Tuple<HyperRectangle, HyperRectangle>> delta) {
+      Collection<Delta> deltas) {
 
     // Update new rules
-    for (Tuple<HyperRectangle, HyperRectangle> d : delta) {
-      HyperRectangle alpha = d.getFirst();
-      HyperRectangle alphaPrime = d.getSecond();
+    for (Delta d : deltas) {
+      HyperRectangle alpha = d.getOld();
+      HyperRectangle alphaPrime = d.getNew();
       Map<GraphNode, Rule> existing = _ownerMap.get(alpha.getAlphaIndex());
       _ownerMap.set(alphaPrime.getAlphaIndex(), new HashMap<>(existing));
       for (Entry<GraphNode, Rule> entry : existing.entrySet()) {
