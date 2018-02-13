@@ -4,8 +4,10 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
@@ -14,6 +16,44 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public class SynthesizerInputMatchersImpl {
+
+  static final class HasAclConditions
+      extends FeatureMatcher<
+          SynthesizerInput, Map<String, Map<String, Map<Integer, BooleanExpr>>>> {
+    HasAclConditions(
+        @Nonnull Matcher<? super Map<String, Map<String, Map<Integer, BooleanExpr>>>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with ACL conditions", "ACL conditions");
+    }
+
+    @Override
+    protected Map<String, Map<String, Map<Integer, BooleanExpr>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getAclConditions();
+    }
+  }
+
+  static final class HasEnabledAcls
+      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, IpAccessList>>> {
+    HasEnabledAcls(@Nonnull Matcher<? super Map<String, Map<String, IpAccessList>>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with enabled ACLs", "enabled ACLs");
+    }
+
+    @Override
+    protected Map<String, Map<String, IpAccessList>> featureValueOf(SynthesizerInput actual) {
+      return actual.getEnabledAcls();
+    }
+  }
+
+  static final class HasEnabledEdges extends FeatureMatcher<SynthesizerInput, Set<Edge>> {
+    HasEnabledEdges(@Nonnull Matcher<? super Set<Edge>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with enabled edges", "enabled edges");
+    }
+
+    @Override
+    protected Set<Edge> featureValueOf(SynthesizerInput actual) {
+      return actual.getEnabledEdges();
+    }
+  }
 
   static final class HasEnabledFlowSinks
       extends FeatureMatcher<SynthesizerInput, Set<NodeInterfacePair>> {
@@ -92,6 +132,18 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Set<Ip>> featureValueOf(SynthesizerInput actual) {
       return actual.getIpsByHostname();
+    }
+  }
+
+  static final class HasTopologyInterfaces
+      extends FeatureMatcher<SynthesizerInput, Map<String, Set<Interface>>> {
+    HasTopologyInterfaces(@Nonnull Matcher<? super Map<String, Set<Interface>>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with topology interfaces", "topology interfaces");
+    }
+
+    @Override
+    protected Map<String, Set<Interface>> featureValueOf(SynthesizerInput actual) {
+      return actual.getTopologyInterfaces();
     }
   }
 

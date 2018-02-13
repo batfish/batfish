@@ -7,9 +7,44 @@ import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 @JsonSchemaDescription("An access-list used to filter IPV4 packets")
 public class IpAccessList extends ComparableStructure<String> {
+
+  public static class Builder extends NetworkFactoryBuilder<IpAccessList> {
+
+    private List<IpAccessListLine> _lines;
+
+    private String _name;
+
+    private Configuration _owner;
+
+    Builder(NetworkFactory networkFactory) {
+      super(networkFactory, IpAccessList.class);
+      _lines = ImmutableList.of();
+    }
+
+    @Override
+    public IpAccessList build() {
+      String name = _name != null ? _name : generateName();
+      IpAccessList ipAccessList = new IpAccessList(name, _lines);
+      if (_owner != null) {
+        _owner.getIpAccessLists().put(name, ipAccessList);
+      }
+      return ipAccessList;
+    }
+
+    public Builder setLines(List<IpAccessListLine> lines) {
+      _lines = lines;
+      return this;
+    }
+
+    public Builder setOwner(Configuration owner) {
+      _owner = owner;
+      return this;
+    }
+  }
 
   private static final String PROP_LINES = "lines";
 

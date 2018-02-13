@@ -3,20 +3,52 @@ package org.batfish.z3.matchers;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledAcls;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledFlowSinks;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasFibConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
 import org.hamcrest.Matcher;
 
 public class SynthesizerInputMatchers {
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's ACL conditions.
+   */
+  public static HasAclConditions hasAclConditions(
+      Matcher<? super Map<String, Map<String, Map<Integer, BooleanExpr>>>> subMatcher) {
+    return new HasAclConditions(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's enabled ACLs.
+   */
+  public static HasEnabledAcls hasEnabledAcls(
+      Matcher<? super Map<String, Map<String, IpAccessList>>> subMatcher) {
+    return new HasEnabledAcls(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's enabled edges.
+   */
+  public static HasEnabledEdges hasEnabledEdges(Matcher<? super Set<Edge>> subMatcher) {
+    return new HasEnabledEdges(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
@@ -71,6 +103,15 @@ public class SynthesizerInputMatchers {
   public static HasIpsByHostname hasIpsByHostname(
       Matcher<? super Map<String, Set<Ip>>> subMatcher) {
     return new HasIpsByHostname(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's topology interfaces.
+   */
+  public static HasTopologyInterfaces hasTopologyInterfaces(
+      Matcher<? super Map<String, Set<Interface>>> subMatcher) {
+    return new HasTopologyInterfaces(subMatcher);
   }
 
   private SynthesizerInputMatchers() {}
