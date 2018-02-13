@@ -3,8 +3,10 @@ package org.batfish.symbolic.abstraction;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -88,11 +90,9 @@ public class BatfishCompressionTest {
     return new BatfishCompressor(batfish).compress(new HeaderSpace());
   }
 
-  /**
-   * Test that compression doesn't change the fibs for this network.
-   */
+  /** Test that compression doesn't change the fibs for this network. */
   @Test
-  public void testCompressionFibs() throws IOException {
+  public void testCompressionFibs_simpleNetwork() throws IOException {
     Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(simpleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
         getFibs(new TreeMap<>(compressNetwork(simpleNetwork())));
@@ -110,6 +110,78 @@ public class BatfishCompressionTest {
                   .forEach(
                       (vrf, rows) -> {
                         assertEquals(rows, compressedFibs.get(router).get(vrf));
+                      });
+            });
+  }
+
+  /** Build a network that can be easily compressed. */
+  private SortedMap<String, Configuration> compressibleNetwork() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Configuration c2 = cb.build();
+    Configuration c3 = cb.build();
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf v1 = vb.setOwner(c1).build();
+    Vrf v3 = vb.setOwner(c3).build();
+    vb.setOwner(c2).build(); // add a vrf to c2 too
+    Prefix p = Prefix.parse("10.23.0.0/31");
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+    ib.setOwner(c1)
+        .setVrf(v1)
+        .setAddress(new InterfaceAddress(p.getStartIp(), p.getPrefixLength()))
+        .build();
+
+    ib.setOwner(c3)
+        .setVrf(v3)
+        .setAddress(new InterfaceAddress(p.getStartIp(), p.getPrefixLength()))
+        .build();
+
+    StaticRoute staticRoute =
+        StaticRoute.builder().setNetwork(p).setNextHopIp(p.getEndIp()).build();
+    v1.getStaticRoutes().add(staticRoute);
+    v3.getStaticRoutes().add(staticRoute);
+
+    return new TreeMap<>(
+        ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2, c3.getName(), c3));
+  }
+
+  /**
+   * Test the following invariant: if a FIB appears on concrete router “r”, then a corresponding
+   * abstract FIB appears on one of these representatives. For example, if there is a concrete FIB
+   * from C to D, then there should be an abstract FIB from A to B, where A is in representatives(C)
+   * and B is in representatives(D).
+   */
+  @Test
+  public void testCompressionFibs_compressibleNetwork() throws IOException {
+    Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(compressibleNetwork());
+    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
+        getFibs(new TreeMap<>(compressNetwork(compressibleNetwork())));
+
+    Set<String> removedConfigs = Sets.difference(origFibs.keySet(), compressedFibs.keySet());
+    assertEquals(removedConfigs.size(), 1);
+
+    // A subset matcher would be nice here.
+    Set<String> addedConfigs = Sets.difference(compressedFibs.keySet(), origFibs.keySet());
+    assertEquals(addedConfigs.size(), 0);
+
+    // all FIB entries in compressed network should also exist in the original network
+    compressedFibs
+        .entrySet()
+        .stream()
+        .forEach(
+            routerEntry -> {
+              String router = routerEntry.getKey();
+              routerEntry
+                  .getValue()
+                  .entrySet()
+                  .stream()
+                  .forEach(
+                      vrfEntry -> {
+                        String vrf = vrfEntry.getKey();
+                        SortedSet<FibRow> rows = vrfEntry.getValue();
+                        assertEquals(rows, origFibs.get(router).get(vrf));
                       });
             });
   }

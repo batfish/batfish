@@ -66,8 +66,8 @@ public class BatfishCompressor {
   }
 
   /**
-   * Merge two maps of filters. When there's collision take the union (to allow
-   * traffic matching either filter).
+   * Merge two maps of filters. When there's collision take the union (to allow traffic matching
+   * either filter).
    */
   private void addAll(
       Map<GraphEdge, Tuple<PrefixTrie, Boolean>> newMap,
@@ -99,10 +99,10 @@ public class BatfishCompressor {
     return newMap;
   }
 
-  /** A slice is an abstracted network for a single destination EC.
-   *  Given one destination EC, return a mapping from each edge to a prefix trie that
-   *  will filter traffic on that EC. We need separate one for each one because they
-   *  get mutated when we install the filters in the network.
+  /**
+   * A slice is an abstracted network for a single destination EC. Given one destination EC, return
+   * a mapping from each edge to a prefix trie that will filter traffic on that EC. We need separate
+   * one for each one because they get mutated when we install the filters in the network.
    */
   private Map<GraphEdge, Tuple<PrefixTrie, Boolean>> processSlice(NetworkSlice slice) {
     Map<GraphEdge, Tuple<PrefixTrie, Boolean>> filters = new HashMap<>();
