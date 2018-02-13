@@ -617,6 +617,11 @@ public class ForwardingGraph {
     List<HyperRectangle> others = _kdtree.intersect(hr);
     HyperRectangle root = _ecs.get(0);
     addRuleDocRec(hr, root, others, cache, overlapping, delta);
+    /* for (HyperRectangle other : others) {
+      if (!root.equals(other)) {
+        addRuleDocRec(hr, other, others, cache, overlapping, delta);
+      }
+    } */
     updateRules(r, overlapping, delta);
   }
 
@@ -636,9 +641,16 @@ public class ForwardingGraph {
     HyperRectangle overlap = added.overlap(other);
     assert (overlap != null);
     BigInteger overlapVolume = overlap.volume();
+    Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
 
+    // Cut off traversal early
     if (other.equals(overlap)) {
       overlapping.add(other);
+      // Make sure we evaluate the children so they add to the overlapping set
+      for (Integer childIndex : childIndices) {
+        HyperRectangle child = _ecs.get(childIndex);
+        addRuleDocRec(added, child, others, cache, overlapping, delta);
+      }
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
       cache.put(other.getAlphaIndex(), ret);
       return ret;
@@ -647,7 +659,26 @@ public class ForwardingGraph {
     BigInteger childrenVolume = BigInteger.ZERO;
     List<Integer> ecs = new ArrayList<>();
 
-    Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
+    // Get only the relvant overlaps
+    /* List<HyperRectangle> newOthers = new ArrayList<>();
+    for (HyperRectangle o : others) {
+      if (childIndices.contains(o.getAlphaIndex())) {
+        newOthers.add(o);
+      }
+    }
+
+    for (HyperRectangle o : newOthers) {
+      HyperRectangle child = _ecs.get(o.getAlphaIndex());
+      Tuple<BigInteger, Integer> tup =
+          addRuleDocRec(added, child, newOthers, cache, overlapping, delta);
+      BigInteger vol = tup.getFirst();
+      Integer ec = tup.getSecond();
+      childrenVolume = childrenVolume.add(vol);
+      if (ec != null) {
+        ecs.add(ec);
+      }
+    } */
+
     for (HyperRectangle o : others) {
       if (childIndices.contains(o.getAlphaIndex())) {
         HyperRectangle child = _ecs.get(o.getAlphaIndex());
