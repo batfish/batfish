@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class IdExpr extends Expr {
@@ -15,7 +16,17 @@ public class IdExpr extends Expr {
     visitor.visitIdExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_id, ((IdExpr) e)._id);
+  }
+
   public String getId() {
     return _id;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_id);
   }
 }

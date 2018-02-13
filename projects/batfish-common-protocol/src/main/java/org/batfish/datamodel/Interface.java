@@ -26,6 +26,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _active;
 
+    private boolean _blacklisted;
+
     private String _name;
 
     private OspfArea _ospfArea;
@@ -53,6 +55,7 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface = new Interface(name, _owner);
       iface.setActive(_active);
+      iface.setBlacklisted(_blacklisted);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.getInterfaces().put(name, iface);
@@ -83,6 +86,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setActive(boolean active) {
       _active = active;
+      return this;
+    }
+
+    public Builder setBlacklisted(boolean blacklisted) {
+      _blacklisted = blacklisted;
       return this;
     }
 

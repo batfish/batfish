@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
@@ -33,11 +34,22 @@ public class EqExpr extends BooleanExpr {
     visitor.visitEqExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    EqExpr other = (EqExpr) e;
+    return Objects.equals(_lhs, other._lhs) && Objects.equals(_rhs, other._rhs);
+  }
+
   public IntExpr getLhs() {
     return _lhs;
   }
 
   public IntExpr getRhs() {
     return _rhs;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_lhs, _rhs);
   }
 }

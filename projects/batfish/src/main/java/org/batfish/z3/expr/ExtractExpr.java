@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Objects;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
@@ -41,6 +42,14 @@ public class ExtractExpr extends IntExpr {
     visitor.visitExtractExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    ExtractExpr other = (ExtractExpr) e;
+    return Objects.equals(_high, other._high)
+        && Objects.equals(_low, other._low)
+        && Objects.equals(_var, other._var);
+  }
+
   public int getHigh() {
     return _high;
   }
@@ -51,6 +60,11 @@ public class ExtractExpr extends IntExpr {
 
   public VarIntExpr getVar() {
     return _var;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_high, _low, _var);
   }
 
   @Override

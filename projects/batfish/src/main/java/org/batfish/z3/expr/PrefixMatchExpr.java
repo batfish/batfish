@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Objects;
 import org.batfish.datamodel.Prefix;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.BooleanExprVisitor;
@@ -35,7 +36,17 @@ public class PrefixMatchExpr extends BooleanExpr {
     visitor.visitPrefixMatchExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_expr, ((PrefixMatchExpr) e)._expr);
+  }
+
   public BooleanExpr getExpr() {
     return _expr;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 }

@@ -18,4 +18,14 @@ public class FalseExpr extends BooleanExpr {
   public void accept(ExprVisitor visitor) {
     visitor.visitFalseExpr(this);
   }
+
+  @Override
+  public boolean exprEquals(Expr e) {
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return System.identityHashCode(this);
+  }
 }

@@ -29,7 +29,7 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.state.StateParameter.Type;
 
-public class SynthesizerInput {
+public final class SynthesizerInput {
 
   public static class Builder {
     private Map<String, Configuration> _configurations;
@@ -326,6 +326,8 @@ public class SynthesizerInput {
                           e2 ->
                               disabledInterfaces == null
                                   || !disabledInterfaces.contains(e2.getKey()))
+                      .filter(e2 -> e2.getValue().getActive())
+                      .filter(e2 -> !e2.getValue().getBlacklisted())
                       .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
                 }));
   }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import org.batfish.common.BatfishException;
@@ -406,8 +407,18 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
     visitor.visitHeaderSpaceMatchExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_expr, ((HeaderSpaceMatchExpr) e)._expr);
+  }
+
   public BooleanExpr getExpr() {
     return _expr;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 
   private <T, C extends Collection<T>> void requireMatch(

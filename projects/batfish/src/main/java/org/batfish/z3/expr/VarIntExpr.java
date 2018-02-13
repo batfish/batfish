@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Objects;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
@@ -23,12 +24,8 @@ public class VarIntExpr extends IntExpr {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o instanceof VarIntExpr) {
-      VarIntExpr rhs = (VarIntExpr) o;
-      return _headerField == rhs._headerField;
-    }
-    return false;
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_headerField, ((VarIntExpr) e)._headerField);
   }
 
   public HeaderField getHeaderField() {
@@ -37,7 +34,7 @@ public class VarIntExpr extends IntExpr {
 
   @Override
   public int hashCode() {
-    return _headerField.hashCode();
+    return Objects.hash(_headerField);
   }
 
   @Override

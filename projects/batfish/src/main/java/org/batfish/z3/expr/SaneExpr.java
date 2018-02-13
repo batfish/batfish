@@ -1,6 +1,7 @@
 package org.batfish.z3.expr;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Objects;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
@@ -74,7 +75,17 @@ public class SaneExpr extends BooleanExpr {
     visitor.visitSaneExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_expr, ((SaneExpr) e)._expr);
+  }
+
   public BooleanExpr getExpr() {
     return _expr;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 }

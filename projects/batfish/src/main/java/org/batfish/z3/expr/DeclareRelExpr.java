@@ -7,6 +7,7 @@ import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Z3Exception;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
@@ -29,8 +30,18 @@ public class DeclareRelExpr extends Statement {
     visitor.visitDeclareRelExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_name, ((DeclareRelExpr) e)._name);
+  }
+
   public String getName() {
     return _name;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name);
   }
 
   public FuncDecl toFuncDecl(Context ctx) throws Z3Exception {

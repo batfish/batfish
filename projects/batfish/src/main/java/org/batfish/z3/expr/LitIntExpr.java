@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Objects;
 import org.batfish.datamodel.Ip;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
@@ -36,12 +37,9 @@ public class LitIntExpr extends IntExpr {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o instanceof LitIntExpr) {
-      LitIntExpr rhs = (LitIntExpr) o;
-      return _bits == rhs._bits && _num == rhs._num;
-    }
-    return false;
+  public boolean exprEquals(Expr e) {
+    LitIntExpr other = (LitIntExpr) e;
+    return Objects.equals(_bits, other._bits) && Objects.equals(_num, other._num);
   }
 
   public int getBits() {
@@ -54,11 +52,7 @@ public class LitIntExpr extends IntExpr {
 
   @Override
   public int hashCode() {
-    int prime = 31;
-    int result = 1;
-    result = prime * result + _bits;
-    result = prime * result + Long.hashCode(_num);
-    return result;
+    return Objects.hash(_bits, _num);
   }
 
   @Override

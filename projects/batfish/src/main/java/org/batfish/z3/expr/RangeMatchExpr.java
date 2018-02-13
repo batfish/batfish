@@ -1,6 +1,7 @@
 package org.batfish.z3.expr;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.datamodel.SubRange;
 import org.batfish.z3.HeaderField;
@@ -112,7 +113,17 @@ public class RangeMatchExpr extends BooleanExpr {
     visitor.visitRangeMatchExpr(this);
   }
 
+  @Override
+  public boolean exprEquals(Expr e) {
+    return Objects.equals(_expr, ((RangeMatchExpr) e)._expr);
+  }
+
   public BooleanExpr getExpr() {
     return _expr;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 }
