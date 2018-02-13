@@ -18,7 +18,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrie;
 import org.batfish.datamodel.RoutingProtocol;
@@ -65,6 +65,10 @@ public class BatfishCompressor {
     _internalRegex = internalRegex();
   }
 
+  /**
+   * Merge two maps of filters. When there's collision take the union (to allow
+   * traffic matching either filter).
+   */
   private void addAll(
       Map<GraphEdge, Tuple<PrefixTrie, Boolean>> newMap,
       Map<GraphEdge, Tuple<PrefixTrie, Boolean>> oldMap) {
@@ -81,6 +85,7 @@ public class BatfishCompressor {
                         Sets.union(
                             tup.getFirst().getPrefixes(),
                             entry.getValue().getFirst().getPrefixes()))),
+                // TODO how do we update the default correctly? and/or/etc?
                 tup.getSecond()));
       }
     }
@@ -94,32 +99,27 @@ public class BatfishCompressor {
     return newMap;
   }
 
-  private Prefix makeCanonical(Prefix p) {
-    int length = p.getPrefixLength();
-    long l = p.getStartIp().asLong();
-    l = (l >> 32 - length);
-    l = (l << 32 - length);
-    Ip ip = new Ip(l);
-    return new Prefix(ip, length);
-  }
-
+  /** A slice is an abstracted network for a single destination EC.
+   *  Given one destination EC, return a mapping from each edge to a prefix trie that
+   *  will filter traffic on that EC. We need separate one for each one because they
+   *  get mutated when we install the filters in the network.
+   */
   private Map<GraphEdge, Tuple<PrefixTrie, Boolean>> processSlice(NetworkSlice slice) {
-    // System.out.println("Slice DstIps:    " + slice.getHeaderSpace().getDstIps());
-    // System.out.println("Slice NotDstIps: " + slice.getHeaderSpace().getNotDstIps());
-    // System.out.println("Is default case: " + slice.getIsDefaultCase());
     Map<GraphEdge, Tuple<PrefixTrie, Boolean>> filters = new HashMap<>();
+
+    // get the set of prefixes for this equivalence class.
+    TreeSet<Prefix> prefixSet =
+        slice
+            .getHeaderSpace()
+            .getDstIps()
+            .stream()
+            .map(IpWildcard::toPrefix)
+            .collect(Collectors.toCollection(TreeSet::new));
+
     for (GraphEdge edge : slice.getGraph().getAllEdges()) {
       if (!edge.isAbstract() && !_graph.isLoopback(edge)) {
-        TreeSet<Prefix> prefixSet =
-            new TreeSet<>(
-                slice
-                    .getHeaderSpace()
-                    .getDstIps()
-                    .stream()
-                    .map(wc -> wc.toPrefix())
-                    .collect(Collectors.toList()));
-        PrefixTrie pt = new PrefixTrie(prefixSet);
-        filters.put(edge, new Tuple<>(pt, slice.getIsDefaultCase()));
+        // add a filter to restrict traffic to this equivalence class.
+        filters.put(edge, new Tuple<>(new PrefixTrie(prefixSet), slice.getIsDefaultCase()));
       }
     }
     return filters;
@@ -145,6 +145,9 @@ public class BatfishCompressor {
     return matchInternal.toString();
   }
 
+  // PrefixTrie: capture the prefixes you are installing to allow traffic through. Restrict
+  // to those prefixes
+  // Boolean: are the prefixes for the default equivalence class?
   private List<Statement> applyFilters(
       List<Statement> statements, @Nullable Tuple<PrefixTrie, Boolean> tup) {
     If i = new If();
@@ -159,6 +162,21 @@ public class BatfishCompressor {
       AbstractionPrefixSet eps = new AbstractionPrefixSet(tup.getFirst());
       MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
       if (tup.getSecond()) {
+        // These prefixes are the default equivalence class.
+        // That means they aren't used in the network (no related to any destination prefix
+        // configured in the network.
+        // Add a filter that only allows traffic for those prefixes if it came from outside.
+        // EXTERNAL = (protocol is bgp or ibgp) and (the AS path is not an internal path)
+        // MATCH = destination matches the prefixTrie
+        // GUARD = EXTERNAL or MATCH (only allow this traffic through)
+        // TODO maybe GUARD should be EXTERNAL and MATCH. (ask Ryan)
+        // TODO why do we need to check EXTERNAL?
+        // we can always use this true branch. The false branch is an optimization for when
+        // we compress to a particular EC and don't care about external stuff that doesn't match
+        // the EC.
+
+        // TODO for now, always take the true branch. Until we understand what it's doing and
+        // why/when it should
         List<AsPathSetElem> elements = new ArrayList<>();
         elements.add(new RegexAsPathSetElem(_internalRegex));
         ExplicitAsPathSet expr = new ExplicitAsPathSet(elements);
@@ -183,6 +201,7 @@ public class BatfishCompressor {
         pfxOrExternal.setDisjuncts(exprs);
         i.setGuard(pfxOrExternal);
       } else {
+        // Not default equivalence class, so just let traffic through if dest matches the prefixTrie
         i.setGuard(match);
       }
     }
@@ -230,7 +249,7 @@ public class BatfishCompressor {
     DestinationClasses dcs = DestinationClasses.create(_batfish, h, true);
     ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
     Optional<Map<GraphEdge, Tuple<PrefixTrie, Boolean>>> opt =
-        ecs.stream().map(s -> processSlice(s.get())).reduce(this::mergeFilters);
+        ecs.stream().map(Supplier::get).map(this::processSlice).reduce(this::mergeFilters);
     if (!opt.isPresent()) {
       return new HashMap<>();
     }
@@ -240,14 +259,6 @@ public class BatfishCompressor {
       GraphEdge ge = entry.getKey();
       filtersByRouter.put(ge.getRouter(), ge, entry.getValue());
     }
-
-    /* filters.forEach(
-    (ge, filts) -> {
-      System.out.println("Edge: " + ge);
-      for (PrefixRange filt : filts.getPrefixRanges()) {
-        System.out.println("  filter: " + filt);
-      }
-    }); */
     return applyFilters(filtersByRouter);
   }
 }

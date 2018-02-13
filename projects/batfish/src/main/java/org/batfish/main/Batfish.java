@@ -971,16 +971,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
     checkEnvironmentExists();
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(differentialContext);
-    saveDataPlane(result, false);
+    saveDataPlane(result._dataPlane, result._answerElement, false);
     return result._answerElement;
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
-  private void saveDataPlane(ComputeDataPlaneResult result, boolean compressed) {
-    saveDataPlane(result._dataPlane, result._answerElement, compressed);
-  }
-
   private void saveDataPlane(
       DataPlane dataPlane, DataPlaneAnswerElement answerElement, boolean compressed) {
     Path dataPlanePath =

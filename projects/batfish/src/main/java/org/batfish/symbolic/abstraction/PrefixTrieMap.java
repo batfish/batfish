@@ -159,6 +159,9 @@ public class PrefixTrieMap implements Serializable {
     }
   }
 
+  /**
+   * Reverse the PrefixTrieMap: return the list of keys (Prefixes) for each value (Sets of devices).
+   */
   public Map<Set<String>, List<Prefix>> createDestinationMap() {
     Map<Set<String>, List<Prefix>> map = new HashMap<>();
     _trie._root.createDestinationMap(map, null, null);

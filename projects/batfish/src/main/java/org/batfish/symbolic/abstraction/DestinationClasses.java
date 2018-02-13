@@ -1,15 +1,15 @@
 package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -66,12 +66,6 @@ public class DestinationClasses {
     return abs;
   }
 
-  public static DestinationClasses create(IBatfish batfish, int fails, boolean defaultCase) {
-    DestinationClasses abs = new DestinationClasses(batfish, null, defaultCase);
-    abs.initDestinationMap();
-    return abs;
-  }
-
   /*
    * Initialize a map from sets of nodes that represent possible destinations,
    * to a set of prefixes that represent the collection of destination
@@ -91,29 +85,29 @@ public class DestinationClasses {
     }
   }
 
+  /**
+   * Adds a catch-all headerspace to the headerspace map. The catch-all case matches dstIps, does
+   * not match notDstIps, and doesn't match anything matched by anything in destinationMap other
+   * case.
+   *
+   * @param dstIps A list of destination IPs that should be in the catch-all headerspace.
+   * @param notDstIps A list of destination IPs that should not be in the catch-all headerspace.
+   * @param destinationMap Inversion of the prefix trie -- from sets of destinations to prefixes
+   */
   private void addCatchAllCase(
       List<Prefix> dstIps, List<Prefix> notDstIps, Map<Set<String>, List<Prefix>> destinationMap) {
     HeaderSpace catchAll = createHeaderSpace(dstIps);
-    // System.out.println("DstIps: " + dstIps);
 
-    SortedSet<IpWildcard> newNotDstIps = new TreeSet<>();
-    newNotDstIps.addAll(
-        notDstIps.stream().map(pfx -> new IpWildcard(pfx)).collect(Collectors.toList()));
-
-    newNotDstIps.addAll(
-        destinationMap
-            .entrySet()
-            .stream()
-            .flatMap(e -> e.getValue().stream())
-            .map(pfx -> new IpWildcard(pfx))
-            .collect(Collectors.toList()));
+    catchAll.setNotDstIps(
+        Stream.concat(
+                notDstIps.stream(), destinationMap.values().stream().flatMap(Collection::stream))
+            .map(IpWildcard::new)
+            .collect(Collectors.toSet()));
 
     if (_headerspace != null) {
       copyAllButDestinationIp(catchAll, _headerspace);
     }
     if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
-      // System.out.println("Catch all: " + catchAll.getDstIps());
-      // System.out.println("Catch all: " + catchAll.getNotDstIps());
       _headerspaceMap.put(new HashSet<>(), new Tuple<>(catchAll, new Tuple<>(null, true)));
     }
   }
@@ -246,12 +240,7 @@ public class DestinationClasses {
    */
   private HeaderSpace createHeaderSpace(List<Prefix> prefixes) {
     HeaderSpace h = new HeaderSpace();
-    SortedSet<IpWildcard> ips = new TreeSet<>();
-    for (Prefix pfx : prefixes) {
-      IpWildcard ip = new IpWildcard(pfx);
-      ips.add(ip);
-    }
-    h.setDstIps(ips);
+    h.setDstIps(prefixes.stream().map(IpWildcard::new).collect(Collectors.toSet()));
     return h;
   }
 

@@ -38,7 +38,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
     DATA_PLANE_PLUGIN_CLASS = dataPlanePlugin;
   }
 
-  public class ComputeDataPlaneResult {
+  public static final class ComputeDataPlaneResult {
     public final DataPlaneAnswerElement _answerElement;
     public final DataPlane _dataPlane;
 

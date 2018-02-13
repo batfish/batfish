@@ -18,6 +18,7 @@ public class NetworkSlice {
 
   private Abstraction _abstraction;
 
+  // TODO what is this?
   private boolean _isDefaultCase;
 
   public NetworkSlice(
