@@ -1,5 +1,8 @@
 package org.batfish.symbolic.abstraction;
 
+import static junit.framework.TestCase.assertNotNull;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableSortedMap;
@@ -22,6 +25,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.FibRow;
+import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Test;
@@ -69,6 +73,19 @@ public class BatfishCompressionTest {
         ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2, c3.getName(), c3));
   }
 
+  private static void assertIsCompressedConfig(Configuration config) {
+    config
+        .getRoutingPolicies()
+        .values()
+        .forEach(
+            p -> {
+              assertEquals(p.getStatements().size(), 1);
+              assertThat(p.getStatements().get(0), instanceOf(If.class));
+              If i = (If) p.getStatements().get(0);
+              assertNotNull(i.getGuard());
+            });
+  }
+
   private Map<String, Map<String, SortedSet<FibRow>>> getFibs(
       SortedMap<String, Configuration> configs) throws IOException {
     // make sure to reconstruct the network, since compression mutates it
@@ -93,10 +110,12 @@ public class BatfishCompressionTest {
   /** Test that compression doesn't change the fibs for this network. */
   @Test
   public void testCompressionFibs_simpleNetwork() throws IOException {
+    Map<String, Configuration> compressedConfigs = compressNetwork(simpleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(simpleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
-        getFibs(new TreeMap<>(compressNetwork(simpleNetwork())));
+        getFibs(new TreeMap<>(compressedConfigs));
 
+    compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
     assert origFibs.keySet().equals(compressedFibs.keySet());
     assertEquals(origFibs, compressedFibs);
 
@@ -155,16 +174,19 @@ public class BatfishCompressionTest {
    */
   @Test
   public void testCompressionFibs_compressibleNetwork() throws IOException {
+    Map<String, Configuration> compressedConfigs = compressNetwork(compressibleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(compressibleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
-        getFibs(new TreeMap<>(compressNetwork(compressibleNetwork())));
+        getFibs(new TreeMap<>(compressedConfigs));
 
-    Set<String> removedConfigs = Sets.difference(origFibs.keySet(), compressedFibs.keySet());
-    assertEquals(removedConfigs.size(), 1);
+    compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
+
+    Set<String> removedRouters = Sets.difference(origFibs.keySet(), compressedFibs.keySet());
+    assertEquals(removedRouters.size(), 1);
 
     // A subset matcher would be nice here.
-    Set<String> addedConfigs = Sets.difference(compressedFibs.keySet(), origFibs.keySet());
-    assertEquals(addedConfigs.size(), 0);
+    Set<String> addedRouters = Sets.difference(compressedFibs.keySet(), origFibs.keySet());
+    assertEquals(addedRouters.size(), 0);
 
     // all FIB entries in compressed network should also exist in the original network
     compressedFibs

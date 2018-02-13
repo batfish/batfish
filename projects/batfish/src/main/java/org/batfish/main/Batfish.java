@@ -142,7 +142,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
-import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -952,19 +951,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedConfigurations.invalidate(_testrigSettings);
 
     return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
-  }
-
-  private void isCompressedConfig(Configuration config) {
-    config
-        .getRoutingPolicies()
-        .values()
-        .forEach(
-            p -> {
-              assert p.getStatements().size() == 1;
-              assert p.getStatements().get(0) instanceof If;
-              If i = (If) p.getStatements().get(0);
-              assert i.getGuard() != null;
-            });
   }
 
   @Override
