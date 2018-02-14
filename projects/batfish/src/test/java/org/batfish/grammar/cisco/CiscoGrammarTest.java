@@ -1,8 +1,10 @@
 package org.batfish.grammar.cisco;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasInterfaces;
@@ -476,7 +478,6 @@ public class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations;
     configurations = batfish.loadConfigurations();
 
@@ -487,6 +488,39 @@ public class CiscoGrammarTest {
     OspfArea area = c.getDefaultVrf().getOspfProcess().getAreas().get(areaNum);
     assertThat(area, hasInterfaces(hasKey(ifaceName)));
     Interface iface = area.getInterfaces().get(ifaceName);
+    assertThat(iface, hasOspfArea(sameInstance(area)));
+    assertThat(iface, isOspfPassive(equalTo(false)));
+    assertThat(iface, isOspfPointToPoint());
+  }
+
+  @Test
+  public void testNxosOspfNonDefaultVrf() throws IOException {
+    String testrigName = "nxos-ospf";
+    String hostname = "nxos-ospf-iface-in-vrf";
+    String ifaceName = "Ethernet1";
+    String vrfName = "OTHER-VRF";
+    long areaNum = 1L;
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    SortedMap<String, Configuration> configurations;
+    configurations = batfish.loadConfigurations();
+
+    /* Ensure bidirectional references between OSPF area and interface */
+    assertThat(configurations, hasKey(hostname));
+    Configuration c = configurations.get(hostname);
+    assertThat(c, hasVrfs(hasKey(vrfName)));
+    Vrf vrf = c.getVrfs().get(vrfName);
+    assertThat(vrf, hasOspfProcess(hasAreas(hasKey(areaNum))));
+    OspfArea area = vrf.getOspfProcess().getAreas().get(areaNum);
+    assertThat(area, hasInterfaces(hasKey(ifaceName)));
+    Interface iface = area.getInterfaces().get(ifaceName);
+    assertThat(iface, hasVrf(sameInstance(vrf)));
     assertThat(iface, hasOspfArea(sameInstance(area)));
     assertThat(iface, isOspfPassive(equalTo(false)));
     assertThat(iface, isOspfPointToPoint());
@@ -507,7 +541,6 @@ public class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations;
     configurations = batfish.loadConfigurations();
 
@@ -627,7 +660,6 @@ public class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
 
     /* Parser should not crash, and configuration with hostname from file should be generated */

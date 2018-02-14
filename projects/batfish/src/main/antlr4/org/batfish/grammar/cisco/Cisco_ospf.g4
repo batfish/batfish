@@ -144,6 +144,10 @@ ro_max_metric
       (
          summary_lsa = SUMMARY_LSA summary = DEC?
       )
+      |
+      (
+         wait_for_bgp = WAIT_FOR BGP bgptag = variable_max_metric
+      )
    )* NEWLINE
 ;
 
@@ -359,6 +363,16 @@ ro_summary_address
 :
    SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
    NEWLINE
+;
+
+ro_vrf
+:
+   VRF name = variable NEWLINE
+   (
+      ro_max_metric
+      | ro_redistribute_connected
+      | ro_redistribute_static
+   )*
 ;
 
 ro6_area
@@ -592,6 +606,7 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
+      | ro_vrf
    )*
 ;
 

@@ -9,9 +9,11 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
@@ -60,6 +62,13 @@ public final class InterfaceMatchers {
    */
   public static HasSourceNats hasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
     return new HasSourceNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's VRF.
+   */
+  public static HasVrf hasVrf(Matcher<? super Vrf> subMatcher) {
+    return new HasVrf(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface is active. */
