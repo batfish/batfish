@@ -1204,9 +1204,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             namesByPath.size());
     namesByPath.forEach(
         (inputPath, name) -> {
-          logger.debugf(
-              "Reading and gunzipping: {} '{}' from '{}'", outputClassName, name, inputPath);
-          byte[] data = fromGzipFile(inputPath);
+          logger.debug(
+              "Reading and unzipping: "
+                  + outputClassName
+                  + " '"
+                  + name
+                  + "' from '"
+                  + inputPath.toString()
+                  + "'");
+          byte[] data = fromLz4File(inputPath);
           logger.debug(" ...OK\n");
           dataByName.put(name, data);
           readCompleted.incrementAndGet();
