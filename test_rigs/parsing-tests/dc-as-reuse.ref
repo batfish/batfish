@@ -444,7 +444,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -867,7 +867,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -1354,7 +1354,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -1841,7 +1841,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -2303,7 +2303,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -2765,7 +2765,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -3252,7 +3252,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -3739,7 +3739,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -4201,7 +4201,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
@@ -4663,7 +4663,7 @@
             "        NEWLINE:'\\n'  <== mode:M_Interface)))",
             "  (stanza",
             "    (s_null",
-            "      (null_block",
+            "      (null_single",
             "        END:'end'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n\\n\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"

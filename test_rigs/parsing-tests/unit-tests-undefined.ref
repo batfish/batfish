@@ -79,7 +79,7 @@
           "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'p3'",
           "files" : {
             "cisco_bgp" : [
-              12
+              14
             ]
           }
         },
@@ -127,7 +127,7 @@
           "description" : "Undefined reference to structure of type: 'crypto keyring' with usage: 'isakmp profile keyring' named 'VRF:MMS:RMT:UPM:1143'",
           "files" : {
             "cisco_crypto" : [
-              158
+              162
             ]
           }
         },
@@ -189,7 +189,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
           "files" : {
             "cisco_interface" : [
-              100
+              111
             ]
           }
         },
@@ -197,7 +197,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat destination acl' named 'mynatacl'",
           "files" : {
             "cisco_interface" : [
-              75
+              83
             ]
           }
         },
@@ -426,7 +426,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'myvpnacl'",
           "files" : {
             "cisco_crypto" : [
-              194
+              198
             ]
           }
         },
@@ -434,7 +434,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface igmp access-group acl' named '1'",
           "files" : {
             "cisco_interface" : [
-              67
+              73
             ]
           }
         },
@@ -442,7 +442,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface incoming ip access-list' named 'ag1'",
           "files" : {
             "cisco_interface" : [
-              46
+              52
             ]
           }
         },
@@ -458,7 +458,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
           "files" : {
             "cisco_interface" : [
-              103
+              114
             ]
           }
         },
@@ -477,7 +477,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
           "files" : {
             "cisco_interface" : [
-              78
+              86
             ]
           }
         },
@@ -502,7 +502,7 @@
           "files" : {
             "cisco_line" : [
               6,
-              22
+              25
             ]
           }
         },
@@ -510,7 +510,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'line access-class list' named '99'",
           "files" : {
             "cisco_line" : [
-              52
+              55
             ]
           }
         },
@@ -518,7 +518,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'line access-class list' named 'vty-acl'",
           "files" : {
             "cisco_line" : [
-              18
+              21
             ]
           }
         },
@@ -622,7 +622,10 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'router rip distribute-list' named 'some-ACL'",
           "files" : {
             "cisco_rip" : [
-              6
+              10,
+              11,
+              12,
+              13
             ]
           }
         },
@@ -695,7 +698,7 @@
           "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server tftp-server list' named '8'",
           "files" : {
             "cisco_snmp" : [
-              88
+              90
             ]
           }
         },
@@ -711,7 +714,7 @@
           "description" : "Undefined reference to structure of type: 'ipv6 acl' with usage: 'line access-class ipv6 list' named 'ipv6-vty-acl'",
           "files" : {
             "cisco_line" : [
-              57
+              60
             ]
           }
         },
@@ -767,7 +770,7 @@
           "description" : "Undefined reference to structure of type: 'nat pool' with usage: 'ip nat source pool' named 'beeble'",
           "files" : {
             "cisco_interface" : [
-              79
+              87
             ]
           }
         },
@@ -913,7 +916,7 @@
           "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute rip route-map' named 'blah'",
           "files" : {
             "cisco_bgp" : [
-              9
+              11
             ]
           }
         },
@@ -921,7 +924,7 @@
           "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute static route-map' named 'abcdefg'",
           "files" : {
             "cisco_bgp" : [
-              8
+              10
             ]
           }
         },
@@ -929,7 +932,7 @@
           "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute connected route-map' named 'DIRECT_OSPF'",
           "files" : {
             "cisco_ospf" : [
-              32
+              52
             ]
           }
         },
@@ -1092,19 +1095,19 @@
           "bgp group" : {
             "p3" : {
               "inherited BGP group" : [
-                12
+                14
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                8
+                10
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                9
+                11
               ]
             },
             "bloop" : {
@@ -1153,14 +1156,14 @@
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                158
+                162
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                194
+                198
               ]
             }
           }
@@ -1169,41 +1172,41 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                100
+                111
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                75
+                83
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                67
+                73
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                103
+                114
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                46
+                52
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                78
+                86
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                79
+                87
               ]
             }
           }
@@ -1227,24 +1230,24 @@
             "40" : {
               "line access-class list" : [
                 6,
-                22
+                25
               ]
             },
             "99" : {
               "line access-class list" : [
-                52
+                55
               ]
             },
             "vty-acl" : {
               "line access-class list" : [
-                18
+                21
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                57
+                60
               ]
             }
           }
@@ -1262,7 +1265,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                32
+                52
               ]
             }
           }
@@ -1294,7 +1297,10 @@
           "ipv4/6 acl" : {
             "some-ACL" : {
               "router rip distribute-list" : [
-                6
+                10,
+                11,
+                12,
+                13
               ]
             }
           }
@@ -1338,7 +1344,7 @@
                 67
               ],
               "snmp server tftp-server list" : [
-                88
+                90
               ]
             },
             "customer-snmp" : {
