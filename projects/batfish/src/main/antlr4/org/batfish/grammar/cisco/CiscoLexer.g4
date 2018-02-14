@@ -7223,11 +7223,6 @@ NO_SUMMARY
    'no-summary'
 ;
 
-NO_VACANT_MESSAGE
-:
-   'no' F_Whitespace+ 'vacant-message'
-;
-
 NOAUTH
 :
    'noauth'
