@@ -18,10 +18,10 @@ public abstract class Statement {
     return statementEquals((Statement) o);
   }
 
-  public abstract boolean statementEquals(Statement e);
-
   @Override
   public abstract int hashCode();
+
+  public abstract boolean statementEquals(Statement e);
 
   @Override
   public String toString() {

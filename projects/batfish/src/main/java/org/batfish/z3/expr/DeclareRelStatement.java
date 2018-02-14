@@ -34,11 +34,6 @@ public class DeclareRelStatement extends Statement {
     visitor.visitDeclareRelStatement(this);
   }
 
-  @Override
-  public boolean statementEquals(Statement e) {
-    return Objects.equals(_name, ((DeclareRelStatement) e)._name);
-  }
-
   public String getName() {
     return _name;
   }
@@ -46,6 +41,11 @@ public class DeclareRelStatement extends Statement {
   @Override
   public int hashCode() {
     return Objects.hash(_name);
+  }
+
+  @Override
+  public boolean statementEquals(Statement e) {
+    return Objects.equals(_name, ((DeclareRelStatement) e)._name);
   }
 
   public FuncDecl toFuncDecl(Context ctx) throws Z3Exception {

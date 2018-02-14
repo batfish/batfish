@@ -24,11 +24,6 @@ public class RuleStatement extends Statement {
     visitor.visitRuleStatement(this);
   }
 
-  @Override
-  public boolean statementEquals(Statement e) {
-    return Objects.equals(_subExpression, ((RuleStatement) e)._subExpression);
-  }
-
   public BooleanExpr getSubExpression() {
     return _subExpression;
   }
@@ -36,5 +31,10 @@ public class RuleStatement extends Statement {
   @Override
   public int hashCode() {
     return Objects.hash(_subExpression);
+  }
+
+  @Override
+  public boolean statementEquals(Statement e) {
+    return Objects.equals(_subExpression, ((RuleStatement) e)._subExpression);
   }
 }

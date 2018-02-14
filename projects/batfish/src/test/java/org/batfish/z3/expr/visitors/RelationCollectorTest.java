@@ -50,6 +50,13 @@ public class RelationCollectorTest {
     assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
   }
 
+  /** Test that collectionRelations returns the empty set for boolean literals. */
+  @Test
+  public void testVisitLiteral() {
+    AndExpr and = new AndExpr(of(TrueExpr.INSTANCE, FalseExpr.INSTANCE));
+    assertThat(collectRelations(_input, and), is(empty()));
+  }
+
   /**
    * Test that collectRelations on a StateExpr returns a singleton set containing that state's
    * nodName.
@@ -59,12 +66,5 @@ public class RelationCollectorTest {
     StateExpr expr = newRelation();
 
     assertThat(collectRelations(_input, expr), equalTo(ImmutableSet.of(getNodName(_input, expr))));
-  }
-
-  /** Test that collectionRelations returns the empty set for boolean literals. */
-  @Test
-  public void testVisitLiteral() {
-    AndExpr and = new AndExpr(of(TrueExpr.INSTANCE, FalseExpr.INSTANCE));
-    assertThat(collectRelations(_input, and), is(empty()));
   }
 }

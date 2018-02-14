@@ -4,11 +4,11 @@ public interface VoidStatementVisitor {
 
   void visitComment(Comment comment);
 
-  void visitRuleStatement(RuleStatement ruleStatement);
-
-  void visitQueryStatement(QueryStatement queryStatement);
-
   void visitDeclareRelStatement(DeclareRelStatement declareRelStatement);
 
   void visitDeclareVarStatement(DeclareVarStatement declareVarStatement);
+
+  void visitQueryStatement(QueryStatement queryStatement);
+
+  void visitRuleStatement(RuleStatement ruleStatement);
 }

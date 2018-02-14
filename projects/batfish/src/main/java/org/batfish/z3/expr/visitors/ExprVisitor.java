@@ -34,9 +34,9 @@ public interface ExprVisitor {
 
   void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr);
 
-  void visitIfExpr(IfExpr ifExpr);
-
   void visitIdExpr(IdExpr idExpr);
+
+  void visitIfExpr(IfExpr ifExpr);
 
   void visitLitIntExpr(LitIntExpr litIntExpr);
 

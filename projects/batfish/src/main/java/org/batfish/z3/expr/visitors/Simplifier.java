@@ -34,8 +34,8 @@ import org.batfish.z3.expr.VarIntExpr;
 
 public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statement> {
 
-  private static final Comment VACUOUS_RULE = new Comment("(vacuous rule)");
   private static final Comment UNSATISFIABLE_RULE = new Comment("(unsatisfiable rule)");
+  private static final Comment VACUOUS_RULE = new Comment("(vacuous rule)");
 
   public static BooleanExpr simplifyBooleanExpr(BooleanExpr expr) {
     Simplifier simplifier = new Simplifier();
@@ -260,6 +260,11 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
+  public Statement visitQueryStatement(QueryStatement queryStatement) {
+    return queryStatement;
+  }
+
+  @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     _simplifiedBooleanExpr = simplifyBooleanExpr(rangeMatchExpr.getExpr());
   }
@@ -283,11 +288,6 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     } else {
       return ruleStatement;
     }
-  }
-
-  @Override
-  public Statement visitQueryStatement(QueryStatement queryStatement) {
-    return queryStatement;
   }
 
   @Override

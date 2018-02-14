@@ -21,11 +21,6 @@ public class DeclareVarStatement extends Statement {
     visitor.visitDeclareVarStatement(this);
   }
 
-  @Override
-  public boolean statementEquals(Statement e) {
-    return Objects.equals(_headerField, ((DeclareVarStatement) e)._headerField);
-  }
-
   public HeaderField getHeaderField() {
     return _headerField;
   }
@@ -33,5 +28,10 @@ public class DeclareVarStatement extends Statement {
   @Override
   public int hashCode() {
     return Objects.hash(_headerField);
+  }
+
+  @Override
+  public boolean statementEquals(Statement e) {
+    return Objects.equals(_headerField, ((DeclareVarStatement) e)._headerField);
   }
 }

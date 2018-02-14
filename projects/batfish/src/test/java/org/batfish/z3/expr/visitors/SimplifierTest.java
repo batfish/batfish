@@ -23,6 +23,23 @@ public class SimplifierTest {
     return new NumberedQuery(_atomCounter++);
   }
 
+  /** Test that we keep simplifying until no more simplifications are possible. */
+  @Test
+  public void testChainedSimplifications() {
+    OrExpr or = new OrExpr(of(new OrExpr(of(new OrExpr(of())))));
+    assertThat(simplifyBooleanExpr(or), equalTo(FalseExpr.INSTANCE));
+  }
+
+  /**
+   * Test that an AND node with a single child (other than TRUE or FALSE) simplifies to that child.
+   */
+  @Test
+  public void testSimplifyAnd1() {
+    BooleanExpr p1 = newAtom();
+    AndExpr and = new AndExpr(of(p1));
+    assertThat(simplifyBooleanExpr(and), equalTo(p1));
+  }
+
   /** Test simplifications: false AND E --> false E AND false --> false */
   @Test
   public void testSimplifyAndExprFalseConjunct() {
@@ -58,6 +75,14 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(and), sameInstance(and));
   }
 
+  /** Test that an AND node with a FALSE child simplifies to FALSE */
+  @Test
+  public void testSimplifyAndFalse() {
+    BooleanExpr p1 = newAtom();
+    AndExpr and = new AndExpr(of(p1, FalseExpr.INSTANCE));
+    assertThat(simplifyBooleanExpr(and), equalTo(FalseExpr.INSTANCE));
+  }
+
   /** Test that any TRUE children of an AND node are removed. */
   @Test
   public void testSimplifyAndTrue() {
@@ -68,12 +93,28 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(and), equalTo(new AndExpr(of(p1, p2))));
   }
 
-  /** Test that an AND node with a FALSE child simplifies to FALSE */
+  /** Test that an empty AND node is simplified to true (the identity under AND). */
   @Test
-  public void testSimplifyAndFalse() {
+  public void testSimplifyEmptyAnd() {
+    AndExpr and = new AndExpr(of());
+    assertThat(simplifyBooleanExpr(and), equalTo(TrueExpr.INSTANCE));
+  }
+
+  /** Test that an empty OR node is simplified to false (the identity under OR). */
+  @Test
+  public void testSimplifyEmptyOr() {
+    OrExpr or = new OrExpr(of());
+    assertThat(simplifyBooleanExpr(or), equalTo(FalseExpr.INSTANCE));
+  }
+
+  /**
+   * Test that an OR node with a single child (other than TRUE or FALSE) simplifies to that child.
+   */
+  @Test
+  public void testSimplifyOr1() {
     BooleanExpr p1 = newAtom();
-    AndExpr and = new AndExpr(of(p1, FalseExpr.INSTANCE));
-    assertThat(simplifyBooleanExpr(and), equalTo(FalseExpr.INSTANCE));
+    OrExpr or = new OrExpr(of(p1));
+    assertThat(simplifyBooleanExpr(or), equalTo(p1));
   }
 
   /** Test that any FALSE children of an OR node are removed. */
@@ -92,46 +133,5 @@ public class SimplifierTest {
     BooleanExpr p1 = newAtom();
     OrExpr or = new OrExpr(of(p1, TrueExpr.INSTANCE));
     assertThat(simplifyBooleanExpr(or), equalTo(TrueExpr.INSTANCE));
-  }
-
-  /**
-   * Test that an AND node with a single child (other than TRUE or FALSE) simplifies to that child.
-   */
-  @Test
-  public void testSimplifyAnd1() {
-    BooleanExpr p1 = newAtom();
-    AndExpr and = new AndExpr(of(p1));
-    assertThat(simplifyBooleanExpr(and), equalTo(p1));
-  }
-
-  /**
-   * Test that an OR node with a single child (other than TRUE or FALSE) simplifies to that child.
-   */
-  @Test
-  public void testSimplifyOr1() {
-    BooleanExpr p1 = newAtom();
-    OrExpr or = new OrExpr(of(p1));
-    assertThat(simplifyBooleanExpr(or), equalTo(p1));
-  }
-
-  /** Test that an empty AND node is simplified to true (the identity under AND). */
-  @Test
-  public void testSimplifyEmptyAnd() {
-    AndExpr and = new AndExpr(of());
-    assertThat(simplifyBooleanExpr(and), equalTo(TrueExpr.INSTANCE));
-  }
-
-  /** Test that an empty OR node is simplified to false (the identity under OR). */
-  @Test
-  public void testSimplifyEmptyOr() {
-    OrExpr or = new OrExpr(of());
-    assertThat(simplifyBooleanExpr(or), equalTo(FalseExpr.INSTANCE));
-  }
-
-  /** Test that we keep simplifying until no more simplifications are possible. */
-  @Test
-  public void testChainedSimplifications() {
-    OrExpr or = new OrExpr(of(new OrExpr(of(new OrExpr(of())))));
-    assertThat(simplifyBooleanExpr(or), equalTo(FalseExpr.INSTANCE));
   }
 }

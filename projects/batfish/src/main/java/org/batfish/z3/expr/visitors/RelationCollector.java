@@ -120,6 +120,9 @@ public class RelationCollector implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
+  public void visitQueryStatement(QueryStatement queryStatement) {}
+
+  @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     rangeMatchExpr.getExpr().accept(this);
   }
@@ -128,9 +131,6 @@ public class RelationCollector implements ExprVisitor, VoidStatementVisitor {
   public void visitRuleStatement(RuleStatement ruleStatement) {
     ruleStatement.getSubExpression().accept(this);
   }
-
-  @Override
-  public void visitQueryStatement(QueryStatement queryStatement) {}
 
   @Override
   public void visitSaneExpr(SaneExpr saneExpr) {

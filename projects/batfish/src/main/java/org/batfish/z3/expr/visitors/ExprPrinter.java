@@ -44,6 +44,12 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
     return printer._sb.toString();
   }
 
+  public static String print(Statement statement) {
+    ExprPrinter printer = new ExprPrinter();
+    statement.accept(printer);
+    return printer._sb.toString();
+  }
+
   public static void print(StringBuilder sb, int indent, Expr expr) {
     expr.accept(new ExprPrinter(sb, indent));
   }
@@ -126,6 +132,31 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   @Override
   public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
     printCollapsedComplexExpr(collapsedListExpr.getSubExpressions());
+  }
+
+  @Override
+  public void visitComment(Comment comment) {
+    _sb.append("\n");
+    for (String line : comment.getLines()) {
+      _sb.append(String.format(";;; %s\n", line));
+    }
+  }
+
+  @Override
+  public void visitDeclareRelStatement(DeclareRelStatement declareRelStatement) {
+    printCollapsedComplexExpr(
+        ImmutableList.of(
+            new IdExpr("declare-rel"),
+            new IdExpr(declareRelStatement.getName()),
+            new CollapsedListExpr(ImmutableList.copyOf(DeclareRelStatement.ARGUMENTS))));
+  }
+
+  @Override
+  public void visitDeclareVarStatement(DeclareVarStatement declareVarStatement) {
+    HeaderField hf = declareVarStatement.getHeaderField();
+    printCollapsedComplexExpr(
+        ImmutableList.of(
+            new IdExpr("declare-var"), new IdExpr(hf.name()), new BitVecExpr(hf.getSize())));
   }
 
   @Override
@@ -246,36 +277,5 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
     _sb.append(varIntExpr.getHeaderField().name());
-  }
-
-  public static String print(Statement statement) {
-    ExprPrinter printer = new ExprPrinter();
-    statement.accept(printer);
-    return printer._sb.toString();
-  }
-
-  @Override
-  public void visitComment(Comment comment) {
-    _sb.append("\n");
-    for (String line : comment.getLines()) {
-      _sb.append(String.format(";;; %s\n", line));
-    }
-  }
-
-  @Override
-  public void visitDeclareRelStatement(DeclareRelStatement declareRelStatement) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("declare-rel"),
-            new IdExpr(declareRelStatement.getName()),
-            new CollapsedListExpr(ImmutableList.copyOf(DeclareRelStatement.ARGUMENTS))));
-  }
-
-  @Override
-  public void visitDeclareVarStatement(DeclareVarStatement declareVarStatement) {
-    HeaderField hf = declareVarStatement.getHeaderField();
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("declare-var"), new IdExpr(hf.name()), new BitVecExpr(hf.getSize())));
   }
 }

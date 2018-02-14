@@ -20,11 +20,6 @@ public class QueryStatement extends Statement {
     visitor.visitQueryStatement(this);
   }
 
-  @Override
-  public boolean statementEquals(Statement e) {
-    return Objects.equals(_subExpression, ((QueryStatement) e)._subExpression);
-  }
-
   public BooleanExpr getSubExpression() {
     return _subExpression;
   }
@@ -32,5 +27,10 @@ public class QueryStatement extends Statement {
   @Override
   public int hashCode() {
     return Objects.hash(_subExpression);
+  }
+
+  @Override
+  public boolean statementEquals(Statement e) {
+    return Objects.equals(_subExpression, ((QueryStatement) e)._subExpression);
   }
 }
