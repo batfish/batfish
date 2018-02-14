@@ -13969,17 +13969,11 @@ M_VacantMessage_ESCAPE_C
 :
    (
       '^C'
-      | '^'
       | '\u0003'
    ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
 ;
 
-M_VacantMessage_HASH
-:
-   '#' -> type ( POUND ) , mode ( M_MOTD_HASH )
-;
-
 M_VacantMessage_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , mode ( M_MOTD_EOF )
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;

@@ -111,7 +111,6 @@ l_null
       | LOGGING
       | LOGOUT_WARNING
       | MODEM
-      | NO_VACANT_MESSAGE
       | NOTIFY
       | PASSWORD
       | PRIVILEGE
@@ -123,7 +122,10 @@ l_null
       | TERMINAL_TYPE
       | TIMEOUT
       | TIMESTAMP
-      | VACANT_MESSAGE
+      |
+      (
+        NO VACANT_MESSAGE
+      )
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -135,6 +137,11 @@ l_transport
       | OUTPUT
       | PREFERRED
    ) prot += variable+ NEWLINE
+;
+
+l_vacant_message
+:
+  VACANT_MESSAGE ESCAPE_C ~ESCAPE_C* ESCAPE_C NEWLINE
 ;
 
 lc_null
@@ -180,6 +187,7 @@ s_line
       | l_login
       | l_null
       | l_transport
+      | l_vacant_message
       | description_line
    )*
 ;
