@@ -1,12 +1,43 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Set;
 
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine extends HeaderSpace {
 
+  public static class Builder {
+
+    private LineAction _action;
+
+    private Set<IpWildcard> _dstIps;
+
+    private String _name;
+
+    private Builder() {}
+
+    public IpAccessListLine build() {
+      IpAccessListLine line = new IpAccessListLine();
+      line.setDstIps(ImmutableSortedSet.copyOf(_dstIps));
+      line.setAction(_action);
+      line.setName(_name);
+      return line;
+    }
+
+    public Builder setDstIps(Iterable<IpWildcard> dstIps) {
+      _dstIps = ImmutableSet.copyOf(dstIps);
+      return this;
+    }
+  }
+
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   private LineAction _action;
 

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -244,23 +245,21 @@ public final class SynthesizerInput {
                           .stream()
                           .flatMap(
                               i -> {
-                                ImmutableSet.Builder<IpAccessList> interfaceAcls =
-                                    ImmutableSet.builder();
+                                ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
+                                    ImmutableList.builder();
                                 IpAccessList aclIn = i.getIncomingFilter();
                                 IpAccessList aclOut = i.getOutgoingFilter();
                                 if (aclIn != null) {
-                                  interfaceAcls.add(aclIn);
+                                  interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
                                 }
                                 if (aclOut != null) {
-                                  interfaceAcls.add(aclIn);
+                                  interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
                                 }
                                 return interfaceAcls.build().stream();
                               })
                           .collect(ImmutableSet.toImmutableSet())
                           .stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  IpAccessList::getName, Function.identity()))));
+                          .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond))));
     } else {
       return _configurations
           .entrySet()
