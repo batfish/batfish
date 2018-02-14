@@ -57,6 +57,17 @@ public class NetworkModel {
     System.out.println("Number Fwd atoms: " + _forwardingBdds.size());
   }
 
+  // Right now this does 32 exists operations -- one for each srcIp variable
+  // It may be more efficent to first create a bdd representing the AND of
+  // all variabels and then call exists one time on this bdd.
+  private BDD existensialQuantifySrcIp(BDD bdd) {
+    BDDInteger srcip = _bddPkt.getSrcIp();
+    for (int i = 0; i < srcip.getBitvec().length; i ++) {
+      bdd = bdd.exist(_bddPkt.getSrcIp().getBitvec()[i]);
+    }
+    return bdd;
+  }
+
   private void computeAclPredicates(Map<String, Configuration> configs) {
     long l = System.currentTimeMillis();
 
@@ -157,7 +168,7 @@ public class NetworkModel {
         NodeInterfacePair nip = tup.getFirst();
         FibRow fib = tup.getSecond();
         BDD port = fwdPredicates.get(nip);
-        BDD pfx = isRelevantFor(fib.getPrefix(), _bddPkt.getDstIp());
+        BDD pfx = destinationIpInPrefix(fib.getPrefix());
         BDD newPort = port.or(pfx.and(fwd.not()));
         fwd = fwd.or(pfx);
         fwdPredicates.put(nip, newPort);
@@ -193,8 +204,8 @@ public class NetworkModel {
    * Does the 32 bit integer match the prefix using lpm?
    * Here the 32 bits are all symbolic variables
    */
-  private BDD isRelevantFor(Prefix p, BDDInteger i) {
-    BDD[] bits = i.getBitvec();
+  private BDD destinationIpInPrefix(Prefix p) {
+    BDD[] bits = _bddPkt.getDstIp().getBitvec();
     BitSet b = p.getStartIp().getAddressBits();
     BDD acc = BDDPacket.factory.one();
     for (int i1 = 0; i1 < p.getPrefixLength(); i1++) {
@@ -208,6 +219,8 @@ public class NetworkModel {
     return acc;
   }
 
+  // P<l>        and {R1<ls1>, ..., Rn<lsn>}  == {(P and R1)<l::ls1>, ..., (P and Rn)<l::lsn>}
+  // (not p)<l>  and {R1<ls1>, ..., Rn<lsn>}  ==
   @Nonnull
   private Set<Atom> computeAtomicPredicates(List<Atom> atoms) {
     Set<Atom> allPredicates = new HashSet<>();
