@@ -75,14 +75,6 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(and), sameInstance(and));
   }
 
-  /** Test that an AND node with a FALSE child simplifies to FALSE */
-  @Test
-  public void testSimplifyAndFalse() {
-    BooleanExpr p1 = newAtom();
-    AndExpr and = new AndExpr(of(p1, FalseExpr.INSTANCE));
-    assertThat(simplifyBooleanExpr(and), equalTo(FalseExpr.INSTANCE));
-  }
-
   /** Test that any TRUE children of an AND node are removed. */
   @Test
   public void testSimplifyAndTrue() {

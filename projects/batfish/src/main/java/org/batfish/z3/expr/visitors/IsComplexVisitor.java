@@ -2,7 +2,6 @@ package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -10,6 +9,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
@@ -41,7 +41,7 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
+  public void visitListExpr(ListExpr listExpr) {
     _isComplex = false;
   }
 

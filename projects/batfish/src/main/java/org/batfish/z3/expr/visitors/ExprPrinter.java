@@ -6,7 +6,6 @@ import java.util.List;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.DeclareRelStatement;
 import org.batfish.z3.expr.DeclareVarStatement;
@@ -17,6 +16,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
@@ -48,10 +48,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
     ExprPrinter printer = new ExprPrinter();
     statement.accept(printer);
     return printer._sb.toString();
-  }
-
-  public static void print(StringBuilder sb, int indent, Expr expr) {
-    expr.accept(new ExprPrinter(sb, indent));
   }
 
   private final int _indent;
@@ -130,8 +126,8 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
-    printCollapsedComplexExpr(collapsedListExpr.getSubExpressions());
+  public void visitListExpr(ListExpr listExpr) {
+    printCollapsedComplexExpr(listExpr.getSubExpressions());
   }
 
   @Override
@@ -148,7 +144,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
         ImmutableList.of(
             new IdExpr("declare-rel"),
             new IdExpr(declareRelStatement.getName()),
-            new CollapsedListExpr(ImmutableList.copyOf(DeclareRelStatement.ARGUMENTS))));
+            new ListExpr(ImmutableList.copyOf(DeclareRelStatement.ARGUMENTS))));
   }
 
   @Override
@@ -168,7 +164,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   public void visitExtractExpr(ExtractExpr extractExpr) {
     printCollapsedComplexExpr(
         ImmutableList.of(
-            new CollapsedListExpr(
+            new ListExpr(
                 ImmutableList.of(
                     new IdExpr("_"),
                     new IdExpr("extract"),
@@ -251,7 +247,8 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitRuleStatement(RuleStatement ruleStatement) {
-    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("if"), ruleStatement.getSubExpression()));
+    printCollapsedComplexExpr(
+        ImmutableList.of(new IdExpr("rule"), ruleStatement.getSubExpression()));
   }
 
   @Override

@@ -4,10 +4,10 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Stream;
+import org.batfish.common.BatfishException;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.DeclareRelStatement;
 import org.batfish.z3.expr.DeclareVarStatement;
@@ -19,6 +19,7 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
@@ -34,7 +35,8 @@ import org.batfish.z3.expr.VarIntExpr;
 
 public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statement> {
 
-  private static final Comment UNSATISFIABLE_RULE = new Comment("(unsatisfiable rule)");
+  private static final Comment UNUSABLE_RULE = new Comment("(unsatisfiable rule)");
+
   private static final Comment VACUOUS_RULE = new Comment("(vacuous rule)");
 
   public static BooleanExpr simplifyBooleanExpr(BooleanExpr expr) {
@@ -108,7 +110,7 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
+  public void visitListExpr(ListExpr listExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -277,7 +279,10 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
       if (newExpr == TrueExpr.INSTANCE) {
         return VACUOUS_RULE;
       } else if (newExpr == FalseExpr.INSTANCE) {
-        return UNSATISFIABLE_RULE;
+        throw new BatfishException("Unsatifiable!");
+      } else if (newExpr instanceof IfExpr
+          && ((IfExpr) newExpr).getAntecedent() == FalseExpr.INSTANCE) {
+        return UNUSABLE_RULE;
       } else if (newExpr instanceof StateExpr) {
         return new RuleStatement((StateExpr) newExpr);
       } else {

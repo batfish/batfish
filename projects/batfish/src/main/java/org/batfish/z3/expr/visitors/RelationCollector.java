@@ -5,7 +5,6 @@ import java.util.Set;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.DeclareRelStatement;
 import org.batfish.z3.expr.DeclareVarStatement;
@@ -16,6 +15,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
@@ -62,8 +62,8 @@ public class RelationCollector implements ExprVisitor, VoidStatementVisitor {
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {}
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
-    collapsedListExpr.getSubExpressions().forEach(expr -> expr.accept(this));
+  public void visitListExpr(ListExpr listExpr) {
+    listExpr.getSubExpressions().forEach(expr -> expr.accept(this));
   }
 
   @Override
@@ -120,7 +120,9 @@ public class RelationCollector implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitQueryStatement(QueryStatement queryStatement) {}
+  public void visitQueryStatement(QueryStatement queryStatement) {
+    queryStatement.getSubExpression().accept(this);
+  }
 
   @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
