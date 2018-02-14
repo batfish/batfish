@@ -92,8 +92,7 @@ oa_area_range
    )
    (
       apply
-      | oaa_override_metric
-      | oaa_restrict
+      | (oaa_override_metric | oaa_restrict)+
    )
 ;
 

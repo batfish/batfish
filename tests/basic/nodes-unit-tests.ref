@@ -2886,7 +2886,7 @@
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
-              "vrf" : "default"
+              "vrf" : "bleepvrf"
             },
             "Ethernet6/1" : {
               "name" : "Ethernet6/1",
@@ -3055,7 +3055,7 @@
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "UNKNOWN",
-              "vrf" : "default"
+              "vrf" : "foovrf"
             },
             "cable-mac1.2" : {
               "name" : "cable-mac1.2",
@@ -3266,23 +3266,33 @@
             }
           },
           "vrfs" : {
+            "bleepvrf" : {
+              "name" : "bleepvrf",
+              "interfaces" : [
+                "Ethernet6/0.48"
+              ]
+            },
             "default" : {
               "name" : "default",
               "interfaces" : [
                 "Ethernet6/0.0",
-                "Ethernet6/0.48",
                 "Ethernet6/1",
                 "cable-downstream1/2",
                 "cable-downstream1/2/3",
                 "cable-downstream5/0/0",
                 "cable-mac1",
-                "cable-mac1.1",
                 "cable-mac1.2",
                 "cable-mac2",
                 "cable-mac3",
                 "cable-upstream1/0/0",
                 "cable-upstream1/0/0.0",
                 "cable-upstream1/0/10"
+              ]
+            },
+            "foovrf" : {
+              "name" : "foovrf",
+              "interfaces" : [
+                "cable-mac1.1"
               ]
             },
             "management" : {
@@ -10924,7 +10934,13 @@
                       "xe-0/0/1.0",
                       "xe-0/0/20.0",
                       "xe-0/0/21.0"
-                    ]
+                    ],
+                    "summaries" : {
+                      "1.2.0.0/16" : {
+                        "advertise" : true,
+                        "metric" : 100
+                      }
+                    }
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -14244,6 +14260,33 @@
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "PHYSICAL",
               "vrf" : "default"
+            },
+            "nve1" : {
+              "name" : "nve1",
+              "accessVlan" : 0,
+              "active" : true,
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "declaredNames" : [
+                "nve1"
+              ],
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "proxyArp" : false,
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "VLAN",
+              "vrf" : "default"
             }
           },
           "roles" : [
@@ -14261,7 +14304,8 @@
             "default" : {
               "name" : "default",
               "interfaces" : [
-                "Ethernet0/0"
+                "Ethernet0/0",
+                "nve1"
               ]
             }
           }
@@ -14286,6 +14330,122 @@
           "vrfs" : {
             "default" : {
               "name" : "default"
+            }
+          }
+        },
+        "nxos_ospf" : {
+          "configurationFormat" : "CISCO_NX",
+          "name" : "nxos_ospf",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "ROUTER",
+          "roles" : [
+            "nxos-ospf"
+          ],
+          "routingPolicies" : {
+            "~OSPF_EXPORT_POLICY:OTHER~" : {
+              "name" : "~OSPF_EXPORT_POLICY:OTHER~",
+              "statements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 20
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "OSPF export connected routes",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                    "protocol" : "connected"
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                      "metricType" : "E2"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 20
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "OSPF export static routes",
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                    "conjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocol" : "static"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "0.0.0.0/0"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                      "metricType" : "E2"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ExitAccept"
+                    }
+                  ]
+                }
+              ]
+            },
+            "~OSPF_EXPORT_POLICY:default~" : {
+              "name" : "~OSPF_EXPORT_POLICY:default~"
+            }
+          },
+          "vendorFamily" : {
+            "cisco" : {
+              "features" : {
+                "privilege" : true
+              },
+              "hostname" : "nxos_ospf"
+            }
+          },
+          "vrfs" : {
+            "OTHER" : {
+              "name" : "OTHER",
+              "ospfProcess" : {
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.2.3.4"
+              }
+            },
+            "default" : {
+              "name" : "default",
+              "ospfProcess" : {
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "referenceBandwidth" : 4.0E10,
+                "routerId" : "1.2.3.4"
+              }
             }
           }
         },

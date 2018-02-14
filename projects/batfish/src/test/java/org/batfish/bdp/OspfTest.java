@@ -6,29 +6,38 @@ import static org.batfish.datamodel.RoutingProtocol.OSPF_IA;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.OspfNeighborMatchers.hasRemoteOspfNeighbor;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasOspfNeighbors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
+import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -47,6 +56,7 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.junit.Before;
 import org.junit.Test;
 
 public class OspfTest {
@@ -126,6 +136,16 @@ public class OspfTest {
     return ImmutableList.of(exportIfMatchL2Prefix);
   }
 
+  private Configuration.Builder _cb;
+
+  private Interface.Builder _ib;
+
+  private NetworkFactory _nf;
+
+  private OspfProcess.Builder _opb;
+
+  private Vrf.Builder _vb;
+
   /*
    * Int:1/2   2/1      2/3   3/2      3/4   4/3
    * R1 <=========> R2 <=========> R3 <=========> R4
@@ -140,7 +160,7 @@ public class OspfTest {
    *  F: R3 E3/4, R4 E4/3
    *  G: R4 Loopback0
    */
-  private static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getOspfRoutes(
+  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getOspfRoutes(
       long areaA,
       long areaB,
       long areaC,
@@ -166,53 +186,46 @@ public class OspfTest {
 
     String c4E4To3Name = "Ethernet4/3";
 
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    RoutingPolicy.Builder rpb = nf.routingPolicyBuilder();
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    OspfProcess.Builder opb = nf.ospfProcessBuilder();
-    OspfArea.Builder oaba = nf.ospfAreaBuilder().setNumber(areaA);
-    OspfArea.Builder oabb = nf.ospfAreaBuilder().setNumber(areaB);
-    OspfArea.Builder oabc = nf.ospfAreaBuilder().setNumber(areaC);
-    OspfArea.Builder oabd = nf.ospfAreaBuilder().setNumber(areaD);
-    OspfArea.Builder oabe = nf.ospfAreaBuilder().setNumber(areaE);
-    OspfArea.Builder oabf = nf.ospfAreaBuilder().setNumber(areaF);
-    OspfArea.Builder oabg = nf.ospfAreaBuilder().setNumber(areaG);
-    Interface.Builder ib =
-        nf.interfaceBuilder().setActive(true).setOspfCost(1).setOspfEnabled(true);
+    RoutingPolicy.Builder rpb = _nf.routingPolicyBuilder();
+    OspfArea.Builder oaba = _nf.ospfAreaBuilder().setNumber(areaA);
+    OspfArea.Builder oabb = _nf.ospfAreaBuilder().setNumber(areaB);
+    OspfArea.Builder oabc = _nf.ospfAreaBuilder().setNumber(areaC);
+    OspfArea.Builder oabd = _nf.ospfAreaBuilder().setNumber(areaD);
+    OspfArea.Builder oabe = _nf.ospfAreaBuilder().setNumber(areaE);
+    OspfArea.Builder oabf = _nf.ospfAreaBuilder().setNumber(areaF);
+    OspfArea.Builder oabg = _nf.ospfAreaBuilder().setNumber(areaG);
 
-    Configuration c1 = cb.setHostname(C1_NAME).build();
-    Vrf v1 = vb.setOwner(c1).build();
+    Configuration c1 = _cb.setHostname(C1_NAME).build();
+    Vrf v1 = _vb.setOwner(c1).build();
     RoutingPolicy c1ExportPolicy =
         rpb.setOwner(c1).setStatements(getExportPolicyStatements(C1_L1_ADDRESS)).build();
-    OspfProcess op1 = opb.setVrf(v1).setExportPolicy(c1ExportPolicy).build();
+    OspfProcess op1 = _opb.setVrf(v1).setExportPolicy(c1ExportPolicy).build();
     OspfArea oa1a = oaba.setOspfProcess(op1).build();
     OspfArea oa1b = areaA == areaB ? oa1a : oabb.setOspfProcess(op1).build();
-    ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C1_L0_ADDRESS).build();
-    ib.setOspfEnabled(false)
+    _ib.setOwner(c1).setVrf(v1).setOspfArea(oa1a);
+    _ib.setOspfPassive(true).setName(l0Name).setAddress(C1_L0_ADDRESS).build();
+    _ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
         .setAddress(C1_L1_ADDRESS)
         .build();
-    ib.setOspfEnabled(true).setOspfArea(oa1b);
-    ib.setName(c1E1To2Name).setAddress(C1_E1_2_ADDRESS).build();
+    _ib.setOspfEnabled(true).setOspfArea(oa1b);
+    _ib.setName(c1E1To2Name).setAddress(C1_E1_2_ADDRESS).build();
 
-    Configuration c2 = cb.setHostname(C2_NAME).build();
-    Vrf v2 = vb.setOwner(c2).build();
+    Configuration c2 = _cb.setHostname(C2_NAME).build();
+    Vrf v2 = _vb.setOwner(c2).build();
     RoutingPolicy c2ExportPolicy =
         rpb.setOwner(c2).setStatements(getExportPolicyStatements(C2_L1_ADDRESS)).build();
     OspfProcess op2 =
-        opb.setVrf(v2)
+        _opb.setVrf(v2)
             .setMaxMetricExternalNetworks(maxMetricExternalNetworks)
             .setMaxMetricStubNetworks(maxMetricStubNetworks)
             .setMaxMetricSummaryNetworks(maxMetricSummaryNetworks)
             .setMaxMetricTransitLinks(maxMetricTransitLinks)
             .setExportPolicy(c2ExportPolicy)
             .build();
-    opb.setMaxMetricExternalNetworks(null)
+    _opb.setMaxMetricExternalNetworks(null)
         .setMaxMetricStubNetworks(null)
         .setMaxMetricSummaryNetworks(null)
         .setMaxMetricTransitLinks(null);
@@ -220,57 +233,57 @@ public class OspfTest {
     OspfArea oa2c = areaB == areaC ? oa2b : oabc.setOspfProcess(op2).build();
     OspfArea oa2d =
         areaB == areaD ? oa2b : areaC == areaD ? oa2c : oabd.setOspfProcess(op2).build();
-    ib.setOwner(c2).setVrf(v2).setOspfArea(oa2c);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C2_L0_ADDRESS).build();
-    ib.setOspfEnabled(false)
+    _ib.setOwner(c2).setVrf(v2).setOspfArea(oa2c);
+    _ib.setOspfPassive(true).setName(l0Name).setAddress(C2_L0_ADDRESS).build();
+    _ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
         .setAddress(C2_L1_ADDRESS)
         .build();
-    ib.setOspfEnabled(true).setOspfArea(oa2b);
-    ib.setName(c2E2To1Name).setAddress(C2_E2_1_ADDRESS).setOspfPointToPoint(true).build();
-    ib.setOspfPointToPoint(false).setOspfArea(oa2d);
-    ib.setName(c2E2To3Name).setAddress(C2_E2_3_ADDRESS).build();
+    _ib.setOspfEnabled(true).setOspfArea(oa2b);
+    _ib.setName(c2E2To1Name).setAddress(C2_E2_1_ADDRESS).setOspfPointToPoint(true).build();
+    _ib.setOspfPointToPoint(false).setOspfArea(oa2d);
+    _ib.setName(c2E2To3Name).setAddress(C2_E2_3_ADDRESS).build();
 
-    Configuration c3 = cb.setHostname(C3_NAME).build();
-    Vrf v3 = vb.setOwner(c3).build();
+    Configuration c3 = _cb.setHostname(C3_NAME).build();
+    Vrf v3 = _vb.setOwner(c3).build();
     RoutingPolicy c3ExportPolicy =
         rpb.setOwner(c3).setStatements(getExportPolicyStatements(C3_L1_ADDRESS)).build();
-    OspfProcess op3 = opb.setVrf(v3).setExportPolicy(c3ExportPolicy).build();
+    OspfProcess op3 = _opb.setVrf(v3).setExportPolicy(c3ExportPolicy).build();
     OspfArea oa3d = oabd.setOspfProcess(op3).build();
     OspfArea oa3e = areaD == areaE ? oa3d : oabe.setOspfProcess(op3).build();
     OspfArea oa3f =
         areaD == areaF ? oa3d : areaE == areaF ? oa3e : oabf.setOspfProcess(op3).build();
-    ib.setOwner(c3).setVrf(v3).setOspfArea(oa3e);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C3_L0_ADDRESS).build();
-    ib.setOspfEnabled(false)
+    _ib.setOwner(c3).setVrf(v3).setOspfArea(oa3e);
+    _ib.setOspfPassive(true).setName(l0Name).setAddress(C3_L0_ADDRESS).build();
+    _ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
         .setAddress(C3_L1_ADDRESS)
         .build();
-    ib.setOspfEnabled(true).setOspfArea(oa3d);
-    ib.setName(c3E3To2Name).setAddress(C3_E3_2_ADDRESS).build();
-    ib.setName(c3E3To4Name).setAddress(C3_E3_4_ADDRESS).setOspfArea(oa3f).build();
+    _ib.setOspfEnabled(true).setOspfArea(oa3d);
+    _ib.setName(c3E3To2Name).setAddress(C3_E3_2_ADDRESS).build();
+    _ib.setName(c3E3To4Name).setAddress(C3_E3_4_ADDRESS).setOspfArea(oa3f).build();
 
-    Configuration c4 = cb.setHostname(C4_NAME).build();
-    Vrf v4 = vb.setOwner(c4).build();
+    Configuration c4 = _cb.setHostname(C4_NAME).build();
+    Vrf v4 = _vb.setOwner(c4).build();
     RoutingPolicy c4ExportPolicy =
         rpb.setOwner(c4).setStatements(getExportPolicyStatements(C4_L1_ADDRESS)).build();
-    OspfProcess op4 = opb.setVrf(v4).setExportPolicy(c4ExportPolicy).build();
+    OspfProcess op4 = _opb.setVrf(v4).setExportPolicy(c4ExportPolicy).build();
     OspfArea oa4f = oabf.setOspfProcess(op4).build();
     OspfArea oa4g = areaF == areaG ? oa4f : oabg.setOspfProcess(op4).build();
-    ib.setOwner(c4).setVrf(v4).setOspfArea(oa4g);
-    ib.setOspfPassive(true).setName(l0Name).setAddress(C4_L0_ADDRESS).build();
-    ib.setOspfEnabled(false)
+    _ib.setOwner(c4).setVrf(v4).setOspfArea(oa4g);
+    _ib.setOspfPassive(true).setName(l0Name).setAddress(C4_L0_ADDRESS).build();
+    _ib.setOspfEnabled(false)
         .setOspfPassive(false)
         .setOspfArea(null)
         .setName(l1Name)
         .setAddress(C4_L1_ADDRESS)
         .build();
-    ib.setOspfEnabled(true).setOspfArea(oa4f);
-    ib.setName(c4E4To3Name).setAddress(C4_E4_3_ADDRESS).build();
+    _ib.setOspfEnabled(true).setOspfArea(oa4f);
+    _ib.setName(c4E4To3Name).setAddress(C4_E4_3_ADDRESS).build();
 
     SortedMap<String, Configuration> configurations =
         new ImmutableSortedMap.Builder<String, Configuration>(String::compareTo)
@@ -295,6 +308,16 @@ public class OspfTest {
             new BdpAnswerElement());
 
     return engine.getRoutes(dp);
+  }
+
+  @Before
+  public void setup() {
+    _nf = new NetworkFactory();
+    _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    _ib = _nf.interfaceBuilder().setActive(true).setOspfCost(1).setOspfEnabled(true);
+
+    _opb = _nf.ospfProcessBuilder();
   }
 
   @Test
@@ -577,5 +600,48 @@ public class OspfTest {
     assertRoute(routesByNode, OSPF_E1, C4_NAME, C3_L1_ADDRESS, 21L);
     assertNoRoute(routesByNode, C4_NAME, C1_E1_2_ADDRESS);
     assertNoRoute(routesByNode, C4_NAME, C2_E2_3_ADDRESS);
+  }
+
+  @Test
+  public void testOspfNonDefaultVrfAdjacency() {
+    OspfArea.Builder oab = _nf.ospfAreaBuilder().setNumber(1L);
+    Prefix adjacencyPrefix = Prefix.parse("1.0.0.0/31");
+    InterfaceAddress i1Address =
+        new InterfaceAddress(adjacencyPrefix.getStartIp(), adjacencyPrefix.getPrefixLength());
+    InterfaceAddress i2Address =
+        new InterfaceAddress(adjacencyPrefix.getEndIp(), adjacencyPrefix.getPrefixLength());
+
+    Configuration c1 = _cb.build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    OspfProcess o1 = _opb.setVrf(v1).build();
+    OspfArea oa1 = oab.setOspfProcess(o1).build();
+    // Interface in default VRF on c1
+    _ib.setOwner(c1).setVrf(v1).setAddress(i1Address).setOspfArea(oa1).build();
+
+    Configuration c2 = _cb.build();
+    // default vrf
+    Vrf v2Default = _vb.setOwner(c2).build();
+    // default OSPF process
+    _opb.setVrf(v2Default).build();
+    Vrf v2Other = _vb.setName("v2Other").build();
+    OspfProcess o2Other = _opb.setVrf(v2Other).build();
+    OspfArea oa2 = oab.setOspfProcess(o2Other).build();
+    // Interface in VRF v2Other on c2
+    _ib.setOwner(c2).setVrf(v2Other).setAddress(i2Address).setOspfArea(oa2).build();
+
+    Map<String, Configuration> configurations = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Topology topology = CommonUtil.synthesizeTopology(configurations);
+    CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
+
+    Pair<Ip, Ip> expectedIpEdge1 = new Pair<>(i1Address.getIp(), i2Address.getIp());
+    Pair<Ip, Ip> expectedIpEdge2 = new Pair<>(i2Address.getIp(), i1Address.getIp());
+
+    assertThat(o1, hasOspfNeighbors(hasKey(expectedIpEdge1)));
+    OspfNeighbor on1 = o1.getOspfNeighbors().get(expectedIpEdge1);
+    assertThat(o2Other, hasOspfNeighbors(hasKey(expectedIpEdge2)));
+    OspfNeighbor on2 = o2Other.getOspfNeighbors().get(expectedIpEdge2);
+    assertThat(on1, hasRemoteOspfNeighbor(sameInstance(on2)));
+    assertThat(on2, hasRemoteOspfNeighbor(sameInstance(on1)));
   }
 }

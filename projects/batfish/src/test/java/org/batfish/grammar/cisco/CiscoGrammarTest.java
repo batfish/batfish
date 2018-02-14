@@ -1,15 +1,27 @@
 package org.batfish.grammar.cisco;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +37,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.bdp.BdpDataPlanePlugin;
-import org.batfish.common.CompositeBatfishException;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -39,6 +50,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -304,11 +316,7 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
+    configurations = batfish.loadConfigurations();
 
     Configuration iosCommunityListConfig = configurations.get(iosName);
     SortedMap<String, CommunityList> iosCommunityLists = iosCommunityListConfig.getCommunityLists();
@@ -417,11 +425,8 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
+    configurations = batfish.loadConfigurations();
+
     Interface i1 = configurations.get(iosHostname).getInterfaces().get(i1Name);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
   }
@@ -438,11 +443,7 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
+    configurations = batfish.loadConfigurations();
 
     assertThat(
         configurations.values().stream().mapToLong(c -> c.getIpsecVpns().values().size()).sum(),
@@ -464,6 +465,68 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testNxosOspfAreaParameters() throws IOException {
+    String testrigName = "nxos-ospf";
+    String hostname = "nxos-ospf-area";
+    String ifaceName = "Ethernet1";
+    long areaNum = 1L;
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    SortedMap<String, Configuration> configurations;
+    configurations = batfish.loadConfigurations();
+
+    /* Ensure bidirectional references between OSPF area and interface */
+    assertThat(configurations, hasKey(hostname));
+    Configuration c = configurations.get(hostname);
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasAreas(hasKey(areaNum)))));
+    OspfArea area = c.getDefaultVrf().getOspfProcess().getAreas().get(areaNum);
+    assertThat(area, hasInterfaces(hasKey(ifaceName)));
+    Interface iface = area.getInterfaces().get(ifaceName);
+    assertThat(iface, hasOspfArea(sameInstance(area)));
+    assertThat(iface, isOspfPassive(equalTo(false)));
+    assertThat(iface, isOspfPointToPoint());
+  }
+
+  @Test
+  public void testNxosOspfNonDefaultVrf() throws IOException {
+    String testrigName = "nxos-ospf";
+    String hostname = "nxos-ospf-iface-in-vrf";
+    String ifaceName = "Ethernet1";
+    String vrfName = "OTHER-VRF";
+    long areaNum = 1L;
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    SortedMap<String, Configuration> configurations;
+    configurations = batfish.loadConfigurations();
+
+    /* Ensure bidirectional references between OSPF area and interface */
+    assertThat(configurations, hasKey(hostname));
+    Configuration c = configurations.get(hostname);
+    assertThat(c, hasVrfs(hasKey(vrfName)));
+    Vrf vrf = c.getVrfs().get(vrfName);
+    assertThat(vrf, hasOspfProcess(hasAreas(hasKey(areaNum))));
+    OspfArea area = vrf.getOspfProcess().getAreas().get(areaNum);
+    assertThat(area, hasInterfaces(hasKey(ifaceName)));
+    Interface iface = area.getInterfaces().get(ifaceName);
+    assertThat(iface, hasVrf(sameInstance(vrf)));
+    assertThat(iface, hasOspfArea(sameInstance(area)));
+    assertThat(iface, isOspfPassive(equalTo(false)));
+    assertThat(iface, isOspfPointToPoint());
+  }
+
+  @Test
   public void testOspfMaxMetric() throws IOException {
     String testrigName = "ospf-max-metric";
     String iosMaxMetricName = "ios-max-metric";
@@ -478,13 +541,9 @@ public class CiscoGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.getSettings().setDisableUnrecognized(false);
     SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
+    configurations = batfish.loadConfigurations();
+
     Configuration iosMaxMetric = configurations.get(iosMaxMetricName);
     Configuration iosMaxMetricCustom = configurations.get(iosMaxMetricCustomName);
     Configuration iosMaxMetricOnStartup = configurations.get(iosMaxMetricOnStartupName);
@@ -528,11 +587,8 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
+    configurations = batfish.loadConfigurations();
+
     Configuration iosMaxMetric = configurations.get(iosOspfPointToPoint);
     Interface e0Sub0 = iosMaxMetric.getInterfaces().get("Ethernet0/0");
     Interface e0Sub1 = iosMaxMetric.getInterfaces().get("Ethernet0/1");
@@ -544,8 +600,8 @@ public class CiscoGrammarTest {
   @Test
   public void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
-    String iosRecoveryName = "ios-recovery";
-    List<String> configurationNames = ImmutableList.of(iosRecoveryName);
+    String hostname = "ios-recovery";
+    List<String> configurationNames = ImmutableList.of(hostname);
 
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
@@ -554,13 +610,9 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
-    SortedMap<String, Configuration> configurations;
-    try {
-      configurations = batfish.loadConfigurations();
-    } catch (CompositeBatfishException e) {
-      throw e.asSingleException();
-    }
-    Configuration iosRecovery = configurations.get(iosRecoveryName);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+
+    Configuration iosRecovery = configurations.get(hostname);
     SortedMap<String, Interface> iosRecoveryInterfaces = iosRecovery.getInterfaces();
     Set<String> iosRecoveryInterfaceNames = iosRecoveryInterfaces.keySet();
     Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
@@ -575,6 +627,43 @@ public class CiscoGrammarTest {
     assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
     assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
+  }
+
+  @Test
+  public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
+    String testrigName = "parsing-recovery";
+    String hostname = "ios-blankish-file";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+
+    /* Hostname is unknown, but a file should be generated nonetheless */
+    assertThat(configurations.entrySet(), hasSize(1));
+  }
+
+  @Test
+  public void testParsingUnrecognizedInterfaceName() throws IOException {
+    String testrigName = "parsing-recovery";
+    String hostname = "ios-bad-interface-name";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    SortedMap<String, Configuration> configurations = batfish.loadConfigurations();
+
+    /* Parser should not crash, and configuration with hostname from file should be generated */
+    assertThat(configurations, hasKey(hostname));
   }
 
   private Configuration parseConfig(String hostname) throws IOException {

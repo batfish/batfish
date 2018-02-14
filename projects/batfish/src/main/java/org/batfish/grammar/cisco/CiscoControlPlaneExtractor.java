@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -284,6 +285,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
@@ -296,7 +298,6 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_modeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
-import org.batfish.grammar.cisco.CiscoParser.If_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
@@ -364,6 +365,7 @@ import org.batfish.grammar.cisco.CiscoParser.Match_ip_access_list_rm_stanzaConte
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_prefix_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_prefix_list_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
@@ -401,7 +403,6 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
-import org.batfish.grammar.cisco.CiscoParser.Pim_ssmContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -420,6 +421,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContex
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
@@ -434,6 +436,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Roi_costContext;
@@ -1784,6 +1787,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterRo_vrf(Ro_vrfContext ctx) {
+    Ip routerId = _currentOspfProcess.getRouterId();
+    _currentVrf = ctx.name.getText();
+    OspfProcess proc = currentVrf().getOspfProcess();
+    if (proc == null) {
+      proc = new OspfProcess(_currentOspfProcess.getName(), _format);
+      currentVrf().setOspfProcess(proc);
+      proc.setRouterId(routerId);
+    }
+    _currentOspfProcess = proc;
+  }
+
+  @Override
   public void enterRoa_interface(Roa_interfaceContext ctx) {
     String ifaceName = ctx.iname.getText();
     String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
@@ -1894,8 +1910,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     try {
       canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
     } catch (BatfishException e) {
-      throw new BatfishException(
-          "Error fetching interface name at: " + getLocation(ctx) + getFullText(ctx), e);
+      _w.redFlag(
+          "Error fetching interface name at: "
+              + getLocation(ctx)
+              + getFullText(ctx)
+              + " : "
+              + e.getMessage());
+      _currentInterfaces = ImmutableList.of();
+      return;
     }
     String namePrefix = canonicalNamePrefix;
     for (Token part : ctx.iname.name_middle_parts) {
@@ -2097,7 +2119,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
-    if (ctx.on_startup != null) {
+    if (ctx.on_startup != null || ctx.wait_for_bgp != null) {
       return;
     }
     _currentOspfProcess.setMaxMetricRouterLsa(true);
@@ -3448,6 +3470,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_vrf_forwarding(If_ip_vrf_forwardingContext ctx) {
+    String name = ctx.name.getText();
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.setVrf(name);
+      initVrf(name);
+    }
+  }
+
+  @Override
   public void exitIf_isis_metric(If_isis_metricContext ctx) {
     int metric = toInteger(ctx.metric);
     for (Interface iface : _currentInterfaces) {
@@ -3570,15 +3601,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIf_vrf_forwarding(If_vrf_forwardingContext ctx) {
-    String name = ctx.name.getText();
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setVrf(name);
-      initVrf(name);
-    }
-  }
-
-  @Override
   public void exitIf_vrf_member(If_vrf_memberContext ctx) {
     String name = ctx.name.getText();
     for (Interface currentInterface : _currentInterfaces) {
@@ -3647,12 +3669,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else if (ctx.IPSEC() != null) {
         tunnel.setMode(TunnelMode.IPSEC);
       } else {
-        throw new BatfishException("unknown tunnel mode in " + ctx.getText());
+        todo(ctx, "unknown tunnel mode");
       }
       if (ctx.IPV4() != null) {
         tunnel.setProtocol(IpProtocol.IP);
       } else if (ctx.IPV6() != null) {
         tunnel.setProtocol(IpProtocol.IPV6);
+      } else {
+        todo(ctx, "unknown tunnel protocol");
       }
     }
   }
@@ -3673,9 +3697,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
-    Ip source = toIp(ctx.IP_ADDRESS());
-    for (Interface iface : _currentInterfaces) {
-      iface.getTunnelInitIfNull().setSource(source);
+    if (ctx.IP_ADDRESS() != null) {
+      Ip source = toIp(ctx.IP_ADDRESS());
+      for (Interface iface : _currentInterfaces) {
+        iface.getTunnelInitIfNull().setSource(source);
+      }
+    } else {
+      _configuration.referenceStructure(
+          CiscoStructureType.INTERFACE,
+          ctx.interface_name().getText(),
+          CiscoStructureUsage.TUNNEL_SOURCE,
+          ctx.interface_name().getStart().getLine());
+      todo(ctx, "tunnel source [interface]");
     }
   }
 
@@ -3933,7 +3966,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       nextHopIp = nextHopPrefix.getStartIp();
     }
     if (ctx.nexthopint != null) {
-      nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      try {
+        nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+      } catch (BatfishException e) {
+        _w.redFlag(
+            "Error fetching interface name at: "
+                + getLocation(ctx)
+                + getFullText(ctx)
+                + " : "
+                + e.getMessage());
+        _currentInterfaces = ImmutableList.of();
+        return;
+      }
     }
     if (ctx.distance != null) {
       distance = toInteger(ctx.distance);
@@ -4278,6 +4322,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     RouteMapMatchIpv6PrefixListLine line =
         new RouteMapMatchIpv6PrefixListLine(names, statementLine);
     _currentRouteMapClause.addMatchLine(line);
+  }
+
+  @Override
+  public void exitMatch_source_protocol_rm_stanza(Match_source_protocol_rm_stanzaContext ctx) {
+    todo(ctx, "match source-protocol");
   }
 
   @Override
@@ -4722,17 +4771,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitPim_ssm(Pim_ssmContext ctx) {
-    if (ctx.name != null) {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
-      _configuration.referenceStructure(
-          CiscoStructureType.IPV4_ACCESS_LIST, name, CiscoStructureUsage.PIM_SSM_ACL, line);
-    }
-  }
-
-  @Override
   public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
     String listName = ctx.list_name.getText();
     int line = ctx.list_name.getLine();
@@ -4988,6 +5026,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRo_area_filterlist(Ro_area_filterlistContext ctx) {
+    String prefixListName = ctx.list.getText();
+    _configuration.referenceStructure(
+        CiscoStructureType.PREFIX_LIST,
+        prefixListName,
+        CiscoStructureUsage.OSPF_AREA_FILTER_LIST,
+        ctx.list.getStart().getLine());
+    todo(ctx, "ospf area filter-list");
+  }
+
+  @Override
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
@@ -5192,6 +5241,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_router_id(Ro_router_idContext ctx) {
     Ip routerId = toIp(ctx.ip);
     _currentOspfProcess.setRouterId(routerId);
+  }
+
+  @Override
+  public void exitRo_vrf(Ro_vrfContext ctx) {
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentOspfProcess = currentVrf().getOspfProcess();
   }
 
   @Override

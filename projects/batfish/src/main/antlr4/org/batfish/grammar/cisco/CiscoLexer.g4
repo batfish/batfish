@@ -4181,6 +4181,16 @@ FLAP_LIST
    'flap-list'
 ;
 
+FLASH
+:
+   'flash'
+;
+
+FLASH_OVERRIDE
+:
+   'flash-override'
+;
+
 FLOATING_CONN
 :
    'floating-conn'
@@ -5016,6 +5026,11 @@ IMAP4
    'imap4'
 ;
 
+IMMEDIATE
+:
+   'immediate'
+;
+
 IMPERSONATION_PROFILE
 :
    'impersonation-profile'
@@ -5366,6 +5381,11 @@ ISIS_METRIC
 ISL
 :
    'isl'
+;
+
+ISOLATE
+:
+  'isolate'
 ;
 
 ISPF
@@ -6056,6 +6076,11 @@ MAIL_SERVER
 MAIN_CPU
 :
    'main-cpu'
+;
+
+MAINTENANCE
+:
+  'maintenance'
 ;
 
 MANAGEMENT
@@ -7406,6 +7431,11 @@ OR
 ORIGIN
 :
    'origin'
+;
+
+ORIGIN_ID
+:
+   'origin-id'
 ;
 
 ORIGINATE
@@ -9233,11 +9263,6 @@ RUN
    'run'
 ;
 
-RX_COS_SLOT
-:
-   'rx-cos-slot'
-;
-
 RW
 :
    [Rr] [Ww]
@@ -9246,6 +9271,16 @@ RW
 RX
 :
    'rx'
+;
+
+RXSPEED
+:
+   'rxspeed'
+;
+
+RX_COS_SLOT
+:
+   'rx-cos-slot'
 ;
 
 SA_FILTER
@@ -9346,6 +9381,11 @@ SCP
 SCRAMBLE
 :
    'scramble'
+;
+
+SCRIPT
+:
+   'script'
 ;
 
 SCRIPTING
@@ -10006,6 +10046,11 @@ SOURCE_INTERFACE
 SOURCE_IP_ADDRESS
 :
    'source-ip-address'
+;
+
+SOURCE_PROTOCOL
+:
+   'source-protocol'
 ;
 
 SOURCE_ROUTE
@@ -11140,6 +11185,11 @@ TUNNELED_NODE_ADDRESS
    'tunneled-node-address'
 ;
 
+TXSPEED
+:
+   'txspeed'
+;
+
 TX_QUEUE
 :
    'tx-queue'
@@ -11780,6 +11830,11 @@ VTY_POOL
 VXLAN
 :
    'vxlan'
+;
+
+WAIT_FOR
+:
+  'wait-for'
 ;
 
 WAIT_START

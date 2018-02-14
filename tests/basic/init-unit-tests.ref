@@ -207,6 +207,7 @@
         "nxos_bgp" : "nxos_bgp",
         "nxos_interface" : "nxos_interface",
         "nxos_misc" : "nxos_misc",
+        "nxos_ospf" : "nxos_ospf",
         "nxos_route_map_continue" : "nxos_route_map_continue",
         "nxos_system" : "nxos_system",
         "openflow" : "openflow",
@@ -443,6 +444,7 @@
         "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_ospf" : "PASSED",
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
@@ -824,7 +826,7 @@
             },
             "99" : {
               "line access-class list" : [
-                51
+                52
               ]
             },
             "vty-acl" : {
@@ -836,7 +838,7 @@
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                56
+                57
               ]
             }
           }
@@ -845,7 +847,7 @@
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
-                29
+                42
               ]
             }
           }
@@ -861,11 +863,6 @@
         },
         "cisco_pim" : {
           "ipv4 acl" : {
-            "232.0.0.0/8" : {
-              "pim ssl acl" : [
-                10
-              ]
-            },
             "foobar" : {
               "pim rp-address" : [
                 7
@@ -900,7 +897,7 @@
           "ipv4 prefix-list" : {
             "bobble" : {
               "route-map match ip prefix-list" : [
-                30
+                31
               ]
             },
             "hpr-connector-subnets" : {
@@ -1196,6 +1193,20 @@
             "IN_BBB" : {
               "bgp inbound route-map" : [
                 28
+              ]
+            }
+          }
+        },
+        "nxos_ospf" : {
+          "route-map" : {
+            "RM_OSPF_DIRECT" : {
+              "ospf redistribute connected route-map" : [
+                9
+              ]
+            },
+            "RM_OSPF_STATIC" : {
+              "ospf redistribute static route-map" : [
+                10
               ]
             }
           }
@@ -1618,7 +1629,7 @@
               19
             ],
             "beeble" : [
-              29
+              30
             ],
             "connected-to-bgp" : [
               4
@@ -1630,7 +1641,7 @@
               26
             ],
             "multicaststuff" : [
-              38
+              40
             ],
             "next-hop-null" : [
               23
@@ -2246,6 +2257,7 @@
         "nxos_bgp" : "PASSED",
         "nxos_interface" : "PASSED",
         "nxos_misc" : "PASSED",
+        "nxos_ospf" : "PASSED",
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",

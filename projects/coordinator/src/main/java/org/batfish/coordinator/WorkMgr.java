@@ -942,30 +942,40 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public void initTestrig(
       String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
-    Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
-    /*-
+    /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
      */
     SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(testrigDir);
       throw new BatfishException(
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    TestrigMetadata metadata =
-        new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
-    try {
-      TestrigMetadataMgr.writeMetadata(
-          metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write testrigMetadata", e);
-    }
-
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
+
+    Path containerDir = getdirContainer(containerName);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+
+    if (!testrigDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
+    }
+
+    // Now that the directory exists, we must also create the metadata.
+    try {
+      TestrigMetadataMgr.writeMetadata(
+          new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+          testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
+    } catch (Exception e) {
+      BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
+      try {
+        CommonUtil.deleteDirectory(testrigDir);
+      } catch (Exception inner) {
+        metadataError.addSuppressed(inner);
+      }
+      throw metadataError;
+    }
 
     Path srcTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
 
@@ -1442,18 +1452,16 @@ public class WorkMgr extends AbstractCoordinator {
   public void uploadTestrig(
       String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
-    if (Files.exists(testrigDir)) {
+
+    // Fail early if the testrig already exists.
+    if (Files.exists(containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName)))) {
       throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
     }
 
-    if (!testrigDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
-    }
-
-    // Write the user's upload to a directory inside the testrig where we save the original upload.
-    Path originalDir = testrigDir.resolve(BfConsts.RELPATH_ORIGINAL_DIR);
-    if (!originalDir.toFile().mkdir()) {
+    // Persist the user's upload to a directory inside the container, named for the testrig,
+    // where we save the original upload for later analysis.
+    Path originalDir = containerDir.resolve(BfConsts.RELPATH_ORIGINAL_DIR).resolve(testrigName);
+    if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
     Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);
