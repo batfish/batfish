@@ -2,13 +2,16 @@ package org.batfish.main;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
+import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -51,7 +54,7 @@ public class BatfishTestUtils {
     final Cache<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
     if (!configurations.isEmpty()) {
-      Path containerDir = tempFolder.newFolder("container").toPath();
+      Path containerDir = tempFolder.newFolder().toPath();
       settings.setContainerDir(containerDir);
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
@@ -99,10 +102,11 @@ public class BatfishTestUtils {
     settings.setThrowOnLexerError(true);
     settings.setThrowOnParserError(true);
     settings.setVerboseParse(true);
-    Path containerDir = tempFolder.newFolder("container").toPath();
+    Path containerDir = tempFolder.newFolder().toPath();
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
+    settings.setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
     Batfish.initTestrigSettings(settings);
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
@@ -157,6 +161,19 @@ public class BatfishTestUtils {
       throw new BatfishException("tempFolder must be set for non-empty configurations");
     }
     return initBatfish(configurations, tempFolder);
+  }
+
+  public static Map<String, Configuration> parseTextConfigs(
+      TemporaryFolder folder, String... configurationNames) throws IOException {
+    SortedMap<String, String> configurationTextMap = new TreeMap<>();
+    for (String configName : configurationNames) {
+      String configurationText = CommonUtil.readResource(configName);
+      configurationTextMap.put(new File(configName).getName(), configurationText);
+    }
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
+    return batfish.loadConfigurations();
   }
 
   private static void writeTemporaryTestrigFiles(

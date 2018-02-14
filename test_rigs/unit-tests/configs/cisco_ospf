@@ -30,11 +30,12 @@ router ospf 1
   area 0.0.0.0 nssa no-redistribution default-information-originate no-summary
   area 0.0.0.0 nssa no-summary
   area 0.0.0.0 range 1.2.3.0/24
+  area 0.0.0.0 range 1.2.3.0/24 cost 17
   area 0.0.0.0 range 1.2.3.0 255.255.255.0
   area 0.0.0.0 range 1.2.3.0 255.255.255.0 advertise
-  area 0.0.0.0 range 1.2.3.0 255.255.255.0 not-advertise
-  area 0.0.0.0 range 1.2.3.0 255.255.255.0 cost 10
   area 0.0.0.0 range 1.2.3.0 255.255.255.0 advertise cost 10
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 cost 10
+  area 0.0.0.0 range 1.2.3.0 255.255.255.0 not-advertise
   auto-cost reference-bandwidth 40 Gbps
   capability lls
   capability transit
@@ -61,6 +62,8 @@ router ospf 1
     network point-to-point
     dead-interval 6
     hello-interval 2
+  area 0 filter-list prefix INFILTER in
+  area 0 filter-list prefix OUTFILTER out
 !
 ospf name-lookup
 ospfv3 name-lookup

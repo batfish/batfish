@@ -3,6 +3,131 @@
     {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
       "nodes" : {
+        "es-domain" : {
+          "configurationFormat" : "AWS",
+          "name" : "es-domain",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
+          "interfaces" : {
+            "es-domain-subnet-1641fa70" : {
+              "name" : "es-domain-subnet-1641fa70",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.1.2/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "192.168.1.2/24",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            },
+            "es-domain-subnet-7044ff16" : {
+              "name" : "es-domain-subnet-7044ff16",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.2.2/28"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "192.168.2.2/28",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "ipAccessLists" : {
+            "~SECURITY_GROUP_EGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false
+                }
+              ]
+            },
+            "~SECURITY_GROUP_INGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            }
+          },
+          "roles" : [
+            "es-domain"
+          ],
+          "vendorFamily" : {
+            "aws" : {
+              "region" : "us-west-2",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "es-domain-subnet-1641fa70",
+                "es-domain-subnet-7044ff16"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
+                  "tag" : -1
+                },
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.2.1",
+                  "tag" : -1
+                }
+              ]
+            }
+          }
+        },
         "igw-068fee63" : {
           "configurationFormat" : "AWS",
           "name" : "igw-068fee63",
@@ -2870,6 +2995,95 @@
                   "network" : "0.0.0.0/0",
                   "nextHopInterface" : "dynamic",
                   "nextHopIp" : "240.0.0.21",
+                  "tag" : -1
+                }
+              ]
+            }
+          }
+        },
+        "test-rds" : {
+          "configurationFormat" : "AWS",
+          "name" : "test-rds",
+          "defaultCrossZoneAction" : "ACCEPT",
+          "defaultInboundAction" : "ACCEPT",
+          "deviceType" : "SWITCH",
+          "interfaces" : {
+            "test-rds-subnet-1641fa70" : {
+              "name" : "test-rds-subnet-1641fa70",
+              "accessVlan" : 0,
+              "active" : true,
+              "allPrefixes" : [
+                "192.168.1.3/24"
+              ],
+              "autostate" : true,
+              "bandwidth" : 1.0E12,
+              "isisL1InterfaceMode" : "unset",
+              "isisL2InterfaceMode" : "unset",
+              "mtu" : 1500,
+              "nativeVlan" : 1,
+              "ospfDeadInterval" : 0,
+              "ospfEnabled" : false,
+              "ospfHelloMultiplier" : 0,
+              "ospfPassive" : false,
+              "ospfPointToPoint" : false,
+              "prefix" : "192.168.1.3/24",
+              "ripEnabled" : false,
+              "ripPassive" : false,
+              "spanningTreePortfast" : false,
+              "switchportMode" : "NONE",
+              "switchportTrunkEncapsulation" : "DOT1Q",
+              "type" : "PHYSICAL",
+              "vrf" : "default"
+            }
+          },
+          "ipAccessLists" : {
+            "~SECURITY_GROUP_EGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_EGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false
+                }
+              ]
+            },
+            "~SECURITY_GROUP_INGRESS_ACL~" : {
+              "name" : "~SECURITY_GROUP_INGRESS_ACL~",
+              "lines" : [
+                {
+                  "action" : "ACCEPT",
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              ]
+            }
+          },
+          "roles" : [
+            "test-rds"
+          ],
+          "vendorFamily" : {
+            "aws" : {
+              "region" : "us-west-2",
+              "vpcId" : "vpc-b390fad5"
+            }
+          },
+          "vrfs" : {
+            "default" : {
+              "name" : "default",
+              "interfaces" : [
+                "test-rds-subnet-1641fa70"
+              ],
+              "staticRoutes" : [
+                {
+                  "class" : "org.batfish.datamodel.StaticRoute",
+                  "administrativeCost" : 1,
+                  "network" : "0.0.0.0/0",
+                  "nextHopInterface" : "dynamic",
+                  "nextHopIp" : "192.168.1.1",
                   "tag" : -1
                 }
               ]

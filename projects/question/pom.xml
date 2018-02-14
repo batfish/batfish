@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.batfish</groupId>
     <artifactId>batfish-parent</artifactId>
-    <version>0.33.0</version>
+    <version>0.34.0</version>
   </parent>
 
   <artifactId>question</artifactId>
@@ -20,10 +21,12 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>
             <execution>
-              <goals><goal>analyze-only</goal></goals>
+              <goals>
+                <goal>analyze-only</goal>
+              </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                   org.slf4j:slf4j-jdk14,com.google.auto.service:auto-service
+                  org.slf4j:slf4j-jdk14,com.google.auto.service:auto-service
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -33,7 +36,9 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -45,17 +50,21 @@
         <executions>
           <execution>
             <id>check</id>
-            <goals><goal>check</goal></goals>
+            <goals>
+              <goal>check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>true</failOnViolation>
+              <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 
           <execution>
             <id>cpd-check</id>
-            <goals><goal>cpd-check</goal></goals>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+              <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
         </executions>
@@ -88,7 +97,12 @@
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service</artifactId>
       <optional>true</optional>
-    </dependency>                                                                                                                                                                                               
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>

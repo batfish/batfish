@@ -4201,6 +4201,16 @@ FLAP_LIST
    'flap-list'
 ;
 
+FLASH
+:
+   'flash'
+;
+
+FLASH_OVERRIDE
+:
+   'flash-override'
+;
+
 FLOATING_CONN
 :
    'floating-conn'
@@ -4399,6 +4409,11 @@ GATEKEEPER
 GATEWAY
 :
    'gateway'
+;
+
+GBPS
+:
+    'Gbps'
 ;
 
 GE
@@ -5031,6 +5046,11 @@ IMAP4
    'imap4'
 ;
 
+IMMEDIATE
+:
+   'immediate'
+;
+
 IMPERSONATION_PROFILE
 :
    'impersonation-profile'
@@ -5381,6 +5401,11 @@ ISIS_METRIC
 ISL
 :
    'isl'
+;
+
+ISOLATE
+:
+  'isolate'
 ;
 
 ISPF
@@ -6078,6 +6103,11 @@ MAIN_CPU
    'main-cpu'
 ;
 
+MAINTENANCE
+:
+  'maintenance'
+;
+
 MANAGEMENT
 :
    'management'
@@ -6306,6 +6336,11 @@ MAXPOLL
 MAXSTARTUPS
 :
    'maxstartups'
+;
+
+MBPS
+:
+    'Mbps'
 ;
 
 MBSSID
@@ -7440,7 +7475,7 @@ ORIGIN
 
 ORIGIN_ID
 :
-	'origin-id'
+   'origin-id'
 ;
 
 ORIGINATE
@@ -9278,11 +9313,6 @@ RUN
    'run'
 ;
 
-RX_COS_SLOT
-:
-   'rx-cos-slot'
-;
-
 RW
 :
    [Rr] [Ww]
@@ -9291,6 +9321,16 @@ RW
 RX
 :
    'rx'
+;
+
+RX_COS_SLOT
+:
+   'rx-cos-slot'
+;
+
+RXSPEED
+:
+   'rxspeed'
 ;
 
 SA_FILTER
@@ -9391,6 +9431,11 @@ SCP
 SCRAMBLE
 :
    'scramble'
+;
+
+SCRIPT
+:
+   'script'
 ;
 
 SCRIPTING
@@ -10051,6 +10096,11 @@ SOURCE_INTERFACE
 SOURCE_IP_ADDRESS
 :
    'source-ip-address'
+;
+
+SOURCE_PROTOCOL
+:
+   'source-protocol'
 ;
 
 SOURCE_ROUTE
@@ -11195,6 +11245,11 @@ TX_QUEUE
    'tx-queue'
 ;
 
+TXSPEED
+:
+   'txspeed'
+;
+
 TYPE
 :
    'type'
@@ -11835,6 +11890,11 @@ VTY_POOL
 VXLAN
 :
    'vxlan'
+;
+
+WAIT_FOR
+:
+  'wait-for'
 ;
 
 WAIT_START

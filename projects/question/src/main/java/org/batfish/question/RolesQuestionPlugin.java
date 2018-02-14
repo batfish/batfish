@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -23,17 +23,25 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
-    private static final String PROP_NODES = "nodes";
+    private static final String PROP_COMPLETE_ROLE_MAP = "completeRoleMap";
 
     private NodeRoleSpecifier _roleSpecifier;
 
-    private Set<String> _nodes;
+    private SortedMap<String, SortedSet<String>> _completeRoleMap;
 
-    public RolesAnswerElement() {}
+    public RolesAnswerElement() {
+      _roleSpecifier = new NodeRoleSpecifier();
+      _completeRoleMap = new TreeMap<>();
+    }
 
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public NodeRoleSpecifier getRoleSpecifier() {
       return _roleSpecifier;
+    }
+
+    @JsonProperty(PROP_COMPLETE_ROLE_MAP)
+    public SortedMap<String, SortedSet<String>> getCompleteRoleMap() {
+      return _completeRoleMap;
     }
 
     @Override
@@ -59,10 +67,8 @@ public class RolesQuestionPlugin extends QuestionPlugin {
 
       sb.append("\n\n");
 
-      SortedMap<String, SortedSet<String>> roleNodesMap =
-          _roleSpecifier.createRoleNodesMap(new TreeSet<String>(_nodes));
       sb.append("The complete map from roles to nodes:\n");
-      for (Map.Entry<String, SortedSet<String>> entry : roleNodesMap.entrySet()) {
+      for (Map.Entry<String, SortedSet<String>> entry : _completeRoleMap.entrySet()) {
         sb.append("   " + entry + "\n");
       }
 
@@ -74,9 +80,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       _roleSpecifier = roleSpecifier;
     }
 
-    @JsonProperty(PROP_NODES)
-    public void setNodes(Set<String> nodes) {
-      _nodes = nodes;
+    @JsonProperty(PROP_COMPLETE_ROLE_MAP)
+    public void setCompleteRoleMap(SortedMap<String, SortedSet<String>> completeRoleMap) {
+      _completeRoleMap = completeRoleMap;
     }
   }
 
@@ -96,10 +102,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
 
-      answerElement.setNodes(nodes);
-
       NodeRoleSpecifier roleSpecifier = _batfish.getNodeRoleSpecifier(question.getInferred());
       answerElement.setRoleSpecifier(roleSpecifier);
+      answerElement.setCompleteRoleMap(roleSpecifier.createRoleNodesMap(nodes));
 
       return answerElement;
     }

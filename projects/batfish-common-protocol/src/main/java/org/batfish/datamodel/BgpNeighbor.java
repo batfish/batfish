@@ -33,6 +33,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private Boolean _additionalPathSend;
     private Boolean _additionalPathSelectAll;
     private Boolean _advertiseInactive;
+    private Vrf _vrf;
+    private Long _clusterId;
+    private Boolean _routeReflectorClient;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, BgpNeighbor.class);
@@ -43,6 +46,9 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       BgpNeighbor bgpNeighbor;
       Ip peerIpAddress = _peerIpAddress != null ? _peerIpAddress : new Ip(generateLong());
       bgpNeighbor = new BgpNeighbor(peerIpAddress, _owner);
+      if (_clusterId != null) {
+        bgpNeighbor.setClusterId(_clusterId);
+      }
       if (_localIp != null) {
         bgpNeighbor.setLocalIp(_localIp);
       }
@@ -69,6 +75,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       }
       if (_additionalPathSelectAll != null) {
         bgpNeighbor.setAdditionalPathsSelectAll(_additionalPathSelectAll);
+      }
+      if (_routeReflectorClient != null) {
+        bgpNeighbor.setRouteReflectorClient(_routeReflectorClient);
+      }
+      if (_vrf != null) {
+        bgpNeighbor.setVrf(_vrf.getName());
       }
       return bgpNeighbor;
     }
@@ -125,6 +137,21 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
     public Builder setAdvertiseInactive(Boolean advertiseInactive) {
       _advertiseInactive = advertiseInactive;
+      return this;
+    }
+
+    public Builder setVrf(Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+
+    public Builder setClusterId(Long clusterId) {
+      _clusterId = clusterId;
+      return this;
+    }
+
+    public Builder setRouteReflectorClient(Boolean routeReflectorClient) {
+      _routeReflectorClient = routeReflectorClient;
       return this;
     }
   }

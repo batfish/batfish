@@ -1,11 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.batfish</groupId>
     <artifactId>batfish-parent</artifactId>
-    <version>0.33.0</version>
+    <version>0.34.0</version>
   </parent>
 
   <artifactId>batfish-client</artifactId>
@@ -20,10 +21,13 @@
           <artifactId>maven-dependency-plugin</artifactId>
           <executions>
             <execution>
-              <goals><goal>analyze-only</goal></goals>
+              <goals>
+                <goal>analyze-only</goal>
+              </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
+                  </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -33,7 +37,9 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -44,17 +50,21 @@
         <executions>
           <execution>
             <id>check</id>
-            <goals><goal>check</goal></goals>
+            <goals>
+              <goal>check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>true</failOnViolation>
+              <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 
           <execution>
             <id>cpd-check</id>
-            <goals><goal>cpd-check</goal></goals>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+              <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
         </executions>
@@ -124,11 +134,6 @@
     </dependency>
 
     <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-jaxrs2</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
     </dependency>
@@ -144,7 +149,7 @@
     </dependency>
 
     <dependency>
-      <groupId>jline</groupId>
+      <groupId>org.jline</groupId>
       <artifactId>jline</artifactId>
     </dependency>
 
@@ -157,9 +162,9 @@
 
     <!-- Test dependencies. -->
     <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <scope>test</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>

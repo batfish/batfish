@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -37,6 +38,8 @@ import org.batfish.datamodel.IsisOption;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -60,6 +63,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_advertise_peer_asCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_key_chainContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_clusterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
@@ -373,7 +377,6 @@ import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
-import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFrom;
@@ -1379,6 +1382,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private OspfArea _currentArea;
 
+  private Prefix _currentAreaRangePrefix;
+
+  @Nullable private Long _currentAreaRangeMetric;
+
+  private boolean _currentAreaRangeRestrict;
+
   private JuniperAuthenticationKey _currentAuthenticationKey;
 
   private JuniperAuthenticationKeyChain _currentAuthenticationKeyChain;
@@ -1758,8 +1767,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterO_area(O_areaContext ctx) {
     Ip areaIp = new Ip(ctx.area.getText());
-    Map<Ip, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
-    _currentArea = areas.computeIfAbsent(areaIp, OspfArea::new);
+    Map<Long, OspfArea> areas = _currentRoutingInstance.getOspfAreas();
+    _currentArea = areas.computeIfAbsent(areaIp.asLong(), OspfArea::new);
+  }
+
+  @Override
+  public void enterOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
+    // Set up defaults: no overridden metric, routes advertised.
+    _currentAreaRangeMetric = null;
+    _currentAreaRangePrefix = null;
+    _currentAreaRangeRestrict = false;
+
+    if (ctx.IP_PREFIX() != null) {
+      Prefix range = Prefix.parse(ctx.IP_PREFIX().getText());
+      _currentAreaRangePrefix = range;
+    } else {
+      todo(ctx, F_IPV6);
+    }
   }
 
   @Override
@@ -1785,7 +1809,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentOspfInterface = initInterface(ctx.id);
       unitFullName = _currentOspfInterface.getName();
     }
-    Ip currentArea = _currentArea.getAreaIp();
+    Ip currentArea = new Ip(_currentArea.getName());
     if (ctx.oai_passive() != null) {
       _currentOspfInterface.getOspfPassiveAreas().add(currentArea);
     } else {
@@ -2311,6 +2335,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         ctx.name.getText(),
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY,
         line);
+  }
+
+  @Override
+  public void exitB_cluster(B_clusterContext ctx) {
+    Ip clusterId = new Ip(ctx.id.getText());
+    _currentBgpGroup.setClusterId(clusterId);
   }
 
   @Override
@@ -2941,8 +2971,30 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
+    if (_currentAreaRangePrefix != null) {
+      OspfAreaSummary summary =
+          new OspfAreaSummary(!_currentAreaRangeRestrict, _currentAreaRangeMetric);
+      Map<Prefix, OspfAreaSummary> summaries = _currentArea.getSummaries();
+      summaries.put(_currentAreaRangePrefix, summary);
+    } else {
+      todo(ctx, F_IPV6);
+    }
+  }
+
+  @Override
   public void exitOa_interface(Oa_interfaceContext ctx) {
     _currentOspfInterface = null;
+  }
+
+  @Override
+  public void exitOaa_override_metric(FlatJuniperParser.Oaa_override_metricContext ctx) {
+    _currentAreaRangeMetric = Long.parseLong(ctx.DEC().getText());
+  }
+
+  @Override
+  public void exitOaa_restrict(FlatJuniperParser.Oaa_restrictContext ctx) {
+    _currentAreaRangeRestrict = true;
   }
 
   @Override

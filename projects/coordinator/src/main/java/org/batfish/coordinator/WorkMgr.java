@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -39,6 +38,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.Container;
+import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Task;
 import org.batfish.common.WorkItem;
@@ -51,6 +51,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -122,14 +123,13 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("Got exception in assignWork: " + stackTrace);
+      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
   }
 
   private void assignWork(QueuedWork work, String worker) {
 
-    _logger.info("WM:AssignWork: Trying to assign " + work + " to " + worker + " \n");
+    _logger.infof("WM:AssignWork: Trying to assign %s to %s\n", work, worker);
 
     boolean assignmentError = false;
     boolean assigned = false;
@@ -143,7 +143,7 @@ public class WorkMgr extends AbstractCoordinator {
             .startActive()) {
       assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
-      JSONObject task = work.getWorkItem().toTask();
+      JSONObject task = new JSONObject(work.getWorkItem().getRequestParams());
       Path containerDir =
           Main.getSettings().getContainersLocation().resolve(work.getWorkItem().getContainerName());
       String testrigName = work.getWorkItem().getTestrigName();
@@ -160,20 +160,16 @@ public class WorkMgr extends AbstractCoordinator {
           BfConsts.ARG_ANSWER_JSON_PATH,
           testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
 
-      ClientBuilder clientBuilder =
+      client =
           CommonUtil.createHttpClientBuilder(
-              _settings.getSslPoolDisable(),
-              _settings.getSslPoolTrustAllCerts(),
-              _settings.getSslPoolKeystoreFile(),
-              _settings.getSslPoolKeystorePassword(),
-              _settings.getSslPoolTruststoreFile(),
-              _settings.getSslPoolTruststorePassword());
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
+              .build();
 
-      if (GlobalTracer.isRegistered()) {
-        clientBuilder.register(ClientTracingFeature.class);
-      }
-
-      client = clientBuilder.build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client
@@ -193,7 +189,7 @@ public class WorkMgr extends AbstractCoordinator {
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("WM:AssignWork: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("WM:AssignWork: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);
@@ -221,6 +217,13 @@ public class WorkMgr extends AbstractCoordinator {
       if (client != null) {
         client.close();
       }
+    }
+
+    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
+      if (assigned) {
+        killWork(work, worker);
+      }
+      return;
     }
 
     // mark the assignment results for both work and worker
@@ -252,25 +255,30 @@ public class WorkMgr extends AbstractCoordinator {
       for (QueuedWork work : workToCheck) {
         String assignedWorker = work.getAssignedWorker();
         if (assignedWorker == null) {
-          _logger.error("WM:CheckWork no assigned worker for " + work + "\n");
+          _logger.errorf("WM:CheckWork no assigned worker for %s\n", work);
           _workQueueMgr.makeWorkUnassigned(work);
           continue;
         }
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.error("Got exception in checkTasks: " + e.getMessage());
+      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
   }
 
   private void checkTask(QueuedWork work, String worker) {
-    _logger.info("WM:CheckWork: Trying to check " + work + " on " + worker + " \n");
+    _logger.infof("WM:CheckWork: Trying to check %s on %s\n", work, worker);
 
-    Task task = new Task();
-    task.setStatus(TaskStatus.UnreachableOrBadResponse);
+    Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
     Client client = null;
-    try {
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan checkTaskSpan =
+        GlobalTracer.get()
+            .buildSpan("Checking Task Status")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert checkTaskSpan != null; // avoid unused warning
       client =
           CommonUtil.createHttpClientBuilder(
                   _settings.getSslPoolDisable(),
@@ -280,6 +288,7 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolTruststoreFile(),
                   _settings.getSslPoolTruststorePassword())
               .build();
+
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client
@@ -294,7 +303,7 @@ public class WorkMgr extends AbstractCoordinator {
       Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("WM:CheckTask: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("WM:CheckTask: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);
@@ -325,17 +334,18 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
+    if (work.getStatus() == WorkStatusCode.TERMINATEDBYUSER) {
+      return;
+    }
+
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.errorf("exception: %s\n", stackTrace);
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
     }
 
-    // if the task ended, send a hint to the pool manager to look up worker
-    // status
-    if (task.getStatus() == TaskStatus.TerminatedAbnormally
-        || task.getStatus() == TaskStatus.TerminatedNormally) {
+    // if the task ended, send a hint to the pool manager to look up worker status
+    if (task.getStatus().isTerminated()) {
       Main.getPoolMgr().refreshWorkerStatus(worker);
     }
   }
@@ -414,13 +424,15 @@ public class WorkMgr extends AbstractCoordinator {
    * @param questionsToAdd The questions to be added to or initially populate the analysis.
    * @param questionsToDelete A list of question names to be deleted from the analysis. Incompatible
    *     with {@code newAnalysis}.
+   * @param suggested An optional Boolean indicating whether analysis is suggested (default: false).
    */
   public void configureAnalysis(
       String containerName,
       boolean newAnalysis,
       String aName,
       Map<String, String> questionsToAdd,
-      List<String> questionsToDelete) {
+      List<String> questionsToDelete,
+      @Nullable Boolean suggested) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
     if (Files.exists(aDir) && newAnalysis) {
@@ -436,6 +448,32 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
       }
     }
+
+    // Create metadata if it's a new analysis, or update it if suggested is not null
+    if (newAnalysis || suggested != null) {
+      AnalysisMetadata metadata;
+      if (newAnalysis) {
+        metadata = new AnalysisMetadata(Instant.now(), (suggested != null) && suggested);
+      } else if (!Files.exists(getpathAnalysisMetadata(containerName, aName))) {
+        // Configuring an old analysis with no metadata file; create one. Know suggested != null
+        metadata = new AnalysisMetadata(Instant.MIN, suggested);
+      } else {
+        try {
+          metadata = AnalysisMetadataMgr.readMetadata(containerName, aName);
+          metadata.setSuggested(suggested);
+        } catch (IOException e) {
+          throw new BatfishException(
+              "Unable to read metadata file for analysis '" + aName + "'", e);
+        }
+      }
+      // Write metadata to file
+      try {
+        AnalysisMetadataMgr.writeMetadata(metadata, containerName, aName);
+      } catch (JsonProcessingException e) {
+        throw new BatfishException("Could not write analysisMetadata", e);
+      }
+    }
+
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
       Path qDir = questionsDir.resolve(entry.getKey());
@@ -758,6 +796,17 @@ public class WorkMgr extends AbstractCoordinator {
 
   // this function should build on others but some overrides are getting in the way
   // TODO: cleanup later
+  public static Path getpathAnalysisMetadata(String container, String analysis) {
+    return Main.getSettings()
+        .getContainersLocation()
+        .resolve(container)
+        .resolve(BfConsts.RELPATH_ANALYSES_DIR)
+        .resolve(analysis)
+        .resolve(BfConsts.RELPATH_METADATA_FILE);
+  }
+
+  // this function should build on others but some overrides are getting in the way
+  // TODO: cleanup later
   public static Path getpathTestrigMetadata(String container, String testrig) {
     return Main.getSettings()
         .getContainersLocation()
@@ -893,30 +942,40 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public void initTestrig(
       String containerName, String testrigName, Path srcDir, boolean autoAnalyze) {
-    Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
-    /*-
+    /*
      * Sanity check what we got:
      *    There should be just one top-level folder.
      */
     SortedSet<Path> srcDirEntries = CommonUtil.getEntries(srcDir);
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
-      CommonUtil.deleteDirectory(testrigDir);
       throw new BatfishException(
           "Unexpected packaging of testrig. There should be just one top-level folder");
     }
 
-    TestrigMetadata metadata =
-        new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
-    try {
-      TestrigMetadataMgr.writeMetadata(
-          metadata, testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write testrigMetadata", e);
-    }
-
     Path srcSubdir = srcDirEntries.iterator().next();
     SortedSet<Path> subFileList = CommonUtil.getEntries(srcSubdir);
+
+    Path containerDir = getdirContainer(containerName);
+    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
+
+    if (!testrigDir.toFile().mkdirs()) {
+      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
+    }
+
+    // Now that the directory exists, we must also create the metadata.
+    try {
+      TestrigMetadataMgr.writeMetadata(
+          new TestrigMetadata(Instant.now(), BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME),
+          testrigDir.resolve(BfConsts.RELPATH_METADATA_FILE));
+    } catch (Exception e) {
+      BatfishException metadataError = new BatfishException("Could not write testrigMetadata", e);
+      try {
+        CommonUtil.deleteDirectory(testrigDir);
+      } catch (Exception inner) {
+        metadataError.addSuppressed(inner);
+      }
+      throw metadataError;
+    }
 
     Path srcTestrigDir = testrigDir.resolve(BfConsts.RELPATH_TEST_RIG_DIR);
 
@@ -958,7 +1017,7 @@ public class WorkMgr extends AbstractCoordinator {
       WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
       autoWorkQueue.add(parseWork);
 
-      Set<String> analysisNames = listAnalyses(containerName);
+      Set<String> analysisNames = listAnalyses(containerName, null);
       for (String analysis : analysisNames) {
         WorkItem analyzeWork =
             WorkItemBuilder.getWorkItemRunAnalysis(
@@ -986,7 +1045,95 @@ public class WorkMgr extends AbstractCoordinator {
     return ENV_FILENAMES.contains(name);
   }
 
-  public SortedSet<String> listAnalyses(String containerName) {
+  public boolean killWork(QueuedWork work) {
+    String worker = work.getAssignedWorker();
+
+    if (worker != null) {
+      return killWork(work, worker);
+    }
+
+    // (worker = null) => this work was not assigned in the first place
+    boolean killed = false;
+    Task fakeTask = new Task(TaskStatus.TerminatedByUser, "Killed unassigned work");
+    try {
+      _workQueueMgr.processTaskCheckResult(work, fakeTask);
+      killed = true;
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+    }
+    return killed;
+  }
+
+  private boolean killWork(QueuedWork work, String worker) {
+    Client client = null;
+    boolean killed = false;
+
+    SpanContext queueWorkSpan = work.getWorkItem().getSourceSpan();
+    try (ActiveSpan killTaskSpan =
+        GlobalTracer.get()
+            .buildSpan("Checking Task Status")
+            .addReference(References.FOLLOWS_FROM, queueWorkSpan)
+            .startActive()) {
+      assert killTaskSpan != null; // avoid unused warning
+      client =
+          CommonUtil.createHttpClientBuilder(
+                  _settings.getSslPoolDisable(),
+                  _settings.getSslPoolTrustAllCerts(),
+                  _settings.getSslPoolKeystoreFile(),
+                  _settings.getSslPoolKeystorePassword(),
+                  _settings.getSslPoolTruststoreFile(),
+                  _settings.getSslPoolTruststorePassword())
+              .build();
+
+      String protocol = _settings.getSslPoolDisable() ? "http" : "https";
+      WebTarget webTarget =
+          client
+              .target(
+                  String.format(
+                      "%s://%s%s/%s",
+                      protocol, worker, BfConsts.SVC_BASE_RSC, BfConsts.SVC_KILL_TASK_RSC))
+              .queryParam(
+                  BfConsts.SVC_TASKID_KEY,
+                  UriComponent.encode(
+                      work.getId().toString(), UriComponent.Type.QUERY_PARAM_SPACE_ENCODED));
+      Response response = webTarget.request(MediaType.APPLICATION_JSON).get();
+
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        _logger.errorf("WM:KillTask: Got non-OK response %s\n", response.getStatus());
+      } else {
+        try {
+          String sobj = response.readEntity(String.class);
+          JSONArray array = new JSONArray(sobj);
+          _logger.infof("response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
+          if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
+            _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
+          } else {
+            Task task = new BatfishObjectMapper().readValue(array.getString(1), Task.class);
+            _workQueueMgr.processTaskCheckResult(work, task);
+            killed = true;
+          }
+        } catch (IllegalStateException e) {
+          // can happen if the worker dies before we could finish reading; let's assume success
+          _logger.infof("worker appears dead before response completion\n");
+          Task fakeTask =
+              new Task(TaskStatus.TerminatedByUser, "worker appears dead before responding");
+          _workQueueMgr.processTaskCheckResult(work, fakeTask);
+          killed = true;
+        }
+      }
+    } catch (ProcessingException e) {
+      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getFullStackTrace(e));
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+    } finally {
+      if (client != null) {
+        client.close();
+      }
+    }
+    return killed;
+  }
+
+  public SortedSet<String> listAnalyses(String containerName, @Nullable Boolean suggested) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
@@ -997,6 +1144,13 @@ public class WorkMgr extends AbstractCoordinator {
             CommonUtil.getSubdirectories(analysesDir)
                 .stream()
                 .map(subdir -> subdir.getFileName().toString())
+                .filter(
+                    aName -> {
+                      // Include the analysis if suggested is null or matches metadata.suggested
+                      return suggested == null
+                          || AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName)
+                              == suggested;
+                    })
                 .collect(Collectors.toSet()));
     return analyses;
   }
@@ -1054,6 +1208,11 @@ public class WorkMgr extends AbstractCoordinator {
     return environments;
   }
 
+  public List<QueuedWork> listIncompleteWork(
+      String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
+    return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
+  }
+
   public SortedSet<String> listQuestions(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -1069,18 +1228,25 @@ public class WorkMgr extends AbstractCoordinator {
     return questions;
   }
 
-  public SortedSet<String> listTestrigs(String containerName) {
+  public List<String> listTestrigs(String containerName) {
     Path containerDir = getdirContainer(containerName);
     Path testrigsDir = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR);
     if (!Files.exists(testrigsDir)) {
-      return new TreeSet<>();
+      return new ArrayList<>();
     }
-    SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(testrigsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+    List<String> testrigs =
+        CommonUtil.getSubdirectories(testrigsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .sorted(
+                (t1, t2) -> { // reverse sorting by creation-time, name
+                  String key1 =
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t1) + t1;
+                  String key2 =
+                      TestrigMetadataMgr.getTestrigCreationTimeOrMin(containerName, t2) + t2;
+                  return key2.compareTo(key1);
+                })
+            .collect(Collectors.toList());
     return testrigs;
   }
 
@@ -1286,18 +1452,16 @@ public class WorkMgr extends AbstractCoordinator {
   public void uploadTestrig(
       String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
-    Path testrigDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName));
-    if (Files.exists(testrigDir)) {
+
+    // Fail early if the testrig already exists.
+    if (Files.exists(containerDir.resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName)))) {
       throw new BatfishException("Testrig with name: '" + testrigName + "' already exists");
     }
 
-    if (!testrigDir.toFile().mkdirs()) {
-      throw new BatfishException("Failed to create directory: '" + testrigDir + "'");
-    }
-
-    // Write the user's upload to a directory inside the testrig where we save the original upload.
-    Path originalDir = testrigDir.resolve(BfConsts.RELPATH_ORIGINAL_DIR);
-    if (!originalDir.toFile().mkdir()) {
+    // Persist the user's upload to a directory inside the container, named for the testrig,
+    // where we save the original upload for later analysis.
+    Path originalDir = containerDir.resolve(BfConsts.RELPATH_ORIGINAL_DIR).resolve(testrigName);
+    if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
     Path zipFile = originalDir.resolve(BfConsts.RELPATH_TESTRIG_ZIP_FILE);

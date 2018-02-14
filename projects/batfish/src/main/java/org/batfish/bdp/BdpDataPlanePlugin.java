@@ -13,7 +13,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.config.BdpSettings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -27,6 +26,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 @AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
+
+  public static final String PLUGIN_NAME = "bdp";
 
   private final Map<BdpDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
 
@@ -147,5 +148,10 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   public void processFlows(Set<Flow> flows) {
     BdpDataPlane dp = loadDataPlane();
     _flowTraces.put(dp, _engine.processFlows(dp, flows));
+  }
+
+  @Override
+  public String getName() {
+    return PLUGIN_NAME;
   }
 }

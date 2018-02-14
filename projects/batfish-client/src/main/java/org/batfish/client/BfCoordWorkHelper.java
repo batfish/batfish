@@ -1,8 +1,9 @@
 package org.batfish.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -132,6 +134,45 @@ public class BfCoordWorkHelper {
             ExceptionUtils.getStackTrace(e));
       }
       return false;
+    }
+  }
+
+  @Nullable
+  public String configureTemplate(String inTemplate, JsonNode exceptions, JsonNode assertion) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_CONFIGURE_QUESTION_TEMPLATE);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUESTION, inTemplate);
+      if (exceptions != null) {
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_EXCEPTIONS, exceptions.toString());
+      }
+      if (assertion != null) {
+        addTextMultiPart(multiPart, CoordConsts.SVC_KEY_ASSERTION, assertion.toString());
+      }
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_QUESTION)) {
+        _logger.errorf("question key not found in: %s\n", jObj);
+        return null;
+      }
+
+      String outTemplate = jObj.getString(CoordConsts.SVC_KEY_QUESTION);
+
+      return outTemplate;
+    } catch (Exception e) {
+      _logger.errorf(
+          "Exception in configureTemplate from %s using (%s, %s, %s)\n",
+          _coordWorkMgr, inTemplate, exceptions, assertion);
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
     }
   }
 
@@ -385,19 +426,14 @@ public class BfCoordWorkHelper {
   }
 
   private ClientBuilder getClientBuilder() {
-    ClientBuilder clientBuilder =
-        CommonUtil.createHttpClientBuilder(
+    return CommonUtil.createHttpClientBuilder(
             _settings.getSslDisable(),
             _settings.getSslTrustAllCerts(),
             _settings.getSslKeystoreFile(),
             _settings.getSslKeystorePassword(),
             _settings.getSslTruststoreFile(),
-            _settings.getSslTruststorePassword());
-    clientBuilder.register(MultiPartFeature.class);
-    if (_settings.getTracingEnable()) {
-      clientBuilder.register(ClientTracingFeature.class);
-    }
-    return clientBuilder;
+            _settings.getSslTruststorePassword())
+        .register(MultiPartFeature.class);
   }
 
   /**
@@ -544,7 +580,9 @@ public class BfCoordWorkHelper {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.errorf("GetObject: Did not get an OK response\n");
+        _logger.debugf(
+            "GetObject: Did not get an OK response for %s -> %s->%s\n",
+            containerName, testrigName, objectName);
         return null;
       }
 
@@ -638,7 +676,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  public Pair<WorkStatusCode, String> getWorkStatus(UUID parseWorkUUID) {
+  public Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -646,7 +684,7 @@ public class BfCoordWorkHelper {
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, parseWorkUUID.toString());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
 
       JSONObject jObj = postData(webTarget, multiPart);
       if (jObj == null) {
@@ -750,6 +788,33 @@ public class BfCoordWorkHelper {
     }
   }
 
+  public boolean killWork(UUID workId) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_KILL_WORK);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKID, workId.toString());
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return false;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_RESULT)) {
+        _logger.errorf("result key not found in: %s\n", jObj);
+        return false;
+      }
+
+      return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
+    } catch (Exception e) {
+      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      return false;
+    }
+  }
+
   @Nullable
   public JSONObject listAnalyses(String containerName) {
     try {
@@ -847,6 +912,41 @@ public class BfCoordWorkHelper {
       }
 
       return environmentList;
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      return null;
+    }
+  }
+
+  @Nullable
+  public List<WorkStatus> listIncompleteWork(String containerName) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_LIST_INCOMPLETE_WORK);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+
+      if (!jObj.has(CoordConsts.SVC_KEY_WORK_LIST)) {
+        _logger.errorf("work list key not found in: %s\n", jObj);
+        return null;
+      }
+
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      String result = jObj.getString(CoordConsts.SVC_KEY_WORK_LIST);
+
+      List<WorkStatus> workList =
+          mapper.readValue(result, new TypeReference<List<WorkStatus>>() {});
+
+      return workList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
       _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
@@ -975,7 +1075,8 @@ public class BfCoordWorkHelper {
       MultiPart multiPart = new MultiPart();
       multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, wItem.toJsonString());
+      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_WORKITEM, mapper.writeValueAsString(wItem));
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
 
       JSONObject jObj = postData(webTarget, multiPart);

@@ -7,10 +7,16 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {
@@ -43,11 +49,26 @@ public final class InterfaceMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's OSPF
+   * area.
+   */
+  public static HasOspfArea hasOspfArea(Matcher<OspfArea> subMatcher) {
+    return new HasOspfArea(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
    * source NATs.
    */
   public static HasSourceNats hasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
     return new HasSourceNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's VRF.
+   */
+  public static HasVrf hasVrf(Matcher<? super Vrf> subMatcher) {
+    return new HasVrf(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface is active. */
@@ -61,6 +82,24 @@ public final class InterfaceMatchers {
    */
   public static IsActive isActive(@Nonnull Matcher<? super Boolean> subMatcher) {
     return new IsActive(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface runs OSPF in passive mode. */
+  public static IsOspfPassive isOspfPassive() {
+    return isOspfPassive(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * ospfPassive flag.
+   */
+  public static IsOspfPassive isOspfPassive(@Nonnull Matcher<? super Boolean> subMatcher) {
+    return new IsOspfPassive(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface runs OSPF in point-to-point mode. */
+  public static IsOspfPointToPoint isOspfPointToPoint() {
+    return new IsOspfPointToPoint(equalTo(true));
   }
 
   private InterfaceMatchers() {}

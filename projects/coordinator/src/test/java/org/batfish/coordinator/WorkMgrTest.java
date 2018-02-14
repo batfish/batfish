@@ -186,6 +186,31 @@ public class WorkMgrTest {
   }
 
   @Test
+  public void testListAnalysesSuggested() {
+    String containerName = "myContainer";
+    _manager.initContainer(containerName, null);
+
+    // Create analysis1 (user analysis) and analysis2 (suggested analysis)
+    _manager.configureAnalysis(
+        containerName, true, "analysis1", Maps.newHashMap(), Lists.newArrayList(), false);
+    _manager.configureAnalysis(
+        containerName, true, "analysis2", Maps.newHashMap(), Lists.newArrayList(), true);
+
+    SortedSet<String> analyses = _manager.listAnalyses(containerName, null);
+    assertTrue("User analyses listed if suggested is null", analyses.contains("analysis1"));
+    assertTrue("Suggested analyses listed if suggested is null", analyses.contains("analysis2"));
+
+    analyses = _manager.listAnalyses(containerName, false);
+    assertTrue("User analyses listed if suggested is false", analyses.contains("analysis1"));
+    assertFalse(
+        "Suggested analyses not listed if suggested is false", analyses.contains("analysis2"));
+
+    analyses = _manager.listAnalyses(containerName, true);
+    assertFalse("User analyses not listed if suggested is true", analyses.contains("analysis1"));
+    assertTrue("Suggested analyses listed if suggested is true", analyses.contains("analysis2"));
+  }
+
+  @Test
   public void testConfigureAnalysis() {
     String containerName = "myContainer";
     _manager.initContainer(containerName, null);
@@ -193,11 +218,11 @@ public class WorkMgrTest {
     Map<String, String> questionsToAdd =
         Maps.newHashMap(Collections.singletonMap("question1", "question1Content"));
     _manager.configureAnalysis(
-        containerName, true, "analysis", questionsToAdd, Lists.newArrayList());
+        containerName, true, "analysis", questionsToAdd, Lists.newArrayList(), null);
     questionsToAdd = Maps.newHashMap(Collections.singletonMap("question2", "question2Content"));
     questionsToAdd.put("question3", "question3Content");
     _manager.configureAnalysis(
-        containerName, false, "analysis", questionsToAdd, Lists.newArrayList());
+        containerName, false, "analysis", questionsToAdd, Lists.newArrayList(), null);
     Path questionPath =
         _folder
             .getRoot()
@@ -222,14 +247,14 @@ public class WorkMgrTest {
     // test delete questions
     List<String> questionsToDelete = Lists.newArrayList();
     _manager.configureAnalysis(
-        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete);
+        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
     assertTrue(
         Files.exists(questionPath.resolve("question1"))
             && Files.exists(questionPath.resolve("question2"))
             && Files.exists(questionPath.resolve("question3")));
     questionsToDelete = Lists.newArrayList("question1", "question2");
     _manager.configureAnalysis(
-        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete);
+        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
     assertFalse(Files.exists(questionPath.resolve("question1")));
     assertFalse(Files.exists(questionPath.resolve("question2")));
     assertTrue(Files.exists(questionPath.resolve("question3")));
@@ -237,6 +262,51 @@ public class WorkMgrTest {
     _thrown.expectMessage(equalTo("Question question1 does not exist for analysis analysis"));
     questionsToDelete = Lists.newArrayList("question1");
     _manager.configureAnalysis(
-        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete);
+        containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
+  }
+
+  @Test
+  public void testConfigureAnalysisSuggested() {
+    String containerName = "myContainer";
+    _manager.initContainer(containerName, null);
+
+    // Analysis initialized with suggested = null should not be marked as suggested
+    _manager.configureAnalysis(
+        containerName, true, "analysis", Maps.newHashMap(), Lists.newArrayList(), null);
+    assertFalse(getMetadataSuggested(containerName, "analysis"));
+
+    // Analysis initialized with suggested = true should be marked as suggested
+    _manager.configureAnalysis(
+        containerName, true, "analysis2", Maps.newHashMap(), Lists.newArrayList(), true);
+    assertTrue(getMetadataSuggested(containerName, "analysis2"));
+
+    // Analysis initialized with suggested = false should not be marked as suggested
+    _manager.configureAnalysis(
+        containerName, true, "analysis3", Maps.newHashMap(), Lists.newArrayList(), false);
+    assertFalse(getMetadataSuggested(containerName, "analysis3"));
+
+    // Existing analysis should not change suggested if suggested arg is null
+    _manager.configureAnalysis(
+        containerName, false, "analysis2", Maps.newHashMap(), Lists.newArrayList(), null);
+    assertTrue(getMetadataSuggested(containerName, "analysis2"));
+    _manager.configureAnalysis(
+        containerName, false, "analysis3", Maps.newHashMap(), Lists.newArrayList(), null);
+    assertFalse(getMetadataSuggested(containerName, "analysis3"));
+
+    // Existing analysis should update suggested if arg is not null
+    _manager.configureAnalysis(
+        containerName, false, "analysis2", Maps.newHashMap(), Lists.newArrayList(), false);
+    assertFalse(getMetadataSuggested(containerName, "analysis2"));
+    _manager.configureAnalysis(
+        containerName, false, "analysis3", Maps.newHashMap(), Lists.newArrayList(), true);
+    assertTrue(getMetadataSuggested(containerName, "analysis3"));
+  }
+
+  private boolean getMetadataSuggested(String containerName, String analysisName) {
+    try {
+      return AnalysisMetadataMgr.readMetadata(containerName, analysisName).getSuggested();
+    } catch (IOException e) {
+      throw new BatfishException("Failed to read metadata", e);
+    }
   }
 }

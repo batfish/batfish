@@ -36,9 +36,9 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.smt.EquivalenceType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
+import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 
@@ -94,9 +94,6 @@ public interface IBatfish extends IPluginConsumer {
 
   InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError);
 
-  void initRemoteOspfNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
-
   void initRemoteRipNeighbors(
       Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology);
 
@@ -149,8 +146,6 @@ public interface IBatfish extends IPluginConsumer {
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
-  void setDataPlanePlugin(DataPlanePlugin dataPlanePlugin);
-
   AnswerElement smtBlackhole(HeaderQuestion q);
 
   AnswerElement smtBoundedLength(HeaderLocationQuestion q, Integer bound);
@@ -169,7 +164,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtReachability(HeaderLocationQuestion q);
 
-  AnswerElement smtRoles(EquivalenceType t, NodesSpecifier nodeRegex);
+  AnswerElement smtRoles(RoleQuestion q);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
@@ -184,4 +179,6 @@ public interface IBatfish extends IPluginConsumer {
       Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
+
+  void registerDataPlanePlugin(DataPlanePlugin plugin, String name);
 }

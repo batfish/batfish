@@ -286,6 +286,11 @@ if_ip_virtual_router
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+if_ip_vrf_forwarding
+:
+   IP VRF FORWARDING name = variable NEWLINE
+;
+
 if_isis_circuit_type
 :
    ISIS CIRCUIT_TYPE
@@ -513,8 +518,6 @@ if_null_block
             | UNREACHABLES
             | VERIFY
             | VIRTUAL_REASSEMBLY
-            | VIRTUAL_ROUTER
-            | VRF
             | WCCP
          )
       )
@@ -893,6 +896,7 @@ if_tunnel
    (
        iftunnel_bandwidth
        | iftunnel_destination
+       | iftunnel_key
        | iftunnel_mode
        | iftunnel_protection
        | iftunnel_source
@@ -902,11 +906,6 @@ if_tunnel
 if_vrf
 :
    VRF name = variable NEWLINE
-;
-
-if_vrf_forwarding
-:
-   VRF FORWARDING name = variable NEWLINE
 ;
 
 if_vrf_member
@@ -1026,6 +1025,11 @@ iftunnel_destination
    DESTINATION IP_ADDRESS NEWLINE
 ;
 
+iftunnel_key
+:
+   KEY keynum = DEC NEWLINE
+;
+
 iftunnel_mode
 :
    MODE
@@ -1036,6 +1040,7 @@ iftunnel_mode
    (
      IPV4
      | IPV6
+     | MULTIPOINT
    )
    NEWLINE
 ;
@@ -1129,6 +1134,7 @@ s_interface
       | if_ip_router_isis
       | if_ip_router_ospf_area
       | if_ip_virtual_router
+      | if_ip_vrf_forwarding
       | if_isis_circuit_type
       | if_isis_enable
       | if_isis_hello_interval
@@ -1153,7 +1159,6 @@ s_interface
       | if_switchport_trunk_native
       | if_tunnel
       | if_vrf
-      | if_vrf_forwarding
       | if_vrf_member
       | if_vrrp
       // do not rearrange items below

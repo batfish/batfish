@@ -10,9 +10,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
@@ -30,7 +32,7 @@ public class Roles {
 
   private BDDNetwork _network;
 
-  private NodesSpecifier _nodeRegex;
+  private NodesSpecifier _nodeSpecifier;
 
   private List<SortedSet<String>> _bgpInEcs = null;
 
@@ -44,16 +46,17 @@ public class Roles {
 
   private List<SortedSet<String>> _nodeEcs = null;
 
-  public static Roles create(IBatfish batfish, NodesSpecifier nodeRegex) {
-    Roles rf = new Roles(batfish, nodeRegex);
-    rf.computeRoles();
+  public static Roles create(
+      IBatfish batfish, List<Prefix> prefixes, NodesSpecifier nodesSpecifier) {
+    Roles rf = new Roles(batfish, nodesSpecifier);
+    rf.computeRoles(prefixes);
     return rf;
   }
 
-  private Roles(IBatfish batfish, NodesSpecifier nodeRegex) {
+  private Roles(IBatfish batfish, NodesSpecifier nodesSpecifier) {
     _graph = new Graph(batfish);
-    _network = BDDNetwork.create(_graph);
-    _nodeRegex = nodeRegex;
+    _network = BDDNetwork.create(_graph, nodesSpecifier);
+    _nodeSpecifier = nodesSpecifier;
     _bgpInEcs = null;
     _bgpOutEcs = null;
     _aclInEcs = null;
@@ -83,7 +86,7 @@ public class Roles {
    * Compute all the devices/interfaces configured with the
    * equivalent policies.
    */
-  private void computeRoles() {
+  private void computeRoles(List<Prefix> prefixes) {
     Map<BDDRoute, SortedSet<String>> importBgpEcs = new HashMap<>();
     Map<BDDRoute, SortedSet<String>> exportBgpEcs = new HashMap<>();
     Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
@@ -96,12 +99,11 @@ public class Roles {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
-    Set<String> includeNodes =
-        _nodeRegex.getMatchingNodes(_graph.getBatfish().loadConfigurations());
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
 
-      if (!includeNodes.contains(router)) {
+      Matcher m = _nodeSpecifier.getRegex().matcher(router);
+      if (!m.matches()) {
         continue;
       }
 
@@ -115,6 +117,7 @@ public class Roles {
         if (x1 == null) {
           importBgpNull.add(s);
         } else {
+          x1 = (prefixes == null ? x1 : x1.restrict(prefixes));
           SortedSet<String> ec = importBgpEcs.computeIfAbsent(x1, k -> new TreeSet<>());
           ec.add(s);
         }
@@ -123,6 +126,7 @@ public class Roles {
         if (x2 == null) {
           exportBgpNull.add(s);
         } else {
+          x2 = (prefixes == null ? x2 : x2.restrict(prefixes));
           SortedSet<String> ec = exportBgpEcs.computeIfAbsent(x2, k -> new TreeSet<>());
           ec.add(s);
         }
@@ -131,6 +135,7 @@ public class Roles {
         if (x4 == null) {
           incomingAclNull.add(s);
         } else {
+          x4 = (prefixes == null ? x4 : x4.restrict(prefixes));
           SortedSet<String> ec = incomingAclEcs.computeIfAbsent(x4.getBdd(), k -> new TreeSet<>());
           ec.add(s);
         }
@@ -139,12 +144,15 @@ public class Roles {
         if (x5 == null) {
           outgoingAclNull.add(s);
         } else {
+          x5 = (prefixes == null ? x5 : x5.restrict(prefixes));
           SortedSet<String> ec = outgoingAclEcs.computeIfAbsent(x5.getBdd(), k -> new TreeSet<>());
           ec.add(s);
         }
 
         InterfacePolicy x6 = _network.getImportPolicyMap().get(ge);
         InterfacePolicy x7 = _network.getExportPolicyMap().get(ge);
+        x6 = (x6 == null || prefixes == null ? x6 : x6.restrict(prefixes));
+        x7 = (x7 == null || prefixes == null ? x7 : x7.restrict(prefixes));
         Tuple<InterfacePolicy, InterfacePolicy> tup = new Tuple<>(x6, x7);
 
         SortedSet<String> ec = interfaceEcs.computeIfAbsent(tup, k -> new TreeSet<>());

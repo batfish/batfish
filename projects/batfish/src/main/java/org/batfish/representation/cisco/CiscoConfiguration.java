@@ -59,6 +59,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -142,6 +143,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("cable-downstream", "cable-downstream")
           .put("cable-mac", "cable-mac")
           .put("cable-upstream", "cable-upstream")
+          .put("Cellular", "Cellular")
           .put("Crypto-Engine", "Crypto-Engine")
           .put("cmp-mgmt", "cmp-mgmt")
           .put("Dialer", "Dialer")
@@ -164,10 +166,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("ma", "Management")
           .put("Management", "Management")
           .put("ManagementEthernet", "ManagementEthernet")
+          .put("mfr", "mfr")
           .put("mgmt", "mgmt")
           .put("MgmtEth", "ManagementEthernet")
           .put("Modular-Cable", "Modular-Cable")
+          .put("Multilink", "Multilink")
           .put("Null", "Null")
+          .put("nve", "nve")
           .put("Port-channel", "Port-Channel")
           .put("POS", "POS")
           .put("PTP", "PTP")
@@ -2745,9 +2750,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // create summarization filters for inter-area routes
-    for (Entry<Long, Map<Prefix, Boolean>> e1 : proc.getSummaries().entrySet()) {
+    for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
       long areaLong = e1.getKey();
-      Map<Prefix, Boolean> summaries = e1.getValue();
+      Map<Prefix, OspfAreaSummary> summaries = e1.getValue();
       OspfArea area = areas.get(areaLong);
       String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + areaLong + "~";
       RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
@@ -2757,18 +2762,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
         areas.put(areaLong, area);
       }
       area.setSummaryFilter(summaryFilterName);
-      for (Entry<Prefix, Boolean> e2 : summaries.entrySet()) {
+      for (Entry<Prefix, OspfAreaSummary> e2 : summaries.entrySet()) {
         Prefix prefix = e2.getKey();
-        boolean advertise = e2.getValue();
+        OspfAreaSummary summary = e2.getValue();
         int prefixLength = prefix.getPrefixLength();
         int filterMinPrefixLength =
-            advertise ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1) : prefixLength;
+            summary.getAdvertise()
+                ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                : prefixLength;
         summaryFilter.addLine(
             new RouteFilterLine(
                 LineAction.REJECT,
                 prefix,
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
-        area.getSummaries().put(prefix, advertise);
+        area.getSummaries().put(prefix, summary);
       }
       summaryFilter.addLine(
           new RouteFilterLine(
@@ -3833,7 +3840,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL);
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_SSM_ACL);
     markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
     markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);

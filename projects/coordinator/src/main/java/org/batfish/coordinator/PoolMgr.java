@@ -143,7 +143,7 @@ public class PoolMgr {
       // _logger.debug(webTarget.getUri());
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("PM:RefreshWorkerStatus: Got non-OK response " + response.getStatus() + "\n");
+        _logger.errorf("PM:RefreshWorkerStatus: Got non-OK response %s\n", response.getStatus());
       } else {
         String sobj = response.readEntity(String.class);
         JSONArray array = new JSONArray(sobj);

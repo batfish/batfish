@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -58,7 +59,6 @@ public class Encoder {
   static final Boolean ENABLE_DEBUGGING = false;
   static final String MAIN_SLICE_NAME = "SLICE-MAIN_";
   private static final boolean ENABLE_UNSAT_CORE = false;
-  private static final Boolean ENABLE_BENCHMARKING = false;
   private int _encodingId;
 
   private boolean _modelIgp;
@@ -83,22 +83,26 @@ public class Encoder {
 
   private UnsatCore _unsatCore;
 
+  private Settings _settings;
+
   /**
    * Create an encoder object that will consider all packets in the provided headerspace.
    *
+   * @param settings The Batfish configuration settings object
    * @param batfish The Batfish object
    */
-  Encoder(IBatfish batfish, HeaderQuestion q) {
-    this(new Graph(batfish), q);
+  Encoder(IBatfish batfish, Settings settings, HeaderQuestion q) {
+    this(settings, new Graph(batfish), q);
   }
 
   /**
    * Create an encoder object that will consider all packets in the provided headerspace.
    *
+   * @param settings The Batfish configuration settings object
    * @param graph The network graph
    */
-  Encoder(Graph graph, HeaderQuestion q) {
-    this(null, graph, q, null, null, null, 0);
+  Encoder(Settings settings, Graph graph, HeaderQuestion q) {
+    this(settings, null, graph, q, null, null, null, 0);
   }
 
   /**
@@ -108,7 +112,15 @@ public class Encoder {
    * @param g An existing network graph
    */
   Encoder(Encoder e, Graph g) {
-    this(e, g, e._question, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
+    this(
+        e._settings,
+        e,
+        g,
+        e._question,
+        e.getCtx(),
+        e.getSolver(),
+        e.getAllVariables(),
+        e.getId() + 1);
   }
 
   /**
@@ -119,7 +131,7 @@ public class Encoder {
    * @param q A header question
    */
   Encoder(Encoder e, Graph g, HeaderQuestion q) {
-    this(e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
+    this(e._settings, e, g, q, e.getCtx(), e.getSolver(), e.getAllVariables(), e.getId() + 1);
   }
 
   /**
@@ -128,6 +140,7 @@ public class Encoder {
    * used.
    */
   private Encoder(
+      Settings settings,
       @Nullable Encoder enc,
       Graph graph,
       HeaderQuestion q,
@@ -135,6 +148,7 @@ public class Encoder {
       @Nullable Solver solver,
       @Nullable Map<String, Expr> vars,
       int id) {
+    _settings = settings;
     _graph = graph;
     _previousEncoder = enc;
     _modelIgp = true;
@@ -150,6 +164,8 @@ public class Encoder {
       cfg.put("proof", "true");
       cfg.put("auto-config", "false");
     }
+
+    cfg.put("timeout", String.valueOf(_settings.getZ3timeout()));
 
     _ctx = (ctx == null ? new Context(cfg) : ctx);
 
@@ -721,17 +737,28 @@ public class Encoder {
     Status status = _solver.check();
     long time = System.currentTimeMillis() - start;
 
-    if (ENABLE_BENCHMARKING) {
-      VerificationStats stats =
-          new VerificationStats(numNodes, numEdges, numVariables, numConstraints, time);
-      System.out.println("Constraints: " + stats.getNumConstraints());
-      System.out.println("Variables: " + stats.getNumVariables());
-      System.out.println("Z3 Time: " + stats.getTime());
-      System.out.println("Stats: \n" + _solver.getStatistics());
+    VerificationStats stats = null;
+    if (_question.getBenchmark()) {
+      stats = new VerificationStats();
+      stats.setAvgNumNodes(numNodes);
+      stats.setMaxNumNodes(numNodes);
+      stats.setMinNumNodes(numNodes);
+      stats.setAvgNumEdges(numEdges);
+      stats.setMaxNumEdges(numEdges);
+      stats.setMinNumEdges(numEdges);
+      stats.setAvgNumVariables(numVariables);
+      stats.setMaxNumVariables(numVariables);
+      stats.setMinNumVariables(numVariables);
+      stats.setAvgNumConstraints(numConstraints);
+      stats.setMaxNumConstraints(numConstraints);
+      stats.setMinNumConstraints(numConstraints);
+      stats.setAvgSolverTime(time);
+      stats.setMaxSolverTime(time);
+      stats.setMinSolverTime(time);
     }
 
     if (status == Status.UNSATISFIABLE) {
-      VerificationResult res = new VerificationResult(true, null, null, null, null, null);
+      VerificationResult res = new VerificationResult(true, null, null, null, null, null, stats);
       return new Tuple<>(res, null);
     } else if (status == Status.UNKNOWN) {
       throw new BatfishException("ERROR: satisfiability unknown");
@@ -752,7 +779,8 @@ public class Encoder {
               _previousEncoder, m, model, packetModel, fwdModel, envModel, failures);
         }
 
-        result = new VerificationResult(false, model, packetModel, envModel, fwdModel, failures);
+        result =
+            new VerificationResult(false, model, packetModel, envModel, fwdModel, failures, stats);
 
         if (!_question.getMinimize()) {
           break;

@@ -167,6 +167,7 @@ logging_null
       | ORIGIN_ID
       | PERMIT_HOSTDOWN
       | PROPRIETARY
+      | ORIGIN_ID
       | OVERRIDE
       | QUEUE_LIMIT
       | RATE_LIMIT

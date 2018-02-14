@@ -17,17 +17,7 @@ ro_area
    (
       area_int = DEC
       | area_ip = IP_ADDRESS
-   )
-   (
-      DEFAULT_COST cost = DEC
-   )?
-   (
-      FILTER_LIST PREFIX prefix_list_name = VARIABLE
-      (
-         IN
-         | OUT
-      )
-   )? NEWLINE
+   ) NEWLINE
    (
       ro_common
       | roa_cost
@@ -35,6 +25,27 @@ ro_area
       | roa_network_null
       | roa_range
    )*
+;
+
+ro_area_default_cost
+:
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   )
+   DEFAULT_COST cost = DEC NEWLINE
+;
+
+ro_area_filterlist
+:
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   )
+   FILTER_LIST PREFIX list = variable (IN | OUT)
+   NEWLINE
 ;
 
 ro_area_nssa
@@ -78,7 +89,11 @@ ro_area_range
    (
       ADVERTISE
       | NOT_ADVERTISE
-   )? ( COST cost = DEC )? NEWLINE
+   )?
+   (
+      COST cost = DEC
+   )?
+   NEWLINE
 ;
 
 ro_area_stub
@@ -96,6 +111,11 @@ ro_area_stub
 ro_authentication
 :
    AUTHENTICATION MESSAGE_DIGEST? NEWLINE
+;
+
+ro_auto_cost
+:
+   AUTO_COST REFERENCE_BANDWIDTH DEC (GBPS | MBPS)? NEWLINE
 ;
 
 ro_common
@@ -150,6 +170,10 @@ ro_max_metric
       |
       (
          summary_lsa = SUMMARY_LSA summary = DEC?
+      )
+      |
+      (
+         wait_for_bgp = WAIT_FOR BGP bgptag = variable_max_metric
       )
    )* NEWLINE
 ;
@@ -369,6 +393,16 @@ ro_summary_address
    NEWLINE
 ;
 
+ro_vrf
+:
+   VRF name = variable NEWLINE
+   (
+      ro_max_metric
+      | ro_redistribute_connected
+      | ro_redistribute_static
+   )*
+;
+
 ro6_area
 :
    AREA ~NEWLINE* NEWLINE
@@ -460,7 +494,11 @@ roa_range
    (
       ADVERTISE
       | NOT_ADVERTISE
-   ) NEWLINE
+   )?
+   (
+      COST cost=DEC
+   )?
+   NEWLINE
 ;
 
 roa_network_null
@@ -576,9 +614,12 @@ s_router_ospf
    (
       ro_address_family
       | ro_area
+      | ro_area_default_cost
+      | ro_area_filterlist
       | ro_area_nssa
       | ro_area_range
       | ro_area_stub
+      | ro_auto_cost
       | ro_common
       | ro_default_information
       | ro_distance
@@ -594,6 +635,7 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
+      | ro_vrf
    )*
 ;
 
@@ -605,3 +647,4 @@ s_router_ospfv3
       | rov3_common
    )*
 ;
+

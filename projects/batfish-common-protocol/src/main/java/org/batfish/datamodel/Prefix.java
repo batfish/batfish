@@ -16,12 +16,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   public static final Prefix ZERO = new Prefix(Ip.ZERO, 0);
 
   private static long getNetworkEnd(long networkStart, int prefixLength) {
-    long networkEnd = networkStart;
-    int onesLength = 32 - prefixLength;
-    for (int i = 0; i < onesLength; i++) {
-      networkEnd |= ((long) 1 << i);
-    }
-    return networkEnd;
+    return networkStart | ((1L << (32 - prefixLength)) - 1);
   }
 
   private static long numWildcardBitsToWildcardLong(int numBits) {
@@ -79,13 +74,13 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   public boolean contains(Ip ip) {
     long start = _ip.asLong();
-    long end = getEndIp().asLong();
+    long end = getNetworkEnd(start, _prefixLength);
     long ipAsLong = ip.asLong();
     return start <= ipAsLong && ipAsLong <= end;
   }
 
   public boolean containsPrefix(Prefix prefix) {
-    return contains(prefix._ip) && _prefixLength < prefix._prefixLength;
+    return contains(prefix._ip) && _prefixLength <= prefix._prefixLength;
   }
 
   @Override

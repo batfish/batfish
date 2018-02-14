@@ -511,6 +511,11 @@ variable_interface_name
    NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
+variable_max_metric
+:
+   ~(NEWLINE | BGP | EXTERNAL_LSA | INCLUDE_STUB | ON_STARTUP | ROUTER_LSA | SUMMARY_LSA | WAIT_FOR)
+;
+
 variable_permissive
 :
    (

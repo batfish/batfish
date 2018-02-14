@@ -13,6 +13,7 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import org.batfish.common.Answerer;
@@ -225,7 +226,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
           _answerElement.setNamedStructureOutliers(outliers);
           break;
         case SAME_SERVERS:
-          _answerElement.setServerOutliers(serverOutliers());
+          _answerElement.setServerOutliers(serverOutliers(question));
           break;
         default:
           throw new BatfishException(
@@ -282,25 +283,46 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       SortedSet<NamedStructureOutlierSet<?>> outliers =
           rankNamedStructureOutliers(hypothesis, equivalenceSets);
 
-      // remove outlier sets where the hypothesis is that a particular named structure
-      // should *not* exist (this  happens when more nodes lack such a structure than contain
-      // such a structure).  such hypotheses do not seem to be useful in general.
-      outliers.removeIf(oset -> oset.getNamedStructure() == null);
-
       if (!_verbose) {
+        // remove outlier sets where the hypothesis is that a particular named structure
+        // should *not* exist (this  happens when more nodes lack such a structure than contain
+        // such a structure).  such hypotheses do not seem to be useful in general.
+        outliers.removeIf(oset -> oset.getNamedStructure() == null);
+
         // remove outlier sets that don't meet our threshold
         outliers.removeIf(oset -> !isWithinThreshold(oset.getConformers(), oset.getOutliers()));
       }
       return outliers;
     }
 
-    private SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers() {
+    private SortedSet<OutlierSet<NavigableSet<String>>> serverOutliers(OutliersQuestion question) {
+      SortedSet<String> serverSets = new TreeSet<>(question.getServerSets());
+
+      SortedMap<String, Function<Configuration, NavigableSet<String>>> serverSetAccessors =
+          new TreeMap<>();
+      serverSetAccessors.put("DnsServers", Configuration::getDnsServers);
+      serverSetAccessors.put("LoggingServers", Configuration::getLoggingServers);
+      serverSetAccessors.put("NtpServers", Configuration::getNtpServers);
+      serverSetAccessors.put("SnmpTrapServers", Configuration::getSnmpTrapServers);
+      serverSetAccessors.put("TacacsServers", Configuration::getTacacsServers);
+
+      if (serverSets.isEmpty()) {
+        serverSets.addAll(serverSetAccessors.keySet());
+      }
+
       SortedSet<OutlierSet<NavigableSet<String>>> rankedOutliers = new TreeSet<>();
-      addPropertyOutliers("DnsServers", Configuration::getDnsServers, rankedOutliers);
-      addPropertyOutliers("LoggingServers", Configuration::getLoggingServers, rankedOutliers);
-      addPropertyOutliers("NtpServers", Configuration::getNtpServers, rankedOutliers);
-      addPropertyOutliers("SnmpTrapServers", Configuration::getSnmpTrapServers, rankedOutliers);
-      addPropertyOutliers("TacacsServers", Configuration::getTacacsServers, rankedOutliers);
+      for (String serverSet : serverSets) {
+        Function<Configuration, NavigableSet<String>> accessorF = serverSetAccessors.get(serverSet);
+        if (accessorF != null) {
+          addPropertyOutliers(serverSet, accessorF, rankedOutliers);
+        }
+      }
+
+      if (!_verbose) {
+        // remove outlier sets where the hypothesis is that a particular server set
+        // should be empty. such hypotheses do not seem to be useful in general.
+        rankedOutliers.removeIf(oset -> oset.getDefinition().isEmpty());
+      }
 
       return rankedOutliers;
     }
@@ -363,7 +385,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
   /**
-   * Detects and ranks outliers based on differences in named structures.
+   * Detects and ranks outliers based on a comparison of nodes' configurations.
    *
    * <p>If many nodes have a structure of a given name and a few do not, this may indicate an error.
    * If many nodes have a structure named N whose definition is identical, and a few nodes have a
@@ -371,8 +393,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
    * leverages this and similar intuition to find outliers.
    *
    * @type Outliers multifile
+   * @param serverSets Set of server-set names to analyze drawn from ( DnsServers, LoggingServers,
+   *     NtpServers, SnmpTrapServers, TacacsServers) Default value is '[]' (which denotes all
+   *     server-set names). This option is applicable to the "sameServers" hypothesis.
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicies, IkeProposal, IpAccessList,
+   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicy, IkeProposal, IpAccessList,
    *     IpsecPolicy, IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]'
    *     (which denotes all structure types). This option is applicable to the "sameName" and
    *     "sameDefinition" hypotheses.
@@ -396,6 +421,8 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
+    private static final String PROP_SERVER_SETS = "serverSets";
+
     private static final String PROP_VERBOSE = "verbose";
 
     private OutliersHypothesis _hypothesis;
@@ -404,10 +431,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
     private NodesSpecifier _nodeRegex;
 
+    private SortedSet<String> _serverSets;
+
     private boolean _verbose;
 
     public OutliersQuestion() {
       _namedStructTypes = new TreeSet<>();
+      _serverSets = new TreeSet<>();
       _nodeRegex = NodesSpecifier.ALL;
       _hypothesis = OutliersHypothesis.SAME_DEFINITION;
     }
@@ -437,6 +467,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
+    @JsonProperty(PROP_SERVER_SETS)
+    public SortedSet<String> getServerSets() {
+      return _serverSets;
+    }
+
     @JsonProperty(PROP_VERBOSE)
     public boolean getVerbose() {
       return _verbose;
@@ -455,6 +490,11 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
+    }
+
+    @JsonProperty(PROP_SERVER_SETS)
+    public void setServerSets(SortedSet<String> serverSets) {
+      _serverSets = serverSets;
     }
 
     @JsonProperty(PROP_VERBOSE)

@@ -10,11 +10,20 @@ public class BfConsts {
 
   public enum TaskStatus {
     InProgress,
+    RequeueFailure,
     TerminatedAbnormally,
+    TerminatedByUser,
     TerminatedNormally,
     Unknown,
     UnreachableOrBadResponse,
     Unscheduled;
+
+    public boolean isTerminated() {
+      return (this == TaskStatus.TerminatedAbnormally
+          || this == TaskStatus.TerminatedByUser
+          || this == TaskStatus.TerminatedNormally
+          || this == TaskStatus.RequeueFailure);
+    }
   }
 
   public static final String ABSPATH_CONFIG_FILE_NAME_ALLINONE =
@@ -167,6 +176,7 @@ public class BfConsts {
   public static final String SVC_FAILURE_KEY = "failure";
   public static final String SVC_GET_STATUS_RSC = "getstatus";
   public static final String SVC_GET_TASKSTATUS_RSC = "gettaskstatus";
+  public static final String SVC_KILL_TASK_RSC = "killtask";
   public static final Integer SVC_PORT = 9999;
   public static final String SVC_RUN_TASK_RSC = "run";
   public static final String SVC_SUCCESS_KEY = "success";

@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
+import org.batfish.symbolic.IDeepCopy;
 import org.batfish.symbolic.Protocol;
 
 /**
@@ -20,7 +21,7 @@ import org.batfish.symbolic.Protocol;
  *
  * @author Ryan Beckett
  */
-public class SymbolicRoute {
+public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
 
   private String _name;
 
@@ -468,6 +469,11 @@ public class SymbolicRoute {
   }
 
   public SymbolicRoute copy() {
+    return new SymbolicRoute(this);
+  }
+
+  @Override
+  public SymbolicRoute deepCopy() {
     return new SymbolicRoute(this);
   }
 }

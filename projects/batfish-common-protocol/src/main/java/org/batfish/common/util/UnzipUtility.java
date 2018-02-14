@@ -1,13 +1,13 @@
 package org.batfish.common.util;
 
-import java.io.BufferedOutputStream;
+import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -18,56 +18,50 @@ import org.batfish.common.BatfishException;
  *
  * @author www.codejava.net with minor local changes tagged with :ratul:
  */
-public class UnzipUtility {
-  /** Size of the buffer to read/write data */
-  private static final int BUFFER_SIZE = 4096;
-
-  public static void unzip(Path zipFile, Path dstDir) {
-    new UnzipUtility().unzipHelper(zipFile, dstDir);
-  }
-
+public final class UnzipUtility {
   /**
    * Extracts a zip entry (file entry)
    *
    * @param zipIn The zip input stream providing the file data
    * @param filePath The path to write the output file
    */
-  private void extractFile(ZipInputStream zipIn, String filePath) {
-    try (FileOutputStream fos = new FileOutputStream(filePath)) {
-      try (BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-        byte[] bytesIn = new byte[BUFFER_SIZE];
-        int read = 0;
-        try {
-          while ((read = zipIn.read(bytesIn)) != -1) {
-            try {
-              bos.write(bytesIn, 0, read);
-            } catch (IOException e) {
-              throw new BatfishException(
-                  "Error writing to output file: '" + filePath + "' for current zipped file", e);
-            }
-          }
-        } catch (IOException e) {
-          throw new BatfishException("Error reading from zip stream", e);
-        }
-      }
-    } catch (FileNotFoundException e) {
-      throw new BatfishException(
-          "Could not open output file in which to extract current zipped file: '" + filePath + "'",
-          e);
+  private static void extractFile(ZipInputStream zipIn, Path filePath) {
+    try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
+      ByteStreams.copy(zipIn, fos);
     } catch (IOException e) {
-      throw new BatfishException(
-          "Could not close output file for current zipped file: '" + filePath + "'", e);
+      throw new BatfishException("Error unzipping to output file: '" + filePath + "'", e);
     }
   }
 
   /**
-   * Extracts a zip file specified by the zipFilePath to a directory specified by destDirectory
-   * (will be created if does not exists)
+   * Asserts that the given {@code outputPath} is actually inside of the given {@code enclosingDir}.
+   */
+  private static Path validatePath(Path outputPath, Path enclosingDir) throws IOException {
+    File canonicalFile = outputPath.toFile().getCanonicalFile();
+    File canonicalDir = enclosingDir.toFile().getCanonicalFile();
+
+    if (canonicalFile.getCanonicalPath().startsWith(canonicalDir.getCanonicalPath())) {
+      return canonicalFile.toPath();
+    } else {
+      throw new IOException(
+          String.format(
+              "Output file %s is outside extraction target directory %s.",
+              outputPath, enclosingDir));
+    }
+  }
+
+  /**
+   * Extracts a zip file specified by the zipFilePath to a directory specified by {@code
+   * destDirectory} (will be created if does not exists)
    *
    * @param zipFile The path to the input zip file
    * @param destDirectory The output directory in which to extract the zip
    */
-  private void unzipHelper(Path zipFile, Path destDirectory) {
+  public static void unzip(Path zipFile, Path destDirectory) {
+    if (!Files.exists(destDirectory) && !destDirectory.toFile().mkdirs()) {
+      throw new BatfishException("Could not create zip output directory " + destDirectory);
+    }
+
     try {
       // :ratul:
       // this lets us check if the zip file is proper
@@ -75,28 +69,23 @@ public class UnzipUtility {
       ZipFile zipTest = new ZipFile(zipFile.toFile());
       zipTest.close();
 
-      if (!Files.exists(destDirectory)) {
-        destDirectory.toFile().mkdirs();
-      }
+      try (FileInputStream fis = new FileInputStream(zipFile.toFile());
+          ZipInputStream zipIn = new ZipInputStream(fis)) {
 
-      try (FileInputStream fis = new FileInputStream(zipFile.toFile())) {
-        try (ZipInputStream zipIn = new ZipInputStream(fis)) {
-          ZipEntry entry = zipIn.getNextEntry();
-
-          // iterates over entries in the zip file
-          while (entry != null) {
-            String filePath = destDirectory + File.separator + entry.getName();
-            if (!entry.isDirectory()) {
-              // if the entry is a file, extracts it
-              extractFile(zipIn, filePath);
-            } else {
-              // if the entry is a directory, make the directory
-              File dir = new File(filePath);
-              dir.mkdir();
+        for (ZipEntry entry = zipIn.getNextEntry(); entry != null; entry = zipIn.getNextEntry()) {
+          Path outputPath =
+              validatePath(
+                  Paths.get(destDirectory + File.separator + entry.getName()), destDirectory);
+          if (entry.isDirectory()) {
+            // Make the directory, including parent dirs.
+            if (!outputPath.toFile().mkdirs()) {
+              throw new IOException("Unable to make directory " + outputPath);
             }
-            zipIn.closeEntry();
-            entry = zipIn.getNextEntry();
+          } else {
+            // Extract the file.
+            extractFile(zipIn, outputPath);
           }
+          zipIn.closeEntry();
         }
       }
     } catch (IOException e) {
@@ -104,4 +93,7 @@ public class UnzipUtility {
           "Could not unzip: '" + zipFile + "' into: '" + destDirectory + "'", e);
     }
   }
+
+  // Prevent instantiation of utility class.
+  private UnzipUtility() {}
 }

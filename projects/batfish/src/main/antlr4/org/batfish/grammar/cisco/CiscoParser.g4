@@ -217,6 +217,51 @@ cisco_configuration
    )+ COLON? NEWLINE? EOF
 ;
 
+configure_maintenance
+:
+   MAINTENANCE ~NEWLINE* NEWLINE
+   (
+      configure_maintenance_null
+      | configure_maintenance_router
+   )*
+;
+
+configure_maintenance_null
+:
+   NO?
+   (
+      IP
+   ) ~NEWLINE* NEWLINE
+;
+
+configure_maintenance_router
+:
+   NO?
+   (
+      ROUTER
+   ) ~NEWLINE* NEWLINE
+   (
+      configure_maintenance_router_null
+   )*
+;
+
+configure_maintenance_router_null
+:
+   NO?
+   (
+      ISOLATE
+   ) ~NEWLINE* NEWLINE
+;
+
+configure_null
+:
+   NO?
+   (
+      | SESSION
+      | TERMINAL
+   ) ~NEWLINE* NEWLINE
+;
+
 cops_listener
 :
    LISTENER
@@ -2054,6 +2099,15 @@ s_call_manager_fallback
    )+
 ;
 
+s_configure
+:
+   NO? CONFIGURE
+   (
+      configure_maintenance
+      | configure_null
+   )
+;
+
 s_control_plane
 :
    CONTROL_PLANE
@@ -3305,6 +3359,7 @@ stanza
    | s_call_manager_fallback
    | s_class_map
    | s_cluster
+   | s_configure
    | s_control_plane
    | s_control_plane_security
    | s_controller

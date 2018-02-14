@@ -30,6 +30,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -231,8 +232,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         Prefix matchingRoutePrefix = matchingRoute.getNetwork();
         // check to make sure matching route's prefix does not totally
         // contain this static route's prefix
-        if (matchingRoutePrefix.getStartIp().asLong() > staticRoutePrefix.getStartIp().asLong()
-            || matchingRoutePrefix.getEndIp().asLong() < staticRoutePrefix.getEndIp().asLong()) {
+        if (!matchingRoutePrefix.containsPrefix(staticRoutePrefix)) {
           changed |= _mainRib.mergeRoute(sr);
           break; // break out of the inner loop but continue processing static routes
         }
@@ -305,24 +305,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
       long areaNum = e.getKey();
       OspfArea area = e.getValue();
-      for (Entry<Prefix, Boolean> e2 : area.getSummaries().entrySet()) {
+      for (Entry<Prefix, OspfAreaSummary> e2 : area.getSummaries().entrySet()) {
         Prefix prefix = e2.getKey();
-        boolean advertise = e2.getValue();
+        OspfAreaSummary summary = e2.getValue();
 
         // Only advertised summaries can contribute
-        if (!advertise) {
+        if (!summary.getAdvertise()) {
           continue;
         }
 
-        // Compute the metric from any possible contributing routes
-        Long metric = null;
-        for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
-          metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
-        }
-        for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
-          metric =
-              computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+        Long metric = summary.getMetric();
+        if (summary.getMetric() == null) {
+          // No metric was configured; compute it from any possible contributing routes.
+          for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
+            metric =
+                computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+          }
+          for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
+            metric =
+                computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+          }
         }
 
         // No routes contributed to the summary, nothing to construct
@@ -462,6 +464,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               builder.setOriginType(originType);
               builder.setProtocol(targetProtocol);
               // TODO: support external route reflector clients
+              builder.setReceivedFromIp(advert.getSrcIp());
               builder.setReceivedFromRouteReflectorClient(false);
               builder.setSrcProtocol(srcProtocol);
               // TODO: possibly suppport setting tag
@@ -484,6 +487,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               outgoingRouteBuilder.setOriginatorIp(advert.getOriginatorIp());
               outgoingRouteBuilder.setOriginType(advert.getOriginType());
               outgoingRouteBuilder.setProtocol(targetProtocol);
+              outgoingRouteBuilder.setReceivedFromIp(advert.getSrcIp());
               // TODO:
               // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
               outgoingRouteBuilder.setSrcProtocol(advert.getSrcProtocol());
@@ -493,6 +497,10 @@ public class VirtualRouter extends ComparableStructure<String> {
               // Incoming originatorIp
               transformedIncomingRouteBuilder.setOriginatorIp(
                   transformedOutgoingRoute.getOriginatorIp());
+
+              // Incoming receivedFromIp
+              transformedIncomingRouteBuilder.setReceivedFromIp(
+                  transformedOutgoingRoute.getReceivedFromIp());
 
               // Incoming clusterList
               transformedIncomingRouteBuilder
@@ -688,6 +696,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       /* Note: Origin type and originator IP should get overwritten, but are needed initially */
       b.setOriginatorIp(_vrf.getBgpProcess().getRouterId());
       b.setOriginType(OriginType.INCOMPLETE);
+      b.setReceivedFromIp(Ip.ZERO);
       BgpRoute br = b.build();
       br.setNonRouting(true);
       _bgpMultipathRib.mergeRoute(br);
@@ -974,6 +983,7 @@ public class VirtualRouter extends ComparableStructure<String> {
           originatorIp = _vrf.getBgpProcess().getRouterId();
         }
         transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
+        transformedOutgoingRouteBuilder.setReceivedFromIp(neighbor.getLocalIp());
 
         // clusterList, receivedFromRouteReflectorClient, (originType
         // for bgp remote route)
@@ -1228,6 +1238,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       }
       for (AbstractRoute remoteRoute : remoteCandidateRoutes) {
         BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
+        transformedOutgoingRouteBuilder.setReceivedFromIp(remoteBgpNeighbor.getLocalIp());
         RoutingProtocol remoteRouteProtocol = remoteRoute.getProtocol();
         boolean remoteRouteIsBgp =
             remoteRouteProtocol == RoutingProtocol.IBGP
@@ -1242,6 +1253,10 @@ public class VirtualRouter extends ComparableStructure<String> {
           originatorIp = remoteVrf.getBgpProcess().getRouterId();
         }
         transformedOutgoingRouteBuilder.setOriginatorIp(originatorIp);
+
+        // note whether new route is received from route reflector client
+        transformedOutgoingRouteBuilder.setReceivedFromRouteReflectorClient(
+            !ebgpSession && neighbor.getRouteReflectorClient());
 
         // clusterList, receivedFromRouteReflectorClient, (originType
         // for bgp remote route)
@@ -1273,30 +1288,42 @@ public class VirtualRouter extends ComparableStructure<String> {
             continue;
           }
           if (remoteRouteProtocol.equals(RoutingProtocol.IBGP) && !ebgpSession) {
+            /*
+             *  The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
+             *  modify the outgoing route as appropriate.
+             */
             boolean remoteRouteReceivedFromRouteReflectorClient =
                 bgpRemoteRoute.getReceivedFromRouteReflectorClient();
             boolean sendingToRouteReflectorClient = remoteBgpNeighbor.getRouteReflectorClient();
-            boolean newRouteReceivedFromRouteReflectorClient = neighbor.getRouteReflectorClient();
-            transformedOutgoingRouteBuilder.setReceivedFromRouteReflectorClient(
-                newRouteReceivedFromRouteReflectorClient);
+            Ip remoteReceivedFromIp = bgpRemoteRoute.getReceivedFromIp();
+            boolean remoteRouteOriginatedByRemoteNeighbor = remoteReceivedFromIp.equals(Ip.ZERO);
+            if (!remoteRouteReceivedFromRouteReflectorClient
+                && !sendingToRouteReflectorClient
+                && !remoteRouteOriginatedByRemoteNeighbor) {
+              /*
+               * Neither reflecting nor originating this iBGP route, so don't send
+               */
+              continue;
+            }
             transformedOutgoingRouteBuilder
                 .getClusterList()
                 .addAll(bgpRemoteRoute.getClusterList());
-            if (!remoteRouteReceivedFromRouteReflectorClient && !sendingToRouteReflectorClient) {
-              continue;
+            if (!remoteRouteOriginatedByRemoteNeighbor) {
+              // we are reflecting, so we need to get the clusterid associated with the remoteRoute
+              BgpNeighbor remoteReceivedFromSession =
+                  remoteVrf
+                      .getBgpProcess()
+                      .getNeighbors()
+                      .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
+              long newClusterId = remoteReceivedFromSession.getClusterId();
+              transformedOutgoingRouteBuilder.getClusterList().add(newClusterId);
             }
-            if (sendingToRouteReflectorClient) {
-              // sender adds its local cluster id to clusterlist of
-              // new route
-              transformedOutgoingRouteBuilder
-                  .getClusterList()
-                  .add(remoteBgpNeighbor.getClusterId());
-            }
-            if (transformedOutgoingRouteBuilder
-                .getClusterList()
-                .contains(neighbor.getClusterId())) {
-              // receiver will reject new route if it contains its
-              // local cluster id
+            Set<Long> localClusterIds = _vrf.getBgpProcess().getClusterIds();
+            Set<Long> outgoingClusterList = transformedOutgoingRouteBuilder.getClusterList();
+            if (localClusterIds.stream().anyMatch(outgoingClusterList::contains)) {
+              /*
+               *  receiver will reject new route if it contains any of its local cluster ids
+               */
               continue;
             }
           }
@@ -1371,6 +1398,7 @@ public class VirtualRouter extends ComparableStructure<String> {
           // Record sent advertisement
           BgpAdvertisementType sentType =
               ebgpSession ? BgpAdvertisementType.EBGP_SENT : BgpAdvertisementType.IBGP_SENT;
+          Ip sentReceivedFromIp = transformedOutgoingRoute.getReceivedFromIp();
           Ip sentOriginatorIp = transformedOutgoingRoute.getOriginatorIp();
           SortedSet<Long> sentClusterList = transformedOutgoingRoute.getClusterList();
           boolean sentReceivedFromRouteReflectorClient =
@@ -1399,6 +1427,9 @@ public class VirtualRouter extends ComparableStructure<String> {
 
           // Incoming originatorIp
           transformedIncomingRouteBuilder.setOriginatorIp(sentOriginatorIp);
+
+          // Incoming receivedFromIp
+          transformedIncomingRouteBuilder.setReceivedFromIp(sentReceivedFromIp);
 
           // Incoming clusterList
           transformedIncomingRouteBuilder.getClusterList().addAll(sentClusterList);

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ $(uname) == 'Darwin' ]]; then
+if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
    GNU_FIND=gfind
 else
    GNU_FIND=find
@@ -8,10 +8,14 @@ fi
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
-export ALLINONE_JAVA_ARGS="-enableassertions $ALLINONE_JAVA_ARGS"
-
 . tools/batfish_functions.sh
+
+
+# Build batfish and run the Maven unit tests.
 batfish_test_all || exit 1
+
+# Configure arguments for allinone throughout later runs.
+export ALLINONE_JAVA_ARGS="-enableassertions -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties"
 
 echo -e "\n  ..... Running parsing tests"
 allinone -cmdfile test_rigs/parsing-tests/commands || exit 1
@@ -34,9 +38,13 @@ allinone -cmdfile tests/aws/commands || exit 1
 echo -e "\n  ..... Running java-smt client tests"
 allinone -cmdfile tests/java-smt/commands || exit 1
 
+echo -e "\n  ..... Running watchdog tests"
+allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit 1
+sleep 5
+
 #Test running separately
 coordinator &
-batfish -servicemode -register -coordinatorhost localhost -loglevel output &
+batfish -runmode workservice -register -coordinatorhost localhost -loglevel output &
 
 echo -e "\n  ..... Running java demo tests"
 if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then

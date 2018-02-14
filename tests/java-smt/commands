@@ -9,7 +9,9 @@ add-batfish-option initinfo false
 init-testrig test_rigs/smt-examples/BGP1 tr-smt-bgp1
 test tests/java-smt/bgp1-forwarding.ref get smt-forwarding dstIps=["42.42.42.0"], fullModel=True
 test tests/java-smt/bgp1-reachability.ref get smt-reachability finalNodeRegex="R1", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/bgp1-reachability-negate.ref get smt-reachability finalNodeRegex="R1", finalIfaceRegex="Loopback.*", negate=True
 test tests/java-smt/bgp1-bounded-len.ref get smt-bounded-length finalNodeRegex="R1", finalIfaceRegex="Loopback.*", bound=1, fullModel=True
+test tests/java-smt/bgp1-bounded-len-negate.ref get smt-bounded-length finalNodeRegex="R1", finalIfaceRegex="Loopback.*", bound=1, negate=True
 test tests/java-smt/bgp1-bounded-len2.ref get smt-bounded-length finalNodeRegex="R1", finalIfaceRegex="Loopback.*", bound=0, fullModel=True
 test tests/java-smt/bgp1-routing-loop.ref get smt-routing-loop fullModel=True
 test tests/java-smt/bgp1-multipath.ref get smt-multipath-consistency finalNodeRegex="R1", finalIfaceRegex="Loopback.*", fullModel=True
@@ -79,7 +81,7 @@ test tests/java-smt/stable3-nondeterministic.ref get smt-deterministic
 
 # Check proper dropping behavior when the metric has overflow
 init-testrig test_rigs/smt-examples/OVERFLOW1 tr-smt-overflow1
-test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], fullModel=True
+test tests/java-smt/overflow1-forwarding.ref get smt-forwarding dstIps=["41.41.41.1"], modelOverflow=True, fullModel=True
 
 # Check correct handling of OSPF areas
 init-testrig test_rigs/smt-examples/AREA1 tr-smt-area1
@@ -138,4 +140,9 @@ test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", 
 # Test BDD-based encoding of route-maps and ACLs
 init-testrig test_rigs/smt-examples/BDD1 tr-bdd1
 test tests/java-smt/roles1.ref get smt-roles equivType=policy
+
+# z3 timeout - 1 millisecond
+add-batfish-option z3timeout 1
+init-testrig test_rigs/fattree-examples/fattree2
+test tests/java-smt/z3timeout.ref -error get smt-reachability dstIps=['70.0.2.0']
 

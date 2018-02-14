@@ -1,8 +1,11 @@
 package org.batfish.config;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.batfish.bdp.BdpSettings;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -13,6 +16,7 @@ import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.main.Driver.RunMode;
 
 public final class Settings extends BaseSettings implements BdpSettings, GrammarSettings {
 
@@ -451,9 +455,13 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARG_NO_SHUFFLE = "noshuffle";
 
+  public static final String ARG_PARENT_PID = "parentpid";
+
   private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
   private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
+
+  public static final String ARG_RUN_MODE = "runmode";
 
   private static final String ARG_SEQUENTIAL = "sequential";
 
@@ -462,8 +470,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_SERVICE_BIND_HOST = "servicebindhost";
 
   public static final String ARG_SERVICE_HOST = "servicehost";
-
-  public static final String ARG_SERVICE_MODE = "servicemode";
 
   private static final String ARG_SERVICE_PORT = "serviceport";
 
@@ -478,6 +484,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
 
   private static final String ARG_TIMESTAMP = "timestamp";
+
+  private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
   private static final String ARGNAME_AS = "as";
 
@@ -500,6 +508,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARGNAME_STRINGS = "string..";
 
   private static final String EXECUTABLE_NAME = "batfish";
+
+  private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
 
   private TestrigSettings _activeTestrigSettings;
 
@@ -613,6 +623,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private String _outputEnvironmentName;
 
+  private int _parentPid;
+
   private boolean _pedanticAsError;
 
   private boolean _pedanticRecord;
@@ -635,7 +647,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private boolean _report;
 
-  private boolean _runInServiceMode;
+  private RunMode _runMode;
 
   private boolean _sequential;
 
@@ -696,6 +708,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private boolean _validateEnvironment;
 
   private boolean _verboseParse;
+
+  private int _z3timeout;
+
+  private String _dataPlaneEngineName;
 
   public Settings() {
     this(new String[] {});
@@ -907,6 +923,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _logTee;
   }
 
+  public int getParentPid() {
+    return _parentPid;
+  }
+
   @Override
   public int getMaxParserContextLines() {
     return _maxParserContextLines;
@@ -969,6 +989,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getReport() {
     return _report;
+  }
+
+  public RunMode getRunMode() {
+    return _runMode;
   }
 
   public boolean getSequential() {
@@ -1105,6 +1129,14 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _ignoreUnsupported;
   }
 
+  public int getZ3timeout() {
+    return _z3timeout;
+  }
+
+  public String getDataPlaneEngineName() {
+    return _dataPlaneEngineName;
+  }
+
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
@@ -1154,16 +1186,17 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
+    setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_SUPPRESS, false);
+    setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
     setDefaultProperty(ARG_SEQUENTIAL, false);
     setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
     setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
-    setDefaultProperty(ARG_SERVICE_MODE, false);
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
@@ -1192,6 +1225,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
+    setDefaultProperty(ARG_Z3_TIMEOUT, 0);
+    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "bdp");
   }
 
   private void initOptions() {
@@ -1240,7 +1275,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addOption(
         ARG_COORDINATOR_HOST,
-        "hostname of coordinator for registration with -" + ARG_SERVICE_MODE,
+        "hostname of coordinator for registration when running as service",
         ARGNAME_HOSTNAME);
 
     addOption(ARG_COORDINATOR_POOL_PORT, "coordinator pool manager listening port", ARGNAME_PORT);
@@ -1360,6 +1395,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addOption(BfConsts.ARG_OUTPUT_ENV, "name of output environment", ARGNAME_NAME);
 
+    addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
+
     addBooleanOption(
         BfConsts.ARG_PEDANTIC_AS_ERROR,
         "throws "
@@ -1387,6 +1424,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(BfConsts.ARG_RED_FLAG_SUPPRESS, "suppresses red-flag warnings");
 
+    addOption(
+        ARG_RUN_MODE,
+        "mode to run in",
+        Arrays.stream(RunMode.values()).map(v -> v.toString()).collect(Collectors.joining("|")));
+
     addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 
     addBooleanOption(ARG_SERIALIZE_TO_TEXT, "serialize to text");
@@ -1397,8 +1439,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         ARGNAME_HOSTNAME);
 
     addOption(ARG_SERVICE_HOST, "local hostname to report to coordinator", ARGNAME_HOSTNAME);
-
-    addBooleanOption(ARG_SERVICE_MODE, "run in service mode");
 
     addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
@@ -1470,12 +1510,18 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(
         BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
+
+    addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
+
+    addOption(
+        ARG_DATAPLANE_ENGINE_NAME,
+        "name of the dataplane generation engine to use.",
+        "dataplane engine name");
   }
 
   private void parseCommandLine(String[] args) {
     initCommandLine(args);
     _canExecute = true;
-    _runInServiceMode = false;
 
     // SPECIAL OPTIONS
     _logFile = getStringOptionValue(BfConsts.ARG_LOG_FILE);
@@ -1537,6 +1583,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _maxParseTreePrintLength = getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
     _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
     _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
+    _parentPid = getIntOptionValue(ARG_PARENT_PID);
     _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
     _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     _prettyPrintAnswer = getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
@@ -1546,7 +1593,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _redFlagAsError = getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
     _redFlagRecord = !getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
     _report = getBooleanOptionValue(BfConsts.COMMAND_REPORT);
-    _runInServiceMode = getBooleanOptionValue(ARG_SERVICE_MODE);
+    _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE).toUpperCase());
     _sequential = getBooleanOptionValue(ARG_SEQUENTIAL);
     _serializeIndependent = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
     _serializeToText = getBooleanOptionValue(ARG_SERIALIZE_TO_TEXT);
@@ -1576,14 +1623,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
     _validateEnvironment = getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
     _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
+    _z3timeout = getIntegerOptionValue(ARG_Z3_TIMEOUT);
+    _dataPlaneEngineName = getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
   }
 
   public boolean prettyPrintAnswer() {
     return _prettyPrintAnswer;
-  }
-
-  public boolean runInServiceMode() {
-    return _runInServiceMode;
   }
 
   public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
@@ -1744,5 +1789,13 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setVerboseParse(boolean verboseParse) {
     _verboseParse = verboseParse;
+  }
+
+  public void setZ3Timeout(int z3Timeout) {
+    _z3timeout = z3Timeout;
+  }
+
+  public void setDataplaneEngineName(String name) {
+    _dataPlaneEngineName = name;
   }
 }

@@ -4,6 +4,8 @@ package org.batfish.common;
 // If you change the values of any of these constants,
 // make sure that the javascript, python clients is updated too
 
+import org.batfish.common.BfConsts.TaskStatus;
+
 public class CoordConsts {
 
   public enum WorkStatusCode {
@@ -11,10 +13,36 @@ public class CoordConsts {
     ASSIGNMENTERROR,
     BLOCKED,
     CHECKINGSTATUS,
+    REQUEUEFAILURE,
     TERMINATEDABNORMALLY,
+    TERMINATEDBYUSER,
     TERMINATEDNORMALLY,
     TRYINGTOASSIGN,
     UNASSIGNED;
+
+    public static WorkStatusCode fromTerminatedTaskStatus(TaskStatus status) {
+      switch (status) {
+        case TerminatedAbnormally:
+          return TERMINATEDABNORMALLY;
+        case TerminatedByUser:
+          return TERMINATEDBYUSER;
+        case TerminatedNormally:
+          return TERMINATEDNORMALLY;
+        case RequeueFailure:
+          return REQUEUEFAILURE;
+        default:
+          throw new IllegalArgumentException(
+              "Cannot convert from " + status + " to WorkStatusCode");
+      }
+    }
+
+    public boolean isTerminated() {
+      return (this == ASSIGNMENTERROR // because we don't attempt assignment of this work
+          || this == WorkStatusCode.TERMINATEDABNORMALLY
+          || this == WorkStatusCode.TERMINATEDBYUSER
+          || this == WorkStatusCode.TERMINATEDNORMALLY
+          || this == WorkStatusCode.REQUEUEFAILURE);
+    }
   }
 
   public static final String DEFAULT_API_KEY = "00000000000000000000000000000000";
@@ -40,6 +68,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ANSWER = "answer";
   public static final String SVC_KEY_ANSWERS = "answers";
   public static final String SVC_KEY_API_KEY = "apikey";
+  public static final String SVC_KEY_ASSERTION = "assertion";
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
@@ -53,6 +82,7 @@ public class CoordConsts {
   public static final String SVC_KEY_DELTA_TESTRIG_NAME = "deltatestrigname";
   public static final String SVC_KEY_ENV_NAME = "envname";
   public static final String SVC_KEY_ENVIRONMENT_LIST = "environmentlist";
+  public static final String SVC_KEY_EXCEPTIONS = "exceptions";
   public static final String SVC_KEY_FAILURE = "failure";
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";
@@ -60,16 +90,21 @@ public class CoordConsts {
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
+  public static final String SVC_KEY_QUESTION = "question";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
+  public static final String SVC_KEY_RESULT = "result";
   public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SUCCESS = "success";
+  public static final String SVC_KEY_SUGGESTED = "suggested";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
   public static final String SVC_KEY_TESTRIG_INFO = "testriginfo";
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
   public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
   public static final String SVC_KEY_VERSION = "version";
+  public static final String SVC_KEY_WORK_LIST = "worklist";
+  public static final String SVC_KEY_WORK_TYPE = "worktype";
   public static final String SVC_KEY_WORKID = "workid";
   public static final String SVC_KEY_WORKITEM = "workitem";
   public static final String SVC_KEY_WORKSPACE_NAME = "workspace";
@@ -85,18 +120,23 @@ public class CoordConsts {
   public static final String SVC_RSC_DEL_ENVIRONMENT = "delenvironment";
   public static final String SVC_RSC_DEL_QUESTION = "delquestion";
   public static final String SVC_RSC_DEL_TESTRIG = "deltestrig";
+  public static final String SVC_RSC_CONFIGURE_QUESTION_TEMPLATE = "configurequestiontemplate";
   public static final String SVC_RSC_GET_ANALYSIS_ANSWERS = "getanalysisanswers";
   public static final String SVC_RSC_GET_ANSWER = "getanswer";
   public static final String SVC_RSC_GET_CONFIGURATION = "getconfiguration";
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
+  public static final String SVC_RSC_GET_DATAPLANING_WORK = "getdataplaningwork";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
+  public static final String SVC_RSC_GET_PARSING_WORK = "getparsingwork";
   public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
   public static final String SVC_RSC_GETSTATUS = "getstatus";
   public static final String SVC_RSC_INIT_CONTAINER = "initcontainer";
+  public static final String SVC_RSC_KILL_WORK = "killwork";
   public static final String SVC_RSC_LIST_ANALYSES = "listanalyses";
   public static final String SVC_RSC_LIST_CONTAINERS = "listcontainers";
   public static final String SVC_RSC_LIST_ENVIRONMENTS = "listenvironments";
+  public static final String SVC_RSC_LIST_INCOMPLETE_WORK = "listincompletework";
   public static final String SVC_RSC_LIST_QUESTIONS = "listquestions";
   public static final String SVC_RSC_LIST_TESTRIGS = "listtestrigs";
   public static final String SVC_RSC_POOL_GET_QUESTION_TEMPLATES = "getquestiontemplates";

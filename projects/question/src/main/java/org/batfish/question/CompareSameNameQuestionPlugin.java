@@ -227,7 +227,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    *
    * @type CompareSameName multifile
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicies, IkeProposal, Interface,
+   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface,
    *     Ip6AccessList, IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList,
    *     RouteFilterList, RoutingPolicy, Vrf, Zone ) Default value is '[]', which denotes all types
    *     except those in excludedNamedStructTypes.

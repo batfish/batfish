@@ -1,0 +1,13 @@
+!
+hostname nxos_ospf
+feature privilege
+!
+router ospf 1
+ router-id 1.2.3.4
+ vrf OTHER
+  max-metric router-lsa external-lsa on-startup 86400 wait-for bgp 12345
+  redistribute direct route-map RM_OSPF_DIRECT
+  redistribute static route-map RM_OSPF_STATIC
+!
+!
+

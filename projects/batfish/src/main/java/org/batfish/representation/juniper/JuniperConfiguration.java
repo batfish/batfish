@@ -40,6 +40,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -296,6 +297,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
       neighbor.setVrf(vrfName);
+
+      // route reflection
+      Ip declaredClusterId = ig.getClusterId();
+      if (declaredClusterId != null) {
+        neighbor.setRouteReflectorClient(true);
+        neighbor.setClusterId(declaredClusterId.asLong());
+      } else {
+        neighbor.setClusterId(routerId.asLong());
+      }
 
       // multipath multiple-as
       boolean currentGroupMultipathMultipleAs = ig.getMultipathMultipleAs();
@@ -600,14 +610,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
               }
             });
     // areas
-    Map<Long, org.batfish.datamodel.OspfArea> newAreas = newProc.getAreas();
-    for (Entry<Ip, OspfArea> e : routingInstance.getOspfAreas().entrySet()) {
-      Ip areaIp = e.getKey();
-      long areaLong = areaIp.asLong();
-      // OspfArea area = e.getValue();
-      org.batfish.datamodel.OspfArea newArea = new org.batfish.datamodel.OspfArea(areaLong);
-      newAreas.put(areaLong, newArea);
-    }
+    Map<Long, OspfArea> newAreas = newProc.getAreas();
+    newAreas.putAll(routingInstance.getOspfAreas());
     // place interfaces into areas
     for (Entry<String, Interface> e : routingInstance.getInterfaces().entrySet()) {
       String name = e.getKey();
@@ -834,10 +838,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void placeInterfaceIntoArea(
-      Map<Long, org.batfish.datamodel.OspfArea> newAreas,
-      String name,
-      Interface iface,
-      String vrfName) {
+      Map<Long, OspfArea> newAreas, String name, Interface iface, String vrfName) {
     Vrf vrf = _c.getVrfs().get(vrfName);
     org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(name);
     Ip ospfArea = iface.getOspfActiveArea();
@@ -845,7 +846,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (ospfArea != null) {
       setCost = true;
       long ospfAreaLong = ospfArea.asLong();
-      org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
+      OspfArea newArea = newAreas.get(ospfAreaLong);
       newArea.getInterfaces().put(name, newIface);
       newIface.setOspfArea(newArea);
       newIface.setOspfEnabled(true);
@@ -853,7 +854,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Ip passiveArea : iface.getOspfPassiveAreas()) {
       setCost = true;
       long ospfAreaLong = passiveArea.asLong();
-      org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
+      OspfArea newArea = newAreas.get(ospfAreaLong);
       newArea.getInterfaces().put(name, newIface);
       newIface.setOspfEnabled(true);
       newIface.setOspfPassive(true);
