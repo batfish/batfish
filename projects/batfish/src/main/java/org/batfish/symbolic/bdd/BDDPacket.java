@@ -1,5 +1,6 @@
 package org.batfish.symbolic.bdd;
 
+import java.lang.reflect.Method;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,16 +22,15 @@ import org.batfish.datamodel.Prefix;
  */
 public class BDDPacket {
 
-  static BDDFactory factory;
+  public static BDDFactory factory;
 
   private static BDDPairing pairing;
 
   static {
     factory = JFactory.init(10000, 1000);
-    factory.disableReorder();
+    factory.enableReorder();
     factory.setCacheRatio(64);
     // Disables printing
-    /*
     try {
       CallbackHandler handler = new CallbackHandler();
       Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
@@ -40,7 +40,6 @@ public class BDDPacket {
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
-    */
     pairing = factory.makePair();
   }
 
@@ -80,14 +79,12 @@ public class BDDPacket {
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
-  BDDPacket() {
+  public BDDPacket() {
 
     // Make sure we have the right number of variables
     int numVars = factory.varNum();
     int numNeeded = 32 * 2 + 16 * 2 + 8 * 3 + 8;
     if (numVars < numNeeded) {
-      System.out.println("Num current: " + numVars);
-      System.out.println("Num needed: " + numNeeded);
       factory.setVarNum(numNeeded);
     }
 

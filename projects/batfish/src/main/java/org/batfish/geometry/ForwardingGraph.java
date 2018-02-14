@@ -717,8 +717,7 @@ public class ForwardingGraph {
     updateRules(r, overlapping, delta);
   }
 
-  private List<Delta> createAtoms(
-      HyperRectangle from, HyperRectangle to) {
+  private List<Delta> createAtoms(HyperRectangle from, HyperRectangle to) {
     List<Delta> delta = new ArrayList<>();
     if (!_intervalSet.contains(from)) {
       from.setAlphaIndex(_ecs.size());
@@ -744,9 +743,7 @@ public class ForwardingGraph {
    * and a Rule, it updates the edge labelled graph accordingly.
    */
   private void updateRules(
-      Rule r,
-      Collection<HyperRectangle> overlapping,
-      Collection<Delta> deltas) {
+      Rule r, Collection<HyperRectangle> overlapping, Collection<Delta> deltas) {
 
     // Update new rules
     for (Delta d : deltas) {

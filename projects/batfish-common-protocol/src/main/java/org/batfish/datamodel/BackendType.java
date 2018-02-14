@@ -10,7 +10,8 @@ public enum BackendType {
   NOD("NoD"),
   DELTANET("deltanet"),
   DELTANET_DOC("deltanet-doc"),
-  DELTANET_BDD("deltanet-bdd");
+  DELTANET_BDD("deltanet-bdd"),
+  ATOMIC_PREDICATES("atomic");
 
   private static final Map<String, BackendType> _map = buildMap();
 
