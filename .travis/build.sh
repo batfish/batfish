@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ $(uname) == 'Darwin' ]]; then
+if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
    GNU_FIND=gfind
 else
    GNU_FIND=find
