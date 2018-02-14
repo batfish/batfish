@@ -245,8 +245,8 @@ public final class SynthesizerInput {
                           .stream()
                           .flatMap(
                               i -> {
-                                ImmutableSet.Builder<Pair<String, IpAccessList>> interfaceAcls =
-                                    ImmutableSet.builder();
+                                ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
+                                    ImmutableList.builder();
                                 IpAccessList aclIn = i.getIncomingFilter();
                                 IpAccessList aclOut = i.getOutgoingFilter();
                                 if (aclIn != null) {
@@ -257,6 +257,8 @@ public final class SynthesizerInput {
                                 }
                                 return interfaceAcls.build().stream();
                               })
+                          .collect(ImmutableSet.toImmutableSet())
+                          .stream()
                           .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond))));
     } else {
       return _configurations

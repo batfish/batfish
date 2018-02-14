@@ -109,9 +109,8 @@ public class SynthesizerInputTest {
   public void testComputeEnabledAcls() {
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
-    IpAccessList srcInterfaceInAcl = _aclb.setOwner(srcNode).build();
+    IpAccessList edgeInterfaceInAcl = _aclb.setOwner(srcNode).build();
     IpAccessList srcInterfaceOutAcl = _aclb.build();
-    IpAccessList iFlowSinkInAcl = _aclb.build();
     IpAccessList iFlowSinkOutAcl = _aclb.build();
     IpAccessList iNoEdgeInAcl = _aclb.build();
     IpAccessList iNoEdgeOutAcl = _aclb.build();
@@ -122,11 +121,11 @@ public class SynthesizerInputTest {
     Interface srcInterface =
         _ib.setOwner(srcNode)
             .setVrf(srcVrf)
-            .setIncomingFilter(srcInterfaceInAcl)
+            .setIncomingFilter(edgeInterfaceInAcl)
             .setOutgoingFilter(srcInterfaceOutAcl)
             .build();
     Interface iFlowSink =
-        _ib.setIncomingFilter(iFlowSinkInAcl).setOutgoingFilter(iFlowSinkOutAcl).build();
+        _ib.setIncomingFilter(edgeInterfaceInAcl).setOutgoingFilter(iFlowSinkOutAcl).build();
     /*
      * Interface without an edge: Its ACLs should be absent with data plane, but present without
      * data plane.
@@ -157,12 +156,10 @@ public class SynthesizerInputTest {
             .build();
     Map<String, IpAccessList> expectedSrcNodeWithDataPlane =
         ImmutableMap.of(
-            srcInterfaceInAcl.getName(),
-            srcInterfaceInAcl,
+            edgeInterfaceInAcl.getName(),
+            edgeInterfaceInAcl,
             srcInterfaceOutAcl.getName(),
             srcInterfaceOutAcl,
-            iFlowSinkInAcl.getName(),
-            iFlowSinkInAcl,
             iFlowSinkOutAcl.getName(),
             iFlowSinkOutAcl);
     Map<String, IpAccessList> expectedSrcNodeWithoutDataPlane =
