@@ -2,24 +2,18 @@ package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
-import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.DeclareRelExpr;
-import org.batfish.z3.expr.DeclareVarExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.ExpandedListExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
-import org.batfish.z3.expr.QueryExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
@@ -30,17 +24,9 @@ public interface ExprVisitor {
 
   void visitBitVecExpr(BitVecExpr bitVecExpr);
 
-  void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr);
-
-  void visitComment(Comment comment);
-
-  void visitDeclareRelExpr(DeclareRelExpr declareRelExpr);
-
-  void visitDeclareVarExpr(DeclareVarExpr declareVarExpr);
+  void visitListExpr(ListExpr listExpr);
 
   void visitEqExpr(EqExpr eqExpr);
-
-  void visitExpandedListExpr(ExpandedListExpr expandedListExpr);
 
   void visitExtractExpr(ExtractExpr extractExpr);
 
@@ -60,11 +46,7 @@ public interface ExprVisitor {
 
   void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr);
 
-  void visitQueryExpr(QueryExpr queryExpr);
-
   void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr);
-
-  void visitRuleExpr(RuleExpr ruleExpr);
 
   void visitSaneExpr(SaneExpr saneExpr);
 

@@ -2,13 +2,19 @@ package org.batfish.z3.expr;
 
 import java.util.List;
 import java.util.Objects;
+import org.batfish.z3.expr.visitors.ExprVisitor;
 
-public abstract class ListExpr extends Expr {
+public class ListExpr extends Expr {
 
   private final List<Expr> _subExpressions;
 
   public ListExpr(List<Expr> subExpressions) {
     _subExpressions = subExpressions;
+  }
+
+  @Override
+  public void accept(ExprVisitor visitor) {
+    visitor.visitListExpr(this);
   }
 
   @Override

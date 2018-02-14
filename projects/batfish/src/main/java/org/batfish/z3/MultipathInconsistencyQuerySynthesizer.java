@@ -7,8 +7,8 @@ import java.util.List;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
-import org.batfish.z3.expr.QueryExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 import org.batfish.z3.state.Accept;
@@ -36,7 +36,7 @@ public class MultipathInconsistencyQuerySynthesizer extends BaseQuerySynthesizer
       throws Z3Exception {
     NodProgram program = new NodProgram(baseProgram.getContext());
     OriginateVrf originate = new OriginateVrf(_hostname, _vrf);
-    RuleExpr injectSymbolicPackets = new RuleExpr(originate);
+    RuleStatement injectSymbolicPackets = new RuleStatement(originate);
     AndExpr queryConditions =
         new AndExpr(
             ImmutableList.of(
@@ -44,14 +44,14 @@ public class MultipathInconsistencyQuerySynthesizer extends BaseQuerySynthesizer
                 Drop.INSTANCE,
                 SaneExpr.INSTANCE,
                 new HeaderSpaceMatchExpr(_headerSpace)));
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
+    RuleStatement queryRule = new RuleStatement(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
     BoolExpr injectSymbolicPacketsBoolExpr =
         BoolExprTransformer.toBoolExpr(
             injectSymbolicPackets.getSubExpression(), input, baseProgram);
     rules.add(injectSymbolicPacketsBoolExpr);
     rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
-    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    QueryStatement query = new QueryStatement(Query.INSTANCE);
     BoolExpr queryBoolExpr =
         BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);

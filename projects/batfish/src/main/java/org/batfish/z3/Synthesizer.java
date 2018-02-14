@@ -14,10 +14,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import org.batfish.z3.expr.DeclareRelExpr;
-import org.batfish.z3.expr.DeclareVarExpr;
-import org.batfish.z3.expr.Expr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.DeclareRelStatement;
+import org.batfish.z3.expr.DeclareVarStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 import org.batfish.z3.expr.visitors.RelationCollector;
@@ -58,7 +57,7 @@ public class Synthesizer {
 
   public static List<Statement> getVarDeclExprs() {
     return Arrays.stream(HeaderField.values())
-        .map(DeclareVarExpr::new)
+        .map(DeclareVarStatement::new)
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -97,7 +96,8 @@ public class Synthesizer {
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
-                Function.identity(), packetRel -> new DeclareRelExpr(packetRel).toFuncDecl(ctx)));
+                Function.identity(),
+                packetRel -> new DeclareRelStatement(packetRel).toFuncDecl(ctx)));
   }
 
   public List<String> getWarnings() {
@@ -174,16 +174,16 @@ public class Synthesizer {
     }
     List<BoolExpr> rules = nodProgram.getRules();
     for (Statement rawStatement : ruleStatements) {
-      Expr statement;
+      Statement statement;
       if (_input.getSimplify()) {
         statement = Simplifier.simplifyStatement(rawStatement);
       } else {
         statement = rawStatement;
       }
-      if (statement instanceof RuleExpr) {
-        RuleExpr ruleExpr = (RuleExpr) statement;
+      if (statement instanceof RuleStatement) {
+        RuleStatement ruleStatement = (RuleStatement) statement;
         BoolExpr ruleBoolExpr =
-            BoolExprTransformer.toBoolExpr(ruleExpr.getSubExpression(), _input, nodProgram);
+            BoolExprTransformer.toBoolExpr(ruleStatement.getSubExpression(), _input, nodProgram);
         rules.add(ruleBoolExpr);
       }
     }

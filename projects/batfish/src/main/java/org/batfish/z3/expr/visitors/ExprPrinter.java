@@ -6,31 +6,32 @@ import java.util.List;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
 import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.DeclareRelExpr;
-import org.batfish.z3.expr.DeclareVarExpr;
+import org.batfish.z3.expr.DeclareRelStatement;
+import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.ExpandedListExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
-import org.batfish.z3.expr.QueryExpr;
+import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
+import org.batfish.z3.expr.VoidStatementVisitor;
 
-public class ExprPrinter implements ExprVisitor {
+public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   private static final List<Expr> HEADER_VARIABLE_EXPRS =
       Arrays.stream(HeaderField.values())
@@ -40,6 +41,12 @@ public class ExprPrinter implements ExprVisitor {
   public static String print(Expr expr) {
     ExprPrinter printer = new ExprPrinter();
     expr.accept(printer);
+    return printer._sb.toString();
+  }
+
+  public static String print(Statement statement) {
+    ExprPrinter printer = new ExprPrinter();
+    statement.accept(printer);
     return printer._sb.toString();
   }
 
@@ -119,8 +126,8 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
-    printCollapsedComplexExpr(collapsedListExpr.getSubExpressions());
+  public void visitListExpr(ListExpr listExpr) {
+    printCollapsedComplexExpr(listExpr.getSubExpressions());
   }
 
   @Override
@@ -132,17 +139,17 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitDeclareRelExpr(DeclareRelExpr declareRelExpr) {
+  public void visitDeclareRelStatement(DeclareRelStatement declareRelStatement) {
     printCollapsedComplexExpr(
         ImmutableList.of(
             new IdExpr("declare-rel"),
-            new IdExpr(declareRelExpr.getName()),
-            new CollapsedListExpr(ImmutableList.copyOf(DeclareRelExpr.ARGUMENTS))));
+            new IdExpr(declareRelStatement.getName()),
+            new ListExpr(ImmutableList.copyOf(DeclareRelStatement.ARGUMENTS))));
   }
 
   @Override
-  public void visitDeclareVarExpr(DeclareVarExpr declareVarExpr) {
-    HeaderField hf = declareVarExpr.getHeaderField();
+  public void visitDeclareVarStatement(DeclareVarStatement declareVarStatement) {
+    HeaderField hf = declareVarStatement.getHeaderField();
     printCollapsedComplexExpr(
         ImmutableList.of(
             new IdExpr("declare-var"), new IdExpr(hf.name()), new BitVecExpr(hf.getSize())));
@@ -154,16 +161,10 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
   public void visitExtractExpr(ExtractExpr extractExpr) {
     printCollapsedComplexExpr(
         ImmutableList.of(
-            new CollapsedListExpr(
+            new ListExpr(
                 ImmutableList.of(
                     new IdExpr("_"),
                     new IdExpr("extract"),
@@ -234,8 +235,9 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitQueryExpr(QueryExpr queryExpr) {
-    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("query"), queryExpr.getSubExpression()));
+  public void visitQueryStatement(QueryStatement queryStatement) {
+    printCollapsedComplexExpr(
+        ImmutableList.of(new IdExpr("query"), queryStatement.getSubExpression()));
   }
 
   @Override
@@ -244,8 +246,9 @@ public class ExprPrinter implements ExprVisitor {
   }
 
   @Override
-  public void visitRuleExpr(RuleExpr ruleExpr) {
-    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("if"), ruleExpr.getSubExpression()));
+  public void visitRuleStatement(RuleStatement ruleStatement) {
+    printCollapsedComplexExpr(
+        ImmutableList.of(new IdExpr("rule"), ruleStatement.getSubExpression()));
   }
 
   @Override

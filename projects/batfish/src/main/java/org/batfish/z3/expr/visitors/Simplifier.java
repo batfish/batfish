@@ -8,32 +8,34 @@ import org.batfish.common.BatfishException;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
 import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.DeclareRelExpr;
-import org.batfish.z3.expr.DeclareVarExpr;
+import org.batfish.z3.expr.DeclareRelStatement;
+import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.ExpandedListExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
+import org.batfish.z3.expr.GenericStatementVisitor;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
-import org.batfish.z3.expr.QueryExpr;
+import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
-public class Simplifier implements ExprVisitor {
+public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statement> {
+
+  private static final Comment UNUSABLE_RULE = new Comment("(unsatisfiable rule)");
 
   private static final Comment VACUOUS_RULE = new Comment("(vacuous rule)");
 
@@ -45,13 +47,10 @@ public class Simplifier implements ExprVisitor {
 
   public static Statement simplifyStatement(Statement statement) {
     Simplifier simplifier = new Simplifier();
-    statement.accept(simplifier);
-    return simplifier._simplifiedStatement;
+    return statement.accept(simplifier);
   }
 
   private BooleanExpr _simplifiedBooleanExpr;
-
-  private Statement _simplifiedStatement;
 
   private Simplifier() {}
 
@@ -111,24 +110,24 @@ public class Simplifier implements ExprVisitor {
   }
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
+  public void visitListExpr(ListExpr listExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void visitComment(Comment comment) {
-    _simplifiedStatement = comment;
+  public Statement visitComment(Comment comment) {
+    return comment;
   }
 
   @Override
-  public void visitDeclareRelExpr(DeclareRelExpr declareRelExpr) {
-    _simplifiedStatement = declareRelExpr;
+  public Statement visitDeclareRelStatement(DeclareRelStatement declareRelStatement) {
+    return declareRelStatement;
   }
 
   @Override
-  public void visitDeclareVarExpr(DeclareVarExpr declareVarExpr) {
-    _simplifiedStatement = declareVarExpr;
+  public Statement visitDeclareVarStatement(DeclareVarStatement declareVarStatement) {
+    return declareVarStatement;
   }
 
   @Override
@@ -142,12 +141,6 @@ public class Simplifier implements ExprVisitor {
     } else {
       _simplifiedBooleanExpr = eqExpr;
     }
-  }
-
-  @Override
-  public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
@@ -269,8 +262,8 @@ public class Simplifier implements ExprVisitor {
   }
 
   @Override
-  public void visitQueryExpr(QueryExpr queryExpr) {
-    _simplifiedStatement = queryExpr;
+  public Statement visitQueryStatement(QueryStatement queryStatement) {
+    return queryStatement;
   }
 
   @Override
@@ -279,23 +272,26 @@ public class Simplifier implements ExprVisitor {
   }
 
   @Override
-  public void visitRuleExpr(RuleExpr ruleExpr) {
-    BooleanExpr oldExpr = ruleExpr.getSubExpression();
+  public Statement visitRuleStatement(RuleStatement ruleStatement) {
+    BooleanExpr oldExpr = ruleStatement.getSubExpression();
     BooleanExpr newExpr = simplifyBooleanExpr(oldExpr);
     if (newExpr != oldExpr) {
       if (newExpr == TrueExpr.INSTANCE) {
-        _simplifiedStatement = VACUOUS_RULE;
+        return VACUOUS_RULE;
       } else if (newExpr == FalseExpr.INSTANCE) {
-        throw new BatfishException("Unsatisfiable!");
+        throw new BatfishException("Unsatifiable!");
+      } else if (newExpr instanceof IfExpr
+          && ((IfExpr) newExpr).getAntecedent() == FalseExpr.INSTANCE) {
+        return UNUSABLE_RULE;
       } else if (newExpr instanceof StateExpr) {
-        _simplifiedStatement = new RuleExpr((StateExpr) newExpr);
+        return new RuleStatement((StateExpr) newExpr);
       } else {
         IfExpr newInterior = (IfExpr) newExpr;
-        _simplifiedStatement =
-            new RuleExpr(newInterior.getAntecedent(), (StateExpr) newInterior.getConsequent());
+        return new RuleStatement(
+            newInterior.getAntecedent(), (StateExpr) newInterior.getConsequent());
       }
     } else {
-      _simplifiedStatement = ruleExpr;
+      return ruleStatement;
     }
   }
 

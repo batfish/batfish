@@ -15,8 +15,8 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.QueryExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 import org.batfish.z3.state.Accept;
@@ -73,11 +73,11 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     NodProgram program = new NodProgram(baseProgram.getContext());
 
     // create rules for injecting symbolic packets into ingress node(s)
-    List<RuleExpr> originateRules = new ArrayList<>();
+    List<RuleStatement> originateRules = new ArrayList<>();
     for (String ingressNode : _ingressNodeVrfs.keySet()) {
       for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
         OriginateVrf originate = new OriginateVrf(ingressNode, ingressVrf);
-        RuleExpr originateRule = new RuleExpr(originate);
+        RuleStatement originateRule = new RuleStatement(originate);
         originateRules.add(originateRule);
       }
     }
@@ -194,15 +194,15 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     queryConditionsBuilder.add(matchHeaderSpace);
     AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
 
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
+    RuleStatement queryRule = new RuleStatement(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
-    for (RuleExpr originateRule : originateRules) {
+    for (RuleStatement originateRule : originateRules) {
       BoolExpr originateBoolExpr =
           BoolExprTransformer.toBoolExpr(originateRule.getSubExpression(), input, baseProgram);
       rules.add(originateBoolExpr);
     }
     rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
-    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    QueryStatement query = new QueryStatement(Query.INSTANCE);
     BoolExpr queryBoolExpr =
         BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);

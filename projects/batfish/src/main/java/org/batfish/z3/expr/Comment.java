@@ -1,7 +1,6 @@
 package org.batfish.z3.expr;
 
 import java.util.Objects;
-import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class Comment extends Statement {
 
@@ -12,13 +11,13 @@ public class Comment extends Statement {
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitComment(this);
+  public <T> T accept(GenericStatementVisitor<T> visitor) {
+    return visitor.visitComment(this);
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
-    return Objects.equals(_lines, ((Comment) e)._lines);
+  public void accept(VoidStatementVisitor visitor) {
+    visitor.visitComment(this);
   }
 
   public String[] getLines() {
@@ -28,5 +27,10 @@ public class Comment extends Statement {
   @Override
   public int hashCode() {
     return Objects.hashCode(_lines);
+  }
+
+  @Override
+  public boolean statementEquals(Statement e) {
+    return Objects.equals(_lines, ((Comment) e)._lines);
   }
 }

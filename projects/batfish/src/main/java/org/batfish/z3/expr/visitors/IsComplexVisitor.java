@@ -2,25 +2,19 @@ package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CollapsedListExpr;
-import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.DeclareRelExpr;
-import org.batfish.z3.expr.DeclareVarExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.ExpandedListExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
-import org.batfish.z3.expr.QueryExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.RuleExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
@@ -47,33 +41,13 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitCollapsedListExpr(CollapsedListExpr collapsedListExpr) {
+  public void visitListExpr(ListExpr listExpr) {
     _isComplex = false;
-  }
-
-  @Override
-  public void visitComment(Comment comment) {
-    _isComplex = false;
-  }
-
-  @Override
-  public void visitDeclareRelExpr(DeclareRelExpr declareRelExpr) {
-    _isComplex = true;
-  }
-
-  @Override
-  public void visitDeclareVarExpr(DeclareVarExpr declareVarExpr) {
-    _isComplex = true;
   }
 
   @Override
   public void visitEqExpr(EqExpr eqExpr) {
     _isComplex = true;
-  }
-
-  @Override
-  public void visitExpandedListExpr(ExpandedListExpr expandedListExpr) {
-    _isComplex = false;
   }
 
   @Override
@@ -122,18 +96,8 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitQueryExpr(QueryExpr queryExpr) {
-    _isComplex = true;
-  }
-
-  @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     rangeMatchExpr.getExpr().accept(this);
-  }
-
-  @Override
-  public void visitRuleExpr(RuleExpr ruleExpr) {
-    _isComplex = true;
   }
 
   @Override
