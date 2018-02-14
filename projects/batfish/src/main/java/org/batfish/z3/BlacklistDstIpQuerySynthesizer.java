@@ -20,8 +20,8 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
-import org.batfish.z3.expr.QueryExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
@@ -102,10 +102,10 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
       queryConditionsBuilder.add(blacklistIpCondition);
     }
     AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
+    RuleStatement queryRule = new RuleStatement(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
     rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
-    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    QueryStatement query = new QueryStatement(Query.INSTANCE);
     BoolExpr queryBoolExpr =
         BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);

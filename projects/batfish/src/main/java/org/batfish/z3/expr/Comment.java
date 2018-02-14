@@ -1,7 +1,6 @@
 package org.batfish.z3.expr;
 
 import java.util.Objects;
-import org.batfish.z3.expr.visitors.ExprVisitor;
 
 public class Comment extends Statement {
 
@@ -12,12 +11,17 @@ public class Comment extends Statement {
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
+  public <T> T accept(GenericStatementVisitor<T> visitor) {
+    return visitor.visitComment(this);
+  }
+
+  @Override
+  public void accept(VoidStatementVisitor visitor) {
     visitor.visitComment(this);
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  public boolean statementEquals(Statement e) {
     return Objects.equals(_lines, ((Comment) e)._lines);
   }
 

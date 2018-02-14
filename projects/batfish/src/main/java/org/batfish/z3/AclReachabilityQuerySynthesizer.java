@@ -6,9 +6,9 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
 import java.util.List;
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.DeclareRelExpr;
-import org.batfish.z3.expr.QueryExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.DeclareRelStatement;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 import org.batfish.z3.state.AclLineMatch;
@@ -38,12 +38,12 @@ public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<A
       AndExpr queryConditions = new AndExpr(ImmutableList.of(matchAclLine, SaneExpr.INSTANCE));
       NumberedQuery queryRel = new NumberedQuery(line);
       String queryRelName = BoolExprTransformer.getNodName(input, queryRel);
-      DeclareRelExpr declaration = new DeclareRelExpr(queryRelName);
+      DeclareRelStatement declaration = new DeclareRelStatement(queryRelName);
       baseProgram.getRelationDeclarations().put(queryRelName, declaration.toFuncDecl(ctx));
-      RuleExpr queryRule = new RuleExpr(queryConditions, queryRel);
+      RuleStatement queryRule = new RuleStatement(queryConditions, queryRel);
       List<BoolExpr> rules = program.getRules();
       rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
-      QueryExpr query = new QueryExpr(queryRel);
+      QueryStatement query = new QueryStatement(queryRel);
       BoolExpr queryBoolExpr =
           BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
       program.getQueries().add(queryBoolExpr);

@@ -9,9 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.batfish.z3.HeaderField;
-import org.batfish.z3.expr.visitors.ExprVisitor;
 
-public class DeclareRelExpr extends Statement {
+public class DeclareRelStatement extends Statement {
 
   public static final List<BitVecExpr> ARGUMENTS =
       Arrays.stream(HeaderField.values())
@@ -21,18 +20,23 @@ public class DeclareRelExpr extends Statement {
 
   private String _name;
 
-  public DeclareRelExpr(String name) {
+  public DeclareRelStatement(String name) {
     _name = name;
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitDeclareRelExpr(this);
+  public <T> T accept(GenericStatementVisitor<T> visitor) {
+    return visitor.visitDeclareRelStatement(this);
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
-    return Objects.equals(_name, ((DeclareRelExpr) e)._name);
+  public void accept(VoidStatementVisitor visitor) {
+    visitor.visitDeclareRelStatement(this);
+  }
+
+  @Override
+  public boolean statementEquals(Statement e) {
+    return Objects.equals(_name, ((DeclareRelStatement) e)._name);
   }
 
   public String getName() {

@@ -9,8 +9,8 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
-import org.batfish.z3.expr.QueryExpr;
-import org.batfish.z3.expr.RuleExpr;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 import org.batfish.z3.state.Accept;
@@ -49,7 +49,7 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       throws Z3Exception {
     NodProgram program = new NodProgram(baseProgram.getContext());
     OriginateVrf originate = new OriginateVrf(_originationNode, _ingressVrf);
-    RuleExpr injectSymbolicPackets = new RuleExpr(originate);
+    RuleStatement injectSymbolicPackets = new RuleStatement(originate);
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder =
         ImmutableList.<BooleanExpr>builder()
             .add(new PreOutEdge(_edge))
@@ -60,14 +60,14 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
     }
     queryConditionsBuilder.add(SaneExpr.INSTANCE);
     AndExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
-    RuleExpr queryRule = new RuleExpr(queryConditions, Query.INSTANCE);
+    RuleStatement queryRule = new RuleStatement(queryConditions, Query.INSTANCE);
     List<BoolExpr> rules = program.getRules();
     BoolExpr injectSymbolicPacketsBoolExpr =
         BoolExprTransformer.toBoolExpr(
             injectSymbolicPackets.getSubExpression(), input, baseProgram);
     rules.add(injectSymbolicPacketsBoolExpr);
     rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
-    QueryExpr query = new QueryExpr(Query.INSTANCE);
+    QueryStatement query = new QueryStatement(Query.INSTANCE);
     BoolExpr queryBoolExpr =
         BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
     program.getQueries().add(queryBoolExpr);
