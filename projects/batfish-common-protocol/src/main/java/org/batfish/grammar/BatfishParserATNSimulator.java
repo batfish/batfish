@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.NoViableAltException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ParserATNSimulator;
+import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishRecognitionException;
 
 /**
  * Clones an existing {@link ParserATNSimulator} used by a {@link BatfishParser} and wraps the
@@ -33,7 +34,16 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
         result = super.adaptivePredict(input, decision, outerContext);
       } catch (NoViableAltException e) {
         // If adaptive prediction fails, throw out current line and try again.
-        _parser.createErrorNodeLine();
+        try {
+          _parser.createErrorNodeLine();
+        } catch (BatfishRecognitionException re) {
+          /*
+           * This lets us exit adaptive prediction gracefully when recovery fails because of:
+           * A. Rule using adaptive prediction that isn't satisfied by EOF
+           * B. Transient lexer corruption due to crappy build system (during development)
+           */
+          return org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER;
+        }
       }
     } while (result == null);
     return result;
