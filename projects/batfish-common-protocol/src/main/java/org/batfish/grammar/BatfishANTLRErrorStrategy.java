@@ -73,8 +73,6 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
   private int _separatorToken;
 
-  private boolean _thrownAtEof;
-
   /**
    * Construct a {@link BatfishANTLRErrorStrategy} that throws out invalid lines from as delimited
    * by {@link separatorToken}. The {@link minimumRequiredSeparatorText} is used to split {@link
@@ -138,8 +136,8 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    */
   private Token createErrorNode(
       Parser recognizer, ParserRuleContext ctx, int lineIndex, Token separator) {
-    if (_recoveredAtEof && !_thrownAtEof) {
-      _thrownAtEof = true;
+    if (_recoveredAtEof) {
+      _recoveredAtEof = false;
       throw new BatfishRecognitionException(recognizer, recognizer.getInputStream(), ctx);
     }
     if (separator.getType() == Lexer.EOF) {
