@@ -31,25 +31,38 @@ public interface SynthesizerInput {
 
   Set<NodeInterfacePair> getEnabledFlowSinks();
 
+  /** Mapping: hostname -> interfaces */
   Map<String, Set<String>> getEnabledInterfaces();
 
+  /** Mapping: hostname -> vrf -> interfaces */
   Map<String, Map<String, Set<String>>> getEnabledInterfacesByNodeVrf();
 
   Set<String> getEnabledNodes();
 
+  /** Mapping: hostname -> vrfs */
   Map<String, Set<String>> getEnabledVrfs();
 
+  /** Mapping: hostname -> vrf -> outgoingInterface -> receivingNodeAndInterface -> condition */
   Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> getFibConditions();
 
+  /** Mapping: hostname -> interface-> incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
 
+  /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
 
+  /** Mapping: hostname -> interface-> outgoingAcl */
   Map<String, Map<String, String>> getOutgoingAcls();
 
+  /** Whether to run simplifier on AST after rule generation */
   boolean getSimplify();
 
+  /** Mapping: hostname -> interfacesOnSomeEdge */
   Map<String, Set<String>> getTopologyInterfaces();
 
+  /**
+   * Set of parameter types that should be vectorized rather than baked into name of relations.<br>
+   * Applies to NoD only.
+   */
   Set<Type> getVectorizedParameters();
 }
