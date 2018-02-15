@@ -44,6 +44,8 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostOutInterface;
+import org.batfish.z3.state.PreInInterface;
+import org.batfish.z3.state.PreOutInterface;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +61,7 @@ public class DefaultTransitionGeneratorTest {
   private static String INTERFACE1 = "interface1";
 
   private static String INTERFACE2 = "interface2";
-  
+
   private static Ip IP1 = new Ip("1.1.1.1");
 
   private static Ip IP2 = new Ip("2.2.2.2");
@@ -617,7 +619,30 @@ public class DefaultTransitionGeneratorTest {
     assertThat(
         rules,
         hasItem(new RuleStatement(new PostOutInterface(NODE2, INTERFACE2), new NodeAccept(NODE2))));
+  }
 
+  @Test
+  public void testVisitNodeDrop() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NodeDrop.State.INSTANCE)));
+
+    // CopyNodeDropAcl
+    assertThat(rules, hasItem(new RuleStatement(new NodeDropAcl(NODE1), new NodeDrop(NODE1))));
+    assertThat(rules, hasItem(new RuleStatement(new NodeDropAcl(NODE2), new NodeDrop(NODE2))));
+
+    // CopyNodeDropNoRoute
+    assertThat(rules, hasItem(new RuleStatement(new NodeDropNoRoute(NODE1), new NodeDrop(NODE1))));
+    assertThat(rules, hasItem(new RuleStatement(new NodeDropNoRoute(NODE2), new NodeDrop(NODE2))));
+
+    // CopyNodeDropNullRoute
+    assertThat(
+        rules, hasItem(new RuleStatement(new NodeDropNullRoute(NODE1), new NodeDrop(NODE1))));
+    assertThat(
+        rules, hasItem(new RuleStatement(new NodeDropNullRoute(NODE2), new NodeDrop(NODE2))));
   }
 
   @Test
@@ -640,5 +665,119 @@ public class DefaultTransitionGeneratorTest {
             new RuleStatement(new NodeDropAclOut(NODE2), new NodeDropAcl(NODE2)));
 
     assertThat(rules, equalTo(Sets.union(expectedCopyNodeDropAclIn, expectedCopyNodeDropAclOut)));
+  }
+
+  @Test
+  public void testVisitNodeDropAclIn() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setIncomingAcls(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
+                    NODE2,
+                    ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setTopologyInterfaces(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableSet.of(INTERFACE1, INTERFACE2),
+                    NODE2,
+                    ImmutableSet.of(INTERFACE1, INTERFACE2)))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NodeDropAclIn.State.INSTANCE)));
+
+    // FailIncomingAcl
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE1, ACL1), new PreInInterface(NODE1, INTERFACE1))),
+                new NodeDropAclIn(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE1, ACL2), new PreInInterface(NODE1, INTERFACE2))),
+                new NodeDropAclIn(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE2, ACL1), new PreInInterface(NODE2, INTERFACE1))),
+                new NodeDropAclIn(NODE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE2, ACL2), new PreInInterface(NODE2, INTERFACE2))),
+                new NodeDropAclIn(NODE2))));
+  }
+
+  @Test
+  public void testVisitNodeDropAclOut() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setOutgoingAcls(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
+                    NODE2,
+                    ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setTopologyInterfaces(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableSet.of(INTERFACE1, INTERFACE2),
+                    NODE2,
+                    ImmutableSet.of(INTERFACE1, INTERFACE2)))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NodeDropAclOut.State.INSTANCE)));
+
+    // FailOutgoingAcl
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE1, ACL1), new PreOutInterface(NODE1, INTERFACE1))),
+                new NodeDropAclOut(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE1, ACL2), new PreOutInterface(NODE1, INTERFACE2))),
+                new NodeDropAclOut(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE2, ACL1), new PreOutInterface(NODE2, INTERFACE1))),
+                new NodeDropAclOut(NODE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new RuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        new AclDeny(NODE2, ACL2), new PreOutInterface(NODE2, INTERFACE2))),
+                new NodeDropAclOut(NODE2))));
   }
 }
