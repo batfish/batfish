@@ -16,6 +16,11 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.FalseExpr;
+import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.NotExpr;
+import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.NumberedQuery;
@@ -50,11 +55,70 @@ public class RelationCollectorTest {
     assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
   }
 
+  /** Test that collectRelations traverses the children of an IfExpr. */
+  @Test
+  public void testVisitIfExpr() {
+    StateExpr p1 = newRelation();
+    StateExpr p2 = newRelation();
+    IfExpr expr = new IfExpr(p1, p2);
+    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1), getNodName(_input, p2));
+
+    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  }
+
   /** Test that collectionRelations returns the empty set for boolean literals. */
   @Test
   public void testVisitLiteral() {
     AndExpr and = new AndExpr(of(TrueExpr.INSTANCE, FalseExpr.INSTANCE));
     assertThat(collectRelations(_input, and), is(empty()));
+  }
+
+  /** Test that collectRelations traverses the child of a NotExpr. */
+  @Test
+  public void testVisitNotExpr() {
+    StateExpr p1 = newRelation();
+    NotExpr expr = new NotExpr(p1);
+    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
+
+    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  }
+
+  /** Test that collectRelations traverses all children of an OrExpr. */
+  @Test
+  public void testVisitOrExpr() {
+    StateExpr p1 = newRelation();
+    StateExpr p2 = newRelation();
+    List<StateExpr> atoms = of(p1, p2);
+    OrExpr expr = new OrExpr(ImmutableList.copyOf(atoms));
+    Set<String> expectedRelations =
+        atoms.stream().map(atom -> getNodName(_input, atom)).collect(ImmutableSet.toImmutableSet());
+
+    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  }
+
+  /** Test that collectRelations traverses the child of a QueryStatement. */
+  @Test
+  public void testVisitQueryStatement() {
+    StateExpr p1 = newRelation();
+    QueryStatement expr = new QueryStatement(p1);
+    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
+
+    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  }
+
+  /** Test that collectRelations traverses the child of a RuleStatement. */
+  @Test
+  public void testVisitRuleStatement() {
+    StateExpr p1 = newRelation();
+    StateExpr p2 = newRelation();
+    RuleStatement expr1 = new RuleStatement(p1);
+    Set<String> expectedRelations1 = ImmutableSet.of(getNodName(_input, p1));
+    RuleStatement expr2 = new RuleStatement(p1, p2);
+    Set<String> expectedRelations2 =
+        ImmutableSet.of(getNodName(_input, p1), getNodName(_input, p2));
+
+    assertThat(collectRelations(_input, expr1), equalTo(expectedRelations1));
+    assertThat(collectRelations(_input, expr2), equalTo(expectedRelations2));
   }
 
   /**
