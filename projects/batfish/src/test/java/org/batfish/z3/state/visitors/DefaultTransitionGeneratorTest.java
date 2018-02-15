@@ -46,7 +46,6 @@ import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostOutInterface;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutInterface;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
