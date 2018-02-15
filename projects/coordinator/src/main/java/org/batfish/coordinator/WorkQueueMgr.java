@@ -80,11 +80,11 @@ public class WorkQueueMgr {
     if (envMetadata.getProcessingStatus() == ProcessingStatus.PARSING
         && getIncompleteWork(container, testrig, environment, WorkType.PARSING) == null) {
       TestrigMetadataMgr.updateEnvironmentStatus(
-          container, testrig, environment, ProcessingStatus.PARSING_FAIL);
+          container, testrig, environment, ProcessingStatus.PARSING_FAIL, null);
     } else if (envMetadata.getProcessingStatus() == ProcessingStatus.DATAPLANING
         && getIncompleteWork(container, testrig, environment, WorkType.DATAPLANING) == null) {
       TestrigMetadataMgr.updateEnvironmentStatus(
-          container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL);
+          container, testrig, environment, ProcessingStatus.DATAPLANING_FAIL, null);
     }
   }
 
@@ -391,13 +391,15 @@ public class WorkQueueMgr {
           wItem.getContainerName(),
           wDetails.baseTestrig,
           wDetails.baseEnv,
-          ProcessingStatus.PARSING);
+          ProcessingStatus.PARSING,
+          null);
     } else if (wDetails.workType == WorkType.DATAPLANING) {
       TestrigMetadataMgr.updateEnvironmentStatus(
           wItem.getContainerName(),
           wDetails.baseTestrig,
           wDetails.baseEnv,
-          ProcessingStatus.DATAPLANING);
+          ProcessingStatus.DATAPLANING,
+          null);
     }
   }
 
@@ -432,7 +434,11 @@ public class WorkQueueMgr {
                     ? ProcessingStatus.PARSED
                     : ProcessingStatus.PARSING_FAIL;
             TestrigMetadataMgr.updateEnvironmentStatus(
-                wItem.getContainerName(), wDetails.baseTestrig, wDetails.baseEnv, status);
+                wItem.getContainerName(),
+                wDetails.baseTestrig,
+                wDetails.baseEnv,
+                status,
+                task.getErrMessage());
           } else if (wDetails.workType == WorkType.DATAPLANING) {
             // no change in status needed if task.getStatus() is RequeueFailure
             if (task.getStatus() == TaskStatus.TerminatedAbnormally
@@ -441,13 +447,15 @@ public class WorkQueueMgr {
                   wItem.getContainerName(),
                   wDetails.baseTestrig,
                   wDetails.baseEnv,
-                  ProcessingStatus.DATAPLANING_FAIL);
+                  ProcessingStatus.DATAPLANING_FAIL,
+                  task.getErrMessage());
             } else if (task.getStatus() == TaskStatus.TerminatedNormally) {
               TestrigMetadataMgr.updateEnvironmentStatus(
                   wItem.getContainerName(),
                   wDetails.baseTestrig,
                   wDetails.baseEnv,
-                  ProcessingStatus.DATAPLANED);
+                  ProcessingStatus.DATAPLANED,
+                  null);
             }
           }
 
@@ -517,7 +525,8 @@ public class WorkQueueMgr {
                       wItem.getContainerName(),
                       wDetails.baseTestrig,
                       wDetails.baseEnv,
-                      ProcessingStatus.UNINITIALIZED);
+                      ProcessingStatus.UNINITIALIZED,
+                      task.getErrMessage());
                 }
               } else { // wDetails.workType == WorkType.DATAPLANING
                 if (envMetadata.getProcessingStatus() != ProcessingStatus.DATAPLANING) {
@@ -529,7 +538,8 @@ public class WorkQueueMgr {
                       wItem.getContainerName(),
                       wDetails.baseTestrig,
                       wDetails.baseEnv,
-                      ProcessingStatus.PARSED);
+                      ProcessingStatus.PARSED,
+                      task.getErrMessage());
                 }
               }
             }

@@ -33,7 +33,8 @@ public class TestrigMetadata {
 
   public void initializeEnvironment(String environment) {
     _environments.put(
-        environment, new EnvironmentMetadata(ProcessingStatus.UNINITIALIZED, new LinkedList<>()));
+        environment,
+        new EnvironmentMetadata(ProcessingStatus.UNINITIALIZED, null, new LinkedList<>()));
   }
 
   @JsonProperty(PROP_CREATIONTIMESTAMP)
