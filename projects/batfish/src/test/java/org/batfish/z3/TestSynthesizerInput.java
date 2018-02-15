@@ -4,14 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.StateParameter.Type;
@@ -28,22 +23,26 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private Set<NodeInterfacePair> _enabledFlowSinks;
 
-    private Map<String, Map<String, Interface>> _enabledInterfaces;
+    private Map<String, Set<String>> _enabledInterfaces;
 
-    private Map<String, Configuration> _enabledNodes;
+    private Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
 
-    private Map<String, Map<String, Vrf>> _enabledVrfs;
+    private Set<String> _enabledNodes;
+
+    private Map<String, Set<String>> _enabledVrfs;
 
     private Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
         _fibConditions;
 
-    private Map<String, Map<String, SortedSet<FibRow>>> _fibs;
+    private Map<String, Map<String, String>> _incomingAcls;
 
     private Map<String, Set<Ip>> _ipsByHostname;
 
+    private Map<String, Map<String, String>> _outgoingAcls;
+
     private boolean _simplify;
 
-    private Map<String, Set<Interface>> _topologyInterfaces;
+    private Map<String, Set<String>> _topologyInterfaces;
 
     private Set<Type> _vectorizedParameters;
 
@@ -53,11 +52,13 @@ public class TestSynthesizerInput implements SynthesizerInput {
       _enabledEdges = ImmutableSet.of();
       _enabledFlowSinks = ImmutableSet.of();
       _enabledInterfaces = ImmutableMap.of();
-      _enabledNodes = ImmutableMap.of();
+      _enabledInterfacesByNodeVrf = ImmutableMap.of();
+      _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
       _fibConditions = ImmutableMap.of();
-      _fibs = ImmutableMap.of();
+      _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
+      _outgoingAcls = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
       _vectorizedParameters = ImmutableSet.of();
     }
@@ -69,11 +70,13 @@ public class TestSynthesizerInput implements SynthesizerInput {
           _enabledEdges,
           _enabledFlowSinks,
           _enabledInterfaces,
+          _enabledInterfacesByNodeVrf,
           _enabledNodes,
           _enabledVrfs,
           _fibConditions,
-          _fibs,
+          _incomingAcls,
           _ipsByHostname,
+          _outgoingAcls,
           _simplify,
           _topologyInterfaces,
           _vectorizedParameters);
@@ -100,17 +103,23 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setEnabledInterfaces(Map<String, Map<String, Interface>> enabledInterfaces) {
+    public Builder setEnabledInterfaces(Map<String, Set<String>> enabledInterfaces) {
       _enabledInterfaces = enabledInterfaces;
       return this;
     }
 
-    public Builder setEnabledNodes(Map<String, Configuration> enabledNodes) {
+    public Builder setEnabledInterfacesByNodeVrf(
+        Map<String, Map<String, Set<String>>> enabledInterfacesByNodeVrf) {
+      _enabledInterfacesByNodeVrf = enabledInterfacesByNodeVrf;
+      return this;
+    }
+
+    public Builder setEnabledNodes(Set<String> enabledNodes) {
       _enabledNodes = enabledNodes;
       return this;
     }
 
-    public Builder setEnabledVrfs(Map<String, Map<String, Vrf>> enabledVrfs) {
+    public Builder setEnabledVrfs(Map<String, Set<String>> enabledVrfs) {
       _enabledVrfs = enabledVrfs;
       return this;
     }
@@ -121,8 +130,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setFibs(Map<String, Map<String, SortedSet<FibRow>>> fibs) {
-      _fibs = fibs;
+    public Builder setIncomingAcls(Map<String, Map<String, String>> incomingAcls) {
+      _incomingAcls = incomingAcls;
       return this;
     }
 
@@ -131,12 +140,17 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setOutgoingAcls(Map<String, Map<String, String>> outgoingAcls) {
+      _outgoingAcls = outgoingAcls;
+      return this;
+    }
+
     public Builder setSimplify(boolean simplify) {
       _simplify = simplify;
       return this;
     }
 
-    public Builder setTopologyInterfaces(Map<String, Set<Interface>> topologyInterfaces) {
+    public Builder setTopologyInterfaces(Map<String, Set<String>> topologyInterfaces) {
       _topologyInterfaces = topologyInterfaces;
       return this;
     }
@@ -159,22 +173,26 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Set<NodeInterfacePair> _enabledFlowSinks;
 
-  private final Map<String, Map<String, Interface>> _enabledInterfaces;
+  private final Map<String, Set<String>> _enabledInterfaces;
 
-  private final Map<String, Configuration> _enabledNodes;
+  private final Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
 
-  private final Map<String, Map<String, Vrf>> _enabledVrfs;
+  private final Set<String> _enabledNodes;
+
+  private final Map<String, Set<String>> _enabledVrfs;
 
   private final Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
       _fibConditions;
 
-  private final Map<String, Map<String, SortedSet<FibRow>>> _fibs;
+  private final Map<String, Map<String, String>> _incomingAcls;
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final Map<String, Map<String, String>> _outgoingAcls;
+
   private final boolean _simplify;
 
-  private final Map<String, Set<Interface>> _topologyInterfaces;
+  private final Map<String, Set<String>> _topologyInterfaces;
 
   private final Set<Type> _vectorizedParameters;
 
@@ -183,25 +201,29 @@ public class TestSynthesizerInput implements SynthesizerInput {
       Map<String, Map<String, Map<Integer, BooleanExpr>>> aclConditions,
       Set<Edge> enabledEdges,
       Set<NodeInterfacePair> enabledFlowSinks,
-      Map<String, Map<String, Interface>> enabledInterfaces,
-      Map<String, Configuration> enabledNodes,
-      Map<String, Map<String, Vrf>> enabledVrfs,
+      Map<String, Set<String>> enabledInterfaces,
+      Map<String, Map<String, Set<String>>> enabledInterfacesByNodeVrf,
+      Set<String> enabledNodes,
+      Map<String, Set<String>> enabledVrfs,
       Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> fibConditions,
-      Map<String, Map<String, SortedSet<FibRow>>> fibs,
+      Map<String, Map<String, String>> incomingAcls,
       Map<String, Set<Ip>> ipsByHostname,
+      Map<String, Map<String, String>> outgoingAcls,
       boolean simplify,
-      Map<String, Set<Interface>> topologyInterfaces,
+      Map<String, Set<String>> topologyInterfaces,
       Set<Type> vectorizedParameters) {
     _aclActions = aclActions;
     _aclConditions = aclConditions;
     _enabledEdges = enabledEdges;
     _enabledFlowSinks = enabledFlowSinks;
     _enabledInterfaces = enabledInterfaces;
+    _enabledInterfacesByNodeVrf = enabledInterfacesByNodeVrf;
     _enabledNodes = enabledNodes;
     _enabledVrfs = enabledVrfs;
     _fibConditions = fibConditions;
-    _fibs = fibs;
+    _incomingAcls = incomingAcls;
     _ipsByHostname = ipsByHostname;
+    _outgoingAcls = outgoingAcls;
     _simplify = simplify;
     _topologyInterfaces = topologyInterfaces;
     _vectorizedParameters = vectorizedParameters;
@@ -228,17 +250,22 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Interface>> getEnabledInterfaces() {
+  public Map<String, Set<String>> getEnabledInterfaces() {
     return _enabledInterfaces;
   }
 
   @Override
-  public Map<String, Configuration> getEnabledNodes() {
+  public Map<String, Map<String, Set<String>>> getEnabledInterfacesByNodeVrf() {
+    return _enabledInterfacesByNodeVrf;
+  }
+
+  @Override
+  public Set<String> getEnabledNodes() {
     return _enabledNodes;
   }
 
   @Override
-  public Map<String, Map<String, Vrf>> getEnabledVrfs() {
+  public Map<String, Set<String>> getEnabledVrfs() {
     return _enabledVrfs;
   }
 
@@ -249,8 +276,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, SortedSet<FibRow>>> getFibs() {
-    return _fibs;
+  public Map<String, Map<String, String>> getIncomingAcls() {
+    return _incomingAcls;
   }
 
   @Override
@@ -259,12 +286,17 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, String>> getOutgoingAcls() {
+    return _outgoingAcls;
+  }
+
+  @Override
   public boolean getSimplify() {
     return _simplify;
   }
 
   @Override
-  public Map<String, Set<Interface>> getTopologyInterfaces() {
+  public Map<String, Set<String>> getTopologyInterfaces() {
     return _topologyInterfaces;
   }
 

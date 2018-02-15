@@ -2,26 +2,14 @@ package org.batfish.z3;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.StateParameter.Type;
 
 public interface SynthesizerInput {
-
-  /**
-   * Mapping: hostname -> aclName -> lineNumber -> lineConditions <br>
-   * lineConditions is a boolean expression representing the constraints on a header necessary for
-   * that line to be matched.
-   */
-  Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions();
 
   /**
    * Mapping: hostname -> aclName -> lineNumber -> lineAction <br>
@@ -32,25 +20,36 @@ public interface SynthesizerInput {
    */
   Map<String, Map<String, Map<Integer, LineAction>>> getAclActions();
 
+  /**
+   * Mapping: hostname -> aclName -> lineNumber -> lineConditions <br>
+   * lineConditions is a boolean expression representing the constraints on a header necessary for
+   * that line to be matched.
+   */
+  Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions();
+
   Set<Edge> getEnabledEdges();
 
   Set<NodeInterfacePair> getEnabledFlowSinks();
 
-  Map<String, Map<String, Interface>> getEnabledInterfaces();
+  Map<String, Set<String>> getEnabledInterfaces();
 
-  Map<String, Configuration> getEnabledNodes();
+  Map<String, Map<String, Set<String>>> getEnabledInterfacesByNodeVrf();
 
-  Map<String, Map<String, Vrf>> getEnabledVrfs();
+  Set<String> getEnabledNodes();
+
+  Map<String, Set<String>> getEnabledVrfs();
 
   Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> getFibConditions();
 
-  Map<String, Map<String, SortedSet<FibRow>>> getFibs();
+  Map<String, Map<String, String>> getIncomingAcls();
 
   Map<String, Set<Ip>> getIpsByHostname();
 
+  Map<String, Map<String, String>> getOutgoingAcls();
+
   boolean getSimplify();
 
-  Map<String, Set<Interface>> getTopologyInterfaces();
+  Map<String, Set<String>> getTopologyInterfaces();
 
   Set<Type> getVectorizedParameters();
 }

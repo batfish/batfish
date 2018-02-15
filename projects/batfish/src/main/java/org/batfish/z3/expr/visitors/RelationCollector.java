@@ -62,11 +62,6 @@ public class RelationCollector implements ExprVisitor, VoidStatementVisitor {
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {}
 
   @Override
-  public void visitListExpr(ListExpr listExpr) {
-    listExpr.getSubExpressions().forEach(expr -> expr.accept(this));
-  }
-
-  @Override
   public void visitComment(Comment comment) {}
 
   @Override
@@ -99,6 +94,11 @@ public class RelationCollector implements ExprVisitor, VoidStatementVisitor {
   public void visitIfExpr(IfExpr ifExpr) {
     ifExpr.getAntecedent().accept(this);
     ifExpr.getConsequent().accept(this);
+  }
+
+  @Override
+  public void visitListExpr(ListExpr listExpr) {
+    listExpr.getSubExpressions().forEach(expr -> expr.accept(this));
   }
 
   @Override

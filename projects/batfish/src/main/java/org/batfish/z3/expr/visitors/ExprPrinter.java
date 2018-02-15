@@ -126,11 +126,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitListExpr(ListExpr listExpr) {
-    printCollapsedComplexExpr(listExpr.getSubExpressions());
-  }
-
-  @Override
   public void visitComment(Comment comment) {
     _sb.append("\n");
     for (String line : comment.getLines()) {
@@ -192,6 +187,11 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   public void visitIfExpr(IfExpr ifExpr) {
     printExpandedComplexExpr(
         ImmutableList.of(new IdExpr("=>"), ifExpr.getAntecedent(), ifExpr.getConsequent()));
+  }
+
+  @Override
+  public void visitListExpr(ListExpr listExpr) {
+    printCollapsedComplexExpr(listExpr.getSubExpressions());
   }
 
   @Override

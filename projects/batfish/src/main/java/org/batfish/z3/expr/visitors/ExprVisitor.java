@@ -24,8 +24,6 @@ public interface ExprVisitor {
 
   void visitBitVecExpr(BitVecExpr bitVecExpr);
 
-  void visitListExpr(ListExpr listExpr);
-
   void visitEqExpr(EqExpr eqExpr);
 
   void visitExtractExpr(ExtractExpr extractExpr);
@@ -37,6 +35,8 @@ public interface ExprVisitor {
   void visitIdExpr(IdExpr idExpr);
 
   void visitIfExpr(IfExpr ifExpr);
+
+  void visitListExpr(ListExpr listExpr);
 
   void visitLitIntExpr(LitIntExpr litIntExpr);
 

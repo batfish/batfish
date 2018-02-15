@@ -110,12 +110,6 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitListExpr(ListExpr listExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
   public Statement visitComment(Comment comment) {
     return comment;
   }
@@ -184,6 +178,12 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     } else {
       _simplifiedBooleanExpr = ifExpr;
     }
+  }
+
+  @Override
+  public void visitListExpr(ListExpr listExpr) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override

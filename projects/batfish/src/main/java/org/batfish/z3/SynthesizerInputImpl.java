@@ -3,6 +3,7 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +23,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
@@ -143,11 +143,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Set<NodeInterfacePair> _enabledFlowSinks;
 
-  private final Map<String, Map<String, Interface>> _enabledInterfaces;
+  private final Map<String, Set<String>> _enabledInterfaces;
 
-  private final Map<String, Configuration> _enabledNodes;
+  private final Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
 
-  private final Map<String, Map<String, Vrf>> _enabledVrfs;
+  private final Set<String> _enabledNodes;
+
+  private final Map<String, Set<String>> _enabledVrfs;
 
   private final Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
       _fibConditions;
@@ -156,11 +158,15 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Set<NodeInterfacePair> _flowSinks;
 
+  private final Map<String, Map<String, String>> _incomingAcls;
+
   private final Map<String, Set<Ip>> _ipsByHostname;
+
+  private final Map<String, Map<String, String>> _outgoingAcls;
 
   private final boolean _simplify;
 
-  private final Map<String, Set<Interface>> _topologyInterfaces;
+  private final Map<String, Set<String>> _topologyInterfaces;
 
   private final Set<Type> _vectorizedParameters;
 
@@ -183,7 +189,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _disabledVrfs = ImmutableMap.copyOf(disabledVrfs);
     _enabledNodes = computeEnabledNodes();
     _enabledVrfs = computeEnabledVrfs();
+    _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
     _enabledInterfaces = computeEnabledInterfaces();
+    _incomingAcls = computeIncomingAcls();
+    _outgoingAcls = computeOutgoingAcls();
     _simplify = simplify;
     _vectorizedParameters = vectorizedParameters;
     if (dataPlane != null) {
@@ -270,26 +279,31 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           .collect(
               ImmutableMap.toImmutableMap(
                   Entry::getKey,
-                  e ->
-                      e.getValue()
-                          .stream()
-                          .flatMap(
-                              i -> {
-                                ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
-                                    ImmutableList.builder();
-                                IpAccessList aclIn = i.getIncomingFilter();
-                                IpAccessList aclOut = i.getOutgoingFilter();
-                                if (aclIn != null) {
-                                  interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
-                                }
-                                if (aclOut != null) {
-                                  interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
-                                }
-                                return interfaceAcls.build().stream();
-                              })
-                          .collect(ImmutableSet.toImmutableSet())
-                          .stream()
-                          .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond))));
+                  topologyInterfacesEntry -> {
+                    String hostname = topologyInterfacesEntry.getKey();
+                    Configuration c = _configurations.get(hostname);
+                    return topologyInterfacesEntry
+                        .getValue()
+                        .stream()
+                        .flatMap(
+                            ifaceName -> {
+                              Interface i = c.getInterfaces().get(ifaceName);
+                              ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
+                                  ImmutableList.builder();
+                              IpAccessList aclIn = i.getIncomingFilter();
+                              IpAccessList aclOut = i.getOutgoingFilter();
+                              if (aclIn != null) {
+                                interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
+                              }
+                              if (aclOut != null) {
+                                interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
+                              }
+                              return interfaceAcls.build().stream();
+                            })
+                        .collect(ImmutableSet.toImmutableSet())
+                        .stream()
+                        .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
+                  }));
     } else {
       return _configurations
           .entrySet()
@@ -316,12 +330,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         .stream()
         .filter(
             e -> {
-              Map<String, Interface> enabledInterfaces1 = _enabledInterfaces.get(e.getNode1());
-              Map<String, Interface> enabledInterfaces2 = _enabledInterfaces.get(e.getNode2());
+              Set<String> enabledInterfaces1 = _enabledInterfaces.get(e.getNode1());
+              Set<String> enabledInterfaces2 = _enabledInterfaces.get(e.getNode2());
               return enabledInterfaces1 != null
-                  && enabledInterfaces1.keySet().contains(e.getInt1())
+                  && enabledInterfaces1.contains(e.getInt1())
                   && enabledInterfaces2 != null
-                  && enabledInterfaces2.keySet().contains(e.getInt2());
+                  && enabledInterfaces2.contains(e.getInt2());
             })
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -331,59 +345,87 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         .stream()
         .filter(
             f -> {
-              Map<String, Interface> enabledInterfaces = _enabledInterfaces.get(f.getHostname());
-              return enabledInterfaces != null
-                  && enabledInterfaces.keySet().contains(f.getInterface());
+              Set<String> enabledInterfaces = _enabledInterfaces.get(f.getHostname());
+              return enabledInterfaces != null && enabledInterfaces.contains(f.getInterface());
             })
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  private Map<String, Map<String, Interface>> computeEnabledInterfaces() {
+  private Map<String, Set<String>> computeEnabledInterfaces() {
+    return _enabledInterfacesByNodeVrf
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                enabledInterfacesByNodeVrfEntry ->
+                    enabledInterfacesByNodeVrfEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .flatMap(
+                            enabledInterfacesByVrfEntry ->
+                                enabledInterfacesByVrfEntry.getValue().stream())
+                        .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  private Map<String, Map<String, Set<String>>> computeEnabledInterfacesByNodeVrf() {
     return _enabledVrfs
         .entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey,
-                e -> {
-                  Set<String> disabledInterfaces = _disabledInterfaces.get(e.getKey());
-                  return e.getValue()
-                      .entrySet()
+                enabledVrfsEntry -> {
+                  String hostname = enabledVrfsEntry.getKey();
+                  Set<String> disabledInterfaces = _disabledInterfaces.get(hostname);
+                  Configuration c = _configurations.get(hostname);
+                  return enabledVrfsEntry
+                      .getValue()
                       .stream()
-                      .flatMap(e2 -> e2.getValue().getInterfaces().entrySet().stream())
-                      .filter(
-                          e2 ->
-                              disabledInterfaces == null
-                                  || !disabledInterfaces.contains(e2.getKey()))
-                      .filter(e2 -> e2.getValue().getActive())
-                      .filter(e2 -> !e2.getValue().getBlacklisted())
-                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Function.identity(),
+                              vrfName ->
+                                  c.getVrfs()
+                                      .get(vrfName)
+                                      .getInterfaces()
+                                      .entrySet()
+                                      .stream()
+                                      .filter(
+                                          interfaceEntry ->
+                                              disabledInterfaces == null
+                                                  || !disabledInterfaces.contains(
+                                                      interfaceEntry.getKey()))
+                                      .filter(
+                                          interfaceEntry -> interfaceEntry.getValue().getActive())
+                                      .filter(
+                                          interfaceEntry ->
+                                              !interfaceEntry.getValue().getBlacklisted())
+                                      .map(Entry::getKey)
+                                      .collect(ImmutableSet.toImmutableSet())));
                 }));
   }
 
-  private Map<String, Configuration> computeEnabledNodes() {
-    return _configurations
-        .entrySet()
-        .stream()
-        .filter(e -> !_disabledNodes.contains(e.getKey()))
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  private Set<String> computeEnabledNodes() {
+    return ImmutableSet.copyOf(Sets.difference(_configurations.keySet(), _disabledNodes));
   }
 
-  private Map<String, Map<String, Vrf>> computeEnabledVrfs() {
+  private Map<String, Set<String>> computeEnabledVrfs() {
     return _enabledNodes
-        .entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                e -> {
-                  Set<String> disabledVrfs = _disabledVrfs.get(e.getKey());
-                  return e.getValue()
+                Function.identity(),
+                hostname -> {
+                  Set<String> disabledVrfs = _disabledVrfs.get(hostname);
+                  return _configurations
+                      .get(hostname)
                       .getVrfs()
-                      .entrySet()
+                      .keySet()
                       .stream()
-                      .filter(e2 -> disabledVrfs == null || !disabledVrfs.contains(e2.getKey()))
-                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                      .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
+                      .collect(ImmutableSet.toImmutableSet());
                 }));
   }
 
@@ -455,8 +497,48 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                     new OrExpr(conditionsByReceiverEntry.getValue().build())))));
   }
 
+  private Map<String, Map<String, String>> computeIncomingAcls() {
+    return _enabledInterfaces
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                enabledInterfacesEntry -> {
+                  Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+                  return enabledInterfacesEntry
+                      .getValue()
+                      .stream()
+                      .filter(
+                          ifaceName ->
+                              c.getInterfaces().get(ifaceName).getIncomingFilterName() != null)
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Function.identity(),
+                              ifaceName ->
+                                  c.getInterfaces().get(ifaceName).getIncomingFilterName()));
+                }));
+  }
+
   private Map<String, Set<Ip>> computeIpsByHostname() {
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(true, _enabledInterfaces);
+    Map<String, Map<String, Interface>> enabledInterfaces =
+        _enabledInterfaces
+            .entrySet()
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey,
+                    enabledInterfacesEntry -> {
+                      Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+                      return enabledInterfacesEntry
+                          .getValue()
+                          .stream()
+                          .collect(
+                              ImmutableMap.toImmutableMap(
+                                  Function.identity(),
+                                  ifaceName -> c.getInterfaces().get(ifaceName)));
+                    }));
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(true, enabledInterfaces);
     Map<String, Set<Ip>> map = new HashMap<>();
     ipOwners.forEach(
         (ip, owners) -> {
@@ -470,26 +552,45 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             ImmutableMap.toImmutableMap(Entry::getKey, e -> ImmutableSet.copyOf(e.getValue())));
   }
 
-  private Map<String, Set<Interface>> computeTopologyInterfaces() {
-    Map<String, Set<Interface>> topologyEdges = new HashMap<>();
+  private Map<String, Map<String, String>> computeOutgoingAcls() {
+    return _enabledInterfaces
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                enabledInterfacesEntry -> {
+                  Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+                  return enabledInterfacesEntry
+                      .getValue()
+                      .stream()
+                      .filter(
+                          ifaceName ->
+                              c.getInterfaces().get(ifaceName).getOutgoingFilterName() != null)
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Function.identity(),
+                              ifaceName ->
+                                  c.getInterfaces().get(ifaceName).getOutgoingFilterName()));
+                }));
+  }
+
+  private Map<String, Set<String>> computeTopologyInterfaces() {
+    Map<String, Set<String>> topologyEdges = new HashMap<>();
     _enabledEdges
         .stream()
         .forEach(
-            e ->
+            enabledEdge ->
                 topologyEdges
-                    .computeIfAbsent(e.getNode1(), n -> new HashSet<>())
-                    .add(_configurations.get(e.getNode1()).getInterfaces().get(e.getInt1())));
+                    .computeIfAbsent(enabledEdge.getNode1(), n -> new HashSet<>())
+                    .add(enabledEdge.getInt1()));
     _enabledFlowSinks
         .stream()
         .forEach(
-            f ->
+            enabledFlowSink ->
                 topologyEdges
-                    .computeIfAbsent(f.getHostname(), n -> new HashSet<>())
-                    .add(
-                        _configurations
-                            .get(f.getHostname())
-                            .getInterfaces()
-                            .get(f.getInterface())));
+                    .computeIfAbsent(enabledFlowSink.getHostname(), n -> new HashSet<>())
+                    .add(enabledFlowSink.getInterface()));
     return topologyEdges
         .entrySet()
         .stream()
@@ -507,51 +608,73 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
    * lineConditions is a boolean expression representing the constraints on a header necessary for
    * that line to be matched.
    */
+  @Override
   public Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions() {
     return _aclConditions;
   }
 
+  @Override
   public Set<Edge> getEnabledEdges() {
     return _enabledEdges;
   }
 
+  @Override
   public Set<NodeInterfacePair> getEnabledFlowSinks() {
     return _enabledFlowSinks;
   }
 
-  public Map<String, Map<String, Interface>> getEnabledInterfaces() {
+  @Override
+  public Map<String, Set<String>> getEnabledInterfaces() {
     return _enabledInterfaces;
   }
 
-  public Map<String, Configuration> getEnabledNodes() {
+  @Override
+  public Map<String, Map<String, Set<String>>> getEnabledInterfacesByNodeVrf() {
+    return _enabledInterfacesByNodeVrf;
+  }
+
+  @Override
+  public Set<String> getEnabledNodes() {
     return _enabledNodes;
   }
 
-  public Map<String, Map<String, Vrf>> getEnabledVrfs() {
+  @Override
+  public Map<String, Set<String>> getEnabledVrfs() {
     return _enabledVrfs;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
       getFibConditions() {
     return _fibConditions;
   }
 
-  public Map<String, Map<String, SortedSet<FibRow>>> getFibs() {
-    return _fibs;
+  @Override
+  public Map<String, Map<String, String>> getIncomingAcls() {
+    return _incomingAcls;
   }
 
+  @Override
   public Map<String, Set<Ip>> getIpsByHostname() {
     return _ipsByHostname;
   }
 
+  @Override
+  public Map<String, Map<String, String>> getOutgoingAcls() {
+    return _outgoingAcls;
+  }
+
+  @Override
   public boolean getSimplify() {
     return _simplify;
   }
 
-  public Map<String, Set<Interface>> getTopologyInterfaces() {
+  @Override
+  public Map<String, Set<String>> getTopologyInterfaces() {
     return _topologyInterfaces;
   }
 
+  @Override
   public Set<Type> getVectorizedParameters() {
     return _vectorizedParameters;
   }

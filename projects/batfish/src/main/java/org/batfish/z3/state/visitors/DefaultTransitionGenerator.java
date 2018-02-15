@@ -1,6 +1,5 @@
 package org.batfish.z3.state.visitors;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
@@ -83,7 +82,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
             new OrExpr(
                 _input
                     .getEnabledNodes()
-                    .keySet()
                     .stream()
                     .map(NodeAccept::new)
                     .collect(ImmutableList.toImmutableList())),
@@ -275,7 +273,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
             new OrExpr(
                 _input
                     .getEnabledNodes()
-                    .keySet()
                     .stream()
                     .map(NodeDrop::new)
                     .collect(ImmutableList.toImmutableList())),
@@ -311,7 +308,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
             new OrExpr(
                 _input
                     .getEnabledNodes()
-                    .keySet()
                     .stream()
                     .map(NodeDropAclIn::new)
                     .collect(ImmutableList.toImmutableList())),
@@ -326,7 +322,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
             new OrExpr(
                 _input
                     .getEnabledNodes()
-                    .keySet()
                     .stream()
                     .map(NodeDropAclOut::new)
                     .collect(ImmutableList.toImmutableList())),
@@ -341,7 +336,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
             new OrExpr(
                 _input
                     .getEnabledNodes()
-                    .keySet()
                     .stream()
                     .map(NodeDropNoRoute::new)
                     .collect(ImmutableList.toImmutableList())),
@@ -356,7 +350,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
             new OrExpr(
                 _input
                     .getEnabledNodes()
-                    .keySet()
                     .stream()
                     .map(NodeDropNullRoute::new)
                     .collect(ImmutableList.toImmutableList())),
@@ -368,22 +361,21 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // PostInForMe
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
         .map(
-            e ->
+            hostname ->
                 new RuleStatement(
                     new AndExpr(
                         ImmutableList.of(
-                            new PostIn(e.getKey()),
+                            new PostIn(hostname),
                             HeaderSpaceMatchExpr.matchDstIp(
                                 _input
                                     .getIpsByHostname()
-                                    .get(e.getKey())
+                                    .get(hostname)
                                     .stream()
                                     .map(IpWildcard::new)
                                     .collect(ImmutableSet.toImmutableSet())))),
-                    new NodeAccept(e.getKey())))
+                    new NodeAccept(hostname)))
         .forEach(_rules::add);
 
     // PostOutFlowSinkInterface
@@ -403,7 +395,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyNodeDropAcl
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(hostname -> new RuleStatement(new NodeDropAcl(hostname), new NodeDrop(hostname)))
         .forEach(_rules::add);
@@ -411,7 +402,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyNodeDropNoRoute
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(hostname -> new RuleStatement(new NodeDropNoRoute(hostname), new NodeDrop(hostname)))
         .forEach(_rules::add);
@@ -419,7 +409,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyNodeDropNullRoute
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(hostname -> new RuleStatement(new NodeDropNullRoute(hostname), new NodeDrop(hostname)))
         .forEach(_rules::add);
@@ -430,7 +419,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyNodeDropAclIn
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(hostname -> new RuleStatement(new NodeDropAclIn(hostname), new NodeDropAcl(hostname)))
         .forEach(_rules::add);
@@ -438,7 +426,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyNodeDropAclOut
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(hostname -> new RuleStatement(new NodeDropAclOut(hostname), new NodeDropAcl(hostname)))
         .forEach(_rules::add);
@@ -452,19 +439,21 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
-              return e.getValue()
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+              Map<String, String> incomingAcls = _input.getIncomingAcls().get(hostname);
+              return topologyInterfacesEntry
+                  .getValue()
                   .stream()
-                  .filter(i -> i.getIncomingFilterName() != null)
+                  .filter(ifaceName -> incomingAcls.get(ifaceName) != null)
                   .map(
-                      i -> {
-                        String inAcl = i.getIncomingFilterName();
+                      ifaceName -> {
+                        String inAcl = incomingAcls.get(ifaceName);
                         return new RuleStatement(
                             new AndExpr(
                                 ImmutableList.of(
                                     new AclDeny(hostname, inAcl),
-                                    new PreInInterface(hostname, i.getName()))),
+                                    new PreInInterface(hostname, ifaceName))),
                             new NodeDropAclIn(hostname));
                       });
             })
@@ -479,19 +468,21 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
-              return e.getValue()
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+              Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
+              return topologyInterfacesEntry
+                  .getValue()
                   .stream()
-                  .filter(i -> i.getOutgoingFilterName() != null)
+                  .filter(ifaceName -> outgoingAcls.get(ifaceName) != null)
                   .map(
-                      i -> {
-                        String outAcl = i.getOutgoingFilterName();
+                      ifaceName -> {
+                        String outAcl = outgoingAcls.get(ifaceName);
                         return new RuleStatement(
                             new AndExpr(
                                 ImmutableList.of(
                                     new AclDeny(hostname, outAcl),
-                                    new PreOutInterface(hostname, i.getName()))),
+                                    new PreOutInterface(hostname, ifaceName))),
                             new NodeDropAclOut(hostname));
                       });
             })
@@ -503,20 +494,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // DestinationRouting
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
-        .filter(e -> _input.getFibs().containsKey(e.getKey()))
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>> fibConditionsByVrf =
                   _input.getFibConditions().get(hostname);
               return _input
                   .getEnabledVrfs()
                   .get(hostname)
-                  .keySet()
                   .stream()
-                  .filter(Predicates.not(_input.getFibs().get(hostname)::containsKey))
                   .flatMap(
                       vrfName -> {
                         Map<String, Map<NodeInterfacePair, BooleanExpr>> fibConditionsByInterface =
@@ -545,20 +531,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // DestinationRouting
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
-        .filter(e -> _input.getFibs().containsKey(e.getKey()))
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>> fibConditionsByVrf =
                   _input.getFibConditions().get(hostname);
               return _input
                   .getEnabledVrfs()
                   .get(hostname)
-                  .keySet()
                   .stream()
-                  .filter(Predicates.not(_input.getFibs().get(hostname)::containsKey))
                   .flatMap(
                       vrfName -> {
                         Map<String, Map<NodeInterfacePair, BooleanExpr>> fibConditionsByInterface =
@@ -592,15 +573,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // ProjectPostOutInterface
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               return _input
                   .getEnabledInterfaces()
                   .get(hostname)
-                  .keySet()
                   .stream()
                   .map(
                       ifaceName ->
@@ -619,15 +597,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // ProjectOriginateVrf
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               return _input
                   .getEnabledVrfs()
                   .get(hostname)
-                  .keySet()
                   .stream()
                   .map(
                       vrfName ->
@@ -645,7 +620,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyOriginate
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(hostname -> new RuleStatement(new Originate(hostname), new PostIn(hostname)))
         .forEach(_rules::add);
@@ -653,15 +627,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // ProjectPostInInterface
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               return _input
                   .getEnabledInterfaces()
                   .get(hostname)
-                  .keySet()
                   .stream()
                   .map(
                       ifaceName ->
@@ -679,15 +650,17 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
-              return e.getValue()
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+              Map<String, String> incomingAcls = _input.getIncomingAcls().get(hostname);
+              return topologyInterfacesEntry
+                  .getValue()
                   .stream()
                   .map(
-                      i -> {
-                        String inAcl = i.getIncomingFilterName();
+                      ifaceName -> {
+                        String inAcl = incomingAcls.get(ifaceName);
                         BooleanExpr antecedent;
-                        BooleanExpr preIn = new PreInInterface(hostname, i.getName());
+                        BooleanExpr preIn = new PreInInterface(hostname, ifaceName);
                         if (inAcl != null) {
                           antecedent =
                               new AndExpr(ImmutableList.of(new AclPermit(hostname, inAcl), preIn));
@@ -695,7 +668,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                           antecedent = preIn;
                         }
                         return new RuleStatement(
-                            antecedent, new PostInInterface(hostname, i.getName()));
+                            antecedent, new PostInInterface(hostname, ifaceName));
                       });
             })
         .forEach(_rules::add);
@@ -706,15 +679,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // CopyOriginateVrf
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               return _input
                   .getEnabledVrfs()
                   .get(hostname)
-                  .keySet()
                   .stream()
                   .map(
                       vrf ->
@@ -726,21 +696,26 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // PostInInterfaceCorrespondingVrf
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               return _input
-                  .getEnabledInterfaces()
+                  .getEnabledInterfacesByNodeVrf()
                   .get(hostname)
                   .entrySet()
                   .stream()
-                  .map(
-                      ei ->
-                          new RuleStatement(
-                              new PostInInterface(hostname, ei.getKey()),
-                              new PostInVrf(hostname, ei.getValue().getVrfName())));
+                  .flatMap(
+                      enabledInterfacesByVrfEntry -> {
+                        String vrfName = enabledInterfacesByVrfEntry.getKey();
+                        return enabledInterfacesByVrfEntry
+                            .getValue()
+                            .stream()
+                            .map(
+                                ifaceName ->
+                                    new RuleStatement(
+                                        new PostInInterface(hostname, ifaceName),
+                                        new PostInVrf(hostname, vrfName)));
+                      });
             })
         .forEach(_rules::add);
   }
@@ -753,14 +728,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
-              return e.getValue()
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+              Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
+              return topologyInterfacesEntry
+                  .getValue()
                   .stream()
                   .map(
-                      i -> {
-                        String ifaceName = i.getName();
-                        String outAcl = i.getOutgoingFilterName();
+                      ifaceName -> {
+                        String outAcl = outgoingAcls.get(ifaceName);
                         BooleanExpr antecedent;
                         BooleanExpr preOut = new PreOutInterface(hostname, ifaceName);
                         if (outAcl != null) {
@@ -801,7 +777,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // PostInNotMine
     _input
         .getEnabledNodes()
-        .keySet()
         .stream()
         .map(
             hostname -> {
@@ -826,20 +801,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // DestinationRouting
     _input
         .getEnabledNodes()
-        .entrySet()
         .stream()
-        .filter(e -> _input.getFibs().containsKey(e.getKey()))
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
+            hostname -> {
               Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>> fibConditionsByVrf =
                   _input.getFibConditions().get(hostname);
               return _input
                   .getEnabledVrfs()
                   .get(hostname)
-                  .keySet()
                   .stream()
-                  .filter(_input.getFibs().get(hostname)::containsKey)
                   .flatMap(
                       vrfName -> {
                         Map<String, Map<NodeInterfacePair, BooleanExpr>> fibConditionsByInterface =
@@ -848,15 +818,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .entrySet()
                             .stream()
                             .filter(
-                                e2 -> {
-                                  String outInterface = e2.getKey();
+                                fibConditionsByInterfaceEntry -> {
+                                  String outInterface = fibConditionsByInterfaceEntry.getKey();
                                   return !isLoopbackInterface(outInterface)
                                       && !CommonUtil.isNullInterface(outInterface)
                                       && !outInterface.equals(FibRow.DROP_NO_ROUTE);
                                 })
                             .flatMap(
-                                e2 -> {
-                                  String outInterface = e2.getKey();
+                                fibConditionsByInterfaceEntry -> {
+                                  String outInterface = fibConditionsByInterfaceEntry.getKey();
                                   Map<NodeInterfacePair, BooleanExpr> fibConditionsByReceiver =
                                       fibConditionsByInterface.get(outInterface);
                                   return fibConditionsByReceiver

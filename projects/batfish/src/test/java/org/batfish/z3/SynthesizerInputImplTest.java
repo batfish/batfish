@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -300,24 +299,24 @@ public class SynthesizerInputImplTest {
 
     assertThat(
         input,
-        hasEnabledInterfaces(
-            hasEntry(equalTo(cEnabled.getName()), hasEntry(iEnabled.getName(), iEnabled))));
+        hasEnabledInterfaces(hasEntry(equalTo(cEnabled.getName()), hasItem(iEnabled.getName()))));
     assertThat(
         input,
         hasEnabledInterfaces(
-            hasEntry(equalTo(cEnabled.getName()), not(hasKey(iDisabledViaInactive.getName())))));
+            hasEntry(equalTo(cEnabled.getName()), not(hasItem(iDisabledViaInactive.getName())))));
     assertThat(
         input,
         hasEnabledInterfaces(
-            hasEntry(equalTo(cEnabled.getName()), not(hasKey(iDisabledViaBlacklisted.getName())))));
+            hasEntry(
+                equalTo(cEnabled.getName()), not(hasItem(iDisabledViaBlacklisted.getName())))));
     assertThat(
         input,
         hasEnabledInterfaces(
-            hasEntry(equalTo(cEnabled.getName()), not(hasKey(iDisabledViaInterface.getName())))));
+            hasEntry(equalTo(cEnabled.getName()), not(hasItem(iDisabledViaInterface.getName())))));
     assertThat(
         input,
         hasEnabledInterfaces(
-            hasEntry(equalTo(cEnabled.getName()), not(hasKey(iDisabledViaVrf.getName())))));
+            hasEntry(equalTo(cEnabled.getName()), not(hasItem(iDisabledViaVrf.getName())))));
     assertThat(input, hasEnabledInterfaces(not(hasKey(cDisabled.getName()))));
   }
 
@@ -332,8 +331,8 @@ public class SynthesizerInputImplTest {
             .setDisabledNodes(ImmutableSet.of(cDisabled.getName()))
             .build();
 
-    assertThat(input, hasEnabledNodes(hasEntry(cEnabled.getName(), cEnabled)));
-    assertThat(input, hasEnabledNodes(not(hasKey(cDisabled.getName()))));
+    assertThat(input, hasEnabledNodes(hasItem(cEnabled.getName())));
+    assertThat(input, hasEnabledNodes(not(hasItem(cDisabled.getName()))));
   }
 
   @Test
@@ -354,13 +353,11 @@ public class SynthesizerInputImplTest {
             .build();
 
     assertThat(
-        input,
-        hasEnabledVrfs(
-            hasEntry(equalTo(cEnabled.getName()), hasEntry(vEnabled.getName(), vEnabled))));
+        input, hasEnabledVrfs(hasEntry(equalTo(cEnabled.getName()), hasItem(vEnabled.getName()))));
     assertThat(
         input,
         hasEnabledVrfs(
-            hasEntry(equalTo(cEnabled.getName()), not(hasKey(vDisabledViaVrf.getName())))));
+            hasEntry(equalTo(cEnabled.getName()), not(hasItem(vDisabledViaVrf.getName())))));
     assertThat(input, hasEnabledVrfs(not(hasKey(cDisabled.getName()))));
   }
 
@@ -515,15 +512,15 @@ public class SynthesizerInputImplTest {
     assertThat(
         inputWithDataPlane,
         hasTopologyInterfaces(
-            hasEntry(equalTo(srcNode.getName()), hasItem(sameInstance(srcInterface)))));
+            hasEntry(equalTo(srcNode.getName()), hasItem(srcInterface.getName()))));
     assertThat(
         inputWithDataPlane,
         hasTopologyInterfaces(
-            hasEntry(equalTo(srcNode.getName()), not(hasItem(sameInstance(iNoEdge))))));
+            hasEntry(equalTo(srcNode.getName()), not(hasItem(iNoEdge.getName())))));
     assertThat(
         inputWithDataPlane,
         hasTopologyInterfaces(
-            hasEntry(equalTo(nextHop.getName()), hasItem(sameInstance(nextHopInterface)))));
+            hasEntry(equalTo(nextHop.getName()), hasItem(nextHopInterface.getName()))));
     assertThat(inputWithoutDataPlane, hasTopologyInterfaces(nullValue()));
   }
 }

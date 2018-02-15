@@ -3,12 +3,9 @@ package org.batfish.z3.matchers;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BooleanExpr;
@@ -19,7 +16,8 @@ public class SynthesizerInputMatchersImpl {
 
   static final class HasAclActions
       extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Map<Integer, LineAction>>>> {
-    HasAclActions(@Nonnull Matcher<? super Map<String, Map<String, Map<Integer, LineAction>>>> subMatcher) {
+    HasAclActions(
+        @Nonnull Matcher<? super Map<String, Map<String, Map<Integer, LineAction>>>> subMatcher) {
       super(subMatcher, "SynthesizerInput with ACL actions", "ACL actions");
     }
 
@@ -69,37 +67,36 @@ public class SynthesizerInputMatchersImpl {
   }
 
   static final class HasEnabledInterfaces
-      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Interface>>> {
-    HasEnabledInterfaces(@Nonnull Matcher<? super Map<String, Map<String, Interface>>> subMatcher) {
+      extends FeatureMatcher<SynthesizerInput, Map<String, Set<String>>> {
+    HasEnabledInterfaces(@Nonnull Matcher<? super Map<String, Set<String>>> subMatcher) {
       super(subMatcher, "SynthesizerInput with enabled interfaces", "enabled interfaces");
     }
 
     @Override
-    protected Map<String, Map<String, Interface>> featureValueOf(SynthesizerInput actual) {
+    protected Map<String, Set<String>> featureValueOf(SynthesizerInput actual) {
       return actual.getEnabledInterfaces();
     }
   }
 
-  static final class HasEnabledNodes
-      extends FeatureMatcher<SynthesizerInput, Map<String, Configuration>> {
-    HasEnabledNodes(@Nonnull Matcher<? super Map<String, Configuration>> subMatcher) {
+  static final class HasEnabledNodes extends FeatureMatcher<SynthesizerInput, Set<String>> {
+    HasEnabledNodes(@Nonnull Matcher<? super Set<String>> subMatcher) {
       super(subMatcher, "SynthesizerInput with enabled nodes", "enabled nodes");
     }
 
     @Override
-    protected Map<String, Configuration> featureValueOf(SynthesizerInput actual) {
+    protected Set<String> featureValueOf(SynthesizerInput actual) {
       return actual.getEnabledNodes();
     }
   }
 
   static final class HasEnabledVrfs
-      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Vrf>>> {
-    HasEnabledVrfs(@Nonnull Matcher<? super Map<String, Map<String, Vrf>>> subMatcher) {
+      extends FeatureMatcher<SynthesizerInput, Map<String, Set<String>>> {
+    HasEnabledVrfs(@Nonnull Matcher<? super Map<String, Set<String>>> subMatcher) {
       super(subMatcher, "SynthesizerInput with enabled VRFs", "enabled VRFs");
     }
 
     @Override
-    protected Map<String, Map<String, Vrf>> featureValueOf(SynthesizerInput actual) {
+    protected Map<String, Set<String>> featureValueOf(SynthesizerInput actual) {
       return actual.getEnabledVrfs();
     }
   }
@@ -137,13 +134,13 @@ public class SynthesizerInputMatchersImpl {
   }
 
   static final class HasTopologyInterfaces
-      extends FeatureMatcher<SynthesizerInput, Map<String, Set<Interface>>> {
-    HasTopologyInterfaces(@Nonnull Matcher<? super Map<String, Set<Interface>>> subMatcher) {
+      extends FeatureMatcher<SynthesizerInput, Map<String, Set<String>>> {
+    HasTopologyInterfaces(@Nonnull Matcher<? super Map<String, Set<String>>> subMatcher) {
       super(subMatcher, "SynthesizerInput with topology interfaces", "topology interfaces");
     }
 
     @Override
-    protected Map<String, Set<Interface>> featureValueOf(SynthesizerInput actual) {
+    protected Map<String, Set<String>> featureValueOf(SynthesizerInput actual) {
       return actual.getTopologyInterfaces();
     }
   }

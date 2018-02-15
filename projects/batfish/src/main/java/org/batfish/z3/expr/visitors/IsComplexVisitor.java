@@ -41,11 +41,6 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitListExpr(ListExpr listExpr) {
-    _isComplex = false;
-  }
-
-  @Override
   public void visitEqExpr(EqExpr eqExpr) {
     _isComplex = true;
   }
@@ -73,6 +68,11 @@ public class IsComplexVisitor implements ExprVisitor {
   @Override
   public void visitIfExpr(IfExpr ifExpr) {
     _isComplex = true;
+  }
+
+  @Override
+  public void visitListExpr(ListExpr listExpr) {
+    _isComplex = false;
   }
 
   @Override

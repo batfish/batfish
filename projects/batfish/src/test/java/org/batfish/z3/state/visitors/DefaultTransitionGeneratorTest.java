@@ -4,13 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.expr.OrExpr;
@@ -34,24 +30,17 @@ import org.junit.Test;
 
 public class DefaultTransitionGeneratorTest {
 
-  private Configuration.Builder _cb;
+  private static String NODE1 = "node1";
 
-  private NetworkFactory _nf;
+  private static String NODE2 = "node2";
 
   @Before
-  public void setup() {
-    _nf = new NetworkFactory();
-    _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-  }
+  public void setup() {}
 
   @Test
   public void testVisitAccept() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -62,9 +51,7 @@ public class DefaultTransitionGeneratorTest {
         equalTo(
             ImmutableSet.of(
                 new RuleStatement(
-                    new OrExpr(
-                        ImmutableList.of(
-                            new NodeAccept(c1.getName()), new NodeAccept(c2.getName()))),
+                    new OrExpr(ImmutableList.of(new NodeAccept(NODE1), new NodeAccept(NODE2))),
                     Accept.INSTANCE))));
   }
 
@@ -86,12 +73,8 @@ public class DefaultTransitionGeneratorTest {
 
   @Test
   public void testVisitDrop() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -102,8 +85,7 @@ public class DefaultTransitionGeneratorTest {
         equalTo(
             ImmutableSet.of(
                 new RuleStatement(
-                    new OrExpr(
-                        ImmutableList.of(new NodeDrop(c1.getName()), new NodeDrop(c2.getName()))),
+                    new OrExpr(ImmutableList.of(new NodeDrop(NODE1), new NodeDrop(NODE2))),
                     Drop.INSTANCE))));
   }
 
@@ -126,12 +108,8 @@ public class DefaultTransitionGeneratorTest {
 
   @Test
   public void testVisitDropAclIn() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -143,19 +121,14 @@ public class DefaultTransitionGeneratorTest {
             ImmutableSet.of(
                 new RuleStatement(
                     new OrExpr(
-                        ImmutableList.of(
-                            new NodeDropAclIn(c1.getName()), new NodeDropAclIn(c2.getName()))),
+                        ImmutableList.of(new NodeDropAclIn(NODE1), new NodeDropAclIn(NODE2))),
                     DropAclIn.INSTANCE))));
   }
 
   @Test
   public void testVisitDropAclOut() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -167,19 +140,14 @@ public class DefaultTransitionGeneratorTest {
             ImmutableSet.of(
                 new RuleStatement(
                     new OrExpr(
-                        ImmutableList.of(
-                            new NodeDropAclOut(c1.getName()), new NodeDropAclOut(c2.getName()))),
+                        ImmutableList.of(new NodeDropAclOut(NODE1), new NodeDropAclOut(NODE2))),
                     DropAclOut.INSTANCE))));
   }
 
   @Test
   public void testVisitDropNoRoute() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -191,19 +159,14 @@ public class DefaultTransitionGeneratorTest {
             ImmutableSet.of(
                 new RuleStatement(
                     new OrExpr(
-                        ImmutableList.of(
-                            new NodeDropNoRoute(c1.getName()), new NodeDropNoRoute(c2.getName()))),
+                        ImmutableList.of(new NodeDropNoRoute(NODE1), new NodeDropNoRoute(NODE2))),
                     DropNoRoute.INSTANCE))));
   }
 
   @Test
   public void testVisitDropNullRoute() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -216,19 +179,14 @@ public class DefaultTransitionGeneratorTest {
                 new RuleStatement(
                     new OrExpr(
                         ImmutableList.of(
-                            new NodeDropNullRoute(c1.getName()),
-                            new NodeDropNullRoute(c2.getName()))),
+                            new NodeDropNullRoute(NODE1), new NodeDropNullRoute(NODE2))),
                     DropNullRoute.INSTANCE))));
   }
 
   @Test
   public void testVisitNodeDropAcl() {
-    Configuration c1 = _cb.build();
-    Configuration c2 = _cb.build();
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableMap.of(c1.getName(), c1, c2.getName(), c2))
-            .build();
+        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -236,13 +194,13 @@ public class DefaultTransitionGeneratorTest {
 
     Set<RuleStatement> expectedCopyNodeDropAclIn =
         ImmutableSet.of(
-            new RuleStatement(new NodeDropAclIn(c1.getName()), new NodeDropAcl(c1.getName())),
-            new RuleStatement(new NodeDropAclIn(c2.getName()), new NodeDropAcl(c2.getName())));
+            new RuleStatement(new NodeDropAclIn(NODE1), new NodeDropAcl(NODE1)),
+            new RuleStatement(new NodeDropAclIn(NODE2), new NodeDropAcl(NODE2)));
 
     Set<RuleStatement> expectedCopyNodeDropAclOut =
         ImmutableSet.of(
-            new RuleStatement(new NodeDropAclOut(c1.getName()), new NodeDropAcl(c1.getName())),
-            new RuleStatement(new NodeDropAclOut(c2.getName()), new NodeDropAcl(c2.getName())));
+            new RuleStatement(new NodeDropAclOut(NODE1), new NodeDropAcl(NODE1)),
+            new RuleStatement(new NodeDropAclOut(NODE2), new NodeDropAcl(NODE2)));
 
     assertThat(rules, equalTo(Sets.union(expectedCopyNodeDropAclIn, expectedCopyNodeDropAclOut)));
   }

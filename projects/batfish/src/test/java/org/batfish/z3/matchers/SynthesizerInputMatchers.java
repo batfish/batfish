@@ -2,12 +2,9 @@ package org.batfish.z3.matchers;
 
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
@@ -64,7 +61,7 @@ public class SynthesizerInputMatchers {
    * SynthesizerInput's enabled interfaces.
    */
   public static HasEnabledInterfaces hasEnabledInterfaces(
-      Matcher<? super Map<String, Map<String, Interface>>> subMatcher) {
+      Matcher<? super Map<String, Set<String>>> subMatcher) {
     return new HasEnabledInterfaces(subMatcher);
   }
 
@@ -72,8 +69,7 @@ public class SynthesizerInputMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
    * SynthesizerInput's enabled nodes.
    */
-  public static HasEnabledNodes hasEnabledNodes(
-      Matcher<? super Map<String, Configuration>> subMatcher) {
+  public static HasEnabledNodes hasEnabledNodes(Matcher<? super Set<String>> subMatcher) {
     return new HasEnabledNodes(subMatcher);
   }
 
@@ -82,7 +78,7 @@ public class SynthesizerInputMatchers {
    * SynthesizerInput's enabled VRFs.
    */
   public static HasEnabledVrfs hasEnabledVrfs(
-      Matcher<? super Map<String, Map<String, Vrf>>> subMatcher) {
+      Matcher<? super Map<String, Set<String>>> subMatcher) {
     return new HasEnabledVrfs(subMatcher);
   }
 
@@ -110,7 +106,7 @@ public class SynthesizerInputMatchers {
    * SynthesizerInput's topology interfaces.
    */
   public static HasTopologyInterfaces hasTopologyInterfaces(
-      Matcher<? super Map<String, Set<Interface>>> subMatcher) {
+      Matcher<? super Map<String, Set<String>>> subMatcher) {
     return new HasTopologyInterfaces(subMatcher);
   }
 
