@@ -1,12 +1,17 @@
 package org.batfish.geometry;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TcpFlags;
+import org.batfish.symbolic.bdd.BDDPacket;
 
 /*
  * High-dimensional hyperrectangle.
@@ -15,20 +20,25 @@ import javax.annotation.Nullable;
  */
 public class EquivalenceClass implements Comparable<EquivalenceClass> {
 
-  private long[] _bounds;
+  private BDD _bdd;
 
   private int _alphaIndex;
 
-  private int _hashcode;
+  public static EquivalenceClass one() {
+    return new EquivalenceClass(BDDPacket.factory.one());
+  }
 
-  EquivalenceClass(long[] bounds) {
-    this._bounds = bounds;
+  public static EquivalenceClass zero() {
+    return new EquivalenceClass(BDDPacket.factory.zero());
+  }
+
+  EquivalenceClass(BDD bdd) {
+    this._bdd = bdd;
     this._alphaIndex = -1;
   }
 
-  EquivalenceClass(EquivalenceClass other) {
-    this._bounds = other._bounds.clone();
-    this._alphaIndex = other._alphaIndex;
+  public BDD getBdd() {
+    return _bdd;
   }
 
   int getAlphaIndex() {
@@ -39,111 +49,31 @@ public class EquivalenceClass implements Comparable<EquivalenceClass> {
     this._alphaIndex = alphaIndex;
   }
 
-  long[] getBounds() {
-    return _bounds;
+  EquivalenceClass and(EquivalenceClass other) {
+    BDD bdd = _bdd.and(other._bdd);
+    return new EquivalenceClass(bdd);
   }
 
-  void setBounds(long[] bounds) {
-    this._bounds = bounds;
+  EquivalenceClass or(EquivalenceClass other) {
+    BDD bdd = _bdd.or(other._bdd);
+    return new EquivalenceClass(bdd);
   }
 
-  @Nullable EquivalenceClass overlap(EquivalenceClass other) {
-    long[] bounds = new long[_bounds.length];
-    for (int i = 0; i < _bounds.length; i += 2) {
-      long x1 = _bounds[i];
-      long x2 = _bounds[i + 1];
-      long ox1 = other._bounds[i];
-      long ox2 = other._bounds[i + 1];
-      if (ox2 <= x1 || ox1 >= x2) {
-        return null;
-      }
-      bounds[i] = Math.max(x1, ox1);
-      bounds[i + 1] = Math.min(x2, ox2);
-    }
-    return new EquivalenceClass(bounds);
+
+  EquivalenceClass not() {
+    return new EquivalenceClass(_bdd.not());
   }
 
-  private void divideRec(
-      EquivalenceClass other, int i, long[] boundsSoFar, Collection<EquivalenceClass> added) {
-
-    if (i >= boundsSoFar.length) {
-      EquivalenceClass r = new EquivalenceClass(boundsSoFar.clone());
-      added.add(r);
-      return;
-    }
-
-    long x1 = _bounds[i];
-    long x2 = _bounds[i + 1];
-    long ox1 = other._bounds[i];
-    long ox2 = other._bounds[i + 1];
-
-    if (x1 != ox1) {
-      boundsSoFar[i] = x1;
-      boundsSoFar[i + 1] = ox1;
-      divideRec(other, i + 2, boundsSoFar, added);
-    }
-
-    boundsSoFar[i] = ox1;
-    boundsSoFar[i + 1] = ox2;
-    divideRec(other, i + 2, boundsSoFar, added);
-
-    if (x2 != ox2) {
-      boundsSoFar[i] = ox2;
-      boundsSoFar[i + 1] = x2;
-      divideRec(other, i + 2, boundsSoFar, added);
-    }
+  boolean isZero() {
+    return _bdd.isZero();
   }
 
-  /*
-   * Assume that they already overlap
-   * That is, the other can not go outside this shape's bounds
-   */
-  @Nullable
-  Collection<EquivalenceClass> subtract(EquivalenceClass other) {
-    // in each dimension we would do this:
-    if (this.equals(other)) {
-      return null;
-    }
-    List<EquivalenceClass> newRects = new ArrayList<>();
-    long[] boundsSoFar = new long[_bounds.length];
-    divideRec(other, 0, boundsSoFar, newRects);
-    return newRects;
+  boolean isOne() {
+    return _bdd.isOne();
   }
 
-  boolean isSubsumedBy(EquivalenceClass other) {
-    for (int i = 0; i < _bounds.length; i += 2) {
-      long x1 = _bounds[i];
-      long x2 = _bounds[i + 1];
-      long ox1 = other._bounds[i];
-      long ox2 = other._bounds[i + 1];
-      boolean subsumed = (ox1 <= x1 && ox2 >= x2);
-      if (!subsumed) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  BigInteger volume() {
-    BigInteger acc = BigInteger.valueOf(_bounds[1] - _bounds[0]);
-    for (int i = 2; i < _bounds.length; i += 2) {
-      BigInteger x = BigInteger.valueOf(_bounds[i + 1] - _bounds[i]);
-      acc = acc.multiply(x);
-    }
-    return acc;
-  }
-
-  @Override
-  public String toString() {
-    String s = "HyperRectangle(";
-    for (int i = 0; i < _bounds.length; i++) {
-      s += _bounds[i];
-      if (i != _bounds.length - 1) {
-        s += ",";
-      }
-    }
-    s += " with " + _alphaIndex + ")";
-    return s;
+  @Override public String toString() {
+    return "EquivalenceClass{" + "_bdd=" + _bdd + '}';
   }
 
   @Override
@@ -155,28 +85,54 @@ public class EquivalenceClass implements Comparable<EquivalenceClass> {
       return false;
     }
     EquivalenceClass that = (EquivalenceClass) o;
-    return Arrays.equals(_bounds, that._bounds);
+    return _bdd.hashCode() == that._bdd.hashCode();
   }
 
   @Override
   public int hashCode() {
-    if (_hashcode == 0) {
-      _hashcode = Arrays.hashCode(_bounds);
-    }
-    return _hashcode;
+    return _bdd.hashCode();
   }
 
-  @Override
-  public int compareTo(@Nonnull EquivalenceClass that) {
-    for (int i = 0; i < _bounds.length; i++) {
-      long cmp = _bounds[i] - that._bounds[i];
-      if (cmp < 0) {
-        return -1;
-      }
-      if (cmp > 0) {
-        return 1;
-      }
+  @Override public int compareTo(@Nonnull EquivalenceClass that) {
+    int x = this._bdd.hashCode();
+    int y = that._bdd.hashCode();
+    if (x < y) {
+      return -1;
+    } else if (x > y) {
+      return 1;
     }
     return 0;
+  }
+
+  public HeaderSpace example(BDDPacket packet) {
+    HeaderSpace space = new HeaderSpace();
+    EquivalenceClass acc = EquivalenceClass.one();
+
+    // this.getBdd().satOne().printSet();
+
+    SortedSet<IpWildcard> dstIps = new TreeSet<>();
+    SortedSet<IpWildcard> srcIps = new TreeSet<>();
+    List<SubRange> dstPorts = new ArrayList<>();
+    List<SubRange> srcPorts = new ArrayList<>();
+    List<SubRange> icmpTypes = new ArrayList<>();
+    List<SubRange> icmpCodes = new ArrayList<>();
+    List<IpProtocol> ipProtos = new ArrayList<>();
+    List<TcpFlags> tcpFlags = new ArrayList<>();
+
+    TcpFlags flags = new TcpFlags();
+    tcpFlags.add(flags);
+    space.setDstIps(dstIps);
+    space.setSrcIps(srcIps);
+    space.setDstPorts(dstPorts);
+    space.setSrcPorts(srcPorts);
+    space.setIcmpTypes(icmpTypes);
+    space.setIcmpCodes(icmpCodes);
+    space.setIpProtocols(ipProtos);
+    space.setTcpFlags(tcpFlags);
+    return space;
+  }
+
+  public static EquivalenceClass fromHeaderSpace(HeaderSpace h, BDDPacket packet) {
+    return EquivalenceClass.one();
   }
 }

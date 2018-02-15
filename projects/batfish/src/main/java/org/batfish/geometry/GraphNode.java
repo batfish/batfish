@@ -48,6 +48,6 @@ public class GraphNode {
 
   @Override
   public String toString() {
-    return "GraphNode{" + "_name='" + _name + '\'' + '}';
+    return "GraphNode{" + _name + '\'' + '}';
   }
 }

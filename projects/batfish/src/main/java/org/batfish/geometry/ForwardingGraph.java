@@ -1,26 +1,23 @@
 package org.batfish.geometry;
 
 import com.google.common.base.Objects;
-import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.Configuration;
@@ -37,8 +34,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -46,6 +41,8 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.main.Batfish;
+import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.utils.Tuple;
 
 /*
@@ -83,8 +80,8 @@ public class ForwardingGraph {
   private static int DROP_NULL_ROUTE_FLAG = 5;
   private static int DROP_NO_ROUTE_FLAG = 6;
 
-  // Factory for creating shapes
-  private GeometricSpaceFactory _factory;
+  // BDD packet
+  private BDDPacket _bddPkt;
 
   // Equivalence classes indexed from 0
   private ArrayList<EquivalenceClass> _ecs;
@@ -117,7 +114,7 @@ public class ForwardingGraph {
   private ArrayList<Set<Integer>> _dag;
 
   // Store the current volume for each EC when using DoC
-  private ArrayList<BigInteger> _volumes;
+  private ArrayList<EquivalenceClass> _remaining;
 
   // Reference to the Batfish object so we can access the ACLs in the configs
   private Batfish _batfish;
@@ -136,24 +133,20 @@ public class ForwardingGraph {
     long t = System.currentTimeMillis();
     _batfish = batfish;
     _dataPlane = dp;
+    _bddPkt = new BDDPacket();
 
     initGraph(batfish, dp);
 
-    // only model fields that are used in the configs
-    EnumSet<PacketField> fields;
-    fields = findRelevantPacketFields(batfish);
-
-    _factory = new GeometricSpaceFactory(fields);
     _ecs = new ArrayList<>();
     _ownerMap = new ArrayList<>();
 
-    EquivalenceClass fullRange = _factory.fullSpace();
-    fullRange.setAlphaIndex(0);
-    _ecs.add(fullRange);
+    EquivalenceClass one = EquivalenceClass.one();
+    one.setAlphaIndex(0);
+    _ecs.add(one);
     _dag = new ArrayList<>();
     _dag.add(new HashSet<>());
-    _volumes = new ArrayList<>();
-    _volumes.add(fullRange.volume());
+    _remaining = new ArrayList<>();
+    _remaining.add(one);
     _ownerMap.add(new HashMap<>());
 
     // initialize the labels
@@ -181,27 +174,19 @@ public class ForwardingGraph {
       List<GraphLink> links = _adjacencyLists.get(aclNode.getIndex());
       GraphLink drop = links.get(0);
       GraphLink accept = links.get(1);
-      List<IpAccessListLine> lines = aclNode.getAcl().getLines();
-      int i = lines.size();
-      for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
-        Rule r = createAclRule(aclLine, drop, accept, i);
-        aclRules.add(r);
-        i--;
-      }
+      // Accept condition
+      Rule r1 = createAclRule(aclNode.getAcl(), drop, accept, 1);
+      aclRules.add(r1);
+      // TODO: revisit if this is necessary
       // default drop rule
-      Rule r = createAclRule(null, drop, accept, 0);
-      rules.add(r);
+      Rule r2 = createAclRule(null, drop, accept, 0);
+      rules.add(r2);
     }
 
 
     // Sort the rules to ensure a deterministic order since they were stored in a hashmap
-    rules.sort(Comparator.comparing(Rule::getRectangle));
-    // Deterministically shuffle the input to get a better balanced KD tree
-    Random rand = new Random(7);
-    Collections.shuffle(rules, rand);
-    // Adding acl rules first gives a better splitting of the KD tree
-    aclRules.addAll(rules);
-    rules = aclRules;
+    rules.addAll(aclRules);
+    rules.sort(Comparator.comparingInt(Rule::getPriority));
 
     for (Rule rule : rules) {
       addRuleDoc(rule);
@@ -213,59 +198,6 @@ public class ForwardingGraph {
 
     // System.out.println("Time for function: " + _time);
     // showStatus();
-  }
-
-  /*
-   * Finds what packet fields are actually matched somewhere in the configurations
-   */
-  private EnumSet<PacketField> findRelevantPacketFields(Batfish batfish) {
-    EnumSet<PacketField> fields = EnumSet.noneOf(PacketField.class);
-    fields.add(PacketField.DSTIP);
-    Map<String, Configuration> configs = batfish.loadConfigurations();
-    for (Configuration config : configs.values()) {
-      for (Interface iface : config.getInterfaces().values()) {
-        if (iface.getOutgoingFilter() != null) {
-          addFields(iface.getOutgoingFilter(), fields);
-        }
-        if (iface.getIncomingFilter() != null) {
-          addFields(iface.getIncomingFilter(), fields);
-        }
-      }
-    }
-    return fields;
-  }
-
-  private void addFields(IpAccessList acl, EnumSet<PacketField> fields) {
-    for (IpAccessListLine aclLine : acl.getLines()) {
-      if (!aclLine.getSrcIps().isEmpty()) {
-        fields.add(PacketField.SRCIP);
-      }
-      if (!aclLine.getDstPorts().isEmpty()) {
-        fields.add(PacketField.DSTPORT);
-      }
-      if (!aclLine.getSrcPorts().isEmpty()) {
-        fields.add(PacketField.SRCPORT);
-      }
-      if (!aclLine.getIpProtocols().isEmpty()) {
-        fields.add(PacketField.IPPROTO);
-      }
-      if (!aclLine.getIcmpTypes().isEmpty()) {
-        fields.add(PacketField.ICMPTYPE);
-      }
-      if (!aclLine.getIcmpCodes().isEmpty()) {
-        fields.add(PacketField.ICMPCODE);
-      }
-      if (!aclLine.getTcpFlags().isEmpty()) {
-        fields.add(PacketField.TCPACK);
-        fields.add(PacketField.TCPCWR);
-        fields.add(PacketField.TCPECE);
-        fields.add(PacketField.TCPFIN);
-        fields.add(PacketField.TCPPSH);
-        fields.add(PacketField.TCPRST);
-        fields.add(PacketField.TCPSYN);
-        fields.add(PacketField.TCPURG);
-      }
-    }
   }
 
   /*
@@ -476,12 +408,28 @@ public class ForwardingGraph {
     NodeInterfacePair nip = new NodeInterfacePair(router, fib.getInterface());
     GraphLink link = _linkMap.get(nip);
     Prefix p = fib.getPrefix();
-    long start = p.getStartIp().asLong();
-    long end = p.getEndIp().asLong() + 1;
-    EquivalenceClass hr = _factory.fullSpace();
-    hr.getBounds()[0] = start;
-    hr.getBounds()[1] = end;
-    return new Rule(link, hr, fib.getPrefix().getPrefixLength());
+    BDD bdd = destinationIpInPrefix(p);
+    EquivalenceClass ec = new EquivalenceClass(bdd);
+    return new Rule(link, ec, fib.getPrefix().getPrefixLength());
+  }
+
+  /*
+   * Does the 32 bit integer match the prefix using lpm?
+   * Here the 32 bits are all symbolic variables
+   */
+  private BDD destinationIpInPrefix(Prefix p) {
+    BDD[] bits = _bddPkt.getDstIp().getBitvec();
+    BitSet b = p.getStartIp().getAddressBits();
+    BDD acc = BDDPacket.factory.one();
+    for (int i1 = 0; i1 < p.getPrefixLength(); i1++) {
+      boolean res = b.get(i1);
+      if (res) {
+        acc = acc.and(bits[i1]);
+      } else {
+        acc = acc.and(bits[i1].not());
+      }
+    }
+    return acc;
   }
 
   /*
@@ -489,14 +437,14 @@ public class ForwardingGraph {
    * node or to the neighbor. The priority the inverse of the line number
    */
   private Rule createAclRule(
-      @Nullable IpAccessListLine aclLine, GraphLink drop, GraphLink accept, int priority) {
-    if (aclLine == null) {
-      EquivalenceClass rect = _factory.fullSpace();
+      @Nullable IpAccessList acl, GraphLink drop, GraphLink accept, int priority) {
+    if (acl == null) {
+      EquivalenceClass rect = EquivalenceClass.one();
       return new Rule(drop, rect, priority);
     } else {
-      GeometricSpace space = _factory.fromAcl(aclLine);
-      GraphLink link = (aclLine.getAction() == LineAction.ACCEPT ? accept : drop);
-      return new Rule(link, space.rectangles().get(0), priority);
+      BDDAcl bddAcl = BDDAcl.create(null, acl, false);
+      EquivalenceClass ec = new EquivalenceClass(bddAcl.getBdd());
+      return new Rule(accept, ec, priority);
     }
   }
 
@@ -523,30 +471,28 @@ public class ForwardingGraph {
    * the difference of cubes representation.
    */
   private void addRuleDoc(Rule r) {
-    EquivalenceClass hr = r.getRectangle();
+    EquivalenceClass hr = r.getEquivalenceClass();
     List<EquivalenceClass> overlapping = new ArrayList<>();
     List<Delta> delta = new ArrayList<>();
-    Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
+    Map<Integer, Integer> cache = new HashMap<>();
     EquivalenceClass root = _ecs.get(0);
     addRuleDocRec(hr, root, cache, overlapping, delta);
     updateRules(r, overlapping, delta);
   }
 
-  private Tuple<BigInteger, Integer> addRuleDocRec(
+  @Nullable private Integer addRuleDocRec(
       EquivalenceClass added,
       EquivalenceClass other,
-      Map<Integer, Tuple<BigInteger, Integer>> cache,
+      Map<Integer, Integer> cache,
       List<EquivalenceClass> overlapping,
       List<Delta> delta) {
 
-    Tuple<BigInteger, Integer> cachedValue = cache.get(other.getAlphaIndex());
+    Integer cachedValue = cache.get(other.getAlphaIndex());
     if (cachedValue != null) {
       return cachedValue;
     }
 
-    EquivalenceClass overlap = added.overlap(other);
-    assert (overlap != null);
-    BigInteger overlapVolume = overlap.volume();
+    EquivalenceClass overlap = added.and(other);
     Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
 
     // Cut off traversal early
@@ -557,58 +503,42 @@ public class ForwardingGraph {
         EquivalenceClass child = _ecs.get(childIndex);
         addRuleDocRec(added, child, cache, overlapping, delta);
       }
-      Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
-      cache.put(other.getAlphaIndex(), ret);
-      return ret;
+      cache.put(other.getAlphaIndex(), other.getAlphaIndex());
+      return other.getAlphaIndex();
     }
 
-    BigInteger childrenVolume = BigInteger.ZERO;
-    List<Integer> ecs = new ArrayList<>();
 
+    EquivalenceClass children = EquivalenceClass.zero();
+    List<Integer> ecs = new ArrayList<>();
     for (Integer childIndex : childIndices) {
       EquivalenceClass child = _ecs.get(childIndex);
-      if (child.overlap(added) != null) {
-        Tuple<BigInteger, Integer> tup =
-            addRuleDocRec(added, child, cache, overlapping, delta);
-        BigInteger vol = tup.getFirst();
-        Integer ec = tup.getSecond();
-        childrenVolume = childrenVolume.add(vol);
+      EquivalenceClass childOverlap = child.and(added);
+      if (!childOverlap.isZero()) {
+        Integer ec = addRuleDocRec(added, child, cache, overlapping, delta);
+        children = children.or(childOverlap);
         if (ec != null) {
+          // children = children.or(_ecs.get(ec));
           ecs.add(ec);
         }
       }
     }
 
-    /*
-    for (EquivalenceClass o : others) {
-      if (childIndices.contains(o.getAlphaIndex())) {
-        EquivalenceClass child = _ecs.get(o.getAlphaIndex());
-        Tuple<BigInteger, Integer> tup =
-            addRuleDocRec(added, child, cache, overlapping, delta);
-        BigInteger vol = tup.getFirst();
-        Integer ec = tup.getSecond();
-        childrenVolume = childrenVolume.add(vol);
-        if (ec != null) {
-          ecs.add(ec);
-        }
-      }
-    } */
+    EquivalenceClass difference = overlap.and(children.not());
 
-    BigInteger volume = overlapVolume.subtract(childrenVolume);
-
-    if (volume.compareTo(BigInteger.ZERO) > 0) {
-      BigInteger otherVolume = _volumes.get(other.getAlphaIndex());
-      BigInteger newOtherVolume = otherVolume.subtract(volume);
+    if (!difference.isZero()) {
       // No new region to create if we cover the old region
-      if (newOtherVolume.compareTo(BigInteger.ZERO) == 0) {
+
+      EquivalenceClass otherRemaining = _remaining.get(other.getAlphaIndex());
+      EquivalenceClass newOtherRemaining = otherRemaining.and(difference.not());
+
+      if (newOtherRemaining.isZero()) {
         overlapping.add(other);
-        Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
-        cache.put(other.getAlphaIndex(), ret);
-        return ret;
+        cache.put(other.getAlphaIndex(), other.getAlphaIndex());
+        return other.getAlphaIndex();
       } else {
-        _volumes.set(other.getAlphaIndex(), newOtherVolume);
+        _remaining.set(other.getAlphaIndex(), newOtherRemaining);
         overlap.setAlphaIndex(_ecs.size());
-        _volumes.add(volume);
+        _remaining.add(difference);
         _ecs.add(overlap);
         // make sure they are the right size
         _ownerMap.add(null);
@@ -621,14 +551,12 @@ public class ForwardingGraph {
         subsumes.addAll(ecs);
       }
 
-      Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, overlap.getAlphaIndex());
-      cache.put(other.getAlphaIndex(), ret);
-      return ret;
+      cache.put(other.getAlphaIndex(), overlap.getAlphaIndex());
+      return overlap.getAlphaIndex();
     }
 
-    Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, null);
-    cache.put(other.getAlphaIndex(), ret);
-    return ret;
+    cache.put(other.getAlphaIndex(), null);
+    return null;
   }
 
   /*
@@ -703,7 +631,7 @@ public class ForwardingGraph {
       EquivalenceClass overlap = entry.getValue();
       Tuple<Path, FlowDisposition> tup = reachable(equivClass, flags, sources, sinks);
       if (tup != null) {
-        Tuple<Flow, FlowTrace> trace = createTrace(_factory.example(overlap), tup);
+        Tuple<Flow, FlowTrace> trace = createTrace(overlap.example(_bddPkt), tup);
         List<Tuple<Flow, FlowTrace>> traces = new ArrayList<>();
         traces.add(trace);
         System.out.println("Reachability time: " + (System.currentTimeMillis() - l));
@@ -755,6 +683,7 @@ public class ForwardingGraph {
   }
 
 
+  // TODO: implement this correctly
   /*
    * Given a query headerspace, pick out the relevant ECs to check
    * and return the overlapping region for each so we can construct
@@ -763,45 +692,18 @@ public class ForwardingGraph {
   @Nonnull
   private Map<Integer, EquivalenceClass> findRelevantEcsDoc(HeaderSpace h) {
     // Pick out the relevant equivalence classes
-    GeometricSpace space = _factory.fromHeaderSpace(h);
+    EquivalenceClass headerspace = EquivalenceClass.fromHeaderSpace(h, _bddPkt);
     Map<Integer, EquivalenceClass> relevant = new HashMap<>();
-    for (EquivalenceClass rect : space.rectangles()) {
-
-      // now we need to check if it actually is relevant, or not
-      Map<Integer, BigInteger> cache = new HashMap<>();
-      for (EquivalenceClass r : _ecs) {
-        EquivalenceClass overlap = rect.overlap(r);
-        if (overlap != null) {
-          // Check if this is a relevant EC
-          BigInteger overlapVolume = findRelevantEcsDocRec(cache, r, overlap);
-          if (overlapVolume.compareTo(BigInteger.ZERO) > 0) {
-            relevant.put(r.getAlphaIndex(), overlap);
-          }
-        }
+    // now we need to check if it actually is relevant, or not
+    for (EquivalenceClass r : _ecs) {
+      EquivalenceClass overlap = headerspace.and(r);
+      if (!overlap.isZero()) {
+        relevant.put(r.getAlphaIndex(), overlap);
       }
     }
+
     return relevant;
   }
-
-  private BigInteger findRelevantEcsDocRec(
-      Map<Integer, BigInteger> cache, EquivalenceClass r, EquivalenceClass overlap) {
-    BigInteger vol = cache.get(r.getAlphaIndex());
-    if (vol != null) {
-      return vol;
-    }
-    BigInteger childrenVolume = BigInteger.ZERO;
-    for (Integer childEc : _dag.get(r.getAlphaIndex())) {
-      EquivalenceClass child = _ecs.get(childEc);
-      EquivalenceClass co = child.overlap(overlap);
-      if (co != null) {
-        childrenVolume = childrenVolume.add(findRelevantEcsDocRec(cache, child, co));
-      }
-    }
-    vol = overlap.volume().subtract(childrenVolume);
-    cache.put(r.getAlphaIndex(), vol);
-    return vol;
-  }
-
 
   /*
    * Create a reachability answer element for compatibility
