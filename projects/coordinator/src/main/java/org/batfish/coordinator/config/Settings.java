@@ -64,6 +64,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   public static final String ARG_TRACING_ENABLE = "tracingenable";
+  public static final String ARG_TRACING_SERVICE_NAME = "tracingservicename";
 
   private static final String ARG_WORK_BIND_HOST = "workbindhost";
 
@@ -111,6 +112,7 @@ public class Settings extends BaseSettings {
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
+  private String _tracingServiceName;
   private String _workBindHost;
 
   public Settings(String[] args) {
@@ -286,6 +288,10 @@ public class Settings extends BaseSettings {
     return _tracingEnable;
   }
 
+  public String getTracingServiceName() {
+    return _tracingServiceName;
+  }
+
   public String getWorkBindHost() {
     return _workBindHost;
   }
@@ -333,6 +339,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
+    setDefaultProperty(ARG_TRACING_SERVICE_NAME, "coordinator-service");
     // setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
     // setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
     setDefaultProperty(
@@ -417,6 +424,8 @@ public class Settings extends BaseSettings {
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
+
+    addOption(ARG_TRACING_SERVICE_NAME, "service name for tracing", "tracing_service_name");
   }
 
   private void parseCommandLine(String[] args) {
@@ -462,6 +471,7 @@ public class Settings extends BaseSettings {
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
+    _tracingServiceName = getStringOptionValue(ARG_TRACING_SERVICE_NAME);
     _containersLocation = getPathOptionValue(ARG_CONTAINERS_LOCATION);
     _periodWorkerStatusRefreshMs = getLongOptionValue(ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
     _periodAssignWorkMs = getLongOptionValue(ARG_PERIOD_ASSIGN_WORK_MS);

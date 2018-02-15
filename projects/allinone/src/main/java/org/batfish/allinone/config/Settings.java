@@ -27,6 +27,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   private static final String ARG_TRACING_ENABLE = "tracingenable";
+  public static final String ARG_TRACING_SERVICE_NAME = "tracingservicename";
   private static final String ARG_VERSION = "version";
 
   private static final String EXECUTABLE_NAME = "allinone";
@@ -44,6 +45,7 @@ public class Settings extends BaseSettings {
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
+  private String _tracingServiceName;
 
   public Settings(String[] args) {
     super(
@@ -110,6 +112,10 @@ public class Settings extends BaseSettings {
     return _tracingEnable;
   }
 
+  public String getTracingServiceName() {
+    return _tracingServiceName;
+  }
+
   private void initConfigDefaults() {
     // setDefaultProperty(ARG_COMMAND_FILE,
     // Paths.get(org.batfish.common.Util.getJarOrClassDir(
@@ -127,6 +133,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
+    setDefaultProperty(ARG_TRACING_SERVICE_NAME, "allinone-service");
     setDefaultProperty(ARG_VERSION, false);
   }
 
@@ -167,6 +174,8 @@ public class Settings extends BaseSettings {
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
 
+    addOption(ARG_TRACING_SERVICE_NAME, "service name for tracing", "tracing_service_name");
+
     addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
   }
 
@@ -199,5 +208,6 @@ public class Settings extends BaseSettings {
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
+    _tracingServiceName = getStringOptionValue(ARG_TRACING_SERVICE_NAME);
   }
 }

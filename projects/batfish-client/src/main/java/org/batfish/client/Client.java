@@ -1808,7 +1808,7 @@ public class Client extends AbstractClient implements IClient {
   private void initTracer() {
     GlobalTracer.register(
         new com.uber.jaeger.Configuration(
-                BfConsts.PROP_CLIENT_SERVICE,
+                _settings.getTracingServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,

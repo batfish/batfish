@@ -264,7 +264,7 @@ public class Main {
   private static void initTracer() {
     GlobalTracer.register(
         new Configuration(
-                BfConsts.PROP_COORDINATOR_SERVICE,
+                _settings.getTracingServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,

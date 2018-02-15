@@ -479,6 +479,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_TRACING_ENABLE = "tracingenable";
 
+  public static final String ARG_TRACING_SERVICE_NAME = "tracingservicename";
+
   private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
 
   private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
@@ -698,6 +700,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private Integer _tracingAgentPort;
 
   private boolean _tracingEnable;
+
+  private String _tracingServiceName;
 
   private boolean _unimplementedAsError;
 
@@ -1097,6 +1101,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _tracingEnable;
   }
 
+  public String getTracingServiceName() {
+    return _tracingServiceName;
+  }
+
   public boolean getUnimplementedAsError() {
     return _unimplementedAsError;
   }
@@ -1212,6 +1220,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
+    setDefaultProperty(ARG_TRACING_SERVICE_NAME, "worker-service");
     setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
@@ -1472,6 +1481,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
+
+    addOption(ARG_TRACING_SERVICE_NAME, "service name for tracing", "tracing_service_name");
+
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
         "throws "
@@ -1618,6 +1630,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
+    _tracingServiceName = getStringOptionValue(ARG_TRACING_SERVICE_NAME);
     _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
