@@ -58,12 +58,12 @@ public class TestrigMetadataMgr {
   }
 
   public static synchronized void updateEnvironmentStatus(
-      String container, String testrig, String envName, ProcessingStatus status)
+      String container, String testrig, String envName, ProcessingStatus status, String errMessage)
       throws IOException {
     Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);
     TestrigMetadata trMetadata = readMetadata(metadataPath);
     EnvironmentMetadata environmentMetadata = trMetadata.getEnvironments().get(envName);
-    environmentMetadata.updateStatus(status);
+    environmentMetadata.updateStatus(status, errMessage);
     writeMetadata(trMetadata, metadataPath);
   }
 }
