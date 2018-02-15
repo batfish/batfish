@@ -48,7 +48,6 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.batfish.atoms.NetworkModel;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -4160,18 +4159,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return p.checkRoutingLoop(q);
   }
 
-  private AnswerElement standardAtomic(
-      HeaderSpace headerSpace,
-      Set<ForwardingAction> actions,
-      Set<String> ingressNodes,
-      Set<String> finalNodes) {
-    // String tag = getFlowTag(_testrigSettings);
-    DataPlane dp = loadDataPlane();
-    NetworkModel aps = new NetworkModel(this, dp);
-    // ForwardingGraph fg = new ForwardingGraph(this, dp, backendType);
-    return new StringAnswerElement("done");
-  }
-
   private AnswerElement standardDeltanet(
       BackendType backendType,
       HeaderSpace headerSpace,
@@ -4249,9 +4236,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (backendType != BackendType.NOD) {
-      if (backendType == BackendType.ATOMIC_PREDICATES) {
-        return standardAtomic(headerSpace, actions, activeIngressNodes, activeFinalNodes);
-      }
       return standardDeltanet(
           backendType, headerSpace, actions, activeIngressNodes, activeFinalNodes);
     }

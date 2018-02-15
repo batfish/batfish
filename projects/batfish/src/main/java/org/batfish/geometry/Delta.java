@@ -2,20 +2,20 @@ package org.batfish.geometry;
 
 public class Delta {
 
-  private HyperRectangle _old;
+  private EquivalenceClass _old;
 
-  private HyperRectangle _new;
+  private EquivalenceClass _new;
 
-  public Delta(HyperRectangle o, HyperRectangle n) {
+  public Delta(EquivalenceClass o, EquivalenceClass n) {
     this._old = o;
     this._new = n;
   }
 
-  public HyperRectangle getOld() {
+  public EquivalenceClass getOld() {
     return _old;
   }
 
-  public HyperRectangle getNew() {
+  public EquivalenceClass getNew() {
     return _new;
   }
 }

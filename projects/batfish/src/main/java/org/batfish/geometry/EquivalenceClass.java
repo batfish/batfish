@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
  * For a 2D version of the rectangle, the bounds will be
  * (xlow, xhigh, ylow, yhigh)
  */
-public class HyperRectangle implements Comparable<HyperRectangle> {
+public class EquivalenceClass implements Comparable<EquivalenceClass> {
 
   private long[] _bounds;
 
@@ -21,12 +21,12 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
 
   private int _hashcode;
 
-  HyperRectangle(long[] bounds) {
+  EquivalenceClass(long[] bounds) {
     this._bounds = bounds;
     this._alphaIndex = -1;
   }
 
-  HyperRectangle(HyperRectangle other) {
+  EquivalenceClass(EquivalenceClass other) {
     this._bounds = other._bounds.clone();
     this._alphaIndex = other._alphaIndex;
   }
@@ -47,8 +47,7 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
     this._bounds = bounds;
   }
 
-  @Nullable
-  HyperRectangle overlap(HyperRectangle other) {
+  @Nullable EquivalenceClass overlap(EquivalenceClass other) {
     long[] bounds = new long[_bounds.length];
     for (int i = 0; i < _bounds.length; i += 2) {
       long x1 = _bounds[i];
@@ -61,14 +60,14 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
       bounds[i] = Math.max(x1, ox1);
       bounds[i + 1] = Math.min(x2, ox2);
     }
-    return new HyperRectangle(bounds);
+    return new EquivalenceClass(bounds);
   }
 
   private void divideRec(
-      HyperRectangle other, int i, long[] boundsSoFar, Collection<HyperRectangle> added) {
+      EquivalenceClass other, int i, long[] boundsSoFar, Collection<EquivalenceClass> added) {
 
     if (i >= boundsSoFar.length) {
-      HyperRectangle r = new HyperRectangle(boundsSoFar.clone());
+      EquivalenceClass r = new EquivalenceClass(boundsSoFar.clone());
       added.add(r);
       return;
     }
@@ -100,18 +99,18 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
    * That is, the other can not go outside this shape's bounds
    */
   @Nullable
-  Collection<HyperRectangle> subtract(HyperRectangle other) {
+  Collection<EquivalenceClass> subtract(EquivalenceClass other) {
     // in each dimension we would do this:
     if (this.equals(other)) {
       return null;
     }
-    List<HyperRectangle> newRects = new ArrayList<>();
+    List<EquivalenceClass> newRects = new ArrayList<>();
     long[] boundsSoFar = new long[_bounds.length];
     divideRec(other, 0, boundsSoFar, newRects);
     return newRects;
   }
 
-  boolean isSubsumedBy(HyperRectangle other) {
+  boolean isSubsumedBy(EquivalenceClass other) {
     for (int i = 0; i < _bounds.length; i += 2) {
       long x1 = _bounds[i];
       long x2 = _bounds[i + 1];
@@ -155,7 +154,7 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    HyperRectangle that = (HyperRectangle) o;
+    EquivalenceClass that = (EquivalenceClass) o;
     return Arrays.equals(_bounds, that._bounds);
   }
 
@@ -168,7 +167,7 @@ public class HyperRectangle implements Comparable<HyperRectangle> {
   }
 
   @Override
-  public int compareTo(@Nonnull HyperRectangle that) {
+  public int compareTo(@Nonnull EquivalenceClass that) {
     for (int i = 0; i < _bounds.length; i++) {
       long cmp = _bounds[i] - that._bounds[i];
       if (cmp < 0) {

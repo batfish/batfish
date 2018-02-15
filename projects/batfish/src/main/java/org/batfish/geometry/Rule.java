@@ -5,10 +5,10 @@ import javax.annotation.Nonnull;
 public class Rule implements Comparable<Rule> {
 
   private GraphLink _link;
-  private HyperRectangle _rectangle;
+  private EquivalenceClass _rectangle;
   private int _priority;
 
-  public Rule(GraphLink link, HyperRectangle rectangle, int priority) {
+  public Rule(GraphLink link, EquivalenceClass rectangle, int priority) {
     this._link = link;
     this._rectangle = rectangle;
     this._priority = priority;
@@ -18,7 +18,7 @@ public class Rule implements Comparable<Rule> {
     return _link;
   }
 
-  public HyperRectangle getRectangle() {
+  public EquivalenceClass getRectangle() {
     return _rectangle;
   }
 

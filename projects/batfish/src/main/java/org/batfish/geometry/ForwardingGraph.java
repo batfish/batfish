@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -22,7 +21,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BackendType;
 import org.batfish.datamodel.Configuration;
@@ -74,10 +72,6 @@ import org.batfish.symbolic.utils.Tuple;
  *
  * - Use a persistent map for _owner to avoid all the deep copies and
  *   reduce space consumption.
- *
- * - There are better datastructures than KD trees for collision detection.
- *   Are any easy to implement?
- *
  */
 public class ForwardingGraph {
 
@@ -93,16 +87,13 @@ public class ForwardingGraph {
   private GeometricSpaceFactory _factory;
 
   // Equivalence classes indexed from 0
-  private ArrayList<HyperRectangle> _ecs;
+  private ArrayList<EquivalenceClass> _ecs;
 
   // Edges labelled with equivalence classes, indexed by link id
   private BitSet[] _labels;
 
   // EC index to graph node index to set of rules for that EC on that node.
   private ArrayList<Map<GraphNode, Rule>> _ownerMap;
-
-  // Efficient searching for equivalence class overlap
-  private KDTree _kdtree;
 
   // All the nodes in the graph
   private List<GraphNode> _allNodes;
@@ -119,7 +110,7 @@ public class ForwardingGraph {
   // Map from ACLs to graph nodes in this extended graph
   private Map<String, AclGraphNode> _aclMap;
 
-  // Map from interfaces to links in this extened graph
+  // Map from interfaces to links in this extended graph
   private Map<NodeInterfacePair, GraphLink> _linkMap;
 
   // A dag used to represent difference of cubes dependencies
@@ -127,12 +118,6 @@ public class ForwardingGraph {
 
   // Store the current volume for each EC when using DoC
   private ArrayList<BigInteger> _volumes;
-
-  // Only used for the BDD backend
-  private NavigableSet<HyperRectangle> _intervalSet;
-
-  // Which backend to use
-  private BackendType _backendType;
 
   // Reference to the Batfish object so we can access the ACLs in the configs
   private Batfish _batfish;
@@ -151,48 +136,25 @@ public class ForwardingGraph {
     long t = System.currentTimeMillis();
     _batfish = batfish;
     _dataPlane = dp;
-    _backendType = backendType;
 
     initGraph(batfish, dp);
 
     // only model fields that are used in the configs
     EnumSet<PacketField> fields;
-    if (_backendType == BackendType.DELTANET_BDD) {
-      fields = EnumSet.of(PacketField.DSTIP);
-    } else {
-      fields = findRelevantPacketFields(batfish);
-    }
+    fields = findRelevantPacketFields(batfish);
 
     _factory = new GeometricSpaceFactory(fields);
     _ecs = new ArrayList<>();
     _ownerMap = new ArrayList<>();
 
-    if (_backendType == BackendType.DELTANET_BDD) {
-      _intervalSet = new TreeSet<>();
-      long[] lower = {0};
-      long[] upper = {(long) Math.pow(2, 32)};
-      HyperRectangle low = new HyperRectangle(lower);
-      HyperRectangle high = new HyperRectangle(upper);
-      low.setAlphaIndex(0);
-      high.setAlphaIndex(1);
-      _intervalSet.add(low);
-      _intervalSet.add(high);
-      _ecs.add(low);
-      _ecs.add(high);
-      _ownerMap.add(new HashMap<>());
-      _ownerMap.add(new HashMap<>());
-    } else {
-      HyperRectangle fullRange = _factory.fullSpace();
-      fullRange.setAlphaIndex(0);
-      _ecs.add(fullRange);
-      _kdtree = new KDTree(_factory.numFields());
-      _kdtree.insert(fullRange);
-      _dag = new ArrayList<>();
-      _dag.add(new HashSet<>());
-      _volumes = new ArrayList<>();
-      _volumes.add(fullRange.volume());
-      _ownerMap.add(new HashMap<>());
-    }
+    EquivalenceClass fullRange = _factory.fullSpace();
+    fullRange.setAlphaIndex(0);
+    _ecs.add(fullRange);
+    _dag = new ArrayList<>();
+    _dag.add(new HashSet<>());
+    _volumes = new ArrayList<>();
+    _volumes.add(fullRange.volume());
+    _ownerMap.add(new HashMap<>());
 
     // initialize the labels
     _labels = new BitSet[_allLinks.size()];
@@ -215,23 +177,22 @@ public class ForwardingGraph {
 
     // add the ACL rules
     List<Rule> aclRules = new ArrayList<>();
-    if (_backendType != BackendType.DELTANET_BDD) {
-      for (AclGraphNode aclNode : _aclMap.values()) {
-        List<GraphLink> links = _adjacencyLists.get(aclNode.getIndex());
-        GraphLink drop = links.get(0);
-        GraphLink accept = links.get(1);
-        List<IpAccessListLine> lines = aclNode.getAcl().getLines();
-        int i = lines.size();
-        for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
-          Rule r = createAclRule(aclLine, drop, accept, i);
-          aclRules.add(r);
-          i--;
-        }
-        // default drop rule
-        Rule r = createAclRule(null, drop, accept, 0);
-        rules.add(r);
+    for (AclGraphNode aclNode : _aclMap.values()) {
+      List<GraphLink> links = _adjacencyLists.get(aclNode.getIndex());
+      GraphLink drop = links.get(0);
+      GraphLink accept = links.get(1);
+      List<IpAccessListLine> lines = aclNode.getAcl().getLines();
+      int i = lines.size();
+      for (IpAccessListLine aclLine : aclNode.getAcl().getLines()) {
+        Rule r = createAclRule(aclLine, drop, accept, i);
+        aclRules.add(r);
+        i--;
       }
+      // default drop rule
+      Rule r = createAclRule(null, drop, accept, 0);
+      rules.add(r);
     }
+
 
     // Sort the rules to ensure a deterministic order since they were stored in a hashmap
     rules.sort(Comparator.comparing(Rule::getRectangle));
@@ -243,15 +204,7 @@ public class ForwardingGraph {
     rules = aclRules;
 
     for (Rule rule : rules) {
-      if (backendType == BackendType.DELTANET) {
-        addRule(rule);
-      } else if (backendType == BackendType.DELTANET_DOC) {
-        addRuleDoc(rule);
-      } else if (backendType == BackendType.DELTANET_BDD) {
-        addRuleBdd(rule);
-      } else {
-        throw new BatfishException("Invalid backed type: " + backendType);
-      }
+      addRuleDoc(rule);
     }
 
     System.out.println("Number of rules: " + rules.size());
@@ -525,7 +478,7 @@ public class ForwardingGraph {
     Prefix p = fib.getPrefix();
     long start = p.getStartIp().asLong();
     long end = p.getEndIp().asLong() + 1;
-    HyperRectangle hr = _factory.fullSpace();
+    EquivalenceClass hr = _factory.fullSpace();
     hr.getBounds()[0] = start;
     hr.getBounds()[1] = end;
     return new Rule(link, hr, fib.getPrefix().getPrefixLength());
@@ -538,7 +491,7 @@ public class ForwardingGraph {
   private Rule createAclRule(
       @Nullable IpAccessListLine aclLine, GraphLink drop, GraphLink accept, int priority) {
     if (aclLine == null) {
-      HyperRectangle rect = _factory.fullSpace();
+      EquivalenceClass rect = _factory.fullSpace();
       return new Rule(drop, rect, priority);
     } else {
       GeometricSpace space = _factory.fromAcl(aclLine);
@@ -559,50 +512,10 @@ public class ForwardingGraph {
   private void showStatus() {
     System.out.println("=====================");
     for (int i = 0; i < _ecs.size(); i++) {
-      HyperRectangle r = _ecs.get(i);
+      EquivalenceClass r = _ecs.get(i);
       System.out.println(i + " --> " + r);
     }
     System.out.println("=====================");
-  }
-
-  /*
-   * Add a rule to the edge-labelled graph by first refining
-   * the equivalence classes, finding the relevant overlap,
-   * and updating the edge labels accordingly.
-   */
-  private void addRule(Rule r) {
-    HyperRectangle hr = r.getRectangle();
-    List<HyperRectangle> overlapping = new ArrayList<>();
-    List<Delta> delta = new ArrayList<>();
-    for (HyperRectangle other : _kdtree.intersect(hr)) {
-      HyperRectangle overlap = hr.overlap(other);
-      assert (overlap != null);
-      Collection<HyperRectangle> newRects = other.subtract(overlap);
-      if (newRects == null) {
-        overlapping.add(other);
-      } else {
-        _kdtree.delete(other);
-        boolean first = true;
-        for (HyperRectangle rect : newRects) {
-          if (first && !rect.equals(other)) {
-            other.setBounds(rect.getBounds());
-            first = false;
-            rect = other;
-          } else {
-            rect.setAlphaIndex(_ecs.size());
-            _ecs.add(rect);
-            _ownerMap.add(null);
-            delta.add(new Delta(other, rect));
-          }
-          _kdtree.insert(rect);
-          if (rect.equals(overlap)) {
-            overlapping.add(rect);
-          }
-        }
-      }
-    }
-
-    updateRules(r, overlapping, delta);
   }
 
   /*
@@ -610,22 +523,20 @@ public class ForwardingGraph {
    * the difference of cubes representation.
    */
   private void addRuleDoc(Rule r) {
-    HyperRectangle hr = r.getRectangle();
-    List<HyperRectangle> overlapping = new ArrayList<>();
+    EquivalenceClass hr = r.getRectangle();
+    List<EquivalenceClass> overlapping = new ArrayList<>();
     List<Delta> delta = new ArrayList<>();
     Map<Integer, Tuple<BigInteger, Integer>> cache = new HashMap<>();
-    List<HyperRectangle> others = _kdtree.intersect(hr);
-    HyperRectangle root = _ecs.get(0);
-    addRuleDocRec(hr, root, others, cache, overlapping, delta);
+    EquivalenceClass root = _ecs.get(0);
+    addRuleDocRec(hr, root, cache, overlapping, delta);
     updateRules(r, overlapping, delta);
   }
 
   private Tuple<BigInteger, Integer> addRuleDocRec(
-      HyperRectangle added,
-      HyperRectangle other,
-      List<HyperRectangle> others,
+      EquivalenceClass added,
+      EquivalenceClass other,
       Map<Integer, Tuple<BigInteger, Integer>> cache,
-      List<HyperRectangle> overlapping,
+      List<EquivalenceClass> overlapping,
       List<Delta> delta) {
 
     Tuple<BigInteger, Integer> cachedValue = cache.get(other.getAlphaIndex());
@@ -633,7 +544,7 @@ public class ForwardingGraph {
       return cachedValue;
     }
 
-    HyperRectangle overlap = added.overlap(other);
+    EquivalenceClass overlap = added.overlap(other);
     assert (overlap != null);
     BigInteger overlapVolume = overlap.volume();
     Set<Integer> childIndices = _dag.get(other.getAlphaIndex());
@@ -643,8 +554,8 @@ public class ForwardingGraph {
       overlapping.add(other);
       // Make sure we evaluate the children so they add to the overlapping set
       for (Integer childIndex : childIndices) {
-        HyperRectangle child = _ecs.get(childIndex);
-        addRuleDocRec(added, child, others, cache, overlapping, delta);
+        EquivalenceClass child = _ecs.get(childIndex);
+        addRuleDocRec(added, child, cache, overlapping, delta);
       }
       Tuple<BigInteger, Integer> ret = new Tuple<>(overlapVolume, other.getAlphaIndex());
       cache.put(other.getAlphaIndex(), ret);
@@ -654,11 +565,11 @@ public class ForwardingGraph {
     BigInteger childrenVolume = BigInteger.ZERO;
     List<Integer> ecs = new ArrayList<>();
 
-    for (HyperRectangle o : others) {
-      if (childIndices.contains(o.getAlphaIndex())) {
-        HyperRectangle child = _ecs.get(o.getAlphaIndex());
+    for (Integer childIndex : childIndices) {
+      EquivalenceClass child = _ecs.get(childIndex);
+      if (child.overlap(added) != null) {
         Tuple<BigInteger, Integer> tup =
-            addRuleDocRec(added, child, others, cache, overlapping, delta);
+            addRuleDocRec(added, child, cache, overlapping, delta);
         BigInteger vol = tup.getFirst();
         Integer ec = tup.getSecond();
         childrenVolume = childrenVolume.add(vol);
@@ -667,6 +578,21 @@ public class ForwardingGraph {
         }
       }
     }
+
+    /*
+    for (EquivalenceClass o : others) {
+      if (childIndices.contains(o.getAlphaIndex())) {
+        EquivalenceClass child = _ecs.get(o.getAlphaIndex());
+        Tuple<BigInteger, Integer> tup =
+            addRuleDocRec(added, child, cache, overlapping, delta);
+        BigInteger vol = tup.getFirst();
+        Integer ec = tup.getSecond();
+        childrenVolume = childrenVolume.add(vol);
+        if (ec != null) {
+          ecs.add(ec);
+        }
+      }
+    } */
 
     BigInteger volume = overlapVolume.subtract(childrenVolume);
 
@@ -688,7 +614,6 @@ public class ForwardingGraph {
         _ownerMap.add(null);
         _dag.add(null);
         overlapping.add(overlap);
-        _kdtree.insert(overlap);
         Set<Integer> subsumes = new HashSet<>();
         _dag.set(overlap.getAlphaIndex(), subsumes);
         _dag.get(other.getAlphaIndex()).add(overlap.getAlphaIndex());
@@ -706,49 +631,17 @@ public class ForwardingGraph {
     return ret;
   }
 
-  private void addRuleBdd(Rule r) {
-    HyperRectangle hr = r.getRectangle();
-    long[] boundsFrom = {hr.getBounds()[0]};
-    long[] boundsTo = {hr.getBounds()[1]};
-    HyperRectangle from = new HyperRectangle(boundsFrom);
-    HyperRectangle to = new HyperRectangle(boundsTo);
-    List<Delta> delta = createAtoms(from, to);
-    SortedSet<HyperRectangle> overlapping = _intervalSet.subSet(from, to);
-    updateRules(r, overlapping, delta);
-  }
-
-  private List<Delta> createAtoms(HyperRectangle from, HyperRectangle to) {
-    List<Delta> delta = new ArrayList<>();
-    if (!_intervalSet.contains(from)) {
-      from.setAlphaIndex(_ecs.size());
-      _ecs.add(from);
-      _ownerMap.add(null);
-      _intervalSet.add(from);
-      HyperRectangle alpha = _intervalSet.lower(from);
-      delta.add(new Delta(alpha, from));
-    }
-    if (from.getBounds()[0] != to.getBounds()[0] && !_intervalSet.contains(to)) {
-      to.setAlphaIndex(_ecs.size());
-      _ecs.add(to);
-      _ownerMap.add(null);
-      _intervalSet.add(to);
-      HyperRectangle alpha = _intervalSet.lower(to);
-      delta.add(new Delta(alpha, to));
-    }
-    return delta;
-  }
-
   /*
    * Given a collection of new ECs and a set of overlapping ECs,
    * and a Rule, it updates the edge labelled graph accordingly.
    */
   private void updateRules(
-      Rule r, Collection<HyperRectangle> overlapping, Collection<Delta> deltas) {
+      Rule r, Collection<EquivalenceClass> overlapping, Collection<Delta> deltas) {
 
     // Update new rules
     for (Delta d : deltas) {
-      HyperRectangle alpha = d.getOld();
-      HyperRectangle alphaPrime = d.getNew();
+      EquivalenceClass alpha = d.getOld();
+      EquivalenceClass alphaPrime = d.getNew();
       Map<GraphNode, Rule> existing = _ownerMap.get(alpha.getAlphaIndex());
       _ownerMap.set(alphaPrime.getAlphaIndex(), new HashMap<>(existing));
       for (Entry<GraphNode, Rule> entry : existing.entrySet()) {
@@ -760,7 +653,7 @@ public class ForwardingGraph {
       }
     }
     // Update old, overlapping rules
-    for (HyperRectangle alpha : overlapping) {
+    for (EquivalenceClass alpha : overlapping) {
       Rule rPrime = null;
       Map<GraphNode, Rule> map = _ownerMap.get(alpha.getAlphaIndex());
       GraphNode source = r.getLink().getSource();
@@ -801,21 +694,13 @@ public class ForwardingGraph {
 
     BitSet flags = actionFlags(actions);
 
-    Map<Integer, HyperRectangle> relevant;
-    if (_backendType == BackendType.DELTANET) {
-      relevant = findRelevantEcs(h);
-    } else if (_backendType == BackendType.DELTANET_DOC) {
-      relevant = findRelevantEcsDoc(h);
-    } else if (_backendType == BackendType.DELTANET_BDD) {
-      relevant = findRelevantEcsBdd(h);
-    } else {
-      throw new BatfishException("Invalid backend type: " + _backendType);
-    }
+    Map<Integer, EquivalenceClass> relevant;
+    relevant = findRelevantEcsDoc(h);
 
     // Check each equivalence class for reachability
-    for (Entry<Integer, HyperRectangle> entry : relevant.entrySet()) {
+    for (Entry<Integer, EquivalenceClass> entry : relevant.entrySet()) {
       Integer equivClass = entry.getKey();
-      HyperRectangle overlap = entry.getValue();
+      EquivalenceClass overlap = entry.getValue();
       Tuple<Path, FlowDisposition> tup = reachable(equivClass, flags, sources, sinks);
       if (tup != null) {
         Tuple<Flow, FlowTrace> trace = createTrace(_factory.example(overlap), tup);
@@ -869,25 +754,6 @@ public class ForwardingGraph {
     return actionFlags;
   }
 
-  /*
-   * Given a query headerspace, pick out the relevant ECs to check
-   * and return the overlapping region for each so we can construct
-   * an example easily.
-   */
-  @Nonnull
-  private Map<Integer, HyperRectangle> findRelevantEcs(HeaderSpace h) {
-    // Pick out the relevant equivalence classes
-    GeometricSpace space = _factory.fromHeaderSpace(h);
-    Map<Integer, HyperRectangle> relevant = new HashMap<>();
-    for (HyperRectangle rect : space.rectangles()) {
-      List<HyperRectangle> intersecting = _kdtree.intersect(rect);
-      for (HyperRectangle r : intersecting) {
-        HyperRectangle overlap = rect.overlap(r);
-        relevant.put(r.getAlphaIndex(), overlap);
-      }
-    }
-    return relevant;
-  }
 
   /*
    * Given a query headerspace, pick out the relevant ECs to check
@@ -895,22 +761,22 @@ public class ForwardingGraph {
    * an example easily.
    */
   @Nonnull
-  private Map<Integer, HyperRectangle> findRelevantEcsDoc(HeaderSpace h) {
+  private Map<Integer, EquivalenceClass> findRelevantEcsDoc(HeaderSpace h) {
     // Pick out the relevant equivalence classes
     GeometricSpace space = _factory.fromHeaderSpace(h);
-    Map<Integer, HyperRectangle> relevant = new HashMap<>();
-    for (HyperRectangle rect : space.rectangles()) {
-      List<HyperRectangle> intersecting = _kdtree.intersect(rect);
+    Map<Integer, EquivalenceClass> relevant = new HashMap<>();
+    for (EquivalenceClass rect : space.rectangles()) {
 
       // now we need to check if it actually is relevant, or not
       Map<Integer, BigInteger> cache = new HashMap<>();
-      for (HyperRectangle r : intersecting) {
-        HyperRectangle overlap = rect.overlap(r);
-        assert (overlap != null);
-        // Check if this is a relevant EC
-        BigInteger overlapVolume = findRelevantEcsDocRec(cache, r, overlap);
-        if (overlapVolume.compareTo(BigInteger.ZERO) > 0) {
-          relevant.put(r.getAlphaIndex(), overlap);
+      for (EquivalenceClass r : _ecs) {
+        EquivalenceClass overlap = rect.overlap(r);
+        if (overlap != null) {
+          // Check if this is a relevant EC
+          BigInteger overlapVolume = findRelevantEcsDocRec(cache, r, overlap);
+          if (overlapVolume.compareTo(BigInteger.ZERO) > 0) {
+            relevant.put(r.getAlphaIndex(), overlap);
+          }
         }
       }
     }
@@ -918,15 +784,15 @@ public class ForwardingGraph {
   }
 
   private BigInteger findRelevantEcsDocRec(
-      Map<Integer, BigInteger> cache, HyperRectangle r, HyperRectangle overlap) {
+      Map<Integer, BigInteger> cache, EquivalenceClass r, EquivalenceClass overlap) {
     BigInteger vol = cache.get(r.getAlphaIndex());
     if (vol != null) {
       return vol;
     }
     BigInteger childrenVolume = BigInteger.ZERO;
     for (Integer childEc : _dag.get(r.getAlphaIndex())) {
-      HyperRectangle child = _ecs.get(childEc);
-      HyperRectangle co = child.overlap(overlap);
+      EquivalenceClass child = _ecs.get(childEc);
+      EquivalenceClass co = child.overlap(overlap);
       if (co != null) {
         childrenVolume = childrenVolume.add(findRelevantEcsDocRec(cache, child, co));
       }
@@ -936,33 +802,6 @@ public class ForwardingGraph {
     return vol;
   }
 
-  /*
-   * Given a query headerspace, pick out the relevant ECs to check
-   * and return the overlapping region for each so we can construct
-   * an example easily.
-   */
-  @Nonnull
-  private Map<Integer, HyperRectangle> findRelevantEcsBdd(HeaderSpace h) {
-    // Pick out the relevant equivalence classes
-    GeometricSpace space = _factory.fromHeaderSpace(h);
-    Map<Integer, HyperRectangle> relevant = new HashMap<>();
-    for (HyperRectangle rect : space.rectangles()) {
-      long[] lower = {rect.getBounds()[0]};
-      long[] upper = {rect.getBounds()[1]};
-      HyperRectangle low = new HyperRectangle(lower);
-      HyperRectangle high = new HyperRectangle(upper);
-      SortedSet<HyperRectangle> overlapping = _intervalSet.subSet(low, high);
-      for (HyperRectangle r1 : overlapping) {
-        HyperRectangle r2 = _intervalSet.ceiling(r1);
-        assert (r2 != null);
-        long[] bounds = {r1.getBounds()[0], r2.getBounds()[0]};
-        HyperRectangle range = new HyperRectangle(bounds);
-        HyperRectangle overlap = rect.overlap(range);
-        relevant.put(r1.getAlphaIndex(), overlap);
-      }
-    }
-    return relevant;
-  }
 
   /*
    * Create a reachability answer element for compatibility

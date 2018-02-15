@@ -24,7 +24,7 @@ class GeometricSpaceFactory {
 
   private EnumMap<PacketField, Integer> _fieldIndex;
 
-  private HyperRectangle _fullSpace;
+  private EquivalenceClass _fullSpace;
 
   private GeometricSpace _one;
 
@@ -108,8 +108,8 @@ class GeometricSpaceFactory {
       bounds[2 * index] = low;
       bounds[2 * index + 1] = high;
     }
-    _fullSpace = new HyperRectangle(bounds);
-    List<HyperRectangle> rects = new ArrayList<>();
+    _fullSpace = new EquivalenceClass(bounds);
+    List<EquivalenceClass> rects = new ArrayList<>();
     rects.add(_fullSpace);
     _one = new GeometricSpace(rects);
     _zero = new GeometricSpace(new ArrayList<>());
@@ -128,10 +128,10 @@ class GeometricSpaceFactory {
   }
 
   public GeometricSpace and(GeometricSpace x, GeometricSpace y) {
-    List<HyperRectangle> rects = new ArrayList<>();
-    for (HyperRectangle r1 : x.rectangles()) {
-      for (HyperRectangle r2 : y.rectangles()) {
-        HyperRectangle overlap = r1.overlap(r2);
+    List<EquivalenceClass> rects = new ArrayList<>();
+    for (EquivalenceClass r1 : x.rectangles()) {
+      for (EquivalenceClass r2 : y.rectangles()) {
+        EquivalenceClass overlap = r1.overlap(r2);
         if (overlap != null) {
           rects.add(overlap);
         }
@@ -141,24 +141,24 @@ class GeometricSpaceFactory {
   }
 
   public GeometricSpace or(GeometricSpace x, GeometricSpace y) {
-    List<HyperRectangle> z = new ArrayList<>();
-    Stack<HyperRectangle> workListX = new Stack<>();
-    Stack<HyperRectangle> workListY = new Stack<>();
+    List<EquivalenceClass> z = new ArrayList<>();
+    Stack<EquivalenceClass> workListX = new Stack<>();
+    Stack<EquivalenceClass> workListY = new Stack<>();
     workListX.addAll(x.rectangles());
     workListY.addAll(y.rectangles());
     while (!workListY.isEmpty()) {
-      HyperRectangle r1 = workListY.pop();
+      EquivalenceClass r1 = workListY.pop();
       boolean disjoint = true;
-      for (HyperRectangle r2 : x.rectangles()) {
-        HyperRectangle overlap = r1.overlap(r2);
+      for (EquivalenceClass r2 : x.rectangles()) {
+        EquivalenceClass overlap = r1.overlap(r2);
         if (overlap != null) {
           disjoint = false;
-          Collection<HyperRectangle> newRects1 = r1.subtract(overlap);
-          Collection<HyperRectangle> newRects2 = r2.subtract(overlap);
+          Collection<EquivalenceClass> newRects1 = r1.subtract(overlap);
+          Collection<EquivalenceClass> newRects2 = r2.subtract(overlap);
           assert (newRects1 != null);
           assert (newRects2 != null);
           workListX.addAll(newRects2);
-          for (HyperRectangle newRect : newRects1) {
+          for (EquivalenceClass newRect : newRects1) {
             if (!newRect.equals(overlap)) {
               workListY.push(newRect);
             }
@@ -175,24 +175,24 @@ class GeometricSpaceFactory {
 
   public GeometricSpace not(GeometricSpace x) {
     GeometricSpace acc = _zero;
-    for (HyperRectangle r : x.rectangles()) {
-      HyperRectangle one = _one.rectangles().iterator().next();
+    for (EquivalenceClass r : x.rectangles()) {
+      EquivalenceClass one = _one.rectangles().iterator().next();
       assert (one != null);
-      Collection<HyperRectangle> divided = one.subtract(r);
+      Collection<EquivalenceClass> divided = one.subtract(r);
       assert (divided != null);
       divided.remove(r);
-      List<HyperRectangle> negated = new ArrayList<>(divided);
+      List<EquivalenceClass> negated = new ArrayList<>(divided);
       GeometricSpace space = new GeometricSpace(negated);
       acc = or(acc, space);
     }
     return acc;
   }
 
-  HyperRectangle fullSpace() {
-    return new HyperRectangle(_fullSpace);
+  EquivalenceClass fullSpace() {
+    return new EquivalenceClass(_fullSpace);
   }
 
-  public HeaderSpace example(HyperRectangle counterExample) {
+  public HeaderSpace example(EquivalenceClass counterExample) {
     HeaderSpace space = new HeaderSpace();
     long[] bounds = counterExample.getBounds();
 
@@ -293,7 +293,7 @@ class GeometricSpaceFactory {
         Prefix p = wc.toPrefix();
         long start = p.getStartIp().asLong();
         long end = p.getEndIp().asLong() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.DSTIP);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;
@@ -311,7 +311,7 @@ class GeometricSpaceFactory {
         Prefix p = wc.toPrefix();
         long start = p.getStartIp().asLong();
         long end = p.getEndIp().asLong() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.SRCIP);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;
@@ -328,7 +328,7 @@ class GeometricSpaceFactory {
       for (SubRange sr : allDstPorts) {
         long start = sr.getStart();
         long end = sr.getEnd() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.DSTPORT);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;
@@ -345,7 +345,7 @@ class GeometricSpaceFactory {
       for (SubRange sr : allSrcPorts) {
         long start = sr.getStart();
         long end = sr.getEnd() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.SRCPORT);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;
@@ -360,7 +360,7 @@ class GeometricSpaceFactory {
       for (IpProtocol proto : h.getIpProtocols()) {
         long start = proto.number();
         long end = proto.number() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.IPPROTO);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;
@@ -375,7 +375,7 @@ class GeometricSpaceFactory {
       for (SubRange sr : h.getIcmpTypes()) {
         long start = sr.getStart();
         long end = sr.getEnd() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.ICMPTYPE);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;
@@ -390,7 +390,7 @@ class GeometricSpaceFactory {
       for (SubRange sr : h.getIcmpCodes()) {
         long start = sr.getStart();
         long end = sr.getEnd() + 1;
-        HyperRectangle r = fullSpace();
+        EquivalenceClass r = fullSpace();
         int index = _fieldIndex.get(PacketField.ICMPCODE);
         r.getBounds()[2 * index] = start;
         r.getBounds()[2 * index + 1] = end;

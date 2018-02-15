@@ -20,13 +20,13 @@ class KDTree {
     return (cd + 1) % (_dimensions + 1);
   }
 
-  private long getDim(HyperRectangle r, int dim) {
+  private long getDim(EquivalenceClass r, int dim) {
     return r.getBounds()[dim];
   }
 
   // A utility function to find minimum of three integers
   @Nullable
-  private HyperRectangle min(@Nullable HyperRectangle x, @Nullable HyperRectangle y, int dim) {
+  private EquivalenceClass min(@Nullable EquivalenceClass x, @Nullable EquivalenceClass y, int dim) {
     if (x == null) {
       return y;
     }
@@ -40,7 +40,7 @@ class KDTree {
   }
 
   @Nullable
-  private HyperRectangle min(int dim, @Nullable HyperRectangle x, @Nullable HyperRectangle y) {
+  private EquivalenceClass min(int dim, @Nullable EquivalenceClass x, @Nullable EquivalenceClass y) {
     if (x == null) {
       return y;
     }
@@ -56,7 +56,7 @@ class KDTree {
     }
   }
 
-  private KNode insert(HyperRectangle r, @Nullable KNode t, int cd) {
+  private KNode insert(EquivalenceClass r, @Nullable KNode t, int cd) {
     if (t == null) {
       return new KNode(r, null, null);
     }
@@ -73,7 +73,7 @@ class KDTree {
   }
 
   @Nullable
-  private HyperRectangle findMin(KNode t, int dim, int cd) {
+  private EquivalenceClass findMin(KNode t, int dim, int cd) {
     if (t == null) {
       return null;
     }
@@ -84,14 +84,14 @@ class KDTree {
         return findMin(t._left, dim, nextDim(cd));
       }
     } else {
-      HyperRectangle x = findMin(t._left, dim, nextDim(cd));
-      HyperRectangle y = findMin(t._right, dim, nextDim(cd));
+      EquivalenceClass x = findMin(t._left, dim, nextDim(cd));
+      EquivalenceClass y = findMin(t._right, dim, nextDim(cd));
       return min(min(x, y, dim), t._rectangle, dim);
     }
   }
 
   @Nullable
-  private KNode delete(@Nullable HyperRectangle r, KNode t, int cd) {
+  private KNode delete(@Nullable EquivalenceClass r, KNode t, int cd) {
     if (t == null) {
       throw new BatfishException("Delete KD tree not found: " + r);
     }
@@ -117,7 +117,7 @@ class KDTree {
     return t;
   }
 
-  private void intersect(HyperRectangle r, KNode t, int cd, List<HyperRectangle> result) {
+  private void intersect(EquivalenceClass r, KNode t, int cd, List<EquivalenceClass> result) {
     if (t == null) {
       return;
     }
@@ -169,7 +169,7 @@ class KDTree {
     return 1 + Math.max(depth(t._left), depth(t._right));
   }
 
-  private void elements(KNode t, List<HyperRectangle> elems) {
+  private void elements(KNode t, List<EquivalenceClass> elems) {
     if (t == null) {
       return;
     }
@@ -186,32 +186,32 @@ class KDTree {
     return depth(_root);
   }
 
-  List<HyperRectangle> elements() {
-    List<HyperRectangle> elems = new ArrayList<>();
+  List<EquivalenceClass> elements() {
+    List<EquivalenceClass> elems = new ArrayList<>();
     elements(_root, elems);
     return elems;
   }
 
-  List<HyperRectangle> intersect(HyperRectangle r) {
-    List<HyperRectangle> allIntersects = new ArrayList<>();
+  List<EquivalenceClass> intersect(EquivalenceClass r) {
+    List<EquivalenceClass> allIntersects = new ArrayList<>();
     intersect(r, _root, 0, allIntersects);
     return allIntersects;
   }
 
-  void insert(HyperRectangle r) {
+  void insert(EquivalenceClass r) {
     _root = insert(r, _root, 0);
   }
 
-  void delete(HyperRectangle r) {
+  void delete(EquivalenceClass r) {
     _root = delete(r, _root, 0);
   }
 
   class KNode {
-    private HyperRectangle _rectangle;
+    private EquivalenceClass _rectangle;
     private KNode _left;
     private KNode _right;
 
-    KNode(HyperRectangle rect, @Nullable KNode l, @Nullable KNode r) {
+    KNode(EquivalenceClass rect, @Nullable KNode l, @Nullable KNode r) {
       this._rectangle = rect;
       this._left = l;
       this._right = r;

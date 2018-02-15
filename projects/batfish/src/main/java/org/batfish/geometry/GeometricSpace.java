@@ -5,19 +5,19 @@ import java.util.List;
 
 public class GeometricSpace {
 
-  private List<HyperRectangle> _rectangles;
+  private List<EquivalenceClass> _rectangles;
 
-  GeometricSpace(List<HyperRectangle> rectangles) {
+  GeometricSpace(List<EquivalenceClass> rectangles) {
     this._rectangles = rectangles;
   }
 
-  public static GeometricSpace singleton(HyperRectangle r) {
-    List<HyperRectangle> rects = new ArrayList<>();
+  public static GeometricSpace singleton(EquivalenceClass r) {
+    List<EquivalenceClass> rects = new ArrayList<>();
     rects.add(r);
     return new GeometricSpace(rects);
   }
 
-  List<HyperRectangle> rectangles() {
+  List<EquivalenceClass> rectangles() {
     return this._rectangles;
   }
 }
