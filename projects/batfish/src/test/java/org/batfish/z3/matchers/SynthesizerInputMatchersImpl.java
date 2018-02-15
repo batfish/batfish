@@ -7,7 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
@@ -16,6 +16,19 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public class SynthesizerInputMatchersImpl {
+
+  static final class HasAclActions
+      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Map<Integer, LineAction>>>> {
+    HasAclActions(@Nonnull Matcher<? super Map<String, Map<String, Map<Integer, LineAction>>>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with ACL actions", "ACL actions");
+    }
+
+    @Override
+    protected Map<String, Map<String, Map<Integer, LineAction>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getAclActions();
+    }
+  }
 
   static final class HasAclConditions
       extends FeatureMatcher<
@@ -29,18 +42,6 @@ public class SynthesizerInputMatchersImpl {
     protected Map<String, Map<String, Map<Integer, BooleanExpr>>> featureValueOf(
         SynthesizerInput actual) {
       return actual.getAclConditions();
-    }
-  }
-
-  static final class HasEnabledAcls
-      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, IpAccessList>>> {
-    HasEnabledAcls(@Nonnull Matcher<? super Map<String, Map<String, IpAccessList>>> subMatcher) {
-      super(subMatcher, "SynthesizerInput with enabled ACLs", "enabled ACLs");
-    }
-
-    @Override
-    protected Map<String, Map<String, IpAccessList>> featureValueOf(SynthesizerInput actual) {
-      return actual.getEnabledAcls();
     }
   }
 

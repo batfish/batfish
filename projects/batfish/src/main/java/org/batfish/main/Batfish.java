@@ -179,7 +179,7 @@ import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
-import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.SynthesizerInputImpl;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -4191,7 +4191,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.info("Synthesizing Z3 ACL logic...");
     Synthesizer s =
         new Synthesizer(
-            SynthesizerInput.builder()
+            SynthesizerInputImpl.builder()
                 .setConfigurations(configurations)
                 .setSimplify(_settings.getSimplify())
                 .build());
@@ -4220,7 +4220,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = loadConfigurations();
     Synthesizer s =
         new Synthesizer(
-            SynthesizerInput.builder()
+            SynthesizerInputImpl.builder()
                 .setConfigurations(configurations)
                 .setDataPlane(dataPlane)
                 .setSimplify(_settings.getSimplify())

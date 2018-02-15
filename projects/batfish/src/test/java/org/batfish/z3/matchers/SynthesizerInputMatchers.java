@@ -6,12 +6,12 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
-import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledAcls;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledFlowSinks;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
@@ -26,20 +26,20 @@ public class SynthesizerInputMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's enabled ACLs.
+   */
+  public static HasAclActions hasAclActions(
+      Matcher<? super Map<String, Map<String, Map<Integer, LineAction>>>> subMatcher) {
+    return new HasAclActions(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
    * SynthesizerInput's ACL conditions.
    */
   public static HasAclConditions hasAclConditions(
       Matcher<? super Map<String, Map<String, Map<Integer, BooleanExpr>>>> subMatcher) {
     return new HasAclConditions(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's enabled ACLs.
-   */
-  public static HasEnabledAcls hasEnabledAcls(
-      Matcher<? super Map<String, Map<String, IpAccessList>>> subMatcher) {
-    return new HasEnabledAcls(subMatcher);
   }
 
   /**

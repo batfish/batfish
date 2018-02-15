@@ -9,7 +9,6 @@ import java.util.Set;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.FibRow;
@@ -78,6 +77,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitAccept(Accept.State accept) {
+    // ProjectNodeAccept
     _rules.add(
         new RuleStatement(
             new OrExpr(
@@ -94,59 +94,55 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitAclDeny(AclDeny.State aclDeny) {
     // MatchDenyLine
     _input
-        .getEnabledAcls()
+        .getAclActions()
         .entrySet()
         .stream()
         .flatMap(
-            enabledAclsEntryByNode -> {
-              String hostname = enabledAclsEntryByNode.getKey();
-              return enabledAclsEntryByNode
+            aclActionsEntryByNode -> {
+              String hostname = aclActionsEntryByNode.getKey();
+              return aclActionsEntryByNode
                   .getValue()
                   .entrySet()
                   .stream()
                   .flatMap(
-                      enabledAclsEntryByAclName -> {
-                        String acl = enabledAclsEntryByAclName.getKey();
-                        List<IpAccessListLine> lines =
-                            enabledAclsEntryByAclName.getValue().getLines();
-                        ImmutableList.Builder<RuleStatement> denyLineRules =
-                            ImmutableList.builder();
-                        for (int line = 0; line < lines.size(); line++) {
-                          if (lines.get(line).getAction() == LineAction.REJECT) {
-                            denyLineRules.add(
-                                new RuleStatement(
-                                    new AclLineMatch(hostname, acl, line),
-                                    new AclDeny(hostname, acl)));
-                          }
-                        }
-                        return denyLineRules.build().stream();
+                      aclActionsEntryByAclName -> {
+                        String acl = aclActionsEntryByAclName.getKey();
+                        return aclActionsEntryByAclName
+                            .getValue()
+                            .entrySet()
+                            .stream()
+                            .filter(lineEntry -> lineEntry.getValue() == LineAction.REJECT)
+                            .map(
+                                lineEntry ->
+                                    new RuleStatement(
+                                        new AclLineMatch(hostname, acl, lineEntry.getKey()),
+                                        new AclDeny(hostname, acl)));
                       });
             })
         .forEach(_rules::add);
 
     // MatchNoLines
     _input
-        .getEnabledAcls()
+        .getAclActions()
         .entrySet()
         .stream()
         .flatMap(
-            enabledAclsEntryByNode -> {
-              String hostname = enabledAclsEntryByNode.getKey();
-              return enabledAclsEntryByNode
+            aclActionsEntryByNode -> {
+              String hostname = aclActionsEntryByNode.getKey();
+              return aclActionsEntryByNode
                   .getValue()
                   .entrySet()
                   .stream()
                   .map(
-                      enabledAclsEntryByAclName -> {
-                        String acl = enabledAclsEntryByAclName.getKey();
-                        List<IpAccessListLine> lines =
-                            enabledAclsEntryByAclName.getValue().getLines();
+                      aclActionsEntryByAclName -> {
+                        String acl = aclActionsEntryByAclName.getKey();
+                        Map<Integer, LineAction> lineActions = aclActionsEntryByAclName.getValue();
                         AclDeny deny = new AclDeny(hostname, acl);
-                        if (lines.isEmpty()) {
+                        if (lineActions.isEmpty()) {
                           return new RuleStatement(deny);
                         } else {
-                          int lastLine = lines.size() - 1;
-                          if (lines.get(lastLine).getAction() == LineAction.ACCEPT) {
+                          int lastLine = lineActions.size() - 1;
+                          if (lineActions.get(lastLine) == LineAction.ACCEPT) {
                             return new RuleStatement(
                                 new AclLineNoMatch(hostname, acl, lastLine), deny);
                           } else {
@@ -240,30 +236,29 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitAclPermit(AclPermit.State aclPermit) {
     // MatchPermitLine
     _input
-        .getEnabledAcls()
+        .getAclActions()
         .entrySet()
         .stream()
         .flatMap(
-            e -> {
-              String hostname = e.getKey();
-              return e.getValue()
+            aclActionsEntryByNode -> {
+              String hostname = aclActionsEntryByNode.getKey();
+              return aclActionsEntryByNode
+                  .getValue()
                   .entrySet()
                   .stream()
                   .flatMap(
-                      e2 -> {
-                        String acl = e2.getKey();
-                        List<IpAccessListLine> lines = e2.getValue().getLines();
-                        ImmutableList.Builder<RuleStatement> denyLineRules =
-                            ImmutableList.builder();
-                        for (int line = 0; line < lines.size(); line++) {
-                          if (lines.get(line).getAction() == LineAction.ACCEPT) {
-                            denyLineRules.add(
-                                new RuleStatement(
-                                    new AclLineMatch(hostname, acl, line),
-                                    new AclPermit(hostname, acl)));
-                          }
-                        }
-                        return denyLineRules.build().stream();
+                      aclActionsEntryByAclName -> {
+                        String acl = aclActionsEntryByAclName.getKey();
+                        return aclActionsEntryByAclName
+                            .getValue()
+                            .entrySet()
+                            .stream()
+                            .filter(lineEntry -> lineEntry.getValue() == LineAction.ACCEPT)
+                            .map(
+                                lineEntry ->
+                                    new RuleStatement(
+                                        new AclLineMatch(hostname, acl, lineEntry.getKey()),
+                                        new AclPermit(hostname, acl)));
                       });
             })
         .forEach(_rules::add);
@@ -274,9 +269,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitDrop(Drop.State drop) {
-    // CopyDropNoRoute
-    _rules.add(new RuleStatement(DropNoRoute.INSTANCE, Drop.INSTANCE));
-
     // ProjectNodeDrop
     _rules.add(
         new RuleStatement(

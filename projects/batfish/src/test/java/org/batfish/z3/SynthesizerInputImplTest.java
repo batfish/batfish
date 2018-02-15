@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledAcls;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclActions;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclConditions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledEdges;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledFlowSinks;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledInterfaces;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TestDataPlane;
@@ -42,19 +44,20 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.matchers.SynthesizerInputMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SynthesizerInputTest {
+public class SynthesizerInputImplTest {
 
   private IpAccessList.Builder _aclb;
+
+  private IpAccessListLine.Builder _acllb;
 
   private Configuration.Builder _cb;
 
   private Interface.Builder _ib;
 
-  private SynthesizerInput.Builder _inputBuilder;
+  private SynthesizerInputImpl.Builder _inputBuilder;
 
   private NetworkFactory _nf;
 
@@ -67,49 +70,22 @@ public class SynthesizerInputTest {
     _vb = _nf.vrfBuilder();
     _ib = _nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
-    _inputBuilder = SynthesizerInput.builder();
+    _acllb = IpAccessListLine.builder();
+    _inputBuilder = SynthesizerInputImpl.builder();
   }
 
   @Test
-  public void testComputeAclConditions() {
-    Configuration c = _cb.build();
-    IpAccessList aclWithoutLines = _aclb.setOwner(c).build();
-    IpAccessList aclWithLines =
-        _aclb
-            .setLines(
-                ImmutableList.<IpAccessListLine>of(
-                    IpAccessListLine.builder()
-                        .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
-                        .build(),
-                    IpAccessListLine.builder()
-                        .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
-                        .build()))
-            .build();
-    SynthesizerInput input =
-        _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
-
-    assertThat(
-        input,
-        SynthesizerInputMatchers.hasAclConditions(
-            equalTo(
-                ImmutableMap.of(
-                    c.getName(),
-                    ImmutableMap.of(
-                        aclWithoutLines.getName(),
-                        ImmutableMap.of(),
-                        aclWithLines.getName(),
-                        ImmutableMap.of(
-                            0,
-                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(0)),
-                            1,
-                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(1))))))));
-  }
-
-  @Test
-  public void testComputeEnabledAcls() {
+  public void testComputeAclActions() {
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
-    IpAccessList edgeInterfaceInAcl = _aclb.setOwner(srcNode).build();
+    IpAccessList edgeInterfaceInAcl =
+        _aclb
+            .setOwner(srcNode)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.builder().setAction(LineAction.ACCEPT).build(),
+                    IpAccessListLine.builder().setAction(LineAction.REJECT).build()))
+            .build();
     IpAccessList srcInterfaceOutAcl = _aclb.build();
     IpAccessList iFlowSinkOutAcl = _aclb.build();
     IpAccessList iNoEdgeInAcl = _aclb.build();
@@ -154,30 +130,32 @@ public class SynthesizerInputTest {
                     .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
                     .build())
             .build();
-    Map<String, IpAccessList> expectedSrcNodeWithDataPlane =
+    Map<Integer, LineAction> expectedActions =
+        ImmutableMap.of(0, LineAction.ACCEPT, 1, LineAction.REJECT);
+    Map<String, Map<Integer, LineAction>> expectedSrcNodeWithDataPlane =
         ImmutableMap.of(
             edgeInterfaceInAcl.getName(),
-            edgeInterfaceInAcl,
+            expectedActions,
             srcInterfaceOutAcl.getName(),
-            srcInterfaceOutAcl,
+            expectedActions,
             iFlowSinkOutAcl.getName(),
-            iFlowSinkOutAcl);
-    Map<String, IpAccessList> expectedSrcNodeWithoutDataPlane =
-        ImmutableMap.<String, IpAccessList>builder()
+            expectedActions);
+    Map<String, Map<Integer, LineAction>> expectedSrcNodeWithoutDataPlane =
+        ImmutableMap.<String, Map<Integer, LineAction>>builder()
             .putAll(expectedSrcNodeWithDataPlane)
-            .put(iNoEdgeInAcl.getName(), iNoEdgeInAcl)
-            .put(iNoEdgeOutAcl.getName(), iNoEdgeOutAcl)
+            .put(iNoEdgeInAcl.getName(), expectedActions)
+            .put(iNoEdgeOutAcl.getName(), expectedActions)
             .build();
-    Map<String, IpAccessList> expectedNextHop =
+    Map<String, Map<Integer, LineAction>> expectedNextHop =
         ImmutableMap.of(
             nextHopInterfaceInAcl.getName(),
-            nextHopInterfaceInAcl,
+            expectedActions,
             nextHopInterfaceOutAcl.getName(),
-            nextHopInterfaceOutAcl);
+            expectedActions);
 
     assertThat(
         inputWithDataPlane,
-        hasEnabledAcls(
+        hasAclActions(
             equalTo(
                 ImmutableMap.of(
                     srcNode.getName(),
@@ -186,13 +164,45 @@ public class SynthesizerInputTest {
                     expectedNextHop))));
     assertThat(
         inputWithoutDataPlane,
-        hasEnabledAcls(
+        hasAclActions(
             equalTo(
                 ImmutableMap.of(
                     srcNode.getName(),
                     expectedSrcNodeWithoutDataPlane,
                     nextHop.getName(),
                     expectedNextHop))));
+  }
+
+  @Test
+  public void testComputeAclConditions() {
+    Configuration c = _cb.build();
+    IpAccessList aclWithoutLines = _aclb.setOwner(c).build();
+    _acllb.setAction(LineAction.ACCEPT);
+    IpAccessList aclWithLines =
+        _aclb
+            .setLines(
+                ImmutableList.<IpAccessListLine>of(
+                    _acllb.setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4")))).build(),
+                    _acllb.setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8")))).build()))
+            .build();
+    SynthesizerInput input =
+        _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
+
+    assertThat(
+        input,
+        hasAclConditions(
+            equalTo(
+                ImmutableMap.of(
+                    c.getName(),
+                    ImmutableMap.of(
+                        aclWithoutLines.getName(),
+                        ImmutableMap.of(),
+                        aclWithLines.getName(),
+                        ImmutableMap.of(
+                            0,
+                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(0)),
+                            1,
+                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(1))))))));
   }
 
   @Test

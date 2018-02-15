@@ -9,11 +9,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.StateExpr;
@@ -34,7 +34,7 @@ public class RelationCollectorTest {
 
   @Before
   public void setup() {
-    _input = SynthesizerInput.builder().setConfigurations(ImmutableMap.of()).build();
+    _input = TestSynthesizerInput.builder().build();
   }
 
   /** Test that collectRelations traverses all children of an AndExpr. */

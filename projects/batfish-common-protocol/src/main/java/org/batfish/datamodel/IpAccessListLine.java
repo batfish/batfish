@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.util.Set;
+import java.util.SortedSet;
 
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine extends HeaderSpace {
@@ -13,22 +12,29 @@ public final class IpAccessListLine extends HeaderSpace {
 
     private LineAction _action;
 
-    private Set<IpWildcard> _dstIps;
+    private SortedSet<IpWildcard> _dstIps;
 
     private String _name;
 
-    private Builder() {}
+    private Builder() {
+      _dstIps = ImmutableSortedSet.of();
+    }
 
     public IpAccessListLine build() {
       IpAccessListLine line = new IpAccessListLine();
-      line.setDstIps(ImmutableSortedSet.copyOf(_dstIps));
+      line.setDstIps(_dstIps);
       line.setAction(_action);
       line.setName(_name);
       return line;
     }
 
+    public Builder setAction(LineAction action) {
+      _action = action;
+      return this;
+    }
+
     public Builder setDstIps(Iterable<IpWildcard> dstIps) {
-      _dstIps = ImmutableSet.copyOf(dstIps);
+      _dstIps = ImmutableSortedSet.copyOf(dstIps);
       return this;
     }
   }
