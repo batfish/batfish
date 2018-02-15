@@ -5,6 +5,10 @@ import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
 
+/**
+ * Represents a projection of a bitvector to a bitvector of a lower dimension. The output consists
+ * of a contiguous subvector of the original.
+ */
 public class ExtractExpr extends IntExpr {
 
   public static IntExpr newExtractExpr(HeaderField var, int low, int high) {
