@@ -143,6 +143,15 @@ public interface IBatfish extends IPluginConsumer {
 
   void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin);
 
+  /**
+   * Register a new dataplane plugin
+   *
+   * @param plugin a {@link DataPlanePlugin} capable of computing a dataplane
+   * @param name name of the plugin, will be used to register the plugin and prefixed to all
+   *     plugin-specific settings (and hence command line arguments)
+   */
+  void registerDataPlanePlugin(DataPlanePlugin plugin, String name);
+
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
@@ -179,6 +188,4 @@ public interface IBatfish extends IPluginConsumer {
       Set<String> notTransitNodes);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
-
-  void registerDataPlanePlugin(DataPlanePlugin plugin, String name);
 }

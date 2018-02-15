@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.cli.CommandLine;
@@ -16,6 +17,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.ConfigurationUtils;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
@@ -36,13 +38,23 @@ public abstract class BaseSettings {
 
   private CommandLine _line;
 
-  protected final Options _options;
+  private final Options _options;
 
+  /**
+   * Initialize settings from an existing configuration
+   *
+   * @param config {@link Configuration} containing the desired settings
+   */
   public BaseSettings(Configuration config) {
     _options = new Options();
-    _config = config;
+    _config = ConfigurationUtils.cloneConfiguration(config);
   }
 
+  /**
+   * Initialize settings from a Java properties file
+   *
+   * @param configFile configuration file
+   */
   public BaseSettings(Path configFile) {
     this(loadFileConfiguration(configFile.toFile()));
   }
@@ -77,17 +89,22 @@ public abstract class BaseSettings {
   protected final boolean getBooleanOptionValue(String key) {
     if (_line.hasOption(key)) {
       String value = _line.getOptionValue(key);
-      if (value == null || value.compareToIgnoreCase("true") == 0) {
-        return true;
-      } else if (value.compareToIgnoreCase("false") == 0) {
-        return false;
+      boolean b;
+      if (value == null || value.trim().equalsIgnoreCase("true")) {
+        b = true;
+      } else if (value.trim().equalsIgnoreCase("false")) {
+        b = false;
       } else {
         throw new CleanBatfishException(
             "Error parsing command line: Invalid boolean value: \"" + value + "\"");
       }
-    } else {
-      return _config.getBoolean(key);
+      _config.setProperty(key, b);
     }
+    return _config.getBoolean(key);
+  }
+
+  public Configuration getConfiguration() {
+    return _config;
   }
 
   protected final Integer getIntegerOptionValue(String key) {
@@ -99,63 +116,73 @@ public abstract class BaseSettings {
     }
   }
 
+  /**
+   * Get integer value of an integer setting from the command line (or return default).
+   *
+   * @param key argument name
+   */
   protected final int getIntOptionValue(String key) {
     String valueStr = _line.getOptionValue(key);
-    if (valueStr == null) {
-      return _config.getInt(key);
-    } else {
-      return Integer.parseInt(valueStr);
+    if (valueStr != null) {
+      _config.setProperty(key, Integer.parseInt(valueStr));
     }
+    return _config.getInt(key);
   }
 
   protected final Long getLongOptionValue(String key) {
     String valueStr = _line.getOptionValue(key);
-    if (valueStr == null) {
-      return _config.getLong(key, null);
-    } else {
+    if (valueStr != null) {
       return Long.parseLong(valueStr);
     }
+    return _config.getLong(key, null);
   }
 
   protected final List<Path> getPathListOptionValue(String key) {
     if (_line.hasOption(key)) {
       String[] optionValues = _line.getOptionValues(key);
-      if (optionValues == null) {
-        return Collections.<Path>emptyList();
-      } else {
-        return Arrays.stream(optionValues)
-            .map(optionValue -> nullablePath(optionValue))
-            .collect(Collectors.toList());
+      if (optionValues != null) {
+        _config.setProperty(
+            key,
+            Arrays.stream(optionValues)
+                .map(BaseSettings::nullablePath)
+                .filter(Objects::nonNull)
+                .map(Path::toString)
+                .toArray());
       }
-    } else {
-      return Arrays.stream(_config.getStringArray(key))
-          .map(optionValue -> nullablePath(optionValue))
-          .collect(Collectors.toList());
     }
+    String[] s = _config.getStringArray(key);
+    return s == null
+        ? Collections.emptyList()
+        : Arrays.stream(s).map(Paths::get).collect(Collectors.toList());
   }
 
   @Nullable
   protected final Path getPathOptionValue(String key) {
-    String value = _line.getOptionValue(key, _config.getString(key));
-    return nullablePath(value);
+    String valueStr = _line.getOptionValue(key);
+    if (valueStr != null) {
+      _config.setProperty(key, valueStr);
+    }
+    return nullablePath(_config.getString(key));
   }
 
   protected final List<String> getStringListOptionValue(String key) {
     if (_line.hasOption(key)) {
       String[] optionValues = _line.getOptionValues(key);
       if (optionValues == null) {
-        return Collections.<String>emptyList();
+        _config.setProperty(key, Collections.emptyList());
       } else {
-        return Arrays.asList(optionValues);
+        _config.setProperty(key, Arrays.asList(optionValues));
       }
-    } else {
-      return Arrays.asList(_config.getStringArray(key));
     }
+    return _config.getList(String.class, key);
   }
 
   protected final String getStringOptionValue(String key) {
-    String value = _line.getOptionValue(key, _config.getString(key));
-    return value;
+    String valueStr = _line.getOptionValue(key);
+    if (valueStr != null) {
+      _config.setProperty(key, valueStr);
+    }
+    return _config.getString(key);
   }
 
   protected final void initCommandLine(String[] args) {
@@ -170,7 +197,7 @@ public abstract class BaseSettings {
   }
 
   @Nullable
-  private final Path nullablePath(String s) {
+  protected static Path nullablePath(String s) {
     return (s != null) ? Paths.get(s) : null;
   }
 
