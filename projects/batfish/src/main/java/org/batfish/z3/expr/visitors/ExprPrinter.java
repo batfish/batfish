@@ -1,7 +1,7 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.AndExpr;
@@ -32,11 +32,6 @@ import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
 
 public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
-
-  private static final List<Expr> HEADER_VARIABLE_EXPRS =
-      Arrays.stream(HeaderField.values())
-          .map(hf -> new IdExpr(hf.name()))
-          .collect(ImmutableList.toImmutableList());
 
   public static String print(Expr expr) {
     ExprPrinter printer = new ExprPrinter();
@@ -259,10 +254,10 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   @Override
   public void visitStateExpr(StateExpr stateExpr) {
     /* TODO: handle vectorized state parameters as variables */
+    /* TODO: handle arguments */
     printCollapsedComplexExpr(
         ImmutableList.<Expr>builder()
-            .add(new IdExpr(stateExpr.getClass().getSimpleName()))
-            .addAll(HEADER_VARIABLE_EXPRS)
+            .add(new IdExpr(BoolExprTransformer.getNodName(ImmutableSet.of(), stateExpr)))
             .build());
   }
 
