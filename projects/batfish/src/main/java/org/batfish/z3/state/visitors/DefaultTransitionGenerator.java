@@ -140,15 +140,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
                           return new RuleStatement(deny);
                         } else {
                           int lastLine = lineActions.size() - 1;
-                          if (lineActions.get(lastLine) == LineAction.ACCEPT) {
-                            return new RuleStatement(
-                                new AclLineNoMatch(hostname, acl, lastLine), deny);
-                          } else {
-                            return null;
-                          }
+                          return new RuleStatement(
+                              new AclLineNoMatch(hostname, acl, lastLine), deny);
                         }
-                      })
-                  .filter(r -> r != null);
+                      });
             })
         .forEach(_rules::add);
   }
