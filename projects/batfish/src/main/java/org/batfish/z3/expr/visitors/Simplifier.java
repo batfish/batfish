@@ -165,14 +165,12 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     BooleanExpr oldConsequent = ifExpr.getConsequent();
     BooleanExpr newAntecedent = simplifyBooleanExpr(oldAntecedent);
     BooleanExpr newConsequent = simplifyBooleanExpr(oldConsequent);
-    if (newAntecedent == FalseExpr.INSTANCE || newConsequent == TrueExpr.INSTANCE) {
+    if (newAntecedent == FalseExpr.INSTANCE
+        || newConsequent == TrueExpr.INSTANCE
+        || newAntecedent.equals(newConsequent)) {
       _simplifiedBooleanExpr = TrueExpr.INSTANCE;
     } else if (newAntecedent == TrueExpr.INSTANCE) {
-      if (newConsequent == FalseExpr.INSTANCE) {
-        _simplifiedBooleanExpr = FalseExpr.INSTANCE;
-      } else {
-        _simplifiedBooleanExpr = newConsequent;
-      }
+      _simplifiedBooleanExpr = newConsequent;
     } else if (newAntecedent != oldAntecedent || newConsequent != oldConsequent) {
       _simplifiedBooleanExpr = new IfExpr(newAntecedent, newConsequent);
     } else {
@@ -200,6 +198,8 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
       _simplifiedBooleanExpr = TrueExpr.INSTANCE;
     } else if (newArg == TrueExpr.INSTANCE) {
       _simplifiedBooleanExpr = FalseExpr.INSTANCE;
+    } else if (newArg instanceof NotExpr) {
+      _simplifiedBooleanExpr = ((NotExpr) newArg).getArg();
     } else if (newArg != oldArg) {
       _simplifiedBooleanExpr = new NotExpr(newArg);
     } else {

@@ -4,9 +4,9 @@ import java.util.Objects;
 
 public class QueryStatement extends Statement {
 
-  private final BooleanExpr _subExpression;
+  private final StateExpr _subExpression;
 
-  public QueryStatement(BooleanExpr expr) {
+  public QueryStatement(StateExpr expr) {
     _subExpression = expr;
   }
 
@@ -20,7 +20,7 @@ public class QueryStatement extends Statement {
     visitor.visitQueryStatement(this);
   }
 
-  public BooleanExpr getSubExpression() {
+  public StateExpr getSubExpression() {
     return _subExpression;
   }
 
