@@ -88,6 +88,8 @@ public class Task {
 
   private static final String PROP_BATCHES = "batches";
 
+  private static final String PROP_ERR_MESSAGE = "errMessage";
+
   private static final String PROP_OBTAINED = "obtained";
 
   private static final String PROP_STATUS = "status";
@@ -97,6 +99,8 @@ public class Task {
   private final String[] _args;
 
   private final List<Batch> _batches;
+
+  private String _errMessage;
 
   private final Date _obtained;
 
@@ -110,20 +114,22 @@ public class Task {
       @JsonProperty(PROP_OBTAINED) Date obtained,
       @JsonProperty(PROP_STATUS) TaskStatus status,
       @JsonProperty(PROP_TERMINATED) Date terminated,
-      @JsonProperty(PROP_BATCHES) List<Batch> batches) {
+      @JsonProperty(PROP_BATCHES) List<Batch> batches,
+      @JsonProperty(PROP_ERR_MESSAGE) String errMessage) {
     _args = args;
     _obtained = obtained;
     _status = status;
     _terminated = terminated;
     _batches = batches;
+    _errMessage = errMessage;
   }
 
   public Task(@Nullable String[] args) {
-    this(args, new Date(), TaskStatus.Unscheduled, null, new ArrayList<>());
+    this(args, new Date(), TaskStatus.Unscheduled, null, new ArrayList<>(), null);
   }
 
   public Task(TaskStatus status) {
-    this(null, new Date(), status, null, new ArrayList<>());
+    this(null, new Date(), status, null, new ArrayList<>(), null);
     if (status == TaskStatus.TerminatedNormally || status == TaskStatus.TerminatedAbnormally) {
       _terminated = new Date();
     }
@@ -141,6 +147,11 @@ public class Task {
 
   public List<Batch> getBatches() {
     return _batches;
+  }
+
+  @JsonProperty(PROP_ERR_MESSAGE)
+  public String getErrMessage() {
+    return _errMessage;
   }
 
   @JsonProperty(PROP_OBTAINED)
@@ -165,6 +176,11 @@ public class Task {
     batch.setStartDate(date);
     _batches.add(batch);
     return batch;
+  }
+
+  @JsonProperty(PROP_ERR_MESSAGE)
+  public void setErrMessage(String msg) {
+    _errMessage = msg;
   }
 
   public void setStatus(TaskStatus status) {

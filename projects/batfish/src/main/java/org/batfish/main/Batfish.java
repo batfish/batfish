@@ -450,8 +450,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private Settings _settings;
 
   // this variable is used communicate with parent thread on how the job
-  // finished
-  private boolean _terminatedWithException;
+  // finished (null if job finished successfully)
+  private String _terminatingExceptionMessage;
 
   private TestrigSettings _testrigSettings;
 
@@ -480,7 +480,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _baseTestrigSettings = settings.getBaseTestrigSettings();
     _logger = _settings.getLogger();
     _deltaTestrigSettings = settings.getDeltaTestrigSettings();
-    _terminatedWithException = false;
+    _terminatingExceptionMessage = null;
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
@@ -1881,8 +1881,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getTaskId();
   }
 
-  public boolean getTerminatedWithException() {
-    return _terminatedWithException;
+  public String getTerminatingExceptionMessage() {
+    return _terminatingExceptionMessage;
   }
 
   @Override
@@ -4011,8 +4011,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _monotonicCache = monotonicCache;
   }
 
-  public void setTerminatedWithException(boolean terminatedWithException) {
-    _terminatedWithException = terminatedWithException;
+  public void setTerminatingExceptionMessage(String terminatingExceptionMessage) {
+    _terminatingExceptionMessage = terminatingExceptionMessage;
   }
 
   @Override

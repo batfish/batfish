@@ -143,7 +143,7 @@ public class WorkQueueMgrTest {
     metadataPath.getParent().toFile().mkdirs();
     TestrigMetadata trMetadata = new TestrigMetadata(Instant.now(), environment);
     EnvironmentMetadata envMetadata = trMetadata.getEnvironments().get(environment);
-    envMetadata.updateStatus(status);
+    envMetadata.updateStatus(status, null);
     TestrigMetadataMgr.writeMetadata(trMetadata, metadataPath);
   }
 
