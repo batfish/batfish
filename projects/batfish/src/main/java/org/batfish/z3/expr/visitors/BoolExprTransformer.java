@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Expr;
 import java.util.Arrays;
+import java.util.Set;
 import org.batfish.z3.HeaderField;
 import org.batfish.z3.NodProgram;
 import org.batfish.z3.SynthesizerInput;
@@ -22,18 +23,23 @@ import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
+import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.visitors.Parameterizer;
 
 public class BoolExprTransformer implements BooleanExprVisitor {
 
-  public static String getNodName(SynthesizerInput input, StateExpr stateExpr) {
+  public static String getNodName(Set<Type> vectorizedParameters, StateExpr stateExpr) {
     StringBuilder name = new StringBuilder();
     name.append(String.format("S_%s", stateExpr.getClass().getSimpleName()));
     Parameterizer.getParameters(stateExpr)
         .stream()
-        .filter(parameter -> !input.getVectorizedParameters().contains(parameter.getType()))
+        .filter(parameter -> !vectorizedParameters.contains(parameter.getType()))
         .forEach(parameter -> name.append(String.format("_%s", parameter.getId())));
     return name.toString();
+  }
+
+  public static String getNodName(SynthesizerInput input, StateExpr stateExpr) {
+    return getNodName(input.getVectorizedParameters(), stateExpr);
   }
 
   public static BoolExpr toBoolExpr(
