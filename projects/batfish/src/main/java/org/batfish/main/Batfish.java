@@ -293,29 +293,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ConfigurationFormat format,
       String header) {
     switch (format) {
-    case JUNIPER:
-    {
-      JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
-      ParserRuleContext tree = parse(parser, logger, settings);
-      JuniperFlattener flattener = new JuniperFlattener(header);
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(flattener, tree);
-      return flattener.getFlattenedConfigurationText();
-    }
+      case JUNIPER:
+        {
+          JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
+          ParserRuleContext tree = parse(parser, logger, settings);
+          JuniperFlattener flattener = new JuniperFlattener(header);
+          ParseTreeWalker walker = new ParseTreeWalker();
+          walker.walk(flattener, tree);
+          return flattener.getFlattenedConfigurationText();
+        }
 
-    case VYOS:
-    {
-      VyosCombinedParser parser = new VyosCombinedParser(input, settings);
-      ParserRuleContext tree = parse(parser, logger, settings);
-      VyosFlattener flattener = new VyosFlattener(header);
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(flattener, tree);
-      return flattener.getFlattenedConfigurationText();
-    }
+      case VYOS:
+        {
+          VyosCombinedParser parser = new VyosCombinedParser(input, settings);
+          ParserRuleContext tree = parse(parser, logger, settings);
+          VyosFlattener flattener = new VyosFlattener(header);
+          ParseTreeWalker walker = new ParseTreeWalker();
+          walker.walk(flattener, tree);
+          return flattener.getFlattenedConfigurationText();
+        }
 
-    // $CASES-OMITTED$
-    default:
-      throw new BatfishException("Invalid format for flattening");
+        // $CASES-OMITTED$
+      default:
+        throw new BatfishException("Invalid format for flattening");
     }
   }
 
@@ -499,7 +499,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .getContainerDir()
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
+                        BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
                     .toString());
     if (!Files.exists(analysisQuestionsDir)) {
       throw new BatfishException(
@@ -1942,10 +1942,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .getBasePath()
             .resolve(
                 Paths.get(
-                    BfConsts.RELPATH_ANALYSES_DIR,
-                    analysisName,
-                    BfConsts.RELPATH_QUESTIONS_DIR,
-                    questionName)
+                        BfConsts.RELPATH_ANALYSES_DIR,
+                        analysisName,
+                        BfConsts.RELPATH_QUESTIONS_DIR,
+                        questionName)
                     .toString());
     questionDir.toFile().mkdirs();
     Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
@@ -1966,114 +1966,114 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String srcVrf = bgpAdvertisement.getSrcVrf();
       String dstVrf = bgpAdvertisement.getDstVrf();
       switch (type) {
-      case EBGP_ORIGINATED:
-      {
-        String originationNodeName = bgpAdvertisement.getSrcNode();
-        Configuration originationNode = configurations.get(originationNodeName);
-        if (originationNode != null) {
-          originationNode.getBgpAdvertisements().add(bgpAdvertisement);
-          originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-          originationNode.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
-          Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
-          originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
-          originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
-          originationVrf.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
-        } else {
-          throw new BatfishException(
-              "Originated bgp advertisement refers to missing node: \""
-                  + originationNodeName
-                  + "\"");
-        }
-        break;
-      }
+        case EBGP_ORIGINATED:
+          {
+            String originationNodeName = bgpAdvertisement.getSrcNode();
+            Configuration originationNode = configurations.get(originationNodeName);
+            if (originationNode != null) {
+              originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+              originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
+              originationNode.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
+              Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
+              originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
+              originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
+              originationVrf.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
+            } else {
+              throw new BatfishException(
+                  "Originated bgp advertisement refers to missing node: \""
+                      + originationNodeName
+                      + "\"");
+            }
+            break;
+          }
 
-      case IBGP_ORIGINATED:
-      {
-        String originationNodeName = bgpAdvertisement.getSrcNode();
-        Configuration originationNode = configurations.get(originationNodeName);
-        if (originationNode != null) {
-          originationNode.getBgpAdvertisements().add(bgpAdvertisement);
-          originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-          originationNode.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
-          Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
-          originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
-          originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
-          originationVrf.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
-        } else {
-          throw new BatfishException(
-              "Originated bgp advertisement refers to missing node: \""
-                  + originationNodeName
-                  + "\"");
-        }
-        break;
-      }
+        case IBGP_ORIGINATED:
+          {
+            String originationNodeName = bgpAdvertisement.getSrcNode();
+            Configuration originationNode = configurations.get(originationNodeName);
+            if (originationNode != null) {
+              originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+              originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
+              originationNode.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
+              Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
+              originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
+              originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
+              originationVrf.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
+            } else {
+              throw new BatfishException(
+                  "Originated bgp advertisement refers to missing node: \""
+                      + originationNodeName
+                      + "\"");
+            }
+            break;
+          }
 
-      case EBGP_RECEIVED:
-      {
-        String recevingNodeName = bgpAdvertisement.getDstNode();
-        Configuration receivingNode = configurations.get(recevingNodeName);
-        if (receivingNode != null) {
-          receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
-          receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-          receivingNode.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
-          Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
-          receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-          receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
-          receivingVrf.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
-        }
-        break;
-      }
+        case EBGP_RECEIVED:
+          {
+            String recevingNodeName = bgpAdvertisement.getDstNode();
+            Configuration receivingNode = configurations.get(recevingNodeName);
+            if (receivingNode != null) {
+              receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+              receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+              receivingNode.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
+              Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
+              receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+              receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
+              receivingVrf.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+          }
 
-      case IBGP_RECEIVED:
-      {
-        String recevingNodeName = bgpAdvertisement.getDstNode();
-        Configuration receivingNode = configurations.get(recevingNodeName);
-        if (receivingNode != null) {
-          receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
-          receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-          receivingNode.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
-          Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
-          receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-          receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
-          receivingVrf.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
-        }
-        break;
-      }
+        case IBGP_RECEIVED:
+          {
+            String recevingNodeName = bgpAdvertisement.getDstNode();
+            Configuration receivingNode = configurations.get(recevingNodeName);
+            if (receivingNode != null) {
+              receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+              receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+              receivingNode.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
+              Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
+              receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+              receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
+              receivingVrf.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+          }
 
-      case EBGP_SENT:
-      {
-        String sendingNodeName = bgpAdvertisement.getSrcNode();
-        Configuration sendingNode = configurations.get(sendingNodeName);
-        if (sendingNode != null) {
-          sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
-          sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-          sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
-          Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
-          sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-          sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
-          sendingVrf.getSentEbgpAdvertisements().add(bgpAdvertisement);
-        }
-        break;
-      }
+        case EBGP_SENT:
+          {
+            String sendingNodeName = bgpAdvertisement.getSrcNode();
+            Configuration sendingNode = configurations.get(sendingNodeName);
+            if (sendingNode != null) {
+              sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+              sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+              sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+              Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
+              sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+              sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
+              sendingVrf.getSentEbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+          }
 
-      case IBGP_SENT:
-      {
-        String sendingNodeName = bgpAdvertisement.getSrcNode();
-        Configuration sendingNode = configurations.get(sendingNodeName);
-        if (sendingNode != null) {
-          sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
-          sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-          sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
-          Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
-          sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-          sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
-          sendingVrf.getSentIbgpAdvertisements().add(bgpAdvertisement);
-        }
-        break;
-      }
+        case IBGP_SENT:
+          {
+            String sendingNodeName = bgpAdvertisement.getSrcNode();
+            Configuration sendingNode = configurations.get(sendingNodeName);
+            if (sendingNode != null) {
+              sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+              sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+              sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
+              Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
+              sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+              sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
+              sendingVrf.getSentIbgpAdvertisements().add(bgpAdvertisement);
+            }
+            break;
+          }
 
-      default:
-        throw new BatfishException("Invalid bgp advertisement type");
+        default:
+          throw new BatfishException("Invalid bgp advertisement type");
       }
     }
   }
@@ -2407,7 +2407,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public ParseEnvironmentRoutingTablesAnswerElement
-  loadParseEnvironmentRoutingTablesAnswerElement() {
+      loadParseEnvironmentRoutingTablesAnswerElement() {
     return loadParseEnvironmentRoutingTablesAnswerElement(true);
   }
 
@@ -2971,8 +2971,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // If vrf has BGP, OSPF, or RIP process and device isn't a host, set device type to router
         if (c.getDeviceType() == null
             && (vrf.getBgpProcess() != null
-            || vrf.getOspfProcess() != null
-            || vrf.getRipProcess() != null)) {
+                || vrf.getOspfProcess() != null
+                || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
         }
         // Compute OSPF interface costs where they are missing
@@ -3522,7 +3522,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               answers.put(
                   questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON),
                   !questionDirPath.getFileName().startsWith(".")
-                      && Files.exists(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
+                          && Files.exists(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
                       ? CommonUtil.readFile(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
                       : ""));
     } catch (IOException e1) {
