@@ -35,4 +35,19 @@ public class OspfExternalType1Route extends OspfExternalRoute {
   public int routeCompare(AbstractRoute rhs) {
     return 0;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof OspfExternalType1Route)) {
+      return false;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    OspfExternalType1Route other = (OspfExternalType1Route) obj;
+    return getCostToAdvertiser() == other.getCostToAdvertiser();
+  }
 }
