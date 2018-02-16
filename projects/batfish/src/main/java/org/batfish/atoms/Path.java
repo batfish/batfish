@@ -29,6 +29,9 @@ public class Path implements Iterable<GraphLink> {
       if (node.equals(link.getSource())) {
         return true;
       }
+      if (node.equals(link.getTarget())) {
+        return true;
+      }
     }
     return false;
   }

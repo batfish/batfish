@@ -721,13 +721,11 @@ public class NetworkModel {
       // System.out.println("Fwd bits: " + s.getForwarding());
       // System.out.println("Acl bits: " + s.getAcl());
 
-      boolean isSink = sinks.contains(current.owner());
       for (GraphLink link : _adjacencyLists.get(current.getIndex())) {
         // TODO: make sure the link is active etc
 
         // System.out.println("  Extend by link: " + link);
 
-        // TODO: what about inbound predicates? GraphLink may be the wrong thing here
         BitSet fwdLink = _forwardingPredicates.get(link);
         BitSet aclLink = _aclOutPredicates.get(link);
 
@@ -746,8 +744,12 @@ public class NetworkModel {
 
         GraphNode neighbor = link.getTarget();
         boolean notLoop = !s.getPath().containsNode(neighbor);
-        boolean nonEmptyOut = !afterOut.getForwarding().isEmpty() && !afterOut.getAcl().isEmpty();
-        boolean nonEmptyIn = !afterIn.getForwarding().isEmpty() && !afterIn.getAcl().isEmpty();
+        boolean nonEmptyOut =
+            !afterOut.getForwarding().isEmpty()
+                && (!afterOut.getAcl().isEmpty() || _aclBdds.isEmpty());
+        boolean nonEmptyIn =
+            !afterIn.getForwarding().isEmpty()
+                && (!afterIn.getAcl().isEmpty() || _aclBdds.isEmpty());
 
         // Add the neighbor
         if (notLoop && nonEmptyIn) {
@@ -760,7 +762,7 @@ public class NetworkModel {
               outboundSummaries.computeIfAbsent(link, k -> new ArrayList<>());
           info.add(afterOut);
         }
-        if (nonEmptyIn) {
+        if (nonEmptyIn && other != null) {
           List<PortReachabilitySummary> info =
               inboundSummaries.computeIfAbsent(other, k -> new ArrayList<>());
           info.add(afterIn);
@@ -938,6 +940,9 @@ public class NetworkModel {
     for (int i = f.nextSetBit(0); i >= 0; i = f.nextSetBit(i + 1)) {
       BDD fwd = _forwardingBdds.get(i);
       acc1 = acc1.or(fwd);
+    }
+    if (_aclBdds.isEmpty()) {
+      return query.and(acc1);
     }
     BDD acc2 = BDDPacket.factory.zero();
     for (int i = a.nextSetBit(0); i >= 0; i = a.nextSetBit(i + 1)) {
