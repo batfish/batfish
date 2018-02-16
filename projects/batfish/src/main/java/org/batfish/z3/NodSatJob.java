@@ -32,7 +32,7 @@ public class NodSatJob<KeyT> extends BatfishJob<NodSatResult<KeyT>> {
     long elapsedTime;
     try (Context ctx = new Context()) {
       NodProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer, ctx);
-      NodProgram queryProgram = _query.getNodProgram(baseProgram);
+      NodProgram queryProgram = _query.getNodProgram(_synthesizer.getInput(), baseProgram);
       NodProgram program = baseProgram.append(queryProgram);
       Params p = ctx.mkParams();
       p.add("fixedpoint.engine", "datalog");
