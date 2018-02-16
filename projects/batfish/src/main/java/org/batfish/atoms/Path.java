@@ -1,7 +1,5 @@
 package org.batfish.atoms;
 
-import java.util.Iterator;
-import javax.annotation.Nonnull;
 import org.batfish.symbolic.collections.PList;
 
 /*

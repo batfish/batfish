@@ -44,31 +44,25 @@ import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.collections.PList;
 import org.batfish.symbolic.utils.Tuple;
 
-
 /**
- * A model of the network dataplane that is based on partitioning the
- * forwarding and ACL functions on each interface into disjoint regions.
- * The idea is proposed and evaluated in this paper:
+ * A model of the network dataplane that is based on partitioning the forwarding and ACL functions
+ * on each interface into disjoint regions. The idea is proposed and evaluated in this paper:
  * https://www.cs.utexas.edu/users/lam/Vita/Cpapers/Yang_Lam_AP_Verifier_2013.pdf
  *
- * <p>By splitting policies into disjoint regions, each region is represented
- * using a single unique integer, and each port can be represented using
- * a compact bitset. This leads to an initial expensive indexing operation,
- * but then permits very fast reachability checks.</p>
+ * <p>By splitting policies into disjoint regions, each region is represented using a single unique
+ * integer, and each port can be represented using a compact bitset. This leads to an initial
+ * expensive indexing operation, but then permits very fast reachability checks.
  *
- * <p>To check reachability from one port to another, the set of all regions is
- * inserted at the source port, and the the network graph is traversed in a
- * depth-first fashion, taking the intersection of the bitsets along each edge.
- * Portions of the resulting tree are pruned as needed when there can be no
- * reachabile packets to that part of the network (i.e., an empty bitset).</p>
+ * <p>To check reachability from one port to another, the set of all regions is inserted at the
+ * source port, and the the network graph is traversed in a depth-first fashion, taking the
+ * intersection of the bitsets along each edge. Portions of the resulting tree are pruned as needed
+ * when there can be no reachabile packets to that part of the network (i.e., an empty bitset).
  *
- * <p>Precomputing reachability between all pairs of ports can be expensive,
- * so it may be a better option to use a fixed size cache to record recently
- * computed reachability information.</p>
+ * <p>Precomputing reachability between all pairs of ports can be expensive, so it may be a better
+ * option to use a fixed size cache to record recently computed reachability information.
  *
- * @author  Ryan Beckett
+ * @author Ryan Beckett
  */
-
 public class NetworkModel {
 
   private static int ACCEPT_FLAG = 0;
@@ -316,7 +310,6 @@ public class NetworkModel {
     }
     return bdd;
   } */
-
 
   /*
    * Compute the atomic predicates for the ACLs in the network
@@ -711,7 +704,6 @@ public class NetworkModel {
     return new Tuple<>(flow, new FlowTrace(fd, hops, note));
   }
 
-
   /*
    * Given a collection of counterexamples, creates an answerelement object to return
    */
@@ -816,7 +808,6 @@ public class NetworkModel {
     return analyzeSummaries(query, outboundSummaries, inboundSummaries, flags, sinks);
     // return analyzeSummaries(query, summaries);
   }
-
 
   /*
    * Once all pairs reachabilty labels have been computed, we need
