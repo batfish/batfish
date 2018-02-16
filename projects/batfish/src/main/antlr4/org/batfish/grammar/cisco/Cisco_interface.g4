@@ -11,6 +11,21 @@ if_autostate
    NO? AUTOSTATE NEWLINE
 ;
 
+if_channel_group
+:
+   CHANNEL_GROUP num = DEC
+   (
+      MODE
+      (
+         ACTIVE
+         | DESIRABLE
+         | AUTO
+         | ON
+         | PASSIVE
+      )
+   )? NEWLINE
+;
+
 if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
@@ -271,6 +286,11 @@ if_ip_virtual_router
    IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
+if_ip_vrf_forwarding
+:
+   IP? VRF FORWARDING name = variable NEWLINE
+;
+
 if_isis_circuit_type
 :
    ISIS CIRCUIT_TYPE
@@ -358,7 +378,6 @@ if_null_block
       | CARRIER_DELAY
       | CDP
       | CHANNEL
-      | CHANNEL_GROUP
       | CHANNEL_PROTOCOL
       | CLASS
       | CLNS
@@ -474,6 +493,7 @@ if_null_block
                   BORDER
                   | BORDER_ROUTER
                   | BSR_BORDER
+                  | DENSE_MODE
                   | DR_PRIORITY
                   | HELLO_INTERVAL
                   | PASSIVE
@@ -491,14 +511,13 @@ if_null_block
             | RIP
             | ROUTE_CACHE
             | RSVP
+            | SAP
             | SDR
             | TCP
             | UNNUMBERED
             | UNREACHABLES
             | VERIFY
             | VIRTUAL_REASSEMBLY
-            | VIRTUAL_ROUTER
-            | VRF
             | WCCP
          )
       )
@@ -875,7 +894,8 @@ if_tunnel
 :
    TUNNEL
    (
-       iftunnel_destination
+       iftunnel_bandwidth
+       | iftunnel_destination
        | iftunnel_key
        | iftunnel_mode
        | iftunnel_protection
@@ -886,11 +906,6 @@ if_tunnel
 if_vrf
 :
    VRF name = variable NEWLINE
-;
-
-if_vrf_forwarding
-:
-   VRF FORWARDING name = variable NEWLINE
 ;
 
 if_vrf_member
@@ -956,6 +971,7 @@ ifigmp_null
    (
       GROUP_TIMEOUT
       | HOST_PROXY
+      | JOIN_GROUP
       | LAST_MEMBER_QUERY_COUNT
       | LAST_MEMBER_QUERY_INTERVAL
       | LAST_MEMBER_QUERY_RESPONSE_TIME
@@ -994,6 +1010,16 @@ ifigmpsg_null
    ) ~NEWLINE* NEWLINE
 ;
 
+iftunnel_bandwidth
+:
+   BANDWIDTH 
+   (
+      RECEIVE
+      | TRANSMIT
+   ) DEC NEWLINE
+;
+
+
 iftunnel_destination
 :
    DESTINATION IP_ADDRESS NEWLINE
@@ -1026,7 +1052,11 @@ iftunnel_protection
 
 iftunnel_source
 :
-   SOURCE (IP_ADDRESS | interface_name) NEWLINE
+   SOURCE 
+   (
+     IP_ADDRESS 
+     | interface_name
+   ) NEWLINE
 ;
 
 ifvrrp_authentication
@@ -1075,6 +1105,7 @@ s_interface
    )
    (
       if_autostate
+      | if_channel_group
       | if_default_gw
       | if_description
       | if_flow_sampler
@@ -1103,6 +1134,7 @@ s_interface
       | if_ip_router_isis
       | if_ip_router_ospf_area
       | if_ip_virtual_router
+      | if_ip_vrf_forwarding
       | if_isis_circuit_type
       | if_isis_enable
       | if_isis_hello_interval
@@ -1127,7 +1159,6 @@ s_interface
       | if_switchport_trunk_native
       | if_tunnel
       | if_vrf
-      | if_vrf_forwarding
       | if_vrf_member
       | if_vrrp
       // do not rearrange items below

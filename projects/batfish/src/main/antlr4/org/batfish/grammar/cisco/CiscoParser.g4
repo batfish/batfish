@@ -20,7 +20,7 @@ options {
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
-   
+
    @Override
    public String getStateInfo() {
       return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
@@ -949,6 +949,7 @@ ip_dhcp_null
       | PACKET
       | SMART_RELAY
       | SNOOPING
+      | USE
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -1150,6 +1151,7 @@ ip_sla_null
       | REQUEST_DATA_SIZE
       | SAMPLES_OF_HISTORY_KEPT
       | TAG
+      | TIMEOUT
       | TOS
       | UDP_JITTER
    ) ~NEWLINE* NEWLINE
@@ -3215,11 +3217,14 @@ spanning_tree_null
 :
    (
       BACKBONEFAST
+      | BPDUFILTER
       | BRIDGE
+      | COST
       | DISPUTE
       | ETHERCHANNEL
       | EXTEND
       | FCOE
+      | GUARD
       | LOGGING
       | LOOPGUARD
       | MODE
@@ -3346,6 +3351,7 @@ stanza
    | s_application
    | s_application_var
    | s_archive
+   | s_arp_access_list_extended
    | s_authentication
    | s_cable
    | s_call_home

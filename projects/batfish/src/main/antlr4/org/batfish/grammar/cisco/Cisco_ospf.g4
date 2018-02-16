@@ -27,6 +27,16 @@ ro_area
    )*
 ;
 
+ro_area_default_cost
+:
+   AREA
+   (
+      area_int = DEC
+      | area_ip = IP_ADDRESS
+   )
+   DEFAULT_COST cost = DEC NEWLINE
+;
+
 ro_area_filterlist
 :
    AREA
@@ -46,8 +56,20 @@ ro_area_nssa
       | area_ip = IP_ADDRESS
    ) NSSA
    (
-      NO_SUMMARY
-      | DEFAULT_INFORMATION_ORIGINATE
+      (
+         DEFAULT_INFORMATION_ORIGINATE
+         (
+            (
+               METRIC metric = DEC
+            )
+            |
+            (
+               METRIC_TYPE metric_type = DEC
+            )
+         )*
+      )
+      | NO_REDISTRIBUTION
+      | NO_SUMMARY
    )* NEWLINE
 ;
 
@@ -57,14 +79,19 @@ ro_area_range
    (
       area_int = DEC
       | area_ip = IP_ADDRESS
+   ) RANGE
+   (
+      (
+         area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
+      )
+      | area_prefix = IP_PREFIX
    )
-   RANGE area_range = IP_PREFIX
    (
       ADVERTISE
       | NOT_ADVERTISE
    )?
    (
-      COST cost=DEC
+      COST cost = DEC
    )?
    NEWLINE
 ;
@@ -144,6 +171,10 @@ ro_max_metric
       (
          summary_lsa = SUMMARY_LSA summary = DEC?
       )
+      |
+      (
+         wait_for_bgp = WAIT_FOR BGP bgptag = variable_max_metric
+      )
    )* NEWLINE
 ;
 
@@ -203,6 +234,7 @@ ro_null
       )
       | AUTO_COST
       | BFD
+      | CAPABILITY
       | DEAD_INTERVAL
       | DISCARD_ROUTE
       | DISTRIBUTE_LIST
@@ -359,6 +391,16 @@ ro_summary_address
 :
    SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
    NEWLINE
+;
+
+ro_vrf
+:
+   VRF name = variable NEWLINE
+   (
+      ro_max_metric
+      | ro_redistribute_connected
+      | ro_redistribute_static
+   )*
 ;
 
 ro6_area
@@ -572,6 +614,7 @@ s_router_ospf
    (
       ro_address_family
       | ro_area
+      | ro_area_default_cost
       | ro_area_filterlist
       | ro_area_nssa
       | ro_area_range
@@ -592,6 +635,7 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
+      | ro_vrf
    )*
 ;
 

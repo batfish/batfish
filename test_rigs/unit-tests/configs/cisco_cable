@@ -174,3 +174,6 @@ packetcable
 packetcable authorize vanilla-docsis-mta
 packetcable multimedia
 !
+controller T1 1/2/3
+ fdl att
+!

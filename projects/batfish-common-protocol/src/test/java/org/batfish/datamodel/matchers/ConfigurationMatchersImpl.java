@@ -22,7 +22,7 @@ final class ConfigurationMatchersImpl {
 
   static final class HasVrfs extends FeatureMatcher<Configuration, Map<String, Vrf>> {
     HasVrfs(@Nonnull Matcher<? super Map<String, Vrf>> subMatcher) {
-      super(subMatcher, "vrfs", "vrfs");
+      super(subMatcher, "a configuration with vrfs", "vrfs");
     }
 
     @Override
@@ -30,4 +30,6 @@ final class ConfigurationMatchersImpl {
       return actual.getVrfs();
     }
   }
+
+  private ConfigurationMatchersImpl() {}
 }

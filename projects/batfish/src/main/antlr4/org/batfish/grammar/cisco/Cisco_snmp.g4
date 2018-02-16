@@ -130,7 +130,10 @@ ss_host_traps
 
 ss_host_use_vrf
 :
-   USE_VRF vrf = variable
+   (
+      USE_VRF
+      | VRF
+   ) vrf = variable
 ;
 
 ss_host_version
@@ -164,12 +167,14 @@ ss_null
       | MAX_IFINDEX_PER_MODULE
       | NOTIFY_FILTER
       | OVERLOAD_CONTROL
+      | PACKETSIZE
       | PRIORITY
       | PROTOCOL
       | QUEUE_LENGTH
       | SYSTEM_SHUTDOWN
       | TCP_SESSION
       | TRAP
+      | TRAP_TIMEOUT
       | TRAPS
       | USER
       | VIEW

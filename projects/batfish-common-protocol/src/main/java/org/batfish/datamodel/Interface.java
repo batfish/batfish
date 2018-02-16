@@ -26,6 +26,12 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _active;
 
+    private Double _bandwidth;
+
+    private boolean _blacklisted;
+
+    private IpAccessList _incomingFilter;
+
     private String _name;
 
     private OspfArea _ospfArea;
@@ -37,6 +43,8 @@ public final class Interface extends ComparableStructure<String> {
     private boolean _ospfPassive;
 
     private boolean _ospfPointToPoint;
+
+    private IpAccessList _outgoingFilter;
 
     private Configuration _owner;
 
@@ -53,6 +61,9 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface = new Interface(name, _owner);
       iface.setActive(_active);
+      iface.setBandwidth(_bandwidth);
+      iface.setBlacklisted(_blacklisted);
+      iface.setIncomingFilter(_incomingFilter);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.getInterfaces().put(name, iface);
@@ -62,6 +73,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setOspfEnabled(_ospfEnabled);
       iface.setOspfPassive(_ospfPassive);
       iface.setOspfPointToPoint(_ospfPointToPoint);
+      iface.setOutgoingFilter(_outgoingFilter);
       iface.setOwner(_owner);
       if (_owner != null) {
         _owner.getInterfaces().put(name, iface);
@@ -83,6 +95,21 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setActive(boolean active) {
       _active = active;
+      return this;
+    }
+
+    public Builder setBandwidth(Double bandwidth) {
+      _bandwidth = bandwidth;
+      return this;
+    }
+
+    public Builder setBlacklisted(boolean blacklisted) {
+      _blacklisted = blacklisted;
+      return this;
+    }
+
+    public Builder setIncomingFilter(IpAccessList incomingFilter) {
+      _incomingFilter = incomingFilter;
       return this;
     }
 
@@ -113,6 +140,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOspfPointToPoint(boolean ospfPointToPoint) {
       _ospfPointToPoint = ospfPointToPoint;
+      return this;
+    }
+
+    public Builder setOutgoingFilter(IpAccessList outgoingFilter) {
+      _outgoingFilter = outgoingFilter;
       return this;
     }
 

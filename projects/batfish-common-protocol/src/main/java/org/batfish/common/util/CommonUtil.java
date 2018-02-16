@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
@@ -77,6 +78,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.OspfNeighbor;
+import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Topology;
@@ -202,40 +206,52 @@ public class CommonUtil {
 
   public static Map<Ip, Set<String>> computeIpOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeIpOwners(
+        excludeInactive,
+        configurations
+            .entrySet()
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
+  }
+
+  public static Map<Ip, Set<String>> computeIpOwners(
+      boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
     // TODO: confirm VRFs are handled correctly
     Map<Ip, Set<String>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    configurations.forEach(
-        (hostname, c) -> {
-          for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
-              // collect vrrp info
-              i.getVrrpGroups()
-                  .forEach(
-                      (groupNum, vrrpGroup) -> {
-                        InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                        if (address == null) {
-                          // This Vlan Interface has invalid configuration. The VRRP has no source
-                          // IP address that would be used for VRRP election. This interface could
-                          // never win the election, so is not a candidate.
-                          return;
-                        }
-                        Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                        Set<Interface> candidates =
-                            vrrpGroups.computeIfAbsent(
-                                key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                        candidates.add(i);
-                      });
-              // collect prefixes
-              i.getAllAddresses()
-                  .stream()
-                  .map(InterfaceAddress::getIp)
-                  .forEach(
-                      ip -> {
-                        Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                        owners.add(hostname);
-                      });
+    enabledInterfaces.forEach(
+        (hostname, currentEnabledInterfaces) -> {
+          for (Interface i : currentEnabledInterfaces.values()) {
+            if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+              continue;
             }
+            // collect vrrp info
+            i.getVrrpGroups()
+                .forEach(
+                    (groupNum, vrrpGroup) -> {
+                      InterfaceAddress address = vrrpGroup.getVirtualAddress();
+                      if (address == null) {
+                        // This Vlan Interface has invalid configuration. The VRRP has no source
+                        // IP address that would be used for VRRP election. This interface could
+                        // never win the election, so is not a candidate.
+                        return;
+                      }
+                      Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
+                      Set<Interface> candidates =
+                          vrrpGroups.computeIfAbsent(
+                              key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                      candidates.add(i);
+                    });
+            // collect prefixes
+            i.getAllAddresses()
+                .stream()
+                .map(InterfaceAddress::getIp)
+                .forEach(
+                    ip -> {
+                      Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
+                      owners.add(hostname);
+                    });
           }
         });
     vrrpGroups.forEach(
@@ -693,6 +709,92 @@ public class CommonUtil {
               });
     }
     return builder.build();
+  }
+
+  public static void initRemoteOspfNeighbors(
+      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
+    for (Entry<String, Configuration> e : configurations.entrySet()) {
+      String hostname = e.getKey();
+      Configuration c = e.getValue();
+      for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
+        Vrf vrf = e2.getValue();
+        OspfProcess proc = vrf.getOspfProcess();
+        if (proc != null) {
+          proc.setOspfNeighbors(new TreeMap<>());
+          String vrfName = e2.getKey();
+          for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
+            long areaNum = e3.getKey();
+            OspfArea area = e3.getValue();
+            for (Entry<String, Interface> e4 : area.getInterfaces().entrySet()) {
+              String ifaceName = e4.getKey();
+              Interface iface = e4.getValue();
+              SortedSet<Edge> ifaceEdges =
+                  topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
+              boolean hasNeighbor = false;
+              Ip localIp = iface.getAddress().getIp();
+              if (ifaceEdges != null) {
+                for (Edge edge : ifaceEdges) {
+                  if (edge.getNode1().equals(hostname)) {
+                    String remoteHostname = edge.getNode2();
+                    String remoteIfaceName = edge.getInt2();
+                    Configuration remoteNode = configurations.get(remoteHostname);
+                    Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                    Vrf remoteVrf = remoteIface.getVrf();
+                    String remoteVrfName = remoteVrf.getName();
+                    OspfProcess remoteProc = remoteVrf.getOspfProcess();
+                    if (remoteProc != null) {
+                      if (remoteProc.getOspfNeighbors() == null) {
+                        remoteProc.setOspfNeighbors(new TreeMap<>());
+                      }
+                      OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
+                      if (remoteArea != null
+                          && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
+                        Ip remoteIp = remoteIface.getAddress().getIp();
+                        Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
+                        OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
+                        if (neighbor == null) {
+                          hasNeighbor = true;
+
+                          // initialize local neighbor
+                          neighbor = new OspfNeighbor(localKey);
+                          neighbor.setArea(areaNum);
+                          neighbor.setVrf(vrfName);
+                          neighbor.setOwner(c);
+                          neighbor.setInterface(iface);
+                          proc.getOspfNeighbors().put(localKey, neighbor);
+
+                          // initialize remote neighbor
+                          Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
+                          OspfNeighbor remoteNeighbor = new OspfNeighbor(remoteKey);
+                          remoteNeighbor.setArea(areaNum);
+                          remoteNeighbor.setVrf(remoteVrfName);
+                          remoteNeighbor.setOwner(remoteNode);
+                          remoteNeighbor.setInterface(remoteIface);
+                          remoteProc.getOspfNeighbors().put(remoteKey, remoteNeighbor);
+
+                          // link neighbors
+                          neighbor.setRemoteOspfNeighbor(remoteNeighbor);
+                          remoteNeighbor.setRemoteOspfNeighbor(neighbor);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              if (!hasNeighbor) {
+                Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
+                OspfNeighbor neighbor = new OspfNeighbor(key);
+                neighbor.setArea(areaNum);
+                neighbor.setVrf(vrfName);
+                neighbor.setOwner(c);
+                neighbor.setInterface(iface);
+                proc.getOspfNeighbors().put(key, neighbor);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
   public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {

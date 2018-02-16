@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.Vrf;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -41,6 +42,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected List<SourceNat> featureValueOf(Interface actual) {
       return actual.getSourceNats();
+    }
+  }
+
+  static final class HasVrf extends FeatureMatcher<Interface, Vrf> {
+    HasVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
+      super(subMatcher, "an interface with vrf", "vrf");
+    }
+
+    @Override
+    protected Vrf featureValueOf(Interface actual) {
+      return actual.getVrf();
     }
   }
 

@@ -6,5 +6,5 @@ public interface QuerySynthesizer {
 
   boolean getNegate();
 
-  NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception;
+  NodProgram getNodProgram(SynthesizerInput input, NodProgram baseProgram) throws Z3Exception;
 }

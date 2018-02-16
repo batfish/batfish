@@ -843,6 +843,32 @@ rsvp_stanza
    RSVP NEWLINE rs_stanza*
 ;
 
+s_arp_access_list_extended
+:
+   ARP ACCESS_LIST name = variable_permissive NEWLINE
+   s_arp_access_list_extended_tail*
+;
+
+s_arp_access_list_extended_tail
+:
+   (
+      (
+         SEQ
+         | SEQUENCE
+      )? num = DEC
+   )? action = access_list_action
+   (
+      REQUEST
+      | RESPONSE
+   )? IP senderip = access_list_ip_range 
+   (
+      targetip = access_list_ip_range 
+   )? MAC sendermac = access_list_mac_range
+   (
+      targetmac = access_list_mac_range 
+   )? LOG? NEWLINE
+;
+
 s_ethernet_services
 :
    ETHERNET_SERVICES ACCESS_LIST name = variable_permissive NEWLINE

@@ -31,4 +31,6 @@ public class ConfigurationMatchers {
   public static HasVrfs hasVrfs(Matcher<? super Map<String, Vrf>> subMatcher) {
     return new HasVrfs(subMatcher);
   }
+
+  private ConfigurationMatchers() {}
 }

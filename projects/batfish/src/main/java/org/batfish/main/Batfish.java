@@ -97,7 +97,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
@@ -182,6 +181,7 @@ import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
+import org.batfish.z3.SynthesizerInputImpl;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -197,52 +197,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
-
-  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
-  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
-  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
-  private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-      _cachedEnvironmentBgpTables;
-  private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
-      _cachedEnvironmentRoutingTables;
-  private final List<TestrigSettings> _testrigSettingsStack;
-  private TestrigSettings _baseTestrigSettings;
-  private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
-  private TestrigSettings _deltaTestrigSettings;
-  private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
-  private BatfishLogger _logger;
-  private Settings _settings;
-  // this variable is used communicate with parent thread on how the job
-  // finished
-  private boolean _terminatedWithException;
-  private TestrigSettings _testrigSettings;
-  private boolean _monotonicCache;
-  private Map<String, DataPlanePlugin> _dataPlanePlugins;
-
-  public Batfish(
-      Settings settings,
-      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
-      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
-      Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-          cachedEnvironmentBgpTables,
-      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
-    super(settings.getSerializeToText());
-    _settings = settings;
-    _bgpTablePlugins = new TreeMap<>();
-    _cachedConfigurations = cachedConfigurations;
-    _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
-    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
-    _cachedDataPlanes = cachedDataPlanes;
-    _externalBgpAdvertisementPlugins = new TreeSet<>();
-    _testrigSettings = settings.getActiveTestrigSettings();
-    _baseTestrigSettings = settings.getBaseTestrigSettings();
-    _logger = _settings.getLogger();
-    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
-    _terminatedWithException = false;
-    _answererCreators = new HashMap<>();
-    _testrigSettingsStack = new ArrayList<>();
-    _dataPlanePlugins = new HashMap<>();
-  }
 
   public static void applyBaseDir(
       TestrigSettings settings, Path containerDir, String testrig, String envName) {
@@ -339,29 +293,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ConfigurationFormat format,
       String header) {
     switch (format) {
-      case JUNIPER:
-        {
-          JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
-          ParserRuleContext tree = parse(parser, logger, settings);
-          JuniperFlattener flattener = new JuniperFlattener(header);
-          ParseTreeWalker walker = new ParseTreeWalker();
-          walker.walk(flattener, tree);
-          return flattener.getFlattenedConfigurationText();
-        }
+    case JUNIPER:
+    {
+      JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
+      ParserRuleContext tree = parse(parser, logger, settings);
+      JuniperFlattener flattener = new JuniperFlattener(header);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(flattener, tree);
+      return flattener.getFlattenedConfigurationText();
+    }
 
-      case VYOS:
-        {
-          VyosCombinedParser parser = new VyosCombinedParser(input, settings);
-          ParserRuleContext tree = parse(parser, logger, settings);
-          VyosFlattener flattener = new VyosFlattener(header);
-          ParseTreeWalker walker = new ParseTreeWalker();
-          walker.walk(flattener, tree);
-          return flattener.getFlattenedConfigurationText();
-        }
+    case VYOS:
+    {
+      VyosCombinedParser parser = new VyosCombinedParser(input, settings);
+      ParserRuleContext tree = parse(parser, logger, settings);
+      VyosFlattener flattener = new VyosFlattener(header);
+      ParseTreeWalker walker = new ParseTreeWalker();
+      walker.walk(flattener, tree);
+      return flattener.getFlattenedConfigurationText();
+    }
 
-        // $CASES-OMITTED$
-      default:
-        throw new BatfishException("Invalid format for flattening");
+    // $CASES-OMITTED$
+    default:
+      throw new BatfishException("Invalid format for flattening");
     }
   }
 
@@ -474,42 +428,65 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return tree;
   }
 
-  /**
-   * Helper function to disable a blacklisted interface and update the given {@link
-   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
-   */
-  private static void blacklistInterface(
-      Map<String, Configuration> configurations,
-      ValidateEnvironmentAnswerElement veae,
-      NodeInterfacePair iface) {
-    String hostname = iface.getHostname();
-    String ifaceName = iface.getInterface();
-    @Nullable Configuration node = configurations.get(hostname);
-    if (node == null) {
-      veae.setValid(false);
-      veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
-      return;
-    }
+  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
 
-    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
-    if (nodeIface == null) {
-      veae.setValid(false);
-      veae.getUndefinedInterfaceBlacklistInterfaces()
-          .computeIfAbsent(hostname, k -> new TreeSet<>())
-          .add(ifaceName);
-      return;
-    }
+  private TestrigSettings _baseTestrigSettings;
 
-    nodeIface.setActive(false);
-    nodeIface.setBlacklisted(true);
-  }
+  private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
-    try {
-      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
-    } catch (IOException e) {
-      throw new BatfishException("Could not serialize " + objectName + " ", e);
-    }
+  private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
+
+  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
+
+  private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+      _cachedEnvironmentBgpTables;
+
+  private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+      _cachedEnvironmentRoutingTables;
+
+  private TestrigSettings _deltaTestrigSettings;
+
+  private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
+
+  private BatfishLogger _logger;
+
+  private Settings _settings;
+
+  // this variable is used communicate with parent thread on how the job
+  // finished (null if job finished successfully)
+  private String _terminatingExceptionMessage;
+
+  private TestrigSettings _testrigSettings;
+
+  private final List<TestrigSettings> _testrigSettingsStack;
+
+  private boolean _monotonicCache;
+
+  private Map<String, DataPlanePlugin> _dataPlanePlugins;
+
+  public Batfish(
+      Settings settings,
+      Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
+      Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+          cachedEnvironmentBgpTables,
+      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
+    super(settings.getSerializeToText());
+    _settings = settings;
+    _bgpTablePlugins = new TreeMap<>();
+    _cachedConfigurations = cachedConfigurations;
+    _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
+    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
+    _cachedDataPlanes = cachedDataPlanes;
+    _externalBgpAdvertisementPlugins = new TreeSet<>();
+    _testrigSettings = settings.getActiveTestrigSettings();
+    _baseTestrigSettings = settings.getBaseTestrigSettings();
+    _logger = _settings.getLogger();
+    _deltaTestrigSettings = settings.getDeltaTestrigSettings();
+    _terminatingExceptionMessage = null;
+    _answererCreators = new HashMap<>();
+    _testrigSettingsStack = new ArrayList<>();
+    _dataPlanePlugins = new HashMap<>();
   }
 
   private Answer analyze() {
@@ -522,7 +499,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .getContainerDir()
             .resolve(
                 Paths.get(
-                        BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
+                    BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
                     .toString());
     if (!Files.exists(analysisQuestionsDir)) {
       throw new BatfishException(
@@ -1907,12 +1884,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getTaskId();
   }
 
-  public boolean getTerminatedWithException() {
-    return _terminatedWithException;
-  }
-
-  public void setTerminatedWithException(boolean terminatedWithException) {
-    _terminatedWithException = terminatedWithException;
+  public String getTerminatingExceptionMessage() {
+    return _terminatingExceptionMessage;
   }
 
   @Override
@@ -1969,10 +1942,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .getBasePath()
             .resolve(
                 Paths.get(
-                        BfConsts.RELPATH_ANALYSES_DIR,
-                        analysisName,
-                        BfConsts.RELPATH_QUESTIONS_DIR,
-                        questionName)
+                    BfConsts.RELPATH_ANALYSES_DIR,
+                    analysisName,
+                    BfConsts.RELPATH_QUESTIONS_DIR,
+                    questionName)
                     .toString());
     questionDir.toFile().mkdirs();
     Path questionPath = questionDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
@@ -1993,114 +1966,114 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String srcVrf = bgpAdvertisement.getSrcVrf();
       String dstVrf = bgpAdvertisement.getDstVrf();
       switch (type) {
-        case EBGP_ORIGINATED:
-          {
-            String originationNodeName = bgpAdvertisement.getSrcNode();
-            Configuration originationNode = configurations.get(originationNodeName);
-            if (originationNode != null) {
-              originationNode.getBgpAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
-              Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
-              originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
-            } else {
-              throw new BatfishException(
-                  "Originated bgp advertisement refers to missing node: \""
-                      + originationNodeName
-                      + "\"");
-            }
-            break;
-          }
+      case EBGP_ORIGINATED:
+      {
+        String originationNodeName = bgpAdvertisement.getSrcNode();
+        Configuration originationNode = configurations.get(originationNodeName);
+        if (originationNode != null) {
+          originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+          originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
+          originationNode.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
+          Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
+          originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
+          originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
+          originationVrf.getOriginatedEbgpAdvertisements().add(bgpAdvertisement);
+        } else {
+          throw new BatfishException(
+              "Originated bgp advertisement refers to missing node: \""
+                  + originationNodeName
+                  + "\"");
+        }
+        break;
+      }
 
-        case IBGP_ORIGINATED:
-          {
-            String originationNodeName = bgpAdvertisement.getSrcNode();
-            Configuration originationNode = configurations.get(originationNodeName);
-            if (originationNode != null) {
-              originationNode.getBgpAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationNode.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
-              Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
-              originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
-              originationVrf.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
-            } else {
-              throw new BatfishException(
-                  "Originated bgp advertisement refers to missing node: \""
-                      + originationNodeName
-                      + "\"");
-            }
-            break;
-          }
+      case IBGP_ORIGINATED:
+      {
+        String originationNodeName = bgpAdvertisement.getSrcNode();
+        Configuration originationNode = configurations.get(originationNodeName);
+        if (originationNode != null) {
+          originationNode.getBgpAdvertisements().add(bgpAdvertisement);
+          originationNode.getOriginatedAdvertisements().add(bgpAdvertisement);
+          originationNode.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
+          Vrf originationVrf = originationNode.getVrfs().get(srcVrf);
+          originationVrf.getBgpAdvertisements().add(bgpAdvertisement);
+          originationVrf.getOriginatedAdvertisements().add(bgpAdvertisement);
+          originationVrf.getOriginatedIbgpAdvertisements().add(bgpAdvertisement);
+        } else {
+          throw new BatfishException(
+              "Originated bgp advertisement refers to missing node: \""
+                  + originationNodeName
+                  + "\"");
+        }
+        break;
+      }
 
-        case EBGP_RECEIVED:
-          {
-            String recevingNodeName = bgpAdvertisement.getDstNode();
-            Configuration receivingNode = configurations.get(recevingNodeName);
-            if (receivingNode != null) {
-              receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
-              Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
-              receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
+      case EBGP_RECEIVED:
+      {
+        String recevingNodeName = bgpAdvertisement.getDstNode();
+        Configuration receivingNode = configurations.get(recevingNodeName);
+        if (receivingNode != null) {
+          receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+          receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+          receivingNode.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
+          Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
+          receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+          receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
+          receivingVrf.getReceivedEbgpAdvertisements().add(bgpAdvertisement);
+        }
+        break;
+      }
 
-        case IBGP_RECEIVED:
-          {
-            String recevingNodeName = bgpAdvertisement.getDstNode();
-            Configuration receivingNode = configurations.get(recevingNodeName);
-            if (receivingNode != null) {
-              receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingNode.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
-              Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
-              receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
-              receivingVrf.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
+      case IBGP_RECEIVED:
+      {
+        String recevingNodeName = bgpAdvertisement.getDstNode();
+        Configuration receivingNode = configurations.get(recevingNodeName);
+        if (receivingNode != null) {
+          receivingNode.getBgpAdvertisements().add(bgpAdvertisement);
+          receivingNode.getReceivedAdvertisements().add(bgpAdvertisement);
+          receivingNode.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
+          Vrf receivingVrf = receivingNode.getVrfs().get(dstVrf);
+          receivingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+          receivingVrf.getReceivedAdvertisements().add(bgpAdvertisement);
+          receivingVrf.getReceivedIbgpAdvertisements().add(bgpAdvertisement);
+        }
+        break;
+      }
 
-        case EBGP_SENT:
-          {
-            String sendingNodeName = bgpAdvertisement.getSrcNode();
-            Configuration sendingNode = configurations.get(sendingNodeName);
-            if (sendingNode != null) {
-              sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
-              Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
-              sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentEbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
+      case EBGP_SENT:
+      {
+        String sendingNodeName = bgpAdvertisement.getSrcNode();
+        Configuration sendingNode = configurations.get(sendingNodeName);
+        if (sendingNode != null) {
+          sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+          sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+          sendingNode.getSentEbgpAdvertisements().add(bgpAdvertisement);
+          Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
+          sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+          sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
+          sendingVrf.getSentEbgpAdvertisements().add(bgpAdvertisement);
+        }
+        break;
+      }
 
-        case IBGP_SENT:
-          {
-            String sendingNodeName = bgpAdvertisement.getSrcNode();
-            Configuration sendingNode = configurations.get(sendingNodeName);
-            if (sendingNode != null) {
-              sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentAdvertisements().add(bgpAdvertisement);
-              sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
-              Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
-              sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
-              sendingVrf.getSentIbgpAdvertisements().add(bgpAdvertisement);
-            }
-            break;
-          }
+      case IBGP_SENT:
+      {
+        String sendingNodeName = bgpAdvertisement.getSrcNode();
+        Configuration sendingNode = configurations.get(sendingNodeName);
+        if (sendingNode != null) {
+          sendingNode.getBgpAdvertisements().add(bgpAdvertisement);
+          sendingNode.getSentAdvertisements().add(bgpAdvertisement);
+          sendingNode.getSentIbgpAdvertisements().add(bgpAdvertisement);
+          Vrf sendingVrf = sendingNode.getVrfs().get(srcVrf);
+          sendingVrf.getBgpAdvertisements().add(bgpAdvertisement);
+          sendingVrf.getSentAdvertisements().add(bgpAdvertisement);
+          sendingVrf.getSentIbgpAdvertisements().add(bgpAdvertisement);
+        }
+        break;
+      }
 
-        default:
-          throw new BatfishException("Invalid bgp advertisement type");
+      default:
+        throw new BatfishException("Invalid bgp advertisement type");
       }
     }
   }
@@ -2187,93 +2160,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       pushDeltaEnvironment();
       initQuestionEnvironment(question, dp, true);
       popEnvironment();
-    }
-  }
-
-  @Override
-  public void initRemoteOspfNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners, Topology topology) {
-    for (Entry<String, Configuration> e : configurations.entrySet()) {
-      String hostname = e.getKey();
-      Configuration c = e.getValue();
-      for (Entry<String, Vrf> e2 : c.getVrfs().entrySet()) {
-        Vrf vrf = e2.getValue();
-        OspfProcess proc = vrf.getOspfProcess();
-        if (proc != null) {
-          proc.setOspfNeighbors(new TreeMap<>());
-          String vrfName = e2.getKey();
-          for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
-            long areaNum = e3.getKey();
-            OspfArea area = e3.getValue();
-            for (Entry<String, Interface> e4 : area.getInterfaces().entrySet()) {
-              String ifaceName = e4.getKey();
-              Interface iface = e4.getValue();
-              SortedSet<Edge> ifaceEdges =
-                  topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
-              boolean hasNeighbor = false;
-              Ip localIp = iface.getAddress().getIp();
-              if (ifaceEdges != null) {
-                for (Edge edge : ifaceEdges) {
-                  if (edge.getNode1().equals(hostname)) {
-                    String remoteHostname = edge.getNode2();
-                    String remoteIfaceName = edge.getInt2();
-                    Configuration remoteNode = configurations.get(remoteHostname);
-                    Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
-                    Vrf remoteVrf = remoteIface.getVrf();
-                    String remoteVrfName = remoteVrf.getName();
-                    OspfProcess remoteProc = remoteVrf.getOspfProcess();
-                    if (remoteProc != null) {
-                      if (remoteProc.getOspfNeighbors() == null) {
-                        remoteProc.setOspfNeighbors(new TreeMap<>());
-                      }
-                      OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
-                      if (remoteArea != null
-                          && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
-                        Ip remoteIp = remoteIface.getAddress().getIp();
-                        Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
-                        OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
-                        if (neighbor == null) {
-                          hasNeighbor = true;
-
-                          // initialize local neighbor
-                          neighbor = new OspfNeighbor(localKey);
-                          neighbor.setArea(areaNum);
-                          neighbor.setVrf(vrfName);
-                          neighbor.setOwner(c);
-                          neighbor.setInterface(iface);
-                          proc.getOspfNeighbors().put(localKey, neighbor);
-
-                          // initialize remote neighbor
-                          Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
-                          OspfNeighbor remoteNeighbor = new OspfNeighbor(remoteKey);
-                          remoteNeighbor.setArea(areaNum);
-                          remoteNeighbor.setVrf(remoteVrfName);
-                          remoteNeighbor.setOwner(remoteNode);
-                          remoteNeighbor.setInterface(remoteIface);
-                          remoteProc.getOspfNeighbors().put(remoteKey, remoteNeighbor);
-
-                          // link neighbors
-                          neighbor.setRemoteOspfNeighbor(remoteNeighbor);
-                          remoteNeighbor.setRemoteOspfNeighbor(neighbor);
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-              if (!hasNeighbor) {
-                Pair<Ip, Ip> key = new Pair<>(localIp, Ip.ZERO);
-                OspfNeighbor neighbor = new OspfNeighbor(key);
-                neighbor.setArea(areaNum);
-                neighbor.setVrf(vrfName);
-                neighbor.setOwner(c);
-                neighbor.setInterface(iface);
-                proc.getOspfNeighbors().put(key, neighbor);
-              }
-            }
-          }
-        }
-      }
     }
   }
 
@@ -2521,7 +2407,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public ParseEnvironmentRoutingTablesAnswerElement
-      loadParseEnvironmentRoutingTablesAnswerElement() {
+  loadParseEnvironmentRoutingTablesAnswerElement() {
     return loadParseEnvironmentRoutingTablesAnswerElement(true);
   }
 
@@ -3085,8 +2971,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         // If vrf has BGP, OSPF, or RIP process and device isn't a host, set device type to router
         if (c.getDeviceType() == null
             && (vrf.getBgpProcess() != null
-                || vrf.getOspfProcess() != null
-                || vrf.getRipProcess() != null)) {
+            || vrf.getOspfProcess() != null
+            || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
         }
         // Compute OSPF interface costs where they are missing
@@ -3201,6 +3087,36 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void processFlows(Set<Flow> flows) {
     getDataPlanePlugin().processFlows(flows);
+  }
+
+  /**
+   * Helper function to disable a blacklisted interface and update the given {@link
+   * ValidateEnvironmentAnswerElement} if the interface does not actually exist.
+   */
+  private static void blacklistInterface(
+      Map<String, Configuration> configurations,
+      ValidateEnvironmentAnswerElement veae,
+      NodeInterfacePair iface) {
+    String hostname = iface.getHostname();
+    String ifaceName = iface.getInterface();
+    @Nullable Configuration node = configurations.get(hostname);
+    if (node == null) {
+      veae.setValid(false);
+      veae.getUndefinedInterfaceBlacklistNodes().add(hostname);
+      return;
+    }
+
+    @Nullable Interface nodeIface = node.getInterfaces().get(ifaceName);
+    if (nodeIface == null) {
+      veae.setValid(false);
+      veae.getUndefinedInterfaceBlacklistInterfaces()
+          .computeIfAbsent(hostname, k -> new TreeSet<>())
+          .add(ifaceName);
+      return;
+    }
+
+    nodeIface.setActive(false);
+    nodeIface.setBlacklisted(true);
   }
 
   private void processInterfaceBlacklist(
@@ -3606,7 +3522,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               answers.put(
                   questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON),
                   !questionDirPath.getFileName().startsWith(".")
-                          && Files.exists(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
+                      && Files.exists(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
                       ? CommonUtil.readFile(questionDirPath.resolve(BfConsts.RELPATH_ANSWER_JSON))
                       : ""));
     } catch (IOException e1) {
@@ -3744,6 +3660,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
     return answer;
+  }
+
+  public static void serializeAsJson(Path outputPath, Object object, String objectName) {
+    try {
+      new BatfishObjectMapper().writeValue(outputPath.toFile(), object);
+    } catch (IOException e) {
+      throw new BatfishException("Could not serialize " + objectName + " ", e);
+    }
   }
 
   private Answer serializeAwsConfigs(Path testRigPath, Path outputPath) {
@@ -4090,6 +4014,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _monotonicCache = monotonicCache;
   }
 
+  public void setTerminatingExceptionMessage(String terminatingExceptionMessage) {
+    _terminatingExceptionMessage = terminatingExceptionMessage;
+  }
+
   @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this, _settings);
@@ -4157,12 +4085,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement smtRoutingLoop(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this, _settings);
     return p.checkRoutingLoop(q);
-  }
-
-  @Override
-  public AnswerElement apt() {
-    NetworkModel nm = new NetworkModel(this, null);
-    return new StringAnswerElement("done");
   }
 
   private AnswerElement standardAtomic(
@@ -4286,7 +4208,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 ACL logic...");
-    Synthesizer s = new Synthesizer(configurations, _settings.getSimplify());
+    Synthesizer s =
+        new Synthesizer(
+            SynthesizerInputImpl.builder()
+                .setConfigurations(configurations)
+                .setSimplify(_settings.getSimplify())
+                .build());
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4310,9 +4237,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.info("Synthesizing Z3 logic...");
     Map<String, Configuration> configurations = loadConfigurations();
-    Synthesizer s = new Synthesizer(configurations, dataPlane, _settings.getSimplify());
-
-    // ForwardingGraph fg = new ForwardingGraph(this, dataPlane);
+    Synthesizer s =
+        new Synthesizer(
+            SynthesizerInputImpl.builder()
+                .setConfigurations(configurations)
+                .setDataPlane(dataPlane)
+                .setSimplify(_settings.getSimplify())
+                .build());
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
