@@ -273,7 +273,7 @@ if_ip_virtual_router
 
 if_ip_vrf_forwarding
 :
-   IP VRF FORWARDING name = variable NEWLINE
+   IP? VRF FORWARDING name = variable NEWLINE
 ;
 
 if_isis_circuit_type
