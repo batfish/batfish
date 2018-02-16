@@ -71,8 +71,7 @@ public class BatfishCompressor {
    * either filter).
    */
   private void addAll(
-      Map<GraphEdge, EquivalenceClassFilter> to,
-      Map<GraphEdge, EquivalenceClassFilter> from) {
+      Map<GraphEdge, EquivalenceClassFilter> to, Map<GraphEdge, EquivalenceClassFilter> from) {
     for (Entry<GraphEdge, EquivalenceClassFilter> entry : from.entrySet()) {
       GraphEdge graphEdge = entry.getKey();
       EquivalenceClassFilter filter = entry.getValue();
@@ -84,13 +83,12 @@ public class BatfishCompressor {
         TreeSet<Prefix> mergedPrefixes =
             new TreeSet<>(
                 Sets.union(
-                    to.get(graphEdge)._prefixTrie.getPrefixes(),
-                    filter._prefixTrie.getPrefixes()));
+                    to.get(graphEdge)._prefixTrie.getPrefixes(), filter._prefixTrie.getPrefixes()));
         EquivalenceClassFilter mergedFilter =
             new EquivalenceClassFilter(
                 new PrefixTrie(mergedPrefixes),
                 to.get(graphEdge)._isForDefaultSlice || filter._isForDefaultSlice);
-        to.put(graphEdge,mergedFilter);
+        to.put(graphEdge, mergedFilter);
       }
     }
   }
@@ -102,9 +100,7 @@ public class BatfishCompressor {
     return newMap;
   }
 
-  /**
-   * A filter for an equivalence class.
-   */
+  /** A filter for an equivalence class. */
   private static class EquivalenceClassFilter {
     // The traffic for this EC
     PrefixTrie _prefixTrie;
@@ -140,8 +136,8 @@ public class BatfishCompressor {
     for (GraphEdge edge : slice.getGraph().getAllEdges()) {
       if (!edge.isAbstract() && !_graph.isLoopback(edge)) {
         // add a filter to restrict traffic to this equivalence class.
-        filters.put(edge,
-            new EquivalenceClassFilter(new PrefixTrie(prefixSet), slice.getIsDefaultCase()));
+        filters.put(
+            edge, new EquivalenceClassFilter(new PrefixTrie(prefixSet), slice.getIsDefaultCase()));
       }
     }
     return filters;
@@ -186,7 +182,7 @@ public class BatfishCompressor {
       if (filter._isForDefaultSlice) {
         // Let traffic through if it passes the filter or was advertised from outside the network.
         Disjunction pfxOrExternal = new Disjunction();
-        pfxOrExternal.setDisjuncts(ImmutableList.of(match,matchExternalTraffic()));
+        pfxOrExternal.setDisjuncts(ImmutableList.of(match, matchExternalTraffic()));
         i.setGuard(pfxOrExternal);
       } else {
         // Not default equivalence class, so just let traffic through if dest matches the filter
@@ -199,7 +195,8 @@ public class BatfishCompressor {
     return newStatements;
   }
 
-  @Nonnull private BooleanExpr matchExternalTraffic() {
+  @Nonnull
+  private BooleanExpr matchExternalTraffic() {
     // Add a filter that only allows traffic for those prefixes if it came from outside.
     // EXTERNAL = (protocol is bgp or ibgp) and (the AS path is not an internal path)
     // MATCH = destination matches the prefixTrie
@@ -232,9 +229,7 @@ public class BatfishCompressor {
     return c;
   }
 
-  /**
-   *
-   */
+  /** */
   public static class Filter {
     public final Prefix _prefix;
     public final boolean _isDefaultCase;
