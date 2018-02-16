@@ -30,4 +30,6 @@ final class ConfigurationMatchersImpl {
       return actual.getVrfs();
     }
   }
+
+  private ConfigurationMatchersImpl() {}
 }

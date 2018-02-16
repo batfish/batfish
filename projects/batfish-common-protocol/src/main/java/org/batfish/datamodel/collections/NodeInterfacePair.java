@@ -12,6 +12,8 @@ public class NodeInterfacePair extends Pair<String, String> {
   /** */
   private static final long serialVersionUID = 1L;
 
+  public static final NodeInterfacePair NONE = new NodeInterfacePair("", "");
+
   @JsonCreator
   public NodeInterfacePair(
       @JsonProperty(PROP_HOSTNAME) String node, @JsonProperty(PROP_INTERFACE) String iface) {

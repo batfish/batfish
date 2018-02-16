@@ -19,26 +19,42 @@ public class NetworkFactory {
 
     public abstract T build();
 
-    protected String generateName() {
-      return _networkFactory.generateName(_outputClass);
-    }
-
     long generateLong() {
       return _networkFactory.generateLong(_outputClass);
     }
+
+    protected String generateName() {
+      return _networkFactory.generateName(_outputClass);
+    }
   }
 
-  private Map<Class<?>, Integer> _generatedNameCounters;
-
   private Map<Class<?>, Long> _generatedLongCounters;
+
+  private Map<Class<?>, Integer> _generatedNameCounters;
 
   public NetworkFactory() {
     _generatedNameCounters = new HashMap<>();
     _generatedLongCounters = new HashMap<>();
   }
 
+  public IpAccessList.Builder aclBuilder() {
+    return new IpAccessList.Builder(this);
+  }
+
+  public BgpNeighbor.Builder bgpNeighborBuilder() {
+    return new BgpNeighbor.Builder(this);
+  }
+
+  public BgpProcess.Builder bgpProcessBuilder() {
+    return new BgpProcess.Builder(this);
+  }
+
   public Configuration.Builder configurationBuilder() {
     return new Configuration.Builder(this);
+  }
+
+  private long generateLong(Class<?> forClass) {
+    return _generatedLongCounters.compute(forClass, (n, v) -> v == null ? 0L : v + 1L);
   }
 
   private String generateName(Class<?> forClass) {
@@ -50,20 +66,12 @@ public class NetworkFactory {
         + "~";
   }
 
-  private long generateLong(Class<?> forClass) {
-    return _generatedLongCounters.compute(forClass, (n, v) -> v == null ? 0L : v + 1L);
-  }
-
   public Interface.Builder interfaceBuilder() {
     return new Interface.Builder(this);
   }
 
-  public BgpProcess.Builder bgpProcessBuilder() {
-    return new BgpProcess.Builder(this);
-  }
-
-  public BgpNeighbor.Builder bgpNeighborBuilder() {
-    return new BgpNeighbor.Builder(this);
+  public OspfArea.Builder ospfAreaBuilder() {
+    return new OspfArea.Builder(this);
   }
 
   public OspfProcess.Builder ospfProcessBuilder() {
@@ -74,15 +82,11 @@ public class NetworkFactory {
     return new RipProcess.Builder(this);
   }
 
-  public Vrf.Builder vrfBuilder() {
-    return new Vrf.Builder(this);
-  }
-
-  public OspfArea.Builder ospfAreaBuilder() {
-    return new OspfArea.Builder(this);
-  }
-
   public RoutingPolicy.Builder routingPolicyBuilder() {
     return new RoutingPolicy.Builder(this);
+  }
+
+  public Vrf.Builder vrfBuilder() {
+    return new Vrf.Builder(this);
   }
 }
