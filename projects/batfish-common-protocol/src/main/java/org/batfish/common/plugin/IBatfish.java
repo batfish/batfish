@@ -172,6 +172,8 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
+  AnswerElement apt();
+
   AnswerElement standard(
       BackendType backendType,
       HeaderSpace headerSpace,

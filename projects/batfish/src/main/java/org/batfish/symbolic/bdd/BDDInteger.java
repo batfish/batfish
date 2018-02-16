@@ -34,15 +34,21 @@ public class BDDInteger {
    */
   public static BDDInteger makeFromIndex(
       BDDFactory factory, int length, int start, boolean reverse) {
+    return makeFromIndex(factory, length, start, reverse, 1);
+  }
+
+  public static BDDInteger makeFromIndex(
+      BDDFactory factory, int length, int start, boolean reverse, int step) {
     BDDInteger bdd = new BDDInteger(factory, length);
-    for (int i = 0; i < length; i++) {
+    int width = length * step;
+    for (int i = 0; i < width; i += step) {
       int idx;
       if (reverse) {
-        idx = start + length - i - 1;
+        idx = start + width - i - 1;
       } else {
         idx = start + i;
       }
-      bdd._bitvec[i] = bdd._factory.ithVar(idx);
+      bdd._bitvec[i / step] = bdd._factory.ithVar(idx);
     }
     return bdd;
   }

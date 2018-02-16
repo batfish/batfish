@@ -1,6 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,12 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TcpFlags;
 
 /**
  * A collection of attributes describing an packet, represented using BDDs
@@ -28,8 +36,8 @@ public class BDDPacket {
 
   static {
     factory = JFactory.init(10000, 1000);
-    factory.enableReorder();
-    factory.setCacheRatio(64);
+    // factory.enableReorder();
+    // factory.setCacheRatio(64);
     // Disables printing
     try {
       CallbackHandler handler = new CallbackHandler();
@@ -95,11 +103,11 @@ public class BDDPacket {
     _ipProtocol = BDDInteger.makeFromIndex(factory, 8, idx, false);
     addBitNames("ipProtocol", 8, idx, false);
     idx += 8;
-    _dstIp = BDDInteger.makeFromIndex(factory, 32, idx, true);
-    addBitNames("dstIp", 32, idx, true);
+    _dstIp = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("dstIp", 32, idx, false);
     idx += 32;
-    _srcIp = BDDInteger.makeFromIndex(factory, 32, idx, true);
-    addBitNames("srcIp", 32, idx, true);
+    _srcIp = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("srcIp", 32, idx, false);
     idx += 32;
     _dstPort = BDDInteger.makeFromIndex(factory, 16, idx, false);
     addBitNames("dstPort", 16, idx, false);
@@ -419,5 +427,382 @@ public class BDDPacket {
       r = r.or(x);
     }
     return r;
+  }
+
+  /*
+   * Create a headerspace object from a BDD
+   */
+  public HeaderSpace toHeaderSpace(BDD bdd) {
+    Set<Integer> vars = new HashSet<>();
+    example(vars, bdd.satOne());
+
+    long dstIp = 0;
+    long srcIp = 0;
+    int dstPort = 0;
+    int srcPort = 0;
+    int ipProto = 0;
+    int icmpType = 0;
+    int icmpCode = 0;
+
+    TcpFlags flags = new TcpFlags();
+
+    for (Integer var : vars) {
+      String name = _bitNames.get(var);
+      if (name.startsWith("dstIp")) {
+        int bit = Integer.parseInt(name.substring(5));
+        dstIp = dstIp + (int) Math.pow(2, 32 - bit);
+      }
+      if (name.startsWith("srcIp")) {
+        int bit = Integer.parseInt(name.substring(5));
+        srcIp = srcIp + (int) Math.pow(2, 32 - bit);
+      }
+      if (name.startsWith("srcPort")) {
+        int bit = Integer.parseInt(name.substring(7));
+        srcPort = srcPort + (int) Math.pow(2, 16 - bit);
+      }
+      if (name.startsWith("dstPort")) {
+        int bit = Integer.parseInt(name.substring(7));
+        dstPort = dstPort + (int) Math.pow(2, 16 - bit);
+      }
+      if (name.startsWith("icmpType")) {
+        int bit = Integer.parseInt(name.substring(8));
+        icmpType = icmpType + (int) Math.pow(2, 8 - bit);
+      }
+      if (name.startsWith("icmpCode")) {
+        int bit = Integer.parseInt(name.substring(8));
+        icmpCode = icmpCode + (int) Math.pow(2, 8 - bit);
+      }
+      if (name.startsWith("ipProtocol")) {
+        int bit = Integer.parseInt(name.substring(10));
+        ipProto = ipProto + (int) Math.pow(2, 8 - bit);
+      }
+      if (name.startsWith("tcpAck")) {
+        flags.setAck(true);
+      }
+      if (name.startsWith("tcpFin")) {
+        flags.setFin(true);
+      }
+      if (name.startsWith("tcpPsh")) {
+        flags.setPsh(true);
+      }
+      if (name.startsWith("tcpRst")) {
+        flags.setRst(true);
+      }
+      if (name.startsWith("tcpSyn")) {
+        flags.setSyn(true);
+      }
+      if (name.startsWith("tcpEce")) {
+        flags.setEce(true);
+      }
+      if (name.startsWith("tcpCwr")) {
+        flags.setCwr(true);
+      }
+      if (name.startsWith("tcpUrg")) {
+        flags.setUrg(true);
+      }
+    }
+
+    HeaderSpace space = new HeaderSpace();
+
+    List<IpWildcard> wcsDst = new ArrayList<>();
+    wcsDst.add(new IpWildcard(new Ip(dstIp)));
+    space.setDstIps(wcsDst);
+
+    List<IpWildcard> wcsSrc = new ArrayList<>();
+    wcsSrc.add(new IpWildcard(new Ip(srcIp)));
+    space.setSrcIps(wcsSrc);
+
+    List<SubRange> dstPorts = new ArrayList<>();
+    dstPorts.add(new SubRange(dstPort, dstPort));
+    space.setDstPorts(dstPorts);
+
+    List<SubRange> srcPorts = new ArrayList<>();
+    srcPorts.add(new SubRange(srcPort, srcPort));
+    space.setDstPorts(srcPorts);
+
+    List<IpProtocol> ipProtos = new ArrayList<>();
+    ipProtos.add(IpProtocol.fromNumber(ipProto));
+    space.setIpProtocols(ipProtos);
+
+    List<SubRange> icmpTypes = new ArrayList<>();
+    icmpTypes.add(new SubRange(icmpType, icmpType));
+    space.setIcmpTypes(icmpTypes);
+
+    List<SubRange> icmpCodes = new ArrayList<>();
+    icmpCodes.add(new SubRange(icmpCode, icmpCode));
+    space.setIcmpTypes(icmpCodes);
+
+    List<TcpFlags> tcpFlags = new ArrayList<>();
+    tcpFlags.add(flags);
+    space.setTcpFlags(tcpFlags);
+
+    return space;
+  }
+
+  /*
+   * Recursively builds each of the intermediate BDD nodes in the
+   * graphviz DOT format.
+   */
+  private void example(Set<Integer> vars, BDD bdd) {
+    if (bdd.isOne() || bdd.isZero()) {
+      return;
+    }
+    BDD low = bdd.low();
+    BDD high = bdd.high();
+    if (low.isZero()) {
+      vars.add(bdd.var());
+    }
+    example(vars, low);
+    example(vars, high);
+  }
+
+  /*
+   * Create a BDD from a headerspace object
+   */
+  public BDD fromHeaderSpace(HeaderSpace l) {
+
+    BDD local = null;
+
+    if (l.getDstIps() != null) {
+      BDD val = computeWildcardMatch(l.getDstIps(), getDstIp(), new HashSet<>());
+      val = l.getDstIps().isEmpty() ? factory.one() : val;
+      local = val;
+    }
+
+    if (l.getSrcIps() != null) {
+      BDD val = computeWildcardMatch(l.getSrcIps(), getSrcIp(), null);
+      val = l.getDstIps().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getDscps() != null && !l.getDscps().isEmpty()) {
+      throw new BatfishException("detected dscps");
+    }
+
+    if (l.getDstPorts() != null) {
+      BDD val = computeValidRange(l.getDstPorts(), getDstPort());
+      val = l.getDstPorts().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getSrcPorts() != null) {
+      BDD val = computeValidRange(l.getSrcPorts(), getSrcPort());
+      val = l.getSrcPorts().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getEcns() != null && !l.getEcns().isEmpty()) {
+      throw new BatfishException("detected ecns");
+    }
+
+    if (l.getTcpFlags() != null) {
+      BDD val = computeTcpFlags(l.getTcpFlags());
+      val = l.getTcpFlags().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getFragmentOffsets() != null && !l.getFragmentOffsets().isEmpty()) {
+      throw new BatfishException("detected fragment offsets");
+    }
+
+    if (l.getIcmpCodes() != null) {
+      BDD val = computeValidRange(l.getIcmpCodes(), getIcmpCode());
+      val = l.getIcmpCodes().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getIcmpTypes() != null) {
+      BDD val = computeValidRange(l.getIcmpTypes(), getIcmpType());
+      val = l.getIcmpTypes().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getStates() != null && !l.getStates().isEmpty()) {
+      throw new BatfishException("detected states");
+    }
+
+    if (l.getIpProtocols() != null) {
+      BDD val = computeIpProtocols(l.getIpProtocols());
+      val = l.getIpProtocols().isEmpty() ? factory.one() : val;
+      local = (local == null ? val : local.and(val));
+    }
+
+    if (l.getNotDscps() != null && !l.getNotDscps().isEmpty()) {
+      throw new BatfishException("detected NOT dscps");
+    }
+
+    if (l.getNotDstIps() != null && !l.getNotDstIps().isEmpty()) {
+      throw new BatfishException("detected NOT dst ip");
+    }
+
+    if (l.getNotSrcIps() != null && !l.getNotSrcIps().isEmpty()) {
+      throw new BatfishException("detected NOT src ip");
+    }
+
+    if (l.getNotDstPorts() != null && !l.getNotDstPorts().isEmpty()) {
+      throw new BatfishException("detected NOT dst port");
+    }
+
+    if (l.getNotSrcPorts() != null && !l.getNotSrcPorts().isEmpty()) {
+      throw new BatfishException("detected NOT src port");
+    }
+
+    if (l.getNotEcns() != null && !l.getNotEcns().isEmpty()) {
+      throw new BatfishException("detected NOT ecns");
+    }
+
+    if (l.getNotIcmpCodes() != null && !l.getNotIcmpCodes().isEmpty()) {
+      throw new BatfishException("detected NOT icmp codes");
+    }
+
+    if (l.getNotIcmpTypes() != null && !l.getNotIcmpTypes().isEmpty()) {
+      throw new BatfishException("detected NOT icmp types");
+    }
+
+    if (l.getNotFragmentOffsets() != null && !l.getNotFragmentOffsets().isEmpty()) {
+      throw new BatfishException("detected NOT fragment offset");
+    }
+
+    if (l.getNotIpProtocols() != null && !l.getNotIpProtocols().isEmpty()) {
+      throw new BatfishException("detected NOT ip protocols");
+    }
+
+    if (local != null) {
+      if (l.getNegate()) {
+        local = local.not();
+      }
+      return local;
+    }
+    return factory.zero();
+  }
+
+  /*
+   * Convert a set of ip protocols to a boolean expression on the symbolic packet
+   */
+  private BDD computeIpProtocols(Set<IpProtocol> ipProtos) {
+    BDD acc = factory.zero();
+    for (IpProtocol proto : ipProtos) {
+      BDD isValue = getIpProtocol().value(proto.number());
+      acc = acc.or(isValue);
+    }
+    return acc;
+  }
+
+  /*
+   * Convert Tcp flags to a boolean expression on the symbolic packet
+   */
+  private BDD computeTcpFlags(List<TcpFlags> flags) {
+    BDD acc = factory.zero();
+    for (TcpFlags fs : flags) {
+      acc = acc.or(computeTcpFlags(fs));
+    }
+    return acc;
+  }
+
+  /*
+   * Convert a Tcp flag to a boolean expression on the symbolic packet
+   */
+  private BDD computeTcpFlags(TcpFlags flags) {
+    BDD acc = factory.one();
+    if (flags.getUseAck()) {
+      BDD value = flags.getAck() ? getTcpAck() : getTcpAck().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUseCwr()) {
+      BDD value = flags.getCwr() ? getTcpCwr() : getTcpCwr().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUseEce()) {
+      BDD value = flags.getEce() ? getTcpEce() : getTcpEce().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUseFin()) {
+      BDD value = flags.getFin() ? getTcpFin() : getTcpFin().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUsePsh()) {
+      BDD value = flags.getPsh() ? getTcpPsh() : getTcpPsh().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUseRst()) {
+      BDD value = flags.getRst() ? getTcpRst() : getTcpRst().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUseSyn()) {
+      BDD value = flags.getSyn() ? getTcpSyn() : getTcpSyn().not();
+      acc = acc.and(value);
+    }
+    if (flags.getUseUrg()) {
+      BDD value = flags.getUrg() ? getTcpUrg() : getTcpUrg().not();
+      acc = acc.and(value);
+    }
+    return acc;
+  }
+
+  /*
+   * Convert a set of ranges and a packet field to a symbolic boolean expression
+   */
+  private BDD computeValidRange(Set<SubRange> ranges, BDDInteger field) {
+    BDD acc = factory.zero();
+    for (SubRange range : ranges) {
+      int start = range.getStart();
+      int end = range.getEnd();
+      // System.out.println("Range: " + start + "--" + end);
+      if (start == end) {
+        BDD isValue = field.value(start);
+        acc = acc.or(isValue);
+      } else {
+        BDD r = field.geq(start).and(field.leq(end));
+        acc = acc.or(r);
+      }
+    }
+    return acc;
+  }
+
+  /*
+   * Convert a set of wildcards and a packet field to a symbolic boolean expression
+   */
+  private BDD computeWildcardMatch(
+      Set<IpWildcard> wcs, BDDInteger field, @Nullable Set<Prefix> ignored) {
+    BDD acc = factory.zero();
+    for (IpWildcard wc : wcs) {
+      if (!wc.isPrefix()) {
+        throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
+      }
+      Prefix p = wc.toPrefix();
+      // if (!PrefixUtils.isContainedBy(p, ignored)) {
+      acc = acc.or(isRelevantFor(p, field));
+      // }
+    }
+    return acc;
+  }
+
+  /*
+   * Does the 32 bit integer match the prefix using lpm?
+   */
+  private BDD isRelevantFor(Prefix p, BDDInteger i) {
+    return firstBitsEqual(i.getBitvec(), p, p.getPrefixLength());
+  }
+
+  /*
+   * Check if the first length bits match the BDDInteger
+   * representing the advertisement prefix.
+   *
+   * Note: We assume the prefix is never modified, so it will
+   * be a bitvector containing only the underlying variables:
+   * [var(0), ..., var(n)]
+   */
+  private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
+    BitSet b = p.getStartIp().getAddressBits();
+    BDD acc = factory.one();
+    for (int i = 0; i < length; i++) {
+      boolean res = b.get(i);
+      if (res) {
+        acc = acc.and(bits[i]);
+      } else {
+        acc = acc.and(bits[i].not());
+      }
+    }
+    return acc;
   }
 }

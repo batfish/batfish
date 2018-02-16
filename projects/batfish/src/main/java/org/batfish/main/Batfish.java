@@ -4160,6 +4160,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return p.checkRoutingLoop(q);
   }
 
+  @Override
+  public AnswerElement apt() {
+    NetworkModel nm = new NetworkModel(this, null);
+    return new StringAnswerElement("done");
+  }
+
   private AnswerElement standardAtomic(
       HeaderSpace headerSpace,
       Set<ForwardingAction> actions,
@@ -4167,9 +4173,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Set<String> finalNodes) {
     // String tag = getFlowTag(_testrigSettings);
     DataPlane dp = loadDataPlane();
-    NetworkModel aps = new NetworkModel(this, dp);
-    // ForwardingGraph fg = new ForwardingGraph(this, dp, backendType);
-    return new StringAnswerElement("done");
+    NetworkModel nm = new NetworkModel(this, dp);
+    return nm.reachable(headerSpace, actions, ingressNodes, finalNodes);
   }
 
   private AnswerElement standardDeltanet(
