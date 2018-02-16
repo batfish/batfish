@@ -95,11 +95,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public List<Flow> getHistoryFlows() {
-    return getHistoryFlows(loadDataPlane());
-  }
-
-  @Override
   public List<Flow> getHistoryFlows(DataPlane dataPlane) {
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
     List<Flow> flowList = new ArrayList<>();
@@ -112,11 +107,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
               }
             });
     return flowList;
-  }
-
-  @Override
-  public List<FlowTrace> getHistoryFlowTraces() {
-    return getHistoryFlowTraces(loadDataPlane());
   }
 
   @Override
@@ -139,11 +129,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
-    return getRoutes(loadDataPlane());
-  }
-
-  @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane) {
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
@@ -152,11 +137,6 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
 
   private BdpDataPlane loadDataPlane() {
     return (BdpDataPlane) _batfish.loadDataPlane();
-  }
-
-  @Override
-  public void processFlows(Set<Flow> flows) {
-    processFlows(flows, loadDataPlane());
   }
 
   @Override

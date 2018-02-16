@@ -63,22 +63,14 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract Set<BgpAdvertisement> getAdvertisements();
 
-  public abstract List<Flow> getHistoryFlows();
-
   public abstract List<Flow> getHistoryFlows(DataPlane dataPlane);
-
-  public abstract List<FlowTrace> getHistoryFlowTraces();
 
   public abstract List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane);
 
   public abstract IbgpTopology getIbgpNeighbors();
 
-  public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
-
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
-
-  public abstract void processFlows(Set<Flow> flows);
 
   public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane);
 
