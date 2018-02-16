@@ -491,15 +491,6 @@ public class NetworkModel {
     // Find the relevant labels for the headerspace
     BDD query = _bddPkt.fromHeaderSpace(h);
 
-    /* BitSet labels = new BitSet();
-    for (int i = 0; i < _forwardingBdds.size(); i++) {
-      BDD fbdd = _forwardingBdds.get(i);
-      BDD overlap = query.and(fbdd);
-      if (!overlap.isZero()) {
-        labels.set(i);
-      }
-    } */
-
     List<Tuple<Flow, FlowTrace>> traces = new ArrayList<>();
     for (GraphNode source : sources) {
       Tuple<Flow, FlowTrace> trace = reachable(query, flags, source, sinks);
