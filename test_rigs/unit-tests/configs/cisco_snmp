@@ -69,6 +69,7 @@ snmp-server group cenic-nms v2c IPv4 auth
 snmp-server host 10.1.2.3 xyx
 snmp-server host 10.1.2.3 use-vrf management
 snmp-server host 10.1.2.3 version 2c dummycommunity 
+snmp-server host 10.1.2.3 vrf mangement
 snmp-server host 10.1.2.3 informs version 2c dummycommunity
 snmp-server ifindex persist
 snmp-server ifmib stats cache
@@ -77,6 +78,7 @@ snmp-server logging threshold oid-processing 1000
 snmp-server manager
 snmp-server max-ifindex-per-module 40
 snmp-server overload-control 0 0
+snmp-server packetsize 512
 snmp-server priority high
 snmp-server protocol enable
 snmp-server queue-length 1000
@@ -89,6 +91,7 @@ snmp-server tftp-server-list 8
 snmp-server trap link ietf
 snmp-server trap-source Loopback0
 snmp-server trap-source IPv4 Loopback0
+snmp-server trap-timeout 10
 snmp-server traps snmp linkup
 snmp-server user admin network-admin auth md5 dummypassword priv dummyprivacypassword localizedkey
 snmp-server view NOROUTES mib-2 included

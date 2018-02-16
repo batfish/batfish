@@ -44,6 +44,7 @@ no ip dhcp smart-relay global
 no ip dhcp snooping
 no ip dhcp snooping information option
 ip dhcp snooping verify mac-address
+no ip dhcp use vrf connected
 ipv6 dhcp relay
 no ipv6 dhcp relay option vpn
 no ipv6 dhcp relay option type cisco

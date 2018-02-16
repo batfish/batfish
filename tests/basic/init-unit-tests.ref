@@ -501,6 +501,11 @@
             "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '1.2.3.4'"
           }
         },
+        "cisco_bgp" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
+          }
+        },
         "cisco_style_acl1" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl1'\n"
@@ -686,19 +691,19 @@
           "bgp group" : {
             "p3" : {
               "inherited BGP group" : [
-                12
+                14
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                8
+                10
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                9
+                11
               ]
             },
             "bloop" : {
@@ -747,14 +752,14 @@
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                158
+                162
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                194
+                198
               ]
             }
           }
@@ -763,41 +768,41 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                100
+                111
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                75
+                83
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                67
+                73
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                103
+                114
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                46
+                52
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                78
+                86
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                79
+                87
               ]
             }
           }
@@ -821,24 +826,24 @@
             "40" : {
               "line access-class list" : [
                 6,
-                22
+                25
               ]
             },
             "99" : {
               "line access-class list" : [
-                52
+                55
               ]
             },
             "vty-acl" : {
               "line access-class list" : [
-                18
+                21
               ]
             }
           },
           "ipv6 acl" : {
             "ipv6-vty-acl" : {
               "line access-class ipv6 list" : [
-                57
+                60
               ]
             }
           }
@@ -856,7 +861,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                32
+                52
               ]
             }
           }
@@ -888,7 +893,10 @@
           "ipv4/6 acl" : {
             "some-ACL" : {
               "router rip distribute-list" : [
-                6
+                10,
+                11,
+                12,
+                13
               ]
             }
           }
@@ -932,7 +940,7 @@
                 67
               ],
               "snmp server tftp-server list" : [
-                88
+                90
               ]
             },
             "customer-snmp" : {
@@ -1523,7 +1531,7 @@
         "cisco_bgp" : {
           "bgp group" : {
             "p1" : [
-              10
+              12
             ]
           }
         },
@@ -1558,12 +1566,12 @@
           },
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : [
-              143
+              145
             ]
           },
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : [
-              180
+              184
             ]
           }
         },
@@ -1641,7 +1649,7 @@
               26
             ],
             "multicaststuff" : [
-              40
+              41
             ],
             "next-hop-null" : [
               23

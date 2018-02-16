@@ -4288,6 +4288,48 @@
                         ]
                       },
                       {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                        "comment" : "Redistribute OSPF routes into BGP",
+                        "conjuncts" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocol" : "ospf"
+                          },
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                            "expr" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                              "type" : "True"
+                            },
+                            "postStatements" : [
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                "type" : "UnsetWriteIntermediateBgpAttributes"
+                              }
+                            ],
+                            "postTrueStatements" : [
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                "type" : "SetReadIntermediateBgpAttributes"
+                              },
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                                "originType" : {
+                                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                  "originType" : "incomplete"
+                                }
+                              }
+                            ],
+                            "preStatements" : [
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                "type" : "SetWriteIntermediateBgpAttributes"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                         "protocol" : "bgp"
                       },
@@ -7154,6 +7196,21 @@
                   "prefix" : "0.0.0.0/0"
                 }
               ]
+            },
+            "~OSPF_SUMMARY_FILTER:default:16909056~" : {
+              "name" : "~OSPF_SUMMARY_FILTER:default:16909056~",
+              "lines" : [
+                {
+                  "action" : "REJECT",
+                  "lengthRange" : "24-32",
+                  "prefix" : "1.2.3.0/24"
+                },
+                {
+                  "action" : "ACCEPT",
+                  "lengthRange" : "0-32",
+                  "prefix" : "0.0.0.0/0"
+                }
+              ]
             }
           },
           "routingPolicies" : {
@@ -7214,6 +7271,15 @@
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  },
+                  "16909056" : {
+                    "name" : 16909056,
+                    "summaries" : {
+                      "1.2.3.0/24" : {
+                        "advertise" : false
+                      }
+                    },
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",

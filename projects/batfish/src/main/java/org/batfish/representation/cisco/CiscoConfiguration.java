@@ -1586,6 +1586,34 @@ public final class CiscoConfiguration extends VendorConfiguration {
       preFilterConditions.getDisjuncts().add(exportConnectedConditions);
     }
 
+    // redistribute ospf
+    BgpRedistributionPolicy redistributeOspfPolicy =
+        proc.getRedistributionPolicies().get(RoutingProtocol.OSPF);
+    if (redistributeOspfPolicy != null) {
+      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      Conjunction exportOspfConditions = new Conjunction();
+      exportOspfConditions.setComment("Redistribute OSPF routes into BGP");
+      exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
+      String mapName = redistributeOspfPolicy.getRouteMap();
+      if (mapName != null) {
+        int mapLine = redistributeOspfPolicy.getRouteMapLine();
+        RouteMap redistributeOspfRouteMap = _routeMaps.get(mapName);
+        if (redistributeOspfRouteMap != null) {
+          redistributeOspfRouteMap.getReferers().put(proc, "ospf redistribution route-map");
+          weInterior = new CallExpr(mapName);
+        } else {
+          undefined(
+              CiscoStructureType.ROUTE_MAP,
+              mapName,
+              CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
+              mapLine);
+        }
+      }
+      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+      exportOspfConditions.getConjuncts().add(we);
+      preFilterConditions.getDisjuncts().add(exportOspfConditions);
+    }
+
     // cause ip peer groups to inherit unset fields from owning named peer
     // group if it exists, and then always from process master peer group
     Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<>();

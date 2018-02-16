@@ -268,7 +268,7 @@ aaa_accounting_system_stanza
 
 aaa_accounting_update
 :
-   UPDATE NEWINFO NEWLINE
+   UPDATE NEWINFO? PERIODIC? DEC NEWLINE
 ;
 
 aaa_authentication
