@@ -745,7 +745,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_IP_ROUTE_VRF = "ip route vrf / vrf - ip route";
 
-  private static final String F_OSPF_AREA_NSSA = "ospf - not-so-stubby areas";
+  private static final String F_OSPF_AREA_NSSA_DEFAULT_ORIGINATE =
+      "ospf - not-so-stubby areas - default-originate";
+
+  private static final String F_OSPF_AREA_NSSA_NO_REDISTRIBUTION =
+      "ospf - not-so-stubby areas - no-redistribution";
 
   private static final String F_OSPF_MAXIMUM_PATHS = "ospf - maximum-paths";
 
@@ -5042,8 +5046,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
     boolean noSummary = ctx.NO_SUMMARY() != null;
     boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
+    boolean noRedstribution = ctx.NO_REDISTRIBUTION() != null;
     if (defaultOriginate) {
-      todo(ctx, F_OSPF_AREA_NSSA);
+      todo(ctx, F_OSPF_AREA_NSSA_DEFAULT_ORIGINATE);
+    }
+    if (noRedstribution) {
+      todo(ctx, F_OSPF_AREA_NSSA_NO_REDISTRIBUTION);
     }
     proc.getNssas().put(area, noSummary);
   }
@@ -5051,7 +5059,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRo_area_range(CiscoParser.Ro_area_rangeContext ctx) {
     long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
-    Prefix prefix = Prefix.parse(ctx.area_range.getText());
+    Prefix prefix;
+    if (ctx.area_prefix != null) {
+      prefix = Prefix.parse(ctx.area_prefix.getText());
+    } else {
+      prefix = new Prefix(new Ip(ctx.area_ip.getText()), new Ip(ctx.area_subnet.getText()));
+    }
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 

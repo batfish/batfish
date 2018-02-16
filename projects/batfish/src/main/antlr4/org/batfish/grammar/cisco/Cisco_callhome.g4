@@ -24,6 +24,7 @@ call_home_null
       | SOURCE_INTERFACE
       | SOURCE_IP_ADDRESS
       | STREET_ADDRESS
+      | VRF
    ) ~NEWLINE* NEWLINE
 ;
 

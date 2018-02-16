@@ -190,6 +190,6 @@ ip sla 10
  history filter failures
  udp-jitter 130.59.38.105 5000
 !
-
+ip sla timeout 100
 !
 

@@ -5,11 +5,14 @@ router bgp 1
  reconnect-interval 30
  no bgp fast-external-fallover
  redistribute connected route-map bloop
+ redistribute ospf 2
+ redistribute ospf 2 vrf vrf1
  redistribute static metric 4294967295 route-map abcdefg
  redistribute rip route-map blah
  template peer-policy p1
   inherit peer-policy p2
   inherit peer-policy p3 10
  exit-peer-policy
+ neighbor 10.0.0.1 disable-connected-check
 !
 
