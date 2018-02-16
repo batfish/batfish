@@ -142,7 +142,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
-import org.batfish.geometry.ForwardingGraph;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -4177,19 +4176,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return nm.reachable(headerSpace, actions, ingressNodes, finalNodes);
   }
 
-  private AnswerElement standardDeltanet(
-      BackendType backendType,
-      HeaderSpace headerSpace,
-      Set<ForwardingAction> actions,
-      Set<String> ingressNodes,
-      Set<String> finalNodes) {
-    // String tag = getFlowTag(_testrigSettings);
-    DataPlane dp = loadDataPlane();
-    System.out.println("Create forwarding graph");
-    ForwardingGraph fg = new ForwardingGraph(this, dp, backendType);
-    return fg.reachable(headerSpace, actions, ingressNodes, finalNodes);
-  }
-
   @Override
   public AnswerElement standard(
       BackendType backendType,
@@ -4253,12 +4239,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
     }
 
-    if (backendType != BackendType.NOD) {
-      if (backendType == BackendType.ATOMIC_PREDICATES) {
-        return standardAtomic(headerSpace, actions, activeIngressNodes, activeFinalNodes);
-      }
-      return standardDeltanet(
-          backendType, headerSpace, actions, activeIngressNodes, activeFinalNodes);
+    if (backendType == BackendType.ATOMIC_PREDICATES) {
+      return standardAtomic(headerSpace, actions, activeIngressNodes, activeFinalNodes);
     }
 
     // build query jobs

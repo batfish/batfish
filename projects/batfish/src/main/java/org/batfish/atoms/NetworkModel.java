@@ -212,6 +212,8 @@ public class NetworkModel {
     }
 
     // Create the links
+    Map<NodeInterfacePair, IpAccessList> inAcls = new HashMap<>();
+    Map<NodeInterfacePair, IpAccessList> outAcls = new HashMap<>();
     int linkIndex = 0;
     for (Entry<NodeInterfacePair, Set<NodeInterfacePair>> entry : edgeMap.entrySet()) {
       NodeInterfacePair nip1 = entry.getKey();
@@ -248,12 +250,20 @@ public class NetworkModel {
         }
 
         if (aclOut != null) {
-          _outAcls.put(l, aclOut);
+          outAcls.put(nip1, aclOut);
         }
         if (aclIn != null) {
-          _inAcls.put(l, aclIn);
+          inAcls.put(nip2, aclIn);
         }
       }
+    }
+
+    // Place the acls for the correct graph links
+    for (Entry<NodeInterfacePair, IpAccessList> e : outAcls.entrySet()) {
+      _outAcls.put(_linkMap.get(e.getKey()), e.getValue());
+    }
+    for (Entry<NodeInterfacePair, IpAccessList> e : inAcls.entrySet()) {
+      _inAcls.put(_linkMap.get(e.getKey()), e.getValue());
     }
 
     // Map links to their opposite end
@@ -605,7 +615,7 @@ public class NetworkModel {
       GraphLink lastLink = path.getLinks().get(0);
       IpAccessList acl;
       if (fd == FlowDisposition.DENIED_IN) {
-        acl = _inAcls.get(lastLink);
+        acl = _inAcls.get(_otherEnd.get(lastLink));
       } else {
         acl = _outAcls.get(lastLink);
       }
@@ -715,7 +725,6 @@ public class NetworkModel {
       GraphNode current = tup.getFirst();
       PortReachabilitySummary s = tup.getSecond();
 
-      // System.out.println("Stack: " + stack);
       // System.out.println("Looking at: " + current);
       // System.out.println("Path is: " + s.getPath().getLinks());
       // System.out.println("Fwd bits: " + s.getForwarding());
@@ -736,11 +745,12 @@ public class NetworkModel {
         PortReachabilitySummary afterOut = s.extendBy(link).applyPort(fwdLink, aclLink);
         // If an inbound acl -- i.e., a real router on the other side with an inbound ACL
         GraphLink other = _otherEnd.get(link);
-        BitSet aclIn = (other == null ? acl : _aclInPredicates.get(link));
+        // System.out.println("  Other link: " + other);
+        BitSet aclIn = (other == null ? acl : _aclInPredicates.get(other));
+        // System.out.println("  Other ACL in: " + aclIn);
         aclIn = (aclIn == null ? acl : aclIn);
         PortReachabilitySummary afterIn = afterOut.applyPort(fwd, aclIn);
-
-        // System.out.println("  After ACL in: " + aclIn);
+        // System.out.println("  After ACL in: " + afterIn.getAcl());
 
         GraphNode neighbor = link.getTarget();
         boolean notLoop = !s.getPath().containsNode(neighbor);
@@ -911,15 +921,17 @@ public class NetworkModel {
 
   private void computeBddSummaries(
       BDD query,
-      Map<GraphLink, List<PortReachabilitySummary>> inboundSummaries,
+      Map<GraphLink, List<PortReachabilitySummary>> summaries,
       List<GraphLink> links,
       Map<GraphLink, BDD> reachable,
       Map<GraphLink, PortReachabilitySummary> nonzero) {
     for (GraphLink link : links) {
-      List<PortReachabilitySummary> s = inboundSummaries.get(link);
+      List<PortReachabilitySummary> s = summaries.get(link);
       if (s != null) {
         BDD atLink = BDDPacket.factory.zero();
         for (PortReachabilitySummary portSummary : s) {
+          // System.out.println("FWD summary for " + link + " as " + portSummary.getForwarding());
+          // System.out.println("ACL summary for " + link + " as " + portSummary.getAcl());
           BitSet f = portSummary.getForwarding();
           BitSet a = portSummary.getAcl();
           BDD withQuery = bddFromSummary(query, f, a);
