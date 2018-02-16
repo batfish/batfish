@@ -20,6 +20,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
@@ -600,9 +601,15 @@ public class NetworkModel {
     Collections.reverse(links);
 
     FlowDisposition fd = tup.getSecond();
-    /* if (fd == FlowDisposition.DENIED_OUT || fd == FlowDisposition.DENIED_IN) {
-      AclGraphNode aclNode = (AclGraphNode) links.get(links.size() - 1).getSource();
-      IpAccessList acl = aclNode.getAcl();
+    if (fd == FlowDisposition.DENIED_OUT || fd == FlowDisposition.DENIED_IN) {
+      GraphLink lastLink = path.getLinks().get(0);
+      IpAccessList acl;
+      if (fd == FlowDisposition.DENIED_IN) {
+        acl = _inAcls.get(lastLink);
+      } else {
+        acl = _outAcls.get(lastLink);
+      }
+
       FilterResult fr = acl.filter(flow);
       String line = "default deny";
       if (fr.getMatchLine() != null) {
@@ -612,8 +619,7 @@ public class NetworkModel {
       note = String.format("DENIED_%s{%s}{%s}", type, acl.getName(), line);
     } else {
       note = fd.name();
-    } */
-    note = fd.name();
+    }
 
     Map<String, Configuration> configs = _batfish.loadConfigurations();
 
@@ -690,7 +696,8 @@ public class NetworkModel {
   private Tuple<Flow, FlowTrace> reachable(
       BDD query, BitSet flags, GraphNode source, Set<GraphNode> sinks) {
 
-    Map<GraphLink, List<PortReachabilitySummary>> summaries = new HashMap<>();
+    Map<GraphLink, List<PortReachabilitySummary>> outboundSummaries = new HashMap<>();
+    Map<GraphLink, List<PortReachabilitySummary>> inboundSummaries = new HashMap<>();
 
     // Create the initial summary
     Path p = new Path(PList.empty(), source, source);
@@ -750,68 +757,193 @@ public class NetworkModel {
         // Update the reachability information
         if (nonEmptyOut) {
           List<PortReachabilitySummary> info =
-              summaries.computeIfAbsent(link, k -> new ArrayList<>());
+              outboundSummaries.computeIfAbsent(link, k -> new ArrayList<>());
           info.add(afterOut);
         }
         if (nonEmptyIn) {
           List<PortReachabilitySummary> info =
-              summaries.computeIfAbsent(other, k -> new ArrayList<>());
+              inboundSummaries.computeIfAbsent(other, k -> new ArrayList<>());
           info.add(afterIn);
         }
       }
     }
 
-    return analyzeSummaries(query, summaries, flags, sinks);
+    return analyzeSummaries(query, outboundSummaries, inboundSummaries, flags, sinks);
     // return analyzeSummaries(query, summaries);
   }
 
   @Nullable
   private Tuple<Flow, FlowTrace> analyzeSummaries(
       BDD query,
-      Map<GraphLink, List<PortReachabilitySummary>> summaries,
+      Map<GraphLink, List<PortReachabilitySummary>> outboundSummaries,
+      Map<GraphLink, List<PortReachabilitySummary>> inboundSummaries,
       BitSet flags,
       Set<GraphNode> sinks) {
 
     for (GraphNode sink : sinks) {
-      for (GraphLink link : _adjacencyLists.get(sink.getIndex())) {
-        List<PortReachabilitySummary> s = summaries.get(link);
-        if (s != null) {
-          for (PortReachabilitySummary portSummary : s) {
-            BitSet f = portSummary.getForwarding();
-            BitSet a = portSummary.getAcl();
 
-            BDD acc1 = BDDPacket.factory.zero();
-            for (int i = f.nextSetBit(0); i >= 0; i = f.nextSetBit(i + 1)) {
-              BDD fwd = _forwardingBdds.get(i);
-              acc1 = acc1.or(fwd);
+      List<GraphLink> local = _adjacencyLists.get(sink.getIndex());
+      List<GraphLink> adjacent = new ArrayList<>();
+
+      for (GraphLink link : local) {
+        GraphLink adj = _otherEnd.get(link);
+        if (adj != null) {
+          adjacent.add(adj);
+        }
+      }
+
+      Map<GraphLink, BDD> reachableIn = new HashMap<>();
+      Map<GraphLink, BDD> reachableOut = new HashMap<>();
+
+      Map<GraphLink, PortReachabilitySummary> nonzeroIn = new HashMap<>();
+      Map<GraphLink, PortReachabilitySummary> nonzeroOut = new HashMap<>();
+
+      computeBddSummaries(query, inboundSummaries, local, reachableIn, nonzeroIn);
+      computeBddSummaries(query, inboundSummaries, adjacent, reachableIn, nonzeroIn);
+      computeBddSummaries(query, outboundSummaries, local, reachableOut, nonzeroOut);
+      computeBddSummaries(query, outboundSummaries, adjacent, reachableOut, nonzeroOut);
+
+      // All traffic leaving from some neighbor
+      BDD exitFromNeighbor = BDDPacket.factory.zero();
+      for (GraphLink link : adjacent) {
+        BDD x = reachableOut.get(link);
+        if (x != null) {
+          exitFromNeighbor = exitFromNeighbor.or(x);
+        }
+      }
+
+      // All traffic that enters
+      BDD enterFromNeighbor = BDDPacket.factory.zero();
+      for (GraphLink link : local) {
+        BDD x = reachableIn.get(link);
+        if (x != null) {
+          enterFromNeighbor = enterFromNeighbor.or(x);
+        }
+      }
+
+      // All traffic that leaves to another neighbor
+      BDD exitsToNeighbor = BDDPacket.factory.zero();
+      for (GraphLink link : local) {
+        BDD x = reachableIn.get(link);
+        if (x != null) {
+          exitsToNeighbor = exitsToNeighbor.or(x);
+        }
+      }
+
+      boolean checkForNoRoute = flags.get(DROP_FLAG) || flags.get(DROP_NO_ROUTE_FLAG);
+      boolean checkForNullRouted = flags.get(DROP_FLAG) || flags.get(DROP_NULL_ROUTE_FLAG);
+      boolean checkForAccept = flags.get(ACCEPT_FLAG);
+      boolean checkForDeniedIn =
+          flags.get(DROP_FLAG) || flags.get(DROP_ACL_FLAG) || flags.get(DROP_ACL_IN_FLAG);
+      boolean checkForDeniedOut =
+          flags.get(DROP_FLAG) || flags.get(DROP_ACL_FLAG) || flags.get(DROP_ACL_OUT_FLAG);
+
+      if (checkForNoRoute && !enterFromNeighbor.isZero() && exitsToNeighbor.isZero()) {
+        HeaderSpace h = _bddPkt.toHeaderSpace(enterFromNeighbor);
+        Path p = nonzeroIn.values().iterator().next().getPath();
+        return createTrace(h, new Tuple<>(p, FlowDisposition.NO_ROUTE));
+      }
+
+      if (checkForAccept) {
+        for (GraphLink link : local) {
+          String neighbor = link.getTarget().getName();
+          if (neighbor.equals("(egress)")) {
+            BDD reach = reachableOut.get(link);
+            if (!reach.isZero()) {
+              HeaderSpace h = _bddPkt.toHeaderSpace(reach);
+              Path p = nonzeroOut.get(link).getPath();
+              return createTrace(h, new Tuple<>(p, FlowDisposition.ACCEPTED));
             }
-            BDD acc2 = BDDPacket.factory.zero();
-            for (int i = a.nextSetBit(0); i >= 0; i = a.nextSetBit(i + 1)) {
-              BDD acl = _aclBdds.get(i);
-              acc2 = acc2.or(acl);
+          }
+        }
+      }
+
+      if (checkForNullRouted) {
+        for (GraphLink link : local) {
+          String iface = link.getSourceIface();
+          if (iface.equals("null_interface")) {
+            BDD reach = reachableOut.get(link);
+            if (!reach.isZero()) {
+              HeaderSpace h = _bddPkt.toHeaderSpace(reach);
+              Path p = nonzeroOut.get(link).getPath();
+              return createTrace(h, new Tuple<>(p, FlowDisposition.NULL_ROUTED));
             }
-            BDD withQuery = query.and(acc1.and(acc2));
-            if (!withQuery.isZero()) {
-              String iface = link.getSourceIface();
-              String neighbor = link.getTarget().getName();
+          }
+        }
+      }
 
-              if (neighbor.equals("(egress)") && flags.get(ACCEPT_FLAG)) {
-                return createTrace(
-                    _bddPkt.toHeaderSpace(withQuery),
-                    new Tuple<>(portSummary.getPath(), FlowDisposition.ACCEPTED));
-              }
+      if (checkForDeniedIn) {
+        for (GraphLink link : local) {
+          GraphLink other = _otherEnd.get(link);
+          if (other != null) {
+            BDD reachIn = reachableIn.get(link);
+            BDD reachOut = reachableOut.get(other);
+            BDD diff = reachOut.and(reachIn.not());
+            if (!diff.isZero()) {
+              HeaderSpace h = _bddPkt.toHeaderSpace(diff);
+              Path p = nonzeroIn.get(link).getPath();
+              return createTrace(h, new Tuple<>(p, FlowDisposition.DENIED_IN));
+            }
+          }
+        }
+      }
 
-              if (iface.equals("null_interface")
-                  && (flags.get(DROP_NULL_ROUTE_FLAG) || flags.get(DROP_FLAG))) {
-                return createTrace(
-                    _bddPkt.toHeaderSpace(withQuery),
-                    new Tuple<>(portSummary.getPath(), FlowDisposition.NULL_ROUTED));
-              }
+      if (checkForDeniedOut) {
+        for (GraphLink link : local) {
+          GraphLink other = _otherEnd.get(link);
+          if (other != null) {
+            BDD reachOut = reachableOut.get(link);
+            BDD diff = reachOut.and(enterFromNeighbor.not());
+            if (!diff.isZero()) {
+              HeaderSpace h = _bddPkt.toHeaderSpace(diff);
+              PortReachabilitySummary summary = nonzeroIn.values().iterator().next();
+              summary = summary.extendBy(link);
+              return createTrace(h, new Tuple<>(summary.getPath(), FlowDisposition.DENIED_OUT));
             }
           }
         }
       }
     }
     return null;
+  }
+
+  private void computeBddSummaries(
+      BDD query,
+      Map<GraphLink, List<PortReachabilitySummary>> inboundSummaries,
+      List<GraphLink> links,
+      Map<GraphLink, BDD> reachable,
+      Map<GraphLink, PortReachabilitySummary> nonzero) {
+    for (GraphLink link : links) {
+      List<PortReachabilitySummary> s = inboundSummaries.get(link);
+      if (s != null) {
+        BDD atLink = BDDPacket.factory.zero();
+        for (PortReachabilitySummary portSummary : s) {
+          BitSet f = portSummary.getForwarding();
+          BitSet a = portSummary.getAcl();
+          BDD withQuery = bddFromSummary(query, f, a);
+          if (!withQuery.isZero()) {
+            nonzero.put(link, portSummary);
+          }
+          atLink = atLink.or(withQuery);
+        }
+        reachable.put(link, atLink);
+      } else {
+        reachable.put(link, BDDPacket.factory.zero());
+      }
+    }
+  }
+
+  private BDD bddFromSummary(BDD query, BitSet f, BitSet a) {
+    BDD acc1 = BDDPacket.factory.zero();
+    for (int i = f.nextSetBit(0); i >= 0; i = f.nextSetBit(i + 1)) {
+      BDD fwd = _forwardingBdds.get(i);
+      acc1 = acc1.or(fwd);
+    }
+    BDD acc2 = BDDPacket.factory.zero();
+    for (int i = a.nextSetBit(0); i >= 0; i = a.nextSetBit(i + 1)) {
+      BDD acl = _aclBdds.get(i);
+      acc2 = acc2.or(acl);
+    }
+    return query.and(acc1.and(acc2));
   }
 }

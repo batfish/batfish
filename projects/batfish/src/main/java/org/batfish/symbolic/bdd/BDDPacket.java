@@ -448,6 +448,7 @@ public class BDDPacket {
 
     for (Integer var : vars) {
       String name = _bitNames.get(var);
+
       if (name.startsWith("dstIp")) {
         int bit = Integer.parseInt(name.substring(5));
         dstIp = dstIp + (int) Math.pow(2, 32 - bit);
@@ -518,7 +519,7 @@ public class BDDPacket {
 
     List<SubRange> srcPorts = new ArrayList<>();
     srcPorts.add(new SubRange(srcPort, srcPort));
-    space.setDstPorts(srcPorts);
+    space.setSrcPorts(srcPorts);
 
     List<IpProtocol> ipProtos = new ArrayList<>();
     ipProtos.add(IpProtocol.fromNumber(ipProto));
@@ -530,7 +531,7 @@ public class BDDPacket {
 
     List<SubRange> icmpCodes = new ArrayList<>();
     icmpCodes.add(new SubRange(icmpCode, icmpCode));
-    space.setIcmpTypes(icmpCodes);
+    space.setIcmpCodes(icmpCodes);
 
     List<TcpFlags> tcpFlags = new ArrayList<>();
     tcpFlags.add(flags);
