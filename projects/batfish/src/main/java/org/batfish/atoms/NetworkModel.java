@@ -44,6 +44,31 @@ import org.batfish.symbolic.bdd.BDDPacket;
 import org.batfish.symbolic.collections.PList;
 import org.batfish.symbolic.utils.Tuple;
 
+
+/**
+ * A model of the network dataplane that is based on partitioning the
+ * forwarding and ACL functions on each interface into disjoint regions.
+ * The idea is proposed and evaluated in this paper:
+ * https://www.cs.utexas.edu/users/lam/Vita/Cpapers/Yang_Lam_AP_Verifier_2013.pdf
+ *
+ * <p>By splitting policies into disjoint regions, each region is represented
+ * using a single unique integer, and each port can be represented using
+ * a compact bitset. This leads to an initial expensive indexing operation,
+ * but then permits very fast reachability checks.</p>
+ *
+ * <p>To check reachability from one port to another, the set of all regions is
+ * inserted at the source port, and the the network graph is traversed in a
+ * depth-first fashion, taking the intersection of the bitsets along each edge.
+ * Portions of the resulting tree are pruned as needed when there can be no
+ * reachabile packets to that part of the network (i.e., an empty bitset).</p>
+ *
+ * <p>Precomputing reachability between all pairs of ports can be expensive,
+ * so it may be a better option to use a fixed size cache to record recently
+ * computed reachability information.</p>
+ *
+ * @author  Ryan Beckett
+ */
+
 public class NetworkModel {
 
   private static int ACCEPT_FLAG = 0;
@@ -287,6 +312,10 @@ public class NetworkModel {
     return bdd;
   } */
 
+
+  /*
+   * Compute the atomic predicates for the ACLs in the network
+   */
   private void computeAclPredicates() {
     // Collect all the acls
     List<IpAccessList> acls = new ArrayList<>();
@@ -338,6 +367,9 @@ public class NetworkModel {
     }
   }
 
+  /*
+   * Compute the atomic predicates for the forwarding behavior of the network
+   */
   private void computeForwardingPredicates() {
     // create a BDD for each port
     List<Atom> atoms = new ArrayList<>();
@@ -429,8 +461,10 @@ public class NetworkModel {
     return acc;
   }
 
-  // P<l>        and {R1<ls1>, ..., Rn<lsn>}  == {(P and R1)<l::ls1>, ..., (P and Rn)<l::lsn>}
-  // (not p)<l>  and {R1<ls1>, ..., Rn<lsn>}  ==
+  /*
+   * Given a collection of predicates, returns the set of atomic
+   * predicates that are mutually disjoint, and are minimal.
+   */
   @Nonnull
   private Set<Atom> computeAtomicPredicates(List<Atom> atoms) {
     Set<Atom> allPredicates = new HashSet<>();
@@ -673,6 +707,10 @@ public class NetworkModel {
     return new Tuple<>(flow, new FlowTrace(fd, hops, note));
   }
 
+
+  /*
+   * Given a collection of counterexamples, creates an answerelement object to return
+   */
   private AnswerElement createReachabilityAnswer(List<Tuple<Flow, FlowTrace>> traces) {
     FlowHistory fh = new FlowHistory();
     String testRigName = _batfish.getTestrigName();
@@ -775,6 +813,11 @@ public class NetworkModel {
     // return analyzeSummaries(query, summaries);
   }
 
+
+  /*
+   * Once all pairs reachabilty labels have been computed, we need
+   * to determine if there is a path with the correct action.
+   */
   @Nullable
   private Tuple<Flow, FlowTrace> analyzeSummaries(
       BDD query,
@@ -910,6 +953,13 @@ public class NetworkModel {
     return null;
   }
 
+  /*
+   * Converts the path summary information from integer labels to BDDs.
+   * This is important for several reasons:
+   * (1) We need to check for overlap with the original user query
+   * (2) Because forwarding and ACLs are treated separately, their
+   *     conjunction may actually be empty.
+   */
   private void computeBddSummaries(
       BDD query,
       Map<GraphLink, List<PortReachabilitySummary>> summaries,
@@ -938,6 +988,9 @@ public class NetworkModel {
     }
   }
 
+  /*
+   * Given a user query (BDD), compute the intersection with the label predicates
+   */
   private BDD bddFromSummary(BDD query, BitSet f, BitSet a) {
     BDD acc1 = BDDPacket.factory.zero();
     for (int i = f.nextSetBit(0); i >= 0; i = f.nextSetBit(i + 1)) {
