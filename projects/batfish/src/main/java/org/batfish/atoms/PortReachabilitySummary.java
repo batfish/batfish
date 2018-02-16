@@ -3,7 +3,7 @@ package org.batfish.atoms;
 import java.util.BitSet;
 
 /*
- * When summary of the reachability from a source location to
+ * A summary of the reachability from a source location to
  * some other port in the network. The summary remembers the
  * exact path taken to get there, as well as the sets of traffic
  * that can flow along that path represented using atomic
