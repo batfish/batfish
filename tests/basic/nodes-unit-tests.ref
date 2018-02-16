@@ -878,7 +878,7 @@
               "switchportMode" : "NONE",
               "switchportTrunkEncapsulation" : "DOT1Q",
               "type" : "VLAN",
-              "vrf" : "default",
+              "vrf" : "mgmt",
               "vrrpGroups" : {
                 "1" : {
                   "name" : 1,
@@ -899,7 +899,10 @@
           },
           "vrfs" : {
             "default" : {
-              "name" : "default",
+              "name" : "default"
+            },
+            "mgmt" : {
+              "name" : "mgmt",
               "interfaces" : [
                 "Vlan1"
               ]
