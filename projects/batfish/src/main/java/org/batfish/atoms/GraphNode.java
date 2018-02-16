@@ -1,12 +1,18 @@
 package org.batfish.atoms;
 
+/*
+ * A graph node for the network model. Rather than using the
+ * node name directly, this class associates a unique index with
+ * each graph node starting from 0. For this reason, we can use
+ * more efficient data structures like arrays instead of maps.
+ */
 public class GraphNode {
 
   private String _name;
 
   private int _index;
 
-  public GraphNode(String name, int index) {
+  GraphNode(String name, int index) {
     this._name = name;
     this._index = index;
   }

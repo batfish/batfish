@@ -162,7 +162,12 @@ public class NetworkModel {
 
   /*
    * Initialize the edge-labelled graph by creating nodes for
-   * every router, and special ACL nodes for every ACL.
+   * every router. We also create nodes to represent the
+   * endpoints of edges that don't have a known neighbor.
+   * For the null interface, this is a (none) node
+   * For other interfaces this will be special (ingress) and
+   * (egress) nodes. Doing this makes it easier to both
+   * keep the representation uniform and find counterexamples.
    */
   private void initGraph(Map<String, Configuration> configs) {
     Topology topo = _batfish.getEnvironmentTopology();
@@ -208,7 +213,7 @@ public class NetworkModel {
     NodeInterfacePair egressPair = new NodeInterfacePair("(egress)", "egress_interface");
     NodeInterfacePair nullPair = new NodeInterfacePair("(none)", "null_interface");
 
-    // add a null interface edge for each router
+    // add ingress/egress edges
     for (Entry<String, Configuration> entry : configs.entrySet()) {
       String router = entry.getKey();
       Configuration config = entry.getValue();
@@ -228,7 +233,7 @@ public class NetworkModel {
       }
     }
 
-    // Add null interface edges to the drop node for every router and ACL node
+    // Add null interface edges to the drop node for every router
     for (Configuration config : configs.values()) {
       NodeInterfacePair nip = new NodeInterfacePair(config.getName(), "null_interface");
       Set<NodeInterfacePair> nips = new HashSet<>();
@@ -443,8 +448,7 @@ public class NetworkModel {
   }
 
   /*
-   * Does the 32 bit integer match the prefix using lpm?
-   * Here the 32 bits are all symbolic variables
+   * Create a BDD that represents the packets that match prefix p.
    */
   private BDD destinationIpInPrefix(Prefix p) {
     BDD[] bits = _bddPkt.getDstIp().getBitvec();

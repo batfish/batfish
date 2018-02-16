@@ -4,7 +4,17 @@ import java.util.Iterator;
 import javax.annotation.Nonnull;
 import org.batfish.symbolic.collections.PList;
 
-public class Path implements Iterable<GraphLink> {
+/*
+ * A path through the <tt>NetworkModel</tt>. Generally, a path
+ * is a collection of nodes represented by a list of links
+ * between nodes. The link representation is useful to find the
+ * interfaces used between nodes. However, to represent the path
+ * with only a single node we also store the path endpoints.
+ *
+ * <p>In order allow efficient reuse of paths in the <tt>NetworkModel</tt>,
+ * the list of links is represented using a persistent list.</p>
+ */
+public class Path {
 
   private GraphNode _source;
 
@@ -46,11 +56,5 @@ public class Path implements Iterable<GraphLink> {
 
   public PList<GraphLink> getLinks() {
     return _links;
-  }
-
-  @Nonnull
-  @Override
-  public Iterator<GraphLink> iterator() {
-    return _links.iterator();
   }
 }

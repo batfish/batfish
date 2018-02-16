@@ -4,24 +4,30 @@ import java.util.HashSet;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 
+/*
+ * An atomic predicate is represented as a thin wrapper around
+ * a BDD. It maintains a set of integer labels that act as a
+ * way of storing provenance information about which predicates
+ * contributed to the creation of this predicate.
+ */
 public class Atom {
 
   private Set<Integer> _labels;
 
   private BDD _bdd;
 
-  public Atom(Set<Integer> labels, BDD bdd) {
+  Atom(Set<Integer> labels, BDD bdd) {
     this._labels = labels;
     this._bdd = bdd;
   }
 
-  public Atom(Integer label, BDD bdd) {
+  Atom(Integer label, BDD bdd) {
     this._labels = new HashSet<>();
     this._labels.add(label);
     this._bdd = bdd;
   }
 
-  public Atom(BDD bdd) {
+  Atom(BDD bdd) {
     this._labels = new HashSet<>();
     this._bdd = bdd;
   }

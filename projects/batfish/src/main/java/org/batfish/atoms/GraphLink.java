@@ -2,6 +2,12 @@ package org.batfish.atoms;
 
 import javax.annotation.Nullable;
 
+/*
+ * A graph link for the network model. Rather than using the
+ * node name directly, this class associates a unique index with
+ * each graph link starting from 0. For this reason, we can use
+ * more efficient data structures like arrays instead of maps.
+ */
 public class GraphLink {
 
   private int _index;
@@ -14,7 +20,7 @@ public class GraphLink {
 
   private String _targetIface;
 
-  public GraphLink(
+  GraphLink(
       GraphNode src,
       String srcIface,
       @Nullable GraphNode tgt,
