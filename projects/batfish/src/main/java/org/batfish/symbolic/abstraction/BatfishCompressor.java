@@ -195,20 +195,13 @@ public class BatfishCompressor {
     return newStatements;
   }
 
+  /**
+   * Create a filter that only allows traffic for those prefixes if it came from outside. EXTERNAL =
+   * (protocol is bgp or ibgp) and (the AS path is not an internal path) MATCH = destination matches
+   * the prefixTrie GUARD = EXTERNAL or MATCH (only allow this traffic through)
+   */
   @Nonnull
   private BooleanExpr matchExternalTraffic() {
-    // Add a filter that only allows traffic for those prefixes if it came from outside.
-    // EXTERNAL = (protocol is bgp or ibgp) and (the AS path is not an internal path)
-    // MATCH = destination matches the prefixTrie
-    // GUARD = EXTERNAL or MATCH (only allow this traffic through)
-    // TODO maybe GUARD should be EXTERNAL and MATCH. (ask Ryan)
-    // TODO why do we need to check EXTERNAL?
-    // we can always use this true branch. The false branch is an optimization for when
-    // we compress to a particular EC and don't care about external stuff that doesn't match
-    // the EC.
-
-    // TODO for now, always take the true branch. Until we understand what it's doing and
-    // why/when it should
     List<AsPathSetElem> elements = new ArrayList<>();
     elements.add(new RegexAsPathSetElem(_internalRegex));
     ExplicitAsPathSet expr = new ExplicitAsPathSet(elements);
@@ -227,17 +220,6 @@ public class BatfishCompressor {
     conjuncts.add(n);
     c.setConjuncts(conjuncts);
     return c;
-  }
-
-  /** */
-  public static class Filter {
-    public final Prefix _prefix;
-    public final boolean _isDefaultCase;
-
-    public Filter(Prefix prefix, boolean isDefaultCase) {
-      _prefix = prefix;
-      _isDefaultCase = isDefaultCase;
-    }
   }
 
   private Map<String, Configuration> applyFilters(

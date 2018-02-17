@@ -172,7 +172,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       AnswerElement innerAnswer =
           (innerQuestion.getDifferential()) ? innerAnswerer.answerDiff() : innerAnswerer.answer();
 
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
+      BatfishObjectMapper mapper = new BatfishObjectMapper(false /* save bytes: don't prettify */);
       String innerAnswerStr = null;
       try {
         innerAnswerStr = mapper.writeValueAsString(innerAnswer);

@@ -567,7 +567,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
-        initRemoteBgpNeighbors(_batfish, configurations);
+        initRemoteBgpNeighbors(configurations);
         SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
@@ -617,7 +617,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
         SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
-        initRemoteBgpNeighbors(_batfish, configurations);
+        initRemoteBgpNeighbors(configurations);
         for (Configuration c : configurations.values()) {
           String hostname = c.getHostname();
           for (Vrf vrf : c.getVrfs().values()) {
@@ -683,7 +683,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
               Interface i1 = n1.getInterfaces().get(edge.getInt1());
               Configuration n2 = configurations.get(edge.getNode2());
               Interface i2 = n2.getInterfaces().get(edge.getInt2());
-              vMatchingEdges.add(new VerboseEdge(n1, i1, n2, i2, edge));
+              vMatchingEdges.add(new VerboseEdge(i1, i2, edge));
             }
             answerElement.setVerboseLanNeighbors(vMatchingEdges);
             break;
@@ -711,8 +711,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return answerElement;
     }
 
-    private void initRemoteBgpNeighbors(
-        IBatfish batfish, Map<String, Configuration> configurations) {
+    private void initRemoteBgpNeighbors(Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
         CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);

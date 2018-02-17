@@ -58,7 +58,6 @@ null_block
       | DYNAMIC_ACCESS_POLICY_RECORD
       | ENABLE_ACL_COUNTER
       | ENABLE_QOS_STATISTICS
-      | END
       | ETHERNET
       | EXCEPTION_SLAVE
       | EXIT
@@ -623,6 +622,7 @@ null_single
       | DOWNLINK
       | DSP
       | DSS
+      | END
       | ENVIRONMENT
       | ENVIRONMENT_MONITOR
       | ERRDISABLE

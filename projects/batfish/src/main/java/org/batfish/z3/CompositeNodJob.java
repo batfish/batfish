@@ -1,6 +1,6 @@
 package org.batfish.z3;
 
-import com.microsoft.z3.BitVecExpr;
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.BitVecNum;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -13,14 +13,15 @@ import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.config.Settings;
@@ -73,7 +74,8 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
         Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
         QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
         NodProgram baseProgram = dataPlaneSynthesizer.synthesizeNodDataPlaneProgram(ctx);
-        NodProgram queryProgram = querySynthesizer.getNodProgram(baseProgram);
+        NodProgram queryProgram =
+            querySynthesizer.getNodProgram(dataPlaneSynthesizer.getInput(), baseProgram);
         NodProgram program = baseProgram.append(queryProgram);
         latestProgram = program;
         Fixedpoint fix = ctx.mkFixedpoint();
@@ -137,13 +139,20 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
           throw new BatfishException("invalid status");
       }
       Model model = solver.getModel();
-      Map<String, Long> constraints = new LinkedHashMap<>();
-      for (FuncDecl constDecl : model.getConstDecls()) {
-        String name = constDecl.getName().toString();
-        BitVecExpr varConstExpr = latestProgram.getVariablesAsConsts().get(name);
-        long val = ((BitVecNum) model.getConstInterp(varConstExpr)).getLong();
-        constraints.put(name, val);
-      }
+      final NodProgram currentLatestProgram = latestProgram;
+      Map<HeaderField, Long> constraints =
+          Arrays.stream(model.getConstDecls())
+              .map(FuncDecl::getName)
+              .map(Object::toString)
+              .map(HeaderField::valueOf)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      headerField ->
+                          ((BitVecNum)
+                                  model.getConstInterp(
+                                      currentLatestProgram.getVariablesAsConsts().get(headerField)))
+                              .getLong()));
       Set<Flow> flows = new HashSet<>();
       for (Pair<String, String> nodeVrf : _nodeVrfSet) {
         String node = nodeVrf.getFirst();
@@ -162,7 +171,7 @@ public class CompositeNodJob extends BatfishJob<NodJobResult> {
     }
   }
 
-  private Flow createFlow(String node, String vrf, Map<String, Long> constraints) {
+  private Flow createFlow(String node, String vrf, Map<HeaderField, Long> constraints) {
     return NodJob.createFlow(node, vrf, constraints, _tag);
   }
 }

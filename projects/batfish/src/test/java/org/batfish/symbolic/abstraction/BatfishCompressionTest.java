@@ -1,15 +1,19 @@
 package org.batfish.symbolic.abstraction;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -20,6 +24,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -101,10 +107,15 @@ public class BatfishCompressionTest {
 
   private Map<String, Configuration> compressNetwork(Map<String, Configuration> configs)
       throws IOException {
+    return compressNetwork(configs, new HeaderSpace());
+  }
+
+  private Map<String, Configuration> compressNetwork(
+      Map<String, Configuration> configs, HeaderSpace headerSpace) throws IOException {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     IBatfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(configs), tmp);
-    return new BatfishCompressor(batfish).compress(new HeaderSpace());
+    return new BatfishCompressor(batfish).compress(headerSpace);
   }
 
   /** Test that compression doesn't change the fibs for this network. */
@@ -181,12 +192,9 @@ public class BatfishCompressionTest {
 
     compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
 
-    Set<String> removedRouters = Sets.difference(origFibs.keySet(), compressedFibs.keySet());
-    assertEquals(removedRouters.size(), 1);
-
-    // A subset matcher would be nice here.
-    Set<String> addedRouters = Sets.difference(compressedFibs.keySet(), origFibs.keySet());
-    assertEquals(addedRouters.size(), 0);
+    // compressedFibs is a strict subset of origFibs
+    assertThat(compressedFibs.keySet(), everyItem(isIn(origFibs.keySet())));
+    assertThat(compressedFibs, not(equalTo(origFibs)));
 
     // all FIB entries in compressed network should also exist in the original network
     compressedFibs
@@ -206,5 +214,116 @@ public class BatfishCompressionTest {
                         assertEquals(rows, origFibs.get(router).get(vrf));
                       });
             });
+  }
+
+  /** This network should be compressed to: A ---> B | | A ---> {B,C} --> D V V C ---> D */
+  private SortedMap<String, Configuration> diamondNetwork() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration cA = cb.build();
+    Configuration cB = cb.build();
+    Configuration cC = cb.build();
+    Configuration cD = cb.build();
+
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf vA = vb.setOwner(cA).build();
+    Vrf vB = vb.setOwner(cB).build();
+    Vrf vC = vb.setOwner(cC).build();
+    Vrf vD = vb.setOwner(cD).build();
+    Prefix pAB = Prefix.parse("10.12.0.0/31");
+    Prefix pAC = Prefix.parse("10.13.0.0/31");
+    Prefix pBD = Prefix.parse("10.24.0.0/31");
+    Prefix pCD = Prefix.parse("10.34.0.0/31");
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+
+    // Add a route from A --> B
+    Interface iAB =
+        ib.setOwner(cA)
+            .setVrf(vA)
+            .setAddress(new InterfaceAddress(pAB.getStartIp(), pAB.getPrefixLength()))
+            .build();
+    Interface iBA =
+        ib.setOwner(cB)
+            .setVrf(vA)
+            .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
+            .build();
+    Interface iAC =
+        ib.setOwner(cA)
+            .setVrf(vC)
+            .setAddress(new InterfaceAddress(pAC.getStartIp(), pAC.getPrefixLength()))
+            .build();
+    Interface iCA =
+        ib.setOwner(cC)
+            .setVrf(vC)
+            .setAddress(new InterfaceAddress(pAC.getEndIp(), pAC.getPrefixLength()))
+            .build();
+    Interface iBD =
+        ib.setOwner(cB)
+            .setVrf(vB)
+            .setAddress(new InterfaceAddress(pBD.getStartIp(), pBD.getPrefixLength()))
+            .build();
+    Interface iDB =
+        ib.setOwner(cD)
+            .setVrf(vD)
+            .setAddress(new InterfaceAddress(pBD.getEndIp(), pBD.getPrefixLength()))
+            .build();
+    Interface iCD =
+        ib.setOwner(cC)
+            .setVrf(vC)
+            .setAddress(new InterfaceAddress(pCD.getStartIp(), pCD.getPrefixLength()))
+            .build();
+    Interface iDC =
+        ib.setOwner(cD)
+            .setVrf(vD)
+            .setAddress(new InterfaceAddress(pCD.getEndIp(), pCD.getPrefixLength()))
+            .build();
+
+    // For the destination
+    Prefix pD = Prefix.parse("4.4.4.4/32");
+    Interface iD =
+        ib.setOwner(cD)
+            .setVrf(vD)
+            .setAddress(new InterfaceAddress(pD.getEndIp(), pD.getPrefixLength()))
+            .build();
+
+    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pD);
+    vA.getStaticRoutes().add(bld.setNextHopIp(pAB.getEndIp()).build());
+    vA.getStaticRoutes().add(bld.setNextHopIp(pAC.getEndIp()).build());
+    vB.getStaticRoutes().add(bld.setNextHopIp(pBD.getEndIp()).build());
+    vC.getStaticRoutes().add(bld.setNextHopIp(pCD.getEndIp()).build());
+
+    return new TreeMap<>(
+        ImmutableSortedMap.of(
+            cA.getName(), cA,
+            cB.getName(), cB,
+            cC.getName(), cC,
+            cD.getName(), cD));
+  }
+
+  /**
+   * Test the following invariant: if a FIB appears on concrete router “r”, then a corresponding
+   * abstract FIB appears on one of these representatives. For example, if there is a concrete FIB
+   * from C to D, then there should be an abstract FIB from A to B, where A is in representatives(C)
+   * and B is in representatives(D).
+   */
+  @Test
+  public void testCompressionFibs_diamondNetwork() throws IOException {
+    IpAccessListLine line = new IpAccessListLine();
+    line.setDstIps(ImmutableList.of(new IpWildcard(Prefix.parse("4.4.4.4/32"))));
+    SortedMap<String, Configuration> origConfigs = diamondNetwork();
+    Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(origConfigs);
+    // compress a new copy since it will get mutated.
+    Map<String, Configuration> compressedConfigs = compressNetwork(diamondNetwork(), line);
+    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
+        getFibs(new TreeMap<>(compressedConfigs));
+
+    compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
+
+    assertThat(compressedConfigs.values(), hasSize(3));
+
+    // compressedFibs is a strict subset of origFibs
+    assertThat(compressedFibs.keySet(), everyItem(isIn(origFibs.keySet())));
+    assertThat(compressedFibs, not(equalTo(origFibs)));
   }
 }

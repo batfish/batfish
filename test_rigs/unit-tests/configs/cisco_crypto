@@ -139,6 +139,8 @@ crypto ipsec profile abcdefg
  set transform-set hijklmnop
  set ikev2-profile someprofile
 !
+crypto ipsec nat-transparency udp-encapsulation
+crypto ipsec nat-transparency spi-matching
 crypto ipsec security-association pmtu-aging infinite
 crypto ipsec transform-set ESP-3DES-MD5 esp-3des esp-md5-hmac
  mode transport
@@ -147,6 +149,8 @@ crypto isakmp identity address
 crypto isakmp invalid-spi-recovery
 crypto isakmp keepalive 10 3 periodic
 crypto isakmp key ~99a9aaa_aaaa9aa|||aaaaaaa address 1.2.3.4
+! Cisco documentation: https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_conn_dplane/configuration/12-4t/sec-ipsec-data-plane-12-4t-book/sec-ipsec-nat-transp.html#GUID-CCD71C21-1234-419D-9327-80522F1CBBB6
+crypto isakmp nat keepalive 30
 crypto isakmp policy 1
   authentication pre-share
   encr 3des

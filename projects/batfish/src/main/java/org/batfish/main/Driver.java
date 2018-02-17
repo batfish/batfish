@@ -256,6 +256,7 @@ public class Driver {
       task.newBatch("Got kill request");
       task.setStatus(TaskStatus.TerminatedByUser);
       task.setTerminated(new Date());
+      task.setErrMessage("Terminated by user");
 
       // we die after a little bit, to allow for the response making it back to the coordinator
       new java.util.Timer()
@@ -404,7 +405,7 @@ public class Driver {
     if (_mainSettings.canExecute()) {
       _mainSettings.setLogger(_mainLogger);
       Batfish.initTestrigSettings(_mainSettings);
-      if (!runBatfish(_mainSettings)) {
+      if (runBatfish(_mainSettings) != null) {
         System.exit(1);
       }
     }
@@ -532,7 +533,7 @@ public class Driver {
   }
 
   @SuppressWarnings("deprecation")
-  private static boolean runBatfish(final Settings settings) {
+  private static String runBatfish(final Settings settings) {
 
     final BatfishLogger logger = settings.getLogger();
 
@@ -565,36 +566,39 @@ public class Driver {
                 Answer answer = null;
                 try {
                   answer = batfish.run();
-                  batfish.setTerminatedWithException(false);
                   if (answer.getStatus() == null) {
                     answer.setStatus(AnswerStatus.SUCCESS);
                   }
                 } catch (CleanBatfishException e) {
-                  batfish.setTerminatedWithException(true);
                   String msg = "FATAL ERROR: " + e.getMessage();
                   logger.error(msg);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
                   answer = Answer.failureAnswer(msg, null);
                 } catch (QuestionException e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
                   logger.error(stackTrace);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
-                  batfish.setTerminatedWithException(true);
                 } catch (BatfishException e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
                   logger.error(stackTrace);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
                   answer = new Answer();
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(e.getBatfishStackTrace());
-                  batfish.setTerminatedWithException(true);
                 } catch (Throwable e) {
                   String stackTrace = ExceptionUtils.getFullStackTrace(e);
                   logger.error(stackTrace);
+                  batfish.setTerminatingExceptionMessage(
+                      e.getClass().getName() + ": " + e.getMessage());
                   answer = new Answer();
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(
                       new BatfishException("Batfish job failed", e).getBatfishStackTrace());
-                  batfish.setTerminatedWithException(true);
                 } finally {
                   try (ActiveSpan outputAnswerSpan =
                       GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
@@ -615,17 +619,17 @@ public class Driver {
         // this is deprecated but we should be safe since we don't have
         // locks and such
         // AF: This doesn't do what you think it does, esp. not in Java 8.
-        // It needs to be replaced.
+        // It needs to be replaced. TODO
         thread.stop();
         logger.error("Batfish worker took too long. Terminated.");
-        batfish.setTerminatedWithException(true);
+        batfish.setTerminatingExceptionMessage("Batfish worker took too long. Terminated.");
       }
 
-      return !batfish.getTerminatedWithException();
+      return batfish.getTerminatingExceptionMessage();
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
       logger.error(stackTrace);
-      return false;
+      return stackTrace;
     }
   }
 
@@ -689,10 +693,12 @@ public class Driver {
                           .startActive()) {
                     assert runBatfishSpan != null; // avoid unused warning
                     task.setStatus(TaskStatus.InProgress);
-                    if (runBatfish(settings)) {
+                    String errMsg = runBatfish(settings);
+                    if (errMsg == null) {
                       task.setStatus(TaskStatus.TerminatedNormally);
                     } else {
                       task.setStatus(TaskStatus.TerminatedAbnormally);
+                      task.setErrMessage(errMsg);
                     }
                     task.setTerminated(new Date());
                     jobLogger.close();

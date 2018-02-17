@@ -597,6 +597,7 @@ null_bgp_tail
       | DAMPEN_IGP_METRIC
       | DAMPENING
       | DESCRIPTION
+      | DISABLE_CONNECTED_CHECK
       | DISTANCE
       | DONT_CAPABILITY_NEGOTIATE
       | DYNAMIC_CAPABILITY
@@ -771,6 +772,10 @@ redistribute_ospf_bgp_tail
       |
       (
          MATCH ospf_route_type*
+      )
+      |
+      (
+         VRF vrf = variable
       )
    )* NEWLINE
 ;

@@ -124,7 +124,10 @@ l_null
       | TIMEOUT
       | TIMESTAMP
       | TXSPEED
-      | VACANT_MESSAGE
+      |
+      (
+        NO VACANT_MESSAGE
+      )
    ) ~NEWLINE* NEWLINE
 ;
 
@@ -141,6 +144,11 @@ l_transport
       | OUTPUT
       | PREFERRED
    ) prot += variable+ NEWLINE
+;
+
+l_vacant_message
+:
+  VACANT_MESSAGE ESCAPE_C ~ESCAPE_C* ESCAPE_C NEWLINE
 ;
 
 lc_null
@@ -187,6 +195,7 @@ s_line
       | l_null
       | l_script
       | l_transport
+      | l_vacant_message
       | description_line
    )*
 ;

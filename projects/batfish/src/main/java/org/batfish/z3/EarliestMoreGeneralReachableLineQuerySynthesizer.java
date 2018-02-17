@@ -1,20 +1,22 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Z3Exception;
-import java.util.ArrayList;
 import java.util.List;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.z3.node.AndExpr;
-import org.batfish.z3.node.BooleanExpr;
-import org.batfish.z3.node.DeclareRelExpr;
-import org.batfish.z3.node.NotExpr;
-import org.batfish.z3.node.NumberedQueryExpr;
-import org.batfish.z3.node.QueryExpr;
-import org.batfish.z3.node.RuleExpr;
-import org.batfish.z3.node.SaneExpr;
+import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.DeclareRelStatement;
+import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.NotExpr;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.visitors.BoolExprTransformer;
+import org.batfish.z3.state.NumberedQuery;
 
 public class EarliestMoreGeneralReachableLineQuerySynthesizer
     extends FirstUnsatQuerySynthesizer<AclLine, Integer> {
@@ -40,31 +42,33 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
   }
 
   @Override
-  public NodProgram getNodProgram(NodProgram baseProgram) throws Z3Exception {
+  public NodProgram getNodProgram(SynthesizerInput input, NodProgram baseProgram)
+      throws Z3Exception {
     Context ctx = baseProgram.getContext();
     NodProgram program = new NodProgram(ctx);
     int unreachableLineIndex = _unreachableLine.getLine();
     IpAccessListLine unreachableLine = _list.getLines().get(unreachableLineIndex);
-    BooleanExpr matchUnreachableLineHeaderSpace = Synthesizer.matchHeaderSpace(unreachableLine);
+    BooleanExpr matchUnreachableLineHeaderSpace = new HeaderSpaceMatchExpr(unreachableLine);
     for (AclLine earlierReachableLine : _earlierReachableLines) {
       int earlierLineIndex = earlierReachableLine.getLine();
       IpAccessListLine earlierLine = _list.getLines().get(earlierLineIndex);
-      BooleanExpr matchEarlierLineHeaderSpace = Synthesizer.matchHeaderSpace(earlierLine);
-      AndExpr queryConditions = new AndExpr();
-      queryConditions.addConjunct(new NotExpr(matchEarlierLineHeaderSpace));
-      queryConditions.addConjunct(matchUnreachableLineHeaderSpace);
-      queryConditions.addConjunct(SaneExpr.INSTANCE);
-      NumberedQueryExpr queryRel = new NumberedQueryExpr(earlierLineIndex);
-      String queryRelName = queryRel.getRelations().toArray(new String[] {})[0];
-      List<Integer> sizes = new ArrayList<>();
-      sizes.addAll(Synthesizer.PACKET_VAR_SIZES.values());
-      DeclareRelExpr declaration = new DeclareRelExpr(queryRelName, sizes);
+      BooleanExpr matchEarlierLineHeaderSpace = new HeaderSpaceMatchExpr(earlierLine);
+      AndExpr queryConditions =
+          new AndExpr(
+              ImmutableList.of(
+                  new NotExpr(matchEarlierLineHeaderSpace),
+                  matchUnreachableLineHeaderSpace,
+                  SaneExpr.INSTANCE));
+      NumberedQuery queryRel = new NumberedQuery(earlierLineIndex);
+      String queryRelName = BoolExprTransformer.getNodName(input, queryRel);
+      DeclareRelStatement declaration = new DeclareRelStatement(queryRelName);
       baseProgram.getRelationDeclarations().put(queryRelName, declaration.toFuncDecl(ctx));
-      RuleExpr queryRule = new RuleExpr(queryConditions, queryRel);
+      RuleStatement queryRule = new RuleStatement(queryConditions, queryRel);
       List<BoolExpr> rules = program.getRules();
-      rules.add(queryRule.toBoolExpr(baseProgram));
-      QueryExpr query = new QueryExpr(queryRel);
-      BoolExpr queryBoolExpr = query.toBoolExpr(baseProgram);
+      rules.add(BoolExprTransformer.toBoolExpr(queryRule.getSubExpression(), input, baseProgram));
+      QueryStatement query = new QueryStatement(queryRel);
+      BoolExpr queryBoolExpr =
+          BoolExprTransformer.toBoolExpr(query.getSubExpression(), input, baseProgram);
       program.getQueries().add(queryBoolExpr);
       _resultsByQueryIndex.add(earlierLineIndex);
     }
