@@ -24,7 +24,7 @@ import org.junit.runners.JUnit4;
 public class PrependAsPathTest {
 
   private static Environment newTestEnvironment(BgpRoute.Builder outputRoute) {
-    Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
+    Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS, null);
     return new Environment(c, "vrf", null, null, outputRoute, null, null);
   }
 

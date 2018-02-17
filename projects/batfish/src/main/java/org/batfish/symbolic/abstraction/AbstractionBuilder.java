@@ -430,8 +430,7 @@ class AbstractionBuilder {
    */
   private Configuration createAbstractConfig(Set<String> abstractRouters, Configuration conf) {
     Configuration abstractConf =
-        new Configuration(conf.getHostname(), conf.getConfigurationFormat());
-    abstractConf.setDomainName(conf.getDomainName());
+        new Configuration(conf.getHostname(), conf.getConfigurationFormat(), conf.getDomainName());
     abstractConf.setDnsServers(conf.getDnsServers());
     abstractConf.setDnsSourceInterface(conf.getDnsSourceInterface());
     abstractConf.setAuthenticationKeyChains(conf.getAuthenticationKeyChains());

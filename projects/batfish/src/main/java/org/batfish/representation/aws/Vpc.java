@@ -67,7 +67,7 @@ public class Vpc implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_vpcId);
+    Configuration cfgNode = Utils.newAwsConfiguration(_vpcId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode

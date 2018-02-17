@@ -39,6 +39,8 @@ public final class Configuration extends ComparableStructure<String> {
 
     private ConfigurationFormat _configurationFormat;
 
+    private String _domainName;
+
     private String _hostname;
 
     private LineAction _defaultCrossZoneAction;
@@ -52,7 +54,7 @@ public final class Configuration extends ComparableStructure<String> {
     @Override
     public Configuration build() {
       String name = _hostname != null ? _hostname : generateName();
-      Configuration configuration = new Configuration(name, _configurationFormat);
+      Configuration configuration = new Configuration(name, _configurationFormat, _domainName);
       if (_defaultCrossZoneAction != null) {
         configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
       }
@@ -64,6 +66,11 @@ public final class Configuration extends ComparableStructure<String> {
 
     public Builder setConfigurationFormat(ConfigurationFormat configurationFormat) {
       _configurationFormat = configurationFormat;
+      return this;
+    }
+
+    public Builder setDomainName(String domainName) {
+      _domainName = domainName;
       return this;
     }
 
@@ -102,6 +109,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_DEVICE_TYPE = "deviceType";
 
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
+
+  private static final String PROP_DOMAIN_NAME = "domainName";
 
   private static final String PROP_IKE_GATEWAYS = "ikeGateways";
 
@@ -237,7 +246,8 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonCreator
   public Configuration(
       @JsonProperty(PROP_NAME) String hostname,
-      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
+      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat,
+      @Nullable @JsonProperty(PROP_DOMAIN_NAME) String domainName) {
     super(hostname);
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
@@ -247,6 +257,7 @@ public final class Configuration extends ComparableStructure<String> {
     }
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
+    _domainName = domainName;
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
@@ -382,6 +393,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _dnsSourceInterface;
   }
 
+  @JsonProperty(PROP_DOMAIN_NAME)
   @JsonPropertyDescription("Domain name of this node.")
   public String getDomainName() {
     return _domainName;
@@ -685,10 +697,6 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_DNS_SOURCE_INTERFACE)
   public void setDnsSourceInterface(String dnsSourceInterface) {
     _dnsSourceInterface = dnsSourceInterface;
-  }
-
-  public void setDomainName(String domainName) {
-    _domainName = domainName;
   }
 
   @JsonProperty(PROP_IKE_GATEWAYS)

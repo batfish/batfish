@@ -76,7 +76,7 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_domainName);
+    Configuration cfgNode = Utils.newAwsConfiguration(_domainName, "aws");
 
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";

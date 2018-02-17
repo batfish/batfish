@@ -3536,9 +3536,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public Configuration toVendorIndependentConfiguration() {
-    final Configuration c = new Configuration(_hostname, _vendor);
+    final Configuration c = new Configuration(_hostname, _vendor, _domainName);
     c.getVendorFamily().setCisco(_cf);
-    c.setDomainName(_domainName);
     c.setRoles(_roles);
     c.setDefaultInboundAction(LineAction.ACCEPT);
     c.setDefaultCrossZoneAction(LineAction.ACCEPT);

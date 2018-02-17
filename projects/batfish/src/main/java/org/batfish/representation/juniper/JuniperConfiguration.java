@@ -1620,10 +1620,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
-    _c = new Configuration(hostname, _vendor);
+    _c = new Configuration(hostname, _vendor, _defaultRoutingInstance.getDomainName());
     _c.setAuthenticationKeyChains(convertAuthenticationKeyChains(_authenticationKeyChains));
     _c.setRoles(_roles);
-    _c.setDomainName(_defaultRoutingInstance.getDomainName());
     _c.setDnsServers(_dnsServers);
     _c.setLoggingServers(_syslogHosts);
     _c.setNtpServers(_ntpServers);
