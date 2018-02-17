@@ -4346,7 +4346,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 logic...");
-    Map<String, Configuration> configurations = loadConfigurations();
     Synthesizer s =
         new Synthesizer(
             SynthesizerInputImpl.builder()
