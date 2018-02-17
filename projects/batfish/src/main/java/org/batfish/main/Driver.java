@@ -633,8 +633,8 @@ public class Driver {
     final Settings settings;
     try {
       settings = new Settings(_mainSettings);
+      settings.setRunMode(RunMode.WORKER);
       settings.parseCommandLine(args);
-      settings.setCanExecute(true);
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
