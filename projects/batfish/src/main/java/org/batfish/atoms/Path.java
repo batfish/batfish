@@ -55,4 +55,32 @@ public class Path {
   public PList<GraphLink> getLinks() {
     return _links;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Path path = (Path) o;
+
+    if (!_source.equals(path._source)) {
+      return false;
+    }
+    if (!_target.equals(path._target)) {
+      return false;
+    }
+    return _links.equals(path._links);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = _source.hashCode();
+    result = 31 * result + _target.hashCode();
+    result = 31 * result + _links.hashCode();
+    return result;
+  }
 }
