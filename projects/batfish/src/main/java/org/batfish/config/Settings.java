@@ -552,13 +552,14 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
    *
    * @param other the {@link Settings to copy}
    */
+  @SuppressWarnings("IncompleteCopyConstructor")
   public Settings(Settings other) {
     super(other._config);
-    initOptions();
-    _activeTestrigSettings = other._activeTestrigSettings;
-    _deltaTestrigSettings = other._deltaTestrigSettings;
-    _baseTestrigSettings = other._baseTestrigSettings;
+    _baseTestrigSettings = new TestrigSettings();
+    _deltaTestrigSettings = new TestrigSettings();
+    _activeTestrigSettings = new TestrigSettings();
     _logger = other._logger;
+    initOptions();
   }
 
   /**
