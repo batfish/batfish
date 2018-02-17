@@ -4664,6 +4664,7 @@
         },
         "cisco_domain" : {
           "configurationFormat" : "CISCO_NX",
+          "domainName" : "my.domain.name",
           "name" : "cisco_domain",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -4673,7 +4674,6 @@
             "2.3.4.5"
           ],
           "dnsSourceInterface" : "Loopback666",
-          "domainName" : "my.domain.name",
           "roles" : [
             "cisco-domain"
           ],
@@ -12042,11 +12042,11 @@
         },
         "juniper_misc" : {
           "configurationFormat" : "FLAT_JUNIPER",
+          "domainName" : "my.domain.name",
           "name" : "juniper_misc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
-          "domainName" : "my.domain.name",
           "roles" : [
             "juniper-misc"
           ],
@@ -12806,6 +12806,7 @@
         },
         "nat-08c21704416f06046" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "nat-08c21704416f06046",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -12823,6 +12824,7 @@
         },
         "nat-09fd8f73171d2d9a3" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "nat-09fd8f73171d2d9a3",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",

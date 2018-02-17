@@ -24,6 +24,7 @@
               ],
               "suffix" : {
                 "configurationFormat" : "CISCO_IOS",
+                "domainName" : "lab.local",
                 "name" : "as2border1",
                 "communityLists" : {
                   "as1_community" : {
@@ -60,7 +61,6 @@
                 "defaultCrossZoneAction" : "ACCEPT",
                 "defaultInboundAction" : "ACCEPT",
                 "deviceType" : "ROUTER",
-                "domainName" : "lab.local",
                 "interfaces" : {
                   "Ethernet0/0" : {
                     "name" : "Ethernet0/0",
