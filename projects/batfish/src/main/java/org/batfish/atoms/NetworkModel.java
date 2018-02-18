@@ -405,7 +405,6 @@ public class NetworkModel {
       String router = entry.getKey();
       // for each router, compute the
       List<Tuple<GraphLink, FibRow>> fibsForRouter = new ArrayList<>();
-
       Set<GraphLink> allLinks = new HashSet<>();
       for (Entry<String, SortedSet<FibRow>> entry2 : entry.getValue().entrySet()) {
         SortedSet<FibRow> fibs = entry2.getValue();
@@ -678,7 +677,6 @@ public class NetworkModel {
       } else {
         acl = _outAcls.get(lastLink);
       }
-
       FilterResult fr = acl.filter(flow);
       String line = "default deny";
       if (fr.getMatchLine() != null) {
@@ -831,43 +829,17 @@ public class NetworkModel {
 
         // Update the reachability information
         if (nonEmptyOut) {
-          // System.out.println("  adding outbound fwd " + afterOut.getForwarding() + " for " +
-          // link);
-          // System.out.println("  adding outbound acl " + afterOut.getAcl() + " for " + link);
           List<PortReachabilitySummary> info =
               outboundSummaries.computeIfAbsent(link, k -> new ArrayList<>());
           info.add(afterOut);
         }
         if (nonEmptyIn && other != null) {
-          // System.out.println("  adding inbound fwd " + afterIn.getForwarding() + " for " +
-          // other);
-          // System.out.println("  adding inbound acl " + afterIn.getAcl() + " for " + other);
           List<PortReachabilitySummary> info =
               inboundSummaries.computeIfAbsent(other, k -> new ArrayList<>());
           info.add(afterIn);
         }
       }
     }
-
-    /* System.out.println("");
-    System.out.println("INBOUND: ");
-    for (Entry<GraphLink, List<PortReachabilitySummary>> e : inboundSummaries.entrySet()) {
-      System.out.println("Link: " + e.getKey());
-      for (PortReachabilitySummary s : e.getValue()) {
-        System.out.println("  fwd: " + s.getForwarding());
-        System.out.println("  acl: " + s.getAcl());
-      }
-    }
-
-    System.out.println("");
-    System.out.println("OUTBOUND: ");
-    for (Entry<GraphLink, List<PortReachabilitySummary>> e : outboundSummaries.entrySet()) {
-      System.out.println("Link: " + e.getKey());
-      for (PortReachabilitySummary s : e.getValue()) {
-        System.out.println("  fwd: " + s.getForwarding());
-        System.out.println("  acl: " + s.getAcl());
-      }
-    } */
 
     return analyzeSummaries(query, outboundSummaries, inboundSummaries, flags, sinks);
     // return analyzeSummaries(query, summaries);
@@ -987,19 +959,17 @@ public class NetworkModel {
       }
 
       if (checkForDeniedOut) {
+        BDD in = bddFromLinks(fwdCache, aclCache, query, local, inboundSummaries);
         for (GraphLink link : local) {
-          GraphLink other = _otherEnd.get(link);
-          if (other != null) {
-            BDD in = bddFromSummaries(fwdCache, aclCache, query, inboundSummaries.get(other));
-            List<PortReachabilitySummary> summaries = outboundSummaries.get(link);
-            if (summaries != null) {
-              for (PortReachabilitySummary summary : summaries) {
-                BDD out = bddFromSummary(fwdCache, aclCache, query, summary);
-                BDD diff = in.and(out.not());
-                if (!diff.isZero()) {
-                  HeaderSpace h = _bddPkt.toHeaderSpace(diff);
-                  return createTrace(h, new Tuple<>(summary.getPath(), FlowDisposition.DENIED_OUT));
-                }
+          List<PortReachabilitySummary> summaries = outboundSummaries.get(link);
+          if (summaries != null) {
+            for (PortReachabilitySummary summary : summaries) {
+              BDD fwdOut = bddFromFwd(fwdCache, query, summary);
+              BDD out = bddFromSummary(fwdCache, aclCache, query, summary);
+              BDD diff = in.and(fwdOut).and(out.not());
+              if (!diff.isZero()) {
+                HeaderSpace h = _bddPkt.toHeaderSpace(diff);
+                return createTrace(h, new Tuple<>(summary.getPath(), FlowDisposition.DENIED_OUT));
               }
             }
           }
@@ -1060,33 +1030,56 @@ public class NetworkModel {
       BDD query,
       PortReachabilitySummary portSummary) {
 
+    BDD fwd = bddFromFwd(fwdCache, query, portSummary);
+    BDD acl = bddFromAcl(aclCache, query, portSummary);
+    return fwd.and(acl);
+  }
+
+  /*
+   * Turn a forwarding bitset into a BDD
+   */
+  private BDD bddFromFwd(
+      Map<BitSet, BDD> fwdCache, BDD query, PortReachabilitySummary portSummary) {
+
     BitSet f = portSummary.getForwarding();
-    BitSet a = portSummary.getAcl();
-
-    BDD acc1 = fwdCache.get(f);
-    if (acc1 == null) {
-      acc1 = BDDPacket.factory.zero();
-      for (int i = f.nextSetBit(0); i >= 0; i = f.nextSetBit(i + 1)) {
-        BDD fwd = _forwardingBdds.get(i);
-        acc1 = acc1.or(fwd);
-      }
-      fwdCache.put(f, acc1);
-    }
-
-    BDD acc2 = aclCache.get(a);
-    if (acc2 == null) {
-      if (_aclBdds.isEmpty()) {
-        acc2 = BDDPacket.factory.one();
+    BDD acc = fwdCache.get(f);
+    if (acc == null) {
+      if (_forwardingBdds.isEmpty()) {
+        acc = BDDPacket.factory.one();
       } else {
-        acc2 = BDDPacket.factory.zero();
-        for (int i = a.nextSetBit(0); i >= 0; i = a.nextSetBit(i + 1)) {
-          BDD acl = _aclBdds.get(i);
-          acc2 = acc2.or(acl);
+        acc = BDDPacket.factory.zero();
+        for (int i = f.nextSetBit(0); i >= 0; i = f.nextSetBit(i + 1)) {
+          BDD fwd = _forwardingBdds.get(i);
+          acc = acc.or(fwd);
         }
       }
-      aclCache.put(a, acc2);
+      fwdCache.put(f, acc);
     }
 
-    return query.and(acc1.and(acc2));
+    return query.and(acc);
+  }
+
+  /*
+   * Turn an ACL bitset into a BDD
+   */
+  private BDD bddFromAcl(
+      Map<BitSet, BDD> aclCache, BDD query, PortReachabilitySummary portSummary) {
+
+    BitSet a = portSummary.getAcl();
+    BDD acc = aclCache.get(a);
+    if (acc == null) {
+      if (_aclBdds.isEmpty()) {
+        acc = BDDPacket.factory.one();
+      } else {
+        acc = BDDPacket.factory.zero();
+        for (int i = a.nextSetBit(0); i >= 0; i = a.nextSetBit(i + 1)) {
+          BDD acl = _aclBdds.get(i);
+          acc = acc.or(acl);
+        }
+      }
+      aclCache.put(a, acc);
+    }
+
+    return query.and(acc);
   }
 }
