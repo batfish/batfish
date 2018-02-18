@@ -822,8 +822,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getString(BfConsts.ARG_QUESTION_NAME);
   }
 
+  @Nullable
   public Path getQuestionPath() {
-    return Paths.get(_config.getString(QUESTION_PATH));
+    return nullablePath(_config.getString(QUESTION_PATH));
   }
 
   public boolean getRedFlagAsError() {
@@ -1584,6 +1585,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   public void setQuestionPath(@Nullable Path questionPath) {
     if (questionPath != null) {
       _config.setProperty(QUESTION_PATH, questionPath.toString());
+    } else {
+      _config.clearProperty(QUESTION_PATH);
     }
   }
 
