@@ -1,7 +1,6 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -56,26 +55,20 @@ public class BDDAcl {
    */
   private void computeACL(@Nullable Set<Prefix> networks) {
     // Check if there is an ACL first
-    if (_acl == null) {
-      _bdd = _factory.one();
-    }
-
-    _bdd = _factory.zero();
-
+    BDD allowed = _factory.zero();
+    BDD denied = _factory.zero();
     List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
-    Collections.reverse(lines);
-
+    // Collections.reverse(lines);
     for (IpAccessListLine l : lines) {
       // System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
       BDD local = _pkt.fromHeaderSpace(l);
-      BDD ret;
       if (l.getAction() == LineAction.ACCEPT) {
-        ret = _factory.one();
+        allowed = allowed.or(local.and(denied.not()));
       } else {
-        ret = _factory.zero();
+        denied = denied.or(local);
       }
-      _bdd = local.ite(ret, _bdd);
     }
+    _bdd = allowed;
   }
 
   public IpAccessList getAcl() {

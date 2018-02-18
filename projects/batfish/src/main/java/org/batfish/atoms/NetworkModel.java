@@ -31,6 +31,8 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IRib;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TcpFlags;
@@ -122,6 +124,10 @@ public class NetworkModel {
   // Given a (directed) link, find the opposite link if one exists
   private Map<GraphLink, GraphLink> _otherEnd;
 
+  // For each node, we keep a BDD representing the locally accepted packets
+  // This is useful primarily to construct meaningful counterexamles
+  private Map<GraphNode, BDD> _acceptedPackets;
+
   /*
    * Model of the network in terms of atomic predicates on ports.
    * There are atomic predicates for both forwarding and for ACLs.
@@ -142,9 +148,11 @@ public class NetworkModel {
     _allNodes = new ArrayList<>();
     _allLinks = new ArrayList<>();
     _otherEnd = new HashMap<>();
+    _acceptedPackets = new HashMap<>();
 
     Map<String, Configuration> configs = batfish.loadConfigurations();
     initGraph(configs);
+    initAccepted(configs);
 
     long l = System.currentTimeMillis();
     computeAclPredicates();
@@ -153,6 +161,29 @@ public class NetworkModel {
     System.out.println("Computing predicates took: " + (System.currentTimeMillis() - l));
     System.out.println("Number ACL atoms: " + _aclBdds.size());
     System.out.println("Number Fwd atoms: " + _forwardingBdds.size());
+  }
+
+  /*
+   * Create a mapping from each node a BDD representing the collection
+   * of packets that are accepted locally for that node. When answering
+   * a reachability question, for example, this becomes very useful to
+   * distinguish between NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK and ACCEPTED.
+   */
+  private void initAccepted(Map<String, Configuration> configs) {
+    for (Entry<String, Configuration> e : configs.entrySet()) {
+      String router = e.getKey();
+      Configuration config = e.getValue();
+      GraphNode node = _nodeMap.get(router);
+      BDD accepted = BDDPacket.factory.zero();
+      for (Interface iface : config.getInterfaces().values()) {
+        for (InterfaceAddress addr : iface.getAllAddresses()) {
+          Ip ip = addr.getIp();
+          BDD match = destinationIpInPrefix(new Prefix(ip, 32));
+          accepted = accepted.or(match);
+        }
+      }
+      _acceptedPackets.put(node, accepted);
+    }
   }
 
   /*
@@ -325,7 +356,7 @@ public class NetworkModel {
     }
 
     for (Entry<GraphLink, IpAccessList> e : _outAcls.entrySet()) {
-      GraphAcl gacl = new GraphAcl(e.getValue(), e.getKey(), false);
+      GraphAcl gacl = new GraphAcl(e.getValue(), e.getKey(), true);
       acls.add(gacl);
     }
 
@@ -390,9 +421,15 @@ public class NetworkModel {
       // sort by decreasing prefix length
       fibsForRouter.sort(
           (t1, t2) -> {
-            int len1 = t1.getSecond().getPrefix().getPrefixLength();
-            int len2 = t2.getSecond().getPrefix().getPrefixLength();
-            return len2 - len1;
+            Prefix p1 = t1.getSecond().getPrefix();
+            Prefix p2 = t2.getSecond().getPrefix();
+            int len1 = p1.getPrefixLength();
+            int len2 = p2.getPrefixLength();
+            int cmp = len2 - len1;
+            if (cmp != 0) {
+              return cmp;
+            }
+            return (int) (p1.getStartIp().asLong() - p2.getStartIp().asLong());
           });
 
       // Compute the BDDs
@@ -524,6 +561,9 @@ public class NetworkModel {
       Tuple<Flow, FlowTrace> trace = reachable(query, flags, source, sinks);
       if (trace != null) {
         traces.add(trace);
+      }
+      if (traces.size() >= 10) {
+        break;
       }
     }
 
@@ -687,12 +727,11 @@ public class NetworkModel {
         protoName = Character.toString(protoName.charAt(0)).toUpperCase() + protoName.substring(1);
         String s =
             String.format(
-                "%sRoute<%s,nhip:%s,nhint:%s>_fnhip:%s",
+                "%sRoute<%s,nhip:%s,nhint:%s>_fnhip:???????",
                 protoName,
                 route.getNetwork(),
                 route.getNextHopIp().toString(),
-                route.getNextHopInterface(),
-                route.getNextHopIp().toString());
+                route.getNextHopInterface());
         routeStrings.add(s);
       }
       FlowTraceHop hop = new FlowTraceHop(edge, routeStrings, null);
@@ -768,6 +807,7 @@ public class NetworkModel {
         PortReachabilitySummary afterOut = s.extendBy(link).applyPort(fwdLink, aclLink);
         // If an inbound acl -- i.e., a real router on the other side with an inbound ACL
         GraphLink other = _otherEnd.get(link);
+        // System.out.println("  Restrict fwd by bits: " + fwdLink);
         // System.out.println("  Other link: " + other);
         BitSet aclIn = (other == null ? acl : _aclInPredicates.get(other));
         // System.out.println("  Other ACL in: " + aclIn);
@@ -808,6 +848,26 @@ public class NetworkModel {
         }
       }
     }
+
+    /* System.out.println("");
+    System.out.println("INBOUND: ");
+    for (Entry<GraphLink, List<PortReachabilitySummary>> e : inboundSummaries.entrySet()) {
+      System.out.println("Link: " + e.getKey());
+      for (PortReachabilitySummary s : e.getValue()) {
+        System.out.println("  fwd: " + s.getForwarding());
+        System.out.println("  acl: " + s.getAcl());
+      }
+    }
+
+    System.out.println("");
+    System.out.println("OUTBOUND: ");
+    for (Entry<GraphLink, List<PortReachabilitySummary>> e : outboundSummaries.entrySet()) {
+      System.out.println("Link: " + e.getKey());
+      for (PortReachabilitySummary s : e.getValue()) {
+        System.out.println("  fwd: " + s.getForwarding());
+        System.out.println("  acl: " + s.getAcl());
+      }
+    } */
 
     return analyzeSummaries(query, outboundSummaries, inboundSummaries, flags, sinks);
     // return analyzeSummaries(query, summaries);
@@ -859,16 +919,28 @@ public class NetworkModel {
 
       if (checkForAccept) {
         for (GraphLink link : local) {
+          BDD acceptedLocally = _acceptedPackets.get(link.getSource());
           String neighbor = link.getTarget().getName();
-          if (neighbor.equals("(egress)")) {
-            List<PortReachabilitySummary> summaries = outboundSummaries.get(link);
-            if (summaries != null) {
-              for (PortReachabilitySummary summary : summaries) {
-                BDD out = bddFromSummary(fwdCache, aclCache, query, summary);
+
+          List<PortReachabilitySummary> summaries = outboundSummaries.get(link);
+          if (summaries != null) {
+            for (PortReachabilitySummary summary : summaries) {
+              BDD out = bddFromSummary(fwdCache, aclCache, query, summary);
+              // First, check if it leaves the network
+              if (neighbor.equals("(egress)")) {
                 if (!out.isZero()) {
                   HeaderSpace h = _bddPkt.toHeaderSpace(out);
-                  return createTrace(h, new Tuple<>(summary.getPath(), FlowDisposition.ACCEPTED));
+                  Path p = summary.getPath();
+                  return createTrace(
+                      h, new Tuple<>(p, FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK));
                 }
+              }
+              // Next, check if it is accepted locally
+              BDD both = acceptedLocally.and(out);
+              if (!both.isZero()) {
+                HeaderSpace h = _bddPkt.toHeaderSpace(both);
+                Path p = summary.getPath();
+                return createTrace(h, new Tuple<>(p, FlowDisposition.ACCEPTED));
               }
             }
           }
