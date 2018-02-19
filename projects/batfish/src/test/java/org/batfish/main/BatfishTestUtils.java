@@ -139,7 +139,7 @@ public class BatfishTestUtils {
    */
   public static Configuration createTestConfiguration(
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {
-    Configuration config = new Configuration(nodeName, configFormat, null);
+    Configuration config = new Configuration(nodeName, configFormat);
     for (String interfaceName : interfaceNames) {
       config.getInterfaces().put(interfaceName, new Interface(interfaceName, config));
     }

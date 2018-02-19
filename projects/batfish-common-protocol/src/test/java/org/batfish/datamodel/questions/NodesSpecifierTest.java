@@ -45,11 +45,9 @@ public class NodesSpecifierTest {
     String matchingRouter = "lhr-border1";
     String nonMatchingRouter1 = "svr-border1";
     String nonMatchingRouter2 = "svr-border2";
-    Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN, null);
-    Configuration nonMatching1 =
-        new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN, null);
-    Configuration nonMatching2 =
-        new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN, null);
+    Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN);
+    Configuration nonMatching1 = new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN);
+    Configuration nonMatching2 = new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN);
     nonMatching2.getRoles().add("lhr-border1"); // to check for accidental role matching
     configurations.put(matchingRouter, matching);
     configurations.put(nonMatchingRouter1, nonMatching1);
@@ -70,13 +68,11 @@ public class NodesSpecifierTest {
     String matchingRouter = "lhr-border1";
     String nonMatchingRouter1 = "svr-border1"; // name shouldn't match role
     String nonMatchingRouter2 = "lhr-border2";
-    Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN, null);
+    Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN);
     matching.getRoles().add("svr-web");
-    Configuration nonMatching1 =
-        new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN, null);
+    Configuration nonMatching1 = new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN);
     matching.getRoles().add("web");
-    Configuration nonMatching2 =
-        new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN, null);
+    Configuration nonMatching2 = new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN);
     nonMatching2.getRoles().add("rtr");
     configurations.put(matchingRouter, matching);
     configurations.put(nonMatchingRouter1, nonMatching1);

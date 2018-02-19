@@ -1356,7 +1356,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // then we create configs for every mentioned node
     for (String hostname : allNodes) {
-      Configuration config = new Configuration(hostname, ConfigurationFormat.CISCO_IOS, null);
+      Configuration config = new Configuration(hostname, ConfigurationFormat.CISCO_IOS);
       configs.put(hostname, config);
     }
     // Now we create interfaces for each edge and record the number of

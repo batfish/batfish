@@ -54,13 +54,14 @@ public final class Configuration extends ComparableStructure<String> {
     @Override
     public Configuration build() {
       String name = _hostname != null ? _hostname : generateName();
-      Configuration configuration = new Configuration(name, _configurationFormat, _domainName);
+      Configuration configuration = new Configuration(name, _configurationFormat);
       if (_defaultCrossZoneAction != null) {
         configuration.setDefaultCrossZoneAction(_defaultCrossZoneAction);
       }
       if (_defaultInboundAction != null) {
         configuration.setDefaultInboundAction(_defaultInboundAction);
       }
+      configuration.setDomainName(_domainName);
       return configuration;
     }
 
@@ -246,8 +247,7 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonCreator
   public Configuration(
       @JsonProperty(PROP_NAME) String hostname,
-      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat,
-      @Nullable @JsonProperty(PROP_DOMAIN_NAME) String domainName) {
+      @Nonnull @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
     super(hostname);
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
@@ -257,7 +257,7 @@ public final class Configuration extends ComparableStructure<String> {
     }
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
-    _domainName = domainName;
+    _domainName = null;
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
@@ -697,6 +697,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_DNS_SOURCE_INTERFACE)
   public void setDnsSourceInterface(String dnsSourceInterface) {
     _dnsSourceInterface = dnsSourceInterface;
+  }
+
+  @JsonProperty(PROP_DOMAIN_NAME)
+  public void setDomainName(String domainName) {
+    _domainName = domainName;
   }
 
   @JsonProperty(PROP_IKE_GATEWAYS)

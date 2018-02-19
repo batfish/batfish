@@ -3536,13 +3536,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public Configuration toVendorIndependentConfiguration() {
-    final Configuration c = new Configuration(_hostname, _vendor, _domainName);
+    final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
     c.setRoles(_roles);
     c.setDefaultInboundAction(LineAction.ACCEPT);
     c.setDefaultCrossZoneAction(LineAction.ACCEPT);
     c.setDnsServers(_dnsServers);
     c.setDnsSourceInterface(_dnsSourceInterface);
+    c.setDomainName(_domainName);
     c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);
