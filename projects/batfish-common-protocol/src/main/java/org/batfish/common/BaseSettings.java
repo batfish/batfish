@@ -1,13 +1,12 @@
 package org.batfish.common;
 
+import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -90,9 +89,13 @@ public abstract class BaseSettings {
     if (_line.hasOption(key)) {
       String value = _line.getOptionValue(key);
       boolean b;
-      if (value == null || value.trim().equalsIgnoreCase("true")) {
+      /*
+       * We don't use Boolean#parseBoolean here because that does not do format detection,
+       * and silently defaults to "false" which is not what we want.
+       */
+      if (value == null || value.equalsIgnoreCase("true")) {
         b = true;
-      } else if (value.trim().equalsIgnoreCase("false")) {
+      } else if (value.equalsIgnoreCase("false")) {
         b = false;
       } else {
         throw new CleanBatfishException(
@@ -103,17 +106,12 @@ public abstract class BaseSettings {
     return _config.getBoolean(key);
   }
 
-  public Configuration getConfiguration() {
-    return _config;
-  }
-
   protected final Integer getIntegerOptionValue(String key) {
     String valueStr = _line.getOptionValue(key);
-    if (valueStr == null) {
-      return _config.getInteger(key, null);
-    } else {
-      return Integer.parseInt(valueStr);
+    if (valueStr != null) {
+      _config.setProperty(key, Integer.parseInt(valueStr));
     }
+    return _config.getInteger(key, null);
   }
 
   /**
@@ -147,13 +145,13 @@ public abstract class BaseSettings {
                 .map(BaseSettings::nullablePath)
                 .filter(Objects::nonNull)
                 .map(Path::toString)
-                .toArray());
+                .collect(ImmutableList.toImmutableList()));
       }
     }
-    String[] s = _config.getStringArray(key);
+    List<String> s = _config.getList(String.class, key);
     return s == null
-        ? Collections.emptyList()
-        : Arrays.stream(s).map(Paths::get).collect(Collectors.toList());
+        ? ImmutableList.of()
+        : s.stream().map(Paths::get).collect(ImmutableList.toImmutableList());
   }
 
   @Nullable
@@ -169,9 +167,9 @@ public abstract class BaseSettings {
     if (_line.hasOption(key)) {
       String[] optionValues = _line.getOptionValues(key);
       if (optionValues == null) {
-        _config.setProperty(key, Collections.emptyList());
+        _config.setProperty(key, ImmutableList.of());
       } else {
-        _config.setProperty(key, Arrays.asList(optionValues));
+        _config.setProperty(key, ImmutableList.of(Arrays.asList(optionValues)));
       }
     }
     return _config.getList(String.class, key);

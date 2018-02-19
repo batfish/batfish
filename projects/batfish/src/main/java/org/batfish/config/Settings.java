@@ -1,10 +1,9 @@
 package org.batfish.config;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -552,7 +551,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
    *
    * @param other the {@link Settings to copy}
    */
-  @SuppressWarnings("IncompleteCopyConstructor")
   public Settings(Settings other) {
     super(other._config);
     _baseTestrigSettings = new TestrigSettings();
@@ -574,7 +572,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   }
 
   public boolean canExecute() {
-    return _config.getBoolean(CAN_EXECUTE, true);
+    return _config.getBoolean(CAN_EXECUTE);
   }
 
   public boolean flattenOnTheFly() {
@@ -634,10 +632,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   @Override
   public boolean getBdpRecordAllIterations() {
     return _config.getBoolean(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
-  }
-
-  public List<String> getBlockNames() {
-    return _config.getList(String.class, BfConsts.ARG_BLOCK_NAMES, Collections.emptyList());
   }
 
   public boolean getCompileEnvironment() {
@@ -967,8 +961,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   }
 
   public List<String> ignoreFilesWithStrings() {
-    return _config.getList(
-        String.class, BfConsts.ARG_IGNORE_FILES_WITH_STRINGS, Collections.emptyList());
+    List<String> l = _config.getList(String.class, BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
+    return l == null ? ImmutableList.of() : l;
   }
 
   public boolean ignoreUnknown() {
@@ -996,7 +990,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
-    setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
+    setDefaultProperty(CAN_EXECUTE, true);
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
@@ -1022,6 +1016,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
     setDefaultProperty(ARG_HELP, false);
     setDefaultProperty(ARG_HISTOGRAM, false);
+    setDefaultProperty(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS, ImmutableList.of());
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
@@ -1118,9 +1113,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS,
         "Set to true to record all iterations, including during oscillation. Ignores max recorded "
             + "iterations value.");
-
-    addListOption(
-        BfConsts.ARG_BLOCK_NAMES, "list of blocks of logic rules to add or remove", "blocknames");
 
     addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
 
@@ -1370,7 +1362,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         "dataplane engine name");
   }
 
-  @VisibleForTesting
   public void parseCommandLine(String[] args) {
     initCommandLine(args);
     _config.setProperty(CAN_EXECUTE, true);
@@ -1395,7 +1386,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getIntOptionValue(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
-    getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
     getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
     getStringOptionValue(ARG_COORDINATOR_HOST);
