@@ -59,7 +59,7 @@ public class NatGateway implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId);
+    Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
     // TODO: Configure forwarding for this NAT
