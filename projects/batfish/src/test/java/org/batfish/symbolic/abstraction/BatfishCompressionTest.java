@@ -126,7 +126,7 @@ public class BatfishCompressionTest {
     Map<String, Map<String, SortedSet<FibRow>>> compressedFibs = compressedDataPlane.getFibs();
 
     compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
-    assert origFibs.keySet().equals(compressedFibs.keySet());
+    assertThat(origFibs.keySet(), equalTo(compressedFibs.keySet()));
     assertEquals(origFibs, compressedFibs);
 
     origFibs.forEach(
@@ -196,7 +196,12 @@ public class BatfishCompressionTest {
             value.forEach((vrf, rows) -> assertEquals(rows, origFibs.get(router).get(vrf))));
   }
 
-  /** This network should be compressed to: A ---> B | | A ---> {B,C} --> D V V C ---> D */
+  /** This network should be compressed to:
+   * A ---> B
+   * |      |           A --> {B,C} --> D
+   * V      V
+   * C ---> D
+   */
   private SortedMap<String, Configuration> diamondNetwork() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -307,7 +312,14 @@ public class BatfishCompressionTest {
     // compressedFibs is a strict subset of origFibs
     assertThat(compressedFibs.keySet(), everyItem(isIn(origFibs.keySet())));
 
-    // compression removed B or C entirely
+    // compression removed B or C entirely (but not both)
     assertThat(compressedFibs, either(not(hasKey("B"))).or(not(hasKey("C"))));
+    assertThat(compressedFibs, either(hasKey("B")).or(hasKey("C")));
+
+    String remains = compressedConfigs.containsKey("B") ? "B" : "C";
+
+    assertThat(compressedFibs.get("A"), equalTo(origFibs.get("A")));
+    assertThat(compressedFibs.get(remains), equalTo(origFibs.get(remains)));
+    // assertThat(compressedFibs.get("D"), equalTo(origFibs.get("D")));
   }
 }

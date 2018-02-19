@@ -96,6 +96,11 @@ public class Graph {
   private Map<String, Integer> _originatorId;
   private Map<String, Integer> _domainMap;
   private Map<Integer, Set<String>> _domainMapInverse;
+
+  /**
+   * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so
+   * some of the Minesweeper analyses will fail. Compression is still possible though.
+   */
   private boolean _hasStaticRouteWithDynamicNextHop;
 
   private Set<CommunityVar> _allCommunities;
@@ -493,16 +498,6 @@ public class Graph {
 
         if (!someIface && !Graph.isNullRouted(sr)) {
           _hasStaticRouteWithDynamicNextHop = true;
-          /* TODO save this error message in case we need to throw later.
-          "Router "
-              + router
-              + " has static route: "
-              + sr.getNextHopInterface()
-              + "("
-              + sr.getNetwork()
-              + ")"
-              + " for non next-hop");
-              */
         }
       }
     }
