@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
@@ -868,6 +869,7 @@ public class CommonUtil {
     return collection == null || collection.isEmpty();
   }
 
+  @MustBeClosed
   public static Stream<Path> list(Path configsPath) {
     try {
       return Files.list(configsPath);
