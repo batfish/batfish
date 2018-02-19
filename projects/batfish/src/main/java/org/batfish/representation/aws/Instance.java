@@ -175,7 +175,7 @@ public class Instance implements AwsVpcEntity, Serializable {
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
     String name = _tags.getOrDefault("Name", _instanceId);
-    Configuration cfgNode = Utils.newAwsConfiguration(name);
+    Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();

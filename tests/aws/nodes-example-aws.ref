@@ -5,6 +5,7 @@
       "nodes" : {
         "es-domain" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "es-domain",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -130,6 +131,7 @@
         },
         "igw-068fee63" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "igw-068fee63",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -192,6 +194,7 @@
         },
         "igw-9b93ddfc" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "igw-9b93ddfc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -254,6 +257,7 @@
         },
         "igw-fac5839d" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "igw-fac5839d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -316,11 +320,11 @@
         },
         "lhr-border-02" : {
           "configurationFormat" : "CISCO_IOS",
+          "domainName" : "demo.com",
           "name" : "lhr-border-02",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
-          "domainName" : "demo.com",
           "ikeGateways" : {
             "isakmp-vpn-ba2e34a8-0" : {
               "name" : "isakmp-vpn-ba2e34a8-0",
@@ -1716,6 +1720,7 @@
         },
         "subnet-073b8061" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-073b8061",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -1842,6 +1847,7 @@
         },
         "subnet-1641fa70" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-1641fa70",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -1968,6 +1974,7 @@
         },
         "subnet-1f315846" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-1f315846",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2103,6 +2110,7 @@
         },
         "subnet-30398256" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-30398256",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2229,6 +2237,7 @@
         },
         "subnet-62f14104" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-62f14104",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2355,6 +2364,7 @@
         },
         "subnet-7044ff16" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-7044ff16",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2481,6 +2491,7 @@
         },
         "subnet-8d0cbdeb" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-8d0cbdeb",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2607,6 +2618,7 @@
         },
         "subnet-9c8adceb" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-9c8adceb",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2742,6 +2754,7 @@
         },
         "subnet-d9cafabc" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-d9cafabc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -2877,6 +2890,7 @@
         },
         "subnet-f73a8191" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "subnet-f73a8191",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3003,6 +3017,7 @@
         },
         "test-rds" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "test-rds",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3092,6 +3107,7 @@
         },
         "vgw-81fd279f" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "vgw-81fd279f",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3586,6 +3602,7 @@
         },
         "vpc-815775e7" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "vpc-815775e7",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3695,6 +3712,7 @@
         },
         "vpc-925131f4" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "vpc-925131f4",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -3830,6 +3848,7 @@
         },
         "vpc-b390fad5" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "vpc-b390fad5",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -4073,6 +4092,7 @@
         },
         "vpc-f8fad69d" : {
           "configurationFormat" : "AWS",
+          "domainName" : "aws",
           "name" : "vpc-f8fad69d",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",

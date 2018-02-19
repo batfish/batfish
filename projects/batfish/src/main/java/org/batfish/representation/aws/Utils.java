@@ -15,11 +15,12 @@ public class Utils {
 
   private static final NetworkFactory FACTORY = new NetworkFactory();
 
-  public static Configuration newAwsConfiguration(String name) {
+  public static Configuration newAwsConfiguration(String name, String domainName) {
     Configuration c =
         FACTORY
             .configurationBuilder()
             .setHostname(name)
+            .setDomainName(domainName)
             .setConfigurationFormat(ConfigurationFormat.AWS)
             .setDefaultInboundAction(LineAction.ACCEPT)
             .setDefaultCrossZoneAction(LineAction.ACCEPT)

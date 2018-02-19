@@ -172,7 +172,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_subnetId);
+    Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
 
     // add one interface that faces the instances
     String instancesIfaceName = _subnetId;
