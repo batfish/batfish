@@ -205,7 +205,7 @@ public class Driver {
   private static void initTracer() {
     GlobalTracer.register(
         new com.uber.jaeger.Configuration(
-                _mainSettings.getTracingServiceName(),
+                _mainSettings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,

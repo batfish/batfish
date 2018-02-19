@@ -38,6 +38,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_QUEUE_INCOMPLETE_WORK = "qincompletework";
   private static final String ARG_QUEUE_TYPE = "qtype";
 
+  public static final String ARG_SERVICE_NAME = "servicename";
   private static final String ARG_SERVICE_POOL_PORT = "poolport";
   private static final String ARG_SERVICE_WORK_PORT = "workport";
   private static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
@@ -64,7 +65,6 @@ public class Settings extends BaseSettings {
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
   public static final String ARG_TRACING_ENABLE = "tracingenable";
-  public static final String ARG_TRACING_SERVICE_NAME = "tracingservicename";
 
   private static final String ARG_WORK_BIND_HOST = "workbindhost";
 
@@ -91,6 +91,7 @@ public class Settings extends BaseSettings {
   private String _queueCompletedWork;
   private WorkQueue.Type _queueType;
   private String _queuIncompleteWork;
+  private String _serviceName;
   private int _servicePoolPort;
   private int _serviceWorkPort;
   private int _serviceWorkV2Port;
@@ -112,7 +113,6 @@ public class Settings extends BaseSettings {
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
   private boolean _tracingEnable;
-  private String _tracingServiceName;
   private String _workBindHost;
 
   public Settings(String[] args) {
@@ -198,6 +198,10 @@ public class Settings extends BaseSettings {
 
   public WorkQueue.Type getQueueType() {
     return _queueType;
+  }
+
+  public String getServiceName() {
+    return _serviceName;
   }
 
   public int getServicePoolPort() {
@@ -288,10 +292,6 @@ public class Settings extends BaseSettings {
     return _tracingEnable;
   }
 
-  public String getTracingServiceName() {
-    return _tracingServiceName;
-  }
-
   public String getWorkBindHost() {
     return _workBindHost;
   }
@@ -322,6 +322,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_POOL_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_WORK_BIND_HOST, Ip.ZERO.toString());
+    setDefaultProperty(ARG_SERVICE_NAME, "coordinator-service");
     setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
     setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
     setDefaultProperty(ARG_SSL_POOL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
@@ -339,7 +340,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
-    setDefaultProperty(ARG_TRACING_SERVICE_NAME, "coordinator-service");
     // setDefaultProperty(ARG_SSL_KEYSTORE_FILE, "selfsigned.jks");
     // setDefaultProperty(ARG_SSL_KEYSTORE_PASSWORD, "batfish");
     setDefaultProperty(
@@ -396,6 +396,8 @@ public class Settings extends BaseSettings {
         "hostname for pool management service",
         "base url for pool management service");
 
+    addOption(ARG_SERVICE_NAME, "service name", "service_name");
+
     addOption(
         ARG_SERVICE_POOL_PORT, "port for pool management service", "port_number_pool_service");
 
@@ -424,8 +426,6 @@ public class Settings extends BaseSettings {
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
-
-    addOption(ARG_TRACING_SERVICE_NAME, "service name for tracing", "tracing_service_name");
   }
 
   private void parseCommandLine(String[] args) {
@@ -449,6 +449,7 @@ public class Settings extends BaseSettings {
     _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);
     _queueType = WorkQueue.Type.valueOf(getStringOptionValue(ARG_QUEUE_TYPE));
     _poolBindHost = getStringOptionValue(ARG_POOL_BIND_HOST);
+    _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _servicePoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
     _workBindHost = getStringOptionValue(ARG_WORK_BIND_HOST);
     _serviceWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
@@ -471,7 +472,6 @@ public class Settings extends BaseSettings {
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
-    _tracingServiceName = getStringOptionValue(ARG_TRACING_SERVICE_NAME);
     _containersLocation = getPathOptionValue(ARG_CONTAINERS_LOCATION);
     _periodWorkerStatusRefreshMs = getLongOptionValue(ARG_PERIOD_WORKER_STATUS_REFRESH_MS);
     _periodAssignWorkMs = getLongOptionValue(ARG_PERIOD_ASSIGN_WORK_MS);

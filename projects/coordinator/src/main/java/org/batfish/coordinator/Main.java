@@ -264,7 +264,7 @@ public class Main {
   private static void initTracer() {
     GlobalTracer.register(
         new Configuration(
-                _settings.getTracingServiceName(),
+                _settings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,

@@ -471,6 +471,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_SERVICE_HOST = "servicehost";
 
+  public static final String ARG_SERVICE_NAME = "servicename";
+
   private static final String ARG_SERVICE_PORT = "serviceport";
 
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
@@ -478,8 +480,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
 
   public static final String ARG_TRACING_ENABLE = "tracingenable";
-
-  public static final String ARG_TRACING_SERVICE_NAME = "tracingservicename";
 
   private static final String ARG_THROW_ON_LEXER_ERROR = "throwlexer";
 
@@ -663,6 +663,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private String _serviceHost;
 
+  private String _serviceName;
+
   private int _servicePort;
 
   private boolean _shuffleJobs;
@@ -700,8 +702,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private Integer _tracingAgentPort;
 
   private boolean _tracingEnable;
-
-  private String _tracingServiceName;
 
   private boolean _unimplementedAsError;
 
@@ -1023,6 +1023,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _serviceHost;
   }
 
+  public String getServiceName() {
+    return _serviceName;
+  }
+
   public int getServicePort() {
     return _servicePort;
   }
@@ -1099,10 +1103,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getTracingEnable() {
     return _tracingEnable;
-  }
-
-  public String getTracingServiceName() {
-    return _tracingServiceName;
   }
 
   public boolean getUnimplementedAsError() {
@@ -1205,6 +1205,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
     setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+    setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
@@ -1220,7 +1221,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
-    setDefaultProperty(ARG_TRACING_SERVICE_NAME, "worker-service");
     setDefaultProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, true);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
@@ -1449,6 +1449,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addOption(ARG_SERVICE_HOST, "local hostname to report to coordinator", ARGNAME_HOSTNAME);
 
+    addOption(ARG_SERVICE_NAME, "service name", "service_name");
+
     addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
     addBooleanOption(
@@ -1481,8 +1483,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
-
-    addOption(ARG_TRACING_SERVICE_NAME, "service name for tracing", "tracing_service_name");
 
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
@@ -1612,6 +1612,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _serializeVendor = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
     _serviceBindHost = getStringOptionValue(ARG_SERVICE_BIND_HOST);
     _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
+    _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _servicePort = getIntOptionValue(ARG_SERVICE_PORT);
     _shuffleJobs = !getBooleanOptionValue(ARG_NO_SHUFFLE);
     _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
@@ -1630,7 +1631,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
-    _tracingServiceName = getStringOptionValue(ARG_TRACING_SERVICE_NAME);
     _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
     _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
     _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
