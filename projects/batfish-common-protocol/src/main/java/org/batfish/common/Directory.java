@@ -3,6 +3,7 @@ package org.batfish.common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.SortedSet;
@@ -22,8 +23,8 @@ public class Directory extends ComparableStructure<String> {
     super(path.getFileName().toString());
     _directories = new TreeSet<>();
     _files = new TreeSet<>();
-    try {
-      for (Path subPath : Files.newDirectoryStream(path)) {
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+      for (Path subPath : stream) {
         String name = subPath.getFileName().toString();
         if (!name.startsWith(".")) {
           if (Files.isDirectory(subPath)) {

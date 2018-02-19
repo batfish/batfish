@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
+import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
@@ -881,6 +882,7 @@ public class CommonUtil {
     return collection == null || collection.isEmpty();
   }
 
+  @MustBeClosed
   public static Stream<Path> list(Path configsPath) {
     try {
       return Files.list(configsPath);
@@ -893,12 +895,6 @@ public class CommonUtil {
     Long upper = l >> 16;
     Long lower = l & 0xFFFF;
     return upper + ":" + lower;
-  }
-
-  /** Returns a hex {@link String} representation of the MD5 hash digest of the input string. */
-  @SuppressWarnings("deprecation") // md5 is deprecated, but used deliberately.
-  public static String md5Digest(String saltedSecret) {
-    return Hashing.md5().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
   public static void moveByCopy(Path srcPath, Path dstPath) {
