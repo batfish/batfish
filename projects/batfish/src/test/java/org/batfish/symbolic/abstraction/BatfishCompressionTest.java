@@ -1,11 +1,13 @@
 package org.batfish.symbolic.abstraction;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertEquals;
@@ -21,6 +23,7 @@ import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -53,23 +56,19 @@ public class BatfishCompressionTest {
     Prefix p12 = Prefix.parse("10.12.0.0/31");
     Prefix p23 = Prefix.parse("10.23.0.0/31");
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
-    Interface i1 =
-        ib.setOwner(c1)
-            .setVrf(v1)
-            .setAddress(new InterfaceAddress(p12.getStartIp(), p12.getPrefixLength()))
-            .build();
-    Interface i21 =
-        ib.setOwner(c2)
-            .setVrf(v2)
-            .setAddress(new InterfaceAddress(p12.getEndIp(), p12.getPrefixLength()))
-            .build();
-    Interface i23 =
-        ib.setAddress(new InterfaceAddress(p23.getStartIp(), p23.getPrefixLength())).build();
-    Interface i3 =
-        ib.setOwner(c3)
-            .setVrf(v3)
-            .setAddress(new InterfaceAddress(p23.getEndIp(), p23.getPrefixLength()))
-            .build();
+    ib.setOwner(c1)
+        .setVrf(v1)
+        .setAddress(new InterfaceAddress(p12.getStartIp(), p12.getPrefixLength()))
+        .build();
+    ib.setOwner(c2)
+        .setVrf(v2)
+        .setAddress(new InterfaceAddress(p12.getEndIp(), p12.getPrefixLength()))
+        .build();
+    ib.setAddress(new InterfaceAddress(p23.getStartIp(), p23.getPrefixLength())).build();
+    ib.setOwner(c3)
+        .setVrf(v3)
+        .setAddress(new InterfaceAddress(p23.getEndIp(), p23.getPrefixLength()))
+        .build();
     StaticRoute s13 = StaticRoute.builder().setNetwork(p23).setNextHopIp(p12.getEndIp()).build();
     v1.getStaticRoutes().add(s13);
     StaticRoute s31 = StaticRoute.builder().setNetwork(p12).setNextHopIp(p23.getStartIp()).build();
@@ -92,8 +91,7 @@ public class BatfishCompressionTest {
             });
   }
 
-  private Map<String, Map<String, SortedSet<FibRow>>> getFibs(
-      SortedMap<String, Configuration> configs) throws IOException {
+  private DataPlane getDataPlane(SortedMap<String, Configuration> configs) throws IOException {
     // make sure to reconstruct the network, since compression mutates it
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
@@ -102,46 +100,41 @@ public class BatfishCompressionTest {
     bdpDataPlanePlugin.initialize(batfish);
     batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
     batfish.computeDataPlane(false);
-    return batfish.loadDataPlane().getFibs();
+    return batfish.loadDataPlane();
   }
 
-  private Map<String, Configuration> compressNetwork(Map<String, Configuration> configs)
+  private SortedMap<String, Configuration> compressNetwork(Map<String, Configuration> configs)
       throws IOException {
     return compressNetwork(configs, new HeaderSpace());
   }
 
-  private Map<String, Configuration> compressNetwork(
+  private SortedMap<String, Configuration> compressNetwork(
       Map<String, Configuration> configs, HeaderSpace headerSpace) throws IOException {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     IBatfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(configs), tmp);
-    return new BatfishCompressor(batfish).compress(headerSpace);
+    return new TreeMap<>(new BatfishCompressor(batfish).compress(headerSpace));
   }
 
   /** Test that compression doesn't change the fibs for this network. */
   @Test
   public void testCompressionFibs_simpleNetwork() throws IOException {
-    Map<String, Configuration> compressedConfigs = compressNetwork(simpleNetwork());
-    Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(simpleNetwork());
-    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
-        getFibs(new TreeMap<>(compressedConfigs));
+    DataPlane origDataPlane = getDataPlane(simpleNetwork());
+    Map<String, Map<String, SortedSet<FibRow>>> origFibs = origDataPlane.getFibs();
+    SortedMap<String, Configuration> compressedConfigs = compressNetwork(simpleNetwork());
+    DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
+    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs = compressedDataPlane.getFibs();
 
     compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
     assert origFibs.keySet().equals(compressedFibs.keySet());
     assertEquals(origFibs, compressedFibs);
 
-    origFibs
-        .entrySet()
-        .forEach(
-            entry -> {
-              String router = entry.getKey();
-              entry
-                  .getValue()
-                  .forEach(
-                      (vrf, rows) -> {
-                        assertEquals(rows, compressedFibs.get(router).get(vrf));
-                      });
-            });
+    origFibs.forEach(
+        (router, value) ->
+            value.forEach(
+                (vrf, rows) -> {
+                  assertEquals(rows, compressedFibs.get(router).get(vrf));
+                }));
   }
 
   /** Build a network that can be easily compressed. */
@@ -185,10 +178,11 @@ public class BatfishCompressionTest {
    */
   @Test
   public void testCompressionFibs_compressibleNetwork() throws IOException {
-    Map<String, Configuration> compressedConfigs = compressNetwork(compressibleNetwork());
-    Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(compressibleNetwork());
-    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
-        getFibs(new TreeMap<>(compressedConfigs));
+    DataPlane origDataPlane = getDataPlane(compressibleNetwork());
+    Map<String, Map<String, SortedSet<FibRow>>> origFibs = origDataPlane.getFibs();
+    SortedMap<String, Configuration> compressedConfigs = compressNetwork(compressibleNetwork());
+    DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
+    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs = compressedDataPlane.getFibs();
 
     compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
 
@@ -197,23 +191,9 @@ public class BatfishCompressionTest {
     assertThat(compressedFibs, not(equalTo(origFibs)));
 
     // all FIB entries in compressed network should also exist in the original network
-    compressedFibs
-        .entrySet()
-        .stream()
-        .forEach(
-            routerEntry -> {
-              String router = routerEntry.getKey();
-              routerEntry
-                  .getValue()
-                  .entrySet()
-                  .stream()
-                  .forEach(
-                      vrfEntry -> {
-                        String vrf = vrfEntry.getKey();
-                        SortedSet<FibRow> rows = vrfEntry.getValue();
-                        assertEquals(rows, origFibs.get(router).get(vrf));
-                      });
-            });
+    compressedFibs.forEach(
+        (router, value) ->
+            value.forEach((vrf, rows) -> assertEquals(rows, origFibs.get(router).get(vrf))));
   }
 
   /** This network should be compressed to: A ---> B | | A ---> {B,C} --> D V V C ---> D */
@@ -221,10 +201,10 @@ public class BatfishCompressionTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration cA = cb.build();
-    Configuration cB = cb.build();
-    Configuration cC = cb.build();
-    Configuration cD = cb.build();
+    Configuration cA = cb.setHostname("A").build();
+    Configuration cB = cb.setHostname("B").build();
+    Configuration cC = cb.setHostname("C").build();
+    Configuration cD = cb.setHostname("D").build();
 
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Vrf vA = vb.setOwner(cA).build();
@@ -312,11 +292,13 @@ public class BatfishCompressionTest {
     IpAccessListLine line = new IpAccessListLine();
     line.setDstIps(ImmutableList.of(new IpWildcard(Prefix.parse("4.4.4.4/32"))));
     SortedMap<String, Configuration> origConfigs = diamondNetwork();
-    Map<String, Map<String, SortedSet<FibRow>>> origFibs = getFibs(origConfigs);
+    DataPlane origDataPlane = getDataPlane(origConfigs);
+    Map<String, Map<String, SortedSet<FibRow>>> origFibs = origDataPlane.getFibs();
     // compress a new copy since it will get mutated.
-    Map<String, Configuration> compressedConfigs = compressNetwork(diamondNetwork(), line);
-    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs =
-        getFibs(new TreeMap<>(compressedConfigs));
+    SortedMap<String, Configuration> compressedConfigs =
+        new TreeMap<>(compressNetwork(diamondNetwork(), line));
+    DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
+    Map<String, Map<String, SortedSet<FibRow>>> compressedFibs = compressedDataPlane.getFibs();
 
     compressedConfigs.values().forEach(BatfishCompressionTest::assertIsCompressedConfig);
 
@@ -324,6 +306,8 @@ public class BatfishCompressionTest {
 
     // compressedFibs is a strict subset of origFibs
     assertThat(compressedFibs.keySet(), everyItem(isIn(origFibs.keySet())));
-    assertThat(compressedFibs, not(equalTo(origFibs)));
+
+    // compression removed B or C entirely
+    assertThat(compressedFibs, either(not(hasKey("B"))).or(not(hasKey("C"))));
   }
 }
