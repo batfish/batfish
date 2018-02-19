@@ -70,7 +70,7 @@ public interface GrammarSettings {
   /**
    * See {@link GrammarSettings#getPrintParseTree()}
    *
-   * @param disableUnrecognized The new value to be returned by subsequent calls to {@link
+   * @param printParseTree The new value to be returned by subsequent calls to {@link
    *     GrammarSettings#getPrintParseTree()}
    */
   void setPrintParseTree(boolean printParseTree);
@@ -78,7 +78,7 @@ public interface GrammarSettings {
   /**
    * See {@link GrammarSettings#getThrowOnLexerError()}
    *
-   * @param disableUnrecognized The new value to be returned by subsequent calls to {@link
+   * @param throwOnLexerError The new value to be returned by subsequent calls to {@link
    *     GrammarSettings#getThrowOnLexerError()}
    */
   void setThrowOnLexerError(boolean throwOnLexerError);
@@ -86,7 +86,7 @@ public interface GrammarSettings {
   /**
    * See {@link GrammarSettings#getThrowOnParserError()}
    *
-   * @param disableUnrecognized The new value to be returned by subsequent calls to {@link
+   * @param throwOnParserError The new value to be returned by subsequent calls to {@link
    *     GrammarSettings#getThrowOnParserError()}
    */
   void setThrowOnParserError(boolean throwOnParserError);
