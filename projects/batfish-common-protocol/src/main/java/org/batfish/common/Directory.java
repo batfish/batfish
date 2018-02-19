@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Stream;
 import org.batfish.common.util.ComparableStructure;
 
 public class Directory extends ComparableStructure<String> {
