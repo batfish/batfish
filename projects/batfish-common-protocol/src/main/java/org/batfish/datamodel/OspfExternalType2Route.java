@@ -26,14 +26,14 @@ public class OspfExternalType2Route extends OspfExternalRoute {
     if (this == obj) {
       return true;
     }
+    if (!(obj instanceof OspfExternalType2Route)) {
+      return false;
+    }
     if (!super.equals(obj)) {
       return false;
     }
     OspfExternalType2Route other = (OspfExternalType2Route) obj;
-    if (getCostToAdvertiser() != other.getCostToAdvertiser()) {
-      return false;
-    }
-    return true;
+    return getCostToAdvertiser() == other.getCostToAdvertiser();
   }
 
   @Override

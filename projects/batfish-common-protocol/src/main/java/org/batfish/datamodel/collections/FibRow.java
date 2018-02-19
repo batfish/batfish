@@ -5,7 +5,7 @@ import org.batfish.datamodel.Prefix;
 
 public class FibRow implements Comparable<FibRow>, Serializable {
 
-  public static final String DROP_INTERFACE = "drop";
+  public static final String DROP_NO_ROUTE = "drop_no_route";
 
   private static final long serialVersionUID = 1L;
 

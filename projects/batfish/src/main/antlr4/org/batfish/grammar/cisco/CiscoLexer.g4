@@ -2487,6 +2487,11 @@ DEFAULT_ACTION
    'default-action'
 ;
 
+DEFAULT_COST
+:
+   'default-cost'
+;
+
 DEFAULT_DESTINATION
 :
    'default-destination'
@@ -2615,6 +2620,11 @@ DELETE_DYNAMIC_LEARN
 DEMAND_CIRCUIT
 :
    'demand-circuit'
+;
+
+DENSE_MODE
+:
+   'dense-mode'
 ;
 
 DENY
@@ -2865,6 +2875,11 @@ DEVICE
 DEVICE_SENSOR
 :
    'device-sensor'
+;
+
+DISABLE_CONNECTED_CHECK
+:
+   'disable-connected-check'
 ;
 
 DISABLE_PEER_AS_CHECK
@@ -4082,6 +4097,11 @@ FAX_RELAY
 FCOE
 :
    'fcoe'
+;
+
+FDL
+:
+	'fdl'
 ;
 
 FEATURE
@@ -5401,6 +5421,11 @@ ISSUER_NAME
 IUC
 :
    'iuc'
+;
+
+JOIN_GROUP
+:
+    'join-group'
 ;
 
 JUMBO
@@ -6888,6 +6913,11 @@ NAT_CONTROL
    'nat-control'
 ;
 
+NAT_TRANSPARENCY
+:
+   'nat-transparency'
+;
+
 NAT_TRAVERSAL
 :
    'nat-traversal'
@@ -7343,6 +7373,11 @@ ON_FAILURE
    'on-failure'
 ;
 
+ON_PASSIVE
+:
+   'on-passive'
+;
+
 ON_STARTUP
 :
    'on-startup'
@@ -7571,6 +7606,11 @@ PACKET_TOO_BIG
 PACKETCABLE
 :
    'packetcable'
+;
+
+PACKETSIZE
+:
+   'packetsize'
 ;
 
 PAGER
@@ -8898,6 +8938,11 @@ RESPONDER
    'responder'
 ;
 
+RESPONSE
+:
+   'response'
+;
+
 RESTRICTED
 :
    'restricted'
@@ -9273,14 +9318,14 @@ RX
    'rx'
 ;
 
-RXSPEED
-:
-   'rxspeed'
-;
-
 RX_COS_SLOT
 :
    'rx-cos-slot'
+;
+
+RXSPEED
+:
+   'rxspeed'
 ;
 
 SA_FILTER
@@ -11070,6 +11115,11 @@ TRAP_SOURCE
    'trap-source' -> pushMode ( M_Interface )
 ;
 
+TRAP_TIMEOUT
+:
+   'trap-timeout'
+;
+
 TRAPS
 :
    'traps'
@@ -11185,14 +11235,14 @@ TUNNELED_NODE_ADDRESS
    'tunneled-node-address'
 ;
 
-TXSPEED
-:
-   'txspeed'
-;
-
 TX_QUEUE
 :
    'tx-queue'
+;
+
+TXSPEED
+:
+   'txspeed'
 ;
 
 TYPE
@@ -11400,6 +11450,11 @@ USER_IDENTITY
    'user-identity'
 ;
 
+USERINFO
+:
+	'userinfo'
+;
+
 USER_MESSAGE
 :
    'user-message' -> pushMode ( M_Description )
@@ -11477,7 +11532,7 @@ V6
 
 VACANT_MESSAGE
 :
-   'vacant-message'
+   'vacant-message' -> pushMode ( M_VacantMessageText )
 ;
 
 VACL
@@ -13956,4 +14011,24 @@ M_SshKey_NEWLINE
 M_SshKey_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_VacantMessageText;
+
+M_VacantMessage_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+M_VacantMessage_ESCAPE_C
+:
+   (
+      '^C'
+      | '\u0003'
+   ) -> type ( ESCAPE_C ) , mode ( M_MOTD_C )
+;
+
+M_VacantMessage_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
 ;

@@ -66,6 +66,7 @@ call-home reporting anonymous
   subscribe-to-alert-group inventory periodic monthly 27
   subscribe-to-alert-group configuration periodic monthly 27
   subscribe-to-alert-group telemetry periodic daily
+ vrf default
 ntp distribute
 !
 

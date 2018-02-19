@@ -1460,7 +1460,10 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Persist the user's upload to a directory inside the container, named for the testrig,
     // where we save the original upload for later analysis.
-    Path originalDir = containerDir.resolve(BfConsts.RELPATH_ORIGINAL_DIR).resolve(testrigName);
+    Path originalDir =
+        containerDir
+            .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
+            .resolve(testrigName + "_" + Instant.now());
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }

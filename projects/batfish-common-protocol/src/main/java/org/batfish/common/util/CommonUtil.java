@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
@@ -205,40 +206,52 @@ public class CommonUtil {
 
   public static Map<Ip, Set<String>> computeIpOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeIpOwners(
+        excludeInactive,
+        configurations
+            .entrySet()
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
+  }
+
+  public static Map<Ip, Set<String>> computeIpOwners(
+      boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
     // TODO: confirm VRFs are handled correctly
     Map<Ip, Set<String>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    configurations.forEach(
-        (hostname, c) -> {
-          for (Interface i : c.getInterfaces().values()) {
-            if (i.getActive() || (!excludeInactive && i.getBlacklisted())) {
-              // collect vrrp info
-              i.getVrrpGroups()
-                  .forEach(
-                      (groupNum, vrrpGroup) -> {
-                        InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                        if (address == null) {
-                          // This Vlan Interface has invalid configuration. The VRRP has no source
-                          // IP address that would be used for VRRP election. This interface could
-                          // never win the election, so is not a candidate.
-                          return;
-                        }
-                        Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                        Set<Interface> candidates =
-                            vrrpGroups.computeIfAbsent(
-                                key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                        candidates.add(i);
-                      });
-              // collect prefixes
-              i.getAllAddresses()
-                  .stream()
-                  .map(InterfaceAddress::getIp)
-                  .forEach(
-                      ip -> {
-                        Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                        owners.add(hostname);
-                      });
+    enabledInterfaces.forEach(
+        (hostname, currentEnabledInterfaces) -> {
+          for (Interface i : currentEnabledInterfaces.values()) {
+            if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+              continue;
             }
+            // collect vrrp info
+            i.getVrrpGroups()
+                .forEach(
+                    (groupNum, vrrpGroup) -> {
+                      InterfaceAddress address = vrrpGroup.getVirtualAddress();
+                      if (address == null) {
+                        // This Vlan Interface has invalid configuration. The VRRP has no source
+                        // IP address that would be used for VRRP election. This interface could
+                        // never win the election, so is not a candidate.
+                        return;
+                      }
+                      Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
+                      Set<Interface> candidates =
+                          vrrpGroups.computeIfAbsent(
+                              key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                      candidates.add(i);
+                    });
+            // collect prefixes
+            i.getAllAddresses()
+                .stream()
+                .map(InterfaceAddress::getIp)
+                .forEach(
+                    ip -> {
+                      Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
+                      owners.add(hostname);
+                    });
           }
         });
     vrrpGroups.forEach(

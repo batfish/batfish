@@ -31,4 +31,19 @@ ip access-list blah
  10 permit ip any any
 !
 access-list dynamic-extended
-
+!
+! Cisco command reference: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/4_1/nx-os/security/configuration/guide/sec_nx-os-cfg/sec_arpinspect.html#wp1158411
+arp access-list unnumberedArpAcl
+    permit ip any mac any
+    permit ip any mac any log
+    permit ip host 10.0.0.1 mac host 0000.0000.0001
+    permit ip 10.0.0.0 0.0.0.255 mac 0000.0000.0001 FFFF.FFFF.0000
+    permit request ip any mac any
+    permit request ip host 10.0.0.1 mac host 0000.0000.0001
+    permit response ip any any mac any
+    permit response ip host 10.0.0.1 any mac host 0000.0000.0001
+    permit response ip any any mac any any
+    permit response ip any host 10.0.0.2 mac any host 0000.0000.0002
+!
+arp access-list numberedArpAcl
+    10 deny ip any mac any

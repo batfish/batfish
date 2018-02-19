@@ -2,6 +2,7 @@ package org.batfish.datamodel.collections;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -31,8 +32,8 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
   public AbstractOutlierSet(
       @JsonProperty(PROP_CONFORMERS) SortedSet<String> conformers,
       @JsonProperty(PROP_OUTLIERS) SortedSet<String> outliers) {
-    _conformers = conformers;
-    _outliers = outliers;
+    _conformers = conformers != null ? conformers : ImmutableSortedSet.of();
+    _outliers = outliers != null ? outliers : ImmutableSortedSet.of();
   }
 
   // sort in reverse order of zScore, which is a measure of how likely it is that

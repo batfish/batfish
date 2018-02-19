@@ -1,40 +1,37 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.Pair;
-import org.batfish.datamodel.collections.VerboseNodeInterfacePair;
+import java.io.Serializable;
 
-public final class VerboseEdge extends Pair<VerboseNodeInterfacePair, VerboseNodeInterfacePair> {
+/**
+ * Represents an edge connecting the interfaces of two nodes directly. Contains the full
+ * specification of both interfaces as well as the names of both nodes.
+ */
+public final class VerboseEdge implements Serializable, Comparable<VerboseEdge> {
 
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
 
   private static final String PROP_NODE1_INTERFACE = "node1Interface";
 
-  private static final String PROP_NODE1 = "node1";
-
   private static final String PROP_NODE2_INTERFACE = "node2Interface";
-
-  private static final String PROP_NODE2 = "node2";
 
   private static final long serialVersionUID = 1L;
 
   private final Edge _edgeSummary;
 
+  private final Interface _node1Interface;
+
+  private final Interface _node2Interface;
+
   @JsonCreator
   public VerboseEdge(
-      @JsonProperty(PROP_NODE1) Configuration node1,
       @JsonProperty(PROP_NODE1_INTERFACE) Interface int1,
-      @JsonProperty(PROP_NODE2) Configuration node2,
       @JsonProperty(PROP_NODE2_INTERFACE) Interface int2,
       @JsonProperty(PROP_EDGE_SUMMARY) Edge e) {
-    this(new VerboseNodeInterfacePair(node1, int1), new VerboseNodeInterfacePair(node2, int2), e);
-  }
-
-  public VerboseEdge(VerboseNodeInterfacePair p1, VerboseNodeInterfacePair p2, Edge e) {
-    super(p1, p2);
-    this._edgeSummary = e;
+    _node1Interface = int1;
+    _node2Interface = int2;
+    _edgeSummary = e;
   }
 
   @JsonProperty(PROP_EDGE_SUMMARY)
@@ -44,36 +41,37 @@ public final class VerboseEdge extends Pair<VerboseNodeInterfacePair, VerboseNod
 
   @JsonProperty(PROP_NODE1_INTERFACE)
   public Interface getInt1() {
-    return _first.getInterface();
+    return _node1Interface;
   }
 
   @JsonProperty(PROP_NODE2_INTERFACE)
   public Interface getInt2() {
-    return _second.getInterface();
+    return _node2Interface;
   }
 
-  @JsonIgnore
-  public VerboseNodeInterfacePair getInterface1() {
-    return _first;
+  @Override
+  public int compareTo(VerboseEdge other) {
+    return _edgeSummary.compareTo(other._edgeSummary);
   }
 
-  @JsonIgnore
-  public VerboseNodeInterfacePair getInterface2() {
-    return _second;
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof VerboseEdge)) {
+      return false;
+    }
+    VerboseEdge other = (VerboseEdge) o;
+    return _edgeSummary.equals(other._edgeSummary);
   }
 
-  @JsonProperty(PROP_NODE1)
-  public Configuration getNode1() {
-    return _first.getHost();
-  }
-
-  @JsonProperty(PROP_NODE2)
-  public Configuration getNode2() {
-    return _second.getHost();
+  @Override
+  public int hashCode() {
+    return _edgeSummary.hashCode();
   }
 
   @Override
   public String toString() {
-    return "<" + getNode1() + ":" + getInt1() + ", " + getNode2() + ":" + getInt2() + ">";
+    return _edgeSummary.toString();
   }
 }

@@ -66,6 +66,7 @@ public class BdpDataPlane implements Serializable, DataPlane {
                   ImmutableMap.builder();
               node._virtualRouters.forEach(
                   (vrName, vr) -> {
+                    boolean hasDefaultRoute = false;
                     ImmutableSortedSet.Builder<FibRow> fibs =
                         new ImmutableSortedSet.Builder<>(naturalOrder());
                     // handle routes
@@ -74,6 +75,9 @@ public class BdpDataPlane implements Serializable, DataPlane {
                     ImmutableList.Builder<AbstractRoute> remainingRoutes = ImmutableList.builder();
                     for (AbstractRoute route : vr._mainRib.getRoutes()) {
                       Prefix network = route.getNetwork();
+                      if (network.equals(Prefix.ZERO)) {
+                        hasDefaultRoute = true;
+                      }
                       switch (route.getProtocol()) {
                         case CONNECTED:
                           importConnectedRoute(
@@ -131,6 +135,9 @@ public class BdpDataPlane implements Serializable, DataPlane {
                               }
                             }
                           });
+                    }
+                    if (!hasDefaultRoute) {
+                      fibs.add(new FibRow(Prefix.ZERO, FibRow.DROP_NO_ROUTE, "", ""));
                     }
                     fibsByVrf.put(vrName, fibs.build());
                   });
