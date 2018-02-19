@@ -320,6 +320,6 @@ public class BatfishCompressionTest {
 
     assertThat(compressedFibs.get("A"), equalTo(origFibs.get("A")));
     assertThat(compressedFibs.get(remains), equalTo(origFibs.get(remains)));
-    // assertThat(compressedFibs.get("D"), equalTo(origFibs.get("D")));
+    assertThat(compressedFibs.get("D"), equalTo(origFibs.get("D")));
   }
 }
