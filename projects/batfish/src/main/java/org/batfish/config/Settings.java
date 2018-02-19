@@ -261,8 +261,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     private Path _basePath;
 
-    private Path _convertAnswerPath;
-
     private EnvironmentSettings _environmentSettings;
 
     private Path _inferredNodeRolesPath;
@@ -278,8 +276,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     private Path _protocolDependencyGraphPath;
 
     private Path _protocolDependencyGraphZipPath;
-
-    private Path _serializeIndependentPath;
 
     private Path _serializeVendorPath;
 
@@ -305,10 +301,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public Path getBasePath() {
       return _basePath;
-    }
-
-    public Path getConvertAnswerPath() {
-      return _convertAnswerPath;
     }
 
     public EnvironmentSettings getEnvironmentSettings() {
@@ -343,10 +335,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       return _protocolDependencyGraphZipPath;
     }
 
-    public Path getSerializeIndependentPath() {
-      return _serializeIndependentPath;
-    }
-
     public Path getSerializeVendorPath() {
       return _serializeVendorPath;
     }
@@ -372,10 +360,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public void setBasePath(Path basePath) {
       _basePath = basePath;
-    }
-
-    public void setConvertAnswerPath(Path convertAnswerPath) {
-      _convertAnswerPath = convertAnswerPath;
     }
 
     public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
@@ -410,10 +394,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
     }
 
-    public void setSerializeIndependentPath(Path path) {
-      _serializeIndependentPath = path;
-    }
-
     public void setSerializeVendorPath(Path path) {
       _serializeVendorPath = path;
     }
@@ -446,8 +426,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_FLATTEN_DESTINATION = "flattendst";
 
   private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
-
-  private static final String ARG_GEN_OSPF_TOPLOGY_PATH = "genospf";
 
   private static final String ARG_GENERATE_STUBS = "gs";
 
@@ -725,11 +703,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public Path getFlattenDestination() {
     return Paths.get(_config.getString(ARG_FLATTEN_DESTINATION));
-  }
-
-  @Nullable
-  public Path getGenerateOspfTopologyPath() {
-    return nullablePath(_config.getString(ARG_GEN_OSPF_TOPLOGY_PATH));
   }
 
   public boolean getGenerateStubs() {
@@ -1027,7 +1000,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
     setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
-    setDefaultProperty(ARG_GEN_OSPF_TOPLOGY_PATH, null);
     setDefaultProperty(ARG_GENERATE_STUBS, false);
     setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
     setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
@@ -1185,9 +1157,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addBooleanOption(
         BfConsts.COMMAND_INIT_INFO, "include parse/convert initialization info in answer");
-
-    addOption(
-        ARG_GEN_OSPF_TOPLOGY_PATH, "generate ospf configs from specified topology", ARGNAME_PATH);
 
     addBooleanOption(ARG_GENERATE_STUBS, "generate stubs");
 
@@ -1427,7 +1396,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
     getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
     getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
-    getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);

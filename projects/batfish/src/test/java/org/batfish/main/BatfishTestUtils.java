@@ -15,6 +15,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Snapshot;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
@@ -29,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
-  private static Cache<TestrigSettings, SortedMap<String, Configuration>> makeTestrigCache() {
+  private static Cache<Snapshot, SortedMap<String, Configuration>> makeTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(5).weakValues().build();
   }
 
@@ -51,7 +52,7 @@ public class BatfishTestUtils {
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Cache<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<Snapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
     Path containerDir = tempFolder.newFolder().toPath();
     settings.setContainerDir(containerDir);
@@ -59,9 +60,8 @@ public class BatfishTestUtils {
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
       Batfish.initTestrigSettings(settings);
-      settings.getBaseTestrigSettings().getSerializeIndependentPath().toFile().mkdirs();
       settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
-      testrigs.put(settings.getBaseTestrigSettings(), configurations);
+      testrigs.put(new Snapshot("tempTestrig", "tempEnvironment"), configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
     Batfish batfish =

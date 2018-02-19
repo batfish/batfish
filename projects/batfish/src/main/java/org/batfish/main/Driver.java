@@ -51,6 +51,7 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
+import org.batfish.common.Snapshot;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.Version;
@@ -125,7 +126,7 @@ public class Driver {
   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-  private static final Cache<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+  private static final Cache<Snapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
@@ -168,7 +169,7 @@ public class Driver {
             MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
-  private static Cache<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
+  private static Cache<Snapshot, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
