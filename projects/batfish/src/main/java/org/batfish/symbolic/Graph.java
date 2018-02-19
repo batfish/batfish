@@ -98,8 +98,8 @@ public class Graph {
   private Map<Integer, Set<String>> _domainMapInverse;
 
   /**
-   * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so
-   * some of the Minesweeper analyses will fail. Compression is still possible though.
+   * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so some of the
+   * Minesweeper analyses will fail. Compression is still possible though.
    */
   private boolean _hasStaticRouteWithDynamicNextHop;
 

@@ -18,6 +18,11 @@ public class NetworkSlice {
 
   private Abstraction _abstraction;
 
+  /**
+   * Indicates whether this slice is for the catch-all destination equivalence class.
+   *
+   * @see DestinationClasses#addCatchAllCase(List, List, Map)
+   */
   private boolean _isDefaultCase;
 
   public NetworkSlice(

@@ -87,8 +87,7 @@ public class DestinationClasses {
 
   /**
    * Adds a catch-all headerspace to the headerspace map. The catch-all case matches dstIps, does
-   * not match notDstIps, and doesn't match anything matched by anything in destinationMap other
-   * case.
+   * not match notDstIps, and doesn't match anything matched by anything in destinationMap.
    *
    * @param dstIps A list of destination IPs that should be in the catch-all headerspace.
    * @param notDstIps A list of destination IPs that should not be in the catch-all headerspace.

@@ -163,6 +163,13 @@ public class BatfishCompressor {
     return matchInternal.toString();
   }
 
+  /**
+   * Update a list of RoutingPolicy statements by filtering traffic according to the input filter.
+   *
+   * @param statements The list of RoutingPolicy statements.
+   * @param filter The filter used to restrict traffic
+   * @return A new list of RoutingPolicy statements
+   */
   // PrefixTrie: capture the prefixes you are installing to allow traffic through. Restrict
   // to those prefixes
   // Boolean: are the prefixes for the default equivalence class?
@@ -222,6 +229,13 @@ public class BatfishCompressor {
     return c;
   }
 
+  /**
+   * Update RoutingPolicies to filter traffic according to filtersByRouter. This mutates the
+   * _graph's configurations.
+   *
+   * @param filtersByRouter Filters for each router/graph edge.
+   * @return A new network with the updated configs.
+   */
   private Map<String, Configuration> applyFilters(
       Table2<String, GraphEdge, EquivalenceClassFilter> filtersByRouter) {
     Map<String, Configuration> newConfigs = new HashMap<>();

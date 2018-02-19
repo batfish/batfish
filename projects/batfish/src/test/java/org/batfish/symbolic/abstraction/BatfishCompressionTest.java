@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -103,11 +105,6 @@ public class BatfishCompressionTest {
     return batfish.loadDataPlane();
   }
 
-  private SortedMap<String, Configuration> compressNetwork(Map<String, Configuration> configs)
-      throws IOException {
-    return compressNetwork(configs, new HeaderSpace());
-  }
-
   private SortedMap<String, Configuration> compressNetwork(
       Map<String, Configuration> configs, HeaderSpace headerSpace) throws IOException {
     TemporaryFolder tmp = new TemporaryFolder();
@@ -121,7 +118,8 @@ public class BatfishCompressionTest {
   public void testCompressionFibs_simpleNetwork() throws IOException {
     DataPlane origDataPlane = getDataPlane(simpleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> origFibs = origDataPlane.getFibs();
-    SortedMap<String, Configuration> compressedConfigs = compressNetwork(simpleNetwork());
+    SortedMap<String, Configuration> compressedConfigs =
+        compressNetwork(simpleNetwork(), new HeaderSpace());
     DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
     Map<String, Map<String, SortedSet<FibRow>>> compressedFibs = compressedDataPlane.getFibs();
 
@@ -180,7 +178,8 @@ public class BatfishCompressionTest {
   public void testCompressionFibs_compressibleNetwork() throws IOException {
     DataPlane origDataPlane = getDataPlane(compressibleNetwork());
     Map<String, Map<String, SortedSet<FibRow>>> origFibs = origDataPlane.getFibs();
-    SortedMap<String, Configuration> compressedConfigs = compressNetwork(compressibleNetwork());
+    SortedMap<String, Configuration> compressedConfigs =
+        compressNetwork(compressibleNetwork(), new HeaderSpace());
     DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
     Map<String, Map<String, SortedSet<FibRow>>> compressedFibs = compressedDataPlane.getFibs();
 
@@ -196,11 +195,11 @@ public class BatfishCompressionTest {
             value.forEach((vrf, rows) -> assertEquals(rows, origFibs.get(router).get(vrf))));
   }
 
-  /** This network should be compressed to:
-   * A ---> B
-   * |      |           A --> {B,C} --> D
-   * V      V
-   * C ---> D
+  /**
+   * This network should be compressed from: A --> B --> D, A --> C --> D to A --> {B,C} --> D.
+   * i.e., B and C should be merged into one node.
+   *
+   * @return Configurations for the original (uncompressed) network.
    */
   private SortedMap<String, Configuration> diamondNetwork() {
     NetworkFactory nf = new NetworkFactory();
@@ -235,7 +234,7 @@ public class BatfishCompressionTest {
             .build();
     Interface iAC =
         ib.setOwner(cA)
-            .setVrf(vC)
+            .setVrf(vA)
             .setAddress(new InterfaceAddress(pAC.getStartIp(), pAC.getPrefixLength()))
             .build();
     Interface iCA =
@@ -299,6 +298,16 @@ public class BatfishCompressionTest {
     SortedMap<String, Configuration> origConfigs = diamondNetwork();
     DataPlane origDataPlane = getDataPlane(origConfigs);
     Map<String, Map<String, SortedSet<FibRow>>> origFibs = origDataPlane.getFibs();
+
+    assertThat(
+        origFibs
+            .get("A")
+            .get("default")
+            .stream()
+            .filter(fibRow -> fibRow.getNextHop().equals("C"))
+            .collect(Collectors.toSet()),
+        hasSize(greaterThan(0)));
+
     // compress a new copy since it will get mutated.
     SortedMap<String, Configuration> compressedConfigs =
         new TreeMap<>(compressNetwork(diamondNetwork(), line));
@@ -318,8 +327,11 @@ public class BatfishCompressionTest {
 
     String remains = compressedConfigs.containsKey("B") ? "B" : "C";
 
-    assertThat(compressedFibs.get("A"), equalTo(origFibs.get("A")));
+    // A and D lose their connections to the removed node.
+    assertThat(compressedFibs.get("A"), not(equalTo(origFibs.get("A"))));
+    assertThat(compressedFibs.get("D"), not(equalTo(origFibs.get("D"))));
+
+    // The remaining node is unchanged.
     assertThat(compressedFibs.get(remains), equalTo(origFibs.get(remains)));
-    assertThat(compressedFibs.get("D"), equalTo(origFibs.get("D")));
   }
 }
