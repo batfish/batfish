@@ -1,6 +1,8 @@
 package org.batfish.config;
 
+import com.google.common.collect.ImmutableList;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -413,6 +415,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
 
+  private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
+
   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
 
   private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
@@ -509,209 +513,21 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String EXECUTABLE_NAME = "batfish";
 
-  private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
+  private static final String CAN_EXECUTE = "canexecute";
+
+  private static final String DIFFERENTIAL_QUESTION = "diffquestion";
+
+  public static final String TASK_ID = "taskid";
+
+  private static final String QUESTION_PATH = "questionpath";
 
   private TestrigSettings _activeTestrigSettings;
 
-  private String _analysisName;
-
-  private boolean _analyze;
-
-  private boolean _answer;
-
-  private Path _answerJsonPath;
-
   private TestrigSettings _baseTestrigSettings;
 
-  private boolean _bdpDetail;
-
-  private int _bdpMaxOscillationRecoveryAttempts;
-
-  private int _bdpMaxRecordedIterations;
-
-  private boolean _bdpPrintAllIterations;
-
-  private boolean _bdpPrintOscillatingIterations;
-
-  private boolean _bdpRecordAllIterations;
-
-  private List<String> _blockNames;
-
-  private boolean _canExecute;
-
-  private boolean _compileDiffEnvironment;
-
-  private Path _containerDir;
-
-  private String _coordinatorHost;
-
-  private int _coordinatorPoolPort;
-
-  private boolean _coordinatorRegister;
-
-  private int _coordinatorWorkPort;
-
-  private boolean _dataPlane;
-
-  private String _deltaEnvironmentName;
-
-  private String _deltaTestrig;
-
-  private TestrigSettings _deltaTestrigSettings;
-
-  private boolean _diffActive;
-
-  private boolean _differential;
-
-  private boolean _diffQuestion;
-
-  private boolean _disableUnrecognized;
-
-  private String _environmentName;
-
-  private boolean _exitOnFirstError;
-
-  private boolean _flatten;
-
-  private Path _flattenDestination;
-
-  private boolean _flattenOnTheFly;
-
-  private boolean _generateStubs;
-
-  private String _generateStubsInputRole;
-
-  private String _generateStubsInterfaceDescriptionRegex;
-
-  private Integer _generateStubsRemoteAs;
-
-  private Path _genOspfTopologyPath;
-
-  private boolean _haltOnConvertError;
-
-  private boolean _haltOnParseError;
-
-  private List<String> _helpPredicates;
-
-  private boolean _histogram;
-
-  private List<String> _ignoreFilesWithStrings;
-
-  private boolean _ignoreUnknown;
-
-  private boolean _ignoreUnsupported;
-
-  private boolean _initInfo;
-
-  private int _jobs;
-
-  private String _logFile;
+  private final TestrigSettings _deltaTestrigSettings;
 
   private BatfishLogger _logger;
-
-  private String _logLevel;
-
-  private boolean _logTee;
-
-  private int _maxParserContextLines;
-
-  private int _maxParserContextTokens;
-
-  private int _maxParseTreePrintLength;
-
-  private int _maxRuntimeMs;
-
-  private String _outputEnvironmentName;
-
-  private int _parentPid;
-
-  private boolean _pedanticAsError;
-
-  private boolean _pedanticRecord;
-
-  private List<String> _predicates;
-
-  private boolean _prettyPrintAnswer;
-
-  private boolean _printParseTree;
-
-  private boolean _printSymmetricEdges;
-
-  private String _questionName;
-
-  private Path _questionPath;
-
-  private boolean _redFlagAsError;
-
-  private boolean _redFlagRecord;
-
-  private boolean _report;
-
-  private RunMode _runMode;
-
-  private boolean _sequential;
-
-  private boolean _serializeIndependent;
-
-  private boolean _serializeToText;
-
-  private boolean _serializeVendor;
-
-  private String _serviceBindHost;
-
-  private String _serviceHost;
-
-  private int _servicePort;
-
-  private boolean _shuffleJobs;
-
-  private boolean _simplify;
-
-  private boolean _sslDisable;
-
-  private Path _sslKeystoreFile;
-
-  private String _sslKeystorePassword;
-
-  private boolean _sslTrustAllCerts;
-
-  private Path _sslTruststoreFile;
-
-  private String _sslTruststorePassword;
-
-  private boolean _synthesizeJsonTopology;
-
-  private String _taskId;
-
-  private String _taskPlugin;
-
-  private String _testrig;
-
-  private boolean _throwOnLexerError;
-
-  private boolean _throwOnParserError;
-
-  private boolean _timestamp;
-
-  private String _tracingAgentHost;
-
-  private Integer _tracingAgentPort;
-
-  private boolean _tracingEnable;
-
-  private boolean _unimplementedAsError;
-
-  private boolean _unimplementedRecord;
-
-  private boolean _unrecognizedAsRedFlag;
-
-  private boolean _validateEnvironment;
-
-  private boolean _verboseParse;
-
-  private int _z3timeout;
-
-  private String _dataPlaneEngineName;
 
   public Settings() {
     this(new String[] {});
@@ -730,12 +546,37 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     parseCommandLine(args);
   }
 
+  /**
+   * Create a copy of some existing settings.
+   *
+   * @param other the {@link Settings to copy}
+   */
+  public Settings(Settings other) {
+    super(other._config);
+    _baseTestrigSettings = new TestrigSettings();
+    _deltaTestrigSettings = new TestrigSettings();
+    _activeTestrigSettings = new TestrigSettings();
+    _logger = other._logger;
+    initOptions();
+  }
+
+  /**
+   * Remove certain setting values
+   *
+   * @param keys a list of keys to clear
+   */
+  public void clearValues(String... keys) {
+    for (String s : keys) {
+      _config.clearProperty(s);
+    }
+  }
+
   public boolean canExecute() {
-    return _canExecute;
+    return _config.getBoolean(CAN_EXECUTE);
   }
 
   public boolean flattenOnTheFly() {
-    return _flattenOnTheFly;
+    return _config.getBoolean(ARG_FLATTEN_ON_THE_FLY);
   }
 
   public TestrigSettings getActiveTestrigSettings() {
@@ -743,87 +584,90 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   }
 
   public String getAnalysisName() {
-    return _analysisName;
+    return _config.getString(BfConsts.ARG_ANALYSIS_NAME);
   }
 
   public boolean getAnalyze() {
-    return _analyze;
+    return _config.getBoolean(BfConsts.COMMAND_ANALYZE);
   }
 
   public boolean getAnswer() {
-    return _answer;
+    return _config.getBoolean(BfConsts.COMMAND_ANSWER);
   }
 
+  @Nullable
   public Path getAnswerJsonPath() {
-    return _answerJsonPath;
+    return nullablePath(_config.getString(BfConsts.ARG_ANSWER_JSON_PATH));
   }
 
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
   }
 
+  @Override
   public boolean getBdpDetail() {
-    return _bdpDetail;
+    return _config.getBoolean(BfConsts.ARG_BDP_DETAIL);
   }
 
+  @Override
   public int getBdpMaxOscillationRecoveryAttempts() {
-    return _bdpMaxOscillationRecoveryAttempts;
+    return _config.getInt(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
   }
 
+  @Override
   public int getBdpMaxRecordedIterations() {
-    return _bdpMaxRecordedIterations;
+    return _config.getInt(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
   }
 
+  @Override
   public boolean getBdpPrintAllIterations() {
-    return _bdpPrintAllIterations;
+    return _config.getBoolean(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
   }
 
+  @Override
   public boolean getBdpPrintOscillatingIterations() {
-    return _bdpPrintOscillatingIterations;
+    return _config.getBoolean(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
   }
 
+  @Override
   public boolean getBdpRecordAllIterations() {
-    return _bdpRecordAllIterations;
-  }
-
-  public List<String> getBlockNames() {
-    return _blockNames;
+    return _config.getBoolean(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
   }
 
   public boolean getCompileEnvironment() {
-    return _compileDiffEnvironment;
+    return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
   }
 
   public Path getContainerDir() {
-    return _containerDir;
+    return Paths.get(_config.getString(BfConsts.ARG_CONTAINER_DIR));
   }
 
   public String getCoordinatorHost() {
-    return _coordinatorHost;
+    return _config.getString(ARG_COORDINATOR_HOST);
   }
 
   public int getCoordinatorPoolPort() {
-    return _coordinatorPoolPort;
+    return _config.getInt(ARG_COORDINATOR_POOL_PORT);
   }
 
   public boolean getCoordinatorRegister() {
-    return _coordinatorRegister;
+    return _config.getBoolean(ARG_COORDINATOR_REGISTER);
   }
 
   public int getCoordinatorWorkPort() {
-    return _coordinatorWorkPort;
+    return _config.getInt(ARG_COORDINATOR_WORK_PORT);
   }
 
   public boolean getDataPlane() {
-    return _dataPlane;
+    return _config.getBoolean(BfConsts.COMMAND_DUMP_DP);
   }
 
   public String getDeltaEnvironmentName() {
-    return _deltaEnvironmentName;
+    return _config.getString(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
   }
 
   public String getDeltaTestrig() {
-    return _deltaTestrig;
+    return _config.getString(BfConsts.ARG_DELTA_TESTRIG);
   }
 
   public TestrigSettings getDeltaTestrigSettings() {
@@ -831,84 +675,81 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   }
 
   public boolean getDiffActive() {
-    return _diffActive;
+    return _config.getBoolean(BfConsts.ARG_DIFF_ACTIVE);
   }
 
   public boolean getDifferential() {
-    return _differential;
+    return _config.getBoolean(BfConsts.ARG_DIFFERENTIAL);
   }
 
   public boolean getDiffQuestion() {
-    return _diffQuestion;
+    return _config.getBoolean(DIFFERENTIAL_QUESTION);
   }
 
   @Override
   public boolean getDisableUnrecognized() {
-    return _disableUnrecognized;
+    return _config.getBoolean(BfConsts.ARG_DISABLE_UNRECOGNIZED);
   }
 
   public String getEnvironmentName() {
-    return _environmentName;
+    return _config.getString(BfConsts.ARG_ENVIRONMENT_NAME);
   }
 
   public boolean getExitOnFirstError() {
-    return _exitOnFirstError;
+    return _config.getBoolean(ARG_EXIT_ON_FIRST_ERROR);
   }
 
   public boolean getFlatten() {
-    return _flatten;
+    return _config.getBoolean(ARG_FLATTEN);
   }
 
   public Path getFlattenDestination() {
-    return _flattenDestination;
+    return Paths.get(_config.getString(ARG_FLATTEN_DESTINATION));
   }
 
+  @Nullable
   public Path getGenerateOspfTopologyPath() {
-    return _genOspfTopologyPath;
+    return nullablePath(_config.getString(ARG_GEN_OSPF_TOPLOGY_PATH));
   }
 
   public boolean getGenerateStubs() {
-    return _generateStubs;
+    return _config.getBoolean(ARG_GENERATE_STUBS);
   }
 
   public String getGenerateStubsInputRole() {
-    return _generateStubsInputRole;
+    return _config.getString(ARG_GENERATE_STUBS_INPUT_ROLE);
   }
 
   public String getGenerateStubsInterfaceDescriptionRegex() {
-    return _generateStubsInterfaceDescriptionRegex;
+    return _config.getString(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
   }
 
   public int getGenerateStubsRemoteAs() {
-    return _generateStubsRemoteAs;
+    return _config.getInt(ARG_GENERATE_STUBS_REMOTE_AS);
   }
 
   public boolean getHaltOnConvertError() {
-    return _haltOnConvertError;
+    return _config.getBoolean(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
   }
 
   public boolean getHaltOnParseError() {
-    return _haltOnParseError;
-  }
-
-  public List<String> getHelpPredicates() {
-    return _helpPredicates;
+    return _config.getBoolean(BfConsts.ARG_HALT_ON_PARSE_ERROR);
   }
 
   public boolean getHistogram() {
-    return _histogram;
+    return _config.getBoolean(ARG_HISTOGRAM);
   }
 
   public boolean getInitInfo() {
-    return _initInfo;
+    return _config.getBoolean(BfConsts.COMMAND_INIT_INFO);
   }
 
   public int getJobs() {
-    return _jobs;
+    return _config.getInt(ARG_JOBS);
   }
 
   public String getLogFile() {
-    return _logFile;
+    return _config.getString(BfConsts.ARG_LOG_FILE);
   }
 
   public BatfishLogger getLogger() {
@@ -916,225 +757,228 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   }
 
   public String getLogLevel() {
-    return _logLevel;
+    return _config.getString(BfConsts.ARG_LOG_LEVEL);
   }
 
   public boolean getLogTee() {
-    return _logTee;
+    return _config.getBoolean(ARG_LOG_TEE);
   }
 
   public int getParentPid() {
-    return _parentPid;
+    return _config.getInt(ARG_PARENT_PID);
   }
 
   @Override
   public int getMaxParserContextLines() {
-    return _maxParserContextLines;
+    return _config.getInt(ARG_MAX_PARSER_CONTEXT_LINES);
   }
 
   @Override
   public int getMaxParserContextTokens() {
-    return _maxParserContextTokens;
+    return _config.getInt(ARG_MAX_PARSER_CONTEXT_TOKENS);
   }
 
   @Override
   public int getMaxParseTreePrintLength() {
-    return _maxParseTreePrintLength;
+    return _config.getInt(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
   }
 
   public int getMaxRuntimeMs() {
-    return _maxRuntimeMs;
+    return _config.getInt(ARG_MAX_RUNTIME_MS);
   }
 
   public String getOutputEnvironmentName() {
-    return _outputEnvironmentName;
+    return _config.getString(BfConsts.ARG_OUTPUT_ENV);
   }
 
   public boolean getPedanticAsError() {
-    return _pedanticAsError;
+    return _config.getBoolean(BfConsts.ARG_PEDANTIC_AS_ERROR);
   }
 
   public boolean getPedanticRecord() {
-    return _pedanticRecord;
+    return !_config.getBoolean(BfConsts.ARG_PEDANTIC_SUPPRESS);
   }
 
-  public List<String> getPredicates() {
-    return _predicates;
+  public boolean getPrettyPrintAnswer() {
+    return _config.getBoolean(BfConsts.ARG_PRETTY_PRINT_ANSWER);
   }
 
   @Override
   public boolean getPrintParseTree() {
-    return _printParseTree;
+    return _config.getBoolean(ARG_PRINT_PARSE_TREES);
   }
 
   public boolean getPrintSymmetricEdgePairs() {
-    return _printSymmetricEdges;
+    return _config.getBoolean(ARG_PRINT_SYMMETRIC_EDGES);
   }
 
   public String getQuestionName() {
-    return _questionName;
+    return _config.getString(BfConsts.ARG_QUESTION_NAME);
   }
 
+  @Nullable
   public Path getQuestionPath() {
-    return _questionPath;
+    return nullablePath(_config.getString(QUESTION_PATH));
   }
 
   public boolean getRedFlagAsError() {
-    return _redFlagAsError;
+    return _config.getBoolean(BfConsts.ARG_RED_FLAG_AS_ERROR);
   }
 
   public boolean getRedFlagRecord() {
-    return _redFlagRecord;
+    return !_config.getBoolean(BfConsts.ARG_RED_FLAG_SUPPRESS);
   }
 
   public boolean getReport() {
-    return _report;
+    return _config.getBoolean(BfConsts.COMMAND_REPORT);
   }
 
   public RunMode getRunMode() {
-    return _runMode;
+    return RunMode.valueOf(_config.getString(ARG_RUN_MODE).toUpperCase());
   }
 
   public boolean getSequential() {
-    return _sequential;
+    return _config.getBoolean(ARG_SEQUENTIAL);
   }
 
   public boolean getSerializeIndependent() {
-    return _serializeIndependent;
+    return _config.getBoolean(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
   }
 
   public boolean getSerializeToText() {
-    return _serializeToText;
+    return _config.getBoolean(ARG_SERIALIZE_TO_TEXT);
   }
 
   public boolean getSerializeVendor() {
-    return _serializeVendor;
+    return _config.getBoolean(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
   }
 
   public String getServiceBindHost() {
-    return _serviceBindHost;
+    return _config.getString(ARG_SERVICE_BIND_HOST);
   }
 
   public String getServiceHost() {
-    return _serviceHost;
+    return _config.getString(ARG_SERVICE_HOST);
   }
 
   public int getServicePort() {
-    return _servicePort;
+    return _config.getInt(ARG_SERVICE_PORT);
   }
 
   public boolean getShuffleJobs() {
-    return _shuffleJobs;
+    return !_config.getBoolean(ARG_NO_SHUFFLE);
   }
 
   public boolean getSimplify() {
-    return _simplify;
+    return !_config.getBoolean(ARG_DISABLE_Z3_SIMPLIFICATION);
   }
 
   public boolean getSslDisable() {
-    return _sslDisable;
+    return _config.getBoolean(BfConsts.ARG_SSL_DISABLE);
   }
 
+  @Nullable
   public Path getSslKeystoreFile() {
-    return _sslKeystoreFile;
+    return nullablePath(_config.getString(BfConsts.ARG_SSL_KEYSTORE_FILE));
   }
 
   public String getSslKeystorePassword() {
-    return _sslKeystorePassword;
+    return _config.getString(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
   }
 
   public boolean getSslTrustAllCerts() {
-    return _sslTrustAllCerts;
+    return _config.getBoolean(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
   }
 
   public Path getSslTruststoreFile() {
-    return _sslTruststoreFile;
+    return _config.get(Path.class, BfConsts.ARG_SSL_TRUSTSTORE_FILE);
   }
 
   public String getSslTruststorePassword() {
-    return _sslTruststorePassword;
+    return _config.getString(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
   }
 
   public boolean getSynthesizeJsonTopology() {
-    return _synthesizeJsonTopology;
+    return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
   }
 
   public String getTaskId() {
-    return _taskId;
+    return _config.getString(TASK_ID);
   }
 
   public String getTaskPlugin() {
-    return _taskPlugin;
+    return _config.getString(BfConsts.ARG_TASK_PLUGIN);
   }
 
   public String getTestrig() {
-    return _testrig;
+    return _config.getString(BfConsts.ARG_TESTRIG);
   }
 
   @Override
   public boolean getThrowOnLexerError() {
-    return _throwOnLexerError;
+    return _config.getBoolean(ARG_THROW_ON_LEXER_ERROR);
   }
 
   @Override
   public boolean getThrowOnParserError() {
-    return _throwOnParserError;
+    return _config.getBoolean(ARG_THROW_ON_PARSER_ERROR);
   }
 
   public boolean getTimestamp() {
-    return _timestamp;
-  }
-
-  public Integer getTracingAgentPort() {
-    return _tracingAgentPort;
+    return _config.getBoolean(ARG_TIMESTAMP);
   }
 
   public String getTracingAgentHost() {
-    return _tracingAgentHost;
+    return _config.getString(ARG_TRACING_AGENT_HOST);
+  }
+
+  public Integer getTracingAgentPort() {
+    return _config.getInt(ARG_TRACING_AGENT_PORT);
   }
 
   public boolean getTracingEnable() {
-    return _tracingEnable;
+    return _config.getBoolean(ARG_TRACING_ENABLE);
   }
 
   public boolean getUnimplementedAsError() {
-    return _unimplementedAsError;
+    return _config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
   }
 
   public boolean getUnimplementedRecord() {
-    return _unimplementedRecord;
+    return !_config.getBoolean(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
   }
 
   public boolean getUnrecognizedAsRedFlag() {
-    return _unrecognizedAsRedFlag;
+    return _config.getBoolean(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
   }
 
   public boolean getValidateEnvironment() {
-    return _validateEnvironment;
+    return _config.getBoolean(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
   }
 
   public boolean getVerboseParse() {
-    return _verboseParse;
+    return _config.getBoolean(BfConsts.ARG_VERBOSE_PARSE);
   }
 
   public List<String> ignoreFilesWithStrings() {
-    return _ignoreFilesWithStrings;
+    List<String> l = _config.getList(String.class, BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
+    return l == null ? ImmutableList.of() : l;
   }
 
   public boolean ignoreUnknown() {
-    return _ignoreUnknown;
+    return _config.getBoolean(ARG_IGNORE_UNKNOWN);
   }
 
   public boolean ignoreUnsupported() {
-    return _ignoreUnsupported;
+    return _config.getBoolean(ARG_IGNORE_UNSUPPORTED);
   }
 
   public int getZ3timeout() {
-    return _z3timeout;
+    return _config.getInt(ARG_Z3_TIMEOUT);
   }
 
   public String getDataPlaneEngineName() {
-    return _dataPlaneEngineName;
+    return _config.getString(ARG_DATAPLANE_ENGINE_NAME);
   }
 
   private void initConfigDefaults() {
@@ -1146,13 +990,14 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
-    setDefaultProperty(BfConsts.ARG_BLOCK_NAMES, new String[] {});
+    setDefaultProperty(CAN_EXECUTE, true);
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
+    setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
@@ -1171,6 +1016,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
     setDefaultProperty(ARG_HELP, false);
     setDefaultProperty(ARG_HISTOGRAM, false);
+    setDefaultProperty(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS, ImmutableList.of());
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
@@ -1267,9 +1113,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS,
         "Set to true to record all iterations, including during oscillation. Ignores max recorded "
             + "iterations value.");
-
-    addListOption(
-        BfConsts.ARG_BLOCK_NAMES, "list of blocks of logic rules to add or remove", "blocknames");
 
     addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
 
@@ -1519,185 +1362,189 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         "dataplane engine name");
   }
 
-  private void parseCommandLine(String[] args) {
+  public void parseCommandLine(String[] args) {
     initCommandLine(args);
-    _canExecute = true;
+    _config.setProperty(CAN_EXECUTE, true);
 
     // SPECIAL OPTIONS
-    _logFile = getStringOptionValue(BfConsts.ARG_LOG_FILE);
-    _logLevel = getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
+    getStringOptionValue(BfConsts.ARG_LOG_FILE);
+    getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
     if (getBooleanOptionValue(ARG_HELP)) {
-      _canExecute = false;
+      _config.setProperty(CAN_EXECUTE, false);
       printHelp(EXECUTABLE_NAME);
       return;
     }
 
     // REGULAR OPTIONS
-    _analysisName = getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
-    _analyze = getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
-    _answer = getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
-    _answerJsonPath = getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
-    _bdpRecordAllIterations = getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
-    _bdpDetail = getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);
-    _bdpMaxOscillationRecoveryAttempts =
-        getIntOptionValue(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
-    _bdpMaxRecordedIterations = getIntOptionValue(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
-    _bdpPrintAllIterations = getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
-    _bdpPrintOscillatingIterations =
-        getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
-    _blockNames = getStringListOptionValue(BfConsts.ARG_BLOCK_NAMES);
-    _compileDiffEnvironment = getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
-    _containerDir = getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
-    _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
-    _coordinatorPoolPort = getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
-    _coordinatorRegister = getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
-    _coordinatorWorkPort = getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
-    _dataPlane = getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
-    _deltaEnvironmentName = getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
-    _deltaTestrig = getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
-    _diffActive = getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
-    _differential = getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
-    _disableUnrecognized = getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
-    _environmentName = getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
-    _exitOnFirstError = getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
-    _flatten = getBooleanOptionValue(ARG_FLATTEN);
-    _flattenDestination = getPathOptionValue(ARG_FLATTEN_DESTINATION);
-    _flattenOnTheFly = getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
-    _generateStubs = getBooleanOptionValue(ARG_GENERATE_STUBS);
-    _generateStubsInputRole = getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
-    _generateStubsInterfaceDescriptionRegex =
-        getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
-    _generateStubsRemoteAs = getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
-    _genOspfTopologyPath = getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
-    _haltOnConvertError = getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
-    _haltOnParseError = getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
-    _histogram = getBooleanOptionValue(ARG_HISTOGRAM);
-    _ignoreFilesWithStrings = getStringListOptionValue(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
-    _ignoreUnknown = getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
-    _ignoreUnsupported = getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
-    _initInfo = getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
-    _jobs = getIntOptionValue(ARG_JOBS);
-    _logTee = getBooleanOptionValue(ARG_LOG_TEE);
-    _maxParserContextLines = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
-    _maxParserContextTokens = getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
-    _maxParseTreePrintLength = getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
-    _maxRuntimeMs = getIntOptionValue(ARG_MAX_RUNTIME_MS);
-    _outputEnvironmentName = getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
-    _parentPid = getIntOptionValue(ARG_PARENT_PID);
-    _pedanticAsError = getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
-    _pedanticRecord = !getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
-    _prettyPrintAnswer = getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
-    _printParseTree = getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
-    _printSymmetricEdges = getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
-    _questionName = getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
-    _redFlagAsError = getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
-    _redFlagRecord = !getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
-    _report = getBooleanOptionValue(BfConsts.COMMAND_REPORT);
-    _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE).toUpperCase());
-    _sequential = getBooleanOptionValue(ARG_SEQUENTIAL);
-    _serializeIndependent = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
-    _serializeToText = getBooleanOptionValue(ARG_SERIALIZE_TO_TEXT);
-    _serializeVendor = getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
-    _serviceBindHost = getStringOptionValue(ARG_SERVICE_BIND_HOST);
-    _serviceHost = getStringOptionValue(ARG_SERVICE_HOST);
-    _servicePort = getIntOptionValue(ARG_SERVICE_PORT);
-    _shuffleJobs = !getBooleanOptionValue(ARG_NO_SHUFFLE);
-    _simplify = !getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
-    _sslDisable = getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
-    _sslKeystoreFile = getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
-    _sslKeystorePassword = getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
-    _sslTrustAllCerts = getBooleanOptionValue(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
-    _sslTruststoreFile = getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
-    _sslTruststorePassword = getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
-    _synthesizeJsonTopology = getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
-    _taskPlugin = getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
-    _testrig = getStringOptionValue(BfConsts.ARG_TESTRIG);
-    _throwOnLexerError = getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
-    _throwOnParserError = getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
-    _timestamp = getBooleanOptionValue(ARG_TIMESTAMP);
-    _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
-    _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
-    _tracingEnable = getBooleanOptionValue(ARG_TRACING_ENABLE);
-    _unimplementedAsError = getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
-    _unimplementedRecord = !getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
-    _unrecognizedAsRedFlag = getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
-    _validateEnvironment = getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
-    _verboseParse = getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
-    _z3timeout = getIntegerOptionValue(ARG_Z3_TIMEOUT);
-    _dataPlaneEngineName = getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
-  }
-
-  public boolean prettyPrintAnswer() {
-    return _prettyPrintAnswer;
+    getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
+    getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
+    getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
+    getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
+    getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
+    getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);
+    getIntOptionValue(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
+    getIntOptionValue(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
+    getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
+    getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
+    getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
+    getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
+    getStringOptionValue(ARG_COORDINATOR_HOST);
+    getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
+    getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
+    getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
+    getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
+    getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
+    getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
+    getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
+    getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
+    getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
+    getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
+    getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
+    getBooleanOptionValue(ARG_FLATTEN);
+    getPathOptionValue(ARG_FLATTEN_DESTINATION);
+    getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
+    getBooleanOptionValue(ARG_GENERATE_STUBS);
+    getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
+    getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
+    getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
+    getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
+    getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
+    getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
+    getBooleanOptionValue(ARG_HISTOGRAM);
+    getStringListOptionValue(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS);
+    getBooleanOptionValue(ARG_IGNORE_UNKNOWN);
+    getBooleanOptionValue(ARG_IGNORE_UNSUPPORTED);
+    getBooleanOptionValue(BfConsts.COMMAND_INIT_INFO);
+    getIntOptionValue(ARG_JOBS);
+    getBooleanOptionValue(ARG_LOG_TEE);
+    getIntOptionValue(ARG_MAX_PARSER_CONTEXT_LINES);
+    getIntOptionValue(ARG_MAX_PARSER_CONTEXT_TOKENS);
+    getIntOptionValue(ARG_MAX_PARSE_TREE_PRINT_LENGTH);
+    getIntOptionValue(ARG_MAX_RUNTIME_MS);
+    getStringOptionValue(BfConsts.ARG_OUTPUT_ENV);
+    getIntOptionValue(ARG_PARENT_PID);
+    getBooleanOptionValue(BfConsts.ARG_PEDANTIC_AS_ERROR);
+    getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
+    getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
+    getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
+    getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
+    getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
+    getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
+    getBooleanOptionValue(BfConsts.ARG_RED_FLAG_SUPPRESS);
+    getBooleanOptionValue(BfConsts.COMMAND_REPORT);
+    getStringOptionValue(ARG_RUN_MODE);
+    getBooleanOptionValue(ARG_SEQUENTIAL);
+    getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT);
+    getBooleanOptionValue(ARG_SERIALIZE_TO_TEXT);
+    getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
+    getStringOptionValue(ARG_SERVICE_BIND_HOST);
+    getStringOptionValue(ARG_SERVICE_HOST);
+    getIntOptionValue(ARG_SERVICE_PORT);
+    getBooleanOptionValue(ARG_NO_SHUFFLE);
+    getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+    getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
+    getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
+    getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
+    getBooleanOptionValue(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
+    getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
+    getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
+    getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
+    getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
+    getStringOptionValue(BfConsts.ARG_TESTRIG);
+    getBooleanOptionValue(ARG_THROW_ON_LEXER_ERROR);
+    getBooleanOptionValue(ARG_THROW_ON_PARSER_ERROR);
+    getBooleanOptionValue(ARG_TIMESTAMP);
+    getStringOptionValue(ARG_TRACING_AGENT_HOST);
+    getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
+    getBooleanOptionValue(ARG_TRACING_ENABLE);
+    getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR);
+    getBooleanOptionValue(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS);
+    getBooleanOptionValue(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG);
+    getBooleanOptionValue(BfConsts.COMMAND_VALIDATE_ENVIRONMENT);
+    getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
+    getIntegerOptionValue(ARG_Z3_TIMEOUT);
+    getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
   }
 
   public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
     _activeTestrigSettings = activeTestrigSettings;
   }
 
+  @Override
   public void setBdpDetail(boolean bdpDetail) {
-    _bdpDetail = bdpDetail;
+    _config.setProperty(BfConsts.ARG_BDP_DETAIL, bdpDetail);
   }
 
+  @Override
   public void setBdpMaxOscillationRecoveryAttempts(int bdpMaxOscillationRecoveryAttempts) {
-    _bdpMaxOscillationRecoveryAttempts = bdpMaxOscillationRecoveryAttempts;
+    _config.setProperty(
+        BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, bdpMaxOscillationRecoveryAttempts);
   }
 
+  @Override
   public void setBdpMaxRecordedIterations(int bdpMaxRecordedIterations) {
-    _bdpMaxRecordedIterations = bdpMaxRecordedIterations;
+    _config.setProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, bdpMaxRecordedIterations);
   }
 
+  @Override
   public void setBdpPrintAllIterations(boolean bdpPrintAllIterations) {
-    _bdpPrintAllIterations = bdpPrintAllIterations;
+    _config.setProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, bdpPrintAllIterations);
   }
 
+  @Override
   public void setBdpPrintOscillatingIterations(boolean bdpPrintOscillatingIterations) {
-    _bdpPrintOscillatingIterations = bdpPrintOscillatingIterations;
+    _config.setProperty(
+        BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, bdpPrintOscillatingIterations);
   }
 
+  @Override
   public void setBdpRecordAllIterations(boolean bdpRecordAllIterations) {
-    _bdpRecordAllIterations = bdpRecordAllIterations;
+    _config.setProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, bdpRecordAllIterations);
+  }
+
+  public void setCanExecute(boolean canExecute) {
+    _config.setProperty(CAN_EXECUTE, canExecute);
   }
 
   public void setContainerDir(Path containerDir) {
-    _containerDir = containerDir;
+    _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
   }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
-    _deltaEnvironmentName = diffEnvironmentName;
+    _config.setProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvironmentName);
   }
 
   public void setDeltaTestrig(String deltaTestrig) {
-    _deltaTestrig = deltaTestrig;
+    _config.setProperty(BfConsts.ARG_DELTA_TESTRIG, deltaTestrig);
   }
 
   public void setDiffActive(boolean diffActive) {
-    _diffActive = diffActive;
+    _config.setProperty(BfConsts.ARG_DIFF_ACTIVE, diffActive);
   }
 
   public void setDiffQuestion(boolean diffQuestion) {
-    _diffQuestion = diffQuestion;
+    _config.setProperty(DIFFERENTIAL_QUESTION, diffQuestion);
   }
 
   @Override
   public void setDisableUnrecognized(boolean b) {
-    _disableUnrecognized = b;
+    _config.setProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, b);
   }
 
   public void setEnvironmentName(String envName) {
-    _environmentName = envName;
+    _config.setProperty(BfConsts.ARG_ENVIRONMENT_NAME, envName);
   }
 
   public void setHaltOnConvertError(boolean haltOnConvertError) {
-    _haltOnConvertError = haltOnConvertError;
+    _config.setProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, haltOnConvertError);
   }
 
   public void setHaltOnParseError(boolean haltOnParseError) {
-    _haltOnParseError = haltOnParseError;
+    _config.setProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, haltOnParseError);
   }
 
   public void setInitInfo(boolean initInfo) {
-    _initInfo = initInfo;
+    _config.setProperty(BfConsts.COMMAND_INIT_INFO, initInfo);
   }
 
   public void setLogger(BatfishLogger logger) {
@@ -1705,97 +1552,105 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   }
 
   public void setMaxParserContextLines(int maxParserContextLines) {
-    _maxParserContextLines = maxParserContextLines;
+    _config.setProperty(ARG_MAX_PARSER_CONTEXT_LINES, maxParserContextLines);
   }
 
   public void setMaxParserContextTokens(int maxParserContextTokens) {
-    _maxParserContextTokens = maxParserContextTokens;
+    _config.setProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, maxParserContextTokens);
   }
 
   public void setMaxParseTreePrintLength(int maxParseTreePrintLength) {
-    _maxParseTreePrintLength = maxParseTreePrintLength;
+    _config.setProperty(ARG_MAX_PARSE_TREE_PRINT_LENGTH, maxParseTreePrintLength);
   }
 
   public void setMaxRuntimeMs(int runtimeMs) {
-    _maxRuntimeMs = runtimeMs;
+    _config.setProperty(ARG_MAX_RUNTIME_MS, runtimeMs);
   }
 
   @Override
   public void setPrintParseTree(boolean printParseTree) {
-    _printParseTree = printParseTree;
+    _config.setProperty(ARG_PRINT_PARSE_TREES, printParseTree);
   }
 
   public void setQuestionPath(@Nullable Path questionPath) {
-    _questionPath = questionPath;
+    if (questionPath != null) {
+      _config.setProperty(QUESTION_PATH, questionPath.toString());
+    } else {
+      _config.clearProperty(QUESTION_PATH);
+    }
   }
 
   public void setReport(boolean report) {
-    _report = report;
+    _config.setProperty(BfConsts.COMMAND_REPORT, report);
+  }
+
+  public void setRunMode(RunMode runMode) {
+    _config.setProperty(ARG_RUN_MODE, runMode.toString());
   }
 
   public void setSequential(boolean sequential) {
-    _sequential = true;
+    _config.setProperty(ARG_SEQUENTIAL, sequential);
   }
 
   public void setSslDisable(boolean sslDisable) {
-    _sslDisable = sslDisable;
+    _config.setProperty(BfConsts.ARG_SSL_DISABLE, sslDisable);
   }
 
   public void setSslKeystoreFile(Path sslKeystoreFile) {
-    _sslKeystoreFile = sslKeystoreFile;
+    _config.setProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, sslKeystoreFile.toString());
   }
 
   public void setSslKeystorePassword(String sslKeystorePassword) {
-    _sslKeystorePassword = sslKeystorePassword;
+    _config.setProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, sslKeystorePassword);
   }
 
   public void setSslTrustAllCerts(boolean sslTrustAllCerts) {
-    _sslTrustAllCerts = sslTrustAllCerts;
+    _config.setProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, sslTrustAllCerts);
   }
 
   public void setSslTruststoreFile(Path sslTruststoreFile) {
-    _sslTruststoreFile = sslTruststoreFile;
+    _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, sslTruststoreFile.toString());
   }
 
   public void setSslTruststorePassword(String sslTruststorePassword) {
-    _sslTruststorePassword = sslTruststorePassword;
+    _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, sslTruststorePassword);
   }
 
   public void setTaskId(String taskId) {
-    _taskId = taskId;
+    _config.setProperty(TASK_ID, taskId);
   }
 
   public void setTestrig(String testrig) {
-    _testrig = testrig;
+    _config.setProperty(BfConsts.ARG_TESTRIG, testrig);
   }
 
   @Override
   public void setThrowOnLexerError(boolean throwOnLexerError) {
-    _throwOnLexerError = throwOnLexerError;
+    _config.setProperty(ARG_THROW_ON_LEXER_ERROR, throwOnLexerError);
   }
 
   @Override
   public void setThrowOnParserError(boolean throwOnParserError) {
-    _throwOnParserError = throwOnParserError;
+    _config.setProperty(ARG_THROW_ON_PARSER_ERROR, throwOnParserError);
   }
 
   public void setUnrecognizedAsRedFlag(boolean unrecognizedAsRedFlag) {
-    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
+    _config.setProperty(BfConsts.ARG_UNRECOGNIZED_AS_RED_FLAG, unrecognizedAsRedFlag);
   }
 
   public void setValidateEnvironment(boolean validateEnvironment) {
-    _validateEnvironment = validateEnvironment;
+    _config.setProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, validateEnvironment);
   }
 
   public void setVerboseParse(boolean verboseParse) {
-    _verboseParse = verboseParse;
+    _config.setProperty(BfConsts.ARG_VERBOSE_PARSE, verboseParse);
   }
 
   public void setZ3Timeout(int z3Timeout) {
-    _z3timeout = z3Timeout;
+    _config.setProperty(ARG_Z3_TIMEOUT, z3Timeout);
   }
 
   public void setDataplaneEngineName(String name) {
-    _dataPlaneEngineName = name;
+    _config.setProperty(ARG_DATAPLANE_ENGINE_NAME, name);
   }
 }
