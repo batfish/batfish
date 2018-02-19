@@ -255,6 +255,7 @@ public class BatfishTest {
     Batfish.checkTopology(configs, topology);
   }
 
+  @Test
   public void testReadMissingIptableFile() throws IOException {
     HostConfiguration host1 = new HostConfiguration();
     host1.setHostname("host1");

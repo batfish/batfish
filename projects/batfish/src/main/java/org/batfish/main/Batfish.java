@@ -1748,6 +1748,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return blacklistEdges;
   }
 
+  @Override
   public Environment getEnvironment() {
     SortedSet<Edge> edgeBlackList = getEdgeBlacklist();
     SortedSet<NodeInterfacePair> interfaceBlackList = getInterfaceBlacklist();
@@ -1887,6 +1888,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
      If inferred is true, it returns the inferred roles;
      otherwise it prefers the user-specified roles if they exist.
   */
+  @Override
   public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
     NodeRoleSpecifier result;
     boolean inferredRoles = false;
@@ -1980,6 +1982,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return dir;
   }
 
+  @Override
   public String getTestrigName() {
     return _testrigSettings.getName();
   }
@@ -2192,6 +2195,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // }
   }
 
+  @Override
   public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
     ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -2200,6 +2204,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
+  @Override
   public InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError) {
     ParseEnvironmentBgpTablesAnswerElement parseAnswer =
         loadParseEnvironmentBgpTablesAnswerElement();
@@ -2208,6 +2213,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
+  @Override
   public InitInfoAnswerElement initInfoRoutes(boolean summary, boolean verboseError) {
     ParseEnvironmentRoutingTablesAnswerElement parseAnswer =
         loadParseEnvironmentRoutingTablesAnswerElement();
