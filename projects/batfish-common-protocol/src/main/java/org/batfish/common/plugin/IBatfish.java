@@ -54,6 +54,8 @@ public interface IBatfish extends IPluginConsumer {
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
+  DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
+
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   String getContainerName();
@@ -76,7 +78,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, String> getQuestionTemplates();
 
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
+  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
   String getTaskId();
 
@@ -185,7 +187,8 @@ public interface IBatfish extends IPluginConsumer {
       NodesSpecifier finalNodeRegex,
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
-      Set<String> notTransitNodes);
+      Set<String> notTransitNodes,
+      boolean useCompression);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }

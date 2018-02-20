@@ -24,6 +24,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final class EnvironmentSettings {
 
+    private Path _compressedDataPlaneAnswerPath;
+
+    private Path _compressedDataPlanePath;
+
     private Path _dataPlaneAnswerPath;
 
     private Path _dataPlanePath;
@@ -65,6 +69,14 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     private Path _serializeEnvironmentRoutingTablesPath;
 
     private Path _validateEnvironmentAnswerPath;
+
+    public Path getCompressedDataPlaneAnswerPath() {
+      return _compressedDataPlaneAnswerPath;
+    }
+
+    public Path getCompressedDataPlanePath() {
+      return _compressedDataPlanePath;
+    }
 
     public Path getDataPlaneAnswerPath() {
       return _dataPlaneAnswerPath;
@@ -148,6 +160,14 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public Path getValidateEnvironmentAnswerPath() {
       return _validateEnvironmentAnswerPath;
+    }
+
+    public void setCompressedDataPlaneAnswerPath(Path compressedDataPlaneAnswerPath) {
+      _compressedDataPlaneAnswerPath = compressedDataPlaneAnswerPath;
+    }
+
+    public void setCompressedDataPlanePath(Path compressedDataPlanePath) {
+      _compressedDataPlanePath = compressedDataPlanePath;
     }
 
     public void setDataPlaneAnswerPath(Path dataPlaneAnswerPath) {
