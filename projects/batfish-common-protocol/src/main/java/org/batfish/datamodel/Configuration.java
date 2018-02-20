@@ -36,6 +36,8 @@ public final class Configuration extends ComparableStructure<String> {
 
     private ConfigurationFormat _configurationFormat;
 
+    private String _domainName;
+
     private String _hostname;
 
     private LineAction _defaultCrossZoneAction;
@@ -56,11 +58,17 @@ public final class Configuration extends ComparableStructure<String> {
       if (_defaultInboundAction != null) {
         configuration.setDefaultInboundAction(_defaultInboundAction);
       }
+      configuration.setDomainName(_domainName);
       return configuration;
     }
 
     public Builder setConfigurationFormat(ConfigurationFormat configurationFormat) {
       _configurationFormat = configurationFormat;
+      return this;
+    }
+
+    public Builder setDomainName(String domainName) {
+      _domainName = domainName;
       return this;
     }
 
@@ -99,6 +107,8 @@ public final class Configuration extends ComparableStructure<String> {
   private static final String PROP_DEVICE_TYPE = "deviceType";
 
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
+
+  private static final String PROP_DOMAIN_NAME = "domainName";
 
   private static final String PROP_IKE_GATEWAYS = "ikeGateways";
 
@@ -244,6 +254,7 @@ public final class Configuration extends ComparableStructure<String> {
     }
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
+    _domainName = null;
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
@@ -379,6 +390,7 @@ public final class Configuration extends ComparableStructure<String> {
     return _dnsSourceInterface;
   }
 
+  @JsonProperty(PROP_DOMAIN_NAME)
   @JsonPropertyDescription("Domain name of this node.")
   public String getDomainName() {
     return _domainName;
@@ -684,6 +696,7 @@ public final class Configuration extends ComparableStructure<String> {
     _dnsSourceInterface = dnsSourceInterface;
   }
 
+  @JsonProperty(PROP_DOMAIN_NAME)
   public void setDomainName(String domainName) {
     _domainName = domainName;
   }

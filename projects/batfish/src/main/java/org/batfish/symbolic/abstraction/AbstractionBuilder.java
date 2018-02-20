@@ -437,9 +437,9 @@ class AbstractionBuilder {
   private Configuration createAbstractConfig(Set<String> abstractRouters, Configuration conf) {
     Configuration abstractConf =
         new Configuration(conf.getHostname(), conf.getConfigurationFormat());
-    abstractConf.setDomainName(conf.getDomainName());
     abstractConf.setDnsServers(conf.getDnsServers());
     abstractConf.setDnsSourceInterface(conf.getDnsSourceInterface());
+    abstractConf.setDomainName(conf.getDomainName());
     abstractConf.setAuthenticationKeyChains(conf.getAuthenticationKeyChains());
     abstractConf.setIkeGateways(conf.getIkeGateways());
     abstractConf.setDefaultCrossZoneAction(conf.getDefaultCrossZoneAction());

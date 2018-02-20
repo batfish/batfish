@@ -4385,6 +4385,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
+  @Override
+  public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
+    _cachedDataPlanes.put(_testrigSettings, dp);
+    serializeObject(dp, _testrigSettings.getEnvironmentSettings().getDataPlanePath());
+    serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
+  }
+
   private void writeJsonAnswer(String structuredAnswerString) {
     // TODO Reduce calls to _settings to deobfuscate this method's purpose and dependencies.
     // Purpose: to write answer json files for adhoc and analysis questions
