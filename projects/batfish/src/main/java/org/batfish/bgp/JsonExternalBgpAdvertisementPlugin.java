@@ -40,13 +40,10 @@ public class JsonExternalBgpAdvertisementPlugin extends ExternalBgpAdvertisement
 
         for (int index = 0; index < announcements.length(); index++) {
           JSONObject announcement = new JSONObject();
-          announcement.put("@id", index);
           JSONObject announcementSrc = announcements.getJSONObject(index);
           for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
             String key = (String) i.next();
-            if (!key.equals("@id")) {
-              announcement.put(key, announcementSrc.get(key));
-            }
+            announcement.put(key, announcementSrc.get(key));
           }
           BgpAdvertisement bgpAdvertisement =
               mapper.readValue(announcement.toString(), BgpAdvertisement.class);

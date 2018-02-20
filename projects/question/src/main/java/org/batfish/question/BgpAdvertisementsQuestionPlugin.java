@@ -1,10 +1,7 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.auto.service.AutoService;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,7 +14,6 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
@@ -28,42 +24,15 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
-  @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
   public static class BgpAdvertisementsAnswerElement implements AnswerElement {
 
-    private static final String PROP_ALL_REQUESTED_ADVERTISEMENTS = "allRequestedAdvertisements";
+    private static final String PROP_BGP_ADVERTISEMENTS = "bgpAdvertisements";
 
-    private static final String PROP_RECEIVED_EBGP_ADVERTISEMENTS = "receivedEbgpAdvertisements";
-
-    private static final String PROP_RECEIVED_IBGP_ADVERTISEMENTS = "receivedIbgpAdvertisements";
-
-    private static final String PROP_SENT_EBGP_ADVERTISEMENTS = "sentEbgpAdvertisements";
-
-    private static final String PROP_SENT_IBGP_ADVERTISEMENTS = "sentIbgpAdvertisements";
-
-    private SortedSet<BgpAdvertisement> _added;
-
-    private SortedSet<BgpAdvertisement> _allRequestedAdvertisements;
-
-    private SortedMap<String, SortedSet<BgpAdvertisement>> _receivedEbgpAdvertisements;
-
-    private SortedMap<String, SortedSet<BgpAdvertisement>> _receivedIbgpAdvertisements;
-
-    private SortedSet<BgpAdvertisement> _removed;
-
-    private SortedMap<String, SortedSet<BgpAdvertisement>> _sentEbgpAdvertisements;
-
-    private SortedMap<String, SortedSet<BgpAdvertisement>> _sentIbgpAdvertisements;
+    private SortedMap<String, SortedSet<BgpAdvertisement>> _bgpAdvertisements;
 
     @JsonCreator
     public BgpAdvertisementsAnswerElement() {
-      _added = new TreeSet<>();
-      _allRequestedAdvertisements = new TreeSet<>();
-      _receivedEbgpAdvertisements = new TreeMap<>();
-      _receivedIbgpAdvertisements = new TreeMap<>();
-      _removed = new TreeSet<>();
-      _sentEbgpAdvertisements = new TreeMap<>();
-      _sentIbgpAdvertisements = new TreeMap<>();
+      _bgpAdvertisements = new TreeMap<>();
     }
 
     public BgpAdvertisementsAnswerElement(
@@ -76,30 +45,16 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       for (String hostname : configurations.keySet()) {
         if (includeNodes.contains(hostname)) {
           allowedHostnames.add(hostname);
-          _sentEbgpAdvertisements.put(hostname, new TreeSet<>());
+          _bgpAdvertisements.put(hostname, new TreeSet<>());
         }
       }
       for (BgpAdvertisement advertisement : externalAdverts) {
         String hostname = advertisement.getDstNode();
         if (allowedHostnames.contains(hostname)
             && (prefixSpace.isEmpty() || prefixSpace.containsPrefix(advertisement.getNetwork()))) {
-          SortedSet<BgpAdvertisement> hostAdverts = _sentEbgpAdvertisements.get(hostname);
-          hostAdverts.add(advertisement);
-          _allRequestedAdvertisements.add(advertisement);
+          _bgpAdvertisements.get(hostname).add(advertisement);
         }
       }
-    }
-
-    public BgpAdvertisementsAnswerElement(
-        BgpAdvertisementsAnswerElement base, BgpAdvertisementsAnswerElement delta) {
-      this();
-      _removed =
-          CommonUtil.difference(
-              base._allRequestedAdvertisements, delta._allRequestedAdvertisements, TreeSet::new);
-      _added =
-          CommonUtil.difference(
-              delta._allRequestedAdvertisements, base._allRequestedAdvertisements, TreeSet::new);
-      _allRequestedAdvertisements = CommonUtil.union(_removed, _added, TreeSet::new);
     }
 
     public BgpAdvertisementsAnswerElement(
@@ -120,130 +75,58 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
         if (received) {
           if (ebgp) {
             Set<BgpAdvertisement> advertisements = configuration.getReceivedEbgpAdvertisements();
-            fill(_receivedEbgpAdvertisements, hostname, advertisements, prefixSpace);
+            fill(hostname, advertisements, prefixSpace);
           }
           if (ibgp) {
             Set<BgpAdvertisement> advertisements = configuration.getReceivedIbgpAdvertisements();
-            fill(_receivedIbgpAdvertisements, hostname, advertisements, prefixSpace);
+            fill(hostname, advertisements, prefixSpace);
           }
         }
         if (sent) {
           if (ebgp) {
             Set<BgpAdvertisement> advertisements = configuration.getSentEbgpAdvertisements();
-            fill(_sentEbgpAdvertisements, hostname, advertisements, prefixSpace);
+            fill(hostname, advertisements, prefixSpace);
           }
           if (ibgp) {
             Set<BgpAdvertisement> advertisements = configuration.getSentIbgpAdvertisements();
-            fill(_sentIbgpAdvertisements, hostname, advertisements, prefixSpace);
+            fill(hostname, advertisements, prefixSpace);
           }
         }
       }
     }
 
     private void fill(
-        Map<String, SortedSet<BgpAdvertisement>> map,
-        String hostname,
-        Set<BgpAdvertisement> advertisements,
-        PrefixSpace prefixSpace) {
-      SortedSet<BgpAdvertisement> placedAdvertisements = new TreeSet<>();
-      map.put(hostname, placedAdvertisements);
+        String hostname, Set<BgpAdvertisement> advertisements, PrefixSpace prefixSpace) {
+      SortedSet<BgpAdvertisement> placedAdvertisements =
+          _bgpAdvertisements.computeIfAbsent(hostname, k -> new TreeSet<>());
       for (BgpAdvertisement advertisement : advertisements) {
         if (prefixSpace.isEmpty() || prefixSpace.containsPrefix(advertisement.getNetwork())) {
           placedAdvertisements.add(advertisement);
-          _allRequestedAdvertisements.add(advertisement);
         }
       }
     }
 
-    public SortedSet<BgpAdvertisement> getAdded() {
-      return _added;
-    }
-
-    @JsonProperty(PROP_ALL_REQUESTED_ADVERTISEMENTS)
-    public SortedSet<BgpAdvertisement> getAllRequestedAdvertisements() {
-      return _allRequestedAdvertisements;
-    }
-
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(PROP_RECEIVED_EBGP_ADVERTISEMENTS)
+    @JsonProperty(PROP_BGP_ADVERTISEMENTS)
     public SortedMap<String, SortedSet<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
-      return _receivedEbgpAdvertisements;
-    }
-
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(PROP_RECEIVED_IBGP_ADVERTISEMENTS)
-    public SortedMap<String, SortedSet<BgpAdvertisement>> getReceivedIbgpAdvertisements() {
-      return _receivedIbgpAdvertisements;
-    }
-
-    public SortedSet<BgpAdvertisement> getRemoved() {
-      return _removed;
-    }
-
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(PROP_SENT_EBGP_ADVERTISEMENTS)
-    public SortedMap<String, SortedSet<BgpAdvertisement>> getSentEbgpAdvertisements() {
-      return _sentEbgpAdvertisements;
-    }
-
-    @JsonIdentityReference(alwaysAsId = true)
-    @JsonProperty(PROP_SENT_IBGP_ADVERTISEMENTS)
-    public SortedMap<String, SortedSet<BgpAdvertisement>> getSentIbgpAdvertisements() {
-      return _sentIbgpAdvertisements;
+      return _bgpAdvertisements;
     }
 
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
-      for (BgpAdvertisement advert : _allRequestedAdvertisements) {
-        String diffSymbol = null;
-        if (_added.contains(advert)) {
-          diffSymbol = "+";
-        } else if (_removed.contains(advert)) {
-          diffSymbol = "-";
+      for (String hostname : _bgpAdvertisements.keySet()) {
+        for (BgpAdvertisement advert : _bgpAdvertisements.get(hostname)) {
+          sb.append(advert.prettyPrint(hostname + " "));
         }
-        sb.append(advert.prettyPrint(diffSymbol));
       }
       String output = sb.toString();
       return output;
     }
 
-    public void setAdded(SortedSet<BgpAdvertisement> added) {
-      _added = added;
-    }
-
-    @JsonProperty(PROP_ALL_REQUESTED_ADVERTISEMENTS)
-    public void setAllRequestedAdvertisements(
-        SortedSet<BgpAdvertisement> allRequestedAdvertisements) {
-      _allRequestedAdvertisements = allRequestedAdvertisements;
-    }
-
-    @JsonProperty(PROP_RECEIVED_EBGP_ADVERTISEMENTS)
-    public void setReceivedEbgpAdvertisements(
-        SortedMap<String, SortedSet<BgpAdvertisement>> receivedEbgpAdvertisements) {
-      _receivedEbgpAdvertisements = receivedEbgpAdvertisements;
-    }
-
-    @JsonProperty(PROP_RECEIVED_IBGP_ADVERTISEMENTS)
-    public void setReceivedIbgpAdvertisements(
-        SortedMap<String, SortedSet<BgpAdvertisement>> receivedIbgpAdvertisements) {
-      _receivedIbgpAdvertisements = receivedIbgpAdvertisements;
-    }
-
-    public void setRemoved(SortedSet<BgpAdvertisement> removed) {
-      _removed = removed;
-    }
-
-    @JsonProperty(PROP_SENT_EBGP_ADVERTISEMENTS)
-    public void setSentEbgpAdvertisements(
-        SortedMap<String, SortedSet<BgpAdvertisement>> sentEbgpAdvertisements) {
-      _sentEbgpAdvertisements = sentEbgpAdvertisements;
-    }
-
-    @JsonProperty(PROP_SENT_IBGP_ADVERTISEMENTS)
-    public void setSentIbgpAdvertisements(
-        SortedMap<String, SortedSet<BgpAdvertisement>> sentIbgpAdvertisements) {
-      _sentIbgpAdvertisements = sentIbgpAdvertisements;
+    @JsonProperty(PROP_BGP_ADVERTISEMENTS)
+    public void setbgpAdvertisements(
+        SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements) {
+      _bgpAdvertisements = bgpAdvertisements;
     }
   }
 
@@ -278,17 +161,6 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
                 question.getSent());
       }
       return answerElement;
-    }
-
-    @Override
-    public AnswerElement answerDiff() {
-      _batfish.pushBaseEnvironment();
-      BgpAdvertisementsAnswerElement base = answer();
-      _batfish.popEnvironment();
-      _batfish.pushDeltaEnvironment();
-      BgpAdvertisementsAnswerElement delta = answer();
-      _batfish.popEnvironment();
-      return new BgpAdvertisementsAnswerElement(base, delta);
     }
   }
 
