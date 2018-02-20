@@ -3,6 +3,8 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,11 +30,13 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_BGP_ADVERTISEMENTS = "bgpAdvertisements";
 
-    private SortedMap<String, SortedSet<BgpAdvertisement>> _bgpAdvertisements;
+    private ImmutableSortedMap<String, ImmutableSortedSet<BgpAdvertisement>> _bgpAdvertisements;
 
     @JsonCreator
-    public BgpAdvertisementsAnswerElement() {
-      _bgpAdvertisements = new TreeMap<>();
+    private BgpAdvertisementsAnswerElement(
+        @JsonProperty(PROP_BGP_ADVERTISEMENTS)
+            SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements) {
+      _bgpAdvertisements = makeImmutable(bgpAdvertisements);
     }
 
     public BgpAdvertisementsAnswerElement(
@@ -40,21 +44,22 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
         Map<String, Configuration> configurations,
         Set<String> includeNodes,
         PrefixSpace prefixSpace) {
-      this();
+      SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements = new TreeMap();
       Set<String> allowedHostnames = new HashSet<>();
       for (String hostname : configurations.keySet()) {
         if (includeNodes.contains(hostname)) {
           allowedHostnames.add(hostname);
-          _bgpAdvertisements.put(hostname, new TreeSet<>());
+          bgpAdvertisements.put(hostname, new TreeSet<>());
         }
       }
       for (BgpAdvertisement advertisement : externalAdverts) {
         String hostname = advertisement.getDstNode();
         if (allowedHostnames.contains(hostname)
             && (prefixSpace.isEmpty() || prefixSpace.containsPrefix(advertisement.getNetwork()))) {
-          _bgpAdvertisements.get(hostname).add(advertisement);
+          bgpAdvertisements.get(hostname).add(advertisement);
         }
       }
+      _bgpAdvertisements = makeImmutable(bgpAdvertisements);
     }
 
     public BgpAdvertisementsAnswerElement(
@@ -65,7 +70,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
         PrefixSpace prefixSpace,
         boolean received,
         boolean sent) {
-      this();
+      SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements = new TreeMap();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
         if (!includeNodes.contains(hostname)) {
@@ -75,30 +80,34 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
         if (received) {
           if (ebgp) {
             Set<BgpAdvertisement> advertisements = configuration.getReceivedEbgpAdvertisements();
-            fill(hostname, advertisements, prefixSpace);
+            fill(bgpAdvertisements, hostname, advertisements, prefixSpace);
           }
           if (ibgp) {
             Set<BgpAdvertisement> advertisements = configuration.getReceivedIbgpAdvertisements();
-            fill(hostname, advertisements, prefixSpace);
+            fill(bgpAdvertisements, hostname, advertisements, prefixSpace);
           }
         }
         if (sent) {
           if (ebgp) {
             Set<BgpAdvertisement> advertisements = configuration.getSentEbgpAdvertisements();
-            fill(hostname, advertisements, prefixSpace);
+            fill(bgpAdvertisements, hostname, advertisements, prefixSpace);
           }
           if (ibgp) {
             Set<BgpAdvertisement> advertisements = configuration.getSentIbgpAdvertisements();
-            fill(hostname, advertisements, prefixSpace);
+            fill(bgpAdvertisements, hostname, advertisements, prefixSpace);
           }
         }
       }
+      _bgpAdvertisements = makeImmutable(bgpAdvertisements);
     }
 
     private void fill(
-        String hostname, Set<BgpAdvertisement> advertisements, PrefixSpace prefixSpace) {
+        SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements,
+        String hostname,
+        Set<BgpAdvertisement> advertisements,
+        PrefixSpace prefixSpace) {
       SortedSet<BgpAdvertisement> placedAdvertisements =
-          _bgpAdvertisements.computeIfAbsent(hostname, k -> new TreeSet<>());
+          bgpAdvertisements.computeIfAbsent(hostname, k -> new TreeSet<>());
       for (BgpAdvertisement advertisement : advertisements) {
         if (prefixSpace.isEmpty() || prefixSpace.containsPrefix(advertisement.getNetwork())) {
           placedAdvertisements.add(advertisement);
@@ -107,26 +116,34 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_BGP_ADVERTISEMENTS)
-    public SortedMap<String, SortedSet<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
+    public ImmutableSortedMap<String, ImmutableSortedSet<BgpAdvertisement>>
+        getReceivedEbgpAdvertisements() {
       return _bgpAdvertisements;
+    }
+
+    private ImmutableSortedMap<String, ImmutableSortedSet<BgpAdvertisement>> makeImmutable(
+        SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements) {
+      return bgpAdvertisements
+          .entrySet()
+          .stream()
+          .collect(
+              ImmutableSortedMap.toImmutableSortedMap(
+                  String::compareTo,
+                  e -> e.getKey(),
+                  e -> ImmutableSortedSet.copyOf(e.getValue())));
     }
 
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
-      for (String hostname : _bgpAdvertisements.keySet()) {
-        for (BgpAdvertisement advert : _bgpAdvertisements.get(hostname)) {
-          sb.append(advert.prettyPrint(hostname + " "));
-        }
-      }
-      String output = sb.toString();
-      return output;
-    }
-
-    @JsonProperty(PROP_BGP_ADVERTISEMENTS)
-    public void setbgpAdvertisements(
-        SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements) {
-      _bgpAdvertisements = bgpAdvertisements;
+      _bgpAdvertisements.forEach(
+          (hostname, adverts) -> {
+            adverts.forEach(
+                (advert) -> {
+                  sb.append(advert.prettyPrint(hostname + " "));
+                });
+          });
+      return sb.toString();
     }
   }
 
