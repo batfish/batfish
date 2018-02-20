@@ -62,6 +62,7 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.plugin.DataPlanePluginSettings;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
@@ -163,6 +164,7 @@ import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
+import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
@@ -221,6 +223,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       envSettings.setName(envName);
       Path envPath = testrigDir.resolve(BfConsts.RELPATH_ENVIRONMENTS_DIR).resolve(envName);
       envSettings.setEnvironmentBasePath(envPath);
+      envSettings.setCompressedDataPlanePath(
+          envPath.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE));
+      envSettings.setCompressedDataPlaneAnswerPath(
+          envPath.resolve(BfConsts.RELPATH_COMPRESSED_DATA_PLANE_ANSWER));
       envSettings.setDataPlanePath(envPath.resolve(BfConsts.RELPATH_DATA_PLANE));
       envSettings.setDataPlaneAnswerPath(envPath.resolve(BfConsts.RELPATH_DATA_PLANE_ANSWER_PATH));
       envSettings.setParseEnvironmentBgpTablesAnswerPath(
@@ -434,6 +440,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private final Cache<TestrigSettings, SortedMap<String, Configuration>> _cachedConfigurations;
 
+  private final Cache<TestrigSettings, DataPlane> _cachedCompressedDataPlanes;
+
   private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
 
   private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -465,6 +473,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Batfish(
       Settings settings,
       Cache<TestrigSettings, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<TestrigSettings, DataPlane> cachedCompressedDataPlanes,
       Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
@@ -475,6 +484,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedConfigurations = cachedConfigurations;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
+    _cachedCompressedDataPlanes = cachedCompressedDataPlanes;
     _cachedDataPlanes = cachedDataPlanes;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     _testrigSettings = settings.getActiveTestrigSettings();
@@ -904,9 +914,80 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flows;
   }
 
-  private Answer computeDataPlane(boolean differentialContext) {
+  private CompressDataPlaneResult computeCompressedDataPlane() {
+    CompressDataPlaneResult result = computeCompressedDataPlane(new HeaderSpace());
+    saveDataPlane(result._compressedDataPlane, result._answerElement, true);
+    return result;
+  }
+
+  public class CompressDataPlaneResult {
+    public final Map<String, Configuration> _compressedConfigs;
+    public final DataPlane _compressedDataPlane;
+    public final DataPlaneAnswerElement _answerElement;
+
+    public CompressDataPlaneResult(
+        Map<String, Configuration> compressedConfigs,
+        DataPlane compressedDataPlane,
+        DataPlaneAnswerElement answerElement) {
+      _compressedConfigs = compressedConfigs;
+      _compressedDataPlane = compressedDataPlane;
+      _answerElement = answerElement;
+    }
+  }
+
+  private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
+    // Compression is going to mutate the configs, so make sure we have a fresh copy
+    // nobody is pointing to.
+    _cachedConfigurations.invalidate(_testrigSettings);
+    loadConfigurations();
+
+    Map<String, Configuration> configs = new BatfishCompressor(this).compress(headerSpace);
+    Topology topo = CommonUtil.synthesizeTopology(configs);
+    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
+
+    // Throw the mutated configurations away.
+    _cachedConfigurations.invalidate(_testrigSettings);
+
+    return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
+  }
+
+  @Override
+  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
     checkEnvironmentExists();
-    return getDataPlanePlugin().computeDataPlane(differentialContext);
+    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(differentialContext);
+    saveDataPlane(result._dataPlane, result._answerElement, false);
+    return result._answerElement;
+  }
+
+  /* Write the dataplane to disk and cache, and write the answer element to disk.
+   */
+  private void saveDataPlane(
+      DataPlane dataPlane, DataPlaneAnswerElement answerElement, boolean compressed) {
+    Path dataPlanePath =
+        compressed
+            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
+            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+
+    Path answerElementPath =
+        compressed
+            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+
+    Cache<TestrigSettings, DataPlane> cache =
+        compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
+
+    cache.put(_testrigSettings, dataPlane);
+
+    _logger.resetTimer();
+    newBatch("Writing data plane to disk", 0);
+    try (ActiveSpan writeDataplane =
+        GlobalTracer.get().buildSpan("Writing data plane").startActive()) {
+      assert writeDataplane != null; // avoid unused warning
+      serializeObject(dataPlane, dataPlanePath);
+      serializeObject(answerElement, answerElementPath);
+    }
+    _logger.printElapsedTime();
   }
 
   private void computeEnvironmentBgpTables() {
@@ -1062,6 +1143,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
     Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
     return Files.exists(dpPath);
+  }
+
+  private boolean compressedDataPlaneDependenciesExist(TestrigSettings testrigSettings) {
+    Path path = testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath();
+    return Files.exists(path);
   }
 
   public SortedMap<String, Configuration> deserializeConfigurations(Path serializedConfigPath) {
@@ -1858,8 +1944,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes() {
-    return getDataPlanePlugin().getRoutes();
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+      boolean useCompression) {
+    return getDataPlanePlugin().getRoutes(loadDataPlane(useCompression));
   }
 
   public Settings getSettings() {
@@ -2148,8 +2235,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!environmentRoutingTablesExist(envSettings)) {
       computeEnvironmentRoutingTables();
     }
-    if (dp && !dataPlaneDependenciesExist(_testrigSettings)) {
-      computeDataPlane(differentialContext);
+    if (dp) {
+      if (!dataPlaneDependenciesExist(_testrigSettings)) {
+        computeDataPlane(differentialContext);
+      }
+
+      if (!compressedDataPlaneDependenciesExist(_testrigSettings)) {
+        computeCompressedDataPlane();
+      }
     }
   }
 
@@ -2300,39 +2393,52 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public DataPlane loadDataPlane() {
-    DataPlane dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
+    return loadDataPlane(false);
+  }
+
+  private DataPlane loadDataPlane(boolean compressed) {
+    Cache<TestrigSettings, DataPlane> cache =
+        compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
+
+    Path path =
+        compressed
+            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
+            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+
+    DataPlane dp = cache.getIfPresent(_testrigSettings);
     if (dp == null) {
       /*
        * Data plane should exist after loading answer element, as it triggers
        * repair if necessary. However, it might not be cached if it was not
        * repaired, so we still might need to load it from disk.
        */
-      loadDataPlaneAnswerElement();
-      dp = _cachedDataPlanes.getIfPresent(_testrigSettings);
+      loadDataPlaneAnswerElement(compressed);
+      dp = cache.getIfPresent(_testrigSettings);
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
-        dp =
-            deserializeObject(
-                _testrigSettings.getEnvironmentSettings().getDataPlanePath(), DataPlane.class);
-        _cachedDataPlanes.put(_testrigSettings, dp);
+        dp = deserializeObject(path, DataPlane.class);
+        cache.put(_testrigSettings, dp);
       }
     }
     return dp;
   }
 
-  private DataPlaneAnswerElement loadDataPlaneAnswerElement() {
-    return loadDataPlaneAnswerElement(true);
+  private DataPlaneAnswerElement loadDataPlaneAnswerElement(boolean compressed) {
+    return loadDataPlaneAnswerElement(compressed, true);
   }
 
-  private DataPlaneAnswerElement loadDataPlaneAnswerElement(boolean firstAttempt) {
-    DataPlaneAnswerElement bae =
-        deserializeObject(
-            _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath(),
-            DataPlaneAnswerElement.class);
+  private DataPlaneAnswerElement loadDataPlaneAnswerElement(
+      boolean compressed, boolean firstAttempt) {
+    Path answerPath =
+        compressed
+            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+
+    DataPlaneAnswerElement bae = deserializeObject(answerPath, DataPlaneAnswerElement.class);
     if (!Version.isCompatibleVersion("Service", "Old data plane", bae.getVersion())) {
       if (firstAttempt) {
-        repairDataPlane();
-        return loadDataPlaneAnswerElement(false);
+        repairDataPlane(compressed);
+        return loadDataPlaneAnswerElement(compressed, false);
       } else {
         throw new BatfishException(
             "Version error repairing data plane for data plane answer element");
@@ -2566,7 +2672,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 })
             .collect(Collectors.toList());
     flows = computeNodOutput(jobs);
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
     AnswerElement answerElement = getHistory();
     return answerElement;
   }
@@ -2933,10 +3039,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -2953,8 +3059,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void populateFlowHistory(
       FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    List<Flow> flows = dataPlanePlugin.getHistoryFlows();
-    List<FlowTrace> flowTraces = dataPlanePlugin.getHistoryFlowTraces();
+    List<Flow> flows = dataPlanePlugin.getHistoryFlows(loadDataPlane());
+    List<FlowTrace> flowTraces = dataPlanePlugin.getHistoryFlowTraces(loadDataPlane());
     int numEntries = flows.size();
     for (int i = 0; i < numEntries; i++) {
       Flow flow = flows.get(i);
@@ -3090,7 +3196,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void processFlows(Set<Flow> flows) {
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
   }
 
   /**
@@ -3391,10 +3497,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3431,12 +3537,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeIndependentConfigs(inputPath, outputPath);
   }
 
-  private void repairDataPlane() {
-    Path dataPlanePath = _testrigSettings.getEnvironmentSettings().getDataPlanePath();
-    Path dataPlaneAnswerPath = _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+  private void repairDataPlane(boolean compressed) {
+    Path dataPlanePath =
+        compressed
+            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
+            : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
+
+    Path dataPlaneAnswerPath =
+        compressed
+            ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
+            : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
+
     CommonUtil.deleteIfExists(dataPlanePath);
     CommonUtil.deleteIfExists(dataPlaneAnswerPath);
-    computeDataPlane(false);
+
+    if (compressed) {
+      computeCompressedDataPlane();
+    } else {
+      computeDataPlane(false);
+    }
   }
 
   /**
@@ -3651,7 +3770,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
-      answer.append(computeDataPlane(_settings.getDiffActive()));
+      answer.addAnswerElement(computeDataPlane(_settings.getDiffActive()));
       action = true;
     }
 
@@ -4100,12 +4219,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NodesSpecifier finalNodeRegex,
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
-      Set<String> notTransitNodes) {
+      Set<String> notTransitNodes,
+      boolean useCompression) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
-    Map<String, Configuration> configurations = loadConfigurations();
     Set<Flow> flows = null;
-    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
+
+    CompressDataPlaneResult compressionResult =
+        useCompression ? computeCompressedDataPlane(headerSpace) : null;
+    Map<String, Configuration> configurations =
+        useCompression ? compressionResult._compressedConfigs : loadConfigurations();
+    DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
+
+    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
 
     // collect ingress nodes
     Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
@@ -4184,7 +4310,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(flows);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
 
     AnswerElement answerElement = getHistory();
     return answerElement;
@@ -4216,14 +4342,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Synthesizer synthesizeDataPlane() {
+    return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
+  }
 
+  @Nonnull
+  public Synthesizer synthesizeDataPlane(
+      Map<String, Configuration> configurations, DataPlane dataPlane) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
-    DataPlane dataPlane = loadDataPlane();
-
     _logger.info("Synthesizing Z3 logic...");
-    Map<String, Configuration> configurations = loadConfigurations();
     Synthesizer s =
         new Synthesizer(
             SynthesizerInputImpl.builder()
