@@ -44,7 +44,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
         Map<String, Configuration> configurations,
         Set<String> includeNodes,
         PrefixSpace prefixSpace) {
-      SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements = new TreeMap();
+      SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements = new TreeMap<>();
       Set<String> allowedHostnames = new HashSet<>();
       for (String hostname : configurations.keySet()) {
         if (includeNodes.contains(hostname)) {
@@ -70,7 +70,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
         PrefixSpace prefixSpace,
         boolean received,
         boolean sent) {
-      SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements = new TreeMap();
+      SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements = new TreeMap<>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
         if (!includeNodes.contains(hostname)) {
