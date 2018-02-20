@@ -86,8 +86,6 @@ public class BDDPacket {
     int numVars = factory.varNum();
     int numNeeded = 32 * 2 + 16 * 2 + 8 * 3 + 8;
     if (numVars < numNeeded) {
-      System.out.println("Num current: " + numVars);
-      System.out.println("Num needed: " + numNeeded);
       factory.setVarNum(numNeeded);
     }
 
