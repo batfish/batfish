@@ -115,8 +115,6 @@ public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
 
     private NodesSpecifier _nodeRegex;
 
-    private boolean _verbose;
-
     public UniqueBgpAsnQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
     }
