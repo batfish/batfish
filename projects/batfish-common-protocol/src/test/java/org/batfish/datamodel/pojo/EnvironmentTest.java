@@ -3,6 +3,7 @@ package org.batfish.datamodel.pojo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -53,8 +54,8 @@ public class EnvironmentTest {
             20,
             new Ip("0.0.0.0"),
             new AsPath(Lists.newArrayList()),
-            null,
-            null,
+            ImmutableSortedSet.of(),
+            ImmutableSortedSet.of(),
             10));
     Environment e =
         new Environment(

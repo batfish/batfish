@@ -247,7 +247,7 @@ public class PropertyChecker {
       int numFailures = q.getFailures();
       System.out.println("Start verification");
       System.out.println("Using headerspace: " + h.getDstIps());
-      DestinationClasses dcs = DestinationClasses.create(_batfish, h, useDefaultCase);
+      DestinationClasses dcs = DestinationClasses.create(_batfish, graph, h, useDefaultCase);
       System.out.println("Number of edges: " + dcs.getGraph().getAllRealEdges().size());
       System.out.println("Created destination classes");
       System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());

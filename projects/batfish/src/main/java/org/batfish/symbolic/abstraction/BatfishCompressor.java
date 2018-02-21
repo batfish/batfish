@@ -60,9 +60,9 @@ public class BatfishCompressor {
 
   private String _internalRegex;
 
-  public BatfishCompressor(IBatfish batfish) {
+  public BatfishCompressor(IBatfish batfish, Map<String, Configuration> configs) {
     _batfish = batfish;
-    _graph = new Graph(batfish);
+    _graph = new Graph(batfish, configs);
     _internalRegex = internalRegex();
   }
 
@@ -271,7 +271,7 @@ public class BatfishCompressor {
   }
 
   public Map<String, Configuration> compress(HeaderSpace h) {
-    DestinationClasses dcs = DestinationClasses.create(_batfish, h, true);
+    DestinationClasses dcs = DestinationClasses.create(_batfish, _graph, h, true);
     ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
     Optional<Map<GraphEdge, EquivalenceClassFilter>> opt =
         ecs.stream().map(Supplier::get).map(this::processSlice).reduce(this::mergeFilters);

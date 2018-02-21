@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -83,18 +82,6 @@ class EncoderSlice {
   private Map<String, SymbolicRoute> _ospfRedistributed;
 
   private Table2<String, Protocol, Set<Prefix>> _originatedNetworks;
-
-  /**
-   * Create a new encoding slice
-   *
-   * @param enc The parent encoder object
-   * @param h The packet headerspace of interest
-   * @param batfish The batfish object
-   * @param sliceName The name of this slice
-   */
-  EncoderSlice(Encoder enc, HeaderSpace h, IBatfish batfish, String sliceName) {
-    this(enc, h, new Graph(batfish), sliceName);
-  }
 
   /**
    * Create a new encoding slice

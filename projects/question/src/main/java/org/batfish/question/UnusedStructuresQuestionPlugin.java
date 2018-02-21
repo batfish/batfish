@@ -92,7 +92,8 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     public UnusedStructuresAnswerElement answer() {
       UnusedStructuresQuestion question = (UnusedStructuresQuestion) _question;
       UnusedStructuresAnswerElement answerElement = new UnusedStructuresAnswerElement();
-      ConvertConfigurationAnswerElement ccae = _batfish.loadConvertConfigurationAnswerElement();
+      ConvertConfigurationAnswerElement ccae =
+          _batfish.loadConvertConfigurationAnswerElementOrReparse();
       Set<String> includeNodes =
           question.getNodeRegex().getMatchingNodes(_batfish.loadConfigurations());
 
