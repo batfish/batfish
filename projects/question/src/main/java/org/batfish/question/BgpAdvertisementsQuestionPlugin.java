@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -128,9 +129,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
           .stream()
           .collect(
               ImmutableSortedMap.toImmutableSortedMap(
-                  String::compareTo,
-                  e -> e.getKey(),
-                  e -> ImmutableSortedSet.copyOf(e.getValue())));
+                  Ordering.natural(), Entry::getKey, e -> ImmutableSortedSet.copyOf(e.getValue())));
     }
 
     @Override
@@ -138,10 +137,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       StringBuilder sb = new StringBuilder();
       _bgpAdvertisements.forEach(
           (hostname, adverts) -> {
-            adverts.forEach(
-                (advert) -> {
-                  sb.append(advert.prettyPrint(hostname + " "));
-                });
+            adverts.forEach(advert -> sb.append(advert.prettyPrint(hostname + " ")));
           });
       return sb.toString();
     }
