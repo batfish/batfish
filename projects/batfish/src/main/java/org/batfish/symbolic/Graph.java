@@ -79,7 +79,6 @@ public class Graph {
   }
 
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
-  private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
   private static final String NULL_INTERFACE_NAME = "null_interface";
   private IBatfish _batfish;
   private Set<String> _routers;
@@ -195,7 +194,6 @@ public class Graph {
     }
 
     initGraph(topology);
-    initOspfCosts();
     initStaticRoutes();
     addNullRouteEdges();
     initEbgpNeighbors();
@@ -420,54 +418,6 @@ public class Graph {
       _allEdges.addAll(graphEdges);
       _edgeMap.put(router, new ArrayList<>(graphEdges));
       _neighbors.put(router, neighs);
-    }
-  }
-
-  /** TODO: This was copied from BdpDataPlanePlugin.java to initialize the OSPF inteface costs */
-  private void initOspfInterfaceCosts(Configuration conf) {
-    if (conf.getDefaultVrf().getOspfProcess() != null) {
-      for (Entry<String, Interface> entry : conf.getInterfaces().entrySet()) {
-        String interfaceName = entry.getKey();
-        Interface i = entry.getValue();
-        if (!i.getActive()) {
-          continue;
-        }
-        Integer ospfCost = i.getOspfCost();
-        if (ospfCost == null) {
-          if (interfaceName.startsWith("Vlan")) {
-            // TODO: fix for non-cisco
-            ospfCost = DEFAULT_CISCO_VLAN_OSPF_COST;
-          } else {
-            if (i.getBandwidth() != null) {
-              ospfCost =
-                  Math.max(
-                      (int)
-                          (conf.getDefaultVrf().getOspfProcess().getReferenceBandwidth()
-                              / i.getBandwidth()),
-                      1);
-            } else {
-              throw new BatfishException(
-                  "Expected non-null interface "
-                      + "bandwidth"
-                      + " for \""
-                      + conf.getHostname()
-                      + "\":\""
-                      + interfaceName
-                      + "\"");
-            }
-          }
-        }
-        i.setOspfCost(ospfCost);
-      }
-    }
-  }
-
-  /*
-   * Initialize the ospf interface costs for each configuration
-   */
-  private void initOspfCosts() {
-    for (Configuration conf : _configurations.values()) {
-      initOspfInterfaceCosts(conf);
     }
   }
 
