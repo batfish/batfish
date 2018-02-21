@@ -213,7 +213,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
         @JsonProperty(PROP_STATUSES) Set<OspfStatus> statuses) {
       _interfacesSpecifier = (ifaceSpec == null) ? InterfacesSpecifier.ALL : ifaceSpec;
       _nodeRegex = (nodeSpec == null) ? NodesSpecifier.ALL : nodeSpec;
-      _statuses = (statuses == null) ? Collections.EMPTY_SET : statuses;
+      _statuses = (statuses == null) ? Collections.emptySet() : statuses;
     }
 
     @Override
