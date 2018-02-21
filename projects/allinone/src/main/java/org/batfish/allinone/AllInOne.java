@@ -14,7 +14,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 
 public class AllInOne {
 
@@ -134,7 +133,7 @@ public class AllInOne {
   private void initTracer() {
     GlobalTracer.register(
         new Configuration(
-                BfConsts.PROP_ALLINONE_SERVICE,
+                _settings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,

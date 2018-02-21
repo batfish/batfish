@@ -495,6 +495,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_SERVICE_HOST = "servicehost";
 
+  public static final String ARG_SERVICE_NAME = "servicename";
+
   private static final String ARG_SERVICE_PORT = "serviceport";
 
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
@@ -881,6 +883,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getString(ARG_SERVICE_HOST);
   }
 
+  public String getServiceName() {
+    return _config.getString(ARG_SERVICE_NAME);
+  }
+
   public int getServicePort() {
     return _config.getInt(ARG_SERVICE_PORT);
   }
@@ -1063,6 +1069,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
     setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+    setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
@@ -1303,6 +1310,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addOption(ARG_SERVICE_HOST, "local hostname to report to coordinator", ARGNAME_HOSTNAME);
 
+    addOption(ARG_SERVICE_NAME, "service name", "service_name");
+
     addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
     addBooleanOption(
@@ -1335,6 +1344,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
+
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
         "throws "
@@ -1459,6 +1469,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
     getStringOptionValue(ARG_SERVICE_BIND_HOST);
     getStringOptionValue(ARG_SERVICE_HOST);
+    getStringOptionValue(ARG_SERVICE_NAME);
     getIntOptionValue(ARG_SERVICE_PORT);
     getBooleanOptionValue(ARG_NO_SHUFFLE);
     getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
