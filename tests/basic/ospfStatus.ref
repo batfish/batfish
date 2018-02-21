@@ -17,9 +17,7 @@
     "class" : "org.batfish.question.OspfStatusQuestionPlugin$OspfStatusQuestion",
     "interfacesSpecifier" : "Loopback.*",
     "nodeRegex" : ".*",
-    "statuses" : [
-      "ENABLED_PASSIVE"
-    ],
+    "status" : ".*PASSIVE",
     "differential" : false
   },
   "status" : "SUCCESS",

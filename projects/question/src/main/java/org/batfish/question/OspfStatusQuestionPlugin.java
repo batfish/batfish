@@ -3,11 +3,14 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.Collections;
-import java.util.HashSet;
+import com.google.common.base.Strings;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -35,31 +38,53 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
   public static class OspfStatusAnswerElement implements AnswerElement {
 
     public enum OspfStatus {
-      DISABLED_EXPORTED,
-      DISABLED_NOT_EXPORTED,
       ENABLED_ACTIVE,
-      ENABLED_PASSIVE
+      ENABLED_PASSIVE,
+      DISABLED_EXPORTED,
+      DISABLED_NOT_EXPORTED
     }
 
-    public static class InfoStruct {
-      @JsonProperty("interface")
-      public NodeInterfacePair iface;
+    public static class OspfInfo implements Comparable<OspfInfo> {
 
-      @JsonProperty("ospfStatus")
-      public OspfStatus ospfStatus;
+      private static final String PROP_INTERFACE = "interface";
+      private static final String PROP_OSPF_STATUS = "ospfStatus";
 
-      // for Jackson
-      private InfoStruct() {}
+      private NodeInterfacePair _iface;
+      private OspfStatus _ospfStatus;
 
-      public InfoStruct(String hostname, String interfaceName, OspfStatus status) {
-        this.iface = new NodeInterfacePair(hostname, interfaceName);
-        this.ospfStatus = status;
+      @JsonCreator
+      private OspfInfo(
+          @JsonProperty(PROP_INTERFACE) NodeInterfacePair iface,
+          @JsonProperty(PROP_OSPF_STATUS) OspfStatus status) {
+        _iface = iface;
+        _ospfStatus = status;
+      }
+
+      public OspfInfo(String hostname, String interfaceName, OspfStatus status) {
+        this(new NodeInterfacePair(hostname, interfaceName), status);
+      }
+
+      @JsonProperty(PROP_INTERFACE)
+      public NodeInterfacePair getInterface() {
+        return _iface;
+      }
+
+      @JsonProperty(PROP_OSPF_STATUS)
+      public OspfStatus getOspfStatus() {
+        return _ospfStatus;
+      }
+
+      @Override
+      public int compareTo(OspfInfo o) {
+        return Comparator.comparing(OspfInfo::getInterface)
+            .thenComparing(OspfInfo::getOspfStatus)
+            .compare(this, o);
       }
     }
 
     private static final String PROP_OSPF_STATUSES = "ospfStatuses";
 
-    private Set<InfoStruct> _ospfStatuses;
+    private SortedSet<OspfInfo> _ospfStatuses;
 
     private OspfStatusAnswerElement() {
       this(null);
@@ -67,23 +92,24 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
     @JsonCreator
     private OspfStatusAnswerElement(
-        @JsonProperty(PROP_OSPF_STATUSES) Set<InfoStruct> ospfStatuses) {
-      _ospfStatuses = (ospfStatuses == null) ? new HashSet<>() : ospfStatuses;
+        @JsonProperty(PROP_OSPF_STATUSES) SortedSet<OspfInfo> ospfStatuses) {
+      _ospfStatuses = (ospfStatuses == null) ? new TreeSet<>() : ospfStatuses;
     }
 
     public void add(String hostname, String ifaceName, OspfStatus status) {
-      _ospfStatuses.add(new InfoStruct(hostname, ifaceName, status));
+      _ospfStatuses.add(new OspfInfo(hostname, ifaceName, status));
     }
 
     @JsonProperty(PROP_OSPF_STATUSES)
-    public Set<InfoStruct> getOspfStatus() {
+    public SortedSet<OspfInfo> getOspfStatus() {
       return _ospfStatuses;
     }
 
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for OSPF loopbacks check\n");
-      _ospfStatuses.forEach(info -> sb.append("  " + info.iface + " " + info.ospfStatus + "\n"));
+      _ospfStatuses.forEach(
+          info -> sb.append("  " + info.getInterface() + " " + info.getOspfStatus() + "\n"));
       return sb.toString();
     }
   }
@@ -98,7 +124,6 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer() {
 
       OspfStatusQuestion question = (OspfStatusQuestion) _question;
-      Set<OspfStatus> statusesQueried = question.getStatuses();
 
       OspfStatusAnswerElement answerElement = new OspfStatusAnswerElement();
 
@@ -119,13 +144,11 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
               if (iface.getOspfEnabled()) {
                 // ospf is running either passively or actively
                 if (iface.getOspfPassive()) {
-                  if (statusesQueried.size() == 0
-                      || statusesQueried.contains(OspfStatus.ENABLED_PASSIVE)) {
+                  if (question.matchesStatus(OspfStatus.ENABLED_PASSIVE)) {
                     answerElement.add(hostname, interfaceName, OspfStatus.ENABLED_PASSIVE);
                   }
                 } else {
-                  if (statusesQueried.size() == 0
-                      || statusesQueried.contains(OspfStatus.ENABLED_ACTIVE)) {
+                  if (question.matchesStatus(OspfStatus.ENABLED_ACTIVE)) {
                     answerElement.add(hostname, interfaceName, OspfStatus.ENABLED_ACTIVE);
                   }
                 }
@@ -155,13 +178,11 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                     }
                   }
                   if (exported) {
-                    if (statusesQueried.size() == 0
-                        || statusesQueried.contains(OspfStatus.DISABLED_EXPORTED)) {
+                    if (question.matchesStatus(OspfStatus.DISABLED_EXPORTED)) {
                       answerElement.add(hostname, interfaceName, OspfStatus.DISABLED_EXPORTED);
                     }
                   } else {
-                    if (statusesQueried.size() == 0
-                        || statusesQueried.contains(OspfStatus.DISABLED_NOT_EXPORTED)) {
+                    if (question.matchesStatus(OspfStatus.DISABLED_NOT_EXPORTED)) {
                       answerElement.add(hostname, interfaceName, OspfStatus.DISABLED_NOT_EXPORTED);
                     }
                   }
@@ -198,22 +219,25 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private static final String PROP_STATUSES = "statuses";
+    private static final String PROP_STATUS = "status";
 
     @Nonnull private InterfacesSpecifier _interfacesSpecifier;
 
     @Nonnull private NodesSpecifier _nodeRegex;
 
-    @Nonnull private Set<OspfStatus> _statuses;
+    @Nonnull private Pattern _statusRegex;
 
     @JsonCreator
     private OspfStatusQuestion(
         @JsonProperty(PROP_INTERFACES_SPECIFIER) InterfacesSpecifier ifaceSpec,
         @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeSpec,
-        @JsonProperty(PROP_STATUSES) Set<OspfStatus> statuses) {
+        @JsonProperty(PROP_STATUS) String status) {
       _interfacesSpecifier = (ifaceSpec == null) ? InterfacesSpecifier.ALL : ifaceSpec;
       _nodeRegex = (nodeSpec == null) ? NodesSpecifier.ALL : nodeSpec;
-      _statuses = (statuses == null) ? Collections.emptySet() : statuses;
+      _statusRegex =
+          Strings.isNullOrEmpty(status)
+              ? Pattern.compile(".*")
+              : Pattern.compile(status.toUpperCase());
     }
 
     @Override
@@ -236,9 +260,13 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
       return _nodeRegex;
     }
 
-    @JsonProperty(PROP_STATUSES)
-    public Set<OspfStatus> getStatuses() {
-      return _statuses;
+    @JsonProperty(PROP_STATUS)
+    private String getStatus() {
+      return _statusRegex.toString();
+    }
+
+    public boolean matchesStatus(OspfStatus status) {
+      return _statusRegex.matcher(status.toString()).matches();
     }
 
     @Override
@@ -246,7 +274,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
       String retString =
           String.format(
               "ospfStatus %snodeRegex=\"%s\", interfaceSpecifier=\"%s\", statuses=\"%s\"",
-              prettyPrintBase(), _nodeRegex, _interfacesSpecifier, _statuses);
+              prettyPrintBase(), _nodeRegex, _interfacesSpecifier, _statusRegex);
       return retString;
     }
   }
