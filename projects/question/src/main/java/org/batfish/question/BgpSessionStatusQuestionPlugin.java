@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -49,12 +50,11 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     UNIQUE_MATCH,
   }
 
-  public static class BgpSession {
-    @JsonProperty("hostname")
-    public String hostname;
+  public static class BgpSession implements Comparable<BgpSession> {
 
-    @JsonProperty("vrfName")
-    public String vrfName;
+    private String _hostname;
+    private String _vrfName;
+    private Prefix _remotePrefix;
 
     @JsonProperty("localIp")
     public Ip localIp;
@@ -64,9 +64,6 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty("remoteNode")
     public String remoteNode;
-
-    @JsonProperty("remotePrefix")
-    public Prefix remotePrefix;
 
     @JsonProperty("status")
     public SessionStatus status;
@@ -78,16 +75,39 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     private BgpSession() {}
 
     public BgpSession(String hostname, String vrfName, Prefix remotePrefix) {
-      this.hostname = hostname;
-      this.vrfName = vrfName;
-      this.remotePrefix = remotePrefix;
+      _hostname = hostname;
+      _vrfName = vrfName;
+      _remotePrefix = remotePrefix;
+    }
+
+    @JsonProperty("hostname")
+    public String getHostname() {
+      return _hostname;
+    }
+
+    @JsonProperty("vrfName")
+    public String getVrfName() {
+      return _vrfName;
+    }
+
+    @JsonProperty("remotePrefix")
+    public Prefix getRemotePrefix() {
+      return _remotePrefix;
     }
 
     @Override
     public String toString() {
       return String.format(
           "%s vrf=%s remote=%s type=%s loopback=%s status=%s localIp=%s remoteNode=%s",
-          hostname, vrfName, remotePrefix, sessionType, onLoopback, status, localIp, remoteNode);
+          _hostname, _vrfName, _remotePrefix, sessionType, onLoopback, status, localIp, remoteNode);
+    }
+
+    @Override
+    public int compareTo(BgpSession o) {
+      return Comparator.comparing(BgpSession::getHostname)
+          .thenComparing(BgpSession::getVrfName)
+          .thenComparing(BgpSession::getRemotePrefix)
+          .compare(this, o);
     }
   }
 
