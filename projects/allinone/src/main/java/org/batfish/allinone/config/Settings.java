@@ -23,6 +23,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_LOG_LEVEL = "loglevel";
   private static final String ARG_RUN_CLIENT = "runclient";
   private static final String ARG_RUN_MODE = org.batfish.client.config.Settings.ARG_RUN_MODE;
+  public static final String ARG_SERVICE_NAME = "servicename";
   private static final String ARG_TESTRIG_DIR = org.batfish.client.config.Settings.ARG_TESTRIG_DIR;
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
   private static final String ARG_TRACING_AGENT_PORT = "tracingagentport";
@@ -40,6 +41,7 @@ public class Settings extends BaseSettings {
   private String _logLevel;
   private boolean _runClient;
   private String _runMode;
+  private String _serviceName;
   private String _testrigDir;
   private String _tracingAgentHost;
   private Integer _tracingAgentPort;
@@ -94,6 +96,10 @@ public class Settings extends BaseSettings {
     return _runMode;
   }
 
+  public String getServiceName() {
+    return _serviceName;
+  }
+
   public String getTestrigDir() {
     return _testrigDir;
   }
@@ -124,6 +130,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_COORDINATOR_ARGS, "");
     setDefaultProperty(ARG_RUN_CLIENT, true);
     setDefaultProperty(ARG_RUN_MODE, "batch");
+    setDefaultProperty(ARG_SERVICE_NAME, "allinone-service");
     setDefaultProperty(ARG_TRACING_AGENT_HOST, "localhost");
     setDefaultProperty(ARG_TRACING_AGENT_PORT, 5775);
     setDefaultProperty(ARG_TRACING_ENABLE, false);
@@ -158,6 +165,8 @@ public class Settings extends BaseSettings {
     addBooleanOption(ARG_RUN_CLIENT, "whether to run the client");
 
     addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive)", "run_mode");
+
+    addOption(ARG_SERVICE_NAME, "service name", "service_name");
 
     addOption(ARG_TESTRIG_DIR, "where the testrig sits", "testrig_dir");
 
@@ -195,6 +204,7 @@ public class Settings extends BaseSettings {
     _coordinatorArgs = getStringOptionValue(ARG_COORDINATOR_ARGS);
     _runClient = getBooleanOptionValue(ARG_RUN_CLIENT);
     _runMode = getStringOptionValue(ARG_RUN_MODE);
+    _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _testrigDir = getStringOptionValue(ARG_TESTRIG_DIR);
     _tracingAgentHost = getStringOptionValue(ARG_TRACING_AGENT_HOST);
     _tracingAgentPort = getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
