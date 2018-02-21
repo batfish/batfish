@@ -101,7 +101,7 @@ public interface IBatfish extends IPluginConsumer {
 
   SortedMap<String, Configuration> loadConfigurations();
 
-  ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement();
+  ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse();
 
   DataPlane loadDataPlane();
 

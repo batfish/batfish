@@ -110,7 +110,7 @@ public class BatfishCompressionTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     IBatfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(configs), tmp);
-    return new TreeMap<>(new BatfishCompressor(batfish).compress(headerSpace));
+    return new TreeMap<>(new BatfishCompressor(batfish, configs).compress(headerSpace));
   }
 
   /** Test that compression doesn't change the fibs for this network. */

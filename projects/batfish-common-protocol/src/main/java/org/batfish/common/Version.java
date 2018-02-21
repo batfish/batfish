@@ -17,6 +17,10 @@ public final class Version {
   private static final String PROPERTIES_PATH = "org/batfish/common/common.properties";
 
   static final String UNKNOWN_VERSION = "0.0.0";
+  /**
+   * A special version string that is incompatible with all other version. Mainly used for testing.
+   */
+  public static final String INCOMPATIBLE_VERSION = "x.x.x";
 
   /**
    * Checks whether the supplied version for another endpoint is compatible with the Batfish version
@@ -75,6 +79,10 @@ public final class Version {
   static boolean isCompatibleVersion(
       String myName, String myVersion, String otherName, @Nullable String otherVersion) {
     otherVersion = firstNonNull(otherVersion, UNKNOWN_VERSION);
+
+    if (otherVersion.equals(INCOMPATIBLE_VERSION) || myVersion.equals(INCOMPATIBLE_VERSION)) {
+      return false;
+    }
 
     if (otherVersion.equals(UNKNOWN_VERSION) || myVersion.equals(UNKNOWN_VERSION)) {
       // Either version is unknown, assume compatible.
