@@ -280,7 +280,7 @@ public class BoolExprTransformerTest {
   @Test
   public void testVisitRangeMatchExpr() {
     BooleanExpr expr =
-        new RangeMatchExpr(
+        RangeMatchExpr.fromSubRanges(
             BasicHeaderField.DSCP,
             BasicHeaderField.DSCP.getSize(),
             ImmutableSet.of(new SubRange(1, 3), new SubRange(5, 7)));

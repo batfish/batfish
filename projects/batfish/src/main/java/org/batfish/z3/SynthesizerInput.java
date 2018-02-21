@@ -1,7 +1,9 @@
 package org.batfish.z3;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -60,6 +62,9 @@ public interface SynthesizerInput {
 
   /** Whether to run simplifier on AST after rule generation */
   boolean getSimplify();
+
+  /** Mapping: hostname -> interface -> [(matchCondition, transformationToApply)] */
+  Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> getSourceNats();
 
   /** Mapping: hostname -> interfacesOnSomeEdge */
   Map<String, Set<String>> getTopologyInterfaces();

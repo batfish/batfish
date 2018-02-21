@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -13,15 +14,19 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedExpr;
+import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineMatch;
@@ -735,7 +740,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPostOutInterface(PostOutInterface.State postOutInterface) {
-    // PassOutgoingAcl
+    // PassOutgoingAclNoMatchSrcNat
     _input
         .getTopologyInterfaces()
         .entrySet()
@@ -743,24 +748,83 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .flatMap(
             topologyInterfacesEntry -> {
               String hostname = topologyInterfacesEntry.getKey();
+              Map<String, List<Entry<BooleanExpr, BooleanExpr>>> sourceNatsByInterface =
+                  _input.getSourceNats().get(hostname);
               Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
               return topologyInterfacesEntry
                   .getValue()
                   .stream()
                   .map(
                       ifaceName -> {
+                        ImmutableList.Builder<BooleanExpr> antecedentConjuncts =
+                            ImmutableList.builder();
+                        List<Entry<BooleanExpr, BooleanExpr>> sourceNats =
+                            sourceNatsByInterface.get(ifaceName);
+                        sourceNats
+                            .stream()
+                            .map(Entry::getKey)
+                            .map(NotExpr::new)
+                            .forEach(antecedentConjuncts::add);
                         String outAcl = outgoingAcls.get(ifaceName);
-                        BooleanExpr antecedent;
-                        BooleanExpr preOut = new PreOutInterface(hostname, ifaceName);
                         if (outAcl != null) {
-                          antecedent =
-                              new AndExpr(
-                                  ImmutableList.of(new AclPermit(hostname, outAcl), preOut));
-                        } else {
-                          antecedent = preOut;
+                          antecedentConjuncts.add(new AclPermit(hostname, outAcl));
                         }
+                        antecedentConjuncts.add(
+                            new EqExpr(
+                                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+                                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())));
+                        antecedentConjuncts.add(new PreOutInterface(hostname, ifaceName));
                         return new TransformationRuleStatement(
-                            antecedent, new PostOutInterface(hostname, ifaceName));
+                            new AndExpr(antecedentConjuncts.build()),
+                            new PostOutInterface(hostname, ifaceName));
+                      });
+            })
+        .forEach(_rules::add);
+
+    // PassOutgoingAclMatchSrcNat
+    _input
+        .getTopologyInterfaces()
+        .entrySet()
+        .stream()
+        .flatMap(
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+              Map<String, List<Entry<BooleanExpr, BooleanExpr>>> sourceNatsByInterface =
+                  _input.getSourceNats().get(hostname);
+              Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
+              return topologyInterfacesEntry
+                  .getValue()
+                  .stream()
+                  .flatMap(
+                      ifaceName -> {
+                        ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
+                        List<Entry<BooleanExpr, BooleanExpr>> sourceNats =
+                            sourceNatsByInterface.get(ifaceName);
+                        for (int i = 0; i < sourceNats.size(); i++) {
+                          ImmutableList.Builder<BooleanExpr> currentSourceNatConjuncts =
+                              ImmutableList.<BooleanExpr>builder()
+                                  .add(sourceNats.get(i).getKey())
+                                  .add(sourceNats.get(i).getValue());
+                          if (i > 0) {
+                            sourceNats
+                                .subList(0, i)
+                                .stream()
+                                .map(Entry::getKey)
+                                .map(NotExpr::new)
+                                .forEach(currentSourceNatConjuncts::add);
+                          }
+                          String outAcl = outgoingAcls.get(ifaceName);
+                          if (outAcl != null) {
+                            currentSourceNatConjuncts.add(
+                                new TransformedExpr(new AclPermit(hostname, outAcl)));
+                          }
+                          currentSourceNatConjuncts.add(new PreOutInterface(hostname, ifaceName));
+                          rules.add(
+                              new TransformationRuleStatement(
+                                  new AndExpr(currentSourceNatConjuncts.build()),
+                                  new PostOutInterface(hostname, ifaceName)));
+                        }
+                        return rules.build().stream();
                       });
             })
         .forEach(_rules::add);

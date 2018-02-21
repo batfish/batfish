@@ -39,7 +39,7 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchDstPort(Set<SubRange> dstPortRanges) {
-    return new RangeMatchExpr(
+    return RangeMatchExpr.fromSubRanges(
         BasicHeaderField.DST_PORT, BasicHeaderField.DST_PORT.getSize(), dstPortRanges);
   }
 
@@ -60,19 +60,19 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchFragmentOffset(Set<SubRange> fragmentOffsetRanges) {
-    return new RangeMatchExpr(
+    return RangeMatchExpr.fromSubRanges(
         BasicHeaderField.FRAGMENT_OFFSET,
         BasicHeaderField.FRAGMENT_OFFSET.getSize(),
         fragmentOffsetRanges);
   }
 
   public static BooleanExpr matchIcmpCode(Set<SubRange> icmpCodes) {
-    return new RangeMatchExpr(
+    return RangeMatchExpr.fromSubRanges(
         BasicHeaderField.ICMP_CODE, BasicHeaderField.ICMP_CODE.getSize(), icmpCodes);
   }
 
   public static BooleanExpr matchIcmpType(Set<SubRange> icmpTypes) {
-    return new RangeMatchExpr(
+    return RangeMatchExpr.fromSubRanges(
         BasicHeaderField.ICMP_TYPE, BasicHeaderField.ICMP_TYPE.getSize(), icmpTypes);
   }
 
@@ -183,7 +183,7 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchPacketLength(Set<SubRange> packetLengths) {
-    return new RangeMatchExpr(
+    return RangeMatchExpr.fromSubRanges(
         BasicHeaderField.PACKET_LENGTH, BasicHeaderField.PACKET_LENGTH.getSize(), packetLengths);
   }
 
@@ -249,7 +249,7 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchSrcPort(Set<SubRange> srcPortRanges) {
-    return new RangeMatchExpr(
+    return RangeMatchExpr.fromSubRanges(
         BasicHeaderField.SRC_PORT, BasicHeaderField.SRC_PORT.getSize(), srcPortRanges);
   }
 

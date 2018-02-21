@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
@@ -21,16 +22,20 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
+import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineMatch;
@@ -1344,6 +1349,28 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setSourceNats(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(TrueExpr.INSTANCE, TrueExpr.INSTANCE),
+                            Maps.immutableEntry(FalseExpr.INSTANCE, FalseExpr.INSTANCE)),
+                        INTERFACE2,
+                        ImmutableList.of(),
+                        INTERFACE3,
+                        ImmutableList.of()),
+                    NODE2,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(FalseExpr.INSTANCE, FalseExpr.INSTANCE),
+                            Maps.immutableEntry(TrueExpr.INSTANCE, TrueExpr.INSTANCE)),
+                        INTERFACE2,
+                        ImmutableList.of(),
+                        INTERFACE3,
+                        ImmutableList.of())))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
@@ -1355,15 +1382,23 @@ public class DefaultTransitionGeneratorTest {
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(PostOutInterface.State.INSTANCE)));
+    BooleanExpr sourceIpUnchanged =
+        new EqExpr(
+            new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+            new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent()));
 
-    // PassOutgoingAcl
+    // PassOutgoingAclNoMatchSrcNat
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
                 new AndExpr(
                     ImmutableList.of(
-                        new AclPermit(NODE1, ACL1), new PreOutInterface(NODE1, INTERFACE1))),
+                        new NotExpr(TrueExpr.INSTANCE),
+                        new NotExpr(FalseExpr.INSTANCE),
+                        new AclPermit(NODE1, ACL1),
+                        sourceIpUnchanged,
+                        new PreOutInterface(NODE1, INTERFACE1))),
                 new PostOutInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
@@ -1371,20 +1406,28 @@ public class DefaultTransitionGeneratorTest {
             new TransformationRuleStatement(
                 new AndExpr(
                     ImmutableList.of(
-                        new AclPermit(NODE1, ACL2), new PreOutInterface(NODE1, INTERFACE2))),
+                        new AclPermit(NODE1, ACL2),
+                        sourceIpUnchanged,
+                        new PreOutInterface(NODE1, INTERFACE2))),
                 new PostOutInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new PreOutInterface(NODE1, INTERFACE3), new PostOutInterface(NODE1, INTERFACE3))));
+                new AndExpr(
+                    ImmutableList.of(sourceIpUnchanged, new PreOutInterface(NODE1, INTERFACE3))),
+                new PostOutInterface(NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
                 new AndExpr(
                     ImmutableList.of(
-                        new AclPermit(NODE2, ACL1), new PreOutInterface(NODE2, INTERFACE1))),
+                        new NotExpr(FalseExpr.INSTANCE),
+                        new NotExpr(TrueExpr.INSTANCE),
+                        new AclPermit(NODE2, ACL1),
+                        sourceIpUnchanged,
+                        new PreOutInterface(NODE2, INTERFACE1))),
                 new PostOutInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
@@ -1392,13 +1435,65 @@ public class DefaultTransitionGeneratorTest {
             new TransformationRuleStatement(
                 new AndExpr(
                     ImmutableList.of(
-                        new AclPermit(NODE2, ACL2), new PreOutInterface(NODE2, INTERFACE2))),
+                        new AclPermit(NODE2, ACL2),
+                        sourceIpUnchanged,
+                        new PreOutInterface(NODE2, INTERFACE2))),
                 new PostOutInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new PreOutInterface(NODE2, INTERFACE3), new PostOutInterface(NODE2, INTERFACE3))));
+                new AndExpr(
+                    ImmutableList.of(sourceIpUnchanged, new PreOutInterface(NODE2, INTERFACE3))),
+                new PostOutInterface(NODE2, INTERFACE3))));
+
+    // PassOutgoingAclMatchSrcNat
+    assertThat(
+        rules,
+        hasItem(
+            new TransformationRuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        TrueExpr.INSTANCE,
+                        TrueExpr.INSTANCE,
+                        new TransformedExpr(new AclPermit(NODE1, ACL1)),
+                        new PreOutInterface(NODE1, INTERFACE1))),
+                new PostOutInterface(NODE1, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new TransformationRuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        FalseExpr.INSTANCE,
+                        FalseExpr.INSTANCE,
+                        new NotExpr(TrueExpr.INSTANCE),
+                        new TransformedExpr(new AclPermit(NODE1, ACL1)),
+                        new PreOutInterface(NODE1, INTERFACE1))),
+                new PostOutInterface(NODE1, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new TransformationRuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        FalseExpr.INSTANCE,
+                        FalseExpr.INSTANCE,
+                        new TransformedExpr(new AclPermit(NODE2, ACL1)),
+                        new PreOutInterface(NODE2, INTERFACE1))),
+                new PostOutInterface(NODE2, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new TransformationRuleStatement(
+                new AndExpr(
+                    ImmutableList.of(
+                        TrueExpr.INSTANCE,
+                        TrueExpr.INSTANCE,
+                        new NotExpr(FalseExpr.INSTANCE),
+                        new TransformedExpr(new AclPermit(NODE2, ACL1)),
+                        new PreOutInterface(NODE2, INTERFACE1))),
+                new PostOutInterface(NODE2, INTERFACE1))));
   }
 
   @Test
