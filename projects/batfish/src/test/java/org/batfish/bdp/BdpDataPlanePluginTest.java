@@ -575,10 +575,10 @@ public class BdpDataPlanePluginTest {
      * Data plane computation succeeds iff recovery is enabled. If disabled, an exception is thrown
      * and should be expected by caller.
      */
-    dataPlanePlugin.computeDataPlane(false);
+    batfish.computeDataPlane(false);
 
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
-        dataPlanePlugin.getRoutes();
+        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Prefix bgpPrefix = Prefix.parse("1.1.1.1/32");
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
@@ -687,9 +687,9 @@ public class BdpDataPlanePluginTest {
             _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    dataPlanePlugin.computeDataPlane(false);
+    batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
-        dataPlanePlugin.getRoutes();
+        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
 
     SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
@@ -790,9 +790,9 @@ public class BdpDataPlanePluginTest {
             _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    dataPlanePlugin.computeDataPlane(false);
+    batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
-        dataPlanePlugin.getRoutes();
+        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     SortedSet<AbstractRoute> r2aRoutes = routes.get("r2a").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r2bRoutes = routes.get("r2b").get(Configuration.DEFAULT_VRF_NAME);
     Set<Prefix> r2aPrefixes =
@@ -827,9 +827,9 @@ public class BdpDataPlanePluginTest {
             _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    dataPlanePlugin.computeDataPlane(false);
+    batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
-        dataPlanePlugin.getRoutes();
+        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
 
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
@@ -859,10 +859,10 @@ public class BdpDataPlanePluginTest {
             _folder);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    dataPlanePlugin.computeDataPlane(false);
+    batfish.computeDataPlane(false);
     SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
-        dataPlanePlugin.getRoutes();
+        dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Prefix staticRoutePrefix = Prefix.parse("10.0.0.0/8");
     SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
     AbstractRoute r1BdpRoute =

@@ -123,7 +123,6 @@ public class Settings extends BaseSettings {
             Settings.class));
 
     initConfigDefaults();
-
     initOptions();
     parseCommandLine(args);
   }
@@ -315,7 +314,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_ASSIGN_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_CHECK_WORK_MS, 1000);
     setDefaultProperty(ARG_PERIOD_WORKER_STATUS_REFRESH_MS, 10000);
-    setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.<String>emptyList());
+    setDefaultProperty(ARG_QUESTION_TEMPLATE_DIRS, Collections.emptyList());
     setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
     setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
     setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());

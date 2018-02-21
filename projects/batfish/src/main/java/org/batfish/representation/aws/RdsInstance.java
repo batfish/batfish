@@ -112,7 +112,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
   }
 
   public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
-    Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier);
+    Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws");
 
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";

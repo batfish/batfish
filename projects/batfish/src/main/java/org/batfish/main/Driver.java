@@ -114,6 +114,9 @@ public class Driver {
 
   private static ConcurrentMap<String, Task> _taskLog;
 
+  private static final Cache<TestrigSettings, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
+      buildDataPlaneCache();
+
   private static final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -539,6 +542,7 @@ public class Driver {
           new Batfish(
               settings,
               CACHED_TESTRIGS,
+              CACHED_COMPRESSED_DATA_PLANES,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
               CACHED_ENVIRONMENT_ROUTING_TABLES);
@@ -632,7 +636,9 @@ public class Driver {
   public static List<String> runBatfishThroughService(final String taskId, String[] args) {
     final Settings settings;
     try {
-      settings = new Settings(args);
+      settings = new Settings(_mainSettings);
+      settings.setRunMode(RunMode.WORKER);
+      settings.parseCommandLine(args);
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
@@ -664,8 +670,6 @@ public class Driver {
                   settings.getLogTee(),
                   false);
           settings.setLogger(jobLogger);
-
-          settings.setMaxRuntimeMs(_mainSettings.getMaxRuntimeMs());
 
           final Task task = new Task(args);
 

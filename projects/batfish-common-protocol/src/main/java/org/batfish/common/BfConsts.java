@@ -45,7 +45,6 @@ public class BfConsts {
   public static final String ARG_BDP_PRINT_ALL_ITERATIONS = "bdpprintalliterations";
   public static final String ARG_BDP_PRINT_OSCILLATING_ITERATIONS = "bdpprintoscillatingiterations";
   public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
-  public static final String ARG_BLOCK_NAMES = "blocknames";
   public static final String ARG_CONTAINER_DIR = "containerdir";
   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
@@ -127,6 +126,8 @@ public class BfConsts {
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+  public static final String RELPATH_COMPRESSED_DATA_PLANE = "compressed_dp";
+  public static final String RELPATH_COMPRESSED_DATA_PLANE_ANSWER = "compressed_dp_answer";
   public static final String RELPATH_DATA_PLANE = "dp";
   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
   public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";

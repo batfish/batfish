@@ -54,6 +54,8 @@ public interface IBatfish extends IPluginConsumer {
   Set<NodeInterfacePair> computeFlowSinks(
       Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
+  DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
+
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   String getContainerName();
@@ -76,7 +78,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, String> getQuestionTemplates();
 
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes();
+  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
   String getTaskId();
 
@@ -143,6 +145,15 @@ public interface IBatfish extends IPluginConsumer {
 
   void registerBgpTablePlugin(BgpTableFormat format, BgpTablePlugin bgpTablePlugin);
 
+  /**
+   * Register a new dataplane plugin
+   *
+   * @param plugin a {@link DataPlanePlugin} capable of computing a dataplane
+   * @param name name of the plugin, will be used to register the plugin and prefixed to all
+   *     plugin-specific settings (and hence command line arguments)
+   */
+  void registerDataPlanePlugin(DataPlanePlugin plugin, String name);
+
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
 
@@ -176,9 +187,8 @@ public interface IBatfish extends IPluginConsumer {
       NodesSpecifier finalNodeRegex,
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
-      Set<String> notTransitNodes);
+      Set<String> notTransitNodes,
+      boolean useCompression);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
-
-  void registerDataPlanePlugin(DataPlanePlugin plugin, String name);
 }
