@@ -25,6 +25,7 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.NumberedQuery;
@@ -265,6 +266,35 @@ public class SimplifierTest {
     OrExpr or = new OrExpr(of(p1, TrueExpr.INSTANCE));
 
     assertThat(simplifyBooleanExpr(or), equalTo(TrueExpr.INSTANCE));
+  }
+
+  /** Elide redundant chained TransformedExpr, since it is idempotent. */
+  @Test
+  public void testSimplifyTransformedExprRedundant() {
+    BooleanExpr p1 = newAtom();
+    BooleanExpr tSub = new TransformedExpr(p1);
+    BooleanExpr t = new TransformedExpr(tSub);
+
+    assertThat(simplifyBooleanExpr(t), equalTo(tSub));
+  }
+
+  /** Simplification of TransformedExpr simplifies subExpression and resulting TransfomedExpr. */
+  @Test
+  public void testSimplifyTransformedExprSubExpression() {
+    BooleanExpr p1 = newAtom();
+    BooleanExpr subExpression = new NotExpr(new NotExpr(new TransformedExpr(p1)));
+
+    assertThat(
+        simplifyBooleanExpr(new TransformedExpr(subExpression)), equalTo(new TransformedExpr(p1)));
+  }
+
+  /** Simplification of TransformedExpr with unsimplifiable subexpression does nothing. */
+  @Test
+  public void testSimplifyTransformedExprUnchanged() {
+    BooleanExpr p1 = newAtom();
+    BooleanExpr t = new TransformedExpr(p1);
+
+    assertThat(simplifyBooleanExpr(t), sameInstance(t));
   }
 
   /** Test that wrapper expressions are changed by simplification */

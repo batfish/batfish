@@ -14,6 +14,11 @@ import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.NumberedQuery;
 
+/**
+ * Synthesizer for a query program that finds the earliest of all reachable lines in an ACL
+ * preceding a given unreachable line, such that its match condition is more general than that of
+ * the unreachable line
+ */
 public class EarliestMoreGeneralReachableLineQuerySynthesizer
     extends FirstUnsatQuerySynthesizer<AclLine, Integer> {
 

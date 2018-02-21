@@ -355,10 +355,10 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     BooleanExpr originalSubExpression = transformedExpr.getSubExpression();
     BooleanExpr simplifiedSubExpression = simplifyBooleanExpr(originalSubExpression);
     if (simplifiedSubExpression instanceof TransformedExpr) {
+      // Transformation is idempotent
       _simplifiedBooleanExpr = simplifiedSubExpression;
     } else if (simplifiedSubExpression != originalSubExpression) {
-      _simplifiedBooleanExpr = new TransformedExpr(simplifiedSubExpression);
-
+      _simplifiedBooleanExpr = simplifyBooleanExpr(new TransformedExpr(simplifiedSubExpression));
     } else {
       _simplifiedBooleanExpr = transformedExpr;
     }

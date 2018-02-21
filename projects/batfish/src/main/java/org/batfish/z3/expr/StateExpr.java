@@ -6,6 +6,7 @@ import org.batfish.z3.state.visitors.Parameterizer;
 import org.batfish.z3.state.visitors.StateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
+/** An expression representing parameterized state. */
 public abstract class StateExpr extends BooleanExpr {
 
   public abstract static class State {

@@ -33,6 +33,7 @@ import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 import org.batfish.z3.state.visitors.Parameterizer;
 
 /**
@@ -229,6 +230,11 @@ public class BoolExprTransformer implements BooleanExprVisitor {
                     getTransformationRelationArgs(_input, transformationStateExpr));
   }
 
+  /**
+   * Transforms e.g. R1(h) and Transformed(R2(h)) -> R3(h,h') to R1(h) and R2(h') -> R3(h,h'), where
+   * h'=h with a particular fixed set of variable substitutions.<br>
+   * See {@link DefaultTransitionGenerator#visitPostOutInterface} for example of use.
+   */
   @Override
   public void visitTransformedExpr(TransformedExpr transformedExpr) {
     /* TODO: allow vectorized variables */
