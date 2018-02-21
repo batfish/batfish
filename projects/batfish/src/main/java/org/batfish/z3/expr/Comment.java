@@ -1,6 +1,6 @@
 package org.batfish.z3.expr;
 
-import java.util.Objects;
+import java.util.Arrays;
 
 public class Comment extends Statement {
 
@@ -26,11 +26,11 @@ public class Comment extends Statement {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_lines);
+    return Arrays.hashCode(_lines);
   }
 
   @Override
   public boolean statementEquals(Statement e) {
-    return Objects.equals(_lines, ((Comment) e)._lines);
+    return Arrays.equals(_lines, ((Comment) e)._lines);
   }
 }
