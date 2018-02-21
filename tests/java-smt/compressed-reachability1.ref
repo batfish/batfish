@@ -242,11 +242,26 @@
       "ACCEPT"
     ],
     "differential" : false,
+    "dstIps" : [
+      "2.34.101.4"
+    ],
+    "dstPorts" : [
+      "0-0"
+    ],
     "finalNodeRegex" : "as2dept1",
     "ingressNodeRegex" : "as2border.*",
+    "ipProtocols" : [
+      "ICMP"
+    ],
     "negateHeader" : false,
     "notFinalNodeRegex" : "",
     "notIngressNodeRegex" : "",
+    "srcIps" : [
+      "0.0.0.0"
+    ],
+    "srcPorts" : [
+      "0-0"
+    ],
     "type" : "standard",
     "useCompression" : true
   },
