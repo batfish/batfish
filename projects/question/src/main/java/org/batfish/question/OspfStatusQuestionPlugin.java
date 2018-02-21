@@ -64,12 +64,12 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
         this(new NodeInterfacePair(hostname, interfaceName), status);
       }
 
-      @JsonProperty("interface")
+      @JsonProperty(PROP_INTERFACE)
       public NodeInterfacePair getInterface() {
         return _iface;
       }
 
-      @JsonProperty("ospfStatus")
+      @JsonProperty(PROP_OSPF_STATUS)
       public OspfStatus getOspfStatus() {
         return _ospfStatus;
       }
