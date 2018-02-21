@@ -22,7 +22,6 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.HeaderSpace;
@@ -84,16 +83,6 @@ public class Encoder {
   private UnsatCore _unsatCore;
 
   private Settings _settings;
-
-  /**
-   * Create an encoder object that will consider all packets in the provided headerspace.
-   *
-   * @param settings The Batfish configuration settings object
-   * @param batfish The Batfish object
-   */
-  Encoder(IBatfish batfish, Settings settings, HeaderQuestion q) {
-    this(settings, new Graph(batfish), q);
-  }
 
   /**
    * Create an encoder object that will consider all packets in the provided headerspace.
