@@ -4,18 +4,22 @@
       "class" : "org.batfish.question.BgpSessionStatusQuestionPlugin$BgpSessionStatusAnswerElement",
       "bgpSessions" : [
         {
-          "hostname" : "as1border1",
-          "remotePrefix" : "5.6.7.8/32",
+          "bgpSession" : {
+            "hostname" : "as1border1",
+            "remotePrefix" : "3.2.2.2/32",
+            "vrfName" : "default"
+          },
           "sessionType" : "EBGP_SINGLEHOP",
-          "status" : "MISSING_LOCAL_IP",
-          "vrfName" : "default"
+          "status" : "MISSING_LOCAL_IP"
         },
         {
-          "hostname" : "as1border1",
-          "remotePrefix" : "3.2.2.2/32",
+          "bgpSession" : {
+            "hostname" : "as1border1",
+            "remotePrefix" : "5.6.7.8/32",
+            "vrfName" : "default"
+          },
           "sessionType" : "EBGP_SINGLEHOP",
-          "status" : "MISSING_LOCAL_IP",
-          "vrfName" : "default"
+          "status" : "MISSING_LOCAL_IP"
         }
       ]
     }
