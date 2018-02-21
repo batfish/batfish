@@ -52,9 +52,58 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
   public static class BgpSession implements Comparable<BgpSession> {
 
+    private static final String PROP_HOSTNAME = "hostname";
+    private static final String PROP_VRF_NAME = "vrfName";
+    private static final String PROP_REMOTE_PREFIX = "remotePrefix";
+
     private String _hostname;
     private String _vrfName;
     private Prefix _remotePrefix;
+
+    @JsonCreator
+    public BgpSession(
+        @JsonProperty(PROP_HOSTNAME) String hostname,
+        @JsonProperty(PROP_VRF_NAME) String vrfName,
+        @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix) {
+      _hostname = hostname;
+      _vrfName = vrfName;
+      _remotePrefix = remotePrefix;
+    }
+
+    @Override
+    public int compareTo(BgpSession o) {
+      return Comparator.comparing(BgpSession::getHostname)
+          .thenComparing(BgpSession::getVrfName)
+          .thenComparing(BgpSession::getRemotePrefix)
+          .compare(this, o);
+    }
+
+    @JsonProperty(PROP_HOSTNAME)
+    public String getHostname() {
+      return _hostname;
+    }
+
+    @JsonProperty(PROP_VRF_NAME)
+    public String getVrfName() {
+      return _vrfName;
+    }
+
+    @JsonProperty(PROP_REMOTE_PREFIX)
+    public Prefix getRemotePrefix() {
+      return _remotePrefix;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("%s vrf=%s remote=%s", _hostname, _vrfName, _remotePrefix);
+    }
+  }
+
+  public static class BgpSessionInfo implements Comparable<BgpSessionInfo> {
+
+    private static final String PROP_BGP_SESSION = "bgpSession";
+
+    private BgpSession _bgpSession;
 
     @JsonProperty("localIp")
     public Ip localIp;
@@ -72,42 +121,29 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     public SessionType sessionType;
 
     @JsonCreator
-    private BgpSession() {}
-
-    public BgpSession(String hostname, String vrfName, Prefix remotePrefix) {
-      _hostname = hostname;
-      _vrfName = vrfName;
-      _remotePrefix = remotePrefix;
+    private BgpSessionInfo(@JsonProperty(PROP_BGP_SESSION) BgpSession session) {
+      _bgpSession = session;
     }
 
-    @JsonProperty("hostname")
-    public String getHostname() {
-      return _hostname;
+    public BgpSessionInfo(String hostname, String vrfName, Prefix remotePrefix) {
+      this(new BgpSession(hostname, vrfName, remotePrefix));
     }
 
-    @JsonProperty("vrfName")
-    public String getVrfName() {
-      return _vrfName;
+    @JsonProperty(PROP_BGP_SESSION)
+    public BgpSession getBgpSession() {
+      return _bgpSession;
     }
 
-    @JsonProperty("remotePrefix")
-    public Prefix getRemotePrefix() {
-      return _remotePrefix;
+    @Override
+    public int compareTo(BgpSessionInfo o) {
+      return Comparator.comparing(BgpSessionInfo::getBgpSession).compare(this, o);
     }
 
     @Override
     public String toString() {
       return String.format(
-          "%s vrf=%s remote=%s type=%s loopback=%s status=%s localIp=%s remoteNode=%s",
-          _hostname, _vrfName, _remotePrefix, sessionType, onLoopback, status, localIp, remoteNode);
-    }
-
-    @Override
-    public int compareTo(BgpSession o) {
-      return Comparator.comparing(BgpSession::getHostname)
-          .thenComparing(BgpSession::getVrfName)
-          .thenComparing(BgpSession::getRemotePrefix)
-          .compare(this, o);
+          "%s type=%s loopback=%s status=%s localIp=%s remoteNode=%s",
+          _bgpSession, sessionType, onLoopback, status, localIp, remoteNode);
     }
   }
 
@@ -115,14 +151,14 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_BGP_SESSIONS = "bgpSessions";
 
-    private Set<BgpSession> _bgpSessions;
+    private SortedSet<BgpSessionInfo> _bgpSessions;
 
     public BgpSessionStatusAnswerElement() {
-      _bgpSessions = new HashSet<>();
+      _bgpSessions = new TreeSet<>();
     }
 
     @JsonProperty(PROP_BGP_SESSIONS)
-    public Set<BgpSession> getBgpSessions() {
+    public SortedSet<BgpSessionInfo> getBgpSessions() {
       return _bgpSessions;
     }
 
@@ -193,42 +229,43 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
               if (foreign) {
                 continue;
               }
-              BgpSession bgpSession = new BgpSession(hostname, vrfName, bgpNeighbor.getPrefix());
+              BgpSessionInfo bgpSessionInfo =
+                  new BgpSessionInfo(hostname, vrfName, bgpNeighbor.getPrefix());
 
-              bgpSession.sessionType =
+              bgpSessionInfo.sessionType =
                   ebgp
                       ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
                       : SessionType.IBGP;
-              if (!question.matchesType(bgpSession.sessionType)) {
+              if (!question.matchesType(bgpSessionInfo.sessionType)) {
                 continue;
               }
 
               if (localIp == null) {
-                bgpSession.status = SessionStatus.MISSING_LOCAL_IP;
+                bgpSessionInfo.status = SessionStatus.MISSING_LOCAL_IP;
               } else {
-                bgpSession.localIp = localIp;
-                bgpSession.onLoopback = loopbackIps.contains(localIp);
+                bgpSessionInfo.localIp = localIp;
+                bgpSessionInfo.onLoopback = loopbackIps.contains(localIp);
 
                 if (!allInterfaceIps.contains(localIp)) {
-                  bgpSession.status = SessionStatus.UNKNOWN_LOCAL_IP;
+                  bgpSessionInfo.status = SessionStatus.UNKNOWN_LOCAL_IP;
                 } else if (!allInterfaceIps.contains(remoteIp)) {
-                  bgpSession.status = SessionStatus.UNKNOWN_REMOTE_IP;
+                  bgpSessionInfo.status = SessionStatus.UNKNOWN_REMOTE_IP;
                 } else {
                   if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
                     if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
-                      bgpSession.status = SessionStatus.HALF_OPEN;
+                      bgpSessionInfo.status = SessionStatus.HALF_OPEN;
                     } else if (bgpNeighbor.getCandidateRemoteBgpNeighbors().size() != 1) {
-                      bgpSession.status = SessionStatus.MULTIPLE_REMOTES;
+                      bgpSessionInfo.status = SessionStatus.MULTIPLE_REMOTES;
                     } else {
-                      bgpSession.remoteNode =
+                      bgpSessionInfo.remoteNode =
                           bgpNeighbor.getRemoteBgpNeighbor().getOwner().getName();
-                      bgpSession.status = SessionStatus.UNIQUE_MATCH;
+                      bgpSessionInfo.status = SessionStatus.UNIQUE_MATCH;
                     }
                   }
                 }
               }
-              if (question.matchesStatus(bgpSession.status)) {
-                answerElement.getBgpSessions().add(bgpSession);
+              if (question.matchesStatus(bgpSessionInfo.status)) {
+                answerElement.getBgpSessions().add(bgpSessionInfo);
               }
             }
           }
