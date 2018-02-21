@@ -51,17 +51,18 @@ public class DestinationClasses {
 
   private Map<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> _headerspaceMap;
 
-  private DestinationClasses(IBatfish batfish, @Nullable HeaderSpace h, boolean defaultCase) {
+  private DestinationClasses(
+      IBatfish batfish, Graph graph, @Nullable HeaderSpace h, boolean defaultCase) {
     _batfish = batfish;
-    _graph = new Graph(batfish);
+    _graph = graph;
     _headerspace = h;
     _headerspaceMap = new HashMap<>();
     _useDefaultCase = defaultCase;
   }
 
   public static DestinationClasses create(
-      IBatfish batfish, @Nullable HeaderSpace h, boolean defaultCase) {
-    DestinationClasses abs = new DestinationClasses(batfish, h, defaultCase);
+      IBatfish batfish, Graph graph, @Nullable HeaderSpace h, boolean defaultCase) {
+    DestinationClasses abs = new DestinationClasses(batfish, graph, h, defaultCase);
     abs.initDestinationMap();
     return abs;
   }

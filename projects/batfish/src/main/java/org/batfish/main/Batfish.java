@@ -1,5 +1,7 @@
 package org.batfish.main;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +50,7 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -936,18 +939,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
-    // Compression is going to mutate the configs, so make sure we have a fresh copy
-    // nobody is pointing to.
-    _cachedConfigurations.invalidate(_testrigSettings);
-    loadConfigurations();
+    // Since compression mutates the configurations, we must clone them before that happens.
+    // A simple way to do this is to create a deep clone of each entry using Java serialization.
+    Map<String, Configuration> clonedConfigs =
+        loadConfigurations()
+            .entrySet()
+            .parallelStream()
+            .collect(toMap(Entry::getKey, entry -> SerializationUtils.clone(entry.getValue())));
 
-    Map<String, Configuration> configs = new BatfishCompressor(this).compress(headerSpace);
+    Map<String, Configuration> configs =
+        new BatfishCompressor(this, clonedConfigs).compress(headerSpace);
     Topology topo = CommonUtil.synthesizeTopology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
-
-    // Throw the mutated configurations away.
-    _cachedConfigurations.invalidate(_testrigSettings);
 
     return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
   }
@@ -3906,15 +3910,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .entrySet()
             .stream()
             .filter(e -> ((HostConfiguration) e.getValue()).getOverlay())
-            .collect(
-                Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
+            .collect(toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
     SortedMap<String, VendorConfiguration> nonOverlayHostConfigurations =
         allHostConfigurations
             .entrySet()
             .stream()
             .filter(e -> !((HostConfiguration) e.getValue()).getOverlay())
-            .collect(
-                Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
+            .collect(toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
 
     // read and associate iptables files for specified hosts
     SortedMap<Path, String> iptablesData = new TreeMap<>();
