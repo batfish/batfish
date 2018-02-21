@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -44,24 +45,40 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     }
 
     public static class OspfInfo implements Comparable<OspfInfo> {
-      @JsonProperty("interface")
-      public NodeInterfacePair iface;
 
-      @JsonProperty("ospfStatus")
-      public OspfStatus ospfStatus;
+      private static final String PROP_INTERFACE = "interface";
+      private static final String PROP_OSPF_STATUS = "ospfStatus";
 
-      // for Jackson
-      private OspfInfo() {}
+      private NodeInterfacePair _iface;
+      private OspfStatus _ospfStatus;
+
+      @JsonCreator
+      private OspfInfo(
+          @JsonProperty(PROP_INTERFACE) NodeInterfacePair iface,
+          @JsonProperty(PROP_OSPF_STATUS) OspfStatus status) {
+        _iface = iface;
+        _ospfStatus = status;
+      }
 
       public OspfInfo(String hostname, String interfaceName, OspfStatus status) {
-        this.iface = new NodeInterfacePair(hostname, interfaceName);
-        this.ospfStatus = status;
+        this(new NodeInterfacePair(hostname, interfaceName), status);
+      }
+
+      @JsonProperty("interface")
+      public NodeInterfacePair getInterface() {
+        return _iface;
+      }
+
+      @JsonProperty("ospfStatus")
+      public OspfStatus getOspfStatus() {
+        return _ospfStatus;
       }
 
       @Override
       public int compareTo(OspfInfo o) {
-        int ifaceCompare = iface.compareTo(o.iface);
-        return (ifaceCompare == 0) ? ospfStatus.compareTo(o.ospfStatus) : ifaceCompare;
+        return Comparator.comparing(OspfInfo::getInterface)
+            .thenComparing(OspfInfo::getOspfStatus)
+            .compare(this, o);
       }
     }
 
@@ -91,7 +108,8 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for OSPF loopbacks check\n");
-      _ospfStatuses.forEach(info -> sb.append("  " + info.iface + " " + info.ospfStatus + "\n"));
+      _ospfStatuses.forEach(
+          info -> sb.append("  " + info.getInterface() + " " + info.getOspfStatus() + "\n"));
       return sb.toString();
     }
   }
