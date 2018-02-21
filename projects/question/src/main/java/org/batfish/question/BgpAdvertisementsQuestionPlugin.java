@@ -31,7 +31,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_BGP_ADVERTISEMENTS = "bgpAdvertisements";
 
-    private ImmutableSortedMap<String, ImmutableSortedSet<BgpAdvertisement>> _bgpAdvertisements;
+    private SortedMap<String, SortedSet<BgpAdvertisement>> _bgpAdvertisements;
 
     @JsonCreator
     private BgpAdvertisementsAnswerElement(
@@ -117,12 +117,11 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_BGP_ADVERTISEMENTS)
-    public ImmutableSortedMap<String, ImmutableSortedSet<BgpAdvertisement>>
-        getReceivedEbgpAdvertisements() {
+    public SortedMap<String, SortedSet<BgpAdvertisement>> getReceivedEbgpAdvertisements() {
       return _bgpAdvertisements;
     }
 
-    private ImmutableSortedMap<String, ImmutableSortedSet<BgpAdvertisement>> makeImmutable(
+    private SortedMap<String, SortedSet<BgpAdvertisement>> makeImmutable(
         SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements) {
       return bgpAdvertisements
           .entrySet()
