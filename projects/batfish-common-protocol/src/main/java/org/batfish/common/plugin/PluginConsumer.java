@@ -8,7 +8,6 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -167,13 +166,6 @@ public abstract class PluginConsumer implements IPluginConsumer {
       throw new BatfishException(
           "Failed to serialize object to gzip output file: " + outputFile, e);
     }
-  }
-
-  /** Serializes the given object to a GZIP-compressed byte[]. */
-  protected byte[] toGzipData(Serializable object) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    serializeToGzipData(object, baos);
-    return baos.toByteArray();
   }
 
   private static class CloseIgnoringOutputStream extends FilterOutputStream {

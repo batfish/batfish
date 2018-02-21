@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
@@ -36,8 +37,10 @@ public class ConvertConfigurationAnswerElement implements InitStepAnswerElement,
     _undefinedReferences = new TreeMap<>();
     _unusedStructures = new TreeMap<>();
     _errors = new TreeMap<>();
+    _version = Version.getVersion();
   }
 
+  @Override
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
   }
@@ -61,6 +64,7 @@ public class ConvertConfigurationAnswerElement implements InitStepAnswerElement,
     return _version;
   }
 
+  @Override
   public SortedMap<String, Warnings> getWarnings() {
     return _warnings;
   }
@@ -118,6 +122,7 @@ public class ConvertConfigurationAnswerElement implements InitStepAnswerElement,
     return sb.toString();
   }
 
+  @Override
   public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
     _errors = errors;
   }
@@ -142,6 +147,7 @@ public class ConvertConfigurationAnswerElement implements InitStepAnswerElement,
     _version = version;
   }
 
+  @Override
   public void setWarnings(SortedMap<String, Warnings> warnings) {
     _warnings = warnings;
   }
