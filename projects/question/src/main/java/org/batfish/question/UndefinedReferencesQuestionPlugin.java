@@ -99,7 +99,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     public UndefinedReferencesAnswerElement answer() {
       UndefinedReferencesQuestion question = (UndefinedReferencesQuestion) _question;
       UndefinedReferencesAnswerElement answerElement = new UndefinedReferencesAnswerElement();
-      ConvertConfigurationAnswerElement ccae = _batfish.loadConvertConfigurationAnswerElement();
+      ConvertConfigurationAnswerElement ccae =
+          _batfish.loadConvertConfigurationAnswerElementOrReparse();
       Set<String> includeNodes =
           question.getNodeRegex().getMatchingNodes(_batfish.loadConfigurations());
 
