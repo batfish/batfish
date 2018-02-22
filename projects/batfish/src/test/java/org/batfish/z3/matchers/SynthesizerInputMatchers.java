@@ -1,7 +1,10 @@
 package org.batfish.z3.matchers;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -16,6 +19,7 @@ import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasFibConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasSourceNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
 import org.hamcrest.Matcher;
 
@@ -99,6 +103,17 @@ public class SynthesizerInputMatchers {
   public static HasIpsByHostname hasIpsByHostname(
       Matcher<? super Map<String, Set<Ip>>> subMatcher) {
     return new HasIpsByHostname(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's source NATs.
+   */
+  public static HasSourceNats hasSourceNats(
+      @Nonnull
+          Matcher<? super Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>>>
+              subMatcher) {
+    return new HasSourceNats(subMatcher);
   }
 
   /**

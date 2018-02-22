@@ -3,8 +3,8 @@ package org.batfish.z3.expr;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class OrExpr extends BooleanExpr {
 
@@ -18,13 +18,13 @@ public class OrExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitOrExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitOrExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitOrExpr(this);
   }
 
   @Override

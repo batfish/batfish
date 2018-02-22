@@ -10,9 +10,10 @@ import static org.hamcrest.Matchers.sameInstance;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
-import org.batfish.z3.HeaderField;
+import org.batfish.z3.BasicHeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -24,6 +25,7 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.NumberedQuery;
@@ -132,8 +134,8 @@ public class SimplifierTest {
    */
   @Test
   public void testSimplifyEqPreserveUnalteredInstance() {
-    IntExpr i1 = new VarIntExpr(HeaderField.DST_IP);
-    IntExpr i2 = new VarIntExpr(HeaderField.SRC_IP);
+    IntExpr i1 = new VarIntExpr(BasicHeaderField.DST_IP);
+    IntExpr i2 = new VarIntExpr(BasicHeaderField.SRC_IP);
     EqExpr eq = new EqExpr(i1, i2);
 
     assertThat(simplifyBooleanExpr(eq), sameInstance(eq));
@@ -142,7 +144,7 @@ public class SimplifierTest {
   /** Test that an EQ node with syntactically equal LHS and RHS simplifies to TRUE. */
   @Test
   public void testSimplifyEqSame() {
-    IntExpr i1 = new VarIntExpr(HeaderField.DST_IP);
+    IntExpr i1 = new VarIntExpr(BasicHeaderField.DST_IP);
     EqExpr eq = new EqExpr(i1, i1);
 
     assertThat(simplifyBooleanExpr(eq), equalTo(TrueExpr.INSTANCE));
@@ -266,14 +268,46 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(or), equalTo(TrueExpr.INSTANCE));
   }
 
+  /** Elide redundant chained TransformedExpr, since it is idempotent. */
+  @Test
+  public void testSimplifyTransformedExprRedundant() {
+    BooleanExpr p1 = newAtom();
+    BooleanExpr tSub = new TransformedExpr(p1);
+    BooleanExpr t = new TransformedExpr(tSub);
+
+    assertThat(simplifyBooleanExpr(t), equalTo(tSub));
+  }
+
+  /** Simplification of TransformedExpr simplifies subExpression and resulting TransfomedExpr. */
+  @Test
+  public void testSimplifyTransformedExprSubExpression() {
+    BooleanExpr p1 = newAtom();
+    BooleanExpr subExpression = new NotExpr(new NotExpr(new TransformedExpr(p1)));
+
+    assertThat(
+        simplifyBooleanExpr(new TransformedExpr(subExpression)), equalTo(new TransformedExpr(p1)));
+  }
+
+  /** Simplification of TransformedExpr with unsimplifiable subexpression does nothing. */
+  @Test
+  public void testSimplifyTransformedExprUnchanged() {
+    BooleanExpr p1 = newAtom();
+    BooleanExpr t = new TransformedExpr(p1);
+
+    assertThat(simplifyBooleanExpr(t), sameInstance(t));
+  }
+
   /** Test that wrapper expressions are changed by simplification */
   @Test
   public void testSimplifyWrappers() {
     BooleanExpr headerSpaceMatchExpr = new HeaderSpaceMatchExpr(IpAccessListLine.builder().build());
-    BooleanExpr prefixMatchExpr = new PrefixMatchExpr(HeaderField.DST_IP, Prefix.ZERO);
+    BooleanExpr prefixMatchExpr = new PrefixMatchExpr(BasicHeaderField.DST_IP, Prefix.ZERO);
     BooleanExpr rangeMatchExpr =
-        RangeMatchExpr.greaterThanOrEqualTo(HeaderField.DST_IP, 123456L, 10);
+        RangeMatchExpr.greaterThanOrEqualTo(BasicHeaderField.DST_IP, 123456L, 10);
 
+    assertThat(
+        simplifyBooleanExpr(CurrentIsOriginalExpr.INSTANCE),
+        not(equalTo(CurrentIsOriginalExpr.INSTANCE)));
     assertThat(simplifyBooleanExpr(headerSpaceMatchExpr), not(equalTo(headerSpaceMatchExpr)));
     assertThat(simplifyBooleanExpr(prefixMatchExpr), not(equalTo(prefixMatchExpr)));
     assertThat(simplifyBooleanExpr(rangeMatchExpr), not(equalTo(rangeMatchExpr)));

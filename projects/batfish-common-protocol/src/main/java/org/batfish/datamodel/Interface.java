@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,12 +49,15 @@ public final class Interface extends ComparableStructure<String> {
 
     private Configuration _owner;
 
+    private List<SourceNat> _sourceNats;
+
     private InterfaceAddress _address;
 
     private Vrf _vrf;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _sourceNats = ImmutableList.of();
     }
 
     @Override
@@ -78,6 +82,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getInterfaces().put(name, iface);
       }
+      iface.setSourceNats(_sourceNats);
       iface.setAddress(_address);
       if (_address != null) {
         iface.setAllAddresses(Collections.singleton(_address));
@@ -150,6 +155,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOwner(Configuration owner) {
       _owner = owner;
+      return this;
+    }
+
+    public Builder setSourceNats(List<SourceNat> sourceNats) {
+      _sourceNats = sourceNats;
       return this;
     }
 
