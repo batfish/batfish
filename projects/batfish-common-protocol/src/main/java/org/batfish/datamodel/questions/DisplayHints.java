@@ -18,6 +18,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Environment;
@@ -41,6 +42,7 @@ public class DisplayHints {
             .put("Interface", getClassString(NodeInterfacePair.class))
             .put("Ip", getClassString(Ip.class))
             .put("Node", getClassString(Node.class))
+            .put("Prefix", getClassString(Prefix.class))
             .put("String", getClassString(String.class))
             .build();
 

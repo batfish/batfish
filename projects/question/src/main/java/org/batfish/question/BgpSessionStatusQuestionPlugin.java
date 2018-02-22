@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -280,12 +281,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       if (owners == null) {
         throw new BatfishException("Expected at least one owner of ip: " + ip);
       }
-      for (String owner : owners) {
-        if (includeNodes2.contains(owner)) {
-          return true;
-        }
-      }
-      return false;
+      return !Sets.intersection(includeNodes2, owners).isEmpty();
     }
   }
 
