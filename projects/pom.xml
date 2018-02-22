@@ -180,6 +180,7 @@
               <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
               <excludeRoot>${project.build.directory}/generated-test-sources</excludeRoot>
             </excludeRoots>
+            <includeTests>true</includeTests>
             <rulesets>
               <ruleset>org/batfish/pmd/pmd-ruleset.xml</ruleset>
             </rulesets>
