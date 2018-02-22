@@ -1,35 +1,113 @@
 package org.batfish.z3.expr.visitors;
 
-import static com.google.common.collect.ImmutableList.of;
 import static org.batfish.z3.expr.visitors.BoolExprTransformer.getNodName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Set;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
-import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.expr.Expr;
-import org.batfish.z3.expr.FalseExpr;
-import org.batfish.z3.expr.IfExpr;
-import org.batfish.z3.expr.NotExpr;
-import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.Statement;
+import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformationStateExpr;
+import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
-import org.batfish.z3.state.NumberedQuery;
+import org.batfish.z3.state.StateParameter;
+import org.batfish.z3.state.StateParameter.Type;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
+import org.batfish.z3.state.visitors.Parameterizer;
+import org.batfish.z3.state.visitors.StateVisitor;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 public class RelationCollectorTest {
 
-  private static Set<String> collectRelations(SynthesizerInput input, Expr expr) {
-    return RelationCollector.collectRelations(input, expr).keySet();
+  public static class TestBasicStateExpr extends BasicStateExpr {
+
+    public static class State extends BasicStateExpr.State {
+
+      public static final State INSTANCE = new State();
+
+      private State() {}
+
+      @Override
+      public void accept(StateVisitor visitor) {
+        throw new UnsupportedOperationException(
+            String.format(
+                "Unsupported %s: %s",
+                StateVisitor.class.getName(), visitor.getClass().getCanonicalName()));
+      }
+    }
+
+    private final int _number;
+
+    public TestBasicStateExpr(int number) {
+      _number = number;
+    }
+
+    @Override
+    public <R> R accept(GenericStateExprVisitor<R> visitor) {
+      if (visitor instanceof Parameterizer) {
+        return visitor.castToGenericStateExprVisitorReturnType(
+            ImmutableList.of(new StateParameter(Integer.toString(_number), Type.QUERY_NUMBER)));
+      }
+      throw new UnsupportedOperationException(
+          String.format(
+              "Unsupported %s: %s",
+              GenericStateExprVisitor.class.getName(), visitor.getClass().getCanonicalName()));
+    }
+
+    @Override
+    public State getState() {
+      return State.INSTANCE;
+    }
+  }
+
+  public static class TestTransformationStateExpr extends TransformationStateExpr {
+
+    public static class State extends TransformationStateExpr.State {
+
+      public static final State INSTANCE = new State();
+
+      private State() {}
+
+      @Override
+      public void accept(StateVisitor visitor) {
+        throw new UnsupportedOperationException(
+            String.format(
+                "Unsupported %s: %s",
+                StateVisitor.class.getName(), visitor.getClass().getCanonicalName()));
+      }
+    }
+
+    private final int _number;
+
+    public TestTransformationStateExpr(int number) {
+      _number = number;
+    }
+
+    @Override
+    public <R> R accept(GenericStateExprVisitor<R> visitor) {
+      if (visitor instanceof Parameterizer) {
+        return visitor.castToGenericStateExprVisitorReturnType(
+            ImmutableList.of(new StateParameter(Integer.toString(_number), Type.QUERY_NUMBER)));
+      }
+      throw new UnsupportedOperationException(
+          String.format(
+              "Unsupported %s: %s",
+              GenericStateExprVisitor.class.getName(), visitor.getClass().getCanonicalName()));
+    }
+
+    @Override
+    public State getState() {
+      return State.INSTANCE;
+    }
   }
 
   private static Set<String> collectRelations(SynthesizerInput input, Statement statement) {
@@ -40,8 +118,12 @@ public class RelationCollectorTest {
 
   private SynthesizerInput _input;
 
-  private BasicStateExpr newRelation() {
-    return new NumberedQuery(_atomCounter++);
+  private BasicStateExpr newBasicStateExpr() {
+    return new TestBasicStateExpr(_atomCounter++);
+  }
+
+  private TransformationStateExpr newTransformationStateExpr() {
+    return new TestTransformationStateExpr(_atomCounter++);
   }
 
   @Before
@@ -49,75 +131,25 @@ public class RelationCollectorTest {
     _input = TestSynthesizerInput.builder().build();
   }
 
-  /** Test that collectRelations traverses all children of an AndExpr. */
   @Test
-  public void testVisitAndExpr() {
-    BasicStateExpr p1 = newRelation();
-    BasicStateExpr p2 = newRelation();
-    List<BasicStateExpr> atoms = of(p1, p2);
-    AndExpr expr = new AndExpr(ImmutableList.copyOf(atoms));
-    Set<String> expectedRelations =
-        atoms.stream().map(atom -> getNodName(_input, atom)).collect(ImmutableSet.toImmutableSet());
-
-    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  public void testTestBasicStateExpr() {
+    BasicStateExpr b1 = newBasicStateExpr();
+    BasicStateExpr b2 = newBasicStateExpr();
+    assertThat(b1, Matchers.not(equalTo(b2)));
   }
 
-  /** Test that collectRelations traverses the children of an IfExpr. */
   @Test
-  public void testVisitIfExpr() {
-    BasicStateExpr p1 = newRelation();
-    BasicStateExpr p2 = newRelation();
-    IfExpr expr = new IfExpr(p1, p2);
-    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1), getNodName(_input, p2));
-
-    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  public void testTestTransformationStateExpr() {
+    TransformationStateExpr t1 = newTransformationStateExpr();
+    TransformationStateExpr t2 = newTransformationStateExpr();
+    assertThat(t1, Matchers.not(equalTo(t2)));
   }
 
-  /** Test that collectionRelations returns the empty set for boolean literals. */
+  /** Test that collectRelations traverses the child of a BasicRuleStatement. */
   @Test
-  public void testVisitLiteral() {
-    AndExpr and = new AndExpr(of(TrueExpr.INSTANCE, FalseExpr.INSTANCE));
-    assertThat(collectRelations(_input, and), equalTo(ImmutableSet.of()));
-  }
-
-  /** Test that collectRelations traverses the child of a NotExpr. */
-  @Test
-  public void testVisitNotExpr() {
-    BasicStateExpr p1 = newRelation();
-    NotExpr expr = new NotExpr(p1);
-    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
-
-    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
-  }
-
-  /** Test that collectRelations traverses all children of an OrExpr. */
-  @Test
-  public void testVisitOrExpr() {
-    BasicStateExpr p1 = newRelation();
-    BasicStateExpr p2 = newRelation();
-    List<BasicStateExpr> atoms = of(p1, p2);
-    OrExpr expr = new OrExpr(ImmutableList.copyOf(atoms));
-    Set<String> expectedRelations =
-        atoms.stream().map(atom -> getNodName(_input, atom)).collect(ImmutableSet.toImmutableSet());
-
-    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
-  }
-
-  /** Test that collectRelations traverses the child of a QueryStatement. */
-  @Test
-  public void testVisitQueryStatement() {
-    BasicStateExpr p1 = newRelation();
-    QueryStatement expr = new QueryStatement(p1);
-    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
-
-    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
-  }
-
-  /** Test that collectRelations traverses the child of a RuleStatement. */
-  @Test
-  public void testVisitRuleStatement() {
-    BasicStateExpr p1 = newRelation();
-    BasicStateExpr p2 = newRelation();
+  public void testVisitBasicRuleStatement() {
+    BasicStateExpr p1 = newBasicStateExpr();
+    BasicStateExpr p2 = newBasicStateExpr();
     BasicRuleStatement expr1 = new BasicRuleStatement(p1);
     Set<String> expectedRelations1 = ImmutableSet.of(getNodName(_input, p1));
     BasicRuleStatement expr2 = new BasicRuleStatement(p1, p2);
@@ -128,14 +160,60 @@ public class RelationCollectorTest {
     assertThat(collectRelations(_input, expr2), equalTo(expectedRelations2));
   }
 
-  /**
-   * Test that collectRelations on a StateExpr returns a singleton set containing that state's
-   * nodName.
-   */
+  /** Test that collectRelations traverses the child of a QueryStatement. */
   @Test
-  public void testVisitStateExpr() {
-    BasicStateExpr expr = newRelation();
+  public void testVisitQueryStatement() {
+    BasicStateExpr p1 = newBasicStateExpr();
+    QueryStatement expr = new QueryStatement(p1);
+    Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
 
-    assertThat(collectRelations(_input, expr), equalTo(ImmutableSet.of(getNodName(_input, expr))));
+    assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
+  }
+
+  /** Test that collectRelations traverses the child of a TransformationRuleStatement. */
+  @Test
+  public void testVisitTransformationRuleStatement() {
+    BasicStateExpr b1 = newBasicStateExpr();
+    BasicStateExpr b2 = newBasicStateExpr();
+    TransformationStateExpr t1 = newTransformationStateExpr();
+    TransformationStateExpr t2 = newTransformationStateExpr();
+    TransformationRuleStatement expr1 = new TransformationRuleStatement(t1);
+    Set<String> expectedRelations1 = ImmutableSet.of(getNodName(_input, t1));
+    TransformationRuleStatement expr2 =
+        new TransformationRuleStatement(
+            TrueExpr.INSTANCE, ImmutableSet.of(b1), ImmutableSet.of(b2), ImmutableSet.of(t1), t2);
+    Set<String> expectedRelations2 =
+        ImmutableSet.of(
+            getNodName(_input, b1),
+            getNodName(_input, b2),
+            getNodName(_input, t1),
+            getNodName(_input, t2));
+
+    assertThat(collectRelations(_input, expr1), equalTo(expectedRelations1));
+    assertThat(collectRelations(_input, expr2), equalTo(expectedRelations2));
+  }
+
+  /** Test that collectRelations traverses the child of a TransformedBasicRuleStatement. */
+  @Test
+  public void testVisitTransformedBasicRuleStatement() {
+    BasicStateExpr b1 = newBasicStateExpr();
+    BasicStateExpr b2 = newBasicStateExpr();
+    TransformationStateExpr t1 = newTransformationStateExpr();
+    BasicStateExpr b3 = newBasicStateExpr();
+    TransformedBasicRuleStatement expr1 = new TransformedBasicRuleStatement(t1, b1);
+    Set<String> expectedRelations1 =
+        ImmutableSet.of(getNodName(_input, t1), getNodName(_input, b1));
+    TransformedBasicRuleStatement expr2 =
+        new TransformedBasicRuleStatement(
+            TrueExpr.INSTANCE, ImmutableSet.of(b1), ImmutableSet.of(b2), ImmutableSet.of(t1), b3);
+    Set<String> expectedRelations2 =
+        ImmutableSet.of(
+            getNodName(_input, b1),
+            getNodName(_input, b2),
+            getNodName(_input, t1),
+            getNodName(_input, b3));
+
+    assertThat(collectRelations(_input, expr1), equalTo(expectedRelations1));
+    assertThat(collectRelations(_input, expr2), equalTo(expectedRelations2));
   }
 }

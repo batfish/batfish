@@ -20,7 +20,6 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
@@ -126,11 +125,6 @@ public class IsComplexVisitor implements ExprVisitor {
   @Override
   public void visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
     visitStateExpr(transformationStateExpr);
-  }
-
-  @Override
-  public void visitTransformedExpr(TransformedExpr transformedExpr) {
-    _isComplex = true;
   }
 
   @Override
