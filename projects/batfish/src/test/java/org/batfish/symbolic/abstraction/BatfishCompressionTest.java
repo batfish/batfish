@@ -222,10 +222,10 @@ public class BatfishCompressionTest {
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
 
     // Add a route from A --> B
-        ib.setOwner(cA)
-            .setVrf(vA)
-            .setAddress(new InterfaceAddress(pAB.getStartIp(), pAB.getPrefixLength()))
-            .build();
+    ib.setOwner(cA)
+        .setVrf(vA)
+        .setAddress(new InterfaceAddress(pAB.getStartIp(), pAB.getPrefixLength()))
+        .build();
     // Interface iBA
     ib.setOwner(cB)
         .setVrf(vA)
