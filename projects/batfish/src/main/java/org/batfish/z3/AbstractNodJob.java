@@ -55,7 +55,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     }
   }
 
-  Map<HeaderField,Long> getHeaderConstraints(
+  Map<HeaderField, Long> getHeaderConstraints(
       Model model, Map<String, BitVecExpr> variablesAsConsts) {
     return Arrays.stream(model.getConstDecls())
         .map(FuncDecl::getName)
@@ -65,8 +65,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
             ImmutableMap.toImmutableMap(
                 Function.identity(),
                 headerField ->
-                    ((BitVecNum)
-                        model.getConstInterp(variablesAsConsts.get(headerField.getName())))
+                    ((BitVecNum) model.getConstInterp(variablesAsConsts.get(headerField.getName())))
                         .getLong()));
   }
 

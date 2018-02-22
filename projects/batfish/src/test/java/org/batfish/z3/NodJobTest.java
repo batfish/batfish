@@ -87,13 +87,15 @@ public class NodJobTest {
     Ip poolIp2 = new Ip("1.0.0.11");
 
     // apply NAT to all packets
-    IpAccessList sourceNat1Acl = aclb.setLines(
-        ImmutableList.of(
-            acllb
-                .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
-                .setAction(LineAction.ACCEPT)
-                .build()
-        )).setOwner(_srcNode).build();
+    IpAccessList sourceNat1Acl =
+        aclb.setLines(
+                ImmutableList.of(
+                    acllb
+                        .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
+                        .setAction(LineAction.ACCEPT)
+                        .build()))
+            .setOwner(_srcNode)
+            .build();
 
     SourceNat sourceNat1 =
         snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp2).setAcl(sourceNat1Acl).build();
@@ -106,7 +108,7 @@ public class NodJobTest {
     Interface dstInterface =
         ib.setOwner(_dstNode)
             .setVrf(dstVrf)
-            .setAddress(new InterfaceAddress(p1.getEndIp(),p1.getPrefixLength()))
+            .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
             .setSourceNats(ImmutableList.of())
             .build();
 
@@ -121,10 +123,10 @@ public class NodJobTest {
     StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
     _srcVrf.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
 
-    _configs = ImmutableSortedMap.of(
-        _srcNode.getName(), _srcNode,
-        _dstNode.getName(), _dstNode);
-
+    _configs =
+        ImmutableSortedMap.of(
+            _srcNode.getName(), _srcNode,
+            _dstNode.getName(), _dstNode);
   }
 
   private void setupDataPlane() throws IOException {
@@ -140,10 +142,7 @@ public class NodJobTest {
 
   private void setupSynthesizer() {
     SynthesizerInput input =
-        SynthesizerInputImpl.builder()
-            .setConfigurations(_configs)
-            .setDataPlane(_dataPlane)
-            .build();
+        SynthesizerInputImpl.builder().setConfigurations(_configs).setDataPlane(_dataPlane).build();
     _synthesizer = new Synthesizer(input);
   }
 
@@ -160,15 +159,12 @@ public class NodJobTest {
             ImmutableSet.of(),
             // notTransitNodes
             ImmutableSet.of());
-    SortedSet<Pair<String,String>> ingressNodes =
-        ImmutableSortedSet.of(
-            new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
+    SortedSet<Pair<String, String>> ingressNodes =
+        ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
     return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag");
   }
 
-  /**
-   * Test that traffic originating from 3.0.0.0 is NATed
-   */
+  /** Test that traffic originating from 3.0.0.0 is NATed */
   @Test
   public void testNatted() throws IOException {
     HeaderSpace headerSpace = new HeaderSpace();
@@ -178,30 +174,32 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
     Model model = nodJob.getSmtModel(z3Context, smtInput._expr);
-    Map<HeaderField, Long> headerConstraints = nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
+    Map<HeaderField, Long> headerConstraints =
+        nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
 
-    assertThat(headerConstraints,
-        hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.0").asLong()));
-    assertThat(headerConstraints,
-        hasEntry(equalTo(BasicHeaderField.SRC_IP),
+    assertThat(
+        headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.0").asLong()));
+    assertThat(
+        headerConstraints,
+        hasEntry(
+            equalTo(BasicHeaderField.SRC_IP),
             Matchers.isOneOf(new Ip("1.0.0.10").asLong(), new Ip("1.0.0.11").asLong())));
 
     Set<Flow> flows = nodJob.getFlows(model, headerConstraints);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
     List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
-    flowTraces.forEach(trace -> {
-      assertThat(trace.getNotes(), is("ACCEPTED"));
-      List<FlowTraceHop> hops = trace.getHops();
-      assertThat(hops, hasSize(1));
-      FlowTraceHop hop = hops.get(0);
-      assertThat(hop.getTransformedFlow(), notNullValue());
-    });
+    flowTraces.forEach(
+        trace -> {
+          assertThat(trace.getNotes(), is("ACCEPTED"));
+          List<FlowTraceHop> hops = trace.getHops();
+          assertThat(hops, hasSize(1));
+          FlowTraceHop hop = hops.get(0);
+          assertThat(hop.getTransformedFlow(), notNullValue());
+        });
   }
 
-  /**
-   * Test that traffic originating from 3.0.0.1 is not NATed
-   */
+  /** Test that traffic originating from 3.0.0.1 is not NATed */
   @Test
   public void testNotNatted() throws IOException {
     HeaderSpace headerSpace = new HeaderSpace();
@@ -214,21 +212,21 @@ public class NodJobTest {
     Map<HeaderField, Long> headerConstraints =
         nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
 
-    assertThat(headerConstraints,
-        hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.1").asLong()));
-    assertThat(headerConstraints,
-        hasEntry(BasicHeaderField.SRC_IP, new Ip("3.0.0.1").asLong()));
+    assertThat(
+        headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.1").asLong()));
+    assertThat(headerConstraints, hasEntry(BasicHeaderField.SRC_IP, new Ip("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(model, headerConstraints);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
     List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
-    flowTraces.forEach(trace -> {
-      assertThat(trace.getNotes(), is("ACCEPTED"));
-      List<FlowTraceHop> hops = trace.getHops();
-      assertThat(hops, hasSize(1));
-      FlowTraceHop hop = hops.get(0);
-      assertThat(hop.getTransformedFlow(), nullValue());
-    });
+    flowTraces.forEach(
+        trace -> {
+          assertThat(trace.getNotes(), is("ACCEPTED"));
+          List<FlowTraceHop> hops = trace.getHops();
+          assertThat(hops, hasSize(1));
+          FlowTraceHop hop = hops.get(0);
+          assertThat(hop.getTransformedFlow(), nullValue());
+        });
   }
 }
