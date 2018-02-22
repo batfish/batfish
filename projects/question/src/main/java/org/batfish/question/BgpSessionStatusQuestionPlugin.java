@@ -43,6 +43,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
   public enum SessionStatus {
     // ordered by how we evaluate status
+    PASSIVE,
     MISSING_LOCAL_IP,
     UNKNOWN_LOCAL_IP,
     UNKNOWN_REMOTE_IP,
@@ -224,9 +225,6 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
               boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
               Ip localIp = bgpNeighbor.getLocalIp();
               Ip remoteIp = bgpNeighbor.getAddress();
-              if (bgpNeighbor.getPrefix().getPrefixLength() != 32) { // why is this here?
-                continue;
-              }
               if (foreign) {
                 continue;
               }
@@ -240,8 +238,10 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
               if (!question.matchesType(bgpSessionInfo.sessionType)) {
                 continue;
               }
-
-              if (localIp == null) {
+              if (bgpNeighbor.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+                // this is an indirect test for passive sessions; need datamodel improvements
+                bgpSessionInfo.status = SessionStatus.PASSIVE;
+              } else if (localIp == null) {
                 bgpSessionInfo.status = SessionStatus.MISSING_LOCAL_IP;
               } else {
                 bgpSessionInfo.localIp = localIp;
