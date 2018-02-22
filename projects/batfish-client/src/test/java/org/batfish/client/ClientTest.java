@@ -77,6 +77,7 @@ import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Typ
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.JSON_PATH;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.JSON_PATH_REGEX;
+import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.LONG;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PREFIX_RANGE;
 import static org.batfish.datamodel.questions.Question.InstanceData.Variable.Type.PROTOCOL;
