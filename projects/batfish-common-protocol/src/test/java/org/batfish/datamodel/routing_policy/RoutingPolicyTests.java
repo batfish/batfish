@@ -56,8 +56,7 @@ public class RoutingPolicyTests {
      */
     assertThat(_w.getRedFlagWarnings(), not(empty()));
     assertThat(
-        _w.getRedFlagWarnings().iterator().next().getText(),
-        org.hamcrest.Matchers.containsString(parentPolicyName));
+        _w.getRedFlagWarnings().iterator().next().getText(), containsString(parentPolicyName));
   }
 
   /** Policy with actual circular reference as expr */
@@ -138,8 +137,7 @@ public class RoutingPolicyTests {
      */
     assertThat(_w.getRedFlagWarnings(), not(empty()));
     assertThat(
-        _w.getRedFlagWarnings().iterator().next().getText(),
-        org.hamcrest.Matchers.containsString(parentPolicyName));
+        _w.getRedFlagWarnings().iterator().next().getText(), containsString(parentPolicyName));
   }
 
   /** Policy with two copies of same call statement - should not contain circular reference */
