@@ -83,7 +83,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
       }
       // is there streams way of multimap to multimap conversion with a filter?
       for (Integer asn : asns.keySet()) {
-        if (asns.get(asn).size() > question.getMinCount()) {
+        if (asns.get(asn).size() >= question.getMinCount()) {
           answerElement.getAsns().putAll(asn, asns.get(asn));
         }
       }
@@ -99,7 +99,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
    * <p>In eBGP-based data centers, it is often desired that each router have its own ASN.
    *
    * @type BgpAsnUse multifile
-   * @param minCount Only report ASNs that are used at more than this number of nodes
+   * @param minCount Only report ASNs that are used at least this number of nodes
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @example bf_answer("BgpAsnUse", nodeRegex='as2.*') Answers the question only for nodes whose
