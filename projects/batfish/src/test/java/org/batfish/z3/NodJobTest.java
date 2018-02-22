@@ -58,7 +58,6 @@ public class NodJobTest {
     _snb = SourceNat.builder();
   }
 
-
   @Test
   public void testSimpleNatNetwork() {
     Configuration srcNode = _cb.build();
@@ -74,13 +73,15 @@ public class NodJobTest {
     Interface srcInterfaceOneSourceNat =
         _ib.setOwner(srcNode)
             .setVrf(srcVrf)
-            .setAddress(new InterfaceAddress(ip11,32))
-            .setSourceNats(ImmutableList.of(sourceNat1)).build();
+            .setAddress(new InterfaceAddress(ip11, 32))
+            .setSourceNats(ImmutableList.of(sourceNat1))
+            .build();
     Interface nextHopInterface =
         _ib.setOwner(nextHop)
             .setVrf(nextHopVrf)
             .setAddress(new InterfaceAddress(ip2, 32))
-            .setSourceNats(ImmutableList.of()).build();
+            .setSourceNats(ImmutableList.of())
+            .build();
     Edge forwardEdge1 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
     Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
     SynthesizerInput input =
@@ -105,8 +106,7 @@ public class NodJobTest {
             // transitNodes
             ImmutableSet.of(),
             // notTransitNodes
-            ImmutableSet.of()
-        );
+            ImmutableSet.of());
     SortedSet<Pair<String, String>> nodeVrfs =
         ImmutableSortedSet.of(new Pair<>(srcNode.getHostname(), srcVrf.getName()));
     NodJob nodJob = new NodJob(new Settings(), synthesizer, querySynthesizer, nodeVrfs, "tag");

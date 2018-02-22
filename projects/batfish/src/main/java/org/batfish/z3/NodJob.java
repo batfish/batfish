@@ -35,7 +35,8 @@ public final class NodJob extends AbstractNodJob {
     return computeSmtConstraintsViaNod(program, _querySynthesizer.getNegate());
   }
 
-  @Nonnull protected NodProgram getNodProgram(Context ctx) {
+  @Nonnull
+  protected NodProgram getNodProgram(Context ctx) {
     ReachabilityProgram baseProgram = _dataPlaneSynthesizer.synthesizeNodDataPlaneProgram();
     ReachabilityProgram queryProgram =
         _querySynthesizer.getReachabilityProgram(_dataPlaneSynthesizer.getInput());
