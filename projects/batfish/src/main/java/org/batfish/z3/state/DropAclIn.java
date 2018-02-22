@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
 public class DropAclIn extends BasicStateExpr {
@@ -23,8 +23,8 @@ public class DropAclIn extends BasicStateExpr {
   private DropAclIn() {}
 
   @Override
-  public void accept(StateExprVisitor visitor) {
-    visitor.visitDropAclIn(this);
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+    return visitor.visitDropAclIn(this);
   }
 
   @Override

@@ -44,214 +44,206 @@ import org.batfish.z3.state.PreOutInterface;
 import org.batfish.z3.state.Query;
 import org.batfish.z3.state.StateParameter;
 
-public class Parameterizer implements StateExprVisitor {
+public class Parameterizer implements GenericStateExprVisitor<List<StateParameter>> {
 
   public static List<StateParameter> getParameters(StateExpr stateExpr) {
     Parameterizer visitor = new Parameterizer();
-    stateExpr.accept(visitor);
-    return visitor._parameters;
+    return stateExpr.accept(visitor);
   }
-
-  private List<StateParameter> _parameters;
 
   private Parameterizer() {}
 
   @Override
-  public void visitAccept(Accept accept) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> castToGenericStateExprVisitorReturnType(Object o) {
+    return ((List<?>) o)
+        .stream()
+        .map(i -> (StateParameter) i)
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override
-  public void visitAclDeny(AclDeny aclDeny) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(aclDeny.getHostname(), NODE),
-            new StateParameter(aclDeny.getAcl(), ACL));
+  public List<StateParameter> visitAccept(Accept accept) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitAclLineMatch(AclLineMatch aclLineMatch) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(aclLineMatch.getHostname(), NODE),
-            new StateParameter(aclLineMatch.getAcl(), ACL),
-            new StateParameter(Integer.toString(aclLineMatch.getLine()), ACL_LINE));
+  public List<StateParameter> visitAclDeny(AclDeny aclDeny) {
+    return ImmutableList.of(
+        new StateParameter(aclDeny.getHostname(), NODE), new StateParameter(aclDeny.getAcl(), ACL));
   }
 
   @Override
-  public void visitAclLineNoMatch(AclLineNoMatch aclLineNoMatch) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(aclLineNoMatch.getHostname(), NODE),
-            new StateParameter(aclLineNoMatch.getAcl(), ACL),
-            new StateParameter(Integer.toString(aclLineNoMatch.getLine()), ACL_LINE));
+  public List<StateParameter> visitAclLineMatch(AclLineMatch aclLineMatch) {
+    return ImmutableList.of(
+        new StateParameter(aclLineMatch.getHostname(), NODE),
+        new StateParameter(aclLineMatch.getAcl(), ACL),
+        new StateParameter(Integer.toString(aclLineMatch.getLine()), ACL_LINE));
   }
 
   @Override
-  public void visitAclPermit(AclPermit aclPermit) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(aclPermit.getHostname(), NODE),
-            new StateParameter(aclPermit.getAcl(), ACL));
+  public List<StateParameter> visitAclLineNoMatch(AclLineNoMatch aclLineNoMatch) {
+    return ImmutableList.of(
+        new StateParameter(aclLineNoMatch.getHostname(), NODE),
+        new StateParameter(aclLineNoMatch.getAcl(), ACL),
+        new StateParameter(Integer.toString(aclLineNoMatch.getLine()), ACL_LINE));
   }
 
   @Override
-  public void visitDebug(Debug debug) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitAclPermit(AclPermit aclPermit) {
+    return ImmutableList.of(
+        new StateParameter(aclPermit.getHostname(), NODE),
+        new StateParameter(aclPermit.getAcl(), ACL));
   }
 
   @Override
-  public void visitDrop(Drop drop) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitDebug(Debug debug) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitDropAcl(DropAcl dropAcl) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitDrop(Drop drop) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitDropAclIn(DropAclIn dropAclIn) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitDropAcl(DropAcl dropAcl) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitDropAclOut(DropAclOut dropAclOut) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitDropAclIn(DropAclIn dropAclIn) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitDropNoRoute(DropNoRoute dropNoRoute) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitDropAclOut(DropAclOut dropAclOut) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitDropNullRoute(DropNullRoute dropNullRoute) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitDropNoRoute(DropNoRoute dropNoRoute) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitNodeAccept(NodeAccept nodeAccept) {
-    _parameters = ImmutableList.of(new StateParameter(nodeAccept.getHostname(), NODE));
+  public List<StateParameter> visitDropNullRoute(DropNullRoute dropNullRoute) {
+    return ImmutableList.of();
   }
 
   @Override
-  public void visitNodeDrop(NodeDrop nodeDrop) {
-    _parameters = ImmutableList.of(new StateParameter(nodeDrop.getHostname(), NODE));
+  public List<StateParameter> visitNodeAccept(NodeAccept nodeAccept) {
+    return ImmutableList.of(new StateParameter(nodeAccept.getHostname(), NODE));
   }
 
   @Override
-  public void visitNodeDropAcl(NodeDropAcl nodeDropAcl) {
-    _parameters = ImmutableList.of(new StateParameter(nodeDropAcl.getHostname(), NODE));
+  public List<StateParameter> visitNodeDrop(NodeDrop nodeDrop) {
+    return ImmutableList.of(new StateParameter(nodeDrop.getHostname(), NODE));
   }
 
   @Override
-  public void visitNodeDropAclIn(NodeDropAclIn nodeDropAclIn) {
-    _parameters = ImmutableList.of(new StateParameter(nodeDropAclIn.getHostname(), NODE));
+  public List<StateParameter> visitNodeDropAcl(NodeDropAcl nodeDropAcl) {
+    return ImmutableList.of(new StateParameter(nodeDropAcl.getHostname(), NODE));
   }
 
   @Override
-  public void visitNodeDropAclOut(NodeDropAclOut nodeDropAclOut) {
-    _parameters = ImmutableList.of(new StateParameter(nodeDropAclOut.getHostname(), NODE));
+  public List<StateParameter> visitNodeDropAclIn(NodeDropAclIn nodeDropAclIn) {
+    return ImmutableList.of(new StateParameter(nodeDropAclIn.getHostname(), NODE));
   }
 
   @Override
-  public void visitNodeDropNoRoute(NodeDropNoRoute nodeDropNoRoute) {
-    _parameters = ImmutableList.of(new StateParameter(nodeDropNoRoute.getHostname(), NODE));
+  public List<StateParameter> visitNodeDropAclOut(NodeDropAclOut nodeDropAclOut) {
+    return ImmutableList.of(new StateParameter(nodeDropAclOut.getHostname(), NODE));
   }
 
   @Override
-  public void visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute) {
-    _parameters = ImmutableList.of(new StateParameter(nodeDropNullRoute.getHostname(), NODE));
+  public List<StateParameter> visitNodeDropNoRoute(NodeDropNoRoute nodeDropNoRoute) {
+    return ImmutableList.of(new StateParameter(nodeDropNoRoute.getHostname(), NODE));
   }
 
   @Override
-  public void visitNodeTransit(NodeTransit nodeTransit) {
-    _parameters = ImmutableList.of(new StateParameter(nodeTransit.getHostname(), NODE));
+  public List<StateParameter> visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute) {
+    return ImmutableList.of(new StateParameter(nodeDropNullRoute.getHostname(), NODE));
   }
 
   @Override
-  public void visitNumberedQuery(NumberedQuery numberedQuery) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(Integer.toString(numberedQuery.getLine()), QUERY_NUMBER));
+  public List<StateParameter> visitNodeTransit(NodeTransit nodeTransit) {
+    return ImmutableList.of(new StateParameter(nodeTransit.getHostname(), NODE));
   }
 
   @Override
-  public void visitOriginate(Originate originate) {
-    _parameters = ImmutableList.of(new StateParameter(originate.getHostname(), NODE));
+  public List<StateParameter> visitNumberedQuery(NumberedQuery numberedQuery) {
+    return ImmutableList.of(
+        new StateParameter(Integer.toString(numberedQuery.getLine()), QUERY_NUMBER));
   }
 
   @Override
-  public void visitOriginateVrf(OriginateVrf originateVrf) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(originateVrf.getHostname(), NODE),
-            new StateParameter(originateVrf.getVrf(), VRF));
+  public List<StateParameter> visitOriginate(Originate originate) {
+    return ImmutableList.of(new StateParameter(originate.getHostname(), NODE));
   }
 
   @Override
-  public void visitPostIn(PostIn postIn) {
-    _parameters = ImmutableList.of(new StateParameter(postIn.getHostname(), NODE));
+  public List<StateParameter> visitOriginateVrf(OriginateVrf originateVrf) {
+    return ImmutableList.of(
+        new StateParameter(originateVrf.getHostname(), NODE),
+        new StateParameter(originateVrf.getVrf(), VRF));
   }
 
   @Override
-  public void visitPostInInterface(PostInInterface postInInterface) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(postInInterface.getHostname(), NODE),
-            new StateParameter(postInInterface.getIface(), INTERFACE));
+  public List<StateParameter> visitPostIn(PostIn postIn) {
+    return ImmutableList.of(new StateParameter(postIn.getHostname(), NODE));
   }
 
   @Override
-  public void visitPostInVrf(PostInVrf postInVrf) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(postInVrf.getHostname(), NODE),
-            new StateParameter(postInVrf.getVrf(), VRF));
+  public List<StateParameter> visitPostInInterface(PostInInterface postInInterface) {
+    return ImmutableList.of(
+        new StateParameter(postInInterface.getHostname(), NODE),
+        new StateParameter(postInInterface.getIface(), INTERFACE));
   }
 
   @Override
-  public void visitPostOutInterface(PostOutInterface postOutInterface) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(postOutInterface.getHostname(), NODE),
-            new StateParameter(postOutInterface.getIface(), INTERFACE));
+  public List<StateParameter> visitPostInVrf(PostInVrf postInVrf) {
+    return ImmutableList.of(
+        new StateParameter(postInVrf.getHostname(), NODE),
+        new StateParameter(postInVrf.getVrf(), VRF));
   }
 
   @Override
-  public void visitPreInInterface(PreInInterface preInInterface) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(preInInterface.getHostname(), NODE),
-            new StateParameter(preInInterface.getIface(), INTERFACE));
+  public List<StateParameter> visitPostOutInterface(PostOutInterface postOutInterface) {
+    return ImmutableList.of(
+        new StateParameter(postOutInterface.getHostname(), NODE),
+        new StateParameter(postOutInterface.getIface(), INTERFACE));
   }
 
   @Override
-  public void visitPreOut(PreOut preOut) {
-    _parameters = ImmutableList.of(new StateParameter(preOut.getHostname(), NODE));
+  public List<StateParameter> visitPreInInterface(PreInInterface preInInterface) {
+    return ImmutableList.of(
+        new StateParameter(preInInterface.getHostname(), NODE),
+        new StateParameter(preInInterface.getIface(), INTERFACE));
   }
 
   @Override
-  public void visitPreOutEdge(PreOutEdge preOutEdge) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(preOutEdge.getSrcNode(), NODE),
-            new StateParameter(preOutEdge.getSrcIface(), INTERFACE),
-            new StateParameter(preOutEdge.getDstNode(), NODE),
-            new StateParameter(preOutEdge.getDstIface(), INTERFACE));
+  public List<StateParameter> visitPreOut(PreOut preOut) {
+    return ImmutableList.of(new StateParameter(preOut.getHostname(), NODE));
   }
 
   @Override
-  public void visitPreOutInterface(PreOutInterface preOutInterface) {
-    _parameters =
-        ImmutableList.of(
-            new StateParameter(preOutInterface.getHostname(), NODE),
-            new StateParameter(preOutInterface.getIface(), INTERFACE));
+  public List<StateParameter> visitPreOutEdge(PreOutEdge preOutEdge) {
+    return ImmutableList.of(
+        new StateParameter(preOutEdge.getSrcNode(), NODE),
+        new StateParameter(preOutEdge.getSrcIface(), INTERFACE),
+        new StateParameter(preOutEdge.getDstNode(), NODE),
+        new StateParameter(preOutEdge.getDstIface(), INTERFACE));
   }
 
   @Override
-  public void visitQuery(Query query) {
-    _parameters = ImmutableList.of();
+  public List<StateParameter> visitPreOutInterface(PreOutInterface preOutInterface) {
+    return ImmutableList.of(
+        new StateParameter(preOutInterface.getHostname(), NODE),
+        new StateParameter(preOutInterface.getIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitQuery(Query query) {
+    return ImmutableList.of();
   }
 }

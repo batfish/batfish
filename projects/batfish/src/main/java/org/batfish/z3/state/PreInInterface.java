@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PreInInterface extends BasicStateExpr {
@@ -28,8 +28,8 @@ public class PreInInterface extends BasicStateExpr {
   }
 
   @Override
-  public void accept(StateExprVisitor visitor) {
-    visitor.visitPreInInterface(this);
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+    return visitor.visitPreInInterface(this);
   }
 
   public String getHostname() {

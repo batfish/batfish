@@ -1,5 +1,9 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Arrays;
+import java.util.Set;
+
 public enum BasicHeaderField implements HeaderField {
   DSCP(6),
   DST_IP(32),
@@ -22,6 +26,11 @@ public enum BasicHeaderField implements HeaderField {
   TCP_FLAGS_RST(1),
   TCP_FLAGS_SYN(1),
   TCP_FLAGS_URG(1);
+
+  public static final Set<String> basicHeaderFieldNames =
+      Arrays.stream(BasicHeaderField.values())
+          .map(BasicHeaderField::getName)
+          .collect(ImmutableSet.toImmutableSet());
 
   private final int _size;
 

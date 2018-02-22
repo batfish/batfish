@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostOutInterface extends TransformationStateExpr {
@@ -28,8 +28,8 @@ public class PostOutInterface extends TransformationStateExpr {
   }
 
   @Override
-  public void accept(StateExprVisitor visitor) {
-    visitor.visitPostOutInterface(this);
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+    return visitor.visitPostOutInterface(this);
   }
 
   public String getHostname() {
