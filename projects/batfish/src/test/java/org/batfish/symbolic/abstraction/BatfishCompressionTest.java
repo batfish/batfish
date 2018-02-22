@@ -222,54 +222,53 @@ public class BatfishCompressionTest {
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
 
     // Add a route from A --> B
-    Interface iAB =
         ib.setOwner(cA)
             .setVrf(vA)
             .setAddress(new InterfaceAddress(pAB.getStartIp(), pAB.getPrefixLength()))
             .build();
-    Interface iBA =
-        ib.setOwner(cB)
-            .setVrf(vA)
-            .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
-            .build();
-    Interface iAC =
-        ib.setOwner(cA)
-            .setVrf(vA)
-            .setAddress(new InterfaceAddress(pAC.getStartIp(), pAC.getPrefixLength()))
-            .build();
-    Interface iCA =
-        ib.setOwner(cC)
-            .setVrf(vC)
-            .setAddress(new InterfaceAddress(pAC.getEndIp(), pAC.getPrefixLength()))
-            .build();
-    Interface iBD =
-        ib.setOwner(cB)
-            .setVrf(vB)
-            .setAddress(new InterfaceAddress(pBD.getStartIp(), pBD.getPrefixLength()))
-            .build();
-    Interface iDB =
-        ib.setOwner(cD)
-            .setVrf(vD)
-            .setAddress(new InterfaceAddress(pBD.getEndIp(), pBD.getPrefixLength()))
-            .build();
-    Interface iCD =
-        ib.setOwner(cC)
-            .setVrf(vC)
-            .setAddress(new InterfaceAddress(pCD.getStartIp(), pCD.getPrefixLength()))
-            .build();
-    Interface iDC =
-        ib.setOwner(cD)
-            .setVrf(vD)
-            .setAddress(new InterfaceAddress(pCD.getEndIp(), pCD.getPrefixLength()))
-            .build();
+    // Interface iBA
+    ib.setOwner(cB)
+        .setVrf(vA)
+        .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
+        .build();
+    // Interface iAC
+    ib.setOwner(cA)
+        .setVrf(vA)
+        .setAddress(new InterfaceAddress(pAC.getStartIp(), pAC.getPrefixLength()))
+        .build();
+    // Interface iCA
+    ib.setOwner(cC)
+        .setVrf(vC)
+        .setAddress(new InterfaceAddress(pAC.getEndIp(), pAC.getPrefixLength()))
+        .build();
+    // Interface iBD
+    ib.setOwner(cB)
+        .setVrf(vB)
+        .setAddress(new InterfaceAddress(pBD.getStartIp(), pBD.getPrefixLength()))
+        .build();
+    // Interface iDB
+    ib.setOwner(cD)
+        .setVrf(vD)
+        .setAddress(new InterfaceAddress(pBD.getEndIp(), pBD.getPrefixLength()))
+        .build();
+    // Interface iCD
+    ib.setOwner(cC)
+        .setVrf(vC)
+        .setAddress(new InterfaceAddress(pCD.getStartIp(), pCD.getPrefixLength()))
+        .build();
+    // Interface iDC
+    ib.setOwner(cD)
+        .setVrf(vD)
+        .setAddress(new InterfaceAddress(pCD.getEndIp(), pCD.getPrefixLength()))
+        .build();
 
     // For the destination
     Prefix pD = Prefix.parse("4.4.4.4/32");
-    Interface iD =
-        ib.setOwner(cD)
-            .setVrf(vD)
-            .setAddress(new InterfaceAddress(pD.getEndIp(), pD.getPrefixLength()))
-            .build();
+    // Interface iD
+    ib.setOwner(cD)
+        .setVrf(vD)
+        .setAddress(new InterfaceAddress(pD.getEndIp(), pD.getPrefixLength()))
+        .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pD);
     vA.getStaticRoutes().add(bld.setNextHopIp(pAB.getEndIp()).build());
