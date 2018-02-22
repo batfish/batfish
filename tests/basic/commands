@@ -24,6 +24,7 @@ test tests/basic/nodes.ref get nodes summary=false
 test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 test tests/basic/ospfLoopbacks.ref get ospfLoopbacks
 test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
+test tests/basic/ospfStatus.ref get ospfstatus interfacesSpecifier="Loopback.*", status=".*passive"
 test tests/basic/pairwiseVpnConnectivity.ref get pairwiseVpnConnectivity
 test tests/basic/roles.ref get roles
 test tests/basic/roles2.ref get roles inferred=true

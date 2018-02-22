@@ -51,6 +51,7 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
+import org.batfish.common.Snapshot;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.Version;
@@ -114,6 +115,9 @@ public class Driver {
 
   private static ConcurrentMap<String, Task> _taskLog;
 
+  private static final Cache<TestrigSettings, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
+      buildDataPlaneCache();
+
   private static final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
   private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -122,7 +126,7 @@ public class Driver {
   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-  private static final Cache<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+  private static final Cache<Snapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
@@ -165,7 +169,7 @@ public class Driver {
             MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
-  private static Cache<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
+  private static Cache<Snapshot, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
@@ -205,7 +209,7 @@ public class Driver {
   private static void initTracer() {
     GlobalTracer.register(
         new com.uber.jaeger.Configuration(
-                BfConsts.PROP_WORKER_SERVICE,
+                _mainSettings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,
@@ -539,6 +543,7 @@ public class Driver {
           new Batfish(
               settings,
               CACHED_TESTRIGS,
+              CACHED_COMPRESSED_DATA_PLANES,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
               CACHED_ENVIRONMENT_ROUTING_TABLES);

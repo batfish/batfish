@@ -94,15 +94,12 @@ public class BfConsts {
    * JSON key names
    */
   public static final String PROP_ALLINONE_PROPERTIES_PATH = "batfishAllinonePropertiesPath";
-  public static final String PROP_ALLINONE_SERVICE = "batfish-allinone";
   public static final String PROP_ALLOWED_VALUES = "allowedValues";
   public static final String PROP_ANSWER_ELEMENTS = "answerElements";
   public static final String PROP_BATFISH_PROPERTIES_PATH = "batfishBatfishPropertiesPath";
   public static final String PROP_BGP_ANNOUNCEMENTS = "Announcements";
   public static final String PROP_CLIENT_PROPERTIES_PATH = "batfishClientPropertiesPath";
-  public static final String PROP_CLIENT_SERVICE = "batfish-client";
   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
-  public static final String PROP_COORDINATOR_SERVICE = "batfish-coordinator";
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
@@ -119,7 +116,6 @@ public class BfConsts {
   public static final String PROP_TYPE = "type";
   public static final String PROP_VALUE = "value";
   public static final String PROP_VARIABLES = "variables";
-  public static final String PROP_WORKER_SERVICE = "batfish-worker";
 
   public static final String RELPATH_ANALYSES_DIR = "analyses";
   public static final String RELPATH_ANALYSIS_FILE = "analysis";
@@ -130,6 +126,8 @@ public class BfConsts {
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+  public static final String RELPATH_COMPRESSED_DATA_PLANE = "compressed_dp";
+  public static final String RELPATH_COMPRESSED_DATA_PLANE_ANSWER = "compressed_dp_answer";
   public static final String RELPATH_DATA_PLANE = "dp";
   public static final String RELPATH_DATA_PLANE_ANSWER_PATH = "dp_answer";
   public static final String RELPATH_DEFAULT_ENVIRONMENT_NAME = "env_default";

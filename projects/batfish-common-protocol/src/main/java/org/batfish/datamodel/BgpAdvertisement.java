@@ -1,10 +1,8 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -21,7 +19,6 @@ import org.batfish.common.BatfishException;
  *
  * @author arifogel
  */
-@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class, property = "@id")
 public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializable {
 
   public enum BgpAdvertisementType {
@@ -599,16 +596,15 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         _weight);
   }
 
-  public String prettyPrint(String diffSymbol) {
+  public String prettyPrint(String prefix) {
     String net = getNetwork().toString();
     String prot = _srcProtocol.protocolName();
-    String diffStr = diffSymbol != null ? diffSymbol + " " : "";
     String routeStr =
         String.format(
             "%s%s dstNode:%s dstVrf:%s dstIp:%s srcNode:%s srcVrf:%s srcIp:%s net:%s nhip:%s "
                 + "origin:%s lp:%s med:%s weight:%s asPath:%s communities:%s orIp:%s clst:%s "
                 + "srcProt:%s\n",
-            diffStr,
+            prefix,
             _type,
             _dstNode,
             _dstVrf,

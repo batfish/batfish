@@ -9,12 +9,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
 import org.batfish.bdp.BdpDataPlanePlugin;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
+import org.batfish.common.Snapshot;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
@@ -29,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
 
-  private static Cache<TestrigSettings, SortedMap<String, Configuration>> makeTestrigCache() {
+  private static Cache<Snapshot, SortedMap<String, Configuration>> makeTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(5).weakValues().build();
   }
 
@@ -47,26 +48,30 @@ public class BatfishTestUtils {
   }
 
   private static Batfish initBatfish(
-      SortedMap<String, Configuration> configurations, @Nullable TemporaryFolder tempFolder)
+      SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
-    final Cache<TestrigSettings, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<Snapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
 
+    Path containerDir = tempFolder.newFolder().toPath();
+    settings.setContainerDir(containerDir);
     if (!configurations.isEmpty()) {
-      Path containerDir = tempFolder.newFolder().toPath();
-      settings.setContainerDir(containerDir);
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
       Batfish.initTestrigSettings(settings);
-      settings.getBaseTestrigSettings().getSerializeIndependentPath().toFile().mkdirs();
       settings.getBaseTestrigSettings().getEnvironmentSettings().getEnvPath().toFile().mkdirs();
-      testrigs.put(settings.getBaseTestrigSettings(), configurations);
+      testrigs.put(new Snapshot("tempTestrig", "tempEnvironment"), configurations);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
     Batfish batfish =
         new Batfish(
-            settings, testrigs, makeDataPlaneCache(), makeEnvBgpCache(), makeEnvRouteCache());
+            settings,
+            testrigs,
+            makeDataPlaneCache(),
+            makeDataPlaneCache(),
+            makeEnvBgpCache(),
+            makeEnvRouteCache());
     batfish.setMonotonicCache(true);
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
@@ -124,6 +129,7 @@ public class BatfishTestUtils {
             settings,
             makeTestrigCache(),
             makeDataPlaneCache(),
+            makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache());
     return batfish;
@@ -155,11 +161,8 @@ public class BatfishTestUtils {
    * @return New Batfish instance
    */
   public static Batfish getBatfish(
-      SortedMap<String, Configuration> configurations, @Nullable TemporaryFolder tempFolder)
+      SortedMap<String, Configuration> configurations, @Nonnull TemporaryFolder tempFolder)
       throws IOException {
-    if (!configurations.isEmpty() && tempFolder == null) {
-      throw new BatfishException("tempFolder must be set for non-empty configurations");
-    }
     return initBatfish(configurations, tempFolder);
   }
 

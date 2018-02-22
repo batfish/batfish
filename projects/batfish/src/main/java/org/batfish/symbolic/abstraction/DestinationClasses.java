@@ -1,14 +1,15 @@
 package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -48,25 +49,20 @@ public class DestinationClasses {
 
   private boolean _useDefaultCase;
 
-  private Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> _headerspaceMap;
+  private Map<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> _headerspaceMap;
 
-  private DestinationClasses(IBatfish batfish, @Nullable HeaderSpace h, boolean defaultCase) {
+  private DestinationClasses(
+      IBatfish batfish, Graph graph, @Nullable HeaderSpace h, boolean defaultCase) {
     _batfish = batfish;
-    _graph = new Graph(batfish);
+    _graph = graph;
     _headerspace = h;
     _headerspaceMap = new HashMap<>();
     _useDefaultCase = defaultCase;
   }
 
   public static DestinationClasses create(
-      IBatfish batfish, @Nullable HeaderSpace h, boolean defaultCase) {
-    DestinationClasses abs = new DestinationClasses(batfish, h, defaultCase);
-    abs.initDestinationMap();
-    return abs;
-  }
-
-  public static DestinationClasses create(IBatfish batfish, int fails, boolean defaultCase) {
-    DestinationClasses abs = new DestinationClasses(batfish, null, defaultCase);
+      IBatfish batfish, Graph graph, @Nullable HeaderSpace h, boolean defaultCase) {
+    DestinationClasses abs = new DestinationClasses(batfish, graph, h, defaultCase);
     abs.initDestinationMap();
     return abs;
   }
@@ -90,29 +86,29 @@ public class DestinationClasses {
     }
   }
 
+  /**
+   * Adds a catch-all headerspace to the headerspace map. The catch-all case matches dstIps, does
+   * not match notDstIps, and doesn't match anything matched by anything in destinationMap.
+   *
+   * @param dstIps A list of destination IPs that should be in the catch-all headerspace.
+   * @param notDstIps A list of destination IPs that should not be in the catch-all headerspace.
+   * @param destinationMap Inversion of the prefix trie -- from sets of destinations to prefixes
+   */
   private void addCatchAllCase(
       List<Prefix> dstIps, List<Prefix> notDstIps, Map<Set<String>, List<Prefix>> destinationMap) {
     HeaderSpace catchAll = createHeaderSpace(dstIps);
-    // System.out.println("DstIps: " + dstIps);
-    for (Prefix pfx : notDstIps) {
-      catchAll.getNotDstIps().add(new IpWildcard(pfx));
-    }
-    for (Entry<Set<String>, List<Prefix>> entry : destinationMap.entrySet()) {
-      // Set<String> devices = entry.getKey();
-      List<Prefix> prefixes = entry.getValue();
-      for (Prefix pfx : prefixes) {
-        // System.out.println("Check for: " + devices + " --> " + prefixes);
-        catchAll.getNotDstIps().add(new IpWildcard(pfx));
-      }
-    }
+
+    catchAll.setNotDstIps(
+        Stream.concat(
+                notDstIps.stream(), destinationMap.values().stream().flatMap(Collection::stream))
+            .map(IpWildcard::new)
+            .collect(Collectors.toSet()));
+
     if (_headerspace != null) {
       copyAllButDestinationIp(catchAll, _headerspace);
     }
     if (!catchAll.getNotDstIps().equals(catchAll.getDstIps())) {
-      // System.out.println("Catch all: " + catchAll.getDstIps());
-      // System.out.println("Catch all: " + catchAll.getNotDstIps());
-      Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(catchAll, null);
-      _headerspaceMap.put(new HashSet<>(), tup);
+      _headerspaceMap.put(new HashSet<>(), new Tuple<>(catchAll, new Tuple<>(null, true)));
     }
   }
 
@@ -123,8 +119,7 @@ public class DestinationClasses {
           if (_headerspace != null) {
             copyAllButDestinationIp(h, _headerspace);
           }
-          Tuple<HeaderSpace, List<Prefix>> tup = new Tuple<>(h, prefixes);
-          _headerspaceMap.put(devices, tup);
+          _headerspaceMap.put(devices, new Tuple<>(h, new Tuple<>(prefixes, false)));
         });
   }
 
@@ -245,12 +240,7 @@ public class DestinationClasses {
    */
   private HeaderSpace createHeaderSpace(List<Prefix> prefixes) {
     HeaderSpace h = new HeaderSpace();
-    SortedSet<IpWildcard> ips = new TreeSet<>();
-    for (Prefix pfx : prefixes) {
-      IpWildcard ip = new IpWildcard(pfx);
-      ips.add(ip);
-    }
-    h.setDstIps(ips);
+    h.setDstIps(prefixes.stream().map(IpWildcard::new).collect(Collectors.toSet()));
     return h;
   }
 
@@ -266,7 +256,7 @@ public class DestinationClasses {
     return _headerspace;
   }
 
-  public Map<Set<String>, Tuple<HeaderSpace, List<Prefix>>> getHeaderspaceMap() {
+  public Map<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> getHeaderspaceMap() {
     return _headerspaceMap;
   }
 }
