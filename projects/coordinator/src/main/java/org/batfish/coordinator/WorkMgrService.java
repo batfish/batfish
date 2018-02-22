@@ -851,7 +851,7 @@ public class WorkMgrService {
       return successResponse(Main.getWorkMgr().getParsingResults(containerName, testrigName));
     } catch (Exception e) {
       String stackTrace = ExceptionUtils.getFullStackTrace(e);
-      _logger.error("WMS:getParsingResults exception: " + stackTrace);
+      _logger.errorf("WMS:getParsingResults exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
   }
