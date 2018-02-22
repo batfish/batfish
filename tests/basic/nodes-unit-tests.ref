@@ -224,7 +224,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "address_family"
+              "hostname" : "address_family",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -1981,7 +1984,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "bgp_address_family"
+              "hostname" : "bgp_address_family",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -2226,7 +2232,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "bgp_foundry"
+              "hostname" : "bgp_foundry",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -4102,7 +4111,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_additional_paths"
+              "hostname" : "cisco_additional_paths",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -4664,7 +4676,6 @@
         },
         "cisco_domain" : {
           "configurationFormat" : "CISCO_NX",
-          "domainName" : "my.domain.name",
           "name" : "cisco_domain",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
@@ -4674,6 +4685,7 @@
             "2.3.4.5"
           ],
           "dnsSourceInterface" : "Loopback666",
+          "domainName" : "my.domain.name",
           "roles" : [
             "cisco-domain"
           ],
@@ -6330,7 +6342,10 @@
           ],
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_isis"
+              "hostname" : "cisco_isis",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -7247,7 +7262,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "cisco_ospf"
+              "hostname" : "cisco_ospf",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -8347,7 +8365,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "colon_in_vrf"
+              "hostname" : "colon_in_vrf",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -9950,7 +9971,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "ios_bgp"
+              "hostname" : "ios_bgp",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -12042,11 +12066,11 @@
         },
         "juniper_misc" : {
           "configurationFormat" : "FLAT_JUNIPER",
-          "domainName" : "my.domain.name",
           "name" : "juniper_misc",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "domainName" : "my.domain.name",
           "roles" : [
             "juniper-misc"
           ],
@@ -12526,7 +12550,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "local_v6_addr"
+              "hostname" : "local_v6_addr",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -12806,11 +12833,11 @@
         },
         "nat-08c21704416f06046" : {
           "configurationFormat" : "AWS",
-          "domainName" : "aws",
           "name" : "nat-08c21704416f06046",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "domainName" : "aws",
           "vendorFamily" : {
             "aws" : {
               "region" : "aws_configs"
@@ -12824,11 +12851,11 @@
         },
         "nat-09fd8f73171d2d9a3" : {
           "configurationFormat" : "AWS",
-          "domainName" : "aws",
           "name" : "nat-09fd8f73171d2d9a3",
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "domainName" : "aws",
           "vendorFamily" : {
             "aws" : {
               "region" : "aws_configs"
@@ -13047,7 +13074,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "neighbor-name-numbers"
+              "hostname" : "neighbor-name-numbers",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -13651,7 +13681,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "network6"
+              "hostname" : "network6",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -13730,7 +13763,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "nexus-arista-router-bgp"
+              "hostname" : "nexus-arista-router-bgp",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -14146,7 +14182,10 @@
           },
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "non_nexus_neighbor_af"
+              "hostname" : "non_nexus_neighbor_af",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
@@ -20443,7 +20482,10 @@
           ],
           "vendorFamily" : {
             "cisco" : {
-              "hostname" : "vrf_context"
+              "hostname" : "vrf_context",
+              "logging" : {
+                "on" : true
+              }
             }
           },
           "vrfs" : {
