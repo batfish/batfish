@@ -34,7 +34,6 @@ public class BatfishObjectMapper extends ObjectMapper {
 
   public BatfishObjectMapper() {
     this(true);
-    registerModule(new GuavaModule());
   }
 
   public BatfishObjectMapper(boolean indent) {
@@ -53,6 +52,8 @@ public class BatfishObjectMapper extends ObjectMapper {
     //  entirely. See also https://github.com/batfish/batfish/issues/256
     setDefaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS));
     setDefaultPrettyPrinter(PRETTY_PRINTER);
+    // This line makes Guava collections work with jackson
+    registerModule(new GuavaModule());
   }
 
   public BatfishObjectMapper(ClassLoader cl) {
