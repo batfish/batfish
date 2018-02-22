@@ -830,6 +830,33 @@ public class WorkMgrService {
   }
 
   @POST
+  @Path(CoordConsts.SVC_RSC_GET_PARSING_RESULTS)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray getParsingResults(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName) {
+    try {
+      _logger.infof("WMS:getParsingResults %s %s %s\n", apiKey, containerName, testrigName);
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(testrigName, "Testrig name");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      return successResponse(Main.getWorkMgr().getParsingResults(containerName, testrigName));
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      _logger.errorf("WMS:getParsingResults exception: %s", stackTrace);
+      return failureResponse(e.getMessage());
+    }
+  }
+
+  @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getQuestionTemplates(@FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey) {
