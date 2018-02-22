@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -51,6 +52,8 @@ public class BatfishObjectMapper extends ObjectMapper {
     //  entirely. See also https://github.com/batfish/batfish/issues/256
     setDefaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_EMPTY, Include.ALWAYS));
     setDefaultPrettyPrinter(PRETTY_PRINTER);
+    // This line makes Guava collections work with jackson
+    registerModule(new GuavaModule());
   }
 
   public BatfishObjectMapper(ClassLoader cl) {
