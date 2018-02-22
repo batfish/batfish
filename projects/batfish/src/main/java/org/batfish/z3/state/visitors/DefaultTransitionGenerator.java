@@ -801,10 +801,13 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         List<Entry<BooleanExpr, BooleanExpr>> sourceNats =
                             sourceNatsByInterface.get(ifaceName);
                         for (int i = 0; i < sourceNats.size(); i++) {
+                          Entry<BooleanExpr, BooleanExpr> currentSourceNatEntry = sourceNats.get(i);
+                          BooleanExpr matchCurrentEntry = currentSourceNatEntry.getKey();
+                          BooleanExpr transformationToApply = currentSourceNatEntry.getValue();
                           ImmutableList.Builder<BooleanExpr> currentSourceNatConjuncts =
                               ImmutableList.<BooleanExpr>builder()
-                                  .add(sourceNats.get(i).getKey())
-                                  .add(sourceNats.get(i).getValue());
+                                  .add(matchCurrentEntry)
+                                  .add(transformationToApply);
                           if (i > 0) {
                             sourceNats
                                 .subList(0, i)
