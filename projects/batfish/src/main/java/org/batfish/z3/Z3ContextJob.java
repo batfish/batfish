@@ -24,6 +24,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
       String node, String vrf, Map<HeaderField, Long> constraints, String tag) {
     Flow.Builder flowBuilder = new Flow.Builder();
     flowBuilder.setIngressNode(node);
+    flowBuilder.setIngressVrf(vrf);
     flowBuilder.setTag(tag);
     constraints.forEach(
         (headerField, value) -> {

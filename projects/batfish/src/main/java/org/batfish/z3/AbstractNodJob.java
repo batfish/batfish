@@ -2,7 +2,6 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecNum;
@@ -15,7 +14,6 @@ import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -40,19 +38,14 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
   public final NodJobResult call() {
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
-      ImmutableSet.Builder<Entry<String, BitVecExpr>> variablesAsConstsBuilder =
-          ImmutableSet.builder();
-      BoolExpr smtInput = computeSmtInput(startTime, ctx, variablesAsConstsBuilder);
-      Model model = getSmtModel(ctx, smtInput);
+      SmtInput smtInput = computeSmtInput(startTime, ctx);
+      Model model = getSmtModel(ctx, smtInput._expr);
       if (model == null) {
         return new NodJobResult(startTime, _logger.getHistory());
       }
-      Map<String, BitVecExpr> variablesAsConsts =
-          variablesAsConstsBuilder
-              .build()
-              .stream()
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-      Set<Flow> flows = getFlows(model, variablesAsConsts);
+      Map<HeaderField, Long> headerConstraints =
+          getHeaderConstraints(model, smtInput._variablesAsConsts);
+      Set<Flow> flows = getFlows(model, headerConstraints);
       return new NodJobResult(startTime, _logger.getHistory(), flows);
     } catch (Z3Exception e) {
       return new NodJobResult(
@@ -62,26 +55,28 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     }
   }
 
-  protected abstract BoolExpr computeSmtInput(
-      long startTime, Context ctx, Builder<Entry<String, BitVecExpr>> variablesAsConstsBuilder);
+  Map<HeaderField,Long> getHeaderConstraints(
+      Model model, Map<String, BitVecExpr> variablesAsConsts) {
+    return Arrays.stream(model.getConstDecls())
+        .map(FuncDecl::getName)
+        .map(Object::toString)
+        .map(HeaderField::parse)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(),
+                headerField ->
+                    ((BitVecNum)
+                        model.getConstInterp(variablesAsConsts.get(headerField.getName())))
+                        .getLong()));
+  }
+
+  protected abstract SmtInput computeSmtInput(long startTime, Context ctx);
 
   private Flow createFlow(String node, String vrf, Map<HeaderField, Long> constraints) {
     return createFlow(node, vrf, constraints, _tag);
   }
 
-  protected Set<Flow> getFlows(Model model, Map<String, BitVecExpr> variablesAsConsts) {
-    Map<HeaderField, Long> constraints =
-        Arrays.stream(model.getConstDecls())
-            .map(FuncDecl::getName)
-            .map(Object::toString)
-            .map(HeaderField::parse)
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Function.identity(),
-                    headerField ->
-                        ((BitVecNum)
-                                model.getConstInterp(variablesAsConsts.get(headerField.getName())))
-                            .getLong()));
+  protected Set<Flow> getFlows(Model model, Map<HeaderField, Long> constraints) {
     return _nodeVrfSet
         .stream()
         .map(
