@@ -2,13 +2,11 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.SortedSetMultimap;
+import com.google.common.collect.TreeMultimap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -21,31 +19,30 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
-public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
+public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
 
-  public static class UniqueBgpAsnAnswerElement implements AnswerElement {
+  public static class BgpAsnUseAnswerElement implements AnswerElement {
 
-    private SortedMap<Integer, SortedSet<String>> _duplicateAsns;
+    public static final String PROP_ASNS = "asns";
 
-    public UniqueBgpAsnAnswerElement() {
-      _duplicateAsns = new TreeMap<>();
+    private SortedSetMultimap<Integer, String> _asns;
+
+    public BgpAsnUseAnswerElement(@JsonProperty(PROP_ASNS) TreeMultimap<Integer, String> asns) {
+      _asns = (asns == null) ? TreeMultimap.create() : asns;
     }
 
-    public void add(Integer asn, SortedSet<String> nodes) {
-      _duplicateAsns.put(asn, nodes);
-    }
-
-    public SortedMap<Integer, SortedSet<String>> getDuplicateAsns() {
-      return _duplicateAsns;
+    @JsonProperty(PROP_ASNS)
+    public SortedSetMultimap<Integer, String> getAsns() {
+      return _asns;
     }
 
     @Override
     public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for unique Bgp ASN check\n");
-      if (_duplicateAsns != null) {
-        for (Integer asn : _duplicateAsns.keySet()) {
+      StringBuilder sb = new StringBuilder("Results for BGP ASN use\n");
+      if (_asns != null) {
+        for (Integer asn : _asns.keySet()) {
           sb.append("  " + asn + "\n");
-          for (String node : _duplicateAsns.get(asn)) {
+          for (String node : _asns.get(asn)) {
             sb.append("    " + node + "\n");
           }
         }
@@ -54,21 +51,21 @@ public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class UniqueBgpAsnAnswerer extends Answerer {
+  public static class BgpAsnUseAnswerer extends Answerer {
 
-    public UniqueBgpAsnAnswerer(Question question, IBatfish batfish) {
+    public BgpAsnUseAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
 
-      UniqueBgpAsnQuestion question = (UniqueBgpAsnQuestion) _question;
+      BgpAsnUseQuestion question = (BgpAsnUseQuestion) _question;
 
-      UniqueBgpAsnAnswerElement answerElement = new UniqueBgpAsnAnswerElement();
+      BgpAsnUseAnswerElement answerElement = new BgpAsnUseAnswerElement(null);
+      SortedSetMultimap<Integer, String> asns = TreeMultimap.create();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
-      SortedMap<Integer, SortedSet<String>> asns = new TreeMap<>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
         if (!nodes.contains(hostname)) {
@@ -79,17 +76,15 @@ public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
           BgpProcess bgpProc = vrf.getBgpProcess();
           if (bgpProc != null) {
             for (BgpNeighbor neighbor : bgpProc.getNeighbors().values()) {
-              SortedSet<String> bgpNodes =
-                  asns.computeIfAbsent(neighbor.getLocalAs(), k -> new TreeSet<>());
-              bgpNodes.add(hostname);
+              asns.put(neighbor.getLocalAs(), hostname);
             }
           }
         }
       }
-      for (Entry<Integer, SortedSet<String>> e : asns.entrySet()) {
-        SortedSet<String> bgpNodes = e.getValue();
-        if (bgpNodes.size() > 1) {
-          answerElement.add(e.getKey(), bgpNodes);
+      // is there streams way of multimap to multimap conversion with a filter?
+      for (Integer asn : asns.keySet()) {
+        if (asns.get(asn).size() > question.getMinCount()) {
+          answerElement.getAsns().putAll(asn, asns.get(asn));
         }
       }
       return answerElement;
@@ -103,20 +98,28 @@ public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
    *
    * <p>In eBGP-based data centers, it is often desired that each router have its own ASN.
    *
-   * @type UniqueBgpAsn multifile
+   * @type BgpAsnUse multifile
+   * @param minCount Only report ASNs that are used at more than this number of nodes
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
-   * @example bf_answer("UniqueBgpAsns", nodeRegex='as2.*') Answers the question only for nodes
-   *     whose names start with 'as2'.
+   * @example bf_answer("BgpAsnUse", nodeRegex='as2.*') Answers the question only for nodes whose
+   *     names start with 'as2'.
    */
-  public static class UniqueBgpAsnQuestion extends Question {
+  public static class BgpAsnUseQuestion extends Question {
+
+    private static final String PROP_MIN_COUNT = "minCount";
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
+    private Integer _minCount;
+
     private NodesSpecifier _nodeRegex;
 
-    public UniqueBgpAsnQuestion() {
-      _nodeRegex = NodesSpecifier.ALL;
+    public BgpAsnUseQuestion(
+        @JsonProperty(PROP_MIN_COUNT) Integer minCount,
+        @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex) {
+      _minCount = minCount == null ? 0 : minCount;
+      _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
     }
 
     @Override
@@ -126,7 +129,12 @@ public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String getName() {
-      return "uniquebgpasn";
+      return "bgpasnuse";
+    }
+
+    @JsonProperty(PROP_MIN_COUNT)
+    public int getMinCount() {
+      return _minCount;
     }
 
     @JsonProperty(PROP_NODE_REGEX)
@@ -137,23 +145,19 @@ public class UniqueBgpAsnQuestionPlugin extends QuestionPlugin {
     @Override
     public String prettyPrint() {
       String retString =
-          String.format("uniquebgpasn %snodeRegex=\"%s", prettyPrintBase(), _nodeRegex);
+          String.format(
+              "bgpasnuse %snodeRegex='%s' minCount=%d", prettyPrintBase(), _nodeRegex, _minCount);
       return retString;
-    }
-
-    @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(NodesSpecifier nodeRegex) {
-      _nodeRegex = nodeRegex;
     }
   }
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new UniqueBgpAsnAnswerer(question, batfish);
+    return new BgpAsnUseAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new UniqueBgpAsnQuestion();
+    return new BgpAsnUseQuestion(null, null);
   }
 }

@@ -1,8 +1,8 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.question.UniqueBgpAsnQuestionPlugin$UniqueBgpAsnAnswerElement",
-      "duplicateAsns" : {
+      "class" : "org.batfish.question.BgpAsnUseQuestionPlugin$BgpAsnUseAnswerElement",
+      "asns" : {
         "1" : [
           "as1border1",
           "as1border2",
@@ -25,9 +25,10 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.UniqueBgpAsnQuestionPlugin$UniqueBgpAsnQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
+    "class" : "org.batfish.question.BgpAsnUseQuestionPlugin$BgpAsnUseQuestion",
+    "minCount" : 1,
+    "nodeRegex" : ".*",
+    "differential" : false
   },
   "status" : "SUCCESS",
   "summary" : {

@@ -34,8 +34,10 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
+                  </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -121,6 +123,11 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-guava</artifactId>
     </dependency>
 
     <dependency>
