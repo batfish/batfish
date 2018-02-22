@@ -25,6 +25,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,14 +86,33 @@ public class WorkMgrTest {
 
   @Test
   public void listQuestionNames() {
+    String questionName = "testquestion";
     _manager.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    assertThat(questionsDir.resolve("initinfo").toFile().mkdirs(), is(true));
+    assertThat(questionsDir.resolve(questionName).toFile().mkdirs(), is(true));
+
+    // Confirm the question shows up in listQuestions
     SortedSet<String> questions = _manager.listQuestions("container");
     assertThat(questions.size(), is(1));
-    assertThat(questions.first(), equalTo("initinfo"));
+    assertThat(questions.first(), equalTo(questionName));
+  }
+
+  @Test
+  public void listQuestionWithInternalQuestion() {
+    // Leading __ means this question is an internal question
+    // And should be hidden from listQuestions
+    String internalQuestionName = "__internalquestion";
+    _manager.initContainer("container", null);
+    Path containerDir =
+        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
+    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    assertThat(questionsDir.resolve(internalQuestionName).toFile().mkdirs(), is(true));
+
+    // Confirm no questions show up in listQuestions
+    SortedSet<String> questions = _manager.listQuestions("container");
+    assertThat(questions, IsEmptyCollection.empty());
   }
 
   @Test

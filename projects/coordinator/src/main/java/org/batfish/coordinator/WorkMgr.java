@@ -1223,6 +1223,8 @@ public class WorkMgr extends AbstractCoordinator {
         new TreeSet<>(
             CommonUtil.getSubdirectories(questionsDir)
                 .stream()
+                // Question dirs starting with __ are internal questions, hidden from clients
+                .filter(dir -> !dir.getFileName().toString().startsWith("__"))
                 .map(dir -> dir.getFileName().toString())
                 .collect(Collectors.toSet()));
     return questions;
