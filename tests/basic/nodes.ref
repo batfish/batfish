@@ -1009,6 +1009,9 @@
                   "execTimeoutSeconds" : 0
                 }
               },
+              "logging" : {
+                "on" : true
+              },
               "services" : {
                 "timestamps" : {
                   "enabled" : true,
@@ -2235,6 +2238,9 @@
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 }
+              },
+              "logging" : {
+                "on" : true
               },
               "ntp" : {
                 "servers" : {
@@ -3815,6 +3821,9 @@
                   "execTimeoutSeconds" : 0
                 }
               },
+              "logging" : {
+                "on" : true
+              },
               "ntp" : {
                 "servers" : {
                   "18.18.18.18" : {
@@ -4976,6 +4985,9 @@
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 }
+              },
+              "logging" : {
+                "on" : true
               },
               "ntp" : {
                 "servers" : {
@@ -7094,6 +7106,9 @@
                   "execTimeoutSeconds" : 0
                 }
               },
+              "logging" : {
+                "on" : true
+              },
               "services" : {
                 "timestamps" : {
                   "enabled" : true,
@@ -7774,6 +7789,9 @@
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 }
+              },
+              "logging" : {
+                "on" : true
               },
               "services" : {
                 "timestamps" : {
@@ -8486,6 +8504,9 @@
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 }
+              },
+              "logging" : {
+                "on" : true
               },
               "services" : {
                 "timestamps" : {
@@ -9598,6 +9619,9 @@
                   "execTimeoutSeconds" : 0
                 }
               },
+              "logging" : {
+                "on" : true
+              },
               "ntp" : {
                 "servers" : {
                   "18.18.18.18" : {
@@ -10635,6 +10659,9 @@
                   "execTimeoutMinutes" : 0,
                   "execTimeoutSeconds" : 0
                 }
+              },
+              "logging" : {
+                "on" : true
               },
               "ntp" : {
                 "servers" : {

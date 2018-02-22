@@ -1,7 +1,7 @@
 package org.batfish.z3.expr;
 
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class FalseExpr extends BooleanExpr {
 
@@ -10,13 +10,13 @@ public class FalseExpr extends BooleanExpr {
   private FalseExpr() {}
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitFalseExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitFalseExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitFalseExpr(this);
   }
 
   @Override

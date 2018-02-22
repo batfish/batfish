@@ -1,10 +1,13 @@
 package org.batfish.z3;
 
-import com.microsoft.z3.Z3Exception;
-
+/** A synthesizer that generates the query portion of a Batfish reachability AST program */
 public interface QuerySynthesizer {
 
   boolean getNegate();
 
-  NodProgram getNodProgram(SynthesizerInput input, NodProgram baseProgram) throws Z3Exception;
+  /**
+   * Generate a reachability program populated only with the incremental rules and queries relevant
+   * to this particular query type.
+   */
+  ReachabilityProgram getReachabilityProgram(SynthesizerInput input);
 }
