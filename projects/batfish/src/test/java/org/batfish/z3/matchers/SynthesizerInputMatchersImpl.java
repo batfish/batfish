@@ -1,6 +1,8 @@
 package org.batfish.z3.matchers;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
@@ -130,6 +132,23 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Set<Ip>> featureValueOf(SynthesizerInput actual) {
       return actual.getIpsByHostname();
+    }
+  }
+
+  static final class HasSourceNats
+      extends FeatureMatcher<
+          SynthesizerInput, Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>>> {
+    HasSourceNats(
+        @Nonnull
+            Matcher<? super Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>>>
+                subMatcher) {
+      super(subMatcher, "SynthesizerInput with source NATs", "source NATs");
+    }
+
+    @Override
+    protected Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getSourceNats();
     }
   }
 

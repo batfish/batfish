@@ -1,14 +1,26 @@
 package org.batfish.z3.expr;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import java.util.Objects;
 import java.util.Set;
 import org.batfish.datamodel.SubRange;
 import org.batfish.z3.HeaderField;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class RangeMatchExpr extends BooleanExpr {
+
+  public static RangeMatchExpr fromSubRanges(HeaderField var, int bits, Set<SubRange> range) {
+    return new RangeMatchExpr(
+        var,
+        bits,
+        range
+            .stream()
+            .map(subRange -> Range.closed((long) subRange.getStart(), (long) subRange.getEnd()))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
 
   public static BooleanExpr greaterThanOrEqualTo(HeaderField bv, long lb, int numBits) {
     long remainingNumber = lb;
@@ -71,12 +83,12 @@ public class RangeMatchExpr extends BooleanExpr {
 
   private final BooleanExpr _expr;
 
-  public RangeMatchExpr(HeaderField var, int bits, Set<SubRange> range) {
+  public RangeMatchExpr(HeaderField var, int bits, Set<Range<Long>> range) {
     long max = (1L << bits) - 1;
     ImmutableList.Builder<BooleanExpr> matchSomeSubRangeBuilder = ImmutableList.builder();
-    for (SubRange subRange : range) {
-      long low = subRange.getStart();
-      long high = subRange.getEnd();
+    for (Range<Long> subRange : range) {
+      long low = subRange.lowerEndpoint();
+      long high = subRange.upperEndpoint();
       if (low == high) {
         EqExpr exactMatch = new EqExpr(new VarIntExpr(var), new LitIntExpr(low, bits));
         matchSomeSubRangeBuilder.add(exactMatch);
@@ -104,13 +116,13 @@ public class RangeMatchExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitRangeMatchExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitRangeMatchExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitRangeMatchExpr(this);
   }
 
   @Override

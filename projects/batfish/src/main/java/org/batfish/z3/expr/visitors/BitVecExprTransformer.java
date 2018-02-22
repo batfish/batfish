@@ -2,51 +2,52 @@ package org.batfish.z3.expr.visitors;
 
 import com.microsoft.z3.BitVecExpr;
 import org.batfish.common.BatfishException;
-import org.batfish.z3.HeaderField;
-import org.batfish.z3.NodProgram;
+import org.batfish.z3.NodContext;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
-public class BitVecExprTransformer implements IntExprVisitor {
+public class BitVecExprTransformer implements GenericIntExprVisitor<BitVecExpr> {
 
-  public static BitVecExpr toBitVecExpr(IntExpr intExpr, NodProgram nodProgram) {
-    BitVecExprTransformer bitVecExprTransformer = new BitVecExprTransformer(nodProgram);
-    intExpr.accept(bitVecExprTransformer);
-    return bitVecExprTransformer._bitVecExpr;
+  public static BitVecExpr toBitVecExpr(IntExpr intExpr, NodContext nodContext) {
+    BitVecExprTransformer bitVecExprTransformer = new BitVecExprTransformer(nodContext);
+    return intExpr.accept(bitVecExprTransformer);
   }
 
-  private BitVecExpr _bitVecExpr;
+  private final NodContext _nodContext;
 
-  private final NodProgram _nodProgram;
-
-  private BitVecExprTransformer(NodProgram nodProgram) {
-    _nodProgram = nodProgram;
+  private BitVecExprTransformer(NodContext nodContext) {
+    _nodContext = nodContext;
   }
 
   @Override
-  public void visitExtractExpr(ExtractExpr extractExpr) {
-    _bitVecExpr =
-        _nodProgram
-            .getContext()
-            .mkExtract(
-                extractExpr.getHigh(),
-                extractExpr.getLow(),
-                toBitVecExpr(extractExpr.getVar(), _nodProgram));
+  public BitVecExpr castToGenericIntExprVisitorReturnType(Object o) {
+    return (BitVecExpr) o;
   }
 
   @Override
-  public void visitLitIntExpr(LitIntExpr litIntExpr) {
-    _bitVecExpr = _nodProgram.getContext().mkBV(litIntExpr.getNum(), litIntExpr.getBits());
+  public BitVecExpr visitExtractExpr(ExtractExpr extractExpr) {
+    return _nodContext
+        .getContext()
+        .mkExtract(
+            extractExpr.getHigh(),
+            extractExpr.getLow(),
+            toBitVecExpr(extractExpr.getVar(), _nodContext));
   }
 
   @Override
-  public void visitVarIntExpr(VarIntExpr varIntExpr) {
-    HeaderField headerField = varIntExpr.getHeaderField();
-    _bitVecExpr = _nodProgram.getVariables().get(headerField);
-    if (_bitVecExpr == null) {
-      throw new BatfishException("nodProgram missing mapping for variable: '" + headerField + "'");
+  public BitVecExpr visitLitIntExpr(LitIntExpr litIntExpr) {
+    return _nodContext.getContext().mkBV(litIntExpr.getNum(), litIntExpr.getBits());
+  }
+
+  @Override
+  public BitVecExpr visitVarIntExpr(VarIntExpr varIntExpr) {
+    String headerField = varIntExpr.getHeaderField().getName();
+    BitVecExpr ret = _nodContext.getVariables().get(headerField);
+    if (ret == null) {
+      throw new BatfishException("nodContext missing mapping for variable: '" + headerField + "'");
     }
+    return ret;
   }
 }

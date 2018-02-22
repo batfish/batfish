@@ -3,6 +3,8 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +31,9 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.RangeMatchExpr;
+import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
@@ -166,6 +171,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final boolean _simplify;
 
+  private final Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> _sourceNats;
+
   private final Map<String, Set<String>> _topologyInterfaces;
 
   private final Set<Type> _vectorizedParameters;
@@ -204,6 +211,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _edges = ImmutableSet.copyOf(dataPlane.getTopologyEdges());
       _enabledEdges = computeEnabledEdges();
       _topologyInterfaces = computeTopologyInterfaces();
+      _sourceNats = computeSourceNats();
     } else {
       _fibs = null;
       _flowSinks = null;
@@ -213,6 +221,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _edges = null;
       _enabledEdges = null;
       _topologyInterfaces = null;
+      _sourceNats = null;
     }
     _enabledAcls = computeEnabledAcls();
     _aclActions = computeAclActions();
@@ -575,6 +584,50 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 }));
   }
 
+  private Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> computeSourceNats() {
+    return _topologyInterfaces
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                topologyInterfacesEntryByHostname -> {
+                  String hostname = topologyInterfacesEntryByHostname.getKey();
+                  Configuration c = _configurations.get(hostname);
+                  return topologyInterfacesEntryByHostname
+                      .getValue()
+                      .stream()
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Function.identity(),
+                              ifaceName -> {
+                                return c.getInterfaces()
+                                    .get(ifaceName)
+                                    .getSourceNats()
+                                    .stream()
+                                    .map(
+                                        sourceNat -> {
+                                          IpAccessList acl = sourceNat.getAcl();
+                                          BooleanExpr matchCondition =
+                                              acl != null
+                                                  ? new AclPermit(hostname, acl.getName())
+                                                  : TrueExpr.INSTANCE;
+                                          BooleanExpr transformationCondition =
+                                              new RangeMatchExpr(
+                                                  TransformationHeaderField.NEW_SRC_IP,
+                                                  TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                                  ImmutableSet.of(
+                                                      Range.closed(
+                                                          sourceNat.getPoolIpFirst().asLong(),
+                                                          sourceNat.getPoolIpLast().asLong())));
+                                          return Maps.immutableEntry(
+                                              matchCondition, transformationCondition);
+                                        })
+                                    .collect(ImmutableList.toImmutableList());
+                              }));
+                }));
+  }
+
   private Map<String, Set<String>> computeTopologyInterfaces() {
     Map<String, Set<String>> topologyEdges = new HashMap<>();
     _enabledEdges
@@ -667,6 +720,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public boolean getSimplify() {
     return _simplify;
+  }
+
+  @Override
+  public Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> getSourceNats() {
+    return _sourceNats;
   }
 
   @Override
