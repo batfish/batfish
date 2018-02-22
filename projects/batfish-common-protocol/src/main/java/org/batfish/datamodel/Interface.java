@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +57,7 @@ public final class Interface extends ComparableStructure<String> {
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _sourceNats = ImmutableList.of();
     }
 
     @Override

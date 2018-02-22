@@ -70,11 +70,11 @@ public class BoolExprTransformerTest {
   private TransformationStateExpr _transformationStateExpr;
 
   private BooleanExpr newBooleanAtom() {
-    return new TestBooleanAtom(_atomCounter++);
+    return new TestBooleanAtom(_atomCounter++, _ctx);
   }
 
   private IntExpr newIntAtom() {
-    return new TestIntAtom(_atomCounter++, 32);
+    return new TestIntAtom(_atomCounter++, 32, _ctx);
   }
 
   @Before

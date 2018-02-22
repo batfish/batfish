@@ -17,7 +17,6 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
-import org.batfish.z3.expr.DelegateBooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -39,7 +38,7 @@ import org.batfish.z3.state.visitors.Parameterizer;
 /**
  * Visitor that transforms Batfish reachability AST {@link BooleanExpr} into Z3 AST {@link BoolExpr}
  */
-public class BoolExprTransformer implements BooleanExprVisitor {
+public class BoolExprTransformer implements GenericBooleanExprVisitor<BoolExpr> {
 
   public static String getNodName(Set<Type> vectorizedParameters, StateExpr stateExpr) {
     StringBuilder name = new StringBuilder();
@@ -57,14 +56,10 @@ public class BoolExprTransformer implements BooleanExprVisitor {
 
   public static BoolExpr toBoolExpr(
       BooleanExpr booleanExpr, SynthesizerInput input, NodContext nodContext) {
-    BoolExprTransformer boolExprTransformer = new BoolExprTransformer(input, nodContext);
-    booleanExpr.accept(boolExprTransformer);
-    return boolExprTransformer._boolExpr;
+    return booleanExpr.accept(new BoolExprTransformer(input, nodContext));
   }
 
   private final Supplier<Expr[]> _basicArguments;
-
-  private BoolExpr _boolExpr;
 
   private final Supplier<Expr[]> _from;
 
@@ -108,6 +103,11 @@ public class BoolExprTransformer implements BooleanExprVisitor {
     _to = () -> _substitutions.get().values().toArray(new Expr[] {});
   }
 
+  @Override
+  public BoolExpr castToGenericBooleanExprVisitorReturnType(Object o) {
+    return (BoolExpr) o;
+  }
+
   private Expr[] getBasicRelationArgs(SynthesizerInput input, BasicStateExpr stateExpr) {
     /* TODO: support vectorized state parameters */
     return _basicArguments.get();
@@ -120,114 +120,104 @@ public class BoolExprTransformer implements BooleanExprVisitor {
   }
 
   @Override
-  public void visitAndExpr(AndExpr andExpr) {
-    _boolExpr =
-        _nodContext
-            .getContext()
-            .mkAnd(
-                andExpr
-                    .getConjuncts()
-                    .stream()
-                    .map(conjunct -> toBoolExpr(conjunct, _input, _nodContext))
-                    .toArray(BoolExpr[]::new));
+  public BoolExpr visitAndExpr(AndExpr andExpr) {
+    return _nodContext
+        .getContext()
+        .mkAnd(
+            andExpr
+                .getConjuncts()
+                .stream()
+                .map(conjunct -> toBoolExpr(conjunct, _input, _nodContext))
+                .toArray(BoolExpr[]::new));
   }
 
   @Override
-  public void visitBasicStateExpr(BasicStateExpr basicStateExpr) {
+  public BoolExpr visitBasicStateExpr(BasicStateExpr basicStateExpr) {
     /* TODO: allow vectorized variables */
-    _boolExpr =
-        (BoolExpr)
-            _nodContext
-                .getContext()
-                .mkApp(
-                    _nodContext.getRelationDeclarations().get(getNodName(_input, basicStateExpr)),
-                    getBasicRelationArgs(_input, basicStateExpr));
-  }
-
-  @Override
-  public void visitCurrentIsOriginal(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    currentIsOriginalExpr.getExpr().accept(this);
-  }
-
-  public void visitDelegateBooleanExpr(DelegateBooleanExpr delegateBooleanExpr) {
-    _boolExpr = delegateBooleanExpr.acceptBoolExprTransformer(_basicArguments, _input, _nodContext);
-  }
-
-  @Override
-  public void visitEqExpr(EqExpr eqExpr) {
-    _boolExpr =
+    return (BoolExpr)
         _nodContext
             .getContext()
-            .mkEq(
-                BitVecExprTransformer.toBitVecExpr(eqExpr.getLhs(), _nodContext),
-                BitVecExprTransformer.toBitVecExpr(eqExpr.getRhs(), _nodContext));
+            .mkApp(
+                _nodContext.getRelationDeclarations().get(getNodName(_input, basicStateExpr)),
+                getBasicRelationArgs(_input, basicStateExpr));
   }
 
   @Override
-  public void visitFalseExpr(FalseExpr falseExpr) {
-    _boolExpr = _nodContext.getContext().mkFalse();
+  public BoolExpr visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
+    return currentIsOriginalExpr.getExpr().accept(this);
   }
 
   @Override
-  public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
-    headerSpaceMatchExpr.getExpr().accept(this);
+  public BoolExpr visitEqExpr(EqExpr eqExpr) {
+    return _nodContext
+        .getContext()
+        .mkEq(
+            BitVecExprTransformer.toBitVecExpr(eqExpr.getLhs(), _nodContext),
+            BitVecExprTransformer.toBitVecExpr(eqExpr.getRhs(), _nodContext));
   }
 
   @Override
-  public void visitIfExpr(IfExpr ifExpr) {
-    _boolExpr =
-        _nodContext
-            .getContext()
-            .mkImplies(
-                BoolExprTransformer.toBoolExpr(ifExpr.getAntecedent(), _input, _nodContext),
-                BoolExprTransformer.toBoolExpr(ifExpr.getConsequent(), _input, _nodContext));
+  public BoolExpr visitFalseExpr(FalseExpr falseExpr) {
+    return _nodContext.getContext().mkFalse();
   }
 
   @Override
-  public void visitNotExpr(NotExpr notExpr) {
-    _boolExpr = _nodContext.getContext().mkNot(toBoolExpr(notExpr.getArg(), _input, _nodContext));
+  public BoolExpr visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
+    return headerSpaceMatchExpr.getExpr().accept(this);
   }
 
   @Override
-  public void visitOrExpr(OrExpr orExpr) {
-    _boolExpr =
-        _nodContext
-            .getContext()
-            .mkOr(
-                orExpr
-                    .getDisjuncts()
-                    .stream()
-                    .map(disjunct -> toBoolExpr(disjunct, _input, _nodContext))
-                    .toArray(BoolExpr[]::new));
+  public BoolExpr visitIfExpr(IfExpr ifExpr) {
+    return _nodContext
+        .getContext()
+        .mkImplies(
+            BoolExprTransformer.toBoolExpr(ifExpr.getAntecedent(), _input, _nodContext),
+            BoolExprTransformer.toBoolExpr(ifExpr.getConsequent(), _input, _nodContext));
   }
 
   @Override
-  public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
-    prefixMatchExpr.getExpr().accept(this);
+  public BoolExpr visitNotExpr(NotExpr notExpr) {
+    return _nodContext.getContext().mkNot(toBoolExpr(notExpr.getArg(), _input, _nodContext));
   }
 
   @Override
-  public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
-    rangeMatchExpr.getExpr().accept(this);
+  public BoolExpr visitOrExpr(OrExpr orExpr) {
+    return _nodContext
+        .getContext()
+        .mkOr(
+            orExpr
+                .getDisjuncts()
+                .stream()
+                .map(disjunct -> toBoolExpr(disjunct, _input, _nodContext))
+                .toArray(BoolExpr[]::new));
   }
 
   @Override
-  public void visitSaneExpr(SaneExpr saneExpr) {
-    saneExpr.getExpr().accept(this);
+  public BoolExpr visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
+    return prefixMatchExpr.getExpr().accept(this);
   }
 
   @Override
-  public void visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
+  public BoolExpr visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
+    return rangeMatchExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public BoolExpr visitSaneExpr(SaneExpr saneExpr) {
+    return saneExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public BoolExpr visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
     /* TODO: allow vectorized variables */
-    _boolExpr =
-        (BoolExpr)
-            _nodContext
-                .getContext()
-                .mkApp(
-                    _nodContext
-                        .getRelationDeclarations()
-                        .get(getNodName(_input, transformationStateExpr)),
-                    getTransformationRelationArgs(_input, transformationStateExpr));
+    return (BoolExpr)
+        _nodContext
+            .getContext()
+            .mkApp(
+                _nodContext
+                    .getRelationDeclarations()
+                    .get(getNodName(_input, transformationStateExpr)),
+                getTransformationRelationArgs(_input, transformationStateExpr));
   }
 
   /**
@@ -236,14 +226,14 @@ public class BoolExprTransformer implements BooleanExprVisitor {
    * See {@link DefaultTransitionGenerator#visitPostOutInterface} for example of use.
    */
   @Override
-  public void visitTransformedExpr(TransformedExpr transformedExpr) {
+  public BoolExpr visitTransformedExpr(TransformedExpr transformedExpr) {
     /* TODO: allow vectorized variables */
     BoolExpr subExpression = toBoolExpr(transformedExpr.getSubExpression(), _input, _nodContext);
-    _boolExpr = (BoolExpr) subExpression.substitute(_from.get(), _to.get());
+    return (BoolExpr) subExpression.substitute(_from.get(), _to.get());
   }
 
   @Override
-  public void visitTrueExpr(TrueExpr trueExpr) {
-    _boolExpr = _nodContext.getContext().mkTrue();
+  public BoolExpr visitTrueExpr(TrueExpr trueExpr) {
+    return _nodContext.getContext().mkTrue();
   }
 }

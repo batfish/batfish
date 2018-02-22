@@ -17,8 +17,8 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.z3.BasicHeaderField;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class HeaderSpaceMatchExpr extends BooleanExpr {
 
@@ -417,13 +417,13 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitHeaderSpaceMatchExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitHeaderSpaceMatchExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitHeaderSpaceMatchExpr(this);
   }
 
   @Override

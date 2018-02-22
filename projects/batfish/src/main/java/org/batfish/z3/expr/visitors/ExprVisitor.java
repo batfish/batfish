@@ -29,7 +29,7 @@ public interface ExprVisitor {
 
   void visitBitVecExpr(BitVecExpr bitVecExpr);
 
-  void visitCurrentIsOriginal(CurrentIsOriginalExpr currentIsOriginalExpr);
+  void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr);
 
   void visitEqExpr(EqExpr eqExpr);
 

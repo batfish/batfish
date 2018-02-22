@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Objects;
 import org.batfish.z3.TransformationHeaderField;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class CurrentIsOriginalExpr extends BooleanExpr {
 
@@ -25,13 +25,13 @@ public class CurrentIsOriginalExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
-    visitor.visitCurrentIsOriginal(this);
+  public void accept(ExprVisitor visitor) {
+    visitor.visitCurrentIsOriginalExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitCurrentIsOriginal(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitCurrentIsOriginalExpr(this);
   }
 
   @Override

@@ -2,8 +2,8 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 import org.batfish.common.BatfishException;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class EqExpr extends BooleanExpr {
 
@@ -25,13 +25,13 @@ public class EqExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitEqExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitEqExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitEqExpr(this);
   }
 
   @Override

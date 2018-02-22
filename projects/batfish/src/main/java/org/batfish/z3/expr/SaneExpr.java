@@ -6,8 +6,8 @@ import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.z3.BasicHeaderField;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public class SaneExpr extends BooleanExpr {
 
@@ -66,13 +66,13 @@ public class SaneExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitSaneExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitSaneExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitSaneExpr(this);
   }
 
   @Override

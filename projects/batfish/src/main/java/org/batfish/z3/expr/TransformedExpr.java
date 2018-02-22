@@ -1,8 +1,8 @@
 package org.batfish.z3.expr;
 
 import java.util.Objects;
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 /**
  * Represents a lazy transformation of the contained {@link BooleanExpr} to one where any
@@ -17,13 +17,13 @@ public class TransformedExpr extends BooleanExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitTransformedExpr(this);
   }
 
   @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitTransformedExpr(this);
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitTransformedExpr(this);
   }
 
   @Override
@@ -31,12 +31,12 @@ public class TransformedExpr extends BooleanExpr {
     return Objects.equals(_subExpression, ((TransformedExpr) e)._subExpression);
   }
 
+  public BooleanExpr getSubExpression() {
+    return _subExpression;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(_subExpression);
-  }
-
-  public BooleanExpr getSubExpression() {
-    return _subExpression;
   }
 }

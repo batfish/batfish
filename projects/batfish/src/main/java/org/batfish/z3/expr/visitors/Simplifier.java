@@ -15,6 +15,7 @@ import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.DeclareRelStatement;
 import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.EqExpr;
+import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.GenericStatementVisitor;
@@ -38,47 +39,54 @@ import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
-public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statement> {
+public class Simplifier
+    implements GenericBooleanExprVisitor<BooleanExpr>,
+        GenericExprVisitor<Expr>,
+        GenericIntExprVisitor<IntExpr>,
+        GenericStatementVisitor<Statement> {
 
   private static final Comment UNUSABLE_RULE = new Comment("(unsatisfiable rule)");
 
   private static final Comment VACUOUS_RULE = new Comment("(vacuous rule)");
 
   public static BooleanExpr simplifyBooleanExpr(BooleanExpr expr) {
-    Simplifier simplifier = new Simplifier();
-    expr.accept(simplifier);
-    return simplifier._simplifiedBooleanExpr;
+    return expr.accept(new Simplifier());
   }
 
   public static Statement simplifyStatement(Statement statement) {
-    Simplifier simplifier = new Simplifier();
-    return statement.accept(simplifier);
+    return statement.accept(new Simplifier());
   }
-
-  private BooleanExpr _simplifiedBooleanExpr;
 
   private Simplifier() {}
 
   @Override
-  public void visitAndExpr(AndExpr andExpr) {
+  public BooleanExpr castToGenericBooleanExprVisitorReturnType(Object o) {
+    return (BooleanExpr) o;
+  }
+
+  @Override
+  public IntExpr castToGenericIntExprVisitorReturnType(Object o) {
+    return (IntExpr) o;
+  }
+
+  @Override
+  public BooleanExpr visitAndExpr(AndExpr andExpr) {
     boolean changed = false;
     List<BooleanExpr> oldConjuncts = andExpr.getConjuncts();
     ImmutableList.Builder<BooleanExpr> newConjunctsBuilder = ImmutableList.builder();
 
     // first check for nested ANDs
     if (oldConjuncts.stream().anyMatch(Predicates.instanceOf(AndExpr.class))) {
-      _simplifiedBooleanExpr =
-          simplifyBooleanExpr(
-              new AndExpr(
-                  oldConjuncts
-                      .stream()
-                      .flatMap(
-                          conjunct ->
-                              conjunct instanceof AndExpr
-                                  ? ((AndExpr) conjunct).getConjuncts().stream()
-                                  : Stream.of(conjunct))
-                      .collect(ImmutableList.toImmutableList())));
-      return;
+      return simplifyBooleanExpr(
+          new AndExpr(
+              oldConjuncts
+                  .stream()
+                  .flatMap(
+                      conjunct ->
+                          conjunct instanceof AndExpr
+                              ? ((AndExpr) conjunct).getConjuncts().stream()
+                              : Stream.of(conjunct))
+                  .collect(ImmutableList.toImmutableList())));
     }
 
     // no nested ANDs, so just simplify all conjuncts
@@ -88,8 +96,7 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
         changed = true;
       }
       if (simplifiedConjunct == FalseExpr.INSTANCE) {
-        _simplifiedBooleanExpr = FalseExpr.INSTANCE;
-        return;
+        return FalseExpr.INSTANCE;
       } else if (simplifiedConjunct != TrueExpr.INSTANCE) {
         newConjunctsBuilder.add(simplifiedConjunct);
       } else {
@@ -98,13 +105,13 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     }
     List<BooleanExpr> newConjuncts = newConjunctsBuilder.build();
     if (newConjuncts.size() == 0) {
-      _simplifiedBooleanExpr = TrueExpr.INSTANCE;
+      return TrueExpr.INSTANCE;
     } else if (newConjuncts.size() == 1) {
-      _simplifiedBooleanExpr = newConjuncts.get(0);
+      return newConjuncts.get(0);
     } else if (!changed) {
-      _simplifiedBooleanExpr = andExpr;
+      return andExpr;
     } else {
-      _simplifiedBooleanExpr = new AndExpr(newConjuncts);
+      return new AndExpr(newConjuncts);
     }
   }
 
@@ -114,12 +121,12 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitBasicStateExpr(BasicStateExpr basicStateExpr) {
-    _simplifiedBooleanExpr = basicStateExpr;
+  public BooleanExpr visitBasicStateExpr(BasicStateExpr basicStateExpr) {
+    return basicStateExpr;
   }
 
   @Override
-  public void visitBitVecExpr(BitVecExpr bitVecExpr) {
+  public IntExpr visitBitVecExpr(BitVecExpr bitVecExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -130,8 +137,8 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitCurrentIsOriginal(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    _simplifiedBooleanExpr = simplifyBooleanExpr(currentIsOriginalExpr.getExpr());
+  public BooleanExpr visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
+    return simplifyBooleanExpr(currentIsOriginalExpr.getExpr());
   }
 
   @Override
@@ -145,42 +152,42 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitEqExpr(EqExpr eqExpr) {
+  public BooleanExpr visitEqExpr(EqExpr eqExpr) {
     IntExpr lhs = eqExpr.getLhs();
     IntExpr rhs = eqExpr.getRhs();
     if (lhs.equals(rhs)) {
-      _simplifiedBooleanExpr = TrueExpr.INSTANCE;
+      return TrueExpr.INSTANCE;
     } else if (lhs instanceof LitIntExpr && rhs instanceof LitIntExpr) {
-      _simplifiedBooleanExpr = FalseExpr.INSTANCE;
+      return FalseExpr.INSTANCE;
     } else {
-      _simplifiedBooleanExpr = eqExpr;
+      return eqExpr;
     }
   }
 
   @Override
-  public void visitExtractExpr(ExtractExpr extractExpr) {
+  public IntExpr visitExtractExpr(ExtractExpr extractExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void visitFalseExpr(FalseExpr falseExpr) {
-    _simplifiedBooleanExpr = falseExpr;
+  public BooleanExpr visitFalseExpr(FalseExpr falseExpr) {
+    return falseExpr;
   }
 
   @Override
-  public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
-    _simplifiedBooleanExpr = simplifyBooleanExpr(headerSpaceMatchExpr.getExpr());
+  public BooleanExpr visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
+    return simplifyBooleanExpr(headerSpaceMatchExpr.getExpr());
   }
 
   @Override
-  public void visitIdExpr(IdExpr idExpr) {
+  public Expr visitIdExpr(IdExpr idExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void visitIfExpr(IfExpr ifExpr) {
+  public BooleanExpr visitIfExpr(IfExpr ifExpr) {
     BooleanExpr oldAntecedent = ifExpr.getAntecedent();
     BooleanExpr oldConsequent = ifExpr.getConsequent();
     BooleanExpr newAntecedent = simplifyBooleanExpr(oldAntecedent);
@@ -188,65 +195,63 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     if (newAntecedent == FalseExpr.INSTANCE
         || newConsequent == TrueExpr.INSTANCE
         || newAntecedent.equals(newConsequent)) {
-      _simplifiedBooleanExpr = TrueExpr.INSTANCE;
+      return TrueExpr.INSTANCE;
     } else if (newAntecedent == TrueExpr.INSTANCE) {
-      _simplifiedBooleanExpr = newConsequent;
+      return newConsequent;
     } else if (newAntecedent != oldAntecedent || newConsequent != oldConsequent) {
-      _simplifiedBooleanExpr = new IfExpr(newAntecedent, newConsequent);
+      return new IfExpr(newAntecedent, newConsequent);
     } else {
-      _simplifiedBooleanExpr = ifExpr;
+      return ifExpr;
     }
   }
 
   @Override
-  public void visitListExpr(ListExpr listExpr) {
+  public Expr visitListExpr(ListExpr listExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void visitLitIntExpr(LitIntExpr litIntExpr) {
+  public IntExpr visitLitIntExpr(LitIntExpr litIntExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
-  public void visitNotExpr(NotExpr notExpr) {
+  public BooleanExpr visitNotExpr(NotExpr notExpr) {
     BooleanExpr oldArg = notExpr.getArg();
     BooleanExpr newArg = simplifyBooleanExpr(oldArg);
     if (newArg == FalseExpr.INSTANCE) {
-      _simplifiedBooleanExpr = TrueExpr.INSTANCE;
+      return TrueExpr.INSTANCE;
     } else if (newArg == TrueExpr.INSTANCE) {
-      _simplifiedBooleanExpr = FalseExpr.INSTANCE;
+      return FalseExpr.INSTANCE;
     } else if (newArg instanceof NotExpr) {
-      _simplifiedBooleanExpr = ((NotExpr) newArg).getArg();
+      return ((NotExpr) newArg).getArg();
     } else if (newArg != oldArg) {
-      _simplifiedBooleanExpr = new NotExpr(newArg);
+      return new NotExpr(newArg);
     } else {
-      _simplifiedBooleanExpr = notExpr;
+      return notExpr;
     }
   }
 
   @Override
-  public void visitOrExpr(OrExpr orExpr) {
+  public BooleanExpr visitOrExpr(OrExpr orExpr) {
     boolean changed = false;
     List<BooleanExpr> oldDisjuncts = orExpr.getDisjuncts();
     ImmutableList.Builder<BooleanExpr> newDisjunctsBuilder = ImmutableList.builder();
 
     // first check for nested ORs
     if (oldDisjuncts.stream().anyMatch(Predicates.instanceOf(OrExpr.class))) {
-      _simplifiedBooleanExpr =
-          simplifyBooleanExpr(
-              new OrExpr(
-                  oldDisjuncts
-                      .stream()
-                      .flatMap(
-                          disjunct ->
-                              disjunct instanceof OrExpr
-                                  ? ((OrExpr) disjunct).getDisjuncts().stream()
-                                  : Stream.of(disjunct))
-                      .collect(ImmutableList.toImmutableList())));
-      return;
+      return simplifyBooleanExpr(
+          new OrExpr(
+              oldDisjuncts
+                  .stream()
+                  .flatMap(
+                      disjunct ->
+                          disjunct instanceof OrExpr
+                              ? ((OrExpr) disjunct).getDisjuncts().stream()
+                              : Stream.of(disjunct))
+                  .collect(ImmutableList.toImmutableList())));
     }
 
     // no nested ORs, so just simplify all disjuncts
@@ -256,8 +261,7 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
         changed = true;
       }
       if (simplifiedDisjunct == TrueExpr.INSTANCE) {
-        _simplifiedBooleanExpr = TrueExpr.INSTANCE;
-        return;
+        return TrueExpr.INSTANCE;
       } else if (simplifiedDisjunct != FalseExpr.INSTANCE) {
         newDisjunctsBuilder.add(simplifiedDisjunct);
       } else {
@@ -266,19 +270,19 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
     }
     List<BooleanExpr> newDisjuncts = newDisjunctsBuilder.build();
     if (newDisjuncts.size() == 0) {
-      _simplifiedBooleanExpr = FalseExpr.INSTANCE;
+      return FalseExpr.INSTANCE;
     } else if (newDisjuncts.size() == 1) {
-      _simplifiedBooleanExpr = newDisjuncts.get(0);
+      return newDisjuncts.get(0);
     } else if (!changed) {
-      _simplifiedBooleanExpr = orExpr;
+      return orExpr;
     } else {
-      _simplifiedBooleanExpr = new OrExpr(newDisjuncts);
+      return new OrExpr(newDisjuncts);
     }
   }
 
   @Override
-  public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
-    _simplifiedBooleanExpr = simplifyBooleanExpr(prefixMatchExpr.getExpr());
+  public BooleanExpr visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
+    return simplifyBooleanExpr(prefixMatchExpr.getExpr());
   }
 
   @Override
@@ -287,8 +291,8 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
-    _simplifiedBooleanExpr = simplifyBooleanExpr(rangeMatchExpr.getExpr());
+  public BooleanExpr visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
+    return simplifyBooleanExpr(rangeMatchExpr.getExpr());
   }
 
   public Statement visitRuleStatement(RuleStatement ruleStatement) {
@@ -332,8 +336,8 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitSaneExpr(SaneExpr saneExpr) {
-    _simplifiedBooleanExpr = simplifyBooleanExpr(saneExpr.getExpr());
+  public BooleanExpr visitSaneExpr(SaneExpr saneExpr) {
+    return simplifyBooleanExpr(saneExpr.getExpr());
   }
 
   @Override
@@ -343,34 +347,34 @@ public class Simplifier implements ExprVisitor, GenericStatementVisitor<Statemen
   }
 
   @Override
-  public void visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
+  public BooleanExpr visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
     /** TODO: something smarter */
-    _simplifiedBooleanExpr = transformationStateExpr;
+    return transformationStateExpr;
   }
 
   @Override
-  public void visitTransformedExpr(TransformedExpr transformedExpr) {
+  public BooleanExpr visitTransformedExpr(TransformedExpr transformedExpr) {
     /* TODO: push transformation down to children? */
     /* TODO: eliminate non-adjacent TransformedExpr children */
     BooleanExpr originalSubExpression = transformedExpr.getSubExpression();
     BooleanExpr simplifiedSubExpression = simplifyBooleanExpr(originalSubExpression);
     if (simplifiedSubExpression instanceof TransformedExpr) {
       // Transformation is idempotent
-      _simplifiedBooleanExpr = simplifiedSubExpression;
+      return simplifiedSubExpression;
     } else if (simplifiedSubExpression != originalSubExpression) {
-      _simplifiedBooleanExpr = simplifyBooleanExpr(new TransformedExpr(simplifiedSubExpression));
+      return simplifyBooleanExpr(new TransformedExpr(simplifiedSubExpression));
     } else {
-      _simplifiedBooleanExpr = transformedExpr;
+      return transformedExpr;
     }
   }
 
   @Override
-  public void visitTrueExpr(TrueExpr trueExpr) {
-    _simplifiedBooleanExpr = trueExpr;
+  public BooleanExpr visitTrueExpr(TrueExpr trueExpr) {
+    return trueExpr;
   }
 
   @Override
-  public void visitVarIntExpr(VarIntExpr varIntExpr) {
+  public IntExpr visitVarIntExpr(VarIntExpr varIntExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

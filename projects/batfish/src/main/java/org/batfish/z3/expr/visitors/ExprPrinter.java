@@ -145,7 +145,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitCurrentIsOriginal(CurrentIsOriginalExpr currentIsOriginalExpr) {
+  public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
     printExpr(currentIsOriginalExpr.getExpr());
   }
 

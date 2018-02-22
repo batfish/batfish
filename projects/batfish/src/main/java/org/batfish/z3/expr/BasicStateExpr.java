@@ -1,7 +1,7 @@
 package org.batfish.z3.expr;
 
-import org.batfish.z3.expr.visitors.BooleanExprVisitor;
 import org.batfish.z3.expr.visitors.ExprVisitor;
+import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 import org.batfish.z3.state.visitors.GeneralStateVisitor;
 
 public abstract class BasicStateExpr extends StateExpr {
@@ -14,15 +14,19 @@ public abstract class BasicStateExpr extends StateExpr {
   }
 
   @Override
-  public void accept(BooleanExprVisitor visitor) {
+  public void accept(ExprVisitor visitor) {
     visitor.visitBasicStateExpr(this);
+  }
+
+  /**
+   * All {@code GenericBooleanExprVisitor} subclasses should have same behavior for all subclasses
+   * of {@code BasicStateExpr}.
+   */
+  @Override
+  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+    return visitor.visitBasicStateExpr(this);
   }
 
   @Override
   public abstract State getState();
-
-  @Override
-  public void accept(ExprVisitor visitor) {
-    visitor.visitBasicStateExpr(this);
-  }
 }

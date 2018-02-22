@@ -50,7 +50,7 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitCurrentIsOriginal(CurrentIsOriginalExpr currentIsOriginalExpr) {
+  public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
     currentIsOriginalExpr.getExpr().accept(this);
   }
 

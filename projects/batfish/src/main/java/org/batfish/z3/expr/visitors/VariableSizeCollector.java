@@ -104,7 +104,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public void visitComment(Comment comment) {}
 
   @Override
-  public void visitCurrentIsOriginal(CurrentIsOriginalExpr currentIsOriginalExpr) {
+  public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
     currentIsOriginalExpr.getExpr().accept(this);
   }
 
