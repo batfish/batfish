@@ -939,6 +939,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
     // Since compression mutates the configurations, we must clone them before that happens.
     // A simple way to do this is to create a deep clone of each entry using Java serialization.
+    _logger.info("Computing compressed dataplane");
     Map<String, Configuration> clonedConfigs =
         loadConfigurations()
             .entrySet()
