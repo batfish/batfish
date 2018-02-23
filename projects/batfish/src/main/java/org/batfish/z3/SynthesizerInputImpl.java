@@ -593,15 +593,15 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 Entry::getKey,
                 topologyInterfacesEntryByHostname -> {
                   String hostname = topologyInterfacesEntryByHostname.getKey();
+                  Set<String> ifaces = topologyInterfacesEntryByHostname.getValue();
                   Configuration c = _configurations.get(hostname);
-                  return topologyInterfacesEntryByHostname
-                      .getValue()
+                  return ifaces
                       .stream()
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Function.identity(),
-                              ifaceName -> {
-                                return c.getInterfaces()
+                              ifaceName ->
+                                c.getInterfaces()
                                     .get(ifaceName)
                                     .getSourceNats()
                                     .stream()
@@ -623,8 +623,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                           return Maps.immutableEntry(
                                               matchCondition, transformationCondition);
                                         })
-                                    .collect(ImmutableList.toImmutableList());
-                              }));
+                                    .collect(ImmutableList.toImmutableList())
+                              ));
                 }));
   }
 

@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
@@ -98,7 +99,10 @@ public class NodJobTest {
             .build();
 
     SourceNat sourceNat1 =
-        snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp2).setAcl(sourceNat1Acl).build();
+        // TODO add a test with poolIp1 to poolIp2. That will exercise the range logic,
+        // which is complex and inscrutable. Consider replacing that with bv_lte and bv_gte.
+        // Would be easier to understand, and Nuno says it will likely be more efficient.
+        snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp1).setAcl(sourceNat1Acl).build();
     Interface srcInterface =
         ib.setOwner(_srcNode)
             .setVrf(_srcVrf)
@@ -173,12 +177,20 @@ public class NodJobTest {
 
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+
     Model model = nodJob.getSmtModel(z3Context, smtInput._expr);
+    assertThat(model, notNullValue());
+
     Map<HeaderField, Long> headerConstraints =
         nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
 
     assertThat(
         headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.0").asLong()));
+    assertThat(
+        headerConstraints,
+        hasEntry(
+            equalTo(BasicHeaderField.SRC_IP),
+            not(equalTo(new Ip("3.0.0.0").asLong()))));
     assertThat(
         headerConstraints,
         hasEntry(
@@ -208,7 +220,10 @@ public class NodJobTest {
 
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+
     Model model = nodJob.getSmtModel(z3Context, smtInput._expr);
+    assertThat(model, notNullValue());
+
     Map<HeaderField, Long> headerConstraints =
         nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
 

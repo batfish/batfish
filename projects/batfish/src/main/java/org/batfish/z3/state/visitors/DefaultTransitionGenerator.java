@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -23,6 +24,7 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformedExpr;
@@ -763,7 +765,22 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         sourceNats
                             .stream()
                             .map(Entry::getKey)
-                            .map(NotExpr::new)
+                            .map(matchCondition -> {
+                              // TODO this is a hack. It correcly negates AclPermit, but
+                              // if we don't want to negate relations, we have to move StateExpr
+                              // out of the BoolExpr hierarchy. Otherwise, the best thing to do
+                              // would be add a NegateVisitor, that uses another visitor to
+                              // check that there is no StateExpr subexpression before applying
+                              // a Not(). This would be expensive, but safe at least.
+                              if(matchCondition instanceof AclPermit) {
+                                AclPermit aclPermit = (AclPermit) matchCondition;
+                                return new AclDeny(aclPermit.getHostname(), aclPermit.getAcl());
+                              } else if(matchCondition instanceof StateExpr) {
+                                throw new BatfishException("Cannot negate a StateExpr");
+                              } else {
+                                return new NotExpr(matchCondition);
+                              }
+                            })
                             .forEach(antecedentConjuncts::add);
                         String outAcl = outgoingAcls.get(ifaceName);
                         if (outAcl != null) {
