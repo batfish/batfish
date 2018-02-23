@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -87,21 +88,7 @@ public class WorkMgrTest {
 
   @Test
   public void listQuestionNames() {
-    String questionName = "testquestion";
-    _manager.initContainer("container", null);
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
-    Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    assertThat(questionsDir.resolve(questionName).toFile().mkdirs(), is(true));
-
-    // Confirm the question shows up in listQuestions
-    SortedSet<String> questions = _manager.listQuestions("container", false);
-    assertThat(questions, IsCollectionWithSize.hasSize(1));
-    assertThat(questions.first(), equalTo(questionName));
-  }
-
-  @Test
-  public void listQuestionVerbose() {
+    String questionName = "publicquestion";
     // Leading __ means this question is an internal question
     // And should be hidden from listQuestions when verbose is false
     String internalQuestionName = "__internalquestion";
@@ -109,18 +96,18 @@ public class WorkMgrTest {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-
-    // Make sure the internal question directory is created
+    // Make sure the question directories are created
+    assertThat(questionsDir.resolve(questionName).toFile().mkdirs(), is(true));
     assertThat(questionsDir.resolve(internalQuestionName).toFile().mkdirs(), is(true));
 
     SortedSet<String> questionsNotVerbose = _manager.listQuestions("container", false);
     SortedSet<String> questionsVerbose = _manager.listQuestions("container", true);
 
-    // Confirm the question does not show up in listQuestions when verbose is false
-    assertThat(questionsNotVerbose, IsEmptyCollection.empty());
+    // Only the public question should show up when verbose is false
+    assertThat(questionsNotVerbose, equalTo(Sets.newHashSet(questionName)));
 
-    // Confirm the question shows up in listQuestions when verbose is true
-    assertThat(questionsVerbose, IsCollectionWithSize.hasSize(1));
+    // Both questions should show up when verbose is true
+    assertThat(questionsVerbose, equalTo(Sets.newHashSet(questionName, internalQuestionName)));
   }
 
   @Test
@@ -140,8 +127,8 @@ public class WorkMgrTest {
     assertTrue(questionsDir.resolve("access").toFile().mkdirs());
     assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
     SortedSet<String> questions = _manager.listQuestions("container", false);
-    assertThat(questions, IsCollectionWithSize.hasSize(3));
-    assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
+    assertThat(questions, hasSize(3));
+    assertThat(questions, equalTo(Sets.newHashSet("access", "initinfo", "nodes")));
   }
 
   @Test
