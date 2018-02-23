@@ -1244,6 +1244,7 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the testrig and questions reside
+   * @param verbose The flag to show all questions, including internal ones
    * @return TODO: document JSON response
    */
   @POST
@@ -1252,7 +1253,8 @@ public class WorkMgrService {
   public JSONArray listQuestions(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_VERBOSE) boolean verbose) {
     try {
       _logger.infof("WMS:listQuestions %s %s\n", apiKey, containerName);
 
@@ -1266,7 +1268,7 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
-      for (String questionName : Main.getWorkMgr().listQuestions(containerName)) {
+      for (String questionName : Main.getWorkMgr().listQuestions(containerName, verbose)) {
         String questionText = Main.getWorkMgr().getQuestion(containerName, questionName);
 
         retObject.put(questionName, new JSONObject(questionText));
