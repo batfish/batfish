@@ -467,8 +467,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private final List<TestrigSettings> _testrigSettingsStack;
 
-  private boolean _monotonicCache;
-
   private Map<String, DataPlanePlugin> _dataPlanePlugins;
 
   public Batfish(
@@ -2232,7 +2230,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private SortedMap<String, Configuration> loadConfigurations(Snapshot snapshot) {
     // Do we already have configurations in the cache?
     SortedMap<String, Configuration> configurations = _cachedConfigurations.getIfPresent(snapshot);
-    if (_monotonicCache && configurations != null) {
+    if (configurations != null) {
       return configurations;
     }
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
@@ -3979,10 +3977,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void registerDataPlanePlugin(DataPlanePlugin plugin, String name) {
     _dataPlanePlugins.put(name, plugin);
-  }
-
-  public void setMonotonicCache(boolean monotonicCache) {
-    _monotonicCache = monotonicCache;
   }
 
   public void setTerminatingExceptionMessage(String terminatingExceptionMessage) {
