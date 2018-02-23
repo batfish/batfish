@@ -96,16 +96,15 @@ public class NodProgram {
     String[] intermediate = new String[] {sb.toString()};
     final AtomicInteger currentVar = new AtomicInteger(0);
     Streams.concat(
-            Arrays.<HeaderField>stream(BasicHeaderField.values()),
-            Arrays.<HeaderField>stream(TransformationHeaderField.values()))
+            Arrays.stream(BasicHeaderField.values()),
+            Arrays.stream(TransformationHeaderField.values()))
         .map(HeaderField::getName)
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(), v -> String.format("(:var %d)", currentVar.getAndIncrement())))
         .forEach(
-            (name, var) ->
+            name ->
                 intermediate[0] =
-                    intermediate[0].replaceAll(Pattern.quote(var), Matcher.quoteReplacement(name)));
+                    intermediate[0].replaceAll(
+                        Pattern.quote(String.format("(:var %d)", currentVar.getAndIncrement())),
+                        Matcher.quoteReplacement(name)));
     return intermediate[0];
   }
 }
