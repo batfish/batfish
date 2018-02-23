@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.visitors.Simplifier;
 
 public class ReachabilityProgram {
 
@@ -53,8 +54,21 @@ public class ReachabilityProgram {
   private ReachabilityProgram(
       List<QueryStatement> queries, List<RuleStatement> rules, SynthesizerInput input) {
     _queries = ImmutableList.copyOf(queries);
-    _rules = ImmutableList.copyOf(rules);
     _input = input;
+
+    /*
+     * Simplify rule statements if desired, and remove statements that simplify to trivial
+     * statements that are no longer rules.
+     */
+    _rules =
+        _input.getSimplify()
+            ? rules
+                .stream()
+                .map(Simplifier::simplifyStatement)
+                .filter(s -> s instanceof RuleStatement)
+                .map(s -> (RuleStatement) s)
+                .collect(ImmutableList.toImmutableList())
+            : ImmutableList.copyOf(rules);
   }
 
   public SynthesizerInput getInput() {
