@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -26,8 +25,6 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
-import org.hamcrest.collection.IsCollectionWithSize;
-import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
