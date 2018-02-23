@@ -12,4 +12,6 @@ public interface GenericStatementVisitor<T> {
   T visitQueryStatement(QueryStatement queryStatement);
 
   T visitTransformationRuleStatement(TransformationRuleStatement transformationRuleStatement);
+
+  T visitTransformedBasicRuleStatement(TransformedBasicRuleStatement transformedBasicRuleStatement);
 }

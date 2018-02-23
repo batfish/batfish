@@ -1,7 +1,7 @@
 package org.batfish.z3.expr;
 
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
+import org.batfish.z3.expr.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.GeneralStateVisitor;
 
 public abstract class BasicStateExpr extends StateExpr {
@@ -23,7 +23,7 @@ public abstract class BasicStateExpr extends StateExpr {
    * of {@code BasicStateExpr}.
    */
   @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
     return visitor.visitBasicStateExpr(this);
   }
 

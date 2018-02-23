@@ -27,7 +27,7 @@ import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformedExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
@@ -86,15 +86,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitAccept(Accept.State accept) {
     // ProjectNodeAccept
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeAccept::new)
-                    .collect(ImmutableList.toImmutableList())),
-            Accept.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(hostname -> new BasicRuleStatement(new NodeAccept(hostname), Accept.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
@@ -265,6 +261,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
             })
         .forEach(_rules::add);
   }
+
+  @Override
+  public void visitAnyHeader(org.batfish.z3.state.AnyHeader.State state) {}
 
   @Override
   public void visitDebug(Debug.State debug) {}
@@ -860,7 +859,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .filter(e -> !_input.getEnabledFlowSinks().contains(e.getInterface2()))
         .map(
             edge ->
-                new BasicRuleStatement(
+                new TransformedBasicRuleStatement(
                     new AndExpr(
                         ImmutableList.of(
                             new PreOutEdge(edge),

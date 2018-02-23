@@ -5,6 +5,7 @@ import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
+import org.batfish.z3.state.AnyHeader;
 import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.DropAcl;
@@ -44,6 +45,8 @@ public interface StateVisitor {
   void visitAclLineNoMatch(AclLineNoMatch.State aclLineNoMatch);
 
   void visitAclPermit(AclPermit.State aclPermit);
+
+  void visitAnyHeader(AnyHeader.State state);
 
   void visitDebug(Debug.State debug);
 

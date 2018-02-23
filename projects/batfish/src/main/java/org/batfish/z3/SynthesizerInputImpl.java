@@ -27,13 +27,14 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.AclPermit;
+import org.batfish.z3.state.AnyHeader;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
@@ -171,7 +172,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> _sourceNats;
+  private final Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> _sourceNats;
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
@@ -584,7 +585,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 }));
   }
 
-  private Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> computeSourceNats() {
+  private Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> computeSourceNats() {
     return _topologyInterfaces
         .entrySet()
         .stream()
@@ -601,30 +602,30 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                           ImmutableMap.toImmutableMap(
                               Function.identity(),
                               ifaceName ->
-                                c.getInterfaces()
-                                    .get(ifaceName)
-                                    .getSourceNats()
-                                    .stream()
-                                    .map(
-                                        sourceNat -> {
-                                          IpAccessList acl = sourceNat.getAcl();
-                                          BooleanExpr matchCondition =
-                                              acl != null
-                                                  ? new AclPermit(hostname, acl.getName())
-                                                  : TrueExpr.INSTANCE;
-                                          BooleanExpr transformationCondition =
-                                              new RangeMatchExpr(
-                                                  TransformationHeaderField.NEW_SRC_IP,
-                                                  TransformationHeaderField.NEW_SRC_IP.getSize(),
-                                                  ImmutableSet.of(
-                                                      Range.closed(
-                                                          sourceNat.getPoolIpFirst().asLong(),
-                                                          sourceNat.getPoolIpLast().asLong())));
-                                          return Maps.immutableEntry(
-                                              matchCondition, transformationCondition);
-                                        })
-                                    .collect(ImmutableList.toImmutableList())
-                              ));
+                                  c.getInterfaces()
+                                      .get(ifaceName)
+                                      .getSourceNats()
+                                      .stream()
+                                      .map(
+                                          sourceNat -> {
+                                            IpAccessList acl = sourceNat.getAcl();
+                                            BasicStateExpr preconditionPreTransformationState =
+                                                acl != null
+                                                    ? new AclPermit(hostname, acl.getName())
+                                                    : AnyHeader.INSTANCE;
+                                            BooleanExpr transformationConstraint =
+                                                new RangeMatchExpr(
+                                                    TransformationHeaderField.NEW_SRC_IP,
+                                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                                    ImmutableSet.of(
+                                                        Range.closed(
+                                                            sourceNat.getPoolIpFirst().asLong(),
+                                                            sourceNat.getPoolIpLast().asLong())));
+                                            return Maps.immutableEntry(
+                                                preconditionPreTransformationState,
+                                                transformationConstraint);
+                                          })
+                                      .collect(ImmutableList.toImmutableList())));
                 }));
   }
 
@@ -723,7 +724,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> getSourceNats() {
+  public Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> getSourceNats() {
     return _sourceNats;
   }
 
