@@ -1,15 +1,13 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.IntStream;
+import org.apache.commons.lang.StringUtils;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
@@ -66,43 +64,42 @@ public class NodProgram {
 
   public String toSmt2String() {
     StringBuilder sb = new StringBuilder();
-    Arrays.stream(BasicHeaderField.values())
+    Streams.concat(
+            Arrays.stream(BasicHeaderField.values()),
+            Arrays.stream(TransformationHeaderField.values()))
         .forEach(
             hf -> {
               String var = hf.name();
               int size = hf.getSize();
               sb.append(String.format("(declare-var %s (_ BitVec %d))\n", var, size));
             });
-    StringBuilder sizeSb = new StringBuilder("(");
-    Arrays.stream(BasicHeaderField.values())
-        .map(BasicHeaderField::getSize)
-        .forEach(s -> sizeSb.append(String.format(" (_ BitVec %d)", s)));
-    String sizes = sizeSb.append(")").toString();
     _context
         .getRelationDeclarations()
-        .keySet()
+        .values()
         .stream()
         .map(
-            r ->
-                r.contains(":") || r.contains("(") || r.contains(")")
-                    ? String.format("|%s|", r)
-                    : r)
-        .forEach(relation -> sb.append(String.format("(declare-rel %s %s)\n", relation, sizes)));
+            funcDecl ->
+                funcDecl
+                    .getSExpr()
+                    .replaceAll("declare-fun", "declare-rel")
+                    .replaceAll(" Bool\\)", ")"))
+        .forEach(declaration -> sb.append(String.format("%s\n", declaration)));
     _rules.forEach(r -> sb.append(String.format("(rule %s)\n", r.toString())));
 
     sb.append("\n");
-    sb.append("(query query_relation)\n");
-    String[] intermediate = new String[] {sb.toString()};
-    final AtomicInteger currentVar = new AtomicInteger(0);
-    Arrays.stream(BasicHeaderField.values())
-        .map(BasicHeaderField::name)
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(), v -> String.format("(:var %d)", currentVar.getAndIncrement())))
-        .forEach(
-            (name, var) ->
-                intermediate[0] =
-                    intermediate[0].replaceAll(Pattern.quote(var), Matcher.quoteReplacement(name)));
-    return intermediate[0];
+    _queries.forEach(
+        query -> sb.append(String.format("(query %s)\n", query.getFuncDecl().getName())));
+
+    String[] variablesAsNames =
+        Streams.concat(
+                Arrays.stream(BasicHeaderField.values()),
+                Arrays.stream(TransformationHeaderField.values()))
+            .map(HeaderField::getName)
+            .toArray(String[]::new);
+    String[] variablesAsDebruijnIndices =
+        IntStream.range(0, variablesAsNames.length)
+            .mapToObj(index -> String.format("(:var %d)", index))
+            .toArray(String[]::new);
+    return StringUtils.replaceEach(sb.toString(), variablesAsDebruijnIndices, variablesAsNames);
   }
 }
