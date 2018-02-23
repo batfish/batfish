@@ -1,14 +1,12 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.z3.expr.QueryStatement;
