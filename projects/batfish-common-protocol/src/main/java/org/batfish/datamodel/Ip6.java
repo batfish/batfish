@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.batfish.common.BatfishException;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
