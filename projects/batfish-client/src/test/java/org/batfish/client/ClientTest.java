@@ -97,11 +97,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -141,7 +142,7 @@ public class ClientTest {
     File tempFile = _folder.newFile("writer");
     FileWriter writer = new FileWriter(tempFile);
     client._logger = new BatfishLogger("output", false);
-    String[] args = (String[]) ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
+    String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
     assertFalse(client.processCommand(args, writer));
     assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
     writer.close();
@@ -634,8 +635,7 @@ public class ClientTest {
             command.commandName(),
             usage.getFirst(),
             usage.getSecond());
-    checkProcessCommandErrorMessage(
-        command, (String[]) ArrayUtils.addAll(options, parameters), expected);
+    checkProcessCommandErrorMessage(command, ArrayUtils.addAll(options, parameters), expected);
   }
 
   @Test
@@ -987,8 +987,8 @@ public class ClientTest {
 
     // Test the merging populates ae and destinationquestion get replaced
     assertThat(expectedMap.entrySet(), equalTo(destMap.entrySet()));
-    assertEquals(new TreeSet<>(Arrays.asList("destinationQuestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
+    assertEquals(Collections.singleton("destinationQuestion"), ae.getReplaced());
+    assertEquals(Collections.singleton("sourceQuestion"), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
 
@@ -1002,8 +1002,8 @@ public class ClientTest {
     Client.mergeQuestions(sourceMap, destMap, ae);
 
     // Test the merging populates ae and sourcequestion get replaced
-    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getReplaced());
-    assertEquals(new TreeSet<>(Arrays.asList("sourceQuestion")), ae.getAdded());
+    assertEquals(Collections.singleton("sourceQuestion"), ae.getReplaced());
+    assertEquals(Collections.singleton("sourceQuestion"), ae.getAdded());
     assertEquals(2, ae.getNumLoaded());
   }
 
@@ -1136,7 +1136,7 @@ public class ClientTest {
     Client client = new Client(new String[] {"-runmode", "gendatamodel"});
     File tempFile = _folder.newFile("writer");
     FileWriter writer = new FileWriter(tempFile);
-    String[] args = (String[]) ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
+    String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
     client._logger = new BatfishLogger("output", false);
     assertTrue(client.processCommand(args, writer));
     assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));

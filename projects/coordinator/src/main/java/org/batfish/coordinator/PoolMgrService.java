@@ -12,7 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
@@ -55,8 +55,7 @@ public class PoolMgrService {
                 new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates)));
       }
     } catch (Exception e) {
-      _logger.errorf(
-          "WMS:getQuestionTemplates exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("WMS:getQuestionTemplates exception: %s\n", ExceptionUtils.getStackTrace(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
@@ -71,7 +70,7 @@ public class PoolMgrService {
       JSONObject obj = new JSONObject(poolStatus);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, obj.toString()));
     } catch (Exception e) {
-      _logger.errorf("PMS:getStatus exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("PMS:getStatus exception: %s\n", ExceptionUtils.getStackTrace(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
   }
@@ -148,7 +147,7 @@ public class PoolMgrService {
         }
       }
     } catch (Exception e) {
-      _logger.errorf("PMS:updatePool exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("PMS:updatePool exception: %s\n", ExceptionUtils.getStackTrace(e));
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, e.getMessage()));
     }
 
