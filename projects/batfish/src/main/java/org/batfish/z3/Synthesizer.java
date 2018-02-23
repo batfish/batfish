@@ -66,7 +66,7 @@ public class Synthesizer {
 
   public ReachabilityProgram synthesizeNodAclProgram(String hostname, String aclName) {
     return synthesizeNodProgram(
-        ImmutableList.<Statement>copyOf(
+        ImmutableList.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 _input,
                 ImmutableSet.of(
@@ -78,7 +78,7 @@ public class Synthesizer {
 
   public ReachabilityProgram synthesizeNodDataPlaneProgram() {
     return synthesizeNodProgram(
-        ImmutableList.<Statement>copyOf(
+        ImmutableList.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 _input,
                 ImmutableSet.of(
@@ -113,16 +113,7 @@ public class Synthesizer {
                     PreOutInterface.State.INSTANCE))));
   }
 
-  private ReachabilityProgram synthesizeNodProgram(List<Statement> ruleStatements) {
-    ReachabilityProgram.Builder builder = ReachabilityProgram.builder();
-    List<RuleStatement> rawRuleStatements =
-        ruleStatements
-            .stream()
-            .filter(s -> s instanceof RuleStatement)
-            .map(s -> (RuleStatement) s)
-            .collect(ImmutableList.toImmutableList());
-    builder.setRules(rawRuleStatements);
-    builder.setInput(_input);
-    return builder.build();
+  private ReachabilityProgram synthesizeNodProgram(List<RuleStatement> ruleStatements) {
+    return ReachabilityProgram.builder().setRules(ruleStatements).setInput(_input).build();
   }
 }

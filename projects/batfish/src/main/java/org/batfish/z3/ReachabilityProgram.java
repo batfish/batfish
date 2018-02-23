@@ -68,7 +68,7 @@ public class ReachabilityProgram {
                 .filter(s -> s instanceof RuleStatement)
                 .map(s -> (RuleStatement) s)
                 .collect(ImmutableList.toImmutableList())
-            : rules;
+            : ImmutableList.copyOf(rules);
   }
 
   public SynthesizerInput getInput() {
