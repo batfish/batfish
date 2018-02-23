@@ -103,7 +103,7 @@ public class WorkMgrTest {
   @Test
   public void listQuestionVerbose() {
     // Leading __ means this question is an internal question
-    // And should be hidden from listQuestions
+    // And should be hidden from listQuestions when verbose is false
     String internalQuestionName = "__internalquestion";
     _manager.initContainer("container", null);
     Path containerDir =
