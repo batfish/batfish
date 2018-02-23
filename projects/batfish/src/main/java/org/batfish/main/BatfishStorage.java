@@ -171,7 +171,8 @@ final class BatfishStorage {
                     entry -> {
                       Path inputPath = entry.getKey();
                       String name = entry.getValue();
-                      _logger.debugf("Reading {} '{}' from '{}'", outputClassName, name, inputPath);
+                      _logger.debugf(
+                          "Reading %s '%s' from '%s'\n", outputClassName, name, inputPath);
                       S output = deserializeObject(inputPath, outputClass);
                       completed.incrementAndGet();
                       return output;
