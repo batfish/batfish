@@ -6,9 +6,8 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.IntStream;
+import org.apache.commons.lang.StringUtils;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
@@ -91,18 +90,16 @@ public class NodProgram {
     _queries.forEach(
         query -> sb.append(String.format("(query %s)\n", query.getFuncDecl().getName())));
 
-    String[] intermediate = new String[] {sb.toString()};
-    final AtomicInteger currentVar = new AtomicInteger(0);
-    Streams.concat(
-            Arrays.stream(BasicHeaderField.values()),
-            Arrays.stream(TransformationHeaderField.values()))
-        .map(HeaderField::getName)
-        .forEach(
-            name ->
-                intermediate[0] =
-                    intermediate[0].replaceAll(
-                        Pattern.quote(String.format("(:var %d)", currentVar.getAndIncrement())),
-                        Matcher.quoteReplacement(name)));
-    return intermediate[0];
+    String[] variablesAsNames =
+        Streams.concat(
+                Arrays.stream(BasicHeaderField.values()),
+                Arrays.stream(TransformationHeaderField.values()))
+            .map(HeaderField::getName)
+            .toArray(String[]::new);
+    String[] variablesAsDebruijnIndices =
+        IntStream.range(0, variablesAsNames.length)
+            .mapToObj(index -> String.format("(:var %d)", index))
+            .toArray(String[]::new);
+    return StringUtils.replaceEach(sb.toString(), variablesAsDebruijnIndices, variablesAsNames);
   }
 }
