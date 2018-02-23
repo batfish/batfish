@@ -14,7 +14,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
@@ -180,7 +180,7 @@ public class PoolMgr {
       _logger.error(String.format("unable to connect to %s: %s\n", worker, e.getMessage()));
       updateWorkerStatus(worker, WorkerStatus.StatusCode.UNREACHABLE);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
       updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
     } finally {

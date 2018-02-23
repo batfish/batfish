@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
@@ -124,7 +124,7 @@ public class AllInOne {
           _logger.info("allinone: still alive ....\n");
         }
       } catch (Exception ex) {
-        String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+        String stackTrace = ExceptionUtils.getStackTrace(ex);
         System.err.println(stackTrace);
       }
     }

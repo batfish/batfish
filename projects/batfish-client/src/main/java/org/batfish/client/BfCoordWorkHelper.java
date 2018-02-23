@@ -21,7 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -57,7 +57,7 @@ public class BfCoordWorkHelper {
       _client = getClientBuilder().build();
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       throw new BatfishException("Failed to create HTTP client", e);
     }
   }
@@ -88,7 +88,7 @@ public class BfCoordWorkHelper {
       return Boolean.toString(jObj.getBoolean(CoordConsts.SVC_KEY_API_KEY));
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -171,7 +171,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in configureTemplate from %s using (%s, %s, %s)\n",
           _coordWorkMgr, inTemplate, exceptions, assertion);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -216,7 +216,7 @@ public class BfCoordWorkHelper {
       return true;
     } catch (Exception e) {
       _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgrV2, containerName);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
@@ -237,7 +237,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
@@ -258,7 +258,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
@@ -278,7 +278,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
@@ -373,7 +373,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getAnswer from %s using (%s, %s)\n",
           _coordWorkMgr, baseTestrig, analysisName);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -420,7 +420,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getAnswer from %s using (%s, %s)\n",
           _coordWorkMgr, baseTestrig, questionName);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -474,7 +474,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getConfiguration from %s for container %s, testrig %s, configuration %s\n",
           _coordWorkMgr, containerName, testrigName, configName);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -511,7 +511,7 @@ public class BfCoordWorkHelper {
       return container;
     } catch (Exception e) {
       _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgrV2, containerName);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -553,7 +553,7 @@ public class BfCoordWorkHelper {
       return retMap;
     } catch (Exception e) {
       _logger.errorf("Exception in getInfo from %s\n", _coordWorkMgr);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -613,7 +613,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getObject from %s using (%s, %s)\n",
           _coordWorkMgr, testrigName, objectName);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -647,7 +647,7 @@ public class BfCoordWorkHelper {
       return jObj.getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
     } catch (Exception e) {
       _logger.errorf("Exception in getQuestionTemplates from %s\n", _coordWorkMgr);
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -707,7 +707,7 @@ public class BfCoordWorkHelper {
       return new Pair<>(workStatus, taskStr);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -740,7 +740,7 @@ public class BfCoordWorkHelper {
       return jObj.getString(CoordConsts.SVC_KEY_CONTAINER_NAME);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -810,7 +810,7 @@ public class BfCoordWorkHelper {
 
       return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
       return false;
     }
   }
@@ -839,7 +839,7 @@ public class BfCoordWorkHelper {
       return jObj.getJSONObject(CoordConsts.SVC_KEY_ANALYSIS_LIST);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -876,7 +876,7 @@ public class BfCoordWorkHelper {
       return containerList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -914,7 +914,7 @@ public class BfCoordWorkHelper {
       return environmentList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -949,7 +949,7 @@ public class BfCoordWorkHelper {
       return workList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -983,7 +983,7 @@ public class BfCoordWorkHelper {
       return questionList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -1015,7 +1015,7 @@ public class BfCoordWorkHelper {
       return testrigArray;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return null;
     }
   }
@@ -1083,7 +1083,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
@@ -1106,7 +1106,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
@@ -1133,7 +1133,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getFullStackTrace(e) + "\n");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
   }
