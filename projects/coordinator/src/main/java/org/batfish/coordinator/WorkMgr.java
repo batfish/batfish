@@ -1213,7 +1213,7 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
   }
 
-  public SortedSet<String> listQuestions(String containerName) {
+  public SortedSet<String> listQuestions(String containerName, boolean verbose) {
     Path containerDir = getdirContainer(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
@@ -1224,8 +1224,9 @@ public class WorkMgr extends AbstractCoordinator {
             CommonUtil.getSubdirectories(questionsDir)
                 .stream()
                 .map(dir -> dir.getFileName().toString())
-                // Question dirs starting with __ are internal questions, hidden from clients
-                .filter(dir -> !dir.startsWith("__"))
+                // Question dirs starting with __ are internal questions
+                // and should not show up in listQuestions
+                .filter(dir -> verbose || !dir.startsWith("__"))
                 .collect(Collectors.toSet()));
     return questions;
   }

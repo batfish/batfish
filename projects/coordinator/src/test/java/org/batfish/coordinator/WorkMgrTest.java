@@ -25,6 +25,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.config.Settings;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.Before;
 import org.junit.Rule;
@@ -80,7 +81,7 @@ public class WorkMgrTest {
   @Test
   public void listEmptyQuestion() {
     _manager.initContainer("container", null);
-    SortedSet<String> questions = _manager.listQuestions("container");
+    SortedSet<String> questions = _manager.listQuestions("container", false);
     assertThat(questions.isEmpty(), is(true));
   }
 
@@ -94,13 +95,13 @@ public class WorkMgrTest {
     assertThat(questionsDir.resolve(questionName).toFile().mkdirs(), is(true));
 
     // Confirm the question shows up in listQuestions
-    SortedSet<String> questions = _manager.listQuestions("container");
-    assertThat(questions.size(), is(1));
+    SortedSet<String> questions = _manager.listQuestions("container", false);
+    assertThat(questions, IsCollectionWithSize.hasSize(1));
     assertThat(questions.first(), equalTo(questionName));
   }
 
   @Test
-  public void listQuestionWithInternalQuestion() {
+  public void listQuestionVerbose() {
     // Leading __ means this question is an internal question
     // And should be hidden from listQuestions
     String internalQuestionName = "__internalquestion";
@@ -108,18 +109,25 @@ public class WorkMgrTest {
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+
+    // Make sure the internal question directory is created
     assertThat(questionsDir.resolve(internalQuestionName).toFile().mkdirs(), is(true));
 
-    // Confirm no questions show up in listQuestions
-    SortedSet<String> questions = _manager.listQuestions("container");
-    assertThat(questions, IsEmptyCollection.empty());
+    SortedSet<String> questionsNotVerbose = _manager.listQuestions("container", false);
+    SortedSet<String> questionsVerbose = _manager.listQuestions("container", true);
+
+    // Confirm the question does not show up in listQuestions when verbose is false
+    assertThat(questionsNotVerbose, IsEmptyCollection.empty());
+
+    // Confirm the question shows up in listQuestions when verbose is true
+    assertThat(questionsVerbose, IsCollectionWithSize.hasSize(1));
   }
 
   @Test
   public void listQuestionWithNonExistContainer() {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Container 'container' does not exist"));
-    _manager.listQuestions("container");
+    _manager.listQuestions("container", false);
   }
 
   @Test
@@ -131,8 +139,8 @@ public class WorkMgrTest {
     assertTrue(questionsDir.resolve("nodes").toFile().mkdirs());
     assertTrue(questionsDir.resolve("access").toFile().mkdirs());
     assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
-    SortedSet<String> questions = _manager.listQuestions("container");
-    assertThat(questions.size(), is(3));
+    SortedSet<String> questions = _manager.listQuestions("container", false);
+    assertThat(questions, IsCollectionWithSize.hasSize(3));
     assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
   }
 

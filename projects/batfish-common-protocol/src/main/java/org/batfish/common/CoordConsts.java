@@ -102,6 +102,7 @@ public class CoordConsts {
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
   public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
+  public static final String SVC_KEY_VERBOSE = "verbose";
   public static final String SVC_KEY_VERSION = "version";
   public static final String SVC_KEY_WORK_LIST = "worklist";
   public static final String SVC_KEY_WORK_TYPE = "worktype";
