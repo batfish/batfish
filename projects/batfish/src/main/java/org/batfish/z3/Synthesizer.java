@@ -5,11 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.visitors.Simplifier;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineMatch;
@@ -68,7 +66,7 @@ public class Synthesizer {
 
   public ReachabilityProgram synthesizeNodAclProgram(String hostname, String aclName) {
     return synthesizeNodProgram(
-        ImmutableList.<Statement>copyOf(
+        ImmutableList.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 _input,
                 ImmutableSet.of(
@@ -80,7 +78,7 @@ public class Synthesizer {
 
   public ReachabilityProgram synthesizeNodDataPlaneProgram() {
     return synthesizeNodProgram(
-        ImmutableList.<Statement>copyOf(
+        ImmutableList.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 _input,
                 ImmutableSet.of(
@@ -115,23 +113,7 @@ public class Synthesizer {
                     PreOutInterface.State.INSTANCE))));
   }
 
-  private ReachabilityProgram synthesizeNodProgram(List<Statement> ruleStatements) {
-    ReachabilityProgram.Builder builder = ReachabilityProgram.builder();
-    Stream<RuleStatement> rawRuleStatements =
-        ruleStatements.stream().filter(s -> s instanceof RuleStatement).map(s -> (RuleStatement) s);
-    /*
-     * Simplify rule statements if desired, and remove statements that simplify to trivial
-     * statements that are no longer rules.
-     */
-    builder.setRules(
-        (_input.getSimplify()
-                ? rawRuleStatements
-                    .map(Simplifier::simplifyStatement)
-                    .filter(s -> s instanceof RuleStatement)
-                    .map(s -> (RuleStatement) s)
-                : rawRuleStatements)
-            .collect(ImmutableList.toImmutableList()));
-    builder.setInput(_input);
-    return builder.build();
+  private ReachabilityProgram synthesizeNodProgram(List<RuleStatement> ruleStatements) {
+    return ReachabilityProgram.builder().setRules(ruleStatements).setInput(_input).build();
   }
 }
