@@ -127,7 +127,6 @@ public class WorkMgrTest {
     assertTrue(questionsDir.resolve("access").toFile().mkdirs());
     assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
     SortedSet<String> questions = _manager.listQuestions("container", false);
-    assertThat(questions, hasSize(3));
     assertThat(questions, equalTo(Sets.newHashSet("access", "initinfo", "nodes")));
   }
 
