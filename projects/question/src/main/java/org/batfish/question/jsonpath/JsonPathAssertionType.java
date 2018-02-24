@@ -7,7 +7,9 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 
 public enum JsonPathAssertionType {
-  count("count"),
+  countequals("countEquals"),
+  countlessthan("countLessThan"),
+  countmorethan("countMoreThan"),
   equals("equals");
 
   private static final Map<String, JsonPathAssertionType> _map = buildMap();

@@ -23,7 +23,7 @@ public class JsonPathQuestionPluginTest {
         Collections.singleton(new JsonPathException(Collections.singletonList("old"), null));
     JsonPathAssertion oldAssertion =
         new JsonPathAssertion(
-            JsonPathAssertionType.equals, mapper.readValue("true", JsonNode.class));
+            JsonPathAssertionType.equals, mapper.readValue("[true]", JsonNode.class));
     JsonPathQuery query = new JsonPathQuery("ll", false, null, null, oldExceptions, oldAssertion);
     JsonPathQuestion oldQuestion = new JsonPathQuestion();
     oldQuestion.setPaths(Collections.singletonList(query));
@@ -32,7 +32,7 @@ public class JsonPathQuestionPluginTest {
         Collections.singleton(new JsonPathException(Collections.singletonList("new"), null));
     JsonPathAssertion newAssertion =
         new JsonPathAssertion(
-            JsonPathAssertionType.equals, mapper.readValue("false", JsonNode.class));
+            JsonPathAssertionType.equals, mapper.readValue("[false]", JsonNode.class));
 
     JsonPathQuestion newQuestion =
         (JsonPathQuestion)
@@ -52,7 +52,7 @@ public class JsonPathQuestionPluginTest {
         Collections.singleton(new JsonPathException(Collections.singletonList("old"), null));
     JsonPathAssertion oldAssertion =
         new JsonPathAssertion(
-            JsonPathAssertionType.equals, mapper.readValue("true", JsonNode.class));
+            JsonPathAssertionType.equals, mapper.readValue("[true]", JsonNode.class));
     JsonPathQuery query = new JsonPathQuery("ll", false, null, null, oldExceptions, oldAssertion);
     JsonPathQuestion oldQuestion = new JsonPathQuestion();
     oldQuestion.setPaths(Collections.singletonList(query));
@@ -65,7 +65,7 @@ public class JsonPathQuestionPluginTest {
 
     JsonPathAssertion newAssertion =
         new JsonPathAssertion(
-            JsonPathAssertionType.equals, mapper.readValue("false", JsonNode.class));
+            JsonPathAssertionType.equals, mapper.readValue("[false]", JsonNode.class));
     JsonPathQuestion nullExceptionQuestion =
         (JsonPathQuestion)
             oldQuestion.configureTemplate(null, mapper.writeValueAsString(newAssertion));
