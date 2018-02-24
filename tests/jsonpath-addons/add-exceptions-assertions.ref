@@ -35,7 +35,7 @@
     {
       "assertion" : {
         "expect" : 3,
-        "type" : "count"
+        "type" : "countEquals"
       },
       "displayHints" : {
         "compositions" : {
