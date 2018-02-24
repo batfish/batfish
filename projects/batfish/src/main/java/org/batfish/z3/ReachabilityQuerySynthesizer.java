@@ -1,6 +1,8 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
@@ -8,11 +10,10 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
-import org.batfish.z3.expr.NotExpr;
-import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -46,6 +47,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
   private Map<String, Set<String>> _ingressNodeVrfs;
 
+  @SuppressWarnings("unused")
   private Set<String> _notTransitNodes;
 
   private Set<String> _transitNodes;
@@ -70,87 +72,89 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder = ImmutableList.builder();
 
     // create query condition for action at final node(s)
-    ImmutableList.Builder<BooleanExpr> finalActionsBuilder = ImmutableList.builder();
+    ImmutableList.Builder<BasicStateExpr> finalActions = ImmutableList.builder();
+    ImmutableList.Builder<BasicStateExpr> queryPreconditionPreTransformationStatesBuilder =
+        ImmutableList.builder();
     for (ForwardingAction action : _actions) {
       switch (action) {
         case ACCEPT:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr accept = new NodeAccept(finalNode);
-              finalActionsBuilder.add(accept);
+              BasicStateExpr accept = new NodeAccept(finalNode);
+              finalActions.add(accept);
             }
           } else {
-            finalActionsBuilder.add(Accept.INSTANCE);
+            finalActions.add(Accept.INSTANCE);
           }
           break;
 
         case DEBUG:
-          finalActionsBuilder.add(Debug.INSTANCE);
+          finalActions.add(Debug.INSTANCE);
           break;
 
         case DROP:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = new NodeDrop(finalNode);
-              finalActionsBuilder.add(drop);
+              BasicStateExpr drop = new NodeDrop(finalNode);
+              finalActions.add(drop);
             }
           } else {
-            finalActionsBuilder.add(Drop.INSTANCE);
+            finalActions.add(Drop.INSTANCE);
           }
           break;
 
         case DROP_ACL:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = new NodeDropAcl(finalNode);
-              finalActionsBuilder.add(drop);
+              BasicStateExpr drop = new NodeDropAcl(finalNode);
+              finalActions.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropAcl.INSTANCE);
+            finalActions.add(DropAcl.INSTANCE);
           }
           break;
 
         case DROP_ACL_IN:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = new NodeDropAclIn(finalNode);
-              finalActionsBuilder.add(drop);
+              BasicStateExpr drop = new NodeDropAclIn(finalNode);
+              finalActions.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropAclIn.INSTANCE);
+            finalActions.add(DropAclIn.INSTANCE);
           }
           break;
 
         case DROP_ACL_OUT:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = new NodeDropAclOut(finalNode);
-              finalActionsBuilder.add(drop);
+              BasicStateExpr drop = new NodeDropAclOut(finalNode);
+              finalActions.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropAclOut.INSTANCE);
+            finalActions.add(DropAclOut.INSTANCE);
           }
           break;
 
         case DROP_NO_ROUTE:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = new NodeDropNoRoute(finalNode);
-              finalActionsBuilder.add(drop);
+              BasicStateExpr drop = new NodeDropNoRoute(finalNode);
+              finalActions.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropNoRoute.INSTANCE);
+            finalActions.add(DropNoRoute.INSTANCE);
           }
           break;
 
         case DROP_NULL_ROUTE:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BooleanExpr drop = new NodeDropNullRoute(finalNode);
-              finalActionsBuilder.add(drop);
+              BasicStateExpr drop = new NodeDropNullRoute(finalNode);
+              finalActions.add(drop);
             }
           } else {
-            finalActionsBuilder.add(DropNullRoute.INSTANCE);
+            finalActions.add(DropNullRoute.INSTANCE);
           }
           break;
 
@@ -159,20 +163,20 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
           throw new BatfishException("unsupported action");
       }
     }
-    OrExpr finalActions = new OrExpr(finalActionsBuilder.build());
-    queryConditionsBuilder.add(finalActions);
     queryConditionsBuilder.add(SaneExpr.INSTANCE);
 
     // check transit constraints (unordered)
-    BooleanExpr transitExpr = null;
-    for (String nodeName : _transitNodes) {
-      transitExpr = new NodeTransit(nodeName);
-      queryConditionsBuilder.add(transitExpr);
-    }
-    for (String nodeName : _notTransitNodes) {
-      transitExpr = new NodeTransit(nodeName);
-      queryConditionsBuilder.add(new NotExpr(transitExpr));
-    }
+    _transitNodes
+        .stream()
+        .map(NodeTransit::new)
+        .forEach(queryPreconditionPreTransformationStatesBuilder::add);
+
+    /* TODO: re-enable notTransitNodes via stratified negation */
+    //    _notTransitNodes
+    //        .stream()
+    //        .map(NodeTransit::new)
+    //        .map(NotExpr::new)
+    //        .forEach(queryPreconditionPreTransformationStates::add);
 
     // add headerSpace constraints
     BooleanExpr matchHeaderSpace = new HeaderSpaceMatchExpr(_headerSpace);
@@ -187,9 +191,24 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
                 CurrentIsOriginalExpr.INSTANCE, new OriginateVrf(ingressNode, ingressVrf)));
       }
     }
-    rules.add(
-        new TransformationRuleStatement(
-            new AndExpr(queryConditionsBuilder.build()), Query.INSTANCE));
+    List<BasicStateExpr> queryPreconditionPreTransformationStates =
+        queryPreconditionPreTransformationStatesBuilder.build();
+    BooleanExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
+    finalActions
+        .build()
+        .stream()
+        .map(
+            finalAction ->
+                new TransformationRuleStatement(
+                    queryConditions,
+                    ImmutableSet.<BasicStateExpr>builder()
+                        .add(finalAction)
+                        .addAll(queryPreconditionPreTransformationStates)
+                        .build(),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(),
+                    Query.INSTANCE))
+        .forEach(rules::add);
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))

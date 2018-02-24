@@ -5,7 +5,7 @@ import org.batfish.z3.expr.TransformationStateExpr;
 
 public interface GeneralStateVisitor {
 
-  void visitBasicState(BasicStateExpr.State basicState);
+  void visitBasicStateExpr(BasicStateExpr.State basicState);
 
-  void visitTransformationState(TransformationStateExpr.State transformationState);
+  void visitTransformationStateExpr(TransformationStateExpr.State transformationState);
 }

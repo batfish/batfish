@@ -3,6 +3,7 @@ package org.batfish.z3.matchers;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
@@ -10,6 +11,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -137,17 +139,22 @@ public class SynthesizerInputMatchersImpl {
 
   static final class HasSourceNats
       extends FeatureMatcher<
-          SynthesizerInput, Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>>> {
+          SynthesizerInput,
+          Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>> {
     HasSourceNats(
         @Nonnull
-            Matcher<? super Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>>>
+            Matcher<
+                    ? super
+                        Map<
+                            String,
+                            Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>>
                 subMatcher) {
       super(subMatcher, "SynthesizerInput with source NATs", "source NATs");
     }
 
     @Override
-    protected Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> featureValueOf(
-        SynthesizerInput actual) {
+    protected Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+        featureValueOf(SynthesizerInput actual) {
       return actual.getSourceNats();
     }
   }

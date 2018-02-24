@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -34,7 +35,6 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.state.AclPermit;
-import org.batfish.z3.state.AnyHeader;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
@@ -172,7 +172,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> _sourceNats;
+  private final Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+      _sourceNats;
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
@@ -585,7 +586,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 }));
   }
 
-  private Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> computeSourceNats() {
+  private Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+      computeSourceNats() {
     return _topologyInterfaces
         .entrySet()
         .stream()
@@ -609,10 +611,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                       .map(
                                           sourceNat -> {
                                             IpAccessList acl = sourceNat.getAcl();
-                                            BasicStateExpr preconditionPreTransformationState =
-                                                acl != null
-                                                    ? new AclPermit(hostname, acl.getName())
-                                                    : AnyHeader.INSTANCE;
+                                            Optional<BasicStateExpr>
+                                                preconditionPreTransformationState =
+                                                    acl != null
+                                                        ? Optional.of(
+                                                            new AclPermit(hostname, acl.getName()))
+                                                        : Optional.empty();
                                             BooleanExpr transformationConstraint =
                                                 new RangeMatchExpr(
                                                     TransformationHeaderField.NEW_SRC_IP,
@@ -724,7 +728,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> getSourceNats() {
+  public Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+      getSourceNats() {
     return _sourceNats;
   }
 

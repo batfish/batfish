@@ -1,7 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.z3.expr.AndExpr;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
@@ -32,8 +32,8 @@ public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<A
       NumberedQuery query = new NumberedQuery(line);
       rules.add(
           new BasicRuleStatement(
-              new AndExpr(
-                  ImmutableList.of(new AclLineMatch(_hostname, _aclName, line), SaneExpr.INSTANCE)),
+              SaneExpr.INSTANCE,
+              ImmutableSet.of(new AclLineMatch(_hostname, _aclName, line)),
               new NumberedQuery(line)));
       queries.add(new QueryStatement(query));
       _keys.add(new AclLine(_hostname, _aclName, line));

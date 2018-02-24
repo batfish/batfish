@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
 public class AclLineNoMatch extends BasicStateExpr {
@@ -31,8 +31,8 @@ public class AclLineNoMatch extends BasicStateExpr {
   }
 
   @Override
-  public void accept(StateExprVisitor visitor) {
-    visitor.visitAclLineNoMatch(this);
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+    return visitor.visitAclLineNoMatch(this);
   }
 
   public String getAcl() {

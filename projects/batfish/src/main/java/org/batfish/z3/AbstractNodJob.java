@@ -55,20 +55,6 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     }
   }
 
-  Map<HeaderField, Long> getHeaderConstraints(
-      Model model, Map<String, BitVecExpr> variablesAsConsts) {
-    return Arrays.stream(model.getConstDecls())
-        .map(FuncDecl::getName)
-        .map(Object::toString)
-        .map(HeaderField::parse)
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(),
-                headerField ->
-                    ((BitVecNum) model.getConstInterp(variablesAsConsts.get(headerField.getName())))
-                        .getLong()));
-  }
-
   protected abstract SmtInput computeSmtInput(long startTime, Context ctx);
 
   private Flow createFlow(String node, String vrf, Map<HeaderField, Long> constraints) {
@@ -85,6 +71,20 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
               return createFlow(node, vrf, constraints);
             })
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  Map<HeaderField, Long> getHeaderConstraints(
+      Model model, Map<String, BitVecExpr> variablesAsConsts) {
+    return Arrays.stream(model.getConstDecls())
+        .map(FuncDecl::getName)
+        .map(Object::toString)
+        .map(HeaderField::parse)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(),
+                headerField ->
+                    ((BitVecNum) model.getConstInterp(variablesAsConsts.get(headerField.getName())))
+                        .getLong()));
   }
 
   protected Model getSmtModel(Context ctx, BoolExpr solverInput) {

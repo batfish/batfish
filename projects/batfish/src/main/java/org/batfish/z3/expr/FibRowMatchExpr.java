@@ -7,8 +7,6 @@ import java.util.TreeSet;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.z3.BasicHeaderField;
-import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PreOut;
 
 public class FibRowMatchExpr {
 
@@ -43,10 +41,6 @@ public class FibRowMatchExpr {
       }
     }
     ImmutableList.Builder<BooleanExpr> conditionsBuilder = ImmutableList.builder();
-    BooleanExpr postInVrf = new PostInVrf(hostname, vrfName);
-    conditionsBuilder.add(postInVrf);
-    BooleanExpr destRoute = new PreOut(hostname);
-    conditionsBuilder.add(destRoute);
 
     // must not match more specific routes
     for (FibRow notRow : notRows) {

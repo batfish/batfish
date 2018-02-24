@@ -16,6 +16,19 @@ public class BasicRuleStatement extends RuleStatement {
 
   private final Set<BasicStateExpr> _preconditionStates;
 
+  public BasicRuleStatement(BasicStateExpr postconditionState) {
+    this(TrueExpr.INSTANCE, ImmutableSet.of(), postconditionState);
+  }
+
+  public BasicRuleStatement(BasicStateExpr preconditionState, BasicStateExpr postconditionState) {
+    this(TrueExpr.INSTANCE, ImmutableSet.of(preconditionState), postconditionState);
+  }
+
+  public BasicRuleStatement(
+      BooleanExpr preconditionStateIndependentConstraints, BasicStateExpr postconditionState) {
+    this(preconditionStateIndependentConstraints, ImmutableSet.of(), postconditionState);
+  }
+
   public BasicRuleStatement(
       BooleanExpr preconditionStateIndependentConstraints,
       Set<BasicStateExpr> preconditionStates,
@@ -25,8 +38,9 @@ public class BasicRuleStatement extends RuleStatement {
     _preconditionStates = preconditionStates;
   }
 
-  public BasicRuleStatement(BasicStateExpr preconditionState, BasicStateExpr postconditionState) {
-    this(TrueExpr.INSTANCE, ImmutableSet.of(preconditionState), postconditionState);
+  public BasicRuleStatement(
+      Set<BasicStateExpr> preconditionStates, BasicStateExpr postconditionState) {
+    this(TrueExpr.INSTANCE, preconditionStates, postconditionState);
   }
 
   @Override
@@ -37,6 +51,18 @@ public class BasicRuleStatement extends RuleStatement {
   @Override
   public void accept(VoidStatementVisitor visitor) {
     visitor.visitBasicRuleStatement(this);
+  }
+
+  public BasicStateExpr getPostconditionState() {
+    return _postconditionState;
+  }
+
+  public BooleanExpr getPreconditionStateIndependentConstraints() {
+    return _preconditionStateIndependentConstraints;
+  }
+
+  public Set<BasicStateExpr> getPreconditionStates() {
+    return _preconditionStates;
   }
 
   @Override

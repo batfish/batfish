@@ -54,13 +54,31 @@ import org.junit.rules.TemporaryFolder;
 
 public class NodJobTest {
 
-  private SortedMap<String, Configuration> _configs;
   private BdpDataPlanePlugin _bdpDataPlanePlugin;
+  private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
+
+  NodJob getNodJob(HeaderSpace headerSpace) {
+    ReachabilityQuerySynthesizer querySynthesizer =
+        new ReachabilityQuerySynthesizer(
+            ImmutableSet.of(ForwardingAction.ACCEPT),
+            headerSpace,
+            // finalNodes
+            ImmutableSet.of(_dstNode.getHostname()),
+            // ingressNodeVrfs
+            ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())),
+            // transitNodes
+            ImmutableSet.of(),
+            // notTransitNodes
+            ImmutableSet.of());
+    SortedSet<Pair<String, String>> ingressNodes =
+        ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag");
+  }
 
   @Before
   public void setup() throws IOException {
@@ -150,24 +168,6 @@ public class NodJobTest {
     _synthesizer = new Synthesizer(input);
   }
 
-  NodJob getNodJob(HeaderSpace headerSpace) {
-    ReachabilityQuerySynthesizer querySynthesizer =
-        new ReachabilityQuerySynthesizer(
-            ImmutableSet.of(ForwardingAction.ACCEPT),
-            headerSpace,
-            // finalNodes
-            ImmutableSet.of(_dstNode.getHostname()),
-            // ingressNodeVrfs
-            ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())),
-            // transitNodes
-            ImmutableSet.of(),
-            // notTransitNodes
-            ImmutableSet.of());
-    SortedSet<Pair<String, String>> ingressNodes =
-        ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag");
-  }
-
   /** Test that traffic originating from 3.0.0.0 is NATed */
   @Test
   public void testNatted() throws IOException {
@@ -188,9 +188,7 @@ public class NodJobTest {
         headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.0").asLong()));
     assertThat(
         headerConstraints,
-        hasEntry(
-            equalTo(BasicHeaderField.SRC_IP),
-            not(equalTo(new Ip("3.0.0.0").asLong()))));
+        hasEntry(equalTo(BasicHeaderField.SRC_IP), not(equalTo(new Ip("3.0.0.0").asLong()))));
     assertThat(
         headerConstraints,
         hasEntry(

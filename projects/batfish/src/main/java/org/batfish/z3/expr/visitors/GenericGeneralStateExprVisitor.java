@@ -3,9 +3,9 @@ package org.batfish.z3.expr.visitors;
 import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.TransformationStateExpr;
 
-public interface GenericStateExprVisitor<R> {
+public interface GenericGeneralStateExprVisitor<R> {
 
-  R castToGenericStateExprVisitorReturnType(Object o);
+  R castToGenericGeneralStateExprVisitorReturnType(Object o);
 
   R visitBasicStateExpr(BasicStateExpr basicStateExpr);
 

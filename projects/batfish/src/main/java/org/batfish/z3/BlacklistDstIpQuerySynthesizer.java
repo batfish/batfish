@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -102,7 +103,11 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
         .setRules(
             ImmutableList.of(
                 new TransformationRuleStatement(
-                    new AndExpr(queryConditionsBuilder.build()), Query.INSTANCE)))
+                    new AndExpr(queryConditionsBuilder.build()),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(),
+                    Query.INSTANCE)))
         .build();
   }
 }

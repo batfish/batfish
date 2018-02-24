@@ -4,7 +4,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Stream;
-import org.batfish.common.BatfishException;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BasicStateExpr;
@@ -12,8 +11,6 @@ import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
-import org.batfish.z3.expr.DeclareRelStatement;
-import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -30,12 +27,11 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedExpr;
+import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
@@ -44,8 +40,6 @@ public class Simplifier
         GenericExprVisitor<Expr>,
         GenericIntExprVisitor<IntExpr>,
         GenericStatementVisitor<Statement> {
-
-  private static final Comment UNUSABLE_RULE = new Comment("(unsatisfiable rule)");
 
   private static final Comment VACUOUS_RULE = new Comment("(vacuous rule)");
 
@@ -117,11 +111,27 @@ public class Simplifier
 
   @Override
   public Statement visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
-    return visitRuleStatement(basicRuleStatement);
+    /** TODO: something smarter */
+    BooleanExpr originalPreconditionStateIndependentConstraints =
+        basicRuleStatement.getPreconditionStateIndependentConstraints();
+    BooleanExpr simplifiedPreconditionStateIndependentConstraints =
+        simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
+    if (originalPreconditionStateIndependentConstraints
+        != simplifiedPreconditionStateIndependentConstraints) {
+      return simplifyStatement(
+          new BasicRuleStatement(
+              simplifiedPreconditionStateIndependentConstraints,
+              basicRuleStatement.getPreconditionStates(),
+              basicRuleStatement.getPostconditionState()));
+    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
+      return VACUOUS_RULE;
+    } else {
+      return basicRuleStatement;
+    }
   }
 
   @Override
-  public BooleanExpr visitBasicStateExpr(BasicStateExpr basicStateExpr) {
+  public BasicStateExpr visitBasicStateExpr(BasicStateExpr basicStateExpr) {
     return basicStateExpr;
   }
 
@@ -139,16 +149,6 @@ public class Simplifier
   @Override
   public BooleanExpr visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
     return simplifyBooleanExpr(currentIsOriginalExpr.getExpr());
-  }
-
-  @Override
-  public Statement visitDeclareRelStatement(DeclareRelStatement declareRelStatement) {
-    return declareRelStatement;
-  }
-
-  @Override
-  public Statement visitDeclareVarStatement(DeclareVarStatement declareVarStatement) {
-    return declareVarStatement;
   }
 
   @Override
@@ -295,46 +295,6 @@ public class Simplifier
     return simplifyBooleanExpr(rangeMatchExpr.getExpr());
   }
 
-  public Statement visitRuleStatement(RuleStatement ruleStatement) {
-    BooleanExpr oldExpr = ruleStatement.getSubExpression();
-    BooleanExpr newExpr = simplifyBooleanExpr(oldExpr);
-    if (newExpr != oldExpr) {
-      if (newExpr == TrueExpr.INSTANCE) {
-        return VACUOUS_RULE;
-      } else if (newExpr == FalseExpr.INSTANCE) {
-        throw new BatfishException("Unsatifiable!");
-      } else if (newExpr instanceof IfExpr
-          && ((IfExpr) newExpr).getAntecedent() == FalseExpr.INSTANCE) {
-        return UNUSABLE_RULE;
-      } else if (newExpr instanceof BasicStateExpr) {
-        return new BasicRuleStatement((BasicStateExpr) newExpr);
-      } else if (newExpr instanceof TransformationStateExpr) {
-        return new TransformationRuleStatement((TransformationStateExpr) newExpr);
-      } else if (newExpr instanceof IfExpr) {
-        IfExpr newInterior = (IfExpr) newExpr;
-        BooleanExpr newConsequent = newInterior.getConsequent();
-        if (newConsequent instanceof BasicStateExpr) {
-          return new BasicRuleStatement(
-              newInterior.getAntecedent(), (BasicStateExpr) newConsequent);
-        } else if (newConsequent instanceof TransformationStateExpr) {
-          return new TransformationRuleStatement(
-              newInterior.getAntecedent(), (TransformationStateExpr) newConsequent);
-        } else {
-          throw new BatfishException(
-              String.format(
-                  "Unexpected consequent type after simplification: %s",
-                  newConsequent.getClass().getCanonicalName()));
-        }
-      } else {
-        throw new BatfishException(
-            String.format(
-                "Unexpected type after simplification: %s", newExpr.getClass().getCanonicalName()));
-      }
-    } else {
-      return ruleStatement;
-    }
-  }
-
   @Override
   public BooleanExpr visitSaneExpr(SaneExpr saneExpr) {
     return simplifyBooleanExpr(saneExpr.getExpr());
@@ -343,28 +303,54 @@ public class Simplifier
   @Override
   public Statement visitTransformationRuleStatement(
       TransformationRuleStatement transformationRuleStatement) {
-    return visitRuleStatement(transformationRuleStatement);
+    /** TODO: something smarter */
+    BooleanExpr originalPreconditionStateIndependentConstraints =
+        transformationRuleStatement.getPreconditionStateIndependentConstraints();
+    BooleanExpr simplifiedPreconditionStateIndependentConstraints =
+        simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
+    if (originalPreconditionStateIndependentConstraints
+        != simplifiedPreconditionStateIndependentConstraints) {
+      return simplifyStatement(
+          new TransformationRuleStatement(
+              simplifiedPreconditionStateIndependentConstraints,
+              transformationRuleStatement.getPreconditionPreTransformationStates(),
+              transformationRuleStatement.getPreconditionPostTransformationStates(),
+              transformationRuleStatement.getPreconditionTransformationStates(),
+              transformationRuleStatement.getPostconditionTransformationState()));
+    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
+      return VACUOUS_RULE;
+    } else {
+      return transformationRuleStatement;
+    }
   }
 
   @Override
-  public BooleanExpr visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
-    /** TODO: something smarter */
+  public TransformationStateExpr visitTransformationStateExpr(
+      TransformationStateExpr transformationStateExpr) {
     return transformationStateExpr;
   }
 
   @Override
-  public BooleanExpr visitTransformedExpr(TransformedExpr transformedExpr) {
-    /* TODO: push transformation down to children? */
-    /* TODO: eliminate non-adjacent TransformedExpr children */
-    BooleanExpr originalSubExpression = transformedExpr.getSubExpression();
-    BooleanExpr simplifiedSubExpression = simplifyBooleanExpr(originalSubExpression);
-    if (simplifiedSubExpression instanceof TransformedExpr) {
-      // Transformation is idempotent
-      return simplifiedSubExpression;
-    } else if (simplifiedSubExpression != originalSubExpression) {
-      return simplifyBooleanExpr(new TransformedExpr(simplifiedSubExpression));
+  public Statement visitTransformedBasicRuleStatement(
+      TransformedBasicRuleStatement transformedBasicRuleStatement) {
+    /** TODO: something smarter */
+    BooleanExpr originalPreconditionStateIndependentConstraints =
+        transformedBasicRuleStatement.getPreconditionStateIndependentConstraints();
+    BooleanExpr simplifiedPreconditionStateIndependentConstraints =
+        simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
+    if (originalPreconditionStateIndependentConstraints
+        != simplifiedPreconditionStateIndependentConstraints) {
+      return simplifyStatement(
+          new TransformedBasicRuleStatement(
+              simplifiedPreconditionStateIndependentConstraints,
+              transformedBasicRuleStatement.getPreconditionPreTransformationStates(),
+              transformedBasicRuleStatement.getPreconditionPostTransformationStates(),
+              transformedBasicRuleStatement.getPreconditionTransformationStates(),
+              transformedBasicRuleStatement.getPostconditionPostTransformationState()));
+    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
+      return VACUOUS_RULE;
     } else {
-      return transformedExpr;
+      return transformedBasicRuleStatement;
     }
   }
 

@@ -3,6 +3,7 @@ package org.batfish.z3;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
@@ -67,7 +68,7 @@ public interface SynthesizerInput {
   /**
    * Mapping: hostname -> interface -> [(preconditionPreTransformationState, transformationToApply)]
    */
-  Map<String, Map<String, List<Entry<BasicStateExpr, BooleanExpr>>>> getSourceNats();
+  Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> getSourceNats();
 
   /** Mapping: hostname -> interfacesOnSomeEdge */
   Map<String, Set<String>> getTopologyInterfaces();

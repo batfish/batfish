@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -556,7 +557,8 @@ public class SynthesizerInputImplTest {
                     equalTo(
                         ImmutableList.of(
                             immutableEntry(
-                                new AclPermit(srcNode.getName(), sourceNat1Acl.getName()),
+                                Optional.of(
+                                    new AclPermit(srcNode.getName(), sourceNat1Acl.getName())),
                                 new RangeMatchExpr(
                                     TransformationHeaderField.NEW_SRC_IP,
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
@@ -572,13 +574,15 @@ public class SynthesizerInputImplTest {
                     equalTo(
                         ImmutableList.of(
                             immutableEntry(
-                                new AclPermit(srcNode.getName(), sourceNat1Acl.getName()),
+                                Optional.of(
+                                    new AclPermit(srcNode.getName(), sourceNat1Acl.getName())),
                                 new RangeMatchExpr(
                                     TransformationHeaderField.NEW_SRC_IP,
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
                                     ImmutableSet.of(Range.closed(ip11.asLong(), ip12.asLong())))),
                             immutableEntry(
-                                new AclPermit(srcNode.getName(), sourceNat2Acl.getName()),
+                                Optional.of(
+                                    new AclPermit(srcNode.getName(), sourceNat2Acl.getName())),
                                 new RangeMatchExpr(
                                     TransformationHeaderField.NEW_SRC_IP,
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),

@@ -3,12 +3,14 @@ package org.batfish.z3.matchers;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
@@ -111,7 +113,9 @@ public class SynthesizerInputMatchers {
    */
   public static HasSourceNats hasSourceNats(
       @Nonnull
-          Matcher<? super Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>>>
+          Matcher<
+                  ? super
+                      Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>>
               subMatcher) {
     return new HasSourceNats(subMatcher);
   }

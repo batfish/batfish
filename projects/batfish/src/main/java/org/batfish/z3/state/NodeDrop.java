@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
 public class NodeDrop extends BasicStateExpr {
@@ -25,8 +25,8 @@ public class NodeDrop extends BasicStateExpr {
   }
 
   @Override
-  public void accept(StateExprVisitor visitor) {
-    visitor.visitNodeDrop(this);
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+    return visitor.visitNodeDrop(this);
   }
 
   public String getHostname() {
