@@ -2,7 +2,8 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 
-public class RuleStatement extends Statement {
+/** A statement describing the preconditions necessary to reach a specified target state */
+public abstract class RuleStatement extends Statement {
 
   private final BooleanExpr _subExpression;
 
@@ -12,16 +13,6 @@ public class RuleStatement extends Statement {
 
   public RuleStatement(StateExpr subExpression) {
     _subExpression = subExpression;
-  }
-
-  @Override
-  public <T> T accept(GenericStatementVisitor<T> visitor) {
-    return visitor.visitRuleStatement(this);
-  }
-
-  @Override
-  public void accept(VoidStatementVisitor visitor) {
-    visitor.visitRuleStatement(this);
   }
 
   public BooleanExpr getSubExpression() {

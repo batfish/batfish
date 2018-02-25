@@ -261,8 +261,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     private Path _basePath;
 
-    private Path _convertAnswerPath;
-
     private EnvironmentSettings _environmentSettings;
 
     private Path _inferredNodeRolesPath;
@@ -278,8 +276,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     private Path _protocolDependencyGraphPath;
 
     private Path _protocolDependencyGraphZipPath;
-
-    private Path _serializeIndependentPath;
 
     private Path _serializeVendorPath;
 
@@ -305,10 +301,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public Path getBasePath() {
       return _basePath;
-    }
-
-    public Path getConvertAnswerPath() {
-      return _convertAnswerPath;
     }
 
     public EnvironmentSettings getEnvironmentSettings() {
@@ -343,10 +335,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       return _protocolDependencyGraphZipPath;
     }
 
-    public Path getSerializeIndependentPath() {
-      return _serializeIndependentPath;
-    }
-
     public Path getSerializeVendorPath() {
       return _serializeVendorPath;
     }
@@ -372,10 +360,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     public void setBasePath(Path basePath) {
       _basePath = basePath;
-    }
-
-    public void setConvertAnswerPath(Path convertAnswerPath) {
-      _convertAnswerPath = convertAnswerPath;
     }
 
     public void setEnvironmentSettings(EnvironmentSettings environmentSettings) {
@@ -410,10 +394,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
       _protocolDependencyGraphZipPath = protocolDependencyGraphZipPath;
     }
 
-    public void setSerializeIndependentPath(Path path) {
-      _serializeIndependentPath = path;
-    }
-
     public void setSerializeVendorPath(Path path) {
       _serializeVendorPath = path;
     }
@@ -446,8 +426,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_FLATTEN_DESTINATION = "flattendst";
 
   private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
-
-  private static final String ARG_GEN_OSPF_TOPLOGY_PATH = "genospf";
 
   private static final String ARG_GENERATE_STUBS = "gs";
 
@@ -494,6 +472,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_SERVICE_BIND_HOST = "servicebindhost";
 
   public static final String ARG_SERVICE_HOST = "servicehost";
+
+  public static final String ARG_SERVICE_NAME = "servicename";
 
   private static final String ARG_SERVICE_PORT = "serviceport";
 
@@ -727,11 +707,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return Paths.get(_config.getString(ARG_FLATTEN_DESTINATION));
   }
 
-  @Nullable
-  public Path getGenerateOspfTopologyPath() {
-    return nullablePath(_config.getString(ARG_GEN_OSPF_TOPLOGY_PATH));
-  }
-
   public boolean getGenerateStubs() {
     return _config.getBoolean(ARG_GENERATE_STUBS);
   }
@@ -881,6 +856,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getString(ARG_SERVICE_HOST);
   }
 
+  public String getServiceName() {
+    return _config.getString(ARG_SERVICE_NAME);
+  }
+
   public int getServicePort() {
     return _config.getInt(ARG_SERVICE_PORT);
   }
@@ -1027,7 +1006,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
     setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
-    setDefaultProperty(ARG_GEN_OSPF_TOPLOGY_PATH, null);
     setDefaultProperty(ARG_GENERATE_STUBS, false);
     setDefaultProperty(ARG_GENERATE_STUBS_INPUT_ROLE, null);
     setDefaultProperty(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX, null);
@@ -1063,6 +1041,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_SERIALIZE_TO_TEXT, false);
     setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
+    setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
@@ -1186,9 +1165,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addBooleanOption(
         BfConsts.COMMAND_INIT_INFO, "include parse/convert initialization info in answer");
 
-    addOption(
-        ARG_GEN_OSPF_TOPLOGY_PATH, "generate ospf configs from specified topology", ARGNAME_PATH);
-
     addBooleanOption(ARG_GENERATE_STUBS, "generate stubs");
 
     addOption(
@@ -1303,6 +1279,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     addOption(ARG_SERVICE_HOST, "local hostname to report to coordinator", ARGNAME_HOSTNAME);
 
+    addOption(ARG_SERVICE_NAME, "service name", "service_name");
+
     addOption(ARG_SERVICE_PORT, "port for batfish service", ARGNAME_PORT);
 
     addBooleanOption(
@@ -1335,6 +1313,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_TRACING_AGENT_PORT, "jaeger agent port", "jaeger_agent_port");
 
     addBooleanOption(ARG_TRACING_ENABLE, "enable tracing");
+
     addBooleanOption(
         BfConsts.ARG_UNIMPLEMENTED_AS_ERROR,
         "throws "
@@ -1427,7 +1406,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getStringOptionValue(ARG_GENERATE_STUBS_INPUT_ROLE);
     getStringOptionValue(ARG_GENERATE_STUBS_INTERFACE_DESCRIPTION_REGEX);
     getIntegerOptionValue(ARG_GENERATE_STUBS_REMOTE_AS);
-    getPathOptionValue(ARG_GEN_OSPF_TOPLOGY_PATH);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);
@@ -1459,6 +1437,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getBooleanOptionValue(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC);
     getStringOptionValue(ARG_SERVICE_BIND_HOST);
     getStringOptionValue(ARG_SERVICE_HOST);
+    getStringOptionValue(ARG_SERVICE_NAME);
     getIntOptionValue(ARG_SERVICE_PORT);
     getBooleanOptionValue(ARG_NO_SHUFFLE);
     getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);

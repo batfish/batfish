@@ -138,6 +138,10 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_SNMP_SOURCE_INTERFACE = "snmpSourceInterface";
 
+  private static final String PROP_SNMP_TRAP_SERVERS = "snmpTrapServers";
+
+  private static final String PROP_TACACS_SERVERS = "tacacsServers";
+
   private static final String PROP_TACACS_SOURCE_INTERFACE = "tacacsSourceInterface";
 
   private static final String PROP_ZONES = "zones";
@@ -210,8 +214,6 @@ public final class Configuration extends ComparableStructure<String> {
   private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
 
   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
-
-  private transient boolean _resolved;
 
   private SortedSet<String> _roles;
 
@@ -579,10 +581,12 @@ public final class Configuration extends ComparableStructure<String> {
     return _snmpSourceInterface;
   }
 
+  @JsonProperty(PROP_SNMP_TRAP_SERVERS)
   public NavigableSet<String> getSnmpTrapServers() {
     return _snmpTrapServers;
   }
 
+  @JsonProperty(PROP_TACACS_SERVERS)
   public NavigableSet<String> getTacacsServers() {
     return _tacacsServers;
   }
@@ -621,50 +625,6 @@ public final class Configuration extends ComparableStructure<String> {
     _sentIbgpAdvertisements = new TreeSet<>();
     for (Vrf vrf : _vrfs.values()) {
       vrf.initBgpAdvertisements();
-    }
-  }
-
-  public void initRoutes() {
-    _routes = new TreeSet<>();
-    for (Vrf vrf : _vrfs.values()) {
-      vrf.initRoutes();
-    }
-  }
-
-  public void resolveReferences() {
-    if (_resolved) {
-      return;
-    }
-    _resolved = true;
-    for (IkeGateway gateway : _ikeGateways.values()) {
-      gateway.resolveReferences(this);
-    }
-    for (IkePolicy ikePolicy : _ikePolicies.values()) {
-      ikePolicy.resolveReferences(this);
-    }
-    for (Interface iface : _interfaces.values()) {
-      iface.resolveReferences(this);
-    }
-    for (IpsecPolicy ipsecPolicy : _ipsecPolicies.values()) {
-      ipsecPolicy.resolveReferences(this);
-    }
-    for (IpsecVpn ipsecVpn : _ipsecVpns.values()) {
-      ipsecVpn.resolveReferences(this);
-    }
-    for (Vrf vrf : _vrfs.values()) {
-      vrf.resolveReferences(this);
-      BgpProcess bgpProc = vrf.getBgpProcess();
-      if (bgpProc != null) {
-        for (BgpNeighbor neighbor : bgpProc.getNeighbors().values()) {
-          neighbor.resolveReferences(this);
-        }
-      }
-      OspfProcess ospfProc = vrf.getOspfProcess();
-      if (ospfProc != null) {
-        for (OspfArea area : ospfProc.getAreas().values()) {
-          area.resolveReferences(this);
-        }
-      }
     }
   }
 
@@ -804,10 +764,12 @@ public final class Configuration extends ComparableStructure<String> {
     _snmpSourceInterface = snmpSourceInterface;
   }
 
+  @JsonProperty(PROP_SNMP_TRAP_SERVERS)
   public void setSnmpTrapServers(NavigableSet<String> snmpTrapServers) {
     _snmpTrapServers = snmpTrapServers;
   }
 
+  @JsonProperty(PROP_TACACS_SERVERS)
   public void setTacacsServers(NavigableSet<String> tacacsServers) {
     _tacacsServers = tacacsServers;
   }
@@ -831,14 +793,12 @@ public final class Configuration extends ComparableStructure<String> {
   }
 
   public void simplifyRoutingPolicies() {
-    NavigableMap<String, RoutingPolicy> simpleRoutingPolicies = new TreeMap<>();
-    simpleRoutingPolicies.putAll(
-        _routingPolicies
-            .entrySet()
-            .stream()
-            .collect(
-                Collectors.<Entry<String, RoutingPolicy>, String, RoutingPolicy>toMap(
-                    e -> e.getKey(), e -> e.getValue().simplify())));
+    NavigableMap<String, RoutingPolicy> simpleRoutingPolicies =
+        new TreeMap<>(
+            _routingPolicies
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().simplify())));
     _routingPolicies = simpleRoutingPolicies;
   }
 }

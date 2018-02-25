@@ -61,7 +61,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.BatfishTestUtils;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -430,7 +429,7 @@ public class VirtualRouterTest {
     // Assert that all interface prefixes have been processed
     assertThat(
         vr._connectedRib.getRoutes(),
-        Matchers.containsInAnyOrder(
+        containsInAnyOrder(
             exampleInterfaceAddresses
                 .entrySet()
                 .stream()

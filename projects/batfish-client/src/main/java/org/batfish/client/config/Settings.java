@@ -30,6 +30,7 @@ public class Settings extends BaseSettings {
   private static final String ARG_PRETTY_PRINT_ANSWERS = "prettyanswers";
   public static final String ARG_QUESTIONS_DIR = "questionsdir";
   public static final String ARG_RUN_MODE = "runmode";
+  public static final String ARG_SERVICE_NAME = "servicename";
   private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
   public static final String ARG_TESTRIG_DIR = "testrigdir";
@@ -55,6 +56,7 @@ public class Settings extends BaseSettings {
 
   private RunMode _runMode;
   private boolean _sanityCheck;
+  private String _serviceName;
   private boolean _sslDisable;
   private Path _sslKeystoreFile;
   private String _sslKeystorePassword;
@@ -140,6 +142,10 @@ public class Settings extends BaseSettings {
     return _sanityCheck;
   }
 
+  public String getServiceName() {
+    return _serviceName;
+  }
+
   public boolean getSslDisable() {
     return _sslDisable;
   }
@@ -199,6 +205,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PERIOD_CHECK_WORK, 1000);
     setDefaultProperty(ARG_PRETTY_PRINT_ANSWERS, true);
     setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
+    setDefaultProperty(ARG_SERVICE_NAME, "client-service");
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
@@ -242,6 +249,8 @@ public class Settings extends BaseSettings {
     addOption(ARG_QUESTIONS_DIR, "directory to output questions in", "questions_dir");
 
     addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive|genquestions)", "run_mode");
+
+    addOption(ARG_SERVICE_NAME, "service name", "service_name");
 
     addOption(
         ARG_SERVICE_POOL_PORT, "port for pool management service", "port_number_pool_service");
@@ -287,6 +296,7 @@ public class Settings extends BaseSettings {
     _questionsDir = getStringOptionValue(ARG_QUESTIONS_DIR);
     _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
     _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
+    _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
     _sslDisable = getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
     _sslKeystoreFile = getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
     _sslKeystorePassword = getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);

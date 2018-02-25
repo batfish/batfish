@@ -36,7 +36,9 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -118,7 +120,7 @@
             <id>check</id>
             <goals><goal>check</goal></goals>
             <configuration>
-               <failOnViolation>true</failOnViolation>
+              <failOnViolation>true</failOnViolation>
             </configuration>
           </execution>
 
@@ -126,7 +128,7 @@
             <id>cpd-check</id>
             <goals><goal>cpd-check</goal></goals>
             <configuration>
-               <failOnViolation>false</failOnViolation>
+              <failOnViolation>false</failOnViolation>
             </configuration>
           </execution>
         </executions>
@@ -158,7 +160,7 @@
     <dependency>
       <groupId>com.google.auto.service</groupId>
       <artifactId>auto-service</artifactId>
-		<optional>true</optional>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
@@ -179,11 +181,6 @@
     <dependency>
       <groupId>com.uber.jaeger</groupId>
       <artifactId>jaeger-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
     </dependency>
 
     <dependency>
@@ -224,6 +221,11 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-configuration2</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <dependency>

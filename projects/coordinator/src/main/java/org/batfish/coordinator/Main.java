@@ -25,7 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -264,7 +264,7 @@ public class Main {
   private static void initTracer() {
     GlobalTracer.register(
         new Configuration(
-                BfConsts.PROP_COORDINATOR_SERVICE,
+                _settings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,
@@ -342,7 +342,7 @@ public class Main {
         _logger.info("Still alive .... waiting for work to show up\n");
       }
     } catch (Exception ex) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+      String stackTrace = ExceptionUtils.getStackTrace(ex);
       System.err.println(stackTrace);
     }
   }

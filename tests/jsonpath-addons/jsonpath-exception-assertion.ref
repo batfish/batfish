@@ -49,6 +49,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "debug" : false,
     "differential" : false,
     "innerQuestion" : {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
@@ -60,7 +61,7 @@
       {
         "assertion" : {
           "expect" : 3,
-          "type" : "count"
+          "type" : "countEquals"
         },
         "exceptions" : [
           {

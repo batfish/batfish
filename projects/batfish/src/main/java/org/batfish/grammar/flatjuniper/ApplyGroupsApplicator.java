@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
@@ -66,7 +66,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
               + "\": "
               + e.getMessage()
               + ": caused by: "
-              + ExceptionUtils.getFullStackTrace(e);
+              + ExceptionUtils.getStackTrace(e);
       _w.pedantic(message);
     } catch (UndefinedGroupBatfishException e) {
       String message =
@@ -85,7 +85,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
               + "\": "
               + e.getMessage()
               + ": caused by: "
-              + ExceptionUtils.getFullStackTrace(e);
+              + ExceptionUtils.getStackTrace(e);
       _w.redFlag(message);
     }
     _newConfigurationLines.remove(_currentSetLine);

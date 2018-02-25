@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
@@ -1808,7 +1808,7 @@ public class Client extends AbstractClient implements IClient {
   private void initTracer() {
     GlobalTracer.register(
         new com.uber.jaeger.Configuration(
-                BfConsts.PROP_CLIENT_SERVICE,
+                _settings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,

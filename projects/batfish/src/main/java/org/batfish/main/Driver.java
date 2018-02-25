@@ -42,8 +42,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.collections4.map.LRUMap;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -51,6 +51,7 @@ import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.QuestionException;
+import org.batfish.common.Snapshot;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.Version;
@@ -125,7 +126,7 @@ public class Driver {
   private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-  private static final Cache<TestrigSettings, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+  private static final Cache<Snapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
@@ -168,7 +169,7 @@ public class Driver {
             MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
-  private static Cache<TestrigSettings, SortedMap<String, Configuration>> buildTestrigCache() {
+  private static Cache<Snapshot, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
@@ -208,7 +209,7 @@ public class Driver {
   private static void initTracer() {
     GlobalTracer.register(
         new com.uber.jaeger.Configuration(
-                BfConsts.PROP_WORKER_SERVICE,
+                _mainSettings.getServiceName(),
                 new SamplerConfiguration(ConstSampler.TYPE, 1),
                 new ReporterConfiguration(
                     false,
@@ -308,7 +309,7 @@ public class Driver {
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {
       System.err.println(
-          "batfish: Initialization failed. Reason: " + ExceptionUtils.getFullStackTrace(e));
+          "batfish: Initialization failed. Reason: " + ExceptionUtils.getStackTrace(e));
       System.exit(1);
     }
   }
@@ -374,12 +375,12 @@ public class Driver {
       try {
         process = builder.start();
       } catch (IOException e) {
-        _mainLogger.errorf("Exception starting process: %s", ExceptionUtils.getFullStackTrace(e));
+        _mainLogger.errorf("Exception starting process: %s", ExceptionUtils.getStackTrace(e));
         _mainLogger.errorf("Will try again in 1 second\n");
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e1) {
-          _mainLogger.errorf("Sleep was interrrupted: %s", ExceptionUtils.getFullStackTrace(e1));
+          _mainLogger.errorf("Sleep was interrrupted: %s", ExceptionUtils.getStackTrace(e1));
         }
         continue;
       }
@@ -389,14 +390,14 @@ public class Driver {
         reader.lines().forEach(line -> _mainLogger.output(line + "\n"));
       } catch (IOException e) {
         _mainLogger.errorf(
-            "Interrupted while reading subprocess stream: %s", ExceptionUtils.getFullStackTrace(e));
+            "Interrupted while reading subprocess stream: %s", ExceptionUtils.getStackTrace(e));
       }
 
       try {
         process.waitFor();
       } catch (InterruptedException e) {
         _mainLogger.infof(
-            "Subprocess was killed: %s.\nRestarting", ExceptionUtils.getFullStackTrace(e));
+            "Subprocess was killed: %s.\nRestarting", ExceptionUtils.getStackTrace(e));
       }
     }
   }
@@ -477,7 +478,7 @@ public class Driver {
       _mainLogger.error(msg);
       System.exit(1);
     } catch (Exception ex) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+      String stackTrace = ExceptionUtils.getStackTrace(ex);
       _mainLogger.error(stackTrace);
       System.exit(1);
     }
@@ -576,14 +577,14 @@ public class Driver {
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = Answer.failureAnswer(msg, null);
                 } catch (QuestionException e) {
-                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  String stackTrace = ExceptionUtils.getStackTrace(e);
                   logger.error(stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
                 } catch (BatfishException e) {
-                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  String stackTrace = ExceptionUtils.getStackTrace(e);
                   logger.error(stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
@@ -591,7 +592,7 @@ public class Driver {
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(e.getBatfishStackTrace());
                 } catch (Throwable e) {
-                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  String stackTrace = ExceptionUtils.getStackTrace(e);
                   logger.error(stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
@@ -627,7 +628,7 @@ public class Driver {
 
       return batfish.getTerminatingExceptionMessage();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       logger.error(stackTrace);
       return stackTrace;
     }
@@ -642,8 +643,7 @@ public class Driver {
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
-      return Arrays.asList(
-          "failure", "Initialization failed: " + ExceptionUtils.getFullStackTrace(e));
+      return Arrays.asList("failure", "Initialization failed: " + ExceptionUtils.getStackTrace(e));
     }
 
     try {

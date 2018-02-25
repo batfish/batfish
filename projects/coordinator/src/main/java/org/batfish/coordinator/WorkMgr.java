@@ -1,12 +1,17 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.io.Closer;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.PushbackInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -26,13 +32,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -41,8 +48,10 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Pair;
 import org.batfish.common.Task;
+import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
+import org.batfish.common.util.BatfishObjectInputStream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -55,6 +64,7 @@ import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -123,7 +133,7 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getStackTrace(e));
     }
   }
 
@@ -208,10 +218,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.error(String.format("Unable to connect to worker at %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -231,14 +241,14 @@ public class WorkMgr extends AbstractCoordinator {
       try {
         _workQueueMgr.markAssignmentError(work);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getFullStackTrace(e);
+        String stackTrace = ExceptionUtils.getStackTrace(e);
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
       try {
         _workQueueMgr.markAssignmentSuccess(work, worker);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getFullStackTrace(e);
+        String stackTrace = ExceptionUtils.getStackTrace(e);
         _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
       }
 
@@ -262,7 +272,7 @@ public class WorkMgr extends AbstractCoordinator {
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getStackTrace(e));
     }
   }
 
@@ -323,10 +333,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -341,7 +351,7 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
     }
 
     // if the task ended, send a hint to the pool manager to look up worker status
@@ -783,6 +793,51 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
+  public JSONObject getParsingResults(String containerName, String testrigName)
+      throws ClassNotFoundException, JsonProcessingException, JSONException {
+
+    // TODO Refactor deserializeObject() out of PluginConsumer so this function can use it.
+
+    /**
+     * A byte-array containing the first 4 bytes of the header for a file that is the output of java
+     * serialization
+     */
+    final byte[] JAVA_SERIALIZED_OBJECT_HEADER = {
+      (byte) 0xac, (byte) 0xed, (byte) 0x00, (byte) 0x05
+    };
+
+    ParseVendorConfigurationAnswerElement pvcae;
+    try (Closer closer = Closer.create()) {
+      // Reading the object from a file
+      FileInputStream fis =
+          closer.register(
+              new FileInputStream(
+                  getdirTestrig(containerName, testrigName)
+                      .resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH)
+                      .toFile()));
+      BufferedInputStream bis = closer.register(new BufferedInputStream(fis));
+      GZIPInputStream gis = closer.register(new GZIPInputStream(bis));
+      PushbackInputStream pbstream =
+          new PushbackInputStream(gis, JAVA_SERIALIZED_OBJECT_HEADER.length);
+      ObjectInputStream ois =
+          new BatfishObjectInputStream(
+              pbstream, ParseVendorConfigurationAnswerElement.class.getClassLoader());
+
+      pvcae = (ParseVendorConfigurationAnswerElement) ois.readObject();
+
+      ois.close();
+    } catch (IOException e) {
+      throw new BatfishException("Failed to deserialize parse answer object", e);
+    }
+    JSONObject warnings = new JSONObject();
+    SortedMap<String, Warnings> warningsMap = pvcae.getWarnings();
+    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    for (String s : warningsMap.keySet()) {
+      warnings.put(s, mapper.writeValueAsString(warningsMap.get(s)));
+    }
+    return warnings;
+  }
+
   public Path getpathAnalysisQuestion(
       String containerName, String analysisName, String questionName) {
     Path questionDir = getdirAnalysisQuestion(containerName, analysisName, questionName);
@@ -1059,7 +1114,7 @@ public class WorkMgr extends AbstractCoordinator {
       _workQueueMgr.processTaskCheckResult(work, fakeTask);
       killed = true;
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
     }
     return killed;
   }
@@ -1122,9 +1177,9 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getStackTrace(e));
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getFullStackTrace(e));
+      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
     } finally {
       if (client != null) {
         client.close();
@@ -1213,7 +1268,7 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.listIncompleteWork(containerName, testrigName, workType);
   }
 
-  public SortedSet<String> listQuestions(String containerName) {
+  public SortedSet<String> listQuestions(String containerName, boolean verbose) {
     Path containerDir = getdirContainer(containerName);
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
     if (!Files.exists(questionsDir)) {
@@ -1224,6 +1279,9 @@ public class WorkMgr extends AbstractCoordinator {
             CommonUtil.getSubdirectories(questionsDir)
                 .stream()
                 .map(dir -> dir.getFileName().toString())
+                // Question dirs starting with __ are internal questions
+                // and should not show up in listQuestions
+                .filter(dir -> verbose || !dir.startsWith("__"))
                 .collect(Collectors.toSet()));
     return questions;
   }

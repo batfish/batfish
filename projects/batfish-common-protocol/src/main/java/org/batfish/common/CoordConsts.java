@@ -102,6 +102,7 @@ public class CoordConsts {
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
   public static final String SVC_KEY_TESTRIG_METADATA = "testrigmetadata";
   public static final String SVC_KEY_TESTRIG_NAME = "testrigname";
+  public static final String SVC_KEY_VERBOSE = "verbose";
   public static final String SVC_KEY_VERSION = "version";
   public static final String SVC_KEY_WORK_LIST = "worklist";
   public static final String SVC_KEY_WORK_TYPE = "worktype";
@@ -127,6 +128,7 @@ public class CoordConsts {
   public static final String SVC_RSC_GET_CONTAINER = "getcontainer";
   public static final String SVC_RSC_GET_DATAPLANING_WORK = "getdataplaningwork";
   public static final String SVC_RSC_GET_OBJECT = "getobject";
+  public static final String SVC_RSC_GET_PARSING_RESULTS = "getparsingresults";
   public static final String SVC_RSC_GET_PARSING_WORK = "getparsingwork";
   public static final String SVC_RSC_GET_QUESTION_TEMPLATES = "getquestiontemplates";
   public static final String SVC_RSC_GET_WORKSTATUS = "getworkstatus";
