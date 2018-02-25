@@ -243,7 +243,6 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
         _roleDimensions.get(nodeName).put(i, roleName);
       }
     }
-
   }
 
   public static SortedMap<String, NavigableMap<Integer, String>> getRoleDimensions(
