@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Random;
 import java.util.SortedMap;
@@ -28,6 +29,10 @@ import org.batfish.datamodel.RoleEdge;
 import org.batfish.datamodel.Topology;
 
 public class InferRoles implements Callable<NodeRoleSpecifier> {
+
+  // During role inference we compute the possible role dimensions of a node based on its name.
+  // Later these dimensions will be stored in each node's Configuration object.
+  private static SortedMap<String, NavigableMap<Integer, String>> _roleDimensions = new TreeMap<>();
 
   private IBatfish _batfish;
   private Map<String, Configuration> _configurations;
@@ -110,6 +115,11 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       return emptySpecifier;
     }
 
+    // record the set of role "dimensions" for each node, which is a part of its name
+    // that may indicate a useful grouping of nodes
+    // (e.g., the node's function, location, device type, etc.)
+    createRoleDimensions(candidateRegexes);
+
     Pair<Integer, Double> bestRegexAndScore = findBestRegex(candidateRegexes);
 
     // select the regex of maximum score, if that score is above threshold
@@ -153,7 +163,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       Pattern p = Pattern.compile(String.join("", _regex));
       _matchingNodes =
           nodes.stream().filter((node) -> p.matcher(node).matches()).collect(Collectors.toList());
-      // keep this regex if it matches more than half of the node names; otherwise try again
+      // keep this regex if it matches a sufficient fraction of node names; otherwise try again
       if ((double) _matchingNodes.size() / nodes.size() >= REGEX_THRESHOLD) {
         return true;
       }
@@ -217,6 +227,28 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       }
     }
     return candidateRegexes;
+  }
+
+  private void createRoleDimensions(List<List<String>> regexes) {
+    for (String node : _matchingNodes) {
+      _roleDimensions.put(node, new TreeMap<>());
+    }
+    for (int i = 0; i < regexes.size(); i++) {
+      NodeRoleSpecifier specifier = regexToRoleSpecifier(regexTokensToRegex(regexes.get(i)));
+      SortedMap<String, SortedSet<String>> nodeRolesMap =
+          specifier.createNodeRolesMap(new TreeSet<>(_matchingNodes));
+      for (Map.Entry<String, SortedSet<String>> entry : nodeRolesMap.entrySet()) {
+        String nodeName = entry.getKey();
+        String roleName = entry.getValue().first();
+        _roleDimensions.get(nodeName).put(i, roleName);
+      }
+    }
+
+  }
+
+  public static SortedMap<String, NavigableMap<Integer, String>> getRoleDimensions(
+      Map<String, Configuration> configurations) {
+    return _roleDimensions;
   }
 
   private List<List<String>> possibleSecondRoleGroups(List<String> tokens) {
