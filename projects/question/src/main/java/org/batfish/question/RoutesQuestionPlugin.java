@@ -281,11 +281,12 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
             SortedSet<AbstractRoute> routes = e2.getValue();
             for (AbstractRoute route : routes) {
               String diffSymbol = null;
-              if (_added.contains(route)) {
-                diffSymbol = addedSymbol;
-              } else if (_removed.contains(route)) {
-                diffSymbol = removedSymbol;
-              }
+              // TODO(https://github.com/batfish/batfish/issues/719)
+              // if (_added.contains(route)) {
+              //   diffSymbol = addedSymbol;
+              // } else if (_removed.contains(route)) {
+              //   diffSymbol = removedSymbol;
+              // }
               String diffStr = diffSymbol != null ? diffSymbol + " " : "";
               String routeStr = route.fullString();
               String newStr = String.format("%s%s\n", diffStr, routeStr);
