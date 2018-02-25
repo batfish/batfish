@@ -60,6 +60,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aaa",
+            "1" : "accounting"
+          },
           "roles" : [
             "aaa-accounting"
           ],
@@ -136,6 +140,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "access",
+            "1" : "list"
+          },
           "roles" : [
             "access-list"
           ],
@@ -156,6 +164,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "address",
+            "1" : "family"
+          },
           "roles" : [
             "address-family"
           ],
@@ -681,6 +693,10 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "acl"
+          },
           "roles" : [
             "arista-acl"
           ],
@@ -701,6 +717,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "bgp"
+          },
           "roles" : [
             "arista-bgp"
           ],
@@ -892,6 +912,10 @@
               }
             }
           },
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "interface"
+          },
           "roles" : [
             "arista-interface"
           ],
@@ -953,6 +977,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "logging"
+          },
           "roles" : [
             "arista-logging"
           ],
@@ -976,6 +1004,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "misc"
+          },
           "roles" : [
             "arista-misc"
           ],
@@ -997,6 +1029,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "ospf"
+          },
           "roles" : [
             "arista-ospf"
           ],
@@ -1039,6 +1075,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "arista",
+            "1" : "username"
+          },
           "roles" : [
             "arista-username"
           ],
@@ -1071,6 +1111,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "aaa"
+          },
           "roles" : [
             "aruba-aaa"
           ],
@@ -1095,6 +1139,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "acl"
+          },
           "roles" : [
             "aruba-acl"
           ],
@@ -1115,6 +1163,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "airgroup"
+          },
           "roles" : [
             "aruba-airgroup"
           ],
@@ -1144,6 +1196,10 @@
               "encryptionAlgorithm" : "AES_256_CBC"
             }
           },
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "crypto"
+          },
           "roles" : [
             "aruba-crypto"
           ],
@@ -1164,6 +1220,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "dhcp"
+          },
           "roles" : [
             "aruba-dhcp"
           ],
@@ -1230,6 +1290,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "interface"
+          },
           "roles" : [
             "aruba-interface"
           ],
@@ -1256,6 +1320,10 @@
           "loggingServers" : [
             "1.2.3.4"
           ],
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "logging"
+          },
           "roles" : [
             "aruba-logging"
           ],
@@ -1284,6 +1352,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "misc"
+          },
           "roles" : [
             "aruba-misc"
           ],
@@ -1304,6 +1376,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "net"
+          },
           "roles" : [
             "aruba-net"
           ],
@@ -1324,6 +1400,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "snmp"
+          },
           "roles" : [
             "aruba-snmp"
           ],
@@ -1401,6 +1481,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "vlan"
+          },
           "roles" : [
             "aruba-vlan"
           ],
@@ -1421,6 +1505,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "voice"
+          },
           "roles" : [
             "aruba-voice"
           ],
@@ -1441,6 +1529,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "aruba",
+            "1" : "vpn"
+          },
           "roles" : [
             "aruba-vpn"
           ],
@@ -1563,6 +1655,10 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "asa",
+            "1" : "acl"
+          },
           "roles" : [
             "asa-acl"
           ],
@@ -1583,6 +1679,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "asa",
+            "1" : "banner"
+          },
           "roles" : [
             "asa-banner"
           ],
@@ -1641,6 +1741,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "asa",
+            "1" : "ospf"
+          },
           "roles" : [
             "asa-ospf"
           ],
@@ -1682,6 +1786,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "asa",
+            "1" : "ssh"
+          },
           "roles" : [
             "asa-ssh"
           ],
@@ -1730,6 +1838,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "banner",
+            "1" : "dos"
+          },
           "roles" : [
             "banner-dos"
           ],
@@ -2119,6 +2231,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "bgp",
+            "1" : "foundry"
+          },
           "roles" : [
             "bgp-foundry"
           ],
@@ -2257,6 +2373,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "bgp",
+            "1" : "nsr"
+          },
           "roles" : [
             "bgp-nsr"
           ],
@@ -2693,6 +2813,10 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "acl"
+          },
           "roles" : [
             "cadant-acl"
           ],
@@ -2713,6 +2837,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "banner"
+          },
           "roles" : [
             "cadant-banner"
           ],
@@ -2736,6 +2864,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "bgp"
+          },
           "roles" : [
             "cadant-bgp"
           ],
@@ -2801,6 +2933,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "cable"
+          },
           "roles" : [
             "cadant-cable"
           ],
@@ -3269,6 +3405,10 @@
               "vrf" : "management"
             }
           },
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "interface"
+          },
           "roles" : [
             "cadant-interface"
           ],
@@ -3406,6 +3546,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "isis"
+          },
           "roles" : [
             "cadant-isis"
           ],
@@ -3430,6 +3574,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "line"
+          },
           "roles" : [
             "cadant-line"
           ],
@@ -3454,6 +3602,10 @@
             "1.2.3.4"
           ],
           "loggingSourceInterface" : "Loopback0",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "logging"
+          },
           "roles" : [
             "cadant-logging"
           ],
@@ -3488,6 +3640,10 @@
             "5.6.7.8"
           ],
           "ntpSourceInterface" : "Loopback0",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "misc"
+          },
           "roles" : [
             "cadant-misc"
           ],
@@ -3586,6 +3742,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "qos"
+          },
           "roles" : [
             "cadant-qos"
           ],
@@ -3606,6 +3766,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "rip"
+          },
           "roles" : [
             "cadant-rip"
           ],
@@ -3671,6 +3835,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cadant",
+            "1" : "snmp"
+          },
           "roles" : [
             "cadant-snmp"
           ],
@@ -3711,6 +3879,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "aaa"
+          },
           "roles" : [
             "cisco-aaa"
           ],
@@ -4051,6 +4223,10 @@
               "name" : "standard"
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "acl"
+          },
           "roles" : [
             "cisco-acl"
           ],
@@ -4136,6 +4312,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "authentication"
+          },
           "roles" : [
             "cisco-authentication"
           ],
@@ -4156,6 +4336,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "bgp"
+          },
           "roles" : [
             "cisco-bgp"
           ],
@@ -4480,6 +4664,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "cable"
+          },
           "roles" : [
             "cisco-cable"
           ],
@@ -4545,6 +4733,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "callhome"
+          },
           "roles" : [
             "cisco-callhome"
           ],
@@ -4583,6 +4775,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "controller"
+          },
           "roles" : [
             "cisco-controller"
           ],
@@ -4635,6 +4831,10 @@
               "protocol" : "ESP"
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "crypto"
+          },
           "roles" : [
             "cisco-crypto"
           ],
@@ -4655,6 +4855,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "dhcp"
+          },
           "roles" : [
             "cisco-dhcp"
           ],
@@ -4686,6 +4890,10 @@
           ],
           "dnsSourceInterface" : "Loopback666",
           "domainName" : "my.domain.name",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "domain"
+          },
           "roles" : [
             "cisco-domain"
           ],
@@ -4706,6 +4914,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "dot"
+          },
           "roles" : [
             "cisco-dot11"
           ],
@@ -4726,6 +4938,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "dot"
+          },
           "roles" : [
             "cisco-dot1x"
           ],
@@ -4746,6 +4962,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "dspfarm"
+          },
           "roles" : [
             "cisco-dspfarm"
           ],
@@ -4897,6 +5117,10 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "eigrp"
+          },
           "roles" : [
             "cisco-eigrp"
           ],
@@ -4917,6 +5141,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "enable"
+          },
           "roles" : [
             "cisco-enable"
           ],
@@ -4967,6 +5195,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "flow"
+          },
           "roles" : [
             "cisco-flow"
           ],
@@ -4990,6 +5222,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "hardware"
+          },
           "roles" : [
             "cisco-hardware"
           ],
@@ -5038,6 +5274,10 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "hsrp"
           },
           "roles" : [
             "cisco-hsrp"
@@ -5698,6 +5938,10 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "interface"
+          },
           "roles" : [
             "cisco-interface"
           ],
@@ -5742,6 +5986,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "ip"
+          },
           "roles" : [
             "cisco-ip"
           ],
@@ -5902,6 +6150,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "ipsla"
+          },
           "roles" : [
             "cisco-ipsla"
           ],
@@ -5922,6 +6174,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "ipv"
+          },
           "roles" : [
             "cisco-ipv6"
           ],
@@ -6337,6 +6593,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "isis"
+          },
           "roles" : [
             "cisco-isis"
           ],
@@ -6371,6 +6631,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "l"
+          },
           "roles" : [
             "cisco-l2tp"
           ],
@@ -6396,6 +6660,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "line"
+          },
           "roles" : [
             "cisco-line"
           ],
@@ -6915,6 +7183,10 @@
             "dead:beef::1"
           ],
           "loggingSourceInterface" : "Management0",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "logging"
+          },
           "roles" : [
             "cisco-logging"
           ],
@@ -6985,6 +7257,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "misc"
+          },
           "roles" : [
             "cisco-misc"
           ],
@@ -7027,6 +7303,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "monitor"
+          },
           "roles" : [
             "cisco-monitor"
           ],
@@ -7047,6 +7327,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "mpls"
+          },
           "roles" : [
             "cisco-mpls"
           ],
@@ -7067,6 +7351,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "multicast"
+          },
           "roles" : [
             "cisco-multicast"
           ],
@@ -7092,6 +7380,10 @@
             "2.3.4.5"
           ],
           "ntpSourceInterface" : "Loopback0",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "ntp"
+          },
           "roles" : [
             "cisco-ntp"
           ],
@@ -7192,6 +7484,10 @@
               "type" : "LOOPBACK",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "ospf"
           },
           "roles" : [
             "cisco-ospf"
@@ -7313,6 +7609,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "pim"
+          },
           "roles" : [
             "cisco-pim"
           ],
@@ -7333,6 +7633,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "platform"
+          },
           "roles" : [
             "cisco-platform"
           ],
@@ -7353,6 +7657,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "privilege"
+          },
           "roles" : [
             "cisco-privilege"
           ],
@@ -7373,6 +7681,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "qos"
+          },
           "roles" : [
             "cisco-qos"
           ],
@@ -7410,6 +7722,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "redundancy"
+          },
           "roles" : [
             "cisco-redundancy"
           ],
@@ -7430,6 +7746,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "rip"
+          },
           "roles" : [
             "cisco-rip"
           ],
@@ -7458,6 +7778,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "role"
+          },
           "roles" : [
             "cisco-role"
           ],
@@ -7608,6 +7932,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "sccp"
+          },
           "roles" : [
             "cisco-sccp"
           ],
@@ -7628,6 +7956,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "snmp"
+          },
           "roles" : [
             "cisco-snmp"
           ],
@@ -7795,6 +8127,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "ssh"
+          },
           "roles" : [
             "cisco-ssh"
           ],
@@ -7818,6 +8154,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "stcapp"
+          },
           "roles" : [
             "cisco-stcapp"
           ],
@@ -7904,6 +8244,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "system"
+          },
           "roles" : [
             "cisco-system"
           ],
@@ -7925,6 +8269,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "tacacs"
+          },
           "roles" : [
             "cisco-tacacs"
           ],
@@ -7962,6 +8310,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "track"
+          },
           "roles" : [
             "cisco-track"
           ],
@@ -7982,6 +8334,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "username"
+          },
           "roles" : [
             "cisco-username"
           ],
@@ -8046,6 +8402,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "vdc"
+          },
           "roles" : [
             "cisco-vdc"
           ],
@@ -8066,6 +8426,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "vlan"
+          },
           "roles" : [
             "cisco-vlan"
           ],
@@ -8086,6 +8450,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "voice"
+          },
           "roles" : [
             "cisco-voice"
           ],
@@ -8106,6 +8474,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "vpdn"
+          },
           "roles" : [
             "cisco-vpdn"
           ],
@@ -8126,6 +8498,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "vpn"
+          },
           "roles" : [
             "cisco-vpn"
           ],
@@ -8146,6 +8522,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "vrf"
+          },
           "roles" : [
             "cisco-vrf"
           ],
@@ -8220,6 +8600,10 @@
               }
             }
           },
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "vrrp"
+          },
           "roles" : [
             "cisco-vrrp"
           ],
@@ -8243,6 +8627,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "webvpn"
+          },
           "roles" : [
             "cisco-webvpn"
           ],
@@ -8263,6 +8651,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "cisco",
+            "1" : "wsma"
+          },
           "roles" : [
             "cisco-wsma"
           ],
@@ -8653,6 +9045,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "community",
+            "1" : "set"
+          },
           "roles" : [
             "community-set"
           ],
@@ -8823,6 +9219,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "foundry",
+            "1" : "bgp"
+          },
           "roles" : [
             "foundry-bgp"
           ],
@@ -8917,6 +9317,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "foundry",
+            "1" : "interface"
+          },
           "roles" : [
             "foundry-interface"
           ],
@@ -8940,6 +9344,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "foundry",
+            "1" : "misc"
+          },
           "roles" : [
             "foundry-misc"
           ],
@@ -9199,6 +9607,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "host"
+          },
           "vendorFamily" : { },
           "vrfs" : {
             "default" : {
@@ -9334,6 +9745,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "host"
           },
           "routingPolicies" : {
             "~OSPF_EXPORT_POLICY:default~" : {
@@ -9711,6 +10125,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "interface",
+            "1" : "exit"
+          },
           "roles" : [
             "interface-exit"
           ],
@@ -9845,6 +10263,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "interface",
+            "1" : "name"
+          },
           "roles" : [
             "interface-name"
           ],
@@ -9905,6 +10327,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "interface",
+            "1" : "sdr"
+          },
           "roles" : [
             "interface-sdr"
           ],
@@ -9928,6 +10354,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "ios",
+            "1" : "bgp"
+          },
           "roles" : [
             "ios-bgp"
           ],
@@ -11110,6 +11540,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "bgp"
+          },
           "roles" : [
             "juniper-bgp"
           ],
@@ -11807,6 +12241,10 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "firewall"
+          },
           "roles" : [
             "juniper-firewall"
           ],
@@ -12046,6 +12484,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "interfaces"
+          },
           "roles" : [
             "juniper-interfaces"
           ],
@@ -12071,6 +12513,10 @@
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
           "domainName" : "my.domain.name",
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "misc"
+          },
           "roles" : [
             "juniper-misc"
           ],
@@ -12093,6 +12539,10 @@
             "1.2.3.4",
             "2.3.4.5"
           ],
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "ntp"
+          },
           "roles" : [
             "juniper-ntp"
           ],
@@ -12111,6 +12561,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "passwords"
+          },
           "roles" : [
             "juniper-passwords"
           ],
@@ -12206,6 +12660,10 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "relay"
           },
           "roles" : [
             "juniper-relay"
@@ -12399,6 +12857,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "snmp"
+          },
           "roles" : [
             "juniper-snmp"
           ],
@@ -12440,6 +12902,10 @@
           "loggingServers" : [
             "1.2.3.4"
           ],
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "syslog"
+          },
           "roles" : [
             "juniper-syslog"
           ],
@@ -12458,6 +12924,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "system"
+          },
           "roles" : [
             "juniper-system"
           ],
@@ -12476,6 +12946,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "juniper",
+            "1" : "tacplus"
+          },
           "roles" : [
             "juniper-tacplus"
           ],
@@ -12592,6 +13066,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "mos",
+            "1" : "application"
+          },
           "roles" : [
             "mos-application"
           ],
@@ -12722,6 +13200,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "mos",
+            "1" : "interface"
+          },
           "roles" : [
             "mos-interface"
           ],
@@ -12754,6 +13236,10 @@
           "ntpServers" : [
             "1.2.3.4"
           ],
+          "roleDimensions" : {
+            "0" : "mos",
+            "1" : "misc"
+          },
           "roles" : [
             "mos-misc"
           ],
@@ -13099,6 +13585,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "neighbor",
+            "1" : "dos"
+          },
           "roles" : [
             "neighbor-dos"
           ],
@@ -13263,6 +13753,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "neighbor",
+            "1" : "mix"
+          },
           "roles" : [
             "neighbor-mix"
           ],
@@ -13544,6 +14038,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "neighbor",
+            "1" : "nxos"
+          },
           "roles" : [
             "neighbor-nxos"
           ],
@@ -13788,6 +14286,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "nexus",
+            "1" : "bgp"
+          },
           "roles" : [
             "nexus-bgp"
           ],
@@ -13976,6 +14478,10 @@
             "1.2.3.4",
             "10.1.2.3"
           ],
+          "roleDimensions" : {
+            "0" : "nexus",
+            "1" : "ntp"
+          },
           "roles" : [
             "nexus-ntp"
           ],
@@ -14010,6 +14516,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "nexus",
+            "1" : "ssh"
+          },
           "roles" : [
             "nexus-ssh"
           ],
@@ -14255,6 +14765,10 @@
               "name" : "standard"
             }
           },
+          "roleDimensions" : {
+            "0" : "nxos",
+            "1" : "acl"
+          },
           "roles" : [
             "nxos-acl"
           ],
@@ -14275,6 +14789,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "nxos",
+            "1" : "bgp"
+          },
           "roles" : [
             "nxos-bgp"
           ],
@@ -14399,6 +14917,10 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "nxos",
+            "1" : "interface"
+          },
           "roles" : [
             "nxos-interface"
           ],
@@ -14426,6 +14948,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "nxos",
+            "1" : "misc"
+          },
           "roles" : [
             "nxos-misc"
           ],
@@ -14449,6 +14975,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "nxos",
+            "1" : "ospf"
+          },
           "roles" : [
             "nxos-ospf"
           ],
@@ -15868,6 +16398,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "nxos",
+            "1" : "system"
+          },
           "roles" : [
             "nxos-system"
           ],
@@ -15908,6 +16442,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "ROUTER",
+          "roleDimensions" : {
+            "0" : "peer",
+            "1" : "template"
+          },
           "roles" : [
             "peer-template"
           ],
@@ -16405,6 +16943,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "pim",
+            "1" : "snooping"
+          },
           "roles" : [
             "pim-snooping"
           ],
@@ -19689,6 +20231,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "router",
+            "1" : "msdp"
+          },
           "roles" : [
             "router-msdp"
           ],
@@ -19824,6 +20370,10 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "switchport",
+            "1" : "range"
           },
           "roles" : [
             "switchport-range"
@@ -20219,6 +20769,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "underscore",
+            "1" : "variable"
+          },
           "roles" : [
             "underscore-variable"
           ],
@@ -20327,6 +20881,10 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "variables",
+            "1" : "dos"
           },
           "roles" : [
             "variables-dos"
@@ -20477,6 +21035,10 @@
           "defaultCrossZoneAction" : "ACCEPT",
           "defaultInboundAction" : "ACCEPT",
           "deviceType" : "SWITCH",
+          "roleDimensions" : {
+            "0" : "vrf",
+            "1" : "context"
+          },
           "roles" : [
             "vrf-context"
           ],

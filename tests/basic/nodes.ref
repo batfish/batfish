@@ -251,6 +251,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "border"
           ],
@@ -1465,6 +1468,9 @@
             "18.18.18.18",
             "23.23.23.23"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "border"
           ],
@@ -2548,6 +2554,9 @@
             "1.1.1.1",
             "2.2.2.2"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "core"
           ],
@@ -3140,6 +3149,9 @@
             "18.18.18.18",
             "23.23.23.23"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "border"
           ],
@@ -4310,6 +4322,9 @@
           "ntpServers" : [
             "18.18.18.18"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "border"
           ],
@@ -5401,6 +5416,9 @@
             "1.1.1.1",
             "2.1.2.2"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "core"
           ],
@@ -5975,6 +5993,9 @@
             "1.1.1.1",
             "2.2.2.2"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "core"
           ],
@@ -6705,6 +6726,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "as"
           },
           "roles" : [
             "dept"
@@ -7474,6 +7498,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "dist"
           ],
@@ -8188,6 +8215,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "as"
           },
           "roles" : [
             "dist"
@@ -8911,6 +8941,9 @@
             "18.18.18.18",
             "23.23.23.23"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "border"
           ],
@@ -10009,6 +10042,9 @@
             "18.18.18.18",
             "23.23.23.23"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "border"
           ],
@@ -10999,6 +11035,9 @@
             "1.1.1.1",
             "2.2.2.2"
           ],
+          "roleDimensions" : {
+            "0" : "as"
+          },
           "roles" : [
             "core"
           ],
@@ -11582,6 +11621,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "host"
+          },
           "roles" : [
             "host"
           ],
@@ -11775,6 +11817,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "host"
           },
           "roles" : [
             "host"

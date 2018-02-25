@@ -92,6 +92,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "es"
+          },
           "roles" : [
             "es-domain"
           ],
@@ -165,6 +168,9 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "igw"
+          },
           "roles" : [
             "igw-068fee63"
           ],
@@ -228,6 +234,9 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "igw"
+          },
           "roles" : [
             "igw-9b93ddfc"
           ],
@@ -290,6 +299,9 @@
               "type" : "VPN",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "igw"
           },
           "roles" : [
             "igw-fac5839d"
@@ -1818,6 +1830,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-073b8061"
           ],
@@ -1944,6 +1959,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "subnet"
           },
           "roles" : [
             "subnet-1641fa70"
@@ -2081,6 +2099,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-1f315846"
           ],
@@ -2207,6 +2228,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "subnet"
           },
           "roles" : [
             "subnet-30398256"
@@ -2335,6 +2359,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-62f14104"
           ],
@@ -2462,6 +2489,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-7044ff16"
           ],
@@ -2588,6 +2618,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "subnet"
           },
           "roles" : [
             "subnet-8d0cbdeb"
@@ -2725,6 +2758,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-9c8adceb"
           ],
@@ -2861,6 +2897,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-d9cafabc"
           ],
@@ -2988,6 +3027,9 @@
               ]
             }
           },
+          "roleDimensions" : {
+            "0" : "subnet"
+          },
           "roles" : [
             "subnet-f73a8191"
           ],
@@ -3079,6 +3121,9 @@
                 }
               ]
             }
+          },
+          "roleDimensions" : {
+            "0" : "test"
           },
           "roles" : [
             "test-rds"
@@ -3349,6 +3394,9 @@
               "ikeGateway" : "vpn-ba2e34a8-2",
               "ipsecPolicy" : "vpn-ba2e34a8-2"
             }
+          },
+          "roleDimensions" : {
+            "0" : "vgw"
           },
           "roles" : [
             "vgw-81fd279f"
@@ -3639,6 +3687,9 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "vpc"
+          },
           "roles" : [
             "vpc-815775e7"
           ],
@@ -3802,6 +3853,9 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "vpc"
           },
           "roles" : [
             "vpc-925131f4"
@@ -4020,6 +4074,9 @@
               "vrf" : "default"
             }
           },
+          "roleDimensions" : {
+            "0" : "vpc"
+          },
           "roles" : [
             "vpc-b390fad5"
           ],
@@ -4209,6 +4266,9 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             }
+          },
+          "roleDimensions" : {
+            "0" : "vpc"
           },
           "roles" : [
             "vpc-f8fad69d"
