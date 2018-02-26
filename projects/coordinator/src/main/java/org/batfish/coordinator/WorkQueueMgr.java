@@ -339,7 +339,7 @@ public class WorkQueueMgr {
   }
 
   @Nonnull
-  public List<QueuedWork> getWorkForChecking() {
+  public synchronized List<QueuedWork> getWorkForChecking() {
     List<QueuedWork> workToCheck = new ArrayList<>();
     for (QueuedWork work : _queueIncompleteWork) {
       if (work.getStatus() == WorkStatusCode.ASSIGNED) {
