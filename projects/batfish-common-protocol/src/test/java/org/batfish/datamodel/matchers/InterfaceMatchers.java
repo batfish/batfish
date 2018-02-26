@@ -17,6 +17,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {
@@ -100,6 +101,19 @@ public final class InterfaceMatchers {
   /** Provides a matcher that matches if the interface runs OSPF in point-to-point mode. */
   public static IsOspfPointToPoint isOspfPointToPoint() {
     return new IsOspfPointToPoint(equalTo(true));
+  }
+
+  /** Provides a matcher that matches if the interface has proxy-arp enabled. */
+  public static IsProxyArp isProxyArp() {
+    return new IsProxyArp(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * proxy-arp setting.
+   */
+  public static IsProxyArp isProxyArp(Matcher<? super Boolean> subMatcher) {
+    return new IsProxyArp(subMatcher);
   }
 
   private InterfaceMatchers() {}
