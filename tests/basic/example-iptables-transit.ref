@@ -7,7 +7,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -94,7 +94,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -159,7 +159,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -235,7 +235,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -311,7 +311,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -398,7 +398,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -496,7 +496,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "example-iptables"
+              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
             }
           },
           "flow" : {
@@ -612,9 +612,6 @@
     "notIngressNodeRegex" : "z1-.*",
     "notTransitNodes" : [
       "z1-firewall"
-    ],
-    "srcIps" : [
-      "10.0.4.0"
     ],
     "type" : "standard",
     "useCompression" : false
