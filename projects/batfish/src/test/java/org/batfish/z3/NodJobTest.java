@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -187,7 +186,7 @@ public class NodJobTest {
         hasEntry(equalTo(BasicHeaderField.SRC_IP), not(equalTo(new Ip("3.0.0.0").asLong()))));
     assertThat(
         headerConstraints,
-        hasEntry(equalTo(BasicHeaderField.SRC_IP), isOneOf(new Ip("1.0.0.10").asLong())));
+        hasEntry(equalTo(BasicHeaderField.SRC_IP), equalTo(new Ip("1.0.0.10").asLong())));
 
     Set<Flow> flows = nodJob.getFlows(model, headerConstraints);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
@@ -200,7 +199,7 @@ public class NodJobTest {
           assertThat(hops, hasSize(1));
           FlowTraceHop hop = hops.get(0);
           assertThat(hop.getTransformedFlow(), notNullValue());
-          assertThat(hop.getTransformedFlow().getSrcIp(), isOneOf(new Ip("1.0.0.10")));
+          assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(new Ip("1.0.0.10")));
         });
   }
 
