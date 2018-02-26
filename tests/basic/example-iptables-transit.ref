@@ -7,7 +7,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
@@ -94,7 +94,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
@@ -159,7 +159,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
@@ -235,7 +235,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
@@ -311,7 +311,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
@@ -398,7 +398,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
@@ -496,7 +496,7 @@
           "environments" : {
             "BASE" : {
               "envName" : "env_default",
-              "testrigName" : "tr_daa7c200-02ad-4473-9759-521af6c83b5d"
+              "testrigName" : "example-iptables"
             }
           },
           "flow" : {
