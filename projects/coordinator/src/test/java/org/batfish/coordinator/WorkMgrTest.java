@@ -79,27 +79,39 @@ public class WorkMgrTest {
   @Test
   public void listEmptyQuestion() {
     _manager.initContainer("container", null);
-    SortedSet<String> questions = _manager.listQuestions("container");
+    SortedSet<String> questions = _manager.listQuestions("container", false);
     assertThat(questions.isEmpty(), is(true));
   }
 
   @Test
   public void listQuestionNames() {
+    String questionName = "publicquestion";
+    // Leading __ means this question is an internal question
+    // And should be hidden from listQuestions when verbose is false
+    String internalQuestionName = "__internalquestion";
     _manager.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
-    assertThat(questionsDir.resolve("initinfo").toFile().mkdirs(), is(true));
-    SortedSet<String> questions = _manager.listQuestions("container");
-    assertThat(questions.size(), is(1));
-    assertThat(questions.first(), equalTo("initinfo"));
+    // Make sure the question directories are created
+    assertThat(questionsDir.resolve(questionName).toFile().mkdirs(), is(true));
+    assertThat(questionsDir.resolve(internalQuestionName).toFile().mkdirs(), is(true));
+
+    SortedSet<String> questionsNotVerbose = _manager.listQuestions("container", false);
+    SortedSet<String> questionsVerbose = _manager.listQuestions("container", true);
+
+    // Only the public question should show up when verbose is false
+    assertThat(questionsNotVerbose, equalTo(Sets.newHashSet(questionName)));
+
+    // Both questions should show up when verbose is true
+    assertThat(questionsVerbose, equalTo(Sets.newHashSet(questionName, internalQuestionName)));
   }
 
   @Test
   public void listQuestionWithNonExistContainer() {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo("Container 'container' does not exist"));
-    _manager.listQuestions("container");
+    _manager.listQuestions("container", false);
   }
 
   @Test
@@ -111,9 +123,8 @@ public class WorkMgrTest {
     assertTrue(questionsDir.resolve("nodes").toFile().mkdirs());
     assertTrue(questionsDir.resolve("access").toFile().mkdirs());
     assertTrue(questionsDir.resolve("initinfo").toFile().mkdirs());
-    SortedSet<String> questions = _manager.listQuestions("container");
-    assertThat(questions.size(), is(3));
-    assertThat(questions.toString(), equalTo("[access, initinfo, nodes]"));
+    SortedSet<String> questions = _manager.listQuestions("container", false);
+    assertThat(questions, equalTo(Sets.newHashSet("access", "initinfo", "nodes")));
   }
 
   @Test

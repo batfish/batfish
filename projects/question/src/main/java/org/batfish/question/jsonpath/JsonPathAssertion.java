@@ -28,6 +28,26 @@ public class JsonPathAssertion {
   public JsonPathAssertion(
       @JsonProperty(PROP_TYPE) JsonPathAssertionType assertionType,
       @JsonProperty(PROP_EXPECT) JsonNode expect) {
+    switch (assertionType) {
+      case countequals:
+      case countlessthan:
+      case countmorethan:
+        if (!expect.isInt()) {
+          throw new IllegalArgumentException(
+              String.format(
+                  "Value '%s' of assertion type '%s' is not an integer", expect, assertionType));
+        }
+        break;
+      case equals:
+        if (!expect.isArray()) {
+          throw new IllegalArgumentException(
+              String.format(
+                  "Value '%s' of assertion type '%s' is not a list", expect, assertionType));
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unhandled assertion type: " + assertionType);
+    }
     _assertionType = assertionType;
     _expect = expect;
   }
@@ -44,19 +64,13 @@ public class JsonPathAssertion {
 
   public boolean evaluate(Set<JsonPathResultEntry> resultEntries) {
     switch (getType()) {
-      case count:
-        if (!_expect.isInt()) {
-          throw new BatfishException(
-              "Expected value of assertion type count ("
-                  + _expect.toString()
-                  + ") is not an integer");
-        }
+      case countequals:
         return resultEntries.size() == _expect.asInt();
+      case countlessthan:
+        return resultEntries.size() < _expect.asInt();
+      case countmorethan:
+        return resultEntries.size() > _expect.asInt();
       case equals:
-        if (!_expect.isArray()) {
-          throw new BatfishException(
-              "Expected value of assertion type equals (" + _expect.toString() + ") is not a list");
-        }
         Set<JsonPathResultEntry> expectedEntries = new HashSet<>();
         for (final JsonNode nodeEntry : _expect) {
           try {

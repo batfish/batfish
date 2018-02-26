@@ -8,7 +8,11 @@ add-batfish-option verboseparse
 test tests/jsonpath-addons/init.ref init-testrig test_rigs/example jsonpath-example
 
 # assertions 
-test tests/jsonpath-addons/jsonpath-assertion-count.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "count", "expect": 5}}]
+test tests/jsonpath-addons/jsonpath-assertion-countequals.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "countEquals", "expect": 5}}]
+
+test tests/jsonpath-addons/jsonpath-assertion-countlessthan.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "countLessThan", "expect": 5}}]
+
+test tests/jsonpath-addons/jsonpath-assertion-countmorethan.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "countMoreThan", "expect": 5}}]
 
 test tests/jsonpath-addons/jsonpath-assertion-equals-no-suffix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", "assertion": {"type" : "equals", "expect": [{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"]}, {"concretePath" : ["'nodes'", "'as3border1'","'interfaces'", "'GigabitEthernet0/0'", "'mtu'"]}, {"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'GigabitEthernet1/0'", "'mtu'"]}, {"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Loopback0'", "'mtu'"]}]}}]
 
@@ -17,7 +21,7 @@ test tests/jsonpath-addons/jsonpath-assertion-equals-with-suffix.ref get jsonpat
 # exceptions 
 test tests/jsonpath-addons/jsonpath-exception-with-suffix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}]}]
 
-test tests/jsonpath-addons/jsonpath-exception-assertion.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}], "assertion": {"type" : "count", "expect" : 3}}]
+test tests/jsonpath-addons/jsonpath-exception-assertion.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path" : "$.nodes['as3border1']..mtu", suffix: True, "exceptions": [{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}], "assertion": {"type" : "countequals", "expect" : 3}}]
 
 # display hints
 test tests/jsonpath-addons/jsonpath-display-hints-prefix.ref get jsonpath innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", summary: False}, paths: [{"path": "$.nodes.*", suffix: False, displayHints: { extractions: { node: { schema : "String", method: { use: prefix, index: 1}}}}}]
@@ -28,7 +32,7 @@ test tests/jsonpath-addons/jsonpath-display-hints-suffixofsuffix.ref get jsonpat
 
 # load templates
 load-questions tests/jsonpath-addons/templates
-test tests/jsonpath-addons/add-exceptions-assertions.ref configure-template new1AaaAccountingCommands aaaAccountingCommands exceptions=[{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}], assertion={"type" : "count", "expect" : 3}
+test tests/jsonpath-addons/add-exceptions-assertions.ref configure-template new1AaaAccountingCommands aaaAccountingCommands exceptions=[{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}], assertion={"type" : "countequals", "expect" : 3}
 test tests/jsonpath-addons/remove-assertions.ref configure-template new2AaaAccountingCommands new1AaaAccountingCommands assertion={}
 test tests/jsonpath-addons/remove-exceptions.ref configure-template new3AaaAccountingCommands new2AaaAccountingCommands exceptions=[]
 

@@ -309,6 +309,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                               if (aclOut != null) {
                                 interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
                               }
+                              i.getSourceNats()
+                                  .forEach(
+                                      sourceNat -> {
+                                        IpAccessList sourceNatAcl = sourceNat.getAcl();
+                                        if (sourceNatAcl != null) {
+                                          interfaceAcls.add(
+                                              new Pair<>(sourceNatAcl.getName(), sourceNatAcl));
+                                        }
+                                      });
+
                               return interfaceAcls.build().stream();
                             })
                         .collect(ImmutableSet.toImmutableSet())
