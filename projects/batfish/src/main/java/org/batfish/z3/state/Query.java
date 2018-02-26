@@ -1,12 +1,12 @@
 package org.batfish.z3.state;
 
-import org.batfish.z3.expr.TransformationStateExpr;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class Query extends TransformationStateExpr {
+public class Query extends BasicStateExpr {
 
-  public static class State extends TransformationStateExpr.State {
+  public static class State extends BasicStateExpr.State {
 
     public static final State INSTANCE = new State();
 
