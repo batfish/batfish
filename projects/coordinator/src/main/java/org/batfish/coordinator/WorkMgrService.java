@@ -27,7 +27,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
@@ -85,7 +85,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:checkApiKey exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:checkApiKey exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -192,7 +192,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:configureAnalysis exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:configureAnalysis exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -242,7 +242,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getWorkStatus exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getWorkStatus exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -286,7 +286,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delAnalysis exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:delAnalysis exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -326,7 +326,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delContainer exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:delContainer exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -372,7 +372,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delEnvironment exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:delEnvironment exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -415,7 +415,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delQuestion exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:delQuestion exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -458,7 +458,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delTestrig exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:delTestrig exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -537,7 +537,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getAnalsysisAnswers exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -613,7 +613,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getAnswer exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getAnswer exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -677,7 +677,7 @@ public class WorkMgrService {
           .type(MediaType.TEXT_PLAIN)
           .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getConfiguration exception: %s", stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
@@ -740,7 +740,7 @@ public class WorkMgrService {
           .type(MediaType.TEXT_PLAIN)
           .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getContainer exception: %s", stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
@@ -761,7 +761,7 @@ public class WorkMgrService {
 
       return successResponse(map);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getInfo exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -820,7 +820,7 @@ public class WorkMgrService {
           .type(MediaType.TEXT_PLAIN)
           .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getObject exception: %s", stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
@@ -850,7 +850,7 @@ public class WorkMgrService {
 
       return successResponse(Main.getWorkMgr().getParsingResults(containerName, testrigName));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getParsingResults exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -876,7 +876,7 @@ public class WorkMgrService {
             new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates));
       }
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getQuestionTemplates exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -892,7 +892,7 @@ public class WorkMgrService {
       retObject.put("service-version", Version.getVersion());
       return successResponse(retObject);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getStatus exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -943,7 +943,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getWorkStatus exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:getWorkStatus exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -990,7 +990,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:initContainer exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:initContainer exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1036,7 +1036,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:killWork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:killWork exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1093,7 +1093,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listAnalyses exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:listAnalyses exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1133,7 +1133,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listContainers exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:listContainers exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1178,7 +1178,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listEnvironments exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:listEnvironments exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1232,7 +1232,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listIncompleteWork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:listIncompleteWork exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1244,6 +1244,7 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container in which the testrig and questions reside
+   * @param verbose The flag to show all questions, including internal ones
    * @return TODO: document JSON response
    */
   @POST
@@ -1252,7 +1253,8 @@ public class WorkMgrService {
   public JSONArray listQuestions(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName) {
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_VERBOSE) boolean verbose) {
     try {
       _logger.infof("WMS:listQuestions %s %s\n", apiKey, containerName);
 
@@ -1266,7 +1268,7 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
-      for (String questionName : Main.getWorkMgr().listQuestions(containerName)) {
+      for (String questionName : Main.getWorkMgr().listQuestions(containerName, verbose)) {
         String questionText = Main.getWorkMgr().getQuestion(containerName, questionName);
 
         retObject.put(questionName, new JSONObject(questionText));
@@ -1277,7 +1279,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listQuestions exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:listQuestions exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1336,7 +1338,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listTestrigs exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:listTestrigs exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1386,7 +1388,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:putObject exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:putObject exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1434,7 +1436,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:queueWork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:queueWork exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1479,7 +1481,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:syncTestrigsSyncNow exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:syncTestrigsSyncNow exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1534,7 +1536,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:syncTestrigsUpdateSettings exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:syncTestrigsUpdateSettings exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1557,7 +1559,7 @@ public class WorkMgrService {
       // .allow("OPTIONS")
       // .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:test exception: %s", stackTrace);
       // return Response.serverError().build();
       return "got error";
@@ -1612,7 +1614,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:uploadEnvironment exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:uploadEnvironment exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1663,7 +1665,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:uploadQuestion exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:uploadQuestion exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1716,7 +1718,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:uploadTestrig exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       _logger.errorf("WMS:uploadTestrig exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }

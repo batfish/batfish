@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -339,7 +339,7 @@ public class WorkQueueMgr {
   }
 
   @Nonnull
-  public List<QueuedWork> getWorkForChecking() {
+  public synchronized List<QueuedWork> getWorkForChecking() {
     List<QueuedWork> workToCheck = new ArrayList<>();
     for (QueuedWork work : _queueIncompleteWork) {
       if (work.getStatus() == WorkStatusCode.ASSIGNED) {
@@ -481,7 +481,7 @@ public class WorkQueueMgr {
                       "Failed to requeue previously blocked work " + requeueWork.getId());
                 }
               } catch (Exception e) {
-                String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                String stackTrace = ExceptionUtils.getStackTrace(e);
                 _logger.errorf("exception: %s\n", stackTrace);
                 // put this work back on incomplete queue and process as if it terminatedabnormally
                 // people may be checking its status and this work may be blocking others

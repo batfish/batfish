@@ -47,7 +47,8 @@ public class JsonPathAssertionTest {
             true);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     JsonPathAssertion jpAssertion =
-        new JsonPathAssertion(JsonPathAssertionType.count, mapper.readValue("2", JsonNode.class));
+        new JsonPathAssertion(
+            JsonPathAssertionType.countequals, mapper.readValue("2", JsonNode.class));
     boolean result = jpAssertion.evaluate(results);
     assertThat(result, equalTo(false));
   }
@@ -59,7 +60,8 @@ public class JsonPathAssertionTest {
             "org/batfish/question/jsonpath/jsonPathAssertionTest.json", "$.nodes..mtu", true);
     BatfishObjectMapper mapper = new BatfishObjectMapper();
     JsonPathAssertion jpAssertion =
-        new JsonPathAssertion(JsonPathAssertionType.count, mapper.readValue("2", JsonNode.class));
+        new JsonPathAssertion(
+            JsonPathAssertionType.countequals, mapper.readValue("2", JsonNode.class));
     boolean result = jpAssertion.evaluate(results);
     assertThat(result, equalTo(true));
   }
