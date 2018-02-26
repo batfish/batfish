@@ -11,6 +11,8 @@ import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
@@ -166,8 +168,15 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
 
       List<BitVecExpr> reversedVars =
           Lists.reverse(
-              Lists.newArrayList(program.getNodContext().getVariablesAsConsts().values()));
-      reversedVars.remove(0); // remove NEW_SRC_IP
+              program
+                  .getNodContext()
+                  .getVariablesAsConsts()
+                  .entrySet()
+                  .stream()
+                  .filter(entry -> BasicHeaderField.basicHeaderFieldNames.contains(entry.getKey()))
+                  .map(Entry::getValue)
+                  .collect(Collectors.toList()));
+
       Expr substitutedAnswer = answer.substituteVars(reversedVars.toArray(new Expr[] {}));
       solverInput = (BoolExpr) substitutedAnswer;
     } else {

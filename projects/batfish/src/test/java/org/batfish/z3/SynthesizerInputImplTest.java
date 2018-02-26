@@ -549,6 +549,17 @@ public class SynthesizerInputImplTest {
                     equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
     assertThat(
         inputWithDataPlane,
+        hasAclConditions(
+            equalTo(
+                ImmutableMap.of(
+                    srcNode.getName(),
+                    ImmutableMap.of(
+                        sourceNat1Acl.getName(), ImmutableMap.of(),
+                        sourceNat2Acl.getName(), ImmutableMap.of()),
+                    nextHop.getName(),
+                    ImmutableMap.of()))));
+    assertThat(
+        inputWithDataPlane,
         hasSourceNats(
             hasEntry(
                 equalTo(srcNode.getName()),

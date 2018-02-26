@@ -7,7 +7,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
@@ -49,24 +48,23 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
         ImmutableSet.<BasicStateExpr>builder()
             .add(new PreOutEdge(_edge))
             .add(new PreInInterface(_edge.getNode2(), _edge.getInt2()));
-    ImmutableList.Builder<BooleanExpr> queryConditionsBuilder =
-        ImmutableList.<BooleanExpr>builder().add(new HeaderSpaceMatchExpr(_headerSpace));
     if (_requireAcceptance) {
       queryPreconditionPreTransformationStates.add(Accept.INSTANCE);
     }
-    queryConditionsBuilder.add(SaneExpr.INSTANCE);
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
         .setRules(
             ImmutableList.of(
                 new BasicRuleStatement(
-                    CurrentIsOriginalExpr.INSTANCE,
+                    new AndExpr(
+                        ImmutableList.of(
+                            CurrentIsOriginalExpr.INSTANCE,
+                            new HeaderSpaceMatchExpr(_headerSpace),
+                            SaneExpr.INSTANCE)),
                     new OriginateVrf(_originationNode, _ingressVrf)),
                 new BasicRuleStatement(
-                    new AndExpr(queryConditionsBuilder.build()),
-                    queryPreconditionPreTransformationStates.build(),
-                    Query.INSTANCE)))
+                    queryPreconditionPreTransformationStates.build(), Query.INSTANCE)))
         .build();
   }
 }
