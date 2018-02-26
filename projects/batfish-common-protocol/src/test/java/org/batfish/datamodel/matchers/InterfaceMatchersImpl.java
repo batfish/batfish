@@ -89,5 +89,16 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class IsProxyArp extends FeatureMatcher<Interface, Boolean> {
+    IsProxyArp(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with proxyArp", "proxyArp");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getProxyArp();
+    }
+  }
+
   private InterfaceMatchersImpl() {}
 }
