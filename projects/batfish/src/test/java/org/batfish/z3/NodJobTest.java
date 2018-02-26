@@ -62,7 +62,7 @@ public class NodJobTest {
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
 
-  NodJob getNodJob(HeaderSpace headerSpace) {
+  private NodJob getNodJob(HeaderSpace headerSpace) {
     ReachabilityQuerySynthesizer querySynthesizer =
         new ReachabilityQuerySynthesizer(
             ImmutableSet.of(ForwardingAction.ACCEPT),
@@ -103,7 +103,6 @@ public class NodJobTest {
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
     Ip poolIp1 = new Ip("1.0.0.10");
-    Ip poolIp2 = new Ip("1.0.0.11");
 
     // apply NAT to all packets
     IpAccessList sourceNat1Acl =
@@ -121,26 +120,23 @@ public class NodJobTest {
         // which is complex and inscrutable. Consider replacing that with bv_lte and bv_gte.
         // Would be easier to understand, and Nuno says it will likely be more efficient.
         snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp1).setAcl(sourceNat1Acl).build();
-    Interface srcInterface =
-        ib.setOwner(_srcNode)
-            .setVrf(_srcVrf)
-            .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-            .setSourceNats(ImmutableList.of(sourceNat1))
-            .build();
-    Interface dstInterface =
-        ib.setOwner(_dstNode)
-            .setVrf(dstVrf)
-            .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-            .setSourceNats(ImmutableList.of())
-            .build();
+    ib.setOwner(_srcNode)
+        .setVrf(_srcVrf)
+        .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
+        .setSourceNats(ImmutableList.of(sourceNat1))
+        .build();
+    ib.setOwner(_dstNode)
+        .setVrf(dstVrf)
+        .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
+        .setSourceNats(ImmutableList.of())
+        .build();
 
     // For the destination
     Prefix pDest = Prefix.parse("2.0.0.0/32");
-    Interface iB =
-        ib.setOwner(_dstNode)
-            .setVrf(dstVrf)
-            .setAddress(new InterfaceAddress(pDest.getEndIp(), pDest.getPrefixLength()))
-            .build();
+    ib.setOwner(_dstNode)
+        .setVrf(dstVrf)
+        .setAddress(new InterfaceAddress(pDest.getEndIp(), pDest.getPrefixLength()))
+        .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest);
     _srcVrf.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
@@ -170,7 +166,7 @@ public class NodJobTest {
 
   /** Test that traffic originating from 3.0.0.0 is NATed */
   @Test
-  public void testNatted() throws IOException {
+  public void testNatted() {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
     NodJob nodJob = getNodJob(headerSpace);
@@ -211,7 +207,7 @@ public class NodJobTest {
 
   /** Test that traffic originating from 3.0.0.1 is not NATed */
   @Test
-  public void testNotNatted() throws IOException {
+  public void testNotNatted() {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
     NodJob nodJob = getNodJob(headerSpace);

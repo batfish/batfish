@@ -354,10 +354,12 @@ public class BoolExprTransformer
         .forEach(preconditions::add);
     return ctx.mkImplies(
         ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
-        toBoolExpr(
-            transformedBasicRuleStatement.getPostconditionPostTransformationState(),
-            _input,
-            _nodContext));
+        (BoolExpr)
+            toBoolExpr(
+                    transformedBasicRuleStatement.getPostconditionPostTransformationState(),
+                    _input,
+                    _nodContext)
+                .substitute(_from.get(), _to.get()));
   }
 
   @Override
