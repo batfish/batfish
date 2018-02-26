@@ -17,7 +17,6 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.Drop;
@@ -163,7 +162,6 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
           throw new BatfishException("unsupported action");
       }
     }
-    queryConditionsBuilder.add(SaneExpr.INSTANCE);
 
     // check transit constraints (unordered)
     _transitNodes
@@ -178,17 +176,18 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     //        .map(NotExpr::new)
     //        .forEach(queryPreconditionPreTransformationStates::add);
 
-    // add headerSpace constraints
-    BooleanExpr matchHeaderSpace = new HeaderSpaceMatchExpr(_headerSpace);
-    queryConditionsBuilder.add(matchHeaderSpace);
-
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     // create rules for injecting symbolic packets into ingress node(s)
     for (String ingressNode : _ingressNodeVrfs.keySet()) {
       for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
         rules.add(
             new BasicRuleStatement(
-                CurrentIsOriginalExpr.INSTANCE, new OriginateVrf(ingressNode, ingressVrf)));
+                new AndExpr(
+                    ImmutableList.of(
+                        CurrentIsOriginalExpr.INSTANCE,
+                        new HeaderSpaceMatchExpr(_headerSpace),
+                        SaneExpr.INSTANCE)),
+                new OriginateVrf(ingressNode, ingressVrf)));
       }
     }
     List<BasicStateExpr> queryPreconditionPreTransformationStates =
@@ -199,14 +198,12 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         .stream()
         .map(
             finalAction ->
-                new TransformationRuleStatement(
+                new BasicRuleStatement(
                     queryConditions,
                     ImmutableSet.<BasicStateExpr>builder()
                         .add(finalAction)
                         .addAll(queryPreconditionPreTransformationStates)
                         .build(),
-                    ImmutableSet.of(),
-                    ImmutableSet.of(),
                     Query.INSTANCE))
         .forEach(rules::add);
     return ReachabilityProgram.builder()

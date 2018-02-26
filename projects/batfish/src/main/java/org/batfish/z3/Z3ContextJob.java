@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.Lists;
+import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
@@ -8,6 +9,7 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import java.util.List;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
@@ -162,10 +164,11 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     BoolExpr solverInput;
     if (answer.getArgs().length > 0) {
 
-      Expr[] reversedVars =
-          Lists.reverse(Lists.newArrayList(program.getNodContext().getVariablesAsConsts().values()))
-              .toArray(new Expr[] {});
-      Expr substitutedAnswer = answer.substituteVars(reversedVars);
+      List<BitVecExpr> reversedVars =
+          Lists.reverse(
+              Lists.newArrayList(program.getNodContext().getVariablesAsConsts().values()));
+      reversedVars.remove(0); // remove NEW_SRC_IP
+      Expr substitutedAnswer = answer.substituteVars(reversedVars.toArray(new Expr[] {}));
       solverInput = (BoolExpr) substitutedAnswer;
     } else {
       solverInput = (BoolExpr) answer;

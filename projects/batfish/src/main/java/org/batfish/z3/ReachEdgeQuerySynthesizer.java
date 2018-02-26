@@ -12,7 +12,6 @@ import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
@@ -64,11 +63,9 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
                 new BasicRuleStatement(
                     CurrentIsOriginalExpr.INSTANCE,
                     new OriginateVrf(_originationNode, _ingressVrf)),
-                new TransformationRuleStatement(
+                new BasicRuleStatement(
                     new AndExpr(queryConditionsBuilder.build()),
                     queryPreconditionPreTransformationStates.build(),
-                    ImmutableSet.of(),
-                    ImmutableSet.of(),
                     Query.INSTANCE)))
         .build();
   }

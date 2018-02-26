@@ -14,13 +14,13 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Query;
 
@@ -102,10 +102,8 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
         .setRules(
             ImmutableList.of(
-                new TransformationRuleStatement(
+                new BasicRuleStatement(
                     new AndExpr(queryConditionsBuilder.build()),
-                    ImmutableSet.of(),
-                    ImmutableSet.of(),
                     ImmutableSet.of(),
                     Query.INSTANCE)))
         .build();
