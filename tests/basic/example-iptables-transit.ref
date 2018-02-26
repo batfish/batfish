@@ -613,6 +613,9 @@
     "notTransitNodes" : [
       "z1-firewall"
     ],
+    "srcIps" : [
+      "10.0.4.0"
+    ],
     "type" : "standard",
     "useCompression" : false
   },
