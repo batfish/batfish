@@ -212,6 +212,61 @@ public class SynthesizerInputImplTest {
                             new HeaderSpaceMatchExpr(aclWithLines.getLines().get(0)),
                             1,
                             new HeaderSpaceMatchExpr(aclWithLines.getLines().get(1))))))));
+
+    Configuration srcNode = _cb.build();
+    Configuration nextHop = _cb.build();
+    Vrf srcVrf = _vb.setOwner(srcNode).build();
+    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
+    Ip ip11 = new Ip("1.0.0.0");
+    Ip ip12 = new Ip("1.0.0.10");
+    Ip ip21 = new Ip("2.0.0.0");
+    Ip ip22 = new Ip("2.0.0.10");
+    IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
+    IpAccessList sourceNat2Acl = _aclb.build();
+    SourceNat sourceNat1 =
+        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
+    SourceNat sourceNat2 =
+        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
+    Interface srcInterfaceZeroSourceNats =
+        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
+    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
+    Interface srcInterfaceTwoSourceNats =
+        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
+    Interface nextHopInterface =
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
+    Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
+    Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
+    Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
+    Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceZeroSourceNats);
+    Edge backEdge2 = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
+    Edge backEdge3 = new Edge(nextHopInterface, srcInterfaceTwoSourceNats);
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setConfigurations(
+                ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
+            .setDataPlane(
+                TestDataPlane.builder()
+                    .setTopologyEdges(
+                        ImmutableSortedSet.of(
+                            forwardEdge1,
+                            forwardEdge2,
+                            forwardEdge3,
+                            backEdge1,
+                            backEdge2,
+                            backEdge3))
+                    .build())
+            .build();
+    assertThat(
+        inputWithDataPlane,
+        hasAclConditions(
+            equalTo(
+                ImmutableMap.of(
+                    srcNode.getName(),
+                    ImmutableMap.of(
+                        sourceNat1Acl.getName(), ImmutableMap.of(),
+                        sourceNat2Acl.getName(), ImmutableMap.of()),
+                    nextHop.getName(),
+                    ImmutableMap.of()))));
   }
 
   @Test
@@ -547,17 +602,6 @@ public class SynthesizerInputImplTest {
                 equalTo(srcNode.getName()),
                 hasEntry(
                     equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
-    assertThat(
-        inputWithDataPlane,
-        hasAclConditions(
-            equalTo(
-                ImmutableMap.of(
-                    srcNode.getName(),
-                    ImmutableMap.of(
-                        sourceNat1Acl.getName(), ImmutableMap.of(),
-                        sourceNat2Acl.getName(), ImmutableMap.of()),
-                    nextHop.getName(),
-                    ImmutableMap.of()))));
     assertThat(
         inputWithDataPlane,
         hasSourceNats(
