@@ -72,7 +72,6 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeEnvBgpCache(),
             makeEnvRouteCache());
-    batfish.setMonotonicCache(true);
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
           settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),

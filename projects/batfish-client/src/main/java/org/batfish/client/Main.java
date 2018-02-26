@@ -1,7 +1,7 @@
 package org.batfish.client;
 
 import java.util.LinkedList;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.client.config.Settings;
 
 public class Main {
@@ -19,7 +19,7 @@ public class Main {
       settings = new Settings(args);
     } catch (Exception e) {
       System.err.println(Main.class.getName() + ": Initialization failed:\n");
-      System.err.print(ExceptionUtils.getFullStackTrace(e));
+      System.err.print(ExceptionUtils.getStackTrace(e));
       System.exit(1);
     }
 

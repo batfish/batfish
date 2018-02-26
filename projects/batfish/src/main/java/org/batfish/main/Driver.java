@@ -42,8 +42,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.collections4.map.LRUMap;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -309,7 +309,7 @@ public class Driver {
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {
       System.err.println(
-          "batfish: Initialization failed. Reason: " + ExceptionUtils.getFullStackTrace(e));
+          "batfish: Initialization failed. Reason: " + ExceptionUtils.getStackTrace(e));
       System.exit(1);
     }
   }
@@ -375,12 +375,12 @@ public class Driver {
       try {
         process = builder.start();
       } catch (IOException e) {
-        _mainLogger.errorf("Exception starting process: %s", ExceptionUtils.getFullStackTrace(e));
+        _mainLogger.errorf("Exception starting process: %s", ExceptionUtils.getStackTrace(e));
         _mainLogger.errorf("Will try again in 1 second\n");
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e1) {
-          _mainLogger.errorf("Sleep was interrrupted: %s", ExceptionUtils.getFullStackTrace(e1));
+          _mainLogger.errorf("Sleep was interrrupted: %s", ExceptionUtils.getStackTrace(e1));
         }
         continue;
       }
@@ -390,14 +390,14 @@ public class Driver {
         reader.lines().forEach(line -> _mainLogger.output(line + "\n"));
       } catch (IOException e) {
         _mainLogger.errorf(
-            "Interrupted while reading subprocess stream: %s", ExceptionUtils.getFullStackTrace(e));
+            "Interrupted while reading subprocess stream: %s", ExceptionUtils.getStackTrace(e));
       }
 
       try {
         process.waitFor();
       } catch (InterruptedException e) {
         _mainLogger.infof(
-            "Subprocess was killed: %s.\nRestarting", ExceptionUtils.getFullStackTrace(e));
+            "Subprocess was killed: %s.\nRestarting", ExceptionUtils.getStackTrace(e));
       }
     }
   }
@@ -478,7 +478,7 @@ public class Driver {
       _mainLogger.error(msg);
       System.exit(1);
     } catch (Exception ex) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(ex);
+      String stackTrace = ExceptionUtils.getStackTrace(ex);
       _mainLogger.error(stackTrace);
       System.exit(1);
     }
@@ -577,14 +577,14 @@ public class Driver {
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = Answer.failureAnswer(msg, null);
                 } catch (QuestionException e) {
-                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  String stackTrace = ExceptionUtils.getStackTrace(e);
                   logger.error(stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
                 } catch (BatfishException e) {
-                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  String stackTrace = ExceptionUtils.getStackTrace(e);
                   logger.error(stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
@@ -592,7 +592,7 @@ public class Driver {
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(e.getBatfishStackTrace());
                 } catch (Throwable e) {
-                  String stackTrace = ExceptionUtils.getFullStackTrace(e);
+                  String stackTrace = ExceptionUtils.getStackTrace(e);
                   logger.error(stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
@@ -628,7 +628,7 @@ public class Driver {
 
       return batfish.getTerminatingExceptionMessage();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getFullStackTrace(e);
+      String stackTrace = ExceptionUtils.getStackTrace(e);
       logger.error(stackTrace);
       return stackTrace;
     }
@@ -643,8 +643,7 @@ public class Driver {
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
-      return Arrays.asList(
-          "failure", "Initialization failed: " + ExceptionUtils.getFullStackTrace(e));
+      return Arrays.asList("failure", "Initialization failed: " + ExceptionUtils.getStackTrace(e));
     }
 
     try {

@@ -55,6 +55,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+    "debug" : false,
     "differential" : false,
     "innerQuestion" : {
       "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
@@ -66,7 +67,7 @@
       {
         "assertion" : {
           "expect" : 5,
-          "type" : "count"
+          "type" : "countMoreThan"
         },
         "path" : "$.nodes['as3border1']..mtu",
         "suffix" : false

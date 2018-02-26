@@ -36,7 +36,9 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>findbugs-maven-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -179,11 +181,6 @@
     <dependency>
       <groupId>com.uber.jaeger</groupId>
       <artifactId>jaeger-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
     </dependency>
 
     <dependency>
