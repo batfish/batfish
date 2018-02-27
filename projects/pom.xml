@@ -26,7 +26,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
-    <antlr4-maven-plugin.version>4.7-batfish-internal</antlr4-maven-plugin.version>
+    <antlr4-maven-plugin.version>4.7.1</antlr4-maven-plugin.version>
     <maven-artifact.version>3.5.0</maven-artifact.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
@@ -42,7 +42,7 @@
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
-    <antlr.version>4.7</antlr.version>
+    <antlr.version>4.7.1</antlr.version>
     <autoservice.version>1.0-rc3</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
@@ -362,26 +362,6 @@
               </pomFile>
               <file>
                 ${basedir}/lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-${jackson-jsonschema.version}.jar
-              </file>
-            </configuration>
-          </execution>
-          <!-- Include our temporary version of the antlr4-maven-plugin until fixes are released. -->
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <id>install-antlr4-maven-plugin</id>
-            <configuration>
-              <groupId>org.antlr</groupId>
-              <artifactId>antlr4-maven-plugin</artifactId>
-              <version>${antlr4-maven-plugin.version}</version>
-              <packaging>jar</packaging>
-              <pomFile>
-                ${basedir}/lib/antlr4-maven-plugin/antlr4-maven-plugin-${antlr4-maven-plugin.version}.pom
-              </pomFile>
-              <file>
-                ${basedir}/lib/antlr4-maven-plugin/antlr4-maven-plugin-${antlr4-maven-plugin.version}.jar
               </file>
             </configuration>
           </execution>
