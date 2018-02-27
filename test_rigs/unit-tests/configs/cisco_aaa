@@ -37,6 +37,7 @@ aaa accounting system default
 !
 ! Cisco command reference: https://www.cisco.com/c/en/us/td/docs/ios/12_2/security/command/reference/fsecur_r/srfacct.html#wpmkr1031586
 aaa accounting update 30
+aaa accounting update newinfo
 aaa accounting update newinfo 30
 aaa accounting update periodic 30
 aaa accounting update newinfo periodic 30
