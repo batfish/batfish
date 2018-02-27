@@ -920,6 +920,7 @@ if_vrrp
       ifvrrp_authentication
       | ifvrrp_ip
       | ifvrrp_ip_secondary
+      | ifvrrp_ipv6
       | ifvrrp_preempt
       | ifvrrp_priority
    )
@@ -1072,6 +1073,11 @@ ifvrrp_ip
 ifvrrp_ip_secondary
 :
    IP ip = IP_ADDRESS SECONDARY NEWLINE
+;
+
+ifvrrp_ipv6
+:
+   IPV6 ip = IPV6_ADDRESS NEWLINE
 ;
 
 ifvrrp_preempt

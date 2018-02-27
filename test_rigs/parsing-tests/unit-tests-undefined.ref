@@ -151,7 +151,7 @@
           "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'GigabitEthernet0/0/0/19'",
           "files" : {
             "cisco_vrrp" : [
-              15
+              16
             ]
           }
         },
@@ -159,7 +159,7 @@
           "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP1/CPU0/0'",
           "files" : {
             "cisco_vrrp" : [
-              27
+              28
             ]
           }
         },
@@ -1385,12 +1385,12 @@
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
               "router vrrp interface" : [
-                15
+                16
               ]
             },
             "ManagementEthernet0/RSP1/CPU0/0" : {
               "router vrrp interface" : [
-                27
+                28
               ]
             }
           }

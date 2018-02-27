@@ -981,12 +981,12 @@
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
               "router vrrp interface" : [
-                15
+                16
               ]
             },
             "ManagementEthernet0/RSP1/CPU0/0" : {
               "router vrrp interface" : [
-                27
+                28
               ]
             }
           }
