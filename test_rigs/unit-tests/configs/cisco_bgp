@@ -14,5 +14,7 @@ router bgp 1
   inherit peer-policy p3 10
  exit-peer-policy
  neighbor 10.0.0.1 disable-connected-check
+ address-family ipv6 unicast
+   redistribute ospfv3 1 route-map abcdefg
 !
 

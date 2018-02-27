@@ -201,6 +201,7 @@ bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
    | redistribute_ospf_bgp_tail
+   | redistribute_ospfv3_null
    | redistribute_rip_bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
@@ -778,6 +779,11 @@ redistribute_ospf_bgp_tail
          VRF vrf = variable
       )
    )* NEWLINE
+;
+
+redistribute_ospfv3_null
+:
+   REDISTRIBUTE OSPFV3 ~NEWLINE* NEWLINE
 ;
 
 redistribute_rip_bgp_tail
