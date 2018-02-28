@@ -1,12 +1,11 @@
 package org.batfish.bdp;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,9 +60,9 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     }
 
     public Set<R> getRoutes() {
-      Set<R> routes = new LinkedHashSet<>();
+      ImmutableSet.Builder<R> routes = ImmutableSet.builder();
       _root.collectRoutes(routes);
-      return routes;
+      return routes.build();
     }
 
     boolean mergeRoute(R route) {
@@ -100,7 +99,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
       _prefix = prefix;
     }
 
-    void collectRoutes(Set<R> routes) {
+    void collectRoutes(ImmutableCollection.Builder<R> routes) {
       if (_left != null) {
         _left.collectRoutes(routes);
       }
@@ -148,14 +147,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements IRib<R> {
     }
 
     private Set<R> getLongestPrefixMatch(Ip address) {
-      Set<R> longestPrefixMatches = new HashSet<>();
-      for (R route : _routes) {
-        Prefix prefix = route.getNetwork();
-        if (prefix.contains(address)) {
-          longestPrefixMatches.add(route);
-        }
-      }
-      return longestPrefixMatches;
+      return _routes
+          .stream()
+          .filter(r -> r.getNetwork().contains(address))
+          .collect(ImmutableSet.toImmutableSet());
     }
 
     /**
