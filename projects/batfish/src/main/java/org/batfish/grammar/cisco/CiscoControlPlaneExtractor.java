@@ -415,6 +415,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailCont
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospf_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospfv3_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_rip_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContext;
@@ -4938,6 +4939,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    }
+  }
+
+  @Override
+  public void exitRedistribute_ospfv3_bgp_tail(Redistribute_ospfv3_bgp_tailContext ctx) {
+    if (ctx.map != null) {
+      String map = ctx.map.getText();
+      int mapLine = ctx.map.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.ROUTE_MAP,
+          map,
+          CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
+          mapLine);
     }
   }
 

@@ -15,6 +15,7 @@ router bgp 1
  exit-peer-policy
  neighbor 10.0.0.1 disable-connected-check
  address-family ipv6 unicast
-   redistribute ospfv3 1 route-map abcdefg
+   redistribute ospfv3 1 route-map ospfv3_map
 !
-
+route-map ospfv3_map permit 10
+!
