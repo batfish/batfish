@@ -201,6 +201,7 @@ bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
    | redistribute_ospf_bgp_tail
+   | redistribute_ospfv3_bgp_tail
    | redistribute_rip_bgp_tail
    | redistribute_static_bgp_tail
    | remove_private_as_bgp_tail
@@ -761,6 +762,28 @@ redistribute_connected_bgp_tail
 redistribute_ospf_bgp_tail
 :
    REDISTRIBUTE OSPF procnum = DEC
+   (
+      (
+         ROUTE_MAP map = variable
+      )
+      |
+      (
+         METRIC metric = DEC
+      )
+      |
+      (
+         MATCH ospf_route_type*
+      )
+      |
+      (
+         VRF vrf = variable
+      )
+   )* NEWLINE
+;
+
+redistribute_ospfv3_bgp_tail
+:
+   REDISTRIBUTE OSPFV3 procnum = DEC
    (
       (
          ROUTE_MAP map = variable
