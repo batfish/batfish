@@ -32073,6 +32073,13 @@
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (if_vrrp",
             "        VRRP:'vrrp'  <== mode:DEFAULT_MODE",
+            "        DEC:'1234'  <== mode:DEFAULT_MODE",
+            "        (ifvrrp_ipv6",
+            "          IPV6:'ipv6'  <== mode:DEFAULT_MODE",
+            "          IPV6_ADDRESS:'::1'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (if_vrrp",
+            "        VRRP:'vrrp'  <== mode:DEFAULT_MODE",
             "        DEC:'123'  <== mode:DEFAULT_MODE",
             "        (ifvrrp_preempt",
             "          PREEMPT:'preempt'  <== mode:DEFAULT_MODE",
@@ -48549,12 +48556,12 @@
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
               "router vrrp interface" : [
-                15
+                16
               ]
             },
             "ManagementEthernet0/RSP1/CPU0/0" : {
               "router vrrp interface" : [
-                27
+                28
               ]
             }
           }
