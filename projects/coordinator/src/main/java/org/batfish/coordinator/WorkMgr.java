@@ -57,6 +57,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
@@ -1188,7 +1189,14 @@ public class WorkMgr extends AbstractCoordinator {
     return killed;
   }
 
-  public SortedSet<String> listAnalyses(String containerName, @Nullable Boolean suggested) {
+  /**
+   * Returns the Analysis names which exist in the container and match the {@link AnalysisType}
+   *
+   * @param containerName Container name
+   * @param analysisType {@link AnalysisType} requested
+   * @return {@link Set} of container names
+   */
+  public SortedSet<String> listAnalyses(String containerName, @Nullable AnalysisType analysisType) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
@@ -1201,10 +1209,20 @@ public class WorkMgr extends AbstractCoordinator {
                 .map(subdir -> subdir.getFileName().toString())
                 .filter(
                     aName -> {
-                      // Include the analysis if suggested is null or matches metadata.suggested
-                      return suggested == null
-                          || AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName)
-                              == suggested;
+                      if (analysisType == AnalysisType.ALL || analysisType == null) {
+                        return true;
+                      }
+                      if (analysisType == AnalysisType.SUGGESTED
+                          && AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(
+                              containerName, aName)) {
+                        return true;
+                      }
+                      if (analysisType == AnalysisType.USER
+                          && !AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(
+                              containerName, aName)) {
+                        return true;
+                      }
+                      return false;
                     })
                 .collect(Collectors.toSet()));
     return analyses;

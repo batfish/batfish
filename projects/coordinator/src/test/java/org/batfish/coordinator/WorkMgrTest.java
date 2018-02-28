@@ -7,6 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -24,6 +25,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.config.Settings;
 import org.junit.Before;
 import org.junit.Rule;
@@ -208,17 +210,24 @@ public class WorkMgrTest {
         containerName, true, "analysis2", Maps.newHashMap(), Lists.newArrayList(), true);
 
     SortedSet<String> analyses = _manager.listAnalyses(containerName, null);
-    assertTrue("User analyses listed if suggested is null", analyses.contains("analysis1"));
-    assertTrue("Suggested analyses listed if suggested is null", analyses.contains("analysis2"));
 
-    analyses = _manager.listAnalyses(containerName, false);
-    assertTrue("User analyses listed if suggested is false", analyses.contains("analysis1"));
-    assertFalse(
-        "Suggested analyses not listed if suggested is false", analyses.contains("analysis2"));
+    // checking that both analyses are returned for AnalysisType as null
+    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis1", "analysis2")));
 
-    analyses = _manager.listAnalyses(containerName, true);
-    assertFalse("User analyses not listed if suggested is true", analyses.contains("analysis1"));
-    assertTrue("Suggested analyses listed if suggested is true", analyses.contains("analysis2"));
+    analyses = _manager.listAnalyses(containerName, AnalysisType.ALL);
+
+    // checking that both analyses are returned for AnalysisType as ALL
+    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis1", "analysis2")));
+
+    analyses = _manager.listAnalyses(containerName, AnalysisType.USER);
+
+    // checking that user analysis is returned for AnalysisType as USER
+    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis1")));
+
+    analyses = _manager.listAnalyses(containerName, AnalysisType.SUGGESTED);
+
+    // checking that suggested analysis is returned for AnalysisType as SUGGESTED
+    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis2")));
   }
 
   @Test
