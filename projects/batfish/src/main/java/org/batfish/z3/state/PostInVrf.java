@@ -1,7 +1,7 @@
 package org.batfish.z3.state;
 
 import org.batfish.z3.expr.BasicStateExpr;
-import org.batfish.z3.state.visitors.StateExprVisitor;
+import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
 public class PostInVrf extends BasicStateExpr {
@@ -28,8 +28,8 @@ public class PostInVrf extends BasicStateExpr {
   }
 
   @Override
-  public void accept(StateExprVisitor visitor) {
-    visitor.visitPostInVrf(this);
+  public <R> R accept(GenericStateExprVisitor<R> visitor) {
+    return visitor.visitPostInVrf(this);
   }
 
   public String getHostname() {

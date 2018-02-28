@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
@@ -8,7 +9,6 @@ import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.OriginateVrf;
@@ -37,15 +37,14 @@ public class MultipathInconsistencyQuerySynthesizer extends BaseQuerySynthesizer
         .setRules(
             ImmutableList.of(
                 new BasicRuleStatement(
-                    CurrentIsOriginalExpr.INSTANCE, new OriginateVrf(_hostname, _vrf)),
-                new TransformationRuleStatement(
                     new AndExpr(
                         ImmutableList.of(
-                            Accept.INSTANCE,
-                            Drop.INSTANCE,
+                            CurrentIsOriginalExpr.INSTANCE,
                             SaneExpr.INSTANCE,
                             new HeaderSpaceMatchExpr(_headerSpace))),
-                    Query.INSTANCE)))
+                    new OriginateVrf(_hostname, _vrf)),
+                new BasicRuleStatement(
+                    ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE)))
         .build();
   }
 }

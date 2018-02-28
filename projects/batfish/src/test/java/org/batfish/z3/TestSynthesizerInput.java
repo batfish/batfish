@@ -5,11 +5,13 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -44,7 +46,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private boolean _simplify;
 
-    private Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> _sourceNats;
+    private Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+        _sourceNats;
 
     private Map<String, Set<String>> _topologyInterfaces;
 
@@ -157,7 +160,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
     }
 
     public Builder setSourceNats(
-        Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> sourceNats) {
+        Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> sourceNats) {
       _sourceNats = sourceNats;
       return this;
     }
@@ -204,7 +207,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> _sourceNats;
+  private final Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+      _sourceNats;
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
@@ -224,7 +228,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
       Map<String, Set<Ip>> ipsByHostname,
       Map<String, Map<String, String>> outgoingAcls,
       boolean simplify,
-      Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> sourceNats,
+      Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> sourceNats,
       Map<String, Set<String>> topologyInterfaces,
       Set<Type> vectorizedParameters) {
     _aclActions = aclActions;
@@ -312,7 +316,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> getSourceNats() {
+  public Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
+      getSourceNats() {
     return _sourceNats;
   }
 

@@ -2,7 +2,8 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
-import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
+import org.batfish.z3.expr.visitors.GenericGeneralStateExprVisitor;
+import org.batfish.z3.expr.visitors.VoidStateExprVisitor;
 import org.batfish.z3.state.visitors.GeneralStateVisitor;
 import org.batfish.z3.state.visitors.Parameterizer;
 import org.batfish.z3.state.visitors.StateVisitor;
@@ -12,7 +13,7 @@ public abstract class TransformationStateExpr extends StateExpr {
   public abstract static class State extends StateExpr.State {
     @Override
     public void accept(GeneralStateVisitor visitor) {
-      visitor.visitTransformationState(this);
+      visitor.visitTransformationStateExpr(this);
     }
 
     @Override
@@ -25,12 +26,17 @@ public abstract class TransformationStateExpr extends StateExpr {
   }
 
   /**
-   * All {@code GenericBooleanExprVisitor} subclasses should have same behavior for all subclasses
-   * of {@code TransformationStateExpr}.
+   * All {@code GenericStateExprVisitor} subclasses should have same behavior for all subclasses of
+   * {@code TransformationStateExpr}.
    */
   @Override
-  public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
+  public <R> R accept(GenericGeneralStateExprVisitor<R> visitor) {
     return visitor.visitTransformationStateExpr(this);
+  }
+
+  @Override
+  public void accept(VoidStateExprVisitor visitor) {
+    visitor.visitTransformationStateExpr(this);
   }
 
   @Override

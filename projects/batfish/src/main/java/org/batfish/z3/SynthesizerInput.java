@@ -3,11 +3,13 @@ package org.batfish.z3;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -63,8 +65,10 @@ public interface SynthesizerInput {
   /** Whether to run simplifier on AST after rule generation */
   boolean getSimplify();
 
-  /** Mapping: hostname -> interface -> [(matchCondition, transformationToApply)] */
-  Map<String, Map<String, List<Entry<BooleanExpr, BooleanExpr>>>> getSourceNats();
+  /**
+   * Mapping: hostname -> interface -> [(preconditionPreTransformationState, transformationToApply)]
+   */
+  Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> getSourceNats();
 
   /** Mapping: hostname -> interfacesOnSomeEdge */
   Map<String, Set<String>> getTopologyInterfaces();

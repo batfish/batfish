@@ -3,11 +3,8 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.Statement;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineMatch;
@@ -40,12 +37,6 @@ import org.batfish.z3.state.PreOutInterface;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class Synthesizer {
-
-  public static List<Statement> getVarDeclExprs() {
-    return Arrays.stream(BasicHeaderField.values())
-        .map(DeclareVarStatement::new)
-        .collect(ImmutableList.toImmutableList());
-  }
 
   private final SynthesizerInput _input;
 

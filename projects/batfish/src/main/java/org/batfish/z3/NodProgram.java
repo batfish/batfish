@@ -8,8 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
-import org.batfish.z3.expr.QueryStatement;
-import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 
 public class NodProgram {
@@ -29,7 +27,6 @@ public class NodProgram {
                     program
                         .getQueries()
                         .stream()
-                        .map(QueryStatement::getSubExpression)
                         .map(
                             booleanExpr ->
                                 BoolExprTransformer.toBoolExpr(
@@ -42,7 +39,6 @@ public class NodProgram {
                     program
                         .getRules()
                         .stream()
-                        .map(RuleStatement::getSubExpression)
                         .map(
                             booleanExpr ->
                                 BoolExprTransformer.toBoolExpr(
@@ -91,7 +87,7 @@ public class NodProgram {
         query -> sb.append(String.format("(query %s)\n", query.getFuncDecl().getName())));
 
     String[] variablesAsNames =
-        Streams.concat(
+        Streams.<HeaderField>concat(
                 Arrays.stream(BasicHeaderField.values()),
                 Arrays.stream(TransformationHeaderField.values()))
             .map(HeaderField::getName)
