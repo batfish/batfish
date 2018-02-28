@@ -1,11 +1,11 @@
 package org.batfish.z3;
 
-import com.google.common.collect.ImmutableSet.Builder;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
@@ -35,9 +35,9 @@ public class CompositeNodJob extends AbstractNodJob {
   }
 
   @Override
-  protected BoolExpr computeSmtInput(
-      long startTime, Context ctx, Builder<Entry<String, BitVecExpr>> variablesAsConstsBuilder) {
+  protected SmtInput computeSmtInput(long startTime, Context ctx) {
     BoolExpr[] answers = new BoolExpr[_numPrograms];
+    Map<String, BitVecExpr> variablesAsConsts = new HashMap<>();
     for (int i = 0; i < _numPrograms; i++) {
       Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
       QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
@@ -45,9 +45,9 @@ public class CompositeNodJob extends AbstractNodJob {
       ReachabilityProgram queryProgram =
           querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput());
       NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
-      variablesAsConstsBuilder.addAll(program.getNodContext().getVariablesAsConsts().entrySet());
+      variablesAsConsts.putAll(program.getNodContext().getVariablesAsConsts());
       answers[i] = computeSmtConstraintsViaNod(program, _querySynthesizers.get(i).getNegate());
     }
-    return ctx.mkAnd(answers);
+    return new SmtInput(ctx.mkAnd(answers), variablesAsConsts);
   }
 }

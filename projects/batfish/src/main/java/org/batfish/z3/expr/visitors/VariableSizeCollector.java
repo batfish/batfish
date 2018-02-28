@@ -19,8 +19,6 @@ import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
-import org.batfish.z3.expr.DeclareRelStatement;
-import org.batfish.z3.expr.DeclareVarStatement;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -38,7 +36,7 @@ import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedExpr;
+import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
@@ -86,7 +84,9 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
-    basicRuleStatement.getSubExpression().accept(this);
+    basicRuleStatement.getPreconditionStateIndependentConstraints().accept(this);
+    basicRuleStatement.getPreconditionStates().forEach(s -> s.accept(this));
+    basicRuleStatement.getPostconditionState().accept(this);
   }
 
   @Override
@@ -107,12 +107,6 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
     currentIsOriginalExpr.getExpr().accept(this);
   }
-
-  @Override
-  public void visitDeclareRelStatement(DeclareRelStatement declareRelStatement) {}
-
-  @Override
-  public void visitDeclareVarStatement(DeclareVarStatement declareVarStatement) {}
 
   @Override
   public void visitEqExpr(EqExpr eqExpr) {
@@ -187,7 +181,15 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   @Override
   public void visitTransformationRuleStatement(
       TransformationRuleStatement transformationRuleStatement) {
-    transformationRuleStatement.getSubExpression().accept(this);
+    transformationRuleStatement.getPreconditionStateIndependentConstraints().accept(this);
+    transformationRuleStatement
+        .getPreconditionPreTransformationStates()
+        .forEach(s -> s.accept(this));
+    transformationRuleStatement
+        .getPreconditionPostTransformationStates()
+        .forEach(s -> s.accept(this));
+    transformationRuleStatement.getPreconditionTransformationStates().forEach(s -> s.accept(this));
+    transformationRuleStatement.getPostconditionTransformationState().accept(this);
   }
 
   @Override
@@ -196,8 +198,19 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   }
 
   @Override
-  public void visitTransformedExpr(TransformedExpr transformedExpr) {
-    transformedExpr.getSubExpression().accept(this);
+  public void visitTransformedBasicRuleStatement(
+      TransformedBasicRuleStatement transformedBasicRuleStatement) {
+    transformedBasicRuleStatement.getPreconditionStateIndependentConstraints().accept(this);
+    transformedBasicRuleStatement
+        .getPreconditionPreTransformationStates()
+        .forEach(s -> s.accept(this));
+    transformedBasicRuleStatement
+        .getPreconditionPostTransformationStates()
+        .forEach(s -> s.accept(this));
+    transformedBasicRuleStatement
+        .getPreconditionTransformationStates()
+        .forEach(s -> s.accept(this));
+    transformedBasicRuleStatement.getPostconditionPostTransformationState().accept(this);
   }
 
   @Override
