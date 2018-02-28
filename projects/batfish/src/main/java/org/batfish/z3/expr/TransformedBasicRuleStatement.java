@@ -5,14 +5,13 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * A @{link RuleStatement} by which a postcondition state reached by a pair of a header and a
- * transformed version it is produced by a set of precondition state(s) reached by the untransformed
- * header; a set of precondition state(s) reached by the transformed header; a set of precondition
- * states reached by the pair; and state-independent constraints
+ * A @{link RuleStatement} by which a postcondition state reached by a transformed header is
+ * produced by a set of precondition state(s) reached by the untransformed header; a set of
+ * precondition state(s) reached by the transformed header; and state-independent constraints
  */
-public class TransformationRuleStatement extends RuleStatement {
+public class TransformedBasicRuleStatement extends RuleStatement {
 
-  private final TransformationStateExpr _postconditionTransformationState;
+  private final BasicStateExpr _postconditionPostTransformationState;
 
   private final Set<BasicStateExpr> _preconditionPostTransformationStates;
 
@@ -22,40 +21,42 @@ public class TransformationRuleStatement extends RuleStatement {
 
   private final Set<TransformationStateExpr> _preconditionTransformationStates;
 
-  public TransformationRuleStatement(
+  public TransformedBasicRuleStatement(
       BooleanExpr preconditionStateIndependentConstraints,
       Set<BasicStateExpr> preconditionPreTransformationStates,
       Set<BasicStateExpr> preconditionPostTransformationStates,
       Set<TransformationStateExpr> preconditionTransformationStates,
-      TransformationStateExpr postconditionTransformationState) {
+      BasicStateExpr postconditionPostTransformationState) {
     _preconditionStateIndependentConstraints = preconditionStateIndependentConstraints;
     _preconditionPreTransformationStates = preconditionPreTransformationStates;
     _preconditionPostTransformationStates = preconditionPostTransformationStates;
     _preconditionTransformationStates = preconditionTransformationStates;
-    _postconditionTransformationState = postconditionTransformationState;
+    _postconditionPostTransformationState = postconditionPostTransformationState;
   }
 
-  public TransformationRuleStatement(TransformationStateExpr postconditionTransformationState) {
+  public TransformedBasicRuleStatement(
+      TransformationStateExpr preconditionTransformationState,
+      BasicStateExpr postconditionPostTransformationState) {
     this(
         TrueExpr.INSTANCE,
         ImmutableSet.of(),
         ImmutableSet.of(),
-        ImmutableSet.of(),
-        postconditionTransformationState);
+        ImmutableSet.of(preconditionTransformationState),
+        postconditionPostTransformationState);
   }
 
   @Override
   public <T> T accept(GenericStatementVisitor<T> visitor) {
-    return visitor.visitTransformationRuleStatement(this);
+    return visitor.visitTransformedBasicRuleStatement(this);
   }
 
   @Override
   public void accept(VoidStatementVisitor visitor) {
-    visitor.visitTransformationRuleStatement(this);
+    visitor.visitTransformedBasicRuleStatement(this);
   }
 
-  public TransformationStateExpr getPostconditionTransformationState() {
-    return _postconditionTransformationState;
+  public BasicStateExpr getPostconditionPostTransformationState() {
+    return _postconditionPostTransformationState;
   }
 
   public Set<BasicStateExpr> getPreconditionPostTransformationStates() {
@@ -77,7 +78,7 @@ public class TransformationRuleStatement extends RuleStatement {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _postconditionTransformationState,
+        _postconditionPostTransformationState,
         _preconditionPostTransformationStates,
         _preconditionPreTransformationStates,
         _preconditionStateIndependentConstraints,
@@ -86,8 +87,9 @@ public class TransformationRuleStatement extends RuleStatement {
 
   @Override
   public boolean statementEquals(Statement e) {
-    TransformationRuleStatement rhs = (TransformationRuleStatement) e;
-    return Objects.equals(_postconditionTransformationState, rhs._postconditionTransformationState)
+    TransformedBasicRuleStatement rhs = (TransformedBasicRuleStatement) e;
+    return Objects.equals(
+            _postconditionPostTransformationState, rhs._postconditionPostTransformationState)
         && Objects.equals(
             _preconditionPostTransformationStates, rhs._preconditionPostTransformationStates)
         && Objects.equals(

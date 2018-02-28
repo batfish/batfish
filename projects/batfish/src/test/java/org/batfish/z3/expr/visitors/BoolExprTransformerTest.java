@@ -6,7 +6,6 @@ import static org.batfish.z3.expr.visitors.BoolExprTransformer.toBoolExpr;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BitVecExpr;
@@ -46,7 +45,6 @@ import org.batfish.z3.expr.TestBooleanAtom;
 import org.batfish.z3.expr.TestIntAtom;
 import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.PostOutInterface;
@@ -114,6 +112,7 @@ public class BoolExprTransformerTest {
 
   @Test
   public void testVisitBasicStateExpr() {
+    // TODO: better test
     assertThat(toBoolExpr(_basicStateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 
@@ -295,17 +294,9 @@ public class BoolExprTransformerTest {
 
   @Test
   public void testVisitTransformationStateExpr() {
+    // TODO: better test
     assertThat(
         toBoolExpr(_transformationStateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
-  }
-
-  @Test
-  public void testVisitTransformedExpr() {
-    BooleanExpr booleanExpr = new TransformedExpr(_basicStateExpr);
-    BoolExpr originalBoolExpr = toBoolExpr(_basicStateExpr, _input, _nodContext);
-    BoolExpr transformedBoolExpr = toBoolExpr(booleanExpr, _input, _nodContext);
-
-    assertThat(transformedBoolExpr.getSExpr(), not(equalTo(originalBoolExpr.getSExpr())));
   }
 
   @Test

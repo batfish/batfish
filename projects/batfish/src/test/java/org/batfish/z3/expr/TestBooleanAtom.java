@@ -3,8 +3,10 @@ package org.batfish.z3.expr;
 import com.microsoft.z3.Context;
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
+import org.batfish.z3.expr.visitors.ExprPrinter;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
+import org.batfish.z3.expr.visitors.Simplifier;
 
 public class TestBooleanAtom extends BooleanExpr {
 
@@ -19,14 +21,22 @@ public class TestBooleanAtom extends BooleanExpr {
 
   @Override
   public void accept(ExprVisitor visitor) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    if (visitor instanceof ExprPrinter) {
+      visitor.visitIdExpr(new IdExpr(_name));
+    } else {
+      throw new UnsupportedOperationException(
+          String.format(
+              "No implementation for %s: %s",
+              ExprVisitor.class.getSimpleName(), visitor.getClass().getSimpleName()));
+    }
   }
 
   @Override
   public <R> R accept(GenericBooleanExprVisitor<R> visitor) {
     if (visitor instanceof BoolExprTransformer) {
       return visitor.castToGenericBooleanExprVisitorReturnType(_ctx.mkBoolConst(_name));
+    } else if (visitor instanceof Simplifier) {
+      return visitor.castToGenericBooleanExprVisitorReturnType(this);
     } else {
       throw new UnsupportedOperationException(
           String.format(

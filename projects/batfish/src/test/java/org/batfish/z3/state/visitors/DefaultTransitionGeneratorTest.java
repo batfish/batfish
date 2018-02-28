@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -23,17 +24,16 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.TransformationHeaderField;
-import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
-import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.TestBooleanAtom;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformedExpr;
+import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -55,7 +55,6 @@ import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeTransit;
-import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
@@ -94,6 +93,10 @@ public class DefaultTransitionGeneratorTest {
   private static final Ip IP4 = new Ip("4.4.4.4");
 
   private static final String LOOPBACK_INTERFACE = "Loopback0";
+
+  private static final String NAT_ACL1 = "natacl1";
+
+  private static final String NAT_ACL2 = "natacl2";
 
   private static final String NODE1 = "node1";
 
@@ -158,41 +161,41 @@ public class DefaultTransitionGeneratorTest {
                 INTERFACE1,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE2, INTERFACE1),
-                    new NumberedQuery(0),
+                    new TestBooleanAtom(0, null),
                     new NodeInterfacePair(NODE2, INTERFACE2),
-                    new NumberedQuery(1)),
+                    new TestBooleanAtom(1, null)),
                 INTERFACE2,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE2, INTERFACE1),
-                    new NumberedQuery(2),
+                    new TestBooleanAtom(2, null),
                     new NodeInterfacePair(NODE2, INTERFACE2),
-                    new NumberedQuery(3)),
+                    new TestBooleanAtom(3, null)),
                 LOOPBACK_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(4)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(4, null)),
                 NULL_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(5)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(5, null)),
                 FibRow.DROP_NO_ROUTE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(6))),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(6, null))),
             VRF2,
             ImmutableMap.of(
                 INTERFACE3,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE2, INTERFACE3),
-                    new NumberedQuery(7),
+                    new TestBooleanAtom(7, null),
                     new NodeInterfacePair(NODE2, INTERFACE4),
-                    new NumberedQuery(8)),
+                    new TestBooleanAtom(8, null)),
                 INTERFACE4,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE2, INTERFACE3),
-                    new NumberedQuery(9),
+                    new TestBooleanAtom(9, null),
                     new NodeInterfacePair(NODE2, INTERFACE4),
-                    new NumberedQuery(10)),
+                    new TestBooleanAtom(10, null)),
                 LOOPBACK_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(11)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(11, null)),
                 NULL_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(12)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(12, null)),
                 FibRow.DROP_NO_ROUTE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(13)))),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(13, null)))),
         NODE2,
         ImmutableMap.of(
             VRF1,
@@ -200,41 +203,41 @@ public class DefaultTransitionGeneratorTest {
                 INTERFACE1,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE1, INTERFACE1),
-                    new NumberedQuery(14),
+                    new TestBooleanAtom(14, null),
                     new NodeInterfacePair(NODE1, INTERFACE2),
-                    new NumberedQuery(15)),
+                    new TestBooleanAtom(15, null)),
                 INTERFACE2,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE1, INTERFACE1),
-                    new NumberedQuery(16),
+                    new TestBooleanAtom(16, null),
                     new NodeInterfacePair(NODE1, INTERFACE2),
-                    new NumberedQuery(17)),
+                    new TestBooleanAtom(17, null)),
                 LOOPBACK_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(18)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(18, null)),
                 NULL_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(19)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(19, null)),
                 FibRow.DROP_NO_ROUTE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(20))),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(20, null))),
             VRF2,
             ImmutableMap.of(
                 INTERFACE3,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE1, INTERFACE3),
-                    new NumberedQuery(21),
+                    new TestBooleanAtom(21, null),
                     new NodeInterfacePair(NODE1, INTERFACE4),
-                    new NumberedQuery(22)),
+                    new TestBooleanAtom(22, null)),
                 INTERFACE4,
                 ImmutableMap.of(
                     new NodeInterfacePair(NODE1, INTERFACE3),
-                    new NumberedQuery(23),
+                    new TestBooleanAtom(23, null),
                     new NodeInterfacePair(NODE1, INTERFACE4),
-                    new NumberedQuery(24)),
+                    new TestBooleanAtom(24, null)),
                 LOOPBACK_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(25)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(25, null)),
                 NULL_INTERFACE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(26)),
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(26, null)),
                 FibRow.DROP_NO_ROUTE,
-                ImmutableMap.of(NodeInterfacePair.NONE, new NumberedQuery(27)))));
+                ImmutableMap.of(NodeInterfacePair.NONE, new TestBooleanAtom(27, null)))));
   }
 
   @Before
@@ -346,13 +349,8 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(Accept.State.INSTANCE)));
 
-    assertThat(
-        rules,
-        equalTo(
-            ImmutableSet.of(
-                new BasicRuleStatement(
-                    new OrExpr(ImmutableList.of(new NodeAccept(NODE1), new NodeAccept(NODE2))),
-                    Accept.INSTANCE))));
+    assertThat(rules, hasItem(new BasicRuleStatement(new NodeAccept(NODE1), Accept.INSTANCE)));
+    assertThat(rules, hasItem(new BasicRuleStatement(new NodeAccept(NODE2), Accept.INSTANCE)));
   }
 
   @Test
@@ -428,6 +426,7 @@ public class DefaultTransitionGeneratorTest {
                 input, ImmutableSet.of(AclLineMatch.State.INSTANCE)));
 
     // MatchCurrentAndDontMatchPrevious
+
     assertThat(
         rules,
         hasItem(new BasicRuleStatement(TrueExpr.INSTANCE, new AclLineMatch(NODE1, ACL1, 0))));
@@ -435,22 +434,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(FalseExpr.INSTANCE, new AclLineNoMatch(NODE1, ACL1, 0))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL1, 0)),
                 new AclLineMatch(NODE1, ACL1, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(TrueExpr.INSTANCE, new AclLineNoMatch(NODE1, ACL1, 1))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL1, 1)),
                 new AclLineMatch(NODE1, ACL1, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(FalseExpr.INSTANCE, new AclLineNoMatch(NODE1, ACL1, 2))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL1, 2)),
                 new AclLineMatch(NODE1, ACL1, 3))));
     assertThat(
         rules,
@@ -459,22 +458,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(TrueExpr.INSTANCE, new AclLineNoMatch(NODE1, ACL2, 0))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL2, 0)),
                 new AclLineMatch(NODE1, ACL2, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(FalseExpr.INSTANCE, new AclLineNoMatch(NODE1, ACL2, 1))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL2, 1)),
                 new AclLineMatch(NODE1, ACL2, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(TrueExpr.INSTANCE, new AclLineNoMatch(NODE1, ACL2, 2))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL2, 2)),
                 new AclLineMatch(NODE1, ACL2, 3))));
     assertThat(
         rules,
@@ -483,22 +482,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(FalseExpr.INSTANCE, new AclLineNoMatch(NODE2, ACL1, 0))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL1, 0)),
                 new AclLineMatch(NODE2, ACL1, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(TrueExpr.INSTANCE, new AclLineNoMatch(NODE2, ACL1, 1))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL1, 1)),
                 new AclLineMatch(NODE2, ACL1, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(FalseExpr.INSTANCE, new AclLineNoMatch(NODE2, ACL1, 2))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL1, 2)),
                 new AclLineMatch(NODE2, ACL1, 3))));
     assertThat(
         rules,
@@ -507,22 +506,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(TrueExpr.INSTANCE, new AclLineNoMatch(NODE2, ACL2, 0))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL2, 0)),
                 new AclLineMatch(NODE2, ACL2, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(FalseExpr.INSTANCE, new AclLineNoMatch(NODE2, ACL2, 1))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL2, 1)),
                 new AclLineMatch(NODE2, ACL2, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(TrueExpr.INSTANCE, new AclLineNoMatch(NODE2, ACL2, 2))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL2, 2)),
                 new AclLineMatch(NODE2, ACL2, 3))));
   }
 
@@ -534,7 +533,6 @@ public class DefaultTransitionGeneratorTest {
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(AclLineNoMatch.State.INSTANCE)));
-
     assertThat(
         rules,
         hasItem(
@@ -544,25 +542,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE), new AclLineNoMatch(NODE1, ACL1, 0))),
+                new NotExpr(FalseExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL1, 0)),
                 new AclLineNoMatch(NODE1, ACL1, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE), new AclLineNoMatch(NODE1, ACL1, 1))),
+                new NotExpr(TrueExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL1, 1)),
                 new AclLineNoMatch(NODE1, ACL1, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE), new AclLineNoMatch(NODE1, ACL1, 2))),
+                new NotExpr(FalseExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL1, 2)),
                 new AclLineNoMatch(NODE1, ACL1, 3))));
     assertThat(
         rules,
@@ -573,25 +568,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE), new AclLineNoMatch(NODE1, ACL2, 0))),
+                new NotExpr(TrueExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL2, 0)),
                 new AclLineNoMatch(NODE1, ACL2, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE), new AclLineNoMatch(NODE1, ACL2, 1))),
+                new NotExpr(FalseExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL2, 1)),
                 new AclLineNoMatch(NODE1, ACL2, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE), new AclLineNoMatch(NODE1, ACL2, 2))),
+                new NotExpr(TrueExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE1, ACL2, 2)),
                 new AclLineNoMatch(NODE1, ACL2, 3))));
     assertThat(
         rules,
@@ -602,25 +594,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE), new AclLineNoMatch(NODE2, ACL1, 0))),
+                new NotExpr(FalseExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL1, 0)),
                 new AclLineNoMatch(NODE2, ACL1, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE), new AclLineNoMatch(NODE2, ACL1, 1))),
+                new NotExpr(TrueExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL1, 1)),
                 new AclLineNoMatch(NODE2, ACL1, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE), new AclLineNoMatch(NODE2, ACL1, 2))),
+                new NotExpr(FalseExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL1, 2)),
                 new AclLineNoMatch(NODE2, ACL1, 3))));
     assertThat(
         rules,
@@ -631,25 +620,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE), new AclLineNoMatch(NODE2, ACL2, 0))),
+                new NotExpr(TrueExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL2, 0)),
                 new AclLineNoMatch(NODE2, ACL2, 1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE), new AclLineNoMatch(NODE2, ACL2, 1))),
+                new NotExpr(FalseExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL2, 1)),
                 new AclLineNoMatch(NODE2, ACL2, 2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE), new AclLineNoMatch(NODE2, ACL2, 2))),
+                new NotExpr(TrueExpr.INSTANCE),
+                ImmutableSet.of(new AclLineNoMatch(NODE2, ACL2, 2)),
                 new AclLineNoMatch(NODE2, ACL2, 3))));
   }
 
@@ -705,13 +691,8 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(Drop.State.INSTANCE)));
 
-    assertThat(
-        rules,
-        equalTo(
-            ImmutableSet.of(
-                new BasicRuleStatement(
-                    new OrExpr(ImmutableList.of(new NodeDrop(NODE1), new NodeDrop(NODE2))),
-                    Drop.INSTANCE))));
+    assertThat(rules, hasItem(new BasicRuleStatement(new NodeDrop(NODE1), Drop.INSTANCE)));
+    assertThat(rules, hasItem(new BasicRuleStatement(new NodeDrop(NODE2), Drop.INSTANCE)));
   }
 
   @Test
@@ -741,13 +722,9 @@ public class DefaultTransitionGeneratorTest {
                 input, ImmutableSet.of(DropAclIn.State.INSTANCE)));
 
     assertThat(
-        rules,
-        equalTo(
-            ImmutableSet.of(
-                new BasicRuleStatement(
-                    new OrExpr(
-                        ImmutableList.of(new NodeDropAclIn(NODE1), new NodeDropAclIn(NODE2))),
-                    DropAclIn.INSTANCE))));
+        rules, hasItem(new BasicRuleStatement(new NodeDropAclIn(NODE1), DropAclIn.INSTANCE)));
+    assertThat(
+        rules, hasItem(new BasicRuleStatement(new NodeDropAclIn(NODE2), DropAclIn.INSTANCE)));
   }
 
   @Test
@@ -760,13 +737,9 @@ public class DefaultTransitionGeneratorTest {
                 input, ImmutableSet.of(DropAclOut.State.INSTANCE)));
 
     assertThat(
-        rules,
-        equalTo(
-            ImmutableSet.of(
-                new BasicRuleStatement(
-                    new OrExpr(
-                        ImmutableList.of(new NodeDropAclOut(NODE1), new NodeDropAclOut(NODE2))),
-                    DropAclOut.INSTANCE))));
+        rules, hasItem(new BasicRuleStatement(new NodeDropAclOut(NODE1), DropAclOut.INSTANCE)));
+    assertThat(
+        rules, hasItem(new BasicRuleStatement(new NodeDropAclOut(NODE2), DropAclOut.INSTANCE)));
   }
 
   @Test
@@ -779,13 +752,9 @@ public class DefaultTransitionGeneratorTest {
                 input, ImmutableSet.of(DropNoRoute.State.INSTANCE)));
 
     assertThat(
-        rules,
-        equalTo(
-            ImmutableSet.of(
-                new BasicRuleStatement(
-                    new OrExpr(
-                        ImmutableList.of(new NodeDropNoRoute(NODE1), new NodeDropNoRoute(NODE2))),
-                    DropNoRoute.INSTANCE))));
+        rules, hasItem(new BasicRuleStatement(new NodeDropNoRoute(NODE1), DropNoRoute.INSTANCE)));
+    assertThat(
+        rules, hasItem(new BasicRuleStatement(new NodeDropNoRoute(NODE2), DropNoRoute.INSTANCE)));
   }
 
   @Test
@@ -799,13 +768,10 @@ public class DefaultTransitionGeneratorTest {
 
     assertThat(
         rules,
-        equalTo(
-            ImmutableSet.of(
-                new BasicRuleStatement(
-                    new OrExpr(
-                        ImmutableList.of(
-                            new NodeDropNullRoute(NODE1), new NodeDropNullRoute(NODE2))),
-                    DropNullRoute.INSTANCE))));
+        hasItem(new BasicRuleStatement(new NodeDropNullRoute(NODE1), DropNullRoute.INSTANCE)));
+    assertThat(
+        rules,
+        hasItem(new BasicRuleStatement(new NodeDropNullRoute(NODE2), DropNullRoute.INSTANCE)));
   }
 
   @Test
@@ -832,43 +798,39 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PostIn(NODE1),
-                        HeaderSpaceMatchExpr.matchDstIp(
-                            ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2))))),
+                HeaderSpaceMatchExpr.matchDstIp(
+                    ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2))),
+                ImmutableSet.of(new PostIn(NODE1)),
                 new NodeAccept(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PostIn(NODE2),
-                        HeaderSpaceMatchExpr.matchDstIp(
-                            ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4))))),
+                HeaderSpaceMatchExpr.matchDstIp(
+                    ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4))),
+                ImmutableSet.of(new PostIn(NODE2)),
                 new NodeAccept(NODE2))));
 
     // PostOutFlowSinkInterface
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
+            new TransformedBasicRuleStatement(
                 new PostOutInterface(NODE1, INTERFACE1), new NodeAccept(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
+            new TransformedBasicRuleStatement(
                 new PostOutInterface(NODE1, INTERFACE2), new NodeAccept(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
+            new TransformedBasicRuleStatement(
                 new PostOutInterface(NODE2, INTERFACE1), new NodeAccept(NODE2))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
+            new TransformedBasicRuleStatement(
                 new PostOutInterface(NODE2, INTERFACE2), new NodeAccept(NODE2))));
   }
 
@@ -947,33 +909,25 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE1, ACL1), new PreInInterface(NODE1, INTERFACE1))),
+                ImmutableSet.of(new AclDeny(NODE1, ACL1), new PreInInterface(NODE1, INTERFACE1)),
                 new NodeDropAclIn(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE1, ACL2), new PreInInterface(NODE1, INTERFACE2))),
+                ImmutableSet.of(new AclDeny(NODE1, ACL2), new PreInInterface(NODE1, INTERFACE2)),
                 new NodeDropAclIn(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE2, ACL1), new PreInInterface(NODE2, INTERFACE1))),
+                ImmutableSet.of(new AclDeny(NODE2, ACL1), new PreInInterface(NODE2, INTERFACE1)),
                 new NodeDropAclIn(NODE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE2, ACL2), new PreInInterface(NODE2, INTERFACE2))),
+                ImmutableSet.of(new AclDeny(NODE2, ACL2), new PreInInterface(NODE2, INTERFACE2)),
                 new NodeDropAclIn(NODE2))));
   }
 
@@ -987,6 +941,30 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setSourceNats(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE1, NAT_ACL1)), TrueExpr.INSTANCE),
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE1, NAT_ACL2)), FalseExpr.INSTANCE)),
+                        INTERFACE2,
+                        ImmutableList.of(
+                            Maps.immutableEntry(Optional.empty(), TrueExpr.INSTANCE),
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE1, NAT_ACL2)), FalseExpr.INSTANCE))),
+                    NODE2,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE2, NAT_ACL1)), TrueExpr.INSTANCE),
+                            Maps.immutableEntry(Optional.empty(), FalseExpr.INSTANCE)),
+                        INTERFACE2,
+                        ImmutableList.of())))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
@@ -999,38 +977,75 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(NodeDropAclOut.State.INSTANCE)));
 
-    // FailOutgoingAcl
+    // FailOutgoingAclNoMatchSrcNat
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE1, ACL1), new PreOutInterface(NODE1, INTERFACE1))),
+                ImmutableSet.of(
+                    new AclDeny(NODE1, ACL1),
+                    new AclDeny(NODE1, NAT_ACL1),
+                    new AclDeny(NODE1, NAT_ACL2),
+                    new PreOutInterface(NODE1, INTERFACE1)),
                 new NodeDropAclOut(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE1, ACL2), new PreOutInterface(NODE1, INTERFACE2))),
+                ImmutableSet.of(new AclDeny(NODE2, ACL2), new PreOutInterface(NODE2, INTERFACE2)),
+                new NodeDropAclOut(NODE2))));
+
+    // FailOutgoingAclMatchSrcNat
+    assertThat(
+        rules,
+        hasItem(
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(
+                    new AclPermit(NODE1, NAT_ACL1), new PreOutInterface(NODE1, INTERFACE1)),
+                ImmutableSet.of(new AclDeny(NODE1, ACL1)),
+                ImmutableSet.of(),
                 new NodeDropAclOut(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE2, ACL1), new PreOutInterface(NODE2, INTERFACE1))),
+            new TransformedBasicRuleStatement(
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(
+                    new AclDeny(NODE1, NAT_ACL1),
+                    new AclPermit(NODE1, NAT_ACL2),
+                    new PreOutInterface(NODE1, INTERFACE1)),
+                ImmutableSet.of(new AclDeny(NODE1, ACL1)),
+                ImmutableSet.of(),
+                new NodeDropAclOut(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutInterface(NODE1, INTERFACE2)),
+                ImmutableSet.of(new AclDeny(NODE1, ACL2)),
+                ImmutableSet.of(),
+                new NodeDropAclOut(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(
+                    new AclPermit(NODE2, NAT_ACL1), new PreOutInterface(NODE2, INTERFACE1)),
+                ImmutableSet.of(new AclDeny(NODE2, ACL1)),
+                ImmutableSet.of(),
                 new NodeDropAclOut(NODE2))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclDeny(NODE2, ACL2), new PreOutInterface(NODE2, INTERFACE2))),
+            new TransformedBasicRuleStatement(
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(
+                    new AclDeny(NODE2, NAT_ACL1), new PreOutInterface(NODE2, INTERFACE1)),
+                ImmutableSet.of(new AclDeny(NODE2, ACL1)),
+                ImmutableSet.of(),
                 new NodeDropAclOut(NODE2))));
   }
 
@@ -1045,13 +1060,33 @@ public class DefaultTransitionGeneratorTest {
 
     // DestinationRouting
     assertThat(
-        rules, hasItem(new BasicRuleStatement(new NumberedQuery(6), new NodeDropNoRoute(NODE1))));
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(6, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeDropNoRoute(NODE1))));
     assertThat(
-        rules, hasItem(new BasicRuleStatement(new NumberedQuery(13), new NodeDropNoRoute(NODE1))));
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(13, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new NodeDropNoRoute(NODE1))));
     assertThat(
-        rules, hasItem(new BasicRuleStatement(new NumberedQuery(20), new NodeDropNoRoute(NODE2))));
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(20, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new NodeDropNoRoute(NODE2))));
     assertThat(
-        rules, hasItem(new BasicRuleStatement(new NumberedQuery(27), new NodeDropNoRoute(NODE2))));
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(27, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new NodeDropNoRoute(NODE2))));
   }
 
   @Test
@@ -1065,27 +1100,61 @@ public class DefaultTransitionGeneratorTest {
 
     // DestinationRouting
     assertThat(
-        rules, hasItem(new BasicRuleStatement(new NumberedQuery(4), new NodeDropNullRoute(NODE1))));
-    assertThat(
-        rules, hasItem(new BasicRuleStatement(new NumberedQuery(5), new NodeDropNullRoute(NODE1))));
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(4, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeDropNullRoute(NODE1))));
     assertThat(
         rules,
-        hasItem(new BasicRuleStatement(new NumberedQuery(11), new NodeDropNullRoute(NODE1))));
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(5, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeDropNullRoute(NODE1))));
     assertThat(
         rules,
-        hasItem(new BasicRuleStatement(new NumberedQuery(12), new NodeDropNullRoute(NODE1))));
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(11, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new NodeDropNullRoute(NODE1))));
     assertThat(
         rules,
-        hasItem(new BasicRuleStatement(new NumberedQuery(18), new NodeDropNullRoute(NODE2))));
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(12, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new NodeDropNullRoute(NODE1))));
     assertThat(
         rules,
-        hasItem(new BasicRuleStatement(new NumberedQuery(19), new NodeDropNullRoute(NODE2))));
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(18, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new NodeDropNullRoute(NODE2))));
     assertThat(
         rules,
-        hasItem(new BasicRuleStatement(new NumberedQuery(25), new NodeDropNullRoute(NODE2))));
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(19, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new NodeDropNullRoute(NODE2))));
     assertThat(
         rules,
-        hasItem(new BasicRuleStatement(new NumberedQuery(26), new NodeDropNullRoute(NODE2))));
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(25, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new NodeDropNullRoute(NODE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new TestBooleanAtom(26, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new NodeDropNullRoute(NODE2))));
   }
 
   @Test
@@ -1108,23 +1177,39 @@ public class DefaultTransitionGeneratorTest {
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new PostOutInterface(NODE1, INTERFACE1), new NodeTransit(NODE1))));
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE1)),
+                new NodeTransit(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new PostOutInterface(NODE1, INTERFACE2), new NodeTransit(NODE1))));
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE2)),
+                new NodeTransit(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new PostOutInterface(NODE2, INTERFACE1), new NodeTransit(NODE2))));
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE1)),
+                new NodeTransit(NODE2))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new PostOutInterface(NODE2, INTERFACE2), new NodeTransit(NODE2))));
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE2)),
+                new NodeTransit(NODE2))));
   }
 
   @Test
@@ -1218,17 +1303,13 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclPermit(NODE1, ACL1), new PreInInterface(NODE1, INTERFACE1))),
+                ImmutableSet.of(new AclPermit(NODE1, ACL1), new PreInInterface(NODE1, INTERFACE1)),
                 new PostInInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclPermit(NODE1, ACL2), new PreInInterface(NODE1, INTERFACE2))),
+                ImmutableSet.of(new AclPermit(NODE1, ACL2), new PreInInterface(NODE1, INTERFACE2)),
                 new PostInInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
@@ -1239,17 +1320,13 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclPermit(NODE2, ACL1), new PreInInterface(NODE2, INTERFACE1))),
+                ImmutableSet.of(new AclPermit(NODE2, ACL1), new PreInInterface(NODE2, INTERFACE1)),
                 new PostInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclPermit(NODE2, ACL2), new PreInInterface(NODE2, INTERFACE2))),
+                ImmutableSet.of(new AclPermit(NODE2, ACL2), new PreInInterface(NODE2, INTERFACE2)),
                 new PostInInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
@@ -1355,8 +1432,10 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(
                         INTERFACE1,
                         ImmutableList.of(
-                            Maps.immutableEntry(TrueExpr.INSTANCE, TrueExpr.INSTANCE),
-                            Maps.immutableEntry(FalseExpr.INSTANCE, FalseExpr.INSTANCE)),
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE1, NAT_ACL1)), TrueExpr.INSTANCE),
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE1, NAT_ACL2)), FalseExpr.INSTANCE)),
                         INTERFACE2,
                         ImmutableList.of(),
                         INTERFACE3,
@@ -1365,8 +1444,10 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(
                         INTERFACE1,
                         ImmutableList.of(
-                            Maps.immutableEntry(FalseExpr.INSTANCE, FalseExpr.INSTANCE),
-                            Maps.immutableEntry(TrueExpr.INSTANCE, TrueExpr.INSTANCE)),
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE2, NAT_ACL1)), FalseExpr.INSTANCE),
+                            Maps.immutableEntry(
+                                Optional.of(new AclPermit(NODE2, NAT_ACL2)), TrueExpr.INSTANCE)),
                         INTERFACE2,
                         ImmutableList.of(),
                         INTERFACE3,
@@ -1392,59 +1473,63 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(TrueExpr.INSTANCE),
-                        new NotExpr(FalseExpr.INSTANCE),
-                        new AclPermit(NODE1, ACL1),
-                        sourceIpUnchanged,
-                        new PreOutInterface(NODE1, INTERFACE1))),
+                sourceIpUnchanged,
+                ImmutableSet.of(
+                    new PreOutInterface(NODE1, INTERFACE1),
+                    new AclPermit(NODE1, ACL1),
+                    new AclDeny(NODE1, NAT_ACL1),
+                    new AclDeny(NODE1, NAT_ACL2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclPermit(NODE1, ACL2),
-                        sourceIpUnchanged,
-                        new PreOutInterface(NODE1, INTERFACE2))),
+                sourceIpUnchanged,
+                ImmutableSet.of(new AclPermit(NODE1, ACL2), new PreOutInterface(NODE1, INTERFACE2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(sourceIpUnchanged, new PreOutInterface(NODE1, INTERFACE3))),
+                sourceIpUnchanged,
+                ImmutableSet.of(new PreOutInterface(NODE1, INTERFACE3)),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new NotExpr(FalseExpr.INSTANCE),
-                        new NotExpr(TrueExpr.INSTANCE),
-                        new AclPermit(NODE2, ACL1),
-                        sourceIpUnchanged,
-                        new PreOutInterface(NODE2, INTERFACE1))),
+                sourceIpUnchanged,
+                ImmutableSet.of(
+                    new PreOutInterface(NODE2, INTERFACE1),
+                    new AclPermit(NODE2, ACL1),
+                    new AclDeny(NODE2, NAT_ACL1),
+                    new AclDeny(NODE2, NAT_ACL2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new AclPermit(NODE2, ACL2),
-                        sourceIpUnchanged,
-                        new PreOutInterface(NODE2, INTERFACE2))),
+                sourceIpUnchanged,
+                ImmutableSet.of(new AclPermit(NODE2, ACL2), new PreOutInterface(NODE2, INTERFACE2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(sourceIpUnchanged, new PreOutInterface(NODE2, INTERFACE3))),
+                sourceIpUnchanged,
+                ImmutableSet.of(new PreOutInterface(NODE2, INTERFACE3)),
+                ImmutableSet.of(),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE2, INTERFACE3))));
 
     // PassOutgoingAclMatchSrcNat
@@ -1452,47 +1537,45 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        TrueExpr.INSTANCE,
-                        TrueExpr.INSTANCE,
-                        new TransformedExpr(new AclPermit(NODE1, ACL1)),
-                        new PreOutInterface(NODE1, INTERFACE1))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(
+                    new PreOutInterface(NODE1, INTERFACE1), new AclPermit(NODE1, NAT_ACL1)),
+                ImmutableSet.of(new AclPermit(NODE1, ACL1)),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        FalseExpr.INSTANCE,
-                        FalseExpr.INSTANCE,
-                        new NotExpr(TrueExpr.INSTANCE),
-                        new TransformedExpr(new AclPermit(NODE1, ACL1)),
-                        new PreOutInterface(NODE1, INTERFACE1))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(
+                    new PreOutInterface(NODE1, INTERFACE1),
+                    new AclDeny(NODE1, NAT_ACL1),
+                    new AclPermit(NODE1, NAT_ACL2)),
+                ImmutableSet.of(new AclPermit(NODE1, ACL1)),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        FalseExpr.INSTANCE,
-                        FalseExpr.INSTANCE,
-                        new TransformedExpr(new AclPermit(NODE2, ACL1)),
-                        new PreOutInterface(NODE2, INTERFACE1))),
+                FalseExpr.INSTANCE,
+                ImmutableSet.of(
+                    new PreOutInterface(NODE2, INTERFACE1), new AclPermit(NODE2, NAT_ACL1)),
+                ImmutableSet.of(new AclPermit(NODE2, ACL1)),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new TransformationRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        TrueExpr.INSTANCE,
-                        TrueExpr.INSTANCE,
-                        new NotExpr(FalseExpr.INSTANCE),
-                        new TransformedExpr(new AclPermit(NODE2, ACL1)),
-                        new PreOutInterface(NODE2, INTERFACE1))),
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(
+                    new PreOutInterface(NODE2, INTERFACE1),
+                    new AclDeny(NODE2, NAT_ACL1),
+                    new AclPermit(NODE2, NAT_ACL2)),
+                ImmutableSet.of(new AclPermit(NODE2, ACL1)),
+                ImmutableSet.of(),
                 new PostOutInterface(NODE2, INTERFACE1))));
   }
 
@@ -1534,175 +1617,175 @@ public class DefaultTransitionGeneratorTest {
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1),
-                        new PostOutInterface(NODE1, INTERFACE1))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE1)),
                 new PreInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                        new PostOutInterface(NODE1, INTERFACE1))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE1)),
                 new PreInInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE3),
-                            new PostOutInterface(NODE1, INTERFACE1))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE3)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE1)),
                     new PreInInterface(NODE2, INTERFACE3)))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1),
-                        new PostOutInterface(NODE1, INTERFACE2))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE2)),
                 new PreInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2),
-                        new PostOutInterface(NODE1, INTERFACE2))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE2)),
                 new PreInInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE3),
-                            new PostOutInterface(NODE1, INTERFACE2))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE3)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE2)),
                     new PreInInterface(NODE2, INTERFACE3)))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE1),
-                            new PostOutInterface(NODE1, INTERFACE3))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE1)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE3)),
                     new PreInInterface(NODE2, INTERFACE1)))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE2),
-                            new PostOutInterface(NODE1, INTERFACE3))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE2)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE3)),
                     new PreInInterface(NODE2, INTERFACE2)))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE3),
-                            new PostOutInterface(NODE1, INTERFACE3))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE3)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE1, INTERFACE3)),
                     new PreInInterface(NODE2, INTERFACE3)))));
 
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1),
-                        new PostOutInterface(NODE2, INTERFACE1))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE1)),
                 new PreInInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2),
-                        new PostOutInterface(NODE2, INTERFACE1))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE1)),
                 new PreInInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE3),
-                            new PostOutInterface(NODE2, INTERFACE1))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE3)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE1)),
                     new PreInInterface(NODE1, INTERFACE3)))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1),
-                        new PostOutInterface(NODE2, INTERFACE2))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE2)),
                 new PreInInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2),
-                        new PostOutInterface(NODE2, INTERFACE2))),
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2)),
+                ImmutableSet.of(),
+                ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE2)),
                 new PreInInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE3),
-                            new PostOutInterface(NODE2, INTERFACE2))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE3)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE2)),
                     new PreInInterface(NODE1, INTERFACE3)))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE1),
-                            new PostOutInterface(NODE2, INTERFACE3))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE1)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE3)),
                     new PreInInterface(NODE1, INTERFACE1)))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE2),
-                            new PostOutInterface(NODE2, INTERFACE3))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE2)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE3)),
                     new PreInInterface(NODE1, INTERFACE2)))));
     assertThat(
         rules,
         not(
             hasItem(
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE3),
-                            new PostOutInterface(NODE2, INTERFACE3))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE3)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(NODE2, INTERFACE3)),
                     new PreInInterface(NODE1, INTERFACE3)))));
   }
 
@@ -1723,23 +1806,19 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PostIn(NODE1),
-                        new NotExpr(
-                            HeaderSpaceMatchExpr.matchDstIp(
-                                ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))))),
+                new NotExpr(
+                    HeaderSpaceMatchExpr.matchDstIp(
+                        ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))),
+                ImmutableSet.of(new PostIn(NODE1)),
                 new PreOut(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new PostIn(NODE2),
-                        new NotExpr(
-                            HeaderSpaceMatchExpr.matchDstIp(
-                                ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))))),
+                new NotExpr(
+                    HeaderSpaceMatchExpr.matchDstIp(
+                        ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))),
+                ImmutableSet.of(new PostIn(NODE2)),
                 new PreOut(NODE2))));
   }
 
@@ -1757,81 +1836,113 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(0), new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
+                new TestBooleanAtom(0, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(1), new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2))));
+                new TestBooleanAtom(1, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(2), new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1))));
+                new TestBooleanAtom(2, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(3), new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2))));
+                new TestBooleanAtom(3, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(7), new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE3))));
+                new TestBooleanAtom(7, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(8), new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE4))));
+                new TestBooleanAtom(8, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE4))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(9), new PreOutEdge(NODE1, INTERFACE4, NODE2, INTERFACE3))));
+                new TestBooleanAtom(9, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE4, NODE2, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(10), new PreOutEdge(NODE1, INTERFACE4, NODE2, INTERFACE4))));
+                new TestBooleanAtom(10, null),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE4, NODE2, INTERFACE4))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(14), new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1))));
+                new TestBooleanAtom(14, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(15), new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2))));
+                new TestBooleanAtom(15, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(16), new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1))));
+                new TestBooleanAtom(16, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(17), new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2))));
+                new TestBooleanAtom(17, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(21), new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE3))));
+                new TestBooleanAtom(21, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(22), new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE4))));
+                new TestBooleanAtom(22, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE4))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(23), new PreOutEdge(NODE2, INTERFACE4, NODE1, INTERFACE3))));
+                new TestBooleanAtom(23, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE4, NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NumberedQuery(24), new PreOutEdge(NODE2, INTERFACE4, NODE1, INTERFACE4))));
+                new TestBooleanAtom(24, null),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE4, NODE1, INTERFACE4))));
   }
 }

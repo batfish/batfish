@@ -1,16 +1,16 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
@@ -44,25 +44,27 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
   @Override
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
-    ImmutableList.Builder<BooleanExpr> queryConditionsBuilder =
-        ImmutableList.<BooleanExpr>builder()
+    ImmutableSet.Builder<BasicStateExpr> queryPreconditionPreTransformationStates =
+        ImmutableSet.<BasicStateExpr>builder()
             .add(new PreOutEdge(_edge))
-            .add(new PreInInterface(_edge.getNode2(), _edge.getInt2()))
-            .add(new HeaderSpaceMatchExpr(_headerSpace));
+            .add(new PreInInterface(_edge.getNode2(), _edge.getInt2()));
     if (_requireAcceptance) {
-      queryConditionsBuilder.add(Accept.INSTANCE);
+      queryPreconditionPreTransformationStates.add(Accept.INSTANCE);
     }
-    queryConditionsBuilder.add(SaneExpr.INSTANCE);
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
         .setRules(
             ImmutableList.of(
                 new BasicRuleStatement(
-                    CurrentIsOriginalExpr.INSTANCE,
+                    new AndExpr(
+                        ImmutableList.of(
+                            CurrentIsOriginalExpr.INSTANCE,
+                            new HeaderSpaceMatchExpr(_headerSpace),
+                            SaneExpr.INSTANCE)),
                     new OriginateVrf(_originationNode, _ingressVrf)),
-                new TransformationRuleStatement(
-                    new AndExpr(queryConditionsBuilder.build()), Query.INSTANCE)))
+                new BasicRuleStatement(
+                    queryPreconditionPreTransformationStates.build(), Query.INSTANCE)))
         .build();
   }
 }

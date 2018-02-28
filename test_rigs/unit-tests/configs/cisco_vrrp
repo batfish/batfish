@@ -5,6 +5,7 @@ interface Ethernet0
  ip address 1.0.0.0/24
  vrrp 123 authentication text bleep
  vrrp 123 ip 1.0.0.1
+ vrrp 1234 ipv6 ::1
  vrrp 123 preempt delay minimum 222
  vrrp 123 preempt delay reload 222
  vrrp 123 priority 234

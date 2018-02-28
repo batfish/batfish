@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.IntStream;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -15,17 +17,17 @@ import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TransformationHeaderField;
-import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
-import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformedExpr;
+import org.batfish.z3.expr.TransformedBasicRuleStatement;
+import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
@@ -84,15 +86,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitAccept(Accept.State accept) {
     // ProjectNodeAccept
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeAccept::new)
-                    .collect(ImmutableList.toImmutableList())),
-            Accept.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(hostname -> new BasicRuleStatement(new NodeAccept(hostname), Accept.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
@@ -180,15 +178,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                 aclConditionsEntryByLine -> {
                                   int line = aclConditionsEntryByLine.getKey();
                                   BooleanExpr lineCriteria = aclConditionsEntryByLine.getValue();
-                                  BooleanExpr antecedent =
+                                  Set<BasicStateExpr> preconditionStates =
                                       line > 0
-                                          ? new AndExpr(
-                                              ImmutableList.of(
-                                                  lineCriteria,
-                                                  new AclLineNoMatch(hostname, acl, line - 1)))
-                                          : lineCriteria;
+                                          ? ImmutableSet.of(
+                                              new AclLineNoMatch(hostname, acl, line - 1))
+                                          : ImmutableSet.of();
                                   return new BasicRuleStatement(
-                                      antecedent, new AclLineMatch(hostname, acl, line));
+                                      lineCriteria,
+                                      preconditionStates,
+                                      new AclLineMatch(hostname, acl, line));
                                 });
                       });
             })
@@ -217,15 +215,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                 e3 -> {
                                   int line = e3.getKey();
                                   BooleanExpr lineCriteria = new NotExpr(e3.getValue());
-                                  BooleanExpr antecedent =
+                                  Set<BasicStateExpr> preconditionStates =
                                       line > 0
-                                          ? new AndExpr(
-                                              ImmutableList.of(
-                                                  lineCriteria,
-                                                  new AclLineNoMatch(hostname, acl, line - 1)))
-                                          : lineCriteria;
+                                          ? ImmutableSet.of(
+                                              new AclLineNoMatch(hostname, acl, line - 1))
+                                          : ImmutableSet.of();
                                   return new BasicRuleStatement(
-                                      antecedent, new AclLineNoMatch(hostname, acl, line));
+                                      lineCriteria,
+                                      preconditionStates,
+                                      new AclLineNoMatch(hostname, acl, line));
                                 });
                       });
             })
@@ -270,15 +268,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDrop(Drop.State drop) {
     // ProjectNodeDrop
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeDrop::new)
-                    .collect(ImmutableList.toImmutableList())),
-            Drop.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(hostname -> new BasicRuleStatement(new NodeDrop(hostname), Drop.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
@@ -305,57 +299,44 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDropAclIn(DropAclIn.State dropAclIn) {
     // ProjectNodeDropAclIn
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeDropAclIn::new)
-                    .collect(ImmutableList.toImmutableList())),
-            DropAclIn.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(hostname -> new BasicRuleStatement(new NodeDropAclIn(hostname), DropAclIn.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
   public void visitDropAclOut(DropAclOut.State dropAclOut) {
     // ProjectNodeDropAclOut
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeDropAclOut::new)
-                    .collect(ImmutableList.toImmutableList())),
-            DropAclOut.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(hostname -> new BasicRuleStatement(new NodeDropAclOut(hostname), DropAclOut.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
   public void visitDropNoRoute(DropNoRoute.State dropNoRoute) {
     // ProjectNodeDropNoRoute
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeDropNoRoute::new)
-                    .collect(ImmutableList.toImmutableList())),
-            DropNoRoute.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(
+            hostname -> new BasicRuleStatement(new NodeDropNoRoute(hostname), DropNoRoute.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
   public void visitDropNullRoute(DropNullRoute.State dropNullRoute) {
     // ProjectNodeDropNullRoute
-    _rules.add(
-        new BasicRuleStatement(
-            new OrExpr(
-                _input
-                    .getEnabledNodes()
-                    .stream()
-                    .map(NodeDropNullRoute::new)
-                    .collect(ImmutableList.toImmutableList())),
-            DropNullRoute.INSTANCE));
+    _input
+        .getEnabledNodes()
+        .stream()
+        .map(
+            hostname ->
+                new BasicRuleStatement(new NodeDropNullRoute(hostname), DropNullRoute.INSTANCE))
+        .forEach(_rules::add);
   }
 
   @Override
@@ -367,16 +348,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .map(
             hostname ->
                 new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PostIn(hostname),
-                            HeaderSpaceMatchExpr.matchDstIp(
-                                _input
-                                    .getIpsByHostname()
-                                    .get(hostname)
-                                    .stream()
-                                    .map(IpWildcard::new)
-                                    .collect(ImmutableSet.toImmutableSet())))),
+                    HeaderSpaceMatchExpr.matchDstIp(
+                        _input
+                            .getIpsByHostname()
+                            .get(hostname)
+                            .stream()
+                            .map(IpWildcard::new)
+                            .collect(ImmutableSet.toImmutableSet())),
+                    ImmutableSet.of(new PostIn(hostname)),
                     new NodeAccept(hostname)))
         .forEach(_rules::add);
 
@@ -386,7 +365,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .stream()
         .map(
             niPair ->
-                new BasicRuleStatement(
+                new TransformedBasicRuleStatement(
                     new PostOutInterface(niPair.getHostname(), niPair.getInterface()),
                     new NodeAccept(niPair.getHostname())))
         .forEach(_rules::add);
@@ -460,10 +439,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       ifaceName -> {
                         String inAcl = incomingAcls.get(ifaceName);
                         return new BasicRuleStatement(
-                            new AndExpr(
-                                ImmutableList.of(
-                                    new AclDeny(hostname, inAcl),
-                                    new PreInInterface(hostname, ifaceName))),
+                            TrueExpr.INSTANCE,
+                            ImmutableSet.of(
+                                new AclDeny(hostname, inAcl),
+                                new PreInInterface(hostname, ifaceName)),
                             new NodeDropAclIn(hostname));
                       });
             })
@@ -472,7 +451,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitNodeDropAclOut(NodeDropAclOut.State nodeDropAclOut) {
-    // FailOutgoingAcl
+    // FailOutgoingAclNoMatchSrcNat
     _input
         .getTopologyInterfaces()
         .entrySet()
@@ -480,20 +459,109 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .flatMap(
             topologyInterfacesEntry -> {
               String hostname = topologyInterfacesEntry.getKey();
+              Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>
+                  sourceNatsByInterface = _input.getSourceNats().get(hostname);
               Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
               return topologyInterfacesEntry
                   .getValue()
                   .stream()
                   .filter(ifaceName -> outgoingAcls.get(ifaceName) != null)
+                  .filter(
+                      ifaceName ->
+                          sourceNatsByInterface
+                              .get(ifaceName)
+                              .stream()
+                              .map(Entry::getKey)
+                              .allMatch(Optional::isPresent))
                   .map(
                       ifaceName -> {
-                        String outAcl = outgoingAcls.get(ifaceName);
+                        List<Entry<Optional<BasicStateExpr>, BooleanExpr>> sourceNats =
+                            sourceNatsByInterface.get(ifaceName);
+                        ImmutableSet.Builder<BasicStateExpr> preconditionStates =
+                            ImmutableSet.builder();
+                        sourceNats
+                            .stream()
+                            .map(Entry::getKey)
+                            .map(
+                                preconditionPreTransformationState -> {
+                                  AclPermit aclPermit =
+                                      (AclPermit) preconditionPreTransformationState.get();
+                                  return new AclDeny(aclPermit.getHostname(), aclPermit.getAcl());
+                                })
+                            .forEach(preconditionStates::add);
+                        preconditionStates.add(new PreOutInterface(hostname, ifaceName));
+                        preconditionStates.add(new AclDeny(hostname, outgoingAcls.get(ifaceName)));
                         return new BasicRuleStatement(
-                            new AndExpr(
-                                ImmutableList.of(
-                                    new AclDeny(hostname, outAcl),
-                                    new PreOutInterface(hostname, ifaceName))),
-                            new NodeDropAclOut(hostname));
+                            preconditionStates.build(), new NodeDropAclOut(hostname));
+                      });
+            })
+        .forEach(_rules::add);
+
+    // FailOutgoingAclMatchSrcNat
+    _input
+        .getTopologyInterfaces()
+        .entrySet()
+        .stream()
+        .flatMap(
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+              Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>
+                  sourceNatsByInterface = _input.getSourceNats().get(hostname);
+              Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
+              return topologyInterfacesEntry
+                  .getValue()
+                  .stream()
+                  .filter(ifaceName -> outgoingAcls.get(ifaceName) != null)
+                  .flatMap(
+                      ifaceName -> {
+                        List<Entry<Optional<BasicStateExpr>, BooleanExpr>> sourceNats =
+                            sourceNatsByInterface.get(ifaceName);
+                        return IntStream.range(0, sourceNats.size())
+                            .filter(
+                                sourceNatIndex ->
+                                    sourceNatIndex == 0
+                                        || sourceNats
+                                            .subList(0, sourceNatIndex)
+                                            .stream()
+                                            .map(Entry::getKey)
+                                            .allMatch(Optional::isPresent))
+                            .mapToObj(
+                                sourceNatIndex -> {
+                                  Entry<Optional<BasicStateExpr>, BooleanExpr>
+                                      currentSourceNatEntry = sourceNats.get(sourceNatIndex);
+                                  ImmutableSet.Builder<BasicStateExpr>
+                                      preconditionPreTransformationStates = ImmutableSet.builder();
+                                  Optional<BasicStateExpr> matchCurrentEntry =
+                                      currentSourceNatEntry.getKey();
+                                  BooleanExpr preconditionStateIndependent =
+                                      currentSourceNatEntry.getValue();
+                                  if (matchCurrentEntry.isPresent()) {
+                                    preconditionPreTransformationStates.add(
+                                        matchCurrentEntry.get());
+                                  }
+                                  if (sourceNatIndex > 0) {
+                                    sourceNats
+                                        .subList(0, sourceNatIndex)
+                                        .stream()
+                                        .map(Entry::getKey)
+                                        .map(Optional::get)
+                                        .map(aclPermit -> (AclPermit) aclPermit)
+                                        .map(
+                                            aclPermit ->
+                                                new AclDeny(
+                                                    aclPermit.getHostname(), aclPermit.getAcl()))
+                                        .forEach(preconditionPreTransformationStates::add);
+                                  }
+                                  preconditionPreTransformationStates.add(
+                                      new PreOutInterface(hostname, ifaceName));
+                                  return new TransformedBasicRuleStatement(
+                                      preconditionStateIndependent,
+                                      preconditionPreTransformationStates.build(),
+                                      ImmutableSet.of(
+                                          new AclDeny(hostname, outgoingAcls.get(ifaceName))),
+                                      ImmutableSet.of(),
+                                      new NodeDropAclOut(hostname));
+                                });
                       });
             })
         .forEach(_rules::add);
@@ -515,6 +583,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .stream()
                   .flatMap(
                       fibConditionsByVrfEntry -> {
+                        String vrfName = fibConditionsByVrfEntry.getKey();
                         return fibConditionsByVrfEntry
                             .getValue()
                             .entrySet()
@@ -531,7 +600,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                           .getValue()
                                           .get(NodeInterfacePair.NONE);
                                   return new BasicRuleStatement(
-                                      conditions, new NodeDropNoRoute(hostname));
+                                      conditions,
+                                      ImmutableSet.of(
+                                          new PostInVrf(hostname, vrfName), new PreOut(hostname)),
+                                      new NodeDropNoRoute(hostname));
                                 });
                       });
             })
@@ -554,6 +626,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .stream()
                   .flatMap(
                       fibConditionsByVrfEntry -> {
+                        String vrfName = fibConditionsByVrfEntry.getKey();
                         return fibConditionsByVrfEntry
                             .getValue()
                             .entrySet()
@@ -571,7 +644,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                           .getValue()
                                           .get(NodeInterfacePair.NONE);
                                   return new BasicRuleStatement(
-                                      conditions, new NodeDropNullRoute(hostname));
+                                      conditions,
+                                      ImmutableSet.of(
+                                          new PostInVrf(hostname, vrfName), new PreOut(hostname)),
+                                      new NodeDropNullRoute(hostname));
                                 });
                       });
             })
@@ -593,7 +669,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .stream()
                   .map(
                       ifaceName ->
-                          new BasicRuleStatement(
+                          new TransformedBasicRuleStatement(
                               new PostOutInterface(hostname, ifaceName),
                               new NodeTransit(hostname)));
             })
@@ -672,16 +748,16 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .map(
                       ifaceName -> {
                         String inAcl = incomingAcls.get(ifaceName);
-                        BooleanExpr antecedent;
-                        BooleanExpr preIn = new PreInInterface(hostname, ifaceName);
+                        Set<BasicStateExpr> preconditionStates;
+                        BasicStateExpr preIn = new PreInInterface(hostname, ifaceName);
                         if (inAcl != null) {
-                          antecedent =
-                              new AndExpr(ImmutableList.of(new AclPermit(hostname, inAcl), preIn));
+                          preconditionStates =
+                              ImmutableSet.of(new AclPermit(hostname, inAcl), preIn);
                         } else {
-                          antecedent = preIn;
+                          preconditionStates = ImmutableSet.of(preIn);
                         }
                         return new BasicRuleStatement(
-                            antecedent, new PostInInterface(hostname, ifaceName));
+                            preconditionStates, new PostInInterface(hostname, ifaceName));
                       });
             })
         .forEach(_rules::add);
@@ -748,34 +824,48 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .flatMap(
             topologyInterfacesEntry -> {
               String hostname = topologyInterfacesEntry.getKey();
-              Map<String, List<Entry<BooleanExpr, BooleanExpr>>> sourceNatsByInterface =
-                  _input.getSourceNats().get(hostname);
+              Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>
+                  sourceNatsByInterface = _input.getSourceNats().get(hostname);
               Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
               return topologyInterfacesEntry
                   .getValue()
                   .stream()
+                  .filter(
+                      ifaceName ->
+                          sourceNatsByInterface
+                              .get(ifaceName)
+                              .stream()
+                              .map(Entry::getKey)
+                              .allMatch(Optional::isPresent))
                   .map(
                       ifaceName -> {
-                        ImmutableList.Builder<BooleanExpr> antecedentConjuncts =
-                            ImmutableList.builder();
-                        List<Entry<BooleanExpr, BooleanExpr>> sourceNats =
+                        List<Entry<Optional<BasicStateExpr>, BooleanExpr>> sourceNats =
                             sourceNatsByInterface.get(ifaceName);
+                        ImmutableSet.Builder<BasicStateExpr> preconditionPreTransformationStates =
+                            ImmutableSet.builder();
                         sourceNats
                             .stream()
                             .map(Entry::getKey)
-                            .map(NotExpr::new)
-                            .forEach(antecedentConjuncts::add);
+                            .map(
+                                preconditionPreTransformationState -> {
+                                  AclPermit aclPermit =
+                                      (AclPermit) preconditionPreTransformationState.get();
+                                  return new AclDeny(aclPermit.getHostname(), aclPermit.getAcl());
+                                })
+                            .forEach(preconditionPreTransformationStates::add);
                         String outAcl = outgoingAcls.get(ifaceName);
                         if (outAcl != null) {
-                          antecedentConjuncts.add(new AclPermit(hostname, outAcl));
+                          preconditionPreTransformationStates.add(new AclPermit(hostname, outAcl));
                         }
-                        antecedentConjuncts.add(
+                        preconditionPreTransformationStates.add(
+                            new PreOutInterface(hostname, ifaceName));
+                        return new TransformationRuleStatement(
                             new EqExpr(
                                 new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
-                                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())));
-                        antecedentConjuncts.add(new PreOutInterface(hostname, ifaceName));
-                        return new TransformationRuleStatement(
-                            new AndExpr(antecedentConjuncts.build()),
+                                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
+                            preconditionPreTransformationStates.build(),
+                            ImmutableSet.of(),
+                            ImmutableSet.of(),
                             new PostOutInterface(hostname, ifaceName));
                       });
             })
@@ -789,45 +879,66 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .flatMap(
             topologyInterfacesEntry -> {
               String hostname = topologyInterfacesEntry.getKey();
-              Map<String, List<Entry<BooleanExpr, BooleanExpr>>> sourceNatsByInterface =
-                  _input.getSourceNats().get(hostname);
+              Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>
+                  sourceNatsByInterface = _input.getSourceNats().get(hostname);
               Map<String, String> outgoingAcls = _input.getOutgoingAcls().get(hostname);
               return topologyInterfacesEntry
                   .getValue()
                   .stream()
                   .flatMap(
                       ifaceName -> {
-                        ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
-                        List<Entry<BooleanExpr, BooleanExpr>> sourceNats =
+                        List<Entry<Optional<BasicStateExpr>, BooleanExpr>> sourceNats =
                             sourceNatsByInterface.get(ifaceName);
-                        for (int i = 0; i < sourceNats.size(); i++) {
-                          Entry<BooleanExpr, BooleanExpr> currentSourceNatEntry = sourceNats.get(i);
-                          BooleanExpr matchCurrentEntry = currentSourceNatEntry.getKey();
-                          BooleanExpr transformationToApply = currentSourceNatEntry.getValue();
-                          ImmutableList.Builder<BooleanExpr> currentSourceNatConjuncts =
-                              ImmutableList.<BooleanExpr>builder()
-                                  .add(matchCurrentEntry)
-                                  .add(transformationToApply);
-                          if (i > 0) {
-                            sourceNats
-                                .subList(0, i)
-                                .stream()
-                                .map(Entry::getKey)
-                                .map(NotExpr::new)
-                                .forEach(currentSourceNatConjuncts::add);
-                          }
-                          String outAcl = outgoingAcls.get(ifaceName);
-                          if (outAcl != null) {
-                            currentSourceNatConjuncts.add(
-                                new TransformedExpr(new AclPermit(hostname, outAcl)));
-                          }
-                          currentSourceNatConjuncts.add(new PreOutInterface(hostname, ifaceName));
-                          rules.add(
-                              new TransformationRuleStatement(
-                                  new AndExpr(currentSourceNatConjuncts.build()),
-                                  new PostOutInterface(hostname, ifaceName)));
-                        }
-                        return rules.build().stream();
+                        return IntStream.range(0, sourceNats.size())
+                            .filter(
+                                sourceNatIndex ->
+                                    sourceNatIndex == 0
+                                        || sourceNats
+                                            .subList(0, sourceNatIndex)
+                                            .stream()
+                                            .map(Entry::getKey)
+                                            .allMatch(Optional::isPresent))
+                            .mapToObj(
+                                sourceNatIndex -> {
+                                  Entry<Optional<BasicStateExpr>, BooleanExpr>
+                                      currentSourceNatEntry = sourceNats.get(sourceNatIndex);
+                                  ImmutableSet.Builder<BasicStateExpr>
+                                      preconditionPreTransformationStates = ImmutableSet.builder();
+                                  Optional<BasicStateExpr> matchCurrentEntry =
+                                      currentSourceNatEntry.getKey();
+                                  BooleanExpr preconditionStateIndependent =
+                                      currentSourceNatEntry.getValue();
+                                  if (matchCurrentEntry.isPresent()) {
+                                    preconditionPreTransformationStates.add(
+                                        matchCurrentEntry.get());
+                                  }
+                                  if (sourceNatIndex > 0) {
+                                    sourceNats
+                                        .subList(0, sourceNatIndex)
+                                        .stream()
+                                        .map(Entry::getKey)
+                                        .map(Optional::get)
+                                        .map(aclPermit -> (AclPermit) aclPermit)
+                                        .map(
+                                            aclPermit ->
+                                                new AclDeny(
+                                                    aclPermit.getHostname(), aclPermit.getAcl()))
+                                        .forEach(preconditionPreTransformationStates::add);
+                                  }
+                                  String outAcl = outgoingAcls.get(ifaceName);
+                                  Set<BasicStateExpr> preconditionPostTransformationStates =
+                                      outAcl != null
+                                          ? ImmutableSet.of(new AclPermit(hostname, outAcl))
+                                          : ImmutableSet.of();
+                                  preconditionPreTransformationStates.add(
+                                      new PreOutInterface(hostname, ifaceName));
+                                  return new TransformationRuleStatement(
+                                      preconditionStateIndependent,
+                                      preconditionPreTransformationStates.build(),
+                                      preconditionPostTransformationStates,
+                                      ImmutableSet.of(),
+                                      new PostOutInterface(hostname, ifaceName));
+                                });
                       });
             })
         .forEach(_rules::add);
@@ -843,11 +954,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .filter(e -> !_input.getEnabledFlowSinks().contains(e.getInterface2()))
         .map(
             edge ->
-                new BasicRuleStatement(
-                    new AndExpr(
-                        ImmutableList.of(
-                            new PreOutEdge(edge),
-                            new PostOutInterface(edge.getNode1(), edge.getInt1()))),
+                new TransformedBasicRuleStatement(
+                    TrueExpr.INSTANCE,
+                    ImmutableSet.of(new PreOutEdge(edge)),
+                    ImmutableSet.of(),
+                    ImmutableSet.of(new PostOutInterface(edge.getNode1(), edge.getInt1())),
                     new PreInInterface(edge.getNode2(), edge.getInt2())))
         .forEach(_rules::add);
   }
@@ -871,7 +982,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
                               .map(IpWildcard::new)
                               .collect(ImmutableSet.toImmutableSet())));
               return new BasicRuleStatement(
-                  new AndExpr(ImmutableList.of(new PostIn(hostname), ipForeignToCurrentNode)),
+                  ipForeignToCurrentNode,
+                  ImmutableSet.of(new PostIn(hostname)),
                   new PreOut(hostname));
             })
         .forEach(_rules::add);
@@ -893,6 +1005,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .stream()
                   .flatMap(
                       fibConditionsByVrfEntry -> {
+                        String vrfName = fibConditionsByVrfEntry.getKey();
                         return fibConditionsByVrfEntry
                             .getValue()
                             .entrySet()
@@ -921,6 +1034,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                             String inInterface = receiver.getInterface();
                                             return new BasicRuleStatement(
                                                 conditions,
+                                                ImmutableSet.of(
+                                                    new PostInVrf(hostname, vrfName),
+                                                    new PreOut(hostname)),
                                                 new PreOutEdge(
                                                     hostname, outInterface, inNode, inInterface));
                                           });

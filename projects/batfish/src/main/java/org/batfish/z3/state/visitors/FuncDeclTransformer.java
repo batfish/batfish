@@ -50,12 +50,12 @@ public class FuncDeclTransformer implements GeneralStateVisitor {
   }
 
   @Override
-  public void visitBasicState(BasicStateExpr.State basicState) {
+  public void visitBasicStateExpr(BasicStateExpr.State basicState) {
     _funcDecl = _ctx.mkFuncDecl(_name, _basicParameterTypes.get(), _ctx.mkBoolSort());
   }
 
   @Override
-  public void visitTransformationState(TransformationStateExpr.State transformationState) {
+  public void visitTransformationStateExpr(TransformationStateExpr.State transformationState) {
     _funcDecl = _ctx.mkFuncDecl(_name, _transformationParameterTypes.get(), _ctx.mkBoolSort());
   }
 }
