@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -1074,6 +1076,7 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
+      analysisType = firstNonNull(analysisType, AnalysisType.ALL);
       for (String analysisName : Main.getWorkMgr().listAnalyses(containerName, analysisType)) {
 
         JSONObject analysisJson = new JSONObject();

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -209,25 +208,16 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, true, "analysis2", Maps.newHashMap(), Lists.newArrayList(), true);
 
-    SortedSet<String> analyses = _manager.listAnalyses(containerName, null);
-
-    // checking that both analyses are returned for AnalysisType as null
-    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis1", "analysis2")));
-
-    analyses = _manager.listAnalyses(containerName, AnalysisType.ALL);
-
-    // checking that both analyses are returned for AnalysisType as ALL
-    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis1", "analysis2")));
-
-    analyses = _manager.listAnalyses(containerName, AnalysisType.USER);
-
-    // checking that user analysis is returned for AnalysisType as USER
-    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis1")));
-
-    analyses = _manager.listAnalyses(containerName, AnalysisType.SUGGESTED);
-
-    // checking that suggested analysis is returned for AnalysisType as SUGGESTED
-    assertThat(analyses, equalTo(ImmutableSortedSet.of("analysis2")));
+    // checking that we get analyses according to AnalysisType
+    assertThat(
+        _manager.listAnalyses(containerName, AnalysisType.ALL),
+        equalTo(Sets.newHashSet("analysis1", "analysis2")));
+    assertThat(
+        _manager.listAnalyses(containerName, AnalysisType.USER),
+        equalTo(Sets.newHashSet("analysis1")));
+    assertThat(
+        _manager.listAnalyses(containerName, AnalysisType.SUGGESTED),
+        equalTo(Sets.newHashSet("analysis2")));
   }
 
   @Test

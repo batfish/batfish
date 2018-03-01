@@ -1,6 +1,8 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.io.Closer;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
@@ -86,6 +88,8 @@ public class WorkMgr extends AbstractCoordinator {
 
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
 
+  private static final long MAX_CACHED_SUGGESTED = 10;
+
   private static Set<String> initEnvFilenames() {
     Set<String> envFilenames = new HashSet<>();
     envFilenames.add(BfConsts.RELPATH_NODE_BLACKLIST_FILE);
@@ -97,6 +101,8 @@ public class WorkMgr extends AbstractCoordinator {
     return envFilenames;
   }
 
+  private Cache<String, Boolean> _cacheSuggedted;
+
   private final BatfishLogger _logger;
 
   private final Settings _settings;
@@ -107,6 +113,7 @@ public class WorkMgr extends AbstractCoordinator {
     super(false);
     _settings = settings;
     _logger = logger;
+    _cacheSuggedted = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SUGGESTED).build();
     _workQueueMgr = new WorkQueueMgr(logger);
     loadPlugins();
   }
@@ -1196,36 +1203,43 @@ public class WorkMgr extends AbstractCoordinator {
    * @param analysisType {@link AnalysisType} requested
    * @return {@link Set} of container names
    */
-  public SortedSet<String> listAnalyses(String containerName, @Nullable AnalysisType analysisType) {
+  public SortedSet<String> listAnalyses(String containerName, AnalysisType analysisType) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
       return new TreeSet<>();
     }
     SortedSet<String> analyses =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(analysesDir)
-                .stream()
-                .map(subdir -> subdir.getFileName().toString())
-                .filter(
-                    aName -> {
-                      if (analysisType == AnalysisType.ALL || analysisType == null) {
-                        return true;
-                      }
-                      if (analysisType == AnalysisType.SUGGESTED
-                          && AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(
-                              containerName, aName)) {
-                        return true;
-                      }
-                      if (analysisType == AnalysisType.USER
-                          && !AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(
-                              containerName, aName)) {
-                        return true;
-                      }
-                      return false;
-                    })
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(analysesDir)
+            .stream()
+            .map(subdir -> subdir.getFileName().toString())
+            .filter(aName -> selectAnalysis(aName, analysisType, containerName))
+            .distinct()
+            .collect(Collectors.toCollection(TreeSet::new));
     return analyses;
+  }
+
+  private boolean selectAnalysis(String aName, AnalysisType analysisType, String containerName) {
+    if (analysisType == AnalysisType.ALL) {
+      return true;
+    }
+    boolean suggested = getSuggested(aName, containerName);
+    if (analysisType == AnalysisType.SUGGESTED && suggested
+        || analysisType == AnalysisType.USER && !suggested) {
+      return true;
+    }
+    return false;
+  }
+
+  private boolean getSuggested(String aName, String containerName) {
+    String cacheKey = String.format("%s::%s", containerName, aName);
+    Boolean suggested = _cacheSuggedted.getIfPresent(cacheKey);
+    if (suggested != null) {
+      return suggested;
+    }
+    suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName);
+    _cacheSuggedted.put(cacheKey, suggested);
+    return suggested;
   }
 
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
