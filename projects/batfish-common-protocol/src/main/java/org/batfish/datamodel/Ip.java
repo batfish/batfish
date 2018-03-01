@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
@@ -121,7 +119,7 @@ public class Ip implements Comparable<Ip>, Serializable {
    * @return a boolean representation of the bit value
    */
   public static boolean getBitAtPosition(long bits, int position) {
-    return (bits & (1 << (MAX_PREFIX_LENGTH - 1 - position))) != 0;
+    return (bits & (1 << (Prefix.MAX_PREFIX_LENGTH - 1 - position))) != 0;
   }
 
   /**
