@@ -2,7 +2,6 @@ package org.batfish.symbolic.abstraction;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +28,7 @@ public class PrefixTrieMap implements Serializable {
 
     void addPrefix(Prefix prefix, String device) {
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getStartIp().getAddressBits();
+      long bits = prefix.getStartIp().asLong();
       Set<String> devices = new HashSet<>();
       devices.add(device);
       _root.addPrefix(prefix, devices, bits, prefixLength, 0);
@@ -50,7 +49,7 @@ public class PrefixTrieMap implements Serializable {
     private ByteTrieNode _right;
 
     private void addPrefix(
-        Prefix prefix, Set<String> devices, BitSet bits, int prefixLength, int depth) {
+        Prefix prefix, Set<String> devices, long bits, int prefixLength, int depth) {
       if (prefixLength == depth) {
         _prefix = prefix;
         if (_devices == null) {
@@ -59,7 +58,7 @@ public class PrefixTrieMap implements Serializable {
           _devices.addAll(devices);
         }
       } else {
-        boolean currentBit = bits.get(depth);
+        boolean currentBit = Ip.getBitAtPosition(bits, depth);
         if (_devices != null) {
           devices.addAll(_devices);
         }

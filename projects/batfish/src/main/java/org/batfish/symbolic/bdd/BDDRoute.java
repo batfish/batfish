@@ -1,7 +1,6 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +14,7 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
@@ -351,7 +351,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public BDDRoute restrict(Prefix pfx) {
     int len = pfx.getPrefixLength();
-    BitSet bits = pfx.getStartIp().getAddressBits();
+    long bits = pfx.getStartIp().asLong();
     int[] vars = new int[len];
     BDD[] vals = new BDD[len];
     // NOTE: do not create a new pairing each time
@@ -359,7 +359,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     pairing.reset();
     for (int i = 0; i < len; i++) {
       int var = _prefix.getBitvec()[i].var(); // prefixIndex + i;
-      BDD subst = bits.get(i) ? factory.one() : factory.zero();
+      BDD subst = Ip.getBitAtPosition(bits, i) ? factory.one() : factory.zero();
       vars[i] = var;
       vals[i] = subst;
     }

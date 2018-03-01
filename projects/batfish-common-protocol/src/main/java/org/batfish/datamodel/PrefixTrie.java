@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
@@ -24,18 +23,18 @@ public class PrefixTrie implements Serializable {
 
     public void addPrefix(Prefix prefix) {
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getStartIp().getAddressBits();
+      long bits = prefix.getStartIp().asLong();
       _root.addPrefix(prefix, bits, prefixLength, 0);
     }
 
     public boolean containsPathFromPrefix(Prefix prefix) {
       int prefixLength = prefix.getPrefixLength();
-      BitSet bits = prefix.getStartIp().getAddressBits();
+      long bits = prefix.getStartIp().asLong();
       return _root.containsPathFromPrefix(bits, prefixLength, 0);
     }
 
     public Prefix getLongestPrefixMatch(Ip address) {
-      BitSet addressBits = address.getAddressBits();
+      long addressBits = address.asLong();
       return _root.getLongestPrefixMatch(address, addressBits, 0);
     }
   }
@@ -51,12 +50,12 @@ public class PrefixTrie implements Serializable {
 
     private ByteTrieNode _right;
 
-    public void addPrefix(Prefix prefix, BitSet bits, int prefixLength, int depth) {
+    public void addPrefix(Prefix prefix, long bits, int prefixLength, int depth) {
       if (prefixLength == depth) {
         _prefix = prefix;
         return;
       } else {
-        boolean currentBit = bits.get(depth);
+        boolean currentBit = Ip.getBitAtPosition(bits, depth);
         if (currentBit) {
           if (_right == null) {
             _right = new ByteTrieNode();
@@ -71,7 +70,7 @@ public class PrefixTrie implements Serializable {
       }
     }
 
-    public boolean containsPathFromPrefix(BitSet bits, int prefixLength, int depth) {
+    public boolean containsPathFromPrefix(long bits, int prefixLength, int depth) {
       if (prefixLength == depth) {
         if (depth == 0 && _prefix == null) {
           return false;
@@ -79,7 +78,7 @@ public class PrefixTrie implements Serializable {
           return true;
         }
       } else {
-        boolean currentBit = bits.get(depth);
+        boolean currentBit = Ip.getBitAtPosition(bits, depth);
         if (currentBit) {
           if (_right == null) {
             return false;
@@ -105,12 +104,12 @@ public class PrefixTrie implements Serializable {
       }
     }
 
-    public Prefix getLongestPrefixMatch(Ip address, BitSet bits, int index) {
+    public Prefix getLongestPrefixMatch(Ip address, long bits, int index) {
       Prefix longestPrefixMatch = getLongestPrefixMatch(address);
       if (index == Prefix.MAX_PREFIX_LENGTH) {
         return longestPrefixMatch;
       }
-      boolean currentBit = bits.get(index);
+      boolean currentBit = Ip.getBitAtPosition(bits, index);
       Prefix longerMatch = null;
       if (currentBit) {
         if (_right != null) {

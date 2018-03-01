@@ -1,7 +1,6 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +13,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
@@ -116,10 +116,10 @@ class TransferBDD {
    * [var(0), ..., var(n)]
    */
   public static BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
-    BitSet b = p.getStartIp().getAddressBits();
+    long b = p.getStartIp().asLong();
     BDD acc = factory.one();
     for (int i = 0; i < length; i++) {
-      boolean res = b.get(i);
+      boolean res = Ip.getBitAtPosition(b, i);
       if (res) {
         acc = acc.and(bits[i]);
       } else {
