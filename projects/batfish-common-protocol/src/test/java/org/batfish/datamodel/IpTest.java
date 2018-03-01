@@ -5,8 +5,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.IsEqual;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -32,7 +30,7 @@ public class IpTest {
     assertThat(getBitAtPosition(0xFF000000L, 7), is(true));
     assertThat(getBitAtPosition(0xFF000000L, 8), is(false));
     for (int i = 0; i < 32; i++) {
-      MatcherAssert.assertThat(getBitAtPosition(Ip.MAX.asLong(), i), IsEqual.equalTo(true));
+      assertThat(getBitAtPosition(Ip.MAX.asLong(), i), equalTo(true));
     }
   }
 }
