@@ -24,6 +24,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.config.Settings;
 import org.junit.Before;
 import org.junit.Rule;
@@ -207,18 +208,16 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, true, "analysis2", Maps.newHashMap(), Lists.newArrayList(), true);
 
-    SortedSet<String> analyses = _manager.listAnalyses(containerName, null);
-    assertTrue("User analyses listed if suggested is null", analyses.contains("analysis1"));
-    assertTrue("Suggested analyses listed if suggested is null", analyses.contains("analysis2"));
-
-    analyses = _manager.listAnalyses(containerName, false);
-    assertTrue("User analyses listed if suggested is false", analyses.contains("analysis1"));
-    assertFalse(
-        "Suggested analyses not listed if suggested is false", analyses.contains("analysis2"));
-
-    analyses = _manager.listAnalyses(containerName, true);
-    assertFalse("User analyses not listed if suggested is true", analyses.contains("analysis1"));
-    assertTrue("Suggested analyses listed if suggested is true", analyses.contains("analysis2"));
+    // checking that we get analyses according to AnalysisType
+    assertThat(
+        _manager.listAnalyses(containerName, AnalysisType.ALL),
+        equalTo(Sets.newHashSet("analysis1", "analysis2")));
+    assertThat(
+        _manager.listAnalyses(containerName, AnalysisType.USER),
+        equalTo(Sets.newHashSet("analysis1")));
+    assertThat(
+        _manager.listAnalyses(containerName, AnalysisType.SUGGESTED),
+        equalTo(Sets.newHashSet("analysis2")));
   }
 
   @Test

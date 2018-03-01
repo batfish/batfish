@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.io.Closer;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,6 +59,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
+import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
@@ -1188,26 +1191,38 @@ public class WorkMgr extends AbstractCoordinator {
     return killed;
   }
 
-  public SortedSet<String> listAnalyses(String containerName, @Nullable Boolean suggested) {
+  /**
+   * Returns the Analysis names which exist in the container and match the {@link AnalysisType}
+   *
+   * @param containerName Container name
+   * @param analysisType {@link AnalysisType} requested
+   * @return {@link Set} of container names
+   */
+  public SortedSet<String> listAnalyses(String containerName, AnalysisType analysisType) {
     Path containerDir = getdirContainer(containerName);
     Path analysesDir = containerDir.resolve(BfConsts.RELPATH_ANALYSES_DIR);
     if (!Files.exists(analysesDir)) {
-      return new TreeSet<>();
+      return ImmutableSortedSet.of();
     }
     SortedSet<String> analyses =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(analysesDir)
-                .stream()
-                .map(subdir -> subdir.getFileName().toString())
-                .filter(
-                    aName -> {
-                      // Include the analysis if suggested is null or matches metadata.suggested
-                      return suggested == null
-                          || AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName)
-                              == suggested;
-                    })
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(analysesDir)
+            .stream()
+            .map(subdir -> subdir.getFileName().toString())
+            .filter(aName -> selectAnalysis(aName, analysisType, containerName))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     return analyses;
+  }
+
+  private boolean selectAnalysis(String aName, AnalysisType analysisType, String containerName) {
+    if (analysisType == AnalysisType.ALL) {
+      return true;
+    }
+    boolean suggested = AnalysisMetadataMgr.getAnalysisSuggestedOrFalse(containerName, aName);
+    if (analysisType == AnalysisType.SUGGESTED && suggested
+        || analysisType == AnalysisType.USER && !suggested) {
+      return true;
+    }
+    return false;
   }
 
   public SortedSet<String> listAnalysisQuestions(String containerName, String analysisName) {
