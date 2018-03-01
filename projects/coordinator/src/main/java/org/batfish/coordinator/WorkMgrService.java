@@ -1,5 +1,7 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -35,6 +37,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.config.Settings;
@@ -1048,8 +1051,8 @@ public class WorkMgrService {
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
    * @param containerName The name of the container whose analyses are to be listed
-   * @param suggested Optional Boolean indicating which analyses to list: true = only suggested
-   *     analyses, false = only user's analyses, null = all analyses
+   * @param analysisType Optional enum {@link AnalysisType} indicating which analyses to list,
+   *     keeping null equivalent to {@link AnalysisType#ALL} for backward compatibility
    * @return TODO: document JSON response
    */
   @POST
@@ -1059,7 +1062,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
-      @Nullable @FormDataParam(CoordConsts.SVC_KEY_SUGGESTED) Boolean suggested) {
+      @Nullable @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_TYPE) AnalysisType analysisType) {
     try {
       _logger.infof("WMS:listAnalyses %s %s\n", apiKey, containerName);
 
@@ -1073,7 +1076,8 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
-      for (String analysisName : Main.getWorkMgr().listAnalyses(containerName, suggested)) {
+      analysisType = firstNonNull(analysisType, AnalysisType.ALL);
+      for (String analysisName : Main.getWorkMgr().listAnalyses(containerName, analysisType)) {
 
         JSONObject analysisJson = new JSONObject();
 

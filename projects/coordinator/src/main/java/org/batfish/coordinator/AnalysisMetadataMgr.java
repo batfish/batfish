@@ -11,6 +11,17 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AnalysisMetadata;
 
 public class AnalysisMetadataMgr {
+  /** Analyses that can be requested for listing */
+  public enum AnalysisType {
+    /** Selects the suggested analyses */
+    SUGGESTED,
+
+    /** Selects the user analyses */
+    USER,
+
+    /** Selects both suggested and user analyses */
+    ALL
+  }
 
   public static Instant getAnalysisCreationTimeOrMin(String container, String analysis) {
     try {
