@@ -18,7 +18,7 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ConfigurationTests {
+public class ConfigurationTest {
 
   public static class HasRemoteIpsecVpn extends FeatureMatcher<IpsecVpn, IpsecVpn> {
 
