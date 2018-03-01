@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a bgp process on a router */
@@ -21,6 +22,7 @@ public class BgpProcess implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpProcess> {
 
+    private Integer _asn;
     private Ip _routerId;
     private Vrf _vrf;
 
@@ -34,10 +36,14 @@ public class BgpProcess implements Serializable {
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
-      if (_routerId != null) {
-        bgpProcess.setRouterId(_routerId);
-      }
+      bgpProcess.setAsn(_asn);
+      bgpProcess.setRouterId(_routerId);
       return bgpProcess;
+    }
+
+    public BgpProcess.Builder setAsn(@Nullable Integer asn) {
+      _asn = asn;
+      return this;
     }
 
     public BgpProcess.Builder setRouterId(Ip routerId) {
@@ -50,6 +56,8 @@ public class BgpProcess implements Serializable {
       return this;
     }
   }
+
+  private static final String PROP_ASN = "asn";
 
   private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
 
@@ -87,6 +95,8 @@ public class BgpProcess implements Serializable {
   private SortedMap<Prefix, BgpNeighbor> _neighbors;
 
   private transient PrefixSpace _originationSpace;
+
+  private Integer _asn;
 
   private Ip _routerId;
 
@@ -151,6 +161,11 @@ public class BgpProcess implements Serializable {
     return _originationSpace;
   }
 
+  @JsonProperty(PROP_ASN)
+  public Integer getAsn() {
+    return _asn;
+  }
+
   @JsonProperty(PROP_ROUTER_ID)
   @JsonPropertyDescription(
       "The configured router ID for this BGP process. Note that it can be overridden for "
@@ -162,6 +177,11 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public BgpTieBreaker getTieBreaker() {
     return _tieBreaker;
+  }
+
+  @JsonProperty(PROP_ASN)
+  public void setAsn(@Nullable Integer asn) {
+    _asn = asn;
   }
 
   @JsonProperty(PROP_GENERATED_ROUTES)

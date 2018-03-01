@@ -1282,6 +1282,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       final Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
+    newBgpProcess.setAsn(proc.getName());
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     BgpTieBreaker tieBreaker = proc.getTieBreaker();
     if (tieBreaker != null) {

@@ -1051,6 +1051,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 1,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -2292,6 +2293,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 1,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -2737,6 +2739,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 1,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -3888,6 +3891,7 @@
                 }
               ],
               "bgpProcess" : {
+                "asn" : 2,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -5051,6 +5055,7 @@
                 }
               ],
               "bgpProcess" : {
+                "asn" : 2,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -5643,6 +5648,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 2,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -6218,6 +6224,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 2,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -7155,6 +7162,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 65001,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -7839,6 +7847,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 2,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -8555,6 +8564,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 2,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -9680,6 +9690,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 3,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -10722,6 +10733,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 3,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
@@ -11337,6 +11349,7 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
+                "asn" : 3,
                 "multipathEbgp" : true,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : true,
