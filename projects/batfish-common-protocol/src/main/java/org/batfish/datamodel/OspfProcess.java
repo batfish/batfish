@@ -31,6 +31,8 @@ public class OspfProcess implements Serializable {
 
     private Long _maxMetricTransitLinks;
 
+    private String _processId;
+
     private Vrf _vrf;
 
     Builder(NetworkFactory networkFactory) {
@@ -48,6 +50,7 @@ public class OspfProcess implements Serializable {
       ospfProcess.setMaxMetricStubNetworks(_maxMetricStubNetworks);
       ospfProcess.setMaxMetricSummaryNetworks(_maxMetricSummaryNetworks);
       ospfProcess.setMaxMetricTransitLinks(_maxMetricTransitLinks);
+      ospfProcess.setProcessId(_processId);
       return ospfProcess;
     }
 
@@ -76,6 +79,11 @@ public class OspfProcess implements Serializable {
       return this;
     }
 
+    public Builder setProcessId(@Nullable String processId) {
+      _processId = processId;
+      return this;
+    }
+
     public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
@@ -88,6 +96,8 @@ public class OspfProcess implements Serializable {
 
   private static final String PROP_EXPORT_POLICY_SOURCES = "exportPolicySources";
 
+  private static final String PROP_GENERATED_ROUTES = "generatedRoutes";
+
   private static final String PROP_MAX_METRIC_EXTERNAL_NETWORKS = "maxMetricExternalNetworks";
 
   private static final String PROP_MAX_METRIC_STUB_NETWORKS = "maxMetricStubNetworks";
@@ -95,6 +105,8 @@ public class OspfProcess implements Serializable {
   private static final String PROP_MAX_METRIC_SUMMARY_NETWORKS = "maxMetricSummaryNetworks";
 
   private static final String PROP_MAX_METRIC_TRANSIT_LINKS = "maxMetricTransitLinks";
+
+  private static final String PROP_PROCESS_ID = "processId";
 
   private static final long serialVersionUID = 1L;
 
@@ -115,6 +127,8 @@ public class OspfProcess implements Serializable {
   private Long _maxMetricTransitLinks;
 
   private transient Map<Pair<Ip, Ip>, OspfNeighbor> _ospfNeighbors;
+
+  private String _processId;
 
   private Double _referenceBandwidth;
 
@@ -173,6 +187,7 @@ public class OspfProcess implements Serializable {
   @JsonPropertyDescription(
       "Generated IPV4 routes for the purpose of export into OSPF. These routes are not imported "
           + "into the main RIB.")
+  @JsonProperty(PROP_GENERATED_ROUTES)
   public SortedSet<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
@@ -200,6 +215,12 @@ public class OspfProcess implements Serializable {
   @JsonIgnore
   public Map<Pair<Ip, Ip>, OspfNeighbor> getOspfNeighbors() {
     return _ospfNeighbors;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_PROCESS_ID)
+  public String getProcessId() {
+    return _processId;
   }
 
   @JsonPropertyDescription(
@@ -242,6 +263,7 @@ public class OspfProcess implements Serializable {
     _exportPolicySources = exportPolicySources;
   }
 
+  @JsonProperty(PROP_GENERATED_ROUTES)
   public void setGeneratedRoutes(SortedSet<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
   }
@@ -269,6 +291,11 @@ public class OspfProcess implements Serializable {
   @JsonIgnore
   public void setOspfNeighbors(Map<Pair<Ip, Ip>, OspfNeighbor> ospfNeighbors) {
     _ospfNeighbors = ospfNeighbors;
+  }
+
+  @JsonProperty(PROP_PROCESS_ID)
+  public void setProcessId(@Nullable String id) {
+    _processId = id;
   }
 
   public void setReferenceBandwidth(Double referenceBandwidth) {
