@@ -133,6 +133,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   /** @deprecated In favor of much simpler {@link #getBitAtPosition(Ip, int)} */
+  @Deprecated
   public BitSet getAddressBits() {
     BitSet bits = _addressBitsCache.get(this);
     if (bits == null) {
