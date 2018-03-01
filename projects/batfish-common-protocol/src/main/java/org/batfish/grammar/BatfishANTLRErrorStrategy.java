@@ -71,13 +71,13 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
   /**
    * Construct a {@link BatfishANTLRErrorStrategy} that throws out invalid lines from as delimited
-   * by {@link separatorToken}. The {@link minimumRequiredSeparatorText} is used to split {@link
+   * by {@code separatorToken}. The {@code minimumRequiredSeparatorText} is used to split {@code
    * text} into lines, which {@link BatfishANTLRErrorStrategy} uses when creating instances of
    * {@link ErrorNode} from discarded lines.
    *
    * @param separatorToken Token that delimits lines
-   * @param minimumRequiredSeparatorText Minimal string representation of {@link separatorToken}
-   * @param text {@link text of file to split into lines}
+   * @param minimumRequiredSeparatorText Minimal string representation of {@code separatorToken}
+   * @param text text of file to split into lines
    */
   private BatfishANTLRErrorStrategy(
       int separatorToken, String minimumRequiredSeparatorText, String text) {
@@ -154,7 +154,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
   }
 
   /**
-   * Attempt to get {@link recognizer} into a state where parsing can continue by throwing away the
+   * Attempt to get {@code parser} into a state where parsing can continue by throwing away the
    * current line and abandoning the current rule if possible. If at root already, the current line
    * is placed into an {@link ErrorNode} at the root and parsing continues at the next line (first
    * base case). If in a child rule with a parent that A) has its own parent and B) started on the
@@ -163,7 +163,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    * ErrorNode} in its place as a child of that parent (second base case). If no lines remain,
    * parsing stops.
    *
-   * @param recognizer The {@link Parser} needing to perform recovery
+   * @param parser The {@link Parser} needing to perform recovery
    * @return If base case applies, returns a {@link Token} whose containing the text of the
    *     created @{link ErrorNode}.
    */
