@@ -24,6 +24,7 @@ public class RecoveryGrammarTest {
     ParseTreeWalker walker = new ParseTreeWalker();
     walker.walk(extractor, ctx);
 
+    assertThat(extractor.getFirstErrorLine(), equalTo(2));
     assertThat(extractor.getNumBlockStatements(), equalTo(2));
     assertThat(extractor.getNumErrorNodes(), equalTo(15));
     assertThat(extractor.getNumInnerStatements(), equalTo(1));
