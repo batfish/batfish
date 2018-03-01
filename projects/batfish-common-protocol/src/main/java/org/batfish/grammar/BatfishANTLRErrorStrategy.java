@@ -1,10 +1,7 @@
 package org.batfish.grammar;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
 import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.IntStream;
@@ -14,7 +11,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenSource;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ATNState;
 import org.antlr.v4.runtime.misc.IntervalSet;
@@ -67,7 +63,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     }
   }
 
-  private final List<String> _lines;
+  private final String[] _lines;
 
   private boolean _recoveredAtEof;
 
@@ -85,9 +81,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    */
   private BatfishANTLRErrorStrategy(
       int separatorToken, String minimumRequiredSeparatorText, String text) {
-    _lines =
-        Collections.unmodifiableList(
-            Arrays.asList(text.split(Pattern.quote(minimumRequiredSeparatorText), -1)));
+    _lines = text.split(Pattern.quote(minimumRequiredSeparatorText), -1);
     _separatorToken = separatorToken;
   }
 
@@ -110,10 +104,9 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
       // Get the line number and separator text from the separator token
       Token separatorToken = recognizer.getCurrentToken();
-      int lineIndex = separatorToken.getLine() - 1;
 
       // Insert the current line as an {@link ErrorNode} as a child of the current rule
-      createErrorNode(recognizer, recognizer.getContext(), lineIndex, separatorToken);
+      createErrorNode(recognizer, recognizer.getContext(), separatorToken);
 
       // Eat the separator token
       recognizer.consume();
@@ -130,12 +123,11 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    * Create an error node with the text of the current line and insert it into parse tree
    *
    * @param recognizer The recognizer with which to create the error node
-   * @param lineIndex The 0-based line of input whose text will go in the error node
-   * @param separator The text of the separator to append to the input line text
+   * @param separator The token that ends the unrecognized link. This is also used to determine the
+   *     index of the line to return in error messages.
    * @return The token contained in the error node
    */
-  private Token createErrorNode(
-      Parser recognizer, ParserRuleContext ctx, int lineIndex, Token separator) {
+  private Token createErrorNode(Parser recognizer, ParserRuleContext ctx, Token separator) {
     if (_recoveredAtEof) {
       _recoveredAtEof = false;
       throw new BatfishRecognitionException(recognizer, recognizer.getInputStream(), ctx);
@@ -143,18 +135,18 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     if (separator.getType() == Lexer.EOF) {
       _recoveredAtEof = true;
     }
-    String lineText = _lines.get(lineIndex) + separator.getText();
+    String lineText = _lines[separator.getLine() - 1] + separator.getText();
     Token lineToken =
         recognizer
             .getTokenFactory()
             .create(
-                new Pair<TokenSource, CharStream>(null, null),
+                new Pair<>(null, null),
                 BatfishLexer.UNRECOGNIZED_LINE_TOKEN,
                 lineText,
                 Lexer.DEFAULT_TOKEN_CHANNEL,
                 -1,
                 -1,
-                lineIndex,
+                separator.getLine(),
                 0);
     ErrorNode errorNode = recognizer.createErrorNode(ctx, lineToken);
     ctx.addErrorNode(errorNode);
@@ -197,18 +189,17 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
     // Get the line number and separator text from the separator token
     Token separatorToken = parser.getCurrentToken();
-    int lineIndex = separatorToken.getLine() - 1;
 
     if (parent == null) {
       // First base case
       parser.consume();
-      return createErrorNode(parser, ctx, lineIndex, separatorToken);
+      return createErrorNode(parser, ctx, separatorToken);
     } else {
       // Second base case
       List<ParseTree> parentChildren = parent.children;
       parentChildren.remove(parentChildren.size() - 1);
       parser.consume();
-      return createErrorNode(parser, parent, lineIndex, separatorToken);
+      return createErrorNode(parser, parent, separatorToken);
     }
   }
 
@@ -237,11 +228,10 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
     // Get the line number and separator text from the separator token
     Token separatorToken = recognizer.getCurrentToken();
-    int lineIndex = separatorToken.getLine() - 1;
 
     ParserRuleContext ctx = recognizer.getContext();
     recognizer.consume();
-    createErrorNode(recognizer, ctx, lineIndex, separatorToken);
+    createErrorNode(recognizer, ctx, separatorToken);
     endErrorCondition(recognizer);
     if (recognizer.getInputStream().LA(1) == Lexer.EOF) {
       recover(recognizer);

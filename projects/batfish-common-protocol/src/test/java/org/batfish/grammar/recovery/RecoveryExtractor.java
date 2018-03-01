@@ -21,6 +21,8 @@ public final class RecoveryExtractor extends RecoveryParserBaseListener {
 
   private int _numTailWords;
 
+  private int _firstErrorLine;
+
   @Override
   public void exitBlock_statement(Block_statementContext ctx) {
     _numBlockStatements++;
@@ -44,6 +46,10 @@ public final class RecoveryExtractor extends RecoveryParserBaseListener {
   @Override
   public void exitTail_word(Tail_wordContext ctx) {
     _numTailWords++;
+  }
+
+  public int getFirstErrorLine() {
+    return _firstErrorLine;
   }
 
   public int getNumBlockStatements() {
@@ -72,6 +78,9 @@ public final class RecoveryExtractor extends RecoveryParserBaseListener {
 
   @Override
   public void visitErrorNode(ErrorNode node) {
+    if (_firstErrorLine == 0) {
+      _firstErrorLine = node.getSymbol().getLine();
+    }
     _numErrorNodes++;
   }
 }
