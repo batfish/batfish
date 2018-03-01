@@ -1,8 +1,12 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Ip.getBitAtPosition;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -18,5 +22,17 @@ public class IpTest {
     assertThat(Ip.numSubnetBitsToSubnetLong(17), equalTo(0xFFFF8000L));
     assertThat(Ip.numSubnetBitsToSubnetLong(31), equalTo(0xFFFFFFFEL));
     assertThat(Ip.numSubnetBitsToSubnetLong(32), equalTo(0xFFFFFFFFL));
+  }
+
+  @Test
+  public void testGetBitAtPosition() {
+    assertThat(getBitAtPosition(0L, 0), is(false));
+    assertThat(getBitAtPosition(0L, 31), is(false));
+    assertThat(getBitAtPosition(1L, 31), is(true));
+    assertThat(getBitAtPosition(0xFF000000L, 7), is(true));
+    assertThat(getBitAtPosition(0xFF000000L, 8), is(false));
+    for (int i = 0; i < 32; i++) {
+      MatcherAssert.assertThat(getBitAtPosition(Ip.MAX.asLong(), i), IsEqual.equalTo(true));
+    }
   }
 }

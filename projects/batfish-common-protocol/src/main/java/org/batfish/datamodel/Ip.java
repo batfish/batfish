@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
@@ -111,6 +113,26 @@ public class Ip implements Comparable<Ip>, Serializable {
     return _ip == rhs._ip;
   }
 
+  /**
+   * Return the boolean value of a bit at the given position.
+   *
+   * @param bits the representation of an IP address as a long
+   * @param position bit position (0 means most significant, 31 least significant)
+   * @return a boolean representation of the bit value
+   */
+  public static boolean getBitAtPosition(long bits, int position) {
+    return (bits & (1 << (MAX_PREFIX_LENGTH - 1 - position))) != 0;
+  }
+
+  /**
+   * See {@link #getBitAtPosition(long, int)}. Equivalent to {@code getBitAtPosition(ip.asLong(),
+   * position)}
+   */
+  public static boolean getBitAtPosition(Ip ip, int position) {
+    return getBitAtPosition(ip.asLong(), position);
+  }
+
+  /** @deprecated In favor of much simpler {@link #getBitAtPosition(Ip, int)} */
   public BitSet getAddressBits() {
     BitSet bits = _addressBitsCache.get(this);
     if (bits == null) {
