@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -289,21 +290,13 @@ public class BgpRoute extends AbstractRoute {
     if (!_network.equals(other._network)) {
       return false;
     }
-    if (_nextHopIp == null) {
-      if (other._nextHopIp != null) {
-        return false;
-      }
-    } else if (!_nextHopIp.equals(other._nextHopIp)) {
+    if (!Objects.equals(_nextHopIp, other._nextHopIp)) {
       return false;
     }
     if (_originType != other._originType) {
       return false;
     }
-    if (_originatorIp == null) {
-      if (other._originatorIp != null) {
-        return false;
-      }
-    } else if (!_originatorIp.equals(other._originatorIp)) {
+    if (!Objects.equals(_originatorIp, other._originatorIp)) {
       return false;
     }
     if (_protocol != other._protocol) {
