@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 
 public class DataPlaneArpAnalysis implements ArpAnalysis {
 
@@ -22,15 +23,26 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     _arpRequests = computeArpRequests(dp, topology);
   }
 
+  /**
+   * Compute an IP address ACL for each interface of each node permitting only those IPs for which
+   * the node would send out an ARP reply on that interface: <br>
+   * <br>
+   * 1) PERMIT IPs belonging to the interface.<br>
+   * 2) (Proxy-ARP) DENY any IP for which there is a longest-prefix match entry in the FIB that goes
+   * through the interface.<br>
+   * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
+   */
   private Map<String, Map<String, IpAddressAcl>> computeArpReplies(
       Map<String, Configuration> configurations, DataPlane dp) {
+
+    /* Compute for each VRF of each node the IPs that are routable. */
     Map<String, Map<String, IpSpace>> routableIpsByNodeVrf =
         dp.getRibs()
             .entrySet()
             .stream()
             .collect(
                 ImmutableMap.toImmutableMap(
-                    Entry::getKey,
+                    Entry::getKey, // hostname
                     ribsByNodeEntry ->
                         ribsByNodeEntry
                             .getValue()
@@ -38,24 +50,30 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                             .stream()
                             .collect(
                                 ImmutableMap.toImmutableMap(
-                                    Entry::getKey,
+                                    Entry::getKey, // vrfName
                                     ribsByVrfEntry ->
                                         ribsByVrfEntry.getValue().getRoutableIps()))));
+
     return dp.getRibs()
         .entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
-                Entry::getKey,
+                Entry::getKey, // hostname
                 ribsByNodeEntry -> {
                   String hostname = ribsByNodeEntry.getKey();
                   Map<String, Interface> interfaces = configurations.get(hostname).getInterfaces();
                   Map<String, Fib> fibsByVrf = dp.getFibs().get(hostname);
                   Map<String, IpSpace> routableIpsByVrf = routableIpsByNodeVrf.get(hostname);
-                  return ribsByNodeEntry
-                      .getValue()
-                      .entrySet()
+                  SortedMap<String, GenericRib<AbstractRoute>> ribsByVrf =
+                      ribsByNodeEntry.getValue();
+                  return ribsByVrf
+                      .entrySet() // vrfName -> RIB
                       .stream()
+                      /*
+                       * Interfaces are partitioned by VRF, so we can safely flatten out a stream
+                       * of them from the VRFs without worrying about duplicate keys.
+                       */
                       .flatMap(
                           ribsByVrfEntry -> {
                             String vrf = ribsByVrfEntry.getKey();
