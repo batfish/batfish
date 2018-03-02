@@ -15,9 +15,9 @@ public class Fib implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  /** route -> nexthopinterface -> nextHopIp -> interfaceRoutes */
   private final Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
 
+  /** Mapping: route -> nexthopinterface -> nextHopIp -> interfaceRoutes */
   public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces() {
     return _nextHopInterfaces;
   }

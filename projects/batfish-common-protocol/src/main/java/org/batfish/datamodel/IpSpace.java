@@ -42,6 +42,8 @@ public final class IpSpace implements Serializable {
     }
   }
 
+  public static final IpSpace ANY = IpSpace.builder().including(IpWildcard.ANY).build();
+
   /** */
   private static final long serialVersionUID = 1L;
 

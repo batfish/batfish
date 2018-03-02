@@ -9,13 +9,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, IpAddressAcl>> _arpReplies;
 
   private final Map<
-          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, IpAddressAcl>>>>>
+          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpAddressAcl>>>>>>
       _arpRequests;
 
   public DataPlaneArpAnalysis(
@@ -92,10 +94,116 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
-  private Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, IpAddressAcl>>>>>
+  private Map<
+          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpAddressAcl>>>>>>
       computeArpRequests(DataPlane dp, Topology topology) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return dp.getFibs()
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey, // hostname
+                fibsByNodeEntry -> {
+                  String hostname = fibsByNodeEntry.getKey();
+                  return fibsByNodeEntry
+                      .getValue()
+                      .entrySet()
+                      .stream()
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey, // vrfName
+                              fibsByVrfEntry -> {
+                                String vrfName = fibsByVrfEntry.getKey();
+                                return computeFibArpRequests(
+                                    hostname, vrfName, fibsByVrfEntry.getValue(), topology);
+                              }));
+                }));
+  }
+
+  private Map<ArpIpChoice, Set<IpAddressAcl>> computeArpRequestsFromNextHopIps(
+      String hostname,
+      String vrfName,
+      String outInterface,
+      Set<Ip> nextHopIps,
+      Set<NodeInterfacePair> receivers) {
+    Set<ArpIpChoice> arpIpChoices =
+        nextHopIps.stream().map(ArpIpChoice::of).collect(ImmutableSet.toImmutableSet());
+    if (arpIpChoices.equals(ImmutableSet.of(ArpIpChoice.USE_DST_IP))) {
+      /*
+       * The union of legal ARP replies of each peer (replyingNode,replyingInterface)
+       * of the outgoing interface.The ACL is the one generated for the peer
+       * (node,interface) pair by algorithm 1.
+       */
+      return ImmutableMap.of(
+          ArpIpChoice.USE_DST_IP,
+          receivers
+              .stream()
+              .map(receiver -> _arpReplies.get(receiver.getHostname()).get(receiver.getInterface()))
+              .collect(ImmutableSet.toImmutableSet()));
+    } else {
+      /* All nextHopIps should be actual IPs. */
+      return arpIpChoices
+          .stream()
+          .collect(
+              ImmutableMap.toImmutableMap(
+                  Function.identity(),
+                  arpIpChoice -> {
+                    boolean someoneWillReply =
+                        receivers
+                            .stream()
+                            .map(
+                                receiver ->
+                                    _arpReplies
+                                        .get(receiver.getHostname())
+                                        .get(receiver.getInterface()))
+                            .anyMatch(
+                                receiverReplies ->
+                                    receiverReplies.permits(arpIpChoice.getIp()));
+                    if (someoneWillReply) {
+                      return ImmutableSet.of(IpAddressAcl.PERMIT_ALL);
+                    } else {
+                      return ImmutableSet.of(IpAddressAcl.DENY_ALL);
+                    }
+                  }));
+    }
+  }
+
+  private Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpAddressAcl>>>>
+      computeFibArpRequests(String hostname, String vrfName, Fib fib, Topology topology) {
+    return fib.getNextHopInterfaces()
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* route */,
+                nextHopInterfacesByRouteEntry ->
+                    nextHopInterfacesByRouteEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* outInterface */,
+                                nextHopInfoByOutInterfaceEntry -> {
+                                  String outInterface = nextHopInfoByOutInterfaceEntry.getKey();
+                                  Set<Edge> outInterfaceEdges =
+                                      topology
+                                          .getInterfaceEdges()
+                                          .get(new NodeInterfacePair(hostname, outInterface));
+                                  Set<NodeInterfacePair> receivers =
+                                      outInterfaceEdges
+                                          .stream()
+                                          .filter(
+                                              edge ->
+                                                  edge.getNode1().equals(hostname)
+                                                      && edge.getInt1().equals(outInterface))
+                                          .map(Edge::getInterface2)
+                                          .collect(ImmutableSet.toImmutableSet());
+                                  Set<Ip> nextHopIps =
+                                      nextHopInfoByOutInterfaceEntry.getValue().keySet();
+                                  return computeArpRequestsFromNextHopIps(
+                                      hostname, vrfName, outInterface, nextHopIps, receivers);
+                                }))));
   }
 
   private IpAddressAcl computeInterfaceIpAddressAcl(
@@ -180,7 +288,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   @Override
-  public Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, IpAddressAcl>>>>>
+  public Map<
+          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpAddressAcl>>>>>>
       getArpRequests() {
     return _arpRequests;
   }

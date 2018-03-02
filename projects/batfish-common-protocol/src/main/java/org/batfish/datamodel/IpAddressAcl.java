@@ -23,6 +23,13 @@ public class IpAddressAcl {
     }
   }
 
+  public static final IpAddressAcl PERMIT_ALL =
+      IpAddressAcl.builder()
+          .setLines(ImmutableList.of(new IpAddressAclLine(IpSpace.ANY, LineAction.ACCEPT)))
+          .build();
+
+  public static final IpAddressAcl DENY_ALL = IpAddressAcl.builder().build();
+
   public static Builder builder() {
     return new Builder();
   }
