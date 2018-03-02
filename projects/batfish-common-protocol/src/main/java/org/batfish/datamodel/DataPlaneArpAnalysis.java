@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
@@ -35,7 +36,124 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   private Map<String, Map<String, IpAddressAcl>> computeArpReplies(
       Map<String, Configuration> configurations, DataPlane dp) {
 
-    /* Compute for each VRF of each node the IPs that are routable. */
+    Map<String, Map<String, IpSpace>> routableIpsByNodeVrf = computeRoutableIpsByNodeVrf(dp);
+
+    return dp.getRibs()
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey, // hostname
+                ribsByNodeEntry -> {
+                  String hostname = ribsByNodeEntry.getKey();
+                  Map<String, Interface> interfaces = configurations.get(hostname).getInterfaces();
+                  Map<String, Fib> fibsByVrf = dp.getFibs().get(hostname);
+                  Map<String, IpSpace> routableIpsByVrf = routableIpsByNodeVrf.get(hostname);
+                  SortedMap<String, GenericRib<AbstractRoute>> ribsByVrf =
+                      ribsByNodeEntry.getValue();
+                  return computeArpRepliesByInterface(
+                      interfaces, fibsByVrf, routableIpsByVrf, ribsByVrf);
+                }));
+  }
+
+  private Map<String, IpAddressAcl> computeArpRepliesByInterface(
+      Map<String, Interface> interfaces,
+      Map<String, Fib> fibsByVrf,
+      Map<String, IpSpace> routableIpsByVrf,
+      SortedMap<String, GenericRib<AbstractRoute>> ribsByVrf) {
+    return ribsByVrf
+        .entrySet() // vrfName -> RIB
+        .stream()
+        /*
+         * Interfaces are partitioned by VRF, so we can safely flatten out a stream
+         * of them from the VRFs without worrying about duplicate keys.
+         */
+        .flatMap(
+            ribsByVrfEntry -> {
+              String vrf = ribsByVrfEntry.getKey();
+              Fib fib = fibsByVrf.get(vrf);
+              GenericRib<AbstractRoute> rib = ribsByVrfEntry.getValue();
+              Map<Prefix, IpSpace> matchingIpsByPrefix = rib.getMatchingIps();
+              Map<String, Set<IpSpace>> interfaceIpSpaces =
+                  computeInterfaceIpSpaces(rib, fib, matchingIpsByPrefix);
+              IpSpace routableIpsForThisVrf = routableIpsByVrf.get(vrf);
+              return interfaceIpSpaces
+                  .entrySet()
+                  .stream()
+                  .map(
+                      interfaceIpSpacesEntry ->
+                          Maps.immutableEntry(
+                              interfaceIpSpacesEntry.getKey(),
+                              computeInterfaceIpAddressAcl(
+                                  interfaces.get(interfaceIpSpacesEntry.getKey()),
+                                  routableIpsForThisVrf,
+                                  interfaceIpSpacesEntry.getValue())));
+            })
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
+  private Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, IpAddressAcl>>>>>
+      computeArpRequests(DataPlane dp, Topology topology) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  private IpAddressAcl computeInterfaceIpAddressAcl(
+      Interface iface, IpSpace routableIpsForThisVrf, Set<IpSpace> ipSpaces) {
+    ImmutableList.Builder<IpAddressAclLine> lines = ImmutableList.builder();
+    IpSpace ipsAssignedToThisInterface = computeIpsAssignedToThisInterface(iface);
+    /* Accept IPs assigned to this interface */
+    lines.add(new IpAddressAclLine(ipsAssignedToThisInterface, LineAction.ACCEPT));
+
+    if (iface.getProxyArp()) {
+      /* Reject IPs routed through this interface */
+      ipSpaces
+          .stream()
+          .map(ipSpace -> new IpAddressAclLine(ipSpace, LineAction.REJECT))
+          .forEach(lines::add);
+
+      /* Accept all other routable IPs */
+      lines.add(new IpAddressAclLine(routableIpsForThisVrf, LineAction.ACCEPT));
+    }
+    return IpAddressAcl.builder().setLines(lines.build()).build();
+  }
+
+  private Map<String, Set<IpSpace>> computeInterfaceIpSpaces(
+      GenericRib<AbstractRoute> rib, Fib fib, Map<Prefix, IpSpace> matchingIpsByPrefix) {
+    Map<String, ImmutableSet.Builder<IpSpace>> interfaceIpSpacesBuilders = new HashMap<>();
+    rib.getRoutes()
+        .forEach(
+            route -> {
+              IpSpace matchingIps = matchingIpsByPrefix.get(route.getNetwork());
+              fib.getNextHopInterfaces()
+                  .get(route)
+                  .keySet()
+                  .forEach(
+                      ifaceName -> {
+                        interfaceIpSpacesBuilders
+                            .computeIfAbsent(ifaceName, n -> ImmutableSet.builder())
+                            .add(matchingIps);
+                      });
+            });
+    return interfaceIpSpacesBuilders
+        .entrySet()
+        .stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().build()));
+  }
+
+  private IpSpace computeIpsAssignedToThisInterface(Interface iface) {
+    IpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpSpace.builder();
+    iface
+        .getAllAddresses()
+        .stream()
+        .map(InterfaceAddress::getIp)
+        .forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(new IpWildcard(ip)));
+    IpSpace ipsAssignedToThisInterface = ipsAssignedToThisInterfaceBuilder.build();
+    return ipsAssignedToThisInterface;
+  }
+
+  /** Compute for each VRF of each node the IPs that are routable. */
+  private Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(DataPlane dp) {
     Map<String, Map<String, IpSpace>> routableIpsByNodeVrf =
         dp.getRibs()
             .entrySet()
@@ -53,108 +171,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                     Entry::getKey, // vrfName
                                     ribsByVrfEntry ->
                                         ribsByVrfEntry.getValue().getRoutableIps()))));
-
-    return dp.getRibs()
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey, // hostname
-                ribsByNodeEntry -> {
-                  String hostname = ribsByNodeEntry.getKey();
-                  Map<String, Interface> interfaces = configurations.get(hostname).getInterfaces();
-                  Map<String, Fib> fibsByVrf = dp.getFibs().get(hostname);
-                  Map<String, IpSpace> routableIpsByVrf = routableIpsByNodeVrf.get(hostname);
-                  SortedMap<String, GenericRib<AbstractRoute>> ribsByVrf =
-                      ribsByNodeEntry.getValue();
-                  return ribsByVrf
-                      .entrySet() // vrfName -> RIB
-                      .stream()
-                      /*
-                       * Interfaces are partitioned by VRF, so we can safely flatten out a stream
-                       * of them from the VRFs without worrying about duplicate keys.
-                       */
-                      .flatMap(
-                          ribsByVrfEntry -> {
-                            String vrf = ribsByVrfEntry.getKey();
-                            IpSpace routableIpsForThisVrf = routableIpsByVrf.get(vrf);
-                            GenericRib<AbstractRoute> rib = ribsByVrfEntry.getValue();
-                            Fib fib = fibsByVrf.get(vrf);
-                            Map<Prefix, IpSpace> matchingIpsByPrefix = rib.getMatchingIps();
-                            Map<String, ImmutableSet.Builder<IpSpace>> interfaceIps =
-                                new HashMap<>();
-                            rib.getRoutes()
-                                .forEach(
-                                    route -> {
-                                      IpSpace matchingIps =
-                                          matchingIpsByPrefix.get(route.getNetwork());
-                                      fib.getNextHopInterfaces()
-                                          .get(route)
-                                          .keySet()
-                                          .forEach(
-                                              ifaceName -> {
-                                                interfaceIps
-                                                    .computeIfAbsent(
-                                                        ifaceName,
-                                                        n -> ImmutableSet.<IpSpace>builder())
-                                                    .add(matchingIps);
-                                              });
-                                    });
-                            return interfaceIps
-                                .entrySet()
-                                .stream()
-                                .map(
-                                    interfaceIpsEntry -> {
-                                      String ifaceName = interfaceIpsEntry.getKey();
-                                      Interface iface = interfaces.get(ifaceName);
-                                      ImmutableList.Builder<IpAddressAclLine> lines =
-                                          ImmutableList.builder();
-                                      IpSpace.Builder ipsAssignedToThisInterface =
-                                          IpSpace.builder();
-                                      iface
-                                          .getAllAddresses()
-                                          .stream()
-                                          .map(InterfaceAddress::getIp)
-                                          .forEach(
-                                              ip ->
-                                                  ipsAssignedToThisInterface.including(
-                                                      new IpWildcard(ip)));
-                                      /* Accept IPs assigned to this interface */
-                                      lines.add(
-                                          new IpAddressAclLine(
-                                              ipsAssignedToThisInterface.build(),
-                                              LineAction.ACCEPT));
-
-                                      if (iface.getProxyArp()) {
-                                        /* Reject IPs routed through this interface */
-                                        interfaceIpsEntry
-                                            .getValue()
-                                            .build()
-                                            .stream()
-                                            .map(
-                                                ipSpace ->
-                                                    new IpAddressAclLine(
-                                                        ipSpace, LineAction.REJECT))
-                                            .forEach(lines::add);
-
-                                        /* Accept all other routable IPs */
-                                        lines.add(
-                                            new IpAddressAclLine(
-                                                routableIpsForThisVrf, LineAction.ACCEPT));
-                                      }
-                                      return Maps.immutableEntry(
-                                          ifaceName,
-                                          IpAddressAcl.builder().setLines(lines.build()).build());
-                                    });
-                          })
-                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-                }));
-  }
-
-  private Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, IpAddressAcl>>>>>
-      computeArpRequests(DataPlane dp, Topology topology) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return routableIpsByNodeVrf;
   }
 
   @Override
