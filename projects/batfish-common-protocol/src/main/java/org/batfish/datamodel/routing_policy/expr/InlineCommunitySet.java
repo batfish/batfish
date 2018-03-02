@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -12,13 +13,21 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class InlineCommunitySet extends CommunitySetExpr {
 
-  /** */
+  private class CachedCommunitiesSupplier implements Serializable, Supplier<SortedSet<Long>> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public SortedSet<Long> get() {
+      return initCommunities();
+    }
+  }
+
   private static final long serialVersionUID = 1L;
 
   private final Supplier<SortedSet<Long>> _cachedCommunities;
@@ -27,13 +36,7 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
   @JsonCreator
   private InlineCommunitySet() {
-    _cachedCommunities = initCachedCommunitiesMemoization();
-  }
-
-  @SuppressWarnings("unchecked")
-  private Supplier<SortedSet<Long>> initCachedCommunitiesMemoization() {
-    return Suppliers.memoize(
-        (Serializable & com.google.common.base.Supplier<SortedSet<Long>>) () -> initCommunities());
+    _cachedCommunities = Suppliers.memoize(new CachedCommunitiesSupplier());
   }
 
   public InlineCommunitySet(Collection<Long> communities) {
