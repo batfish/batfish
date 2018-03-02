@@ -157,8 +157,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                         .get(receiver.getHostname())
                                         .get(receiver.getInterface()))
                             .anyMatch(
-                                receiverReplies ->
-                                    receiverReplies.permits(arpIpChoice.getIp()));
+                                receiverReplies -> receiverReplies.permits(arpIpChoice.getIp()));
                     if (someoneWillReply) {
                       return ImmutableSet.of(IpAddressAcl.PERMIT_ALL);
                     } else {
