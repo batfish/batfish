@@ -1075,7 +1075,7 @@ public class WorkMgr extends AbstractCoordinator {
       WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
       autoWorkQueue.add(parseWork);
 
-      Set<String> analysisNames = listAnalyses(containerName, null);
+      Set<String> analysisNames = listAnalyses(containerName, AnalysisType.ALL);
       for (String analysis : analysisNames) {
         WorkItem analyzeWork =
             WorkItemBuilder.getWorkItemRunAnalysis(
