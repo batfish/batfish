@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 
 public class DataPlaneArpAnalysis implements ArpAnalysis {
