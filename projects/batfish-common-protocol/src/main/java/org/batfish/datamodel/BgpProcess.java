@@ -97,15 +97,19 @@ public class BgpProcess implements Serializable {
     _neighbors = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
-    _clusterIds =
-        Suppliers.memoize(
-            (Serializable & Supplier<Set<Long>>)
-                () ->
-                    _neighbors
-                        .values()
-                        .stream()
-                        .map(BgpNeighbor::getClusterId)
-                        .collect(ImmutableSet.toImmutableSet()));
+    _clusterIds = initClusterIdsMemoization();
+  }
+
+  @SuppressWarnings("unchecked")
+  private Supplier<Set<Long>> initClusterIdsMemoization() {
+    return Suppliers.memoize(
+        (Serializable & Supplier<Set<Long>>)
+            () ->
+                _neighbors
+                    .values()
+                    .stream()
+                    .map(BgpNeighbor::getClusterId)
+                    .collect(ImmutableSet.toImmutableSet()));
   }
 
   /**

@@ -27,10 +27,13 @@ public class InlineCommunitySet extends CommunitySetExpr {
 
   @JsonCreator
   private InlineCommunitySet() {
-    _cachedCommunities =
-        Suppliers.memoize(
-            (Serializable & com.google.common.base.Supplier<SortedSet<Long>>)
-                () -> initCommunities());
+    _cachedCommunities = initCachedCommunitiesMemoization();
+  }
+
+  @SuppressWarnings("unchecked")
+  private Supplier<SortedSet<Long>> initCachedCommunitiesMemoization() {
+    return Suppliers.memoize(
+        (Serializable & com.google.common.base.Supplier<SortedSet<Long>>) () -> initCommunities());
   }
 
   public InlineCommunitySet(Collection<Long> communities) {
