@@ -21,9 +21,12 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
       _arpRequests;
 
   public DataPlaneArpAnalysis(
-      Map<String, Configuration> configurations, DataPlane dp, Topology topology) {
-    _arpReplies = computeArpReplies(configurations, dp);
-    _arpRequests = computeArpRequests(dp, topology);
+      Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
+      Map<String, Map<String, Fib>> fibs,
+      Topology topology) {
+    _arpReplies = computeArpReplies(configurations, ribs, fibs);
+    _arpRequests = computeArpRequests(fibs, topology);
   }
 
   /**
@@ -36,12 +39,11 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
    * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
    */
   private Map<String, Map<String, IpAddressAcl>> computeArpReplies(
-      Map<String, Configuration> configurations, DataPlane dp) {
-
-    Map<String, Map<String, IpSpace>> routableIpsByNodeVrf = computeRoutableIpsByNodeVrf(dp);
-
-    return dp.getRibs()
-        .entrySet()
+      Map<String, Configuration> configurations,
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
+      Map<String, Map<String, Fib>> fibs) {
+    Map<String, Map<String, IpSpace>> routableIpsByNodeVrf = computeRoutableIpsByNodeVrf(ribs);
+    return ribs.entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
@@ -49,7 +51,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 ribsByNodeEntry -> {
                   String hostname = ribsByNodeEntry.getKey();
                   Map<String, Interface> interfaces = configurations.get(hostname).getInterfaces();
-                  Map<String, Fib> fibsByVrf = dp.getFibs().get(hostname);
+                  Map<String, Fib> fibsByVrf = fibs.get(hostname);
                   Map<String, IpSpace> routableIpsByVrf = routableIpsByNodeVrf.get(hostname);
                   SortedMap<String, GenericRib<AbstractRoute>> ribsByVrf =
                       ribsByNodeEntry.getValue();
@@ -96,9 +98,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private Map<
           String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpAddressAcl>>>>>>
-      computeArpRequests(DataPlane dp, Topology topology) {
-    return dp.getFibs()
-        .entrySet()
+      computeArpRequests(Map<String, Map<String, Fib>> fibs, Topology topology) {
+    return fibs.entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
@@ -260,10 +261,10 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   /** Compute for each VRF of each node the IPs that are routable. */
-  private Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(DataPlane dp) {
+  private Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     Map<String, Map<String, IpSpace>> routableIpsByNodeVrf =
-        dp.getRibs()
-            .entrySet()
+        ribs.entrySet()
             .stream()
             .collect(
                 ImmutableMap.toImmutableMap(
