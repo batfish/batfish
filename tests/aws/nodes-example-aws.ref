@@ -1689,6 +1689,7 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "10.10.255.8"
               },

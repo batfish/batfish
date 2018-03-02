@@ -1670,6 +1670,7 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "192.168.1.0"
               }
@@ -7310,6 +7311,7 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4"
               }
@@ -9372,6 +9374,7 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "2.130.0.1"
               }
@@ -10729,6 +10732,7 @@
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "2",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "169.232.1.4"
               }
@@ -14554,6 +14558,7 @@
               "name" : "OTHER",
               "ospfProcess" : {
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:OTHER~",
+                "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4"
               }
@@ -14562,6 +14567,7 @@
               "name" : "default",
               "ospfProcess" : {
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4"
               }

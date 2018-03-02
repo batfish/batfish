@@ -2695,6 +2695,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
     }
 
+    newProcess.setProcessId(proc.getName());
+
     // establish areas and associated interfaces
     Map<Long, OspfArea> areas = newProcess.getAreas();
     List<OspfNetwork> networks = new ArrayList<>();
