@@ -2141,7 +2141,6 @@
           "structDefinition" : {
             "name" : "default",
             "bgpProcess" : {
-              "asn" : 1,
               "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,

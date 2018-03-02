@@ -1473,7 +1473,6 @@
             "default" : {
               "name" : "default",
               "bgpProcess" : {
-                "asn" : 65301,
                 "multipathEbgp" : false,
                 "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                 "multipathIbgp" : false,

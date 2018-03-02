@@ -1092,7 +1092,6 @@
                       }
                     ],
                     "bgpProcess" : {
-                      "asn" : 2,
                       "multipathEbgp" : true,
                       "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
                       "multipathIbgp" : true,
