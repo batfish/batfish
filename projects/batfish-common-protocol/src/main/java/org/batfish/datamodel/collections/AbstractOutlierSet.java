@@ -68,7 +68,7 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
     AbstractOutlierSet rhs = (AbstractOutlierSet) other;
     return _conformers.equals(rhs.getConformers())
         && _outliers.equals(rhs.getOutliers())
-        && Objects.equals(_role, rhs.getRole());
+        && Objects.equals(this.getRole(), rhs.getRole());
   }
 
   @JsonProperty(PROP_CONFORMERS)
