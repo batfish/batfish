@@ -10921,10 +10921,8 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 66051,
-              "ospfCost" : 1,
               "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
+              "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
@@ -10949,10 +10947,8 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfArea" : 66051,
-              "ospfCost" : 1,
               "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
+              "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
               "ospfPassive" : false,
               "ospfPointToPoint" : false,
@@ -10977,11 +10973,10 @@
               "isisL2InterfaceMode" : "unset",
               "mtu" : 1500,
               "nativeVlan" : 1,
-              "ospfCost" : 1,
               "ospfDeadInterval" : 0,
-              "ospfEnabled" : true,
+              "ospfEnabled" : false,
               "ospfHelloMultiplier" : 0,
-              "ospfPassive" : true,
+              "ospfPassive" : false,
               "ospfPointToPoint" : false,
               "ripEnabled" : false,
               "ripPassive" : false,
@@ -11036,11 +11031,6 @@
                 "areas" : {
                   "66051" : {
                     "name" : 66051,
-                    "interfaces" : [
-                      "xe-0/0/1.0",
-                      "xe-0/0/20.0",
-                      "xe-0/0/21.0"
-                    ],
                     "summaries" : {
                       "1.2.0.0/16" : {
                         "advertise" : true,
