@@ -4,9 +4,11 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterface;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
@@ -30,9 +32,19 @@ public class ConfigurationMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * interface with specified name.
+   */
+  public static HasInterface hasInterface(
+      @Nonnull String name, @Nonnull Matcher<? super Interface> subMatcher) {
+    return new HasInterface(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
    * interfaces.
    */
-  public static HasInterfaces hasInterfaces(Matcher<? super Map<String, Interface>> subMatcher) {
+  public static HasInterfaces hasInterfaces(
+      @Nonnull Matcher<? super Map<String, Interface>> subMatcher) {
     return new HasInterfaces(subMatcher);
   }
 

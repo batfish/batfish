@@ -13,12 +13,26 @@ final class ConfigurationMatchersImpl {
 
   static final class HasDefaultVrf extends FeatureMatcher<Configuration, Vrf> {
     HasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
-      super(subMatcher, "default vrf", "default vrf");
+      super(subMatcher, "A Configuration with defaultVrf:", "defaultVrf");
     }
 
     @Override
     protected Vrf featureValueOf(Configuration actual) {
       return actual.getDefaultVrf();
+    }
+  }
+
+  static final class HasInterface extends FeatureMatcher<Configuration, Interface> {
+    private final String _name;
+
+    HasInterface(@Nonnull String name, @Nonnull Matcher<? super Interface> subMatcher) {
+      super(subMatcher, "A Configuration with interface " + name + ":", "interface " + name);
+      _name = name;
+    }
+
+    @Override
+    protected Interface featureValueOf(Configuration actual) {
+      return actual.getInterfaces().get(_name);
     }
   }
 
