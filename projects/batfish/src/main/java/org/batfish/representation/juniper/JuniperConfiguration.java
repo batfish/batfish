@@ -844,14 +844,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Ip ospfArea = iface.getOspfActiveArea();
     boolean setCost = false;
     if (ospfArea != null) {
-      setCost = true;
-      long ospfAreaLong = ospfArea.asLong();
-      OspfArea newArea = newAreas.get(ospfAreaLong);
-      newArea.getInterfaces().put(name, newIface);
-      newIface.setOspfArea(newArea);
-      newIface.setOspfEnabled(true);
+      if (newIface.getAddress() == null) {
+        _w.redFlag(
+            String.format(
+                "Cannot assign interface %s to be active in area %s because it has no IP address.",
+                name, ospfArea));
+      } else {
+        setCost = true;
+        long ospfAreaLong = ospfArea.asLong();
+        OspfArea newArea = newAreas.get(ospfAreaLong);
+        newArea.getInterfaces().put(name, newIface);
+        newIface.setOspfArea(newArea);
+        newIface.setOspfEnabled(true);
+      }
     }
     for (Ip passiveArea : iface.getOspfPassiveAreas()) {
+      if (newIface.getAddress() == null) {
+        _w.redFlag(
+            String.format(
+                "Cannot assign interface %s to be passive in area %s because it has no IP address.",
+                name, passiveArea));
+        continue;
+      }
       setCost = true;
       long ospfAreaLong = passiveArea.asLong();
       OspfArea newArea = newAreas.get(ospfAreaLong);
