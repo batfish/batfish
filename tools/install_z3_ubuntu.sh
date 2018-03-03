@@ -8,6 +8,7 @@ set -e
 UBUNTU_VERSION="$(lsb_release -rs)"
 [ -n "${UBUNTU_VERSION}" ]
 INSTALL_PREFIX="${1}"
+Z3_CACHE_DIR="${HOME}/.batfish_z3_cache"
 BINDIR="${INSTALL_PREFIX}/bin"
 INCLUDEDIR="${INSTALL_PREFIX}/include"
 JAVADIR="${INSTALL_PREFIX}/share/java"
@@ -32,7 +33,7 @@ fi
 Z3_REPO_URL="https://github.com/batfish/z3"
 Z3_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-${ARCH}-ubuntu-${UBUNTU_VERSION}.zip"
 Z3_ZIP="$(basename "${Z3_ZIP_URL}")"
-CACHED_Z3_ZIP="${HOME}/.cache/${Z3_ZIP}"
+CACHED_Z3_ZIP="${Z3_CACHE_DIR}/${Z3_ZIP}"
 Z3_DIR="$(basename "${Z3_ZIP}" .zip)"
 WORKING="$(mktemp -d)"
 cd "${WORKING}"

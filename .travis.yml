@@ -13,6 +13,7 @@ script:
 cache:
   directories:
   - $HOME/.m2
+  - $HOME/.batfish_z3_cache
 
 # Delete the batfish jars, which change every build, from the cache.
 # Also delete the locally-built jars, which are installed every build.
