@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
@@ -48,6 +47,19 @@ public class BgpProcess implements Serializable {
     public BgpProcess.Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
+    }
+  }
+
+  private class ClusterIdsSupplier implements Serializable, Supplier<Set<Long>> {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Set<Long> get() {
+      return _neighbors
+          .values()
+          .stream()
+          .map(BgpNeighbor::getClusterId)
+          .collect(ImmutableSet.toImmutableSet());
     }
   }
 
@@ -97,15 +109,7 @@ public class BgpProcess implements Serializable {
     _neighbors = new TreeMap<>();
     _generatedRoutes = new TreeSet<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
-    _clusterIds =
-        Suppliers.memoize(
-            (Serializable & Supplier<Set<Long>>)
-                () ->
-                    _neighbors
-                        .values()
-                        .stream()
-                        .map(BgpNeighbor::getClusterId)
-                        .collect(ImmutableSet.toImmutableSet()));
+    _clusterIds = new ClusterIdsSupplier();
   }
 
   /**
