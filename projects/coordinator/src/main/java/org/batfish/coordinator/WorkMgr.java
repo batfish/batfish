@@ -1091,8 +1091,9 @@ public class WorkMgr extends AbstractCoordinator {
       }
 
       for (WorkItem workItem : autoWorkQueue) {
-        if (!queueWork(workItem)) {
-          throw new BatfishException("Unable to queue work while auto processing: " + workItem);
+        boolean queued = queueWork(workItem);
+        if (!queued) {
+          _logger.errorf("Unable to queue work while auto processing: %s", workItem);
         }
       }
     }
