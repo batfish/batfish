@@ -1980,6 +1980,13 @@
             "3" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.1.1'"
           }
         },
+        "juniper-ospf" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Cannot assign interface xe-0/0/1.0 to be active in area 0.1.2.3 because it has no IP address.",
+            "2" : "MISCELLANEOUS: Cannot assign interface xe-0/0/20.0 to be active in area 0.1.2.3 because it has no IP address.",
+            "3" : "MISCELLANEOUS: Cannot assign interface xe-0/0/21.0 to be passive in area 0.1.2.3 because it has no IP address."
+          }
+        },
         "juniper-tcpflags" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: missing action in firewall filter: 'foo', term: 'bar'"

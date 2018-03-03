@@ -10,7 +10,7 @@ final class VrfMatchersImpl {
 
   static final class HasOspfProcess extends FeatureMatcher<Vrf, OspfProcess> {
     HasOspfProcess(@Nonnull Matcher<? super OspfProcess> subMatcher) {
-      super(subMatcher, "ospfProcess", "ospfProcess");
+      super(subMatcher, "A VRF with ospfProcess:", "ospfProcess");
     }
 
     @Override
