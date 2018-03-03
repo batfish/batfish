@@ -3,8 +3,10 @@ COORDINATOR="${BASH_SOURCE[0]}"
 COORDINATOR_PATH="$(dirname "$COORDINATOR")"
 ALLINONE_PATH="${COORDINATOR_PATH}/../allinone"
 ALLINONE_JAR="$ALLINONE_PATH/target/allinone-bundle-${BATFISH_VERSION}.jar"
+CPSEP=":"
 if batfish_cygwin; then
    ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
+   CPSEP=";"
 fi
-java $COORDINATOR_JAVA_ARGS -cp "${ALLINONE_JAR}:${COORDINATOR_CLASSPATH}" org.batfish.coordinator.Main "$@"
+java $COORDINATOR_JAVA_ARGS -cp "${ALLINONE_JAR}${CPSEP}${COORDINATOR_CLASSPATH}" org.batfish.coordinator.Main "$@"
 
