@@ -37,9 +37,9 @@ Z3_DIR="$(basename "${Z3_ZIP}" .zip)"
 WORKING="$(mktemp -d)"
 cd "${WORKING}"
 if [ -f "${CACHED_Z3_ZIP}" ]; then
-  CURRENT_HASH="$(md5sum ${CACHED_Z3_ZIP})"
+  CURRENT_HASH="$(md5sum ${CACHED_Z3_ZIP} | awk '{ print $1 }')"
 fi
-if [ "${CURRENT_HASH}"="${MD5_HASH["${ARCH}"-"${UBUNTU_VERSION}"]}" ]; then
+if [ "${CURRENT_HASH}" = "${MD5_HASH["${ARCH}"-"${UBUNTU_VERSION}"]}" ]; then
   cp "${CACHED_Z3_ZIP}" "${WORKING}/"
 else
   wget "${Z3_ZIP_URL}"
