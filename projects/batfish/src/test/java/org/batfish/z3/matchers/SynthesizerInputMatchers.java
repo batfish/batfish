@@ -3,14 +3,12 @@ package org.batfish.z3.matchers;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
@@ -23,6 +21,7 @@ import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasFibConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasSourceNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
+import org.batfish.z3.state.AclPermit;
 import org.hamcrest.Matcher;
 
 public class SynthesizerInputMatchers {
@@ -32,7 +31,7 @@ public class SynthesizerInputMatchers {
    * SynthesizerInput's enabled ACLs.
    */
   public static HasAclActions hasAclActions(
-      Matcher<? super Map<String, Map<String, Map<Integer, LineAction>>>> subMatcher) {
+      Matcher<? super Map<String, Map<String, List<LineAction>>>> subMatcher) {
     return new HasAclActions(subMatcher);
   }
 
@@ -41,7 +40,7 @@ public class SynthesizerInputMatchers {
    * SynthesizerInput's ACL conditions.
    */
   public static HasAclConditions hasAclConditions(
-      Matcher<? super Map<String, Map<String, Map<Integer, BooleanExpr>>>> subMatcher) {
+      Matcher<? super Map<String, Map<String, List<BooleanExpr>>>> subMatcher) {
     return new HasAclConditions(subMatcher);
   }
 
@@ -113,9 +112,7 @@ public class SynthesizerInputMatchers {
    */
   public static HasSourceNats hasSourceNats(
       @Nonnull
-          Matcher<
-                  ? super
-                      Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>>
+          Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
               subMatcher) {
     return new HasSourceNats(subMatcher);
   }

@@ -42,6 +42,7 @@ public class NodContext {
             .collect(ImmutableSet.toImmutableSet())
             .stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+
     _variables =
         variableSizes
             .entrySet()

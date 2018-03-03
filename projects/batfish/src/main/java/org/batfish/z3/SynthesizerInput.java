@@ -3,14 +3,13 @@ package org.batfish.z3;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 /**
@@ -26,14 +25,14 @@ public interface SynthesizerInput {
    * ACLs, while for other reachability queries this will only contain ACLs that a packet could
    * reasonably encounter (e.g. ACLs assigned to interfaces).
    */
-  Map<String, Map<String, Map<Integer, LineAction>>> getAclActions();
+  Map<String, Map<String, List<LineAction>>> getAclActions();
 
   /**
    * Mapping: hostname -> aclName -> lineNumber -> lineConditions <br>
    * lineConditions is a boolean expression representing the constraints on a header necessary for
    * that line to be matched.
    */
-  Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions();
+  Map<String, Map<String, List<BooleanExpr>>> getAclConditions();
 
   Set<Edge> getEnabledEdges();
 
@@ -50,7 +49,11 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> vrfs */
   Map<String, Set<String>> getEnabledVrfs();
 
-  /** Mapping: hostname -> vrf -> outgoingInterface -> receivingNodeAndInterface -> condition */
+  /**
+   * Mapping: hostname -> vrf -> outgoingInterface -> receivingNodeAndInterface -> condition There
+   * are three special cases of receivingNodeAndInterface that do not correspond to the topology: 1)
+   * No route. 2) Null route. 3) Flow sink.
+   */
   Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> getFibConditions();
 
   /** Mapping: hostname -> interface-> incomingAcl */
@@ -68,7 +71,7 @@ public interface SynthesizerInput {
   /**
    * Mapping: hostname -> interface -> [(preconditionPreTransformationState, transformationToApply)]
    */
-  Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> getSourceNats();
+  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
 
   /** Mapping: hostname -> interfacesOnSomeEdge */
   Map<String, Set<String>> getTopologyInterfaces();

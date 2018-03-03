@@ -47,7 +47,7 @@ import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformationStateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.Accept;
-import org.batfish.z3.state.PostOutInterface;
+import org.batfish.z3.state.PreOutEdgePostNat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +78,7 @@ public class BoolExprTransformerTest {
   @Before
   public void setup() {
     _basicStateExpr = Accept.INSTANCE;
-    _transformationStateExpr = new PostOutInterface("host1", "interface1");
+    _transformationStateExpr = new PreOutEdgePostNat("host1", "interface1", "host2", "interface2");
     _ctx = new Context();
     _input = TestSynthesizerInput.builder().build();
     _nodContext =
