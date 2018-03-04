@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
@@ -68,11 +67,6 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   @JsonProperty(PROP_INTERFACES)
   @JsonPropertyDescription("The interfaces assigned to this OSPF area")
-  public SortedSet<String> getInterfaceNames() {
-    return _interfaces;
-  }
-
-  @JsonIgnore
   public SortedSet<String> getInterfaces() {
     return _interfaces;
   }

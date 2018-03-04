@@ -748,7 +748,7 @@ public class CommonUtil {
                       }
                       OspfArea remoteArea = remoteProc.getAreas().get(areaNum);
                       if (remoteArea != null
-                          && remoteArea.getInterfaceNames().contains(remoteIfaceName)) {
+                          && remoteArea.getInterfaces().contains(remoteIfaceName)) {
                         Ip remoteIp = remoteIface.getAddress().getIp();
                         Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
                         OspfNeighbor neighbor = proc.getOspfNeighbors().get(localKey);
