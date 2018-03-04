@@ -8,7 +8,7 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertise
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -182,35 +182,35 @@ public class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasKey("xe-0/0/0.0"))))));
+            hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.0"))))));
 
     assertThat(c, hasInterface("xe-0/0/0.1", isOspfPassive()));
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasKey("xe-0/0/0.1"))))));
+            hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.1"))))));
     assertThat(
         c,
         hasDefaultVrf(
-            hasOspfProcess(hasArea(1L, OspfAreaMatchers.hasInterfaces(hasKey("xe-0/0/0.1"))))));
+            hasOspfProcess(hasArea(1L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.1"))))));
 
     /* The following interfaces should be absent since they have no IP addresses assigned. */
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(
-                hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasKey("xe-0/0/0.2")))))));
+                hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.2")))))));
 
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(
-                hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasKey("xe-0/0/0.3")))))));
+                hasArea(0L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))))));
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(
-                hasArea(1L, OspfAreaMatchers.hasInterfaces(not(hasKey("xe-0/0/0.3")))))));
+                hasArea(1L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))))));
   }
 
   @Test

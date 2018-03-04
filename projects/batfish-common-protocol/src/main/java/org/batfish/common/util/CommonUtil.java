@@ -726,9 +726,8 @@ public class CommonUtil {
           for (Entry<Long, OspfArea> e3 : proc.getAreas().entrySet()) {
             long areaNum = e3.getKey();
             OspfArea area = e3.getValue();
-            for (Entry<String, Interface> e4 : area.getInterfaces().entrySet()) {
-              String ifaceName = e4.getKey();
-              Interface iface = e4.getValue();
+            for (String ifaceName : area.getInterfaces()) {
+              Interface iface = c.getInterfaces().get(ifaceName);
               SortedSet<Edge> ifaceEdges =
                   topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
               boolean hasNeighbor = false;

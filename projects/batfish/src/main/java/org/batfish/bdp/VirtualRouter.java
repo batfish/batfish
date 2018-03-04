@@ -310,7 +310,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         OspfAreaSummary summary = e2.getValue();
 
         // Only advertised summaries can contribute
-        if (!summary.getAdvertise()) {
+        if (!summary.getAdvertised()) {
           continue;
         }
 
@@ -603,7 +603,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     proc.getAreas()
         .forEach(
             (areaNum, area) -> {
-              for (Interface iface : area.getInterfaces().values()) {
+              for (String ifaceName : area.getInterfaces()) {
+                Interface iface = _c.getInterfaces().get(ifaceName);
                 if (iface.getActive()) {
                   Set<Prefix> allNetworkPrefixes =
                       iface

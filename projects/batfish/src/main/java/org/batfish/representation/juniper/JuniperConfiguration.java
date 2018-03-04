@@ -853,7 +853,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         setCost = true;
         long ospfAreaLong = ospfArea.asLong();
         OspfArea newArea = newAreas.get(ospfAreaLong);
-        newArea.getInterfaces().put(name, newIface);
+        newArea.getInterfaces().add(name);
         newIface.setOspfArea(newArea);
         newIface.setOspfEnabled(true);
       }
@@ -869,7 +869,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       setCost = true;
       long ospfAreaLong = passiveArea.asLong();
       OspfArea newArea = newAreas.get(ospfAreaLong);
-      newArea.getInterfaces().put(name, newIface);
+      newArea.getInterfaces().add(name);
       newIface.setOspfEnabled(true);
       newIface.setOspfPassive(true);
     }

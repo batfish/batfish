@@ -107,7 +107,7 @@ public class DeviceTypeTest {
       // Compute OSPF interface costs where they are missing
       OspfProcess proc = vrf.getOspfProcess();
       if (proc != null) {
-        proc.initInterfaceCosts();
+        proc.initInterfaceCosts(c);
       }
     }
     // If device was not a host or router, call it a switch
