@@ -269,8 +269,9 @@ public class BatfishTest {
     answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
     Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
     String failureMessage =
-        "Iptables file iptables/host1.iptables for host host1 "
-            + "is not contained within the testrig";
+        "Iptables file iptables"
+            + File.separator
+            + "host1.iptables for host host1 is not contained within the testrig";
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
     assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.FAILED));
     assertThat(
