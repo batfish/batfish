@@ -65,7 +65,6 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
-import org.batfish.datamodel.matchers.OspfAreaSummaryMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -153,10 +152,7 @@ public class CiscoGrammarTest {
         hasDefaultVrf(
             hasOspfProcess(
                 hasArea(
-                    1L,
-                    hasSummary(
-                        Prefix.parse("10.0.0.0/16"),
-                        OspfAreaSummaryMatchers.isAdvertised(equalTo(false)))))));
+                    1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised(equalTo(false)))))));
     assertThat(
         manual,
         hasDefaultVrf(
