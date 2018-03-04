@@ -263,23 +263,20 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   /** Compute for each VRF of each node the IPs that are routable. */
   private Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
-    Map<String, Map<String, IpSpace>> routableIpsByNodeVrf =
-        ribs.entrySet()
-            .stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, // hostname
-                    ribsByNodeEntry ->
-                        ribsByNodeEntry
-                            .getValue()
-                            .entrySet()
-                            .stream()
-                            .collect(
-                                ImmutableMap.toImmutableMap(
-                                    Entry::getKey, // vrfName
-                                    ribsByVrfEntry ->
-                                        ribsByVrfEntry.getValue().getRoutableIps()))));
-    return routableIpsByNodeVrf;
+    return ribs.entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey, // hostname
+                ribsByNodeEntry ->
+                    ribsByNodeEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey, // vrfName
+                                ribsByVrfEntry -> ribsByVrfEntry.getValue().getRoutableIps()))));
   }
 
   @Override
