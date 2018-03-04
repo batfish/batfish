@@ -10,9 +10,8 @@ fi
 
 GJF_VERSION=1.5
 JAR_NAME="google-java-format-${GJF_VERSION}-all-deps.jar"
-M2_HOME="${HOME}"
 JAR_SUFFIX=".m2/repository/com/google/googlejavaformat/google-java-format/${GJF_VERSION}/${JAR_NAME}"
-JAR="${M2_HOME}/${JAR_SUFFIX}"
+JAR="${HOME}/${JAR_SUFFIX}"
 if [[ $(uname) == *"CYGWIN"* ]]; then
    JAR="${USERPROFILE}\\$(cygpath -w "${JAR_SUFFIX}")"
 fi
