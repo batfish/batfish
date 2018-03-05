@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -23,7 +24,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
+import org.batfish.common.WorkItem;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.config.Settings;
 import org.junit.Before;
@@ -310,6 +313,80 @@ public class WorkMgrTest {
     _manager.configureAnalysis(
         containerName, false, "analysis3", Maps.newHashMap(), Lists.newArrayList(), true);
     assertTrue(getMetadataSuggested(containerName, "analysis3"));
+  }
+
+  @Test
+  public void testGetAutoWorkQueueUserAnalysis() {
+    String containerName = "myContainer";
+    String testrigName = "myTestrig";
+    _manager.initContainer(containerName, null);
+
+    // user policy
+    _manager.configureAnalysis(
+        containerName, true, "useranalysis", Maps.newHashMap(), Lists.newArrayList(), false);
+
+    WorkItem parseWorkItem = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
+
+    WorkItem analysisWorkItem =
+        WorkItemBuilder.getWorkItemRunAnalysis(
+            "useranalysis",
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            false,
+            false);
+
+    List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
+
+    assertThat(workQueue, hasSize(2));
+
+    // checking that the first work item is for parse
+    assertThat(workQueue.get(0).matches(parseWorkItem), equalTo(true));
+
+    // checking run analysis workitem
+    assertThat(
+        "Work Queue not correct for user analyses",
+        workQueue.get(1).matches(analysisWorkItem),
+        equalTo(true));
+  }
+
+  @Test
+  public void testGetAutoWorkQueueSuggestedAnalysis() {
+    String containerName = "myContainer";
+    String testrigName = "myTestrig";
+    _manager.initContainer(containerName, null);
+
+    // user policy
+    _manager.configureAnalysis(
+        containerName, true, "suggestedanalysis", Maps.newHashMap(), Lists.newArrayList(), true);
+
+    WorkItem parseWorkItem = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
+
+    WorkItem analysisWorkItem =
+        WorkItemBuilder.getWorkItemRunAnalysis(
+            "suggestedanalysis",
+            containerName,
+            testrigName,
+            BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+            null,
+            null,
+            false,
+            false);
+
+    List<WorkItem> workQueue = _manager.getAutoWorkQueue(containerName, testrigName);
+
+    assertThat(workQueue, hasSize(2));
+
+    // checking that the first work item is for parse
+    assertThat(workQueue.get(0).matches(parseWorkItem), equalTo(true));
+
+    // checking run analysis workitem
+    assertThat(
+        "Work Queue not correct for suggested analyses",
+        workQueue.get(1).matches(analysisWorkItem),
+        equalTo(true));
   }
 
   private boolean getMetadataSuggested(String containerName, String analysisName) {
