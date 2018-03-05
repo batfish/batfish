@@ -1070,33 +1070,36 @@ public class WorkMgr extends AbstractCoordinator {
         testrigName, bgpTables, routingTables);
 
     if (autoAnalyze) {
-      List<WorkItem> autoWorkQueue = new LinkedList<>();
-
-      WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
-      autoWorkQueue.add(parseWork);
-
-      Set<String> analysisNames = listAnalyses(containerName, null);
-      for (String analysis : analysisNames) {
-        WorkItem analyzeWork =
-            WorkItemBuilder.getWorkItemRunAnalysis(
-                analysis,
-                containerName,
-                testrigName,
-                BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
-                null,
-                null,
-                false,
-                false);
-        autoWorkQueue.add(analyzeWork);
-      }
-
-      for (WorkItem workItem : autoWorkQueue) {
+      for (WorkItem workItem : getAutoWorkQueue(containerName, testrigName)) {
         boolean queued = queueWork(workItem);
         if (!queued) {
           _logger.errorf("Unable to queue work while auto processing: %s", workItem);
         }
       }
     }
+  }
+
+  List<WorkItem> getAutoWorkQueue(String containerName, String testrigName) {
+    List<WorkItem> autoWorkQueue = new LinkedList<>();
+
+    WorkItem parseWork = WorkItemBuilder.getWorkItemParse(containerName, testrigName);
+    autoWorkQueue.add(parseWork);
+
+    Set<String> analysisNames = listAnalyses(containerName, AnalysisType.ALL);
+    for (String analysis : analysisNames) {
+      WorkItem analyzeWork =
+          WorkItemBuilder.getWorkItemRunAnalysis(
+              analysis,
+              containerName,
+              testrigName,
+              BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME,
+              null,
+              null,
+              false,
+              false);
+      autoWorkQueue.add(analyzeWork);
+    }
+    return autoWorkQueue;
   }
 
   private boolean isEnvFile(Path path) {
