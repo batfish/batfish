@@ -2,6 +2,7 @@ package org.batfish.z3.state.visitors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -1763,7 +1764,7 @@ public class DefaultTransitionGeneratorTest {
             ImmutableSet.of(),
             new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
 
-    assertThat(rules, contains(permitRule, denyRule));
+    assertThat(rules, containsInAnyOrder(permitRule, denyRule));
   }
 
   /** Test the transitions generated for PreOutEdgePostNat for a flow sink with NAT */
@@ -1824,7 +1825,7 @@ public class DefaultTransitionGeneratorTest {
                 Configuration.NODE_NONE_NAME,
                 Interface.FLOW_SINK_TERMINATION_NAME));
 
-    assertThat(rules, contains(permitRule, denyRule));
+    assertThat(rules, containsInAnyOrder(permitRule, denyRule));
   }
 
   /** Test the transitions generated for PreOutEdgePostNat for a flow sink without NAT */
