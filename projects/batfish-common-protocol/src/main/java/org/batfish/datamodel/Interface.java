@@ -70,7 +70,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setIncomingFilter(_incomingFilter);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
-        _ospfArea.getInterfaces().put(name, iface);
+        _ospfArea.getInterfaces().add(name);
         iface.setOspfAreaName(_ospfArea.getName());
       }
       iface.setOspfCost(_ospfCost);

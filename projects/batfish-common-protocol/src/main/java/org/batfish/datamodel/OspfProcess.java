@@ -239,9 +239,10 @@ public class OspfProcess implements Serializable {
     return _routerId;
   }
 
-  public void initInterfaceCosts() {
+  public void initInterfaceCosts(Configuration c) {
     for (OspfArea area : _areas.values()) {
-      for (Interface i : area.getInterfaces().values()) {
+      for (String ifaceName : area.getInterfaces()) {
+        Interface i = c.getInterfaces().get(ifaceName);
         if (i.getActive()) {
           i.setOspfCost(computeInterfaceCost(i));
         }

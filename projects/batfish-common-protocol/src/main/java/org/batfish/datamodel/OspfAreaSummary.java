@@ -14,20 +14,20 @@ public final class OspfAreaSummary implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final boolean _advertise;
+  private final boolean _advertised;
   @Nullable private final Long _metric;
 
   public OspfAreaSummary(
-      @JsonProperty(PROP_ADVERTISE) boolean advertise,
+      @JsonProperty(PROP_ADVERTISE) boolean advertised,
       @JsonProperty(PROP_METRIC) @Nullable Long metric) {
-    this._advertise = advertise;
+    this._advertised = advertised;
     this._metric = metric;
   }
 
   /** Returns true if this summarized route is advertised externally. */
   @JsonProperty(PROP_ADVERTISE)
-  public boolean getAdvertise() {
-    return _advertise;
+  public boolean getAdvertised() {
+    return _advertised;
   }
 
   /**

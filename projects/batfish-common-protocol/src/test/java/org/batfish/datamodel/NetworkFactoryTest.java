@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
@@ -8,6 +9,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.junit.Test;
 
 public class NetworkFactoryTest {
@@ -100,7 +102,7 @@ public class NetworkFactoryTest {
     assertThat(oa1.getName(), not(equalTo(oa2.getName())));
     assertThat(oa1, not(sameInstance(oa2)));
     assertThat(ospfProcess.getAreas().get(oa2.getName()), sameInstance(oa2));
-    assertThat(oa2.getInterfaces().get(iface.getName()), sameInstance(iface));
+    assertThat(oa2, OspfAreaMatchers.hasInterfaces(hasItem(iface.getName())));
     assertThat(iface.getOspfAreaName(), equalTo(oa2.getName()));
   }
 }
