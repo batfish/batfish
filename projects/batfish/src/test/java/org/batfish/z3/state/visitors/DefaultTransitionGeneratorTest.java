@@ -823,18 +823,18 @@ public class DefaultTransitionGeneratorTest {
                 new NodeAccept(NODE2))));
 
     // PostOutFlowSinkInterface
-    for (String node1 : new String[] {NODE1, NODE2}) {
-      for (String node1Interface : new String[] {INTERFACE1, INTERFACE2}) {
+    for (String node : new String[] {NODE1, NODE2}) {
+      for (String iface : new String[] {INTERFACE1, INTERFACE2}) {
         assertThat(
             rules,
             hasItem(
                 new BasicRuleStatement(
                     new PostOutEdge(
-                        node1,
-                        node1Interface,
+                        node,
+                        iface,
                         Configuration.NODE_NONE_NAME,
                         Interface.FLOW_SINK_TERMINATION_NAME),
-                    new NodeAccept(node1))));
+                    new NodeAccept(node))));
       }
     }
   }
