@@ -682,4 +682,76 @@ public class SynthesizerInputImplTest {
             hasEntry(equalTo(nextHop.getName()), hasItem(nextHopInterface.getName()))));
     assertThat(inputWithoutDataPlane, hasTopologyInterfaces(nullValue()));
   }
+
+  /**
+   * Test that for a SourceNat with no ACL, the SynthesizerInput will have an "accept everything"
+   * ACL.
+   */
+  @Test
+  public void testSourceNatWithNoAcl() {
+    Configuration srcNode = _cb.build();
+    Configuration nextHop = _cb.build();
+    Vrf srcVrf = _vb.setOwner(srcNode).build();
+    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
+    Ip ip1 = new Ip("1.0.0.0");
+    Ip ip2 = new Ip("1.0.0.10");
+    SourceNat sourceNat = _snb.setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
+    Interface srcInterfaceOneSourceNat =
+        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of(sourceNat)).build();
+    Interface nextHopInterface =
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
+    Edge forwardEdge = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
+    Edge backEdge = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setConfigurations(
+                ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
+            .setDataPlane(
+                TestDataPlane.builder()
+                    .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
+                    .build())
+            .build();
+
+    // Acl for the SourceNat is DefaultSourceNatAcl
+    assertThat(
+        inputWithDataPlane,
+        hasSourceNats(
+            hasEntry(
+                equalTo(srcNode.getName()),
+                hasEntry(
+                    equalTo(srcInterfaceOneSourceNat.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(
+                                    srcNode.getHostname(),
+                                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName()),
+                                new RangeMatchExpr(
+                                    TransformationHeaderField.NEW_SRC_IP,
+                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    ImmutableSet.of(
+                                        Range.closed(ip1.asLong(), ip2.asLong()))))))))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasAclConditions(
+            hasEntry(
+                srcNode.getHostname(),
+                ImmutableMap.of(
+                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
+                    ImmutableList.of(
+                        new HeaderSpaceMatchExpr(
+                            IpAccessListLine.builder()
+                                .setSrcIps(ImmutableList.of(new IpWildcard("0.0.0.0/0")))
+                                .build()))))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasAclActions(
+            hasEntry(
+                srcNode.getHostname(),
+                ImmutableMap.of(
+                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
+                    ImmutableList.of(LineAction.ACCEPT)))));
+  }
 }

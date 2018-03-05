@@ -25,6 +25,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
@@ -36,6 +37,14 @@ import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
+
+  static final IpAccessList DEFAULT_SOURCE_NAT_ACL =
+      new NetworkFactory()
+          .aclBuilder()
+          .setName("~DEFAULT_SOURCE_NAT_ACL~")
+          .setLines(
+              ImmutableList.of(IpAccessListLine.builder().setAction(LineAction.ACCEPT).build()))
+          .build();
 
   public static class Builder {
     private Map<String, Configuration> _configurations;
@@ -234,15 +243,17 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey,
-                e ->
-                    e.getValue()
+                enabledAclsByHostnameEntry ->
+                    enabledAclsByHostnameEntry
+                        .getValue()
                         .entrySet()
                         .stream()
                         .collect(
                             ImmutableMap.toImmutableMap(
                                 Entry::getKey,
-                                e2 ->
-                                    e2.getValue()
+                                enabledAclsByAclNameEntry ->
+                                    enabledAclsByAclNameEntry
+                                        .getValue()
                                         .getLines()
                                         .stream()
                                         .map(IpAccessListLine::getAction)
@@ -305,6 +316,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                         if (sourceNatAcl != null) {
                                           interfaceAcls.add(
                                               new Pair<>(sourceNatAcl.getName(), sourceNatAcl));
+                                        } else {
+                                          interfaceAcls.add(
+                                              new Pair<>(
+                                                  DEFAULT_SOURCE_NAT_ACL.getName(),
+                                                  DEFAULT_SOURCE_NAT_ACL));
                                         }
                                       });
 
@@ -613,8 +629,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                       .map(
                                           sourceNat -> {
                                             IpAccessList acl = sourceNat.getAcl();
+                                            String aclName =
+                                                acl == null
+                                                    ? DEFAULT_SOURCE_NAT_ACL.getName()
+                                                    : acl.getName();
                                             AclPermit preconditionPreTransformationState =
-                                                new AclPermit(hostname, acl.getName());
+                                                new AclPermit(hostname, aclName);
                                             BooleanExpr transformationConstraint =
                                                 new RangeMatchExpr(
                                                     TransformationHeaderField.NEW_SRC_IP,

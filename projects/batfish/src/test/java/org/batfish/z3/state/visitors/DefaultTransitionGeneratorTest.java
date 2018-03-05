@@ -1,6 +1,7 @@
 package org.batfish.z3.state.visitors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -963,7 +964,6 @@ public class DefaultTransitionGeneratorTest {
                         INTERFACE2,
                         ImmutableList.of(
                             Maps.immutableEntry(
-                                // random guess
                                 new AclPermit(NODE1, NAT_ACL1), TrueExpr.INSTANCE),
                             Maps.immutableEntry(
                                 new AclPermit(NODE1, NAT_ACL2), FalseExpr.INSTANCE))),
@@ -973,7 +973,6 @@ public class DefaultTransitionGeneratorTest {
                         ImmutableList.of(
                             Maps.immutableEntry(new AclPermit(NODE2, NAT_ACL1), TrueExpr.INSTANCE),
                             Maps.immutableEntry(
-                                // random guess
                                 new AclPermit(NODE2, NAT_ACL1), FalseExpr.INSTANCE)),
                         INTERFACE2,
                         ImmutableList.of())))
@@ -1601,39 +1600,6 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitPreOutEdgePostNatFlowSink() {
-    SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledFlowSinks(ImmutableSet.of(new NodeInterfacePair(NODE1, INTERFACE1)))
-            .build();
-    Set<RuleStatement> rules =
-        ImmutableSet.copyOf(
-            DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE)));
-
-    assertThat(
-        rules,
-        hasItem(
-            new TransformationRuleStatement(
-                new EqExpr(
-                    new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
-                    new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
-                ImmutableSet.of(
-                    new PreOutEdge(
-                        NODE1,
-                        INTERFACE1,
-                        Configuration.NODE_NONE_NAME,
-                        Interface.FLOW_SINK_TERMINATION_NAME)),
-                ImmutableSet.of(),
-                ImmutableSet.of(),
-                new PreOutEdgePostNat(
-                    NODE1,
-                    INTERFACE1,
-                    Configuration.NODE_NONE_NAME,
-                    Interface.FLOW_SINK_TERMINATION_NAME))));
-  }
-
-  @Test
   public void testVisitPreOutEdge() {
     SynthesizerInput input =
         TestSynthesizerInput.builder().setFibConditions(fibConditions()).build();
@@ -1755,5 +1721,143 @@ public class DefaultTransitionGeneratorTest {
                 new TestBooleanAtom(24, null),
                 ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
                 new PreOutEdge(NODE2, INTERFACE4, NODE1, INTERFACE4))));
+  }
+
+  /** Test the transitions generated for PreOutEdgePostNat for an edge with a source nat. */
+  @Test
+  public void testVisitPreOutEdgePostNat_topologyInterfaceWithNAT() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setEnabledEdges(ImmutableSet.of(new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2)))
+            .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
+            .setSourceNats(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(
+                                new AclPermit(NODE1, NAT_ACL1), new TestBooleanAtom(1, null))))))
+            .build();
+    List<RuleStatement> rules =
+        DefaultTransitionGenerator.generateTransitions(
+            input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
+
+    RuleStatement permitRule =
+        new TransformationRuleStatement(
+            new TestBooleanAtom(1, null),
+            ImmutableSet.of(
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                new AclPermit(NODE1, NAT_ACL1)),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+
+    RuleStatement denyRule =
+        new TransformationRuleStatement(
+            new EqExpr(
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
+            ImmutableSet.of(
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclDeny(NODE1, NAT_ACL1)),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+
+    assertThat(rules, contains(permitRule, denyRule));
+  }
+
+  /** Test the transitions generated for PreOutEdgePostNat for a flow sink with NAT */
+  @Test
+  public void testVisitPreOutEdgePostNat_flowSinkNAT() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setEnabledFlowSinks(ImmutableSet.of(new NodeInterfacePair(NODE1, INTERFACE1)))
+            .setSourceNats(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(
+                                new AclPermit(NODE1, NAT_ACL1), new TestBooleanAtom(1, null))))))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE)));
+
+    RuleStatement permitRule =
+        new TransformationRuleStatement(
+            new TestBooleanAtom(1, null),
+            ImmutableSet.of(
+                new PreOutEdge(
+                    NODE1,
+                    INTERFACE1,
+                    Configuration.NODE_NONE_NAME,
+                    Interface.FLOW_SINK_TERMINATION_NAME),
+                new AclPermit(NODE1, NAT_ACL1)),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(
+                NODE1,
+                INTERFACE1,
+                Configuration.NODE_NONE_NAME,
+                Interface.FLOW_SINK_TERMINATION_NAME));
+
+    RuleStatement denyRule =
+        new TransformationRuleStatement(
+            new EqExpr(
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
+            ImmutableSet.of(
+                new PreOutEdge(
+                    NODE1,
+                    INTERFACE1,
+                    Configuration.NODE_NONE_NAME,
+                    Interface.FLOW_SINK_TERMINATION_NAME),
+                new AclDeny(NODE1, NAT_ACL1)),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(
+                NODE1,
+                INTERFACE1,
+                Configuration.NODE_NONE_NAME,
+                Interface.FLOW_SINK_TERMINATION_NAME));
+
+    assertThat(rules, contains(permitRule, denyRule));
+  }
+
+  /** Test the transitions generated for PreOutEdgePostNat for a flow sink without NAT */
+  @Test
+  public void testVisitPreOutEdgePostNat_flowSinkNoNAT() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setEnabledFlowSinks(ImmutableSet.of(new NodeInterfacePair(NODE1, INTERFACE1)))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE)));
+
+    RuleStatement rule =
+        new TransformationRuleStatement(
+            new EqExpr(
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
+            ImmutableSet.of(
+                new PreOutEdge(
+                    NODE1,
+                    INTERFACE1,
+                    Configuration.NODE_NONE_NAME,
+                    Interface.FLOW_SINK_TERMINATION_NAME)),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(
+                NODE1,
+                INTERFACE1,
+                Configuration.NODE_NONE_NAME,
+                Interface.FLOW_SINK_TERMINATION_NAME));
+    assertThat(rules, contains(rule));
   }
 }

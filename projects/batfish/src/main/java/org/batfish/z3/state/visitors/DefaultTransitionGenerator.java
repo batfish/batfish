@@ -62,7 +62,6 @@ import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.Query;
 
 public class DefaultTransitionGenerator implements StateVisitor {
-
   public static List<RuleStatement> generateTransitions(SynthesizerInput input, Set<State> states) {
     DefaultTransitionGenerator visitor = new DefaultTransitionGenerator(input);
     states.forEach(state -> state.accept(visitor));
@@ -710,69 +709,44 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPreOutEdgePostNat(PreOutEdgePostNat.State preOutEdgePostNat) {
-    generatePreOutEdgePostNat_topologyEdges();
-    generatePreOutEdgePostNat_flowSinks();
+    visitPreOutEdgePostNat_generateTopologyEdgeRules();
+    visitPreOutEdgePostNat_generateFlowSinkRules();
   }
 
-  private void generatePreOutEdgePostNat_topologyEdges() {
-    // Matches source nat.
+  private void visitPreOutEdgePostNat_generateFlowSinkRules() {
     _input
-        .getEnabledEdges()
+        .getEnabledFlowSinks()
         .stream()
-        .filter(e -> _input.getSourceNats().containsKey(e.getNode1()))
-        .filter(e -> _input.getSourceNats().get(e.getNode1()).containsKey(e.getInt1()))
+        .filter(flowSink -> _input.getSourceNats().containsKey(flowSink.getHostname()))
+        .filter(
+            flowSink ->
+                _input
+                    .getSourceNats()
+                    .get(flowSink.getHostname())
+                    .containsKey(flowSink.getInterface()))
         .forEach(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
-              generatePreOutEdgeMatchSourceNatRules(node1, iface1, node2, iface2);
+            flowSink -> {
+              String node1 = flowSink.getHostname();
+              String iface1 = flowSink.getInterface();
+              String node2 = Configuration.NODE_NONE_NAME;
+              String iface2 = Interface.FLOW_SINK_TERMINATION_NAME;
+              visitPreOutEdgePostNat_generateMatchSourceNatRules(node1, iface1, node2, iface2);
             });
 
     // Doesn't match source nat.
     _input
-        .getEnabledEdges()
+        .getEnabledFlowSinks()
         .forEach(
-            edge -> {
-              String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
-
-              generatePreOutEdgeNoMatchSourceNatRules(node1, iface1, node2, iface2);
+            flowSink -> {
+              String node1 = flowSink.getHostname();
+              String iface1 = flowSink.getInterface();
+              String node2 = Configuration.NODE_NONE_NAME;
+              String iface2 = Interface.FLOW_SINK_TERMINATION_NAME;
+              visitPreOutEdgePostNat_generateNoMatchSourceNatRules(node1, iface1, node2, iface2);
             });
   }
 
-  private void generatePreOutEdgeNoMatchSourceNatRules(
-      String node1, String iface1, String node2, String iface2) {
-    List<Entry<AclPermit, BooleanExpr>> sourceNats =
-        _input
-            .getSourceNats()
-            .getOrDefault(node1, ImmutableMap.of())
-            .getOrDefault(iface1, ImmutableList.of());
-
-    ImmutableSet.Builder<BasicStateExpr> preStates = ImmutableSet.builder();
-    preStates.add(new PreOutEdge(node1, iface1, node2, iface2));
-
-    sourceNats
-        .stream()
-        .map(Entry::getKey)
-        .map(aclPermit -> new AclDeny(aclPermit.getHostname(), aclPermit.getAcl()))
-        .forEach(preStates::add);
-
-    _rules.add(
-        new TransformationRuleStatement(
-            new EqExpr(
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
-            preStates.build(),
-            ImmutableSet.of(),
-            ImmutableSet.of(),
-            new PreOutEdgePostNat(node1, iface1, node2, iface2)));
-  }
-
-  private void generatePreOutEdgeMatchSourceNatRules(
+  private void visitPreOutEdgePostNat_generateMatchSourceNatRules(
       String node1, String iface1, String node2, String iface2) {
 
     List<Entry<AclPermit, BooleanExpr>> sourceNats = _input.getSourceNats().get(node1).get(iface1);
@@ -805,36 +779,61 @@ public class DefaultTransitionGenerator implements StateVisitor {
     }
   }
 
-  private void generatePreOutEdgePostNat_flowSinks() {
-    _input
-        .getEnabledFlowSinks()
+  private void visitPreOutEdgePostNat_generateNoMatchSourceNatRules(
+      String node1, String iface1, String node2, String iface2) {
+    List<Entry<AclPermit, BooleanExpr>> sourceNats =
+        _input
+            .getSourceNats()
+            .getOrDefault(node1, ImmutableMap.of())
+            .getOrDefault(iface1, ImmutableList.of());
+
+    ImmutableSet.Builder<BasicStateExpr> preStates = ImmutableSet.builder();
+    preStates.add(new PreOutEdge(node1, iface1, node2, iface2));
+
+    sourceNats
         .stream()
-        .filter(flowSink -> _input.getSourceNats().containsKey(flowSink.getHostname()))
-        .filter(
-            flowSink ->
-                _input
-                    .getSourceNats()
-                    .get(flowSink.getHostname())
-                    .containsKey(flowSink.getInterface()))
+        .map(Entry::getKey)
+        .map(aclPermit -> new AclDeny(aclPermit.getHostname(), aclPermit.getAcl()))
+        .forEach(preStates::add);
+
+    _rules.add(
+        new TransformationRuleStatement(
+            new EqExpr(
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
+            preStates.build(),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(node1, iface1, node2, iface2)));
+  }
+
+  private void visitPreOutEdgePostNat_generateTopologyEdgeRules() {
+    // Matches source nat.
+    _input
+        .getEnabledEdges()
+        .stream()
+        .filter(e -> _input.getSourceNats().containsKey(e.getNode1()))
+        .filter(e -> _input.getSourceNats().get(e.getNode1()).containsKey(e.getInt1()))
         .forEach(
-            flowSink -> {
-              String node1 = flowSink.getHostname();
-              String iface1 = flowSink.getInterface();
-              String node2 = Configuration.NODE_NONE_NAME;
-              String iface2 = Interface.FLOW_SINK_TERMINATION_NAME;
-              generatePreOutEdgeMatchSourceNatRules(node1, iface1, node2, iface2);
+            edge -> {
+              String node1 = edge.getNode1();
+              String iface1 = edge.getInt1();
+              String node2 = edge.getNode2();
+              String iface2 = edge.getInt2();
+              visitPreOutEdgePostNat_generateMatchSourceNatRules(node1, iface1, node2, iface2);
             });
 
     // Doesn't match source nat.
     _input
-        .getEnabledFlowSinks()
+        .getEnabledEdges()
         .forEach(
-            flowSink -> {
-              String node1 = flowSink.getHostname();
-              String iface1 = flowSink.getInterface();
-              String node2 = Configuration.NODE_NONE_NAME;
-              String iface2 = Interface.FLOW_SINK_TERMINATION_NAME;
-              generatePreOutEdgeNoMatchSourceNatRules(node1, iface1, node2, iface2);
+            edge -> {
+              String node1 = edge.getNode1();
+              String iface1 = edge.getInt1();
+              String node2 = edge.getNode2();
+              String iface2 = edge.getInt2();
+
+              visitPreOutEdgePostNat_generateNoMatchSourceNatRules(node1, iface1, node2, iface2);
             });
   }
 
