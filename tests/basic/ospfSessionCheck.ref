@@ -10,12 +10,6 @@
               "name" : "as1border1:<1.0.1.1:1.0.1.2>",
               "remoteIp" : "1.0.1.2",
               "vrf" : "default"
-            },
-            "<1.1.1.1:0.0.0.0>" : {
-              "localIp" : "1.1.1.1",
-              "name" : "as1border1:<1.1.1.1:0.0.0.0>",
-              "remoteIp" : "0.0.0.0",
-              "vrf" : "default"
             }
           }
         },
@@ -390,5 +384,10 @@
     "node1Regex" : ".*",
     "node2Regex" : ".*"
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }
