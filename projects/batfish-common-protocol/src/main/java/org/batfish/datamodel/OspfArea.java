@@ -1,15 +1,13 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
@@ -54,9 +52,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   private static final long serialVersionUID = 1L;
 
-  private transient SortedSet<String> _interfaceNames;
-
-  private SortedMap<String, Interface> _interfaces;
+  private SortedSet<String> _interfaces;
 
   private SortedMap<Prefix, OspfAreaSummary> _summaries;
 
@@ -65,22 +61,13 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   @JsonCreator
   public OspfArea(@JsonProperty(PROP_NAME) Long number) {
     super(number);
-    _interfaces = new TreeMap<>();
+    _interfaces = new TreeSet<>();
     _summaries = new TreeMap<>();
   }
 
   @JsonProperty(PROP_INTERFACES)
   @JsonPropertyDescription("The interfaces assigned to this OSPF area")
-  public SortedSet<String> getInterfaceNames() {
-    if (_interfaces != null && !_interfaces.isEmpty()) {
-      return ImmutableSortedSet.copyOf(_interfaces.keySet());
-    } else {
-      return _interfaceNames;
-    }
-  }
-
-  @JsonIgnore
-  public SortedMap<String, Interface> getInterfaces() {
+  public SortedSet<String> getInterfaces() {
     return _interfaces;
   }
 
@@ -94,25 +81,8 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     return _summaryFilter;
   }
 
-  public void resolveReferences(final Configuration owner) {
-    if (_interfaceNames != null) {
-      ImmutableSortedMap.Builder<String, Interface> builder =
-          new ImmutableSortedMap.Builder<>(String::compareTo);
-      _interfaceNames
-          .stream()
-          .map(ifaceName -> owner.getInterfaces().get(ifaceName))
-          .forEach(i -> builder.put(i.getName(), i));
-      _interfaces = builder.build();
-    }
-  }
-
   @JsonProperty(PROP_INTERFACES)
-  public void setInterfaceNames(SortedSet<String> interfaceNames) {
-    _interfaceNames = interfaceNames;
-  }
-
-  @JsonIgnore
-  public void setInterfaces(SortedMap<String, Interface> interfaces) {
+  public void setInterfaces(SortedSet<String> interfaces) {
     _interfaces = interfaces;
   }
 

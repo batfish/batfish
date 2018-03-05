@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -2699,6 +2700,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // establish areas and associated interfaces
     Map<Long, OspfArea> areas = newProcess.getAreas();
+    Map<Long, ImmutableSortedSet.Builder<String>> areaInterfacesBuilders = new HashMap<>();
     List<OspfNetwork> networks = new ArrayList<>();
     networks.addAll(proc.getNetworks());
     Collections.sort(
@@ -2738,7 +2740,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // we have a longest prefix match
           long areaNum = network.getArea();
           OspfArea newArea = areas.computeIfAbsent(areaNum, OspfArea::new);
-          newArea.getInterfaces().put(ifaceName, iface);
+          ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
+              areaInterfacesBuilders.computeIfAbsent(
+                  areaNum, n -> ImmutableSortedSet.naturalOrder());
+          newAreaInterfacesBuilder.add(ifaceName);
           iface.setOspfArea(newArea);
           iface.setOspfEnabled(true);
           boolean passive =
@@ -2749,6 +2754,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           break;
         }
       }
+      areaInterfacesBuilders.forEach(
+          (areaNum, interfacesBuilder) ->
+              areas.get(areaNum).setInterfaces(interfacesBuilder.build()));
     }
 
     // create summarization filters for inter-area routes
@@ -2769,7 +2777,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         OspfAreaSummary summary = e2.getValue();
         int prefixLength = prefix.getPrefixLength();
         int filterMinPrefixLength =
-            summary.getAdvertise()
+            summary.getAdvertised()
                 ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
                 : prefixLength;
         summaryFilter.addLine(
@@ -2777,8 +2785,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 LineAction.REJECT,
                 prefix,
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
-        area.getSummaries().put(prefix, summary);
       }
+      area.setSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
               LineAction.ACCEPT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));

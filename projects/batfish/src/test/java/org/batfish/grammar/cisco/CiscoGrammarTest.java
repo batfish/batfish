@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -10,8 +11,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
@@ -23,6 +26,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isIn;
@@ -57,7 +61,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -143,28 +146,29 @@ public class CiscoGrammarTest {
   @Test
   public void testOspfSummaryRouteMetric() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
-    OspfAreaSummary summary =
-        manual
-            .getDefaultVrf()
-            .getOspfProcess()
-            .getAreas()
-            .get(1L)
-            .getSummaries()
-            .get(Prefix.parse("10.0.0.0/16"));
-    assertThat(summary, not(isAdvertised()));
-    assertThat(summary, hasMetric(100L));
+
+    assertThat(
+        manual,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(
+                    1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised(equalTo(false)))))));
+    assertThat(
+        manual,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(100L))))));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
-    summary =
-        defaults
-            .getDefaultVrf()
-            .getOspfProcess()
-            .getAreas()
-            .get(1L)
-            .getSummaries()
-            .get(Prefix.parse("10.0.0.0/16"));
-    assertThat(summary, isAdvertised());
-    assertThat(summary, hasMetric(nullValue()));
+
+    assertThat(
+        defaults,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised())))));
+    assertThat(
+        defaults,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
   }
 
   @Test
@@ -505,11 +509,10 @@ public class CiscoGrammarTest {
     Configuration c = configurations.get(hostname);
     assertThat(c, hasDefaultVrf(hasOspfProcess(hasAreas(hasKey(areaNum)))));
     OspfArea area = c.getDefaultVrf().getOspfProcess().getAreas().get(areaNum);
-    assertThat(area, OspfAreaMatchers.hasInterfaces(hasKey(ifaceName)));
-    Interface iface = area.getInterfaces().get(ifaceName);
-    assertThat(iface, hasOspfArea(sameInstance(area)));
-    assertThat(iface, isOspfPassive(equalTo(false)));
-    assertThat(iface, isOspfPointToPoint());
+    assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
+    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
+    assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
 
   @Test
@@ -536,12 +539,11 @@ public class CiscoGrammarTest {
     Vrf vrf = c.getVrfs().get(vrfName);
     assertThat(vrf, hasOspfProcess(hasAreas(hasKey(areaNum))));
     OspfArea area = vrf.getOspfProcess().getAreas().get(areaNum);
-    assertThat(area, OspfAreaMatchers.hasInterfaces(hasKey(ifaceName)));
-    Interface iface = area.getInterfaces().get(ifaceName);
-    assertThat(iface, hasVrf(sameInstance(vrf)));
-    assertThat(iface, hasOspfArea(sameInstance(area)));
-    assertThat(iface, isOspfPassive(equalTo(false)));
-    assertThat(iface, isOspfPointToPoint());
+    assertThat(area, OspfAreaMatchers.hasInterfaces(hasItem(ifaceName)));
+    assertThat(c, hasInterface(ifaceName, hasVrf(sameInstance(vrf))));
+    assertThat(c, hasInterface(ifaceName, hasOspfArea(sameInstance(area))));
+    assertThat(c, hasInterface(ifaceName, isOspfPassive(equalTo(false))));
+    assertThat(c, hasInterface(ifaceName, isOspfPointToPoint()));
   }
 
   @Test
