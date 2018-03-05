@@ -963,8 +963,7 @@ public class DefaultTransitionGeneratorTest {
                                 new AclPermit(NODE1, NAT_ACL2), FalseExpr.INSTANCE)),
                         INTERFACE2,
                         ImmutableList.of(
-                            Maps.immutableEntry(
-                                new AclPermit(NODE1, NAT_ACL1), TrueExpr.INSTANCE),
+                            Maps.immutableEntry(new AclPermit(NODE1, NAT_ACL1), TrueExpr.INSTANCE),
                             Maps.immutableEntry(
                                 new AclPermit(NODE1, NAT_ACL2), FalseExpr.INSTANCE))),
                     NODE2,
