@@ -68,7 +68,10 @@ public class WorkMgrServiceTest {
     initContainerEnvironment();
     Response response = _service.getContainer("100", "0.0.0", _containerName);
     String containerJson = response.getEntity().toString();
-    String expected = "{\n  \"name\" : \"myContainer\"\n}";
+    String expected =
+        String.format(
+            "{%s  \"name\" : \"myContainer\"%s}",
+            System.getProperty("line.separator"), System.getProperty("line.separator"));
     assertThat(containerJson, equalTo(expected));
   }
 
