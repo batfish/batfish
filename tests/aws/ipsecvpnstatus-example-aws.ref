@@ -1,12 +1,12 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.question.IpsecVpnStatusQuestionPlugin$IpsecVpnStatusAnswerElement",
+      "class" : "org.batfish.question.ipsecvpnstatus.IpsecVpnStatusAnswerElement",
       "ipsecVpns" : [
         {
           "ipsecVpnEndpoint" : {
             "hostname" : "lhr-border-02",
-            "ipsecVpn" : "Tunnel1"
+            "vpnName" : "Tunnel1"
           },
           "problems" : [
             "MISSING_REMOTE_ENDPOINT"
@@ -15,7 +15,7 @@
         {
           "ipsecVpnEndpoint" : {
             "hostname" : "lhr-border-02",
-            "ipsecVpn" : "Tunnel2"
+            "vpnName" : "Tunnel2"
           },
           "problems" : [
             "MISSING_REMOTE_ENDPOINT"
@@ -25,7 +25,7 @@
     }
   ],
   "question" : {
-    "class" : "org.batfish.question.IpsecVpnStatusQuestionPlugin$IpsecVpnStatusQuestion",
+    "class" : "org.batfish.question.ipsecvpnstatus.IpsecVpnStatusQuestion",
     "node1Regex" : "lhr-border-02",
     "node2Regex" : ".*",
     "problemRegex" : "MISSING.*",
