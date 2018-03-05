@@ -68,10 +68,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     return visitor._rules.build();
   }
 
-  private static boolean isLoopbackInterface(String ifaceName) {
-    return ifaceName.toLowerCase().startsWith("lo");
-  }
-
   private final SynthesizerInput _input;
 
   private ImmutableList.Builder<RuleStatement> _rules;
@@ -522,7 +518,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .filter(
                                 fibConditionsByOutInterfaceEntry -> {
                                   String outInterface = fibConditionsByOutInterfaceEntry.getKey();
-                                  return isLoopbackInterface(outInterface)
+                                  return CommonUtil.isLoopback(outInterface)
                                       || CommonUtil.isNullInterface(outInterface);
                                 })
                             .map(
@@ -900,10 +896,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .stream()
                             .filter(
                                 fibConditionsByOutInterfaceEntry -> {
-                                  // TODO what's going on here?
-                                  // can we use flow sinks for this?
                                   String outInterface = fibConditionsByOutInterfaceEntry.getKey();
-                                  return !isLoopbackInterface(outInterface)
+                                  // Loopback and Null Interfaces are handled in
+                                  // visitNodeDropNullRoute.
+                                  // DROP_NO_ROUTE is handled in visitNodeDropNoRoute
+                                  return !CommonUtil.isLoopback(outInterface)
                                       && !CommonUtil.isNullInterface(outInterface)
                                       && !outInterface.equals(FibRow.DROP_NO_ROUTE);
                                 })
