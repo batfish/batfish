@@ -944,11 +944,11 @@
           ]
         }
       },
-      "version" : "0.34.0"
+      "version" : "0.35.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.34.0"
+      "version" : "0.35.0"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
