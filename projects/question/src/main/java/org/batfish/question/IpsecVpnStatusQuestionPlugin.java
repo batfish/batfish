@@ -27,8 +27,8 @@ public class IpsecVpnStatusQuestionPlugin extends QuestionPlugin {
     INCOMPATIBLE_IKE_PROPOSALS,
     INCOMPATIBLE_IPSEC_PROPOSALS,
     INCOMPATIBLE_PRE_SHARED_KEY,
-    MISSING_ENDPOINT,
-    NON_UNIQUE_ENDPOINT,
+    MISSING_REMOTE_ENDPOINT,
+    MULTIPLE_REMOTE_ENDPOINTS,
     NONE
   }
 
@@ -181,10 +181,10 @@ public class IpsecVpnStatusQuestionPlugin extends QuestionPlugin {
           SortedSet<Problem> problems = new TreeSet<>();
           IpsecVpn remoteIpsecVpn = null;
           if (ipsecVpn.getRemoteIpsecVpn() == null) {
-            problems.add(Problem.MISSING_ENDPOINT);
+            problems.add(Problem.MISSING_REMOTE_ENDPOINT);
           } else {
             if (ipsecVpn.getCandidateRemoteIpsecVpns().size() != 1) {
-              problems.add(Problem.NON_UNIQUE_ENDPOINT);
+              problems.add(Problem.MULTIPLE_REMOTE_ENDPOINTS);
             }
             remoteIpsecVpn = ipsecVpn.getRemoteIpsecVpn();
             String remoteHost = remoteIpsecVpn.getOwner().getHostname();

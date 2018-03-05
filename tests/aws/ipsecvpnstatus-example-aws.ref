@@ -1,0 +1,57 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.IpsecVpnStatusQuestionPlugin$IpsecVpnStatusAnswerElement",
+      "ipsecVpns" : [
+        {
+          "ipsecVpnEndpoint" : {
+            "hostname" : "lhr-border-02",
+            "ipsecVpn" : "Tunnel1"
+          },
+          "problems" : [
+            "MISSING_REMOTE_ENDPOINT"
+          ]
+        },
+        {
+          "ipsecVpnEndpoint" : {
+            "hostname" : "lhr-border-02",
+            "ipsecVpn" : "Tunnel2"
+          },
+          "problems" : [
+            "MISSING_REMOTE_ENDPOINT"
+          ]
+        },
+        {
+          "ipsecVpnEndpoint" : {
+            "hostname" : "vgw-81fd279f",
+            "ipsecVpn" : "vpn-ba2e34a8-1"
+          },
+          "problems" : [
+            "MISSING_REMOTE_ENDPOINT"
+          ]
+        },
+        {
+          "ipsecVpnEndpoint" : {
+            "hostname" : "vgw-81fd279f",
+            "ipsecVpn" : "vpn-ba2e34a8-2"
+          },
+          "problems" : [
+            "MISSING_REMOTE_ENDPOINT"
+          ]
+        }
+      ]
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.IpsecVpnStatusQuestionPlugin$IpsecVpnStatusQuestion",
+    "node1Regex" : ".*",
+    "node2Regex" : ".*",
+    "differential" : false
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}
