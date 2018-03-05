@@ -728,6 +728,9 @@ public class CommonUtil {
             OspfArea area = e3.getValue();
             for (String ifaceName : area.getInterfaces()) {
               Interface iface = c.getInterfaces().get(ifaceName);
+              if (iface.getOspfPassive()) {
+                continue;
+              }
               SortedSet<Edge> ifaceEdges =
                   topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
               boolean hasNeighbor = false;
@@ -739,6 +742,9 @@ public class CommonUtil {
                     String remoteIfaceName = edge.getInt2();
                     Configuration remoteNode = configurations.get(remoteHostname);
                     Interface remoteIface = remoteNode.getInterfaces().get(remoteIfaceName);
+                    if (remoteIface.getOspfPassive()) {
+                      continue;
+                    }
                     Vrf remoteVrf = remoteIface.getVrf();
                     String remoteVrfName = remoteVrf.getName();
                     OspfProcess remoteProc = remoteVrf.getOspfProcess();
