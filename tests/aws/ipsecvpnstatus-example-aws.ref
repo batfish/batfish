@@ -20,32 +20,15 @@
           "problems" : [
             "MISSING_REMOTE_ENDPOINT"
           ]
-        },
-        {
-          "ipsecVpnEndpoint" : {
-            "hostname" : "vgw-81fd279f",
-            "ipsecVpn" : "vpn-ba2e34a8-1"
-          },
-          "problems" : [
-            "MISSING_REMOTE_ENDPOINT"
-          ]
-        },
-        {
-          "ipsecVpnEndpoint" : {
-            "hostname" : "vgw-81fd279f",
-            "ipsecVpn" : "vpn-ba2e34a8-2"
-          },
-          "problems" : [
-            "MISSING_REMOTE_ENDPOINT"
-          ]
         }
       ]
     }
   ],
   "question" : {
     "class" : "org.batfish.question.IpsecVpnStatusQuestionPlugin$IpsecVpnStatusQuestion",
-    "node1Regex" : ".*",
+    "node1Regex" : "lhr-border-02",
     "node2Regex" : ".*",
+    "problemRegex" : "MISSING.*",
     "differential" : false
   },
   "status" : "SUCCESS",

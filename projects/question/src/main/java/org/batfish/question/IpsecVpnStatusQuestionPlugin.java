@@ -3,11 +3,13 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.base.Strings;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
@@ -204,7 +206,9 @@ public class IpsecVpnStatusQuestionPlugin extends QuestionPlugin {
           if (problems.size() == 0) {
             problems.add(Problem.NONE);
           }
-          answerElement.getIpsecVpns().add(new IpsecVpnInfo(ipsecVpn, problems, remoteIpsecVpn));
+          if (problems.stream().anyMatch(v -> question.matchesProblem(v))) {
+            answerElement.getIpsecVpns().add(new IpsecVpnInfo(ipsecVpn, problems, remoteIpsecVpn));
+          }
         }
       }
       return answerElement;
@@ -229,19 +233,24 @@ public class IpsecVpnStatusQuestionPlugin extends QuestionPlugin {
   public static class IpsecVpnStatusQuestion extends Question {
 
     private static final String PROP_NODE1_REGEX = "node1Regex";
-
     private static final String PROP_NODE2_REGEX = "node2Regex";
+    private static final String PROP_PROBLEM_REGEX = "problemRegex";
 
-    private NodesSpecifier _node1Regex;
-
-    private NodesSpecifier _node2Regex;
+    @Nonnull private NodesSpecifier _node1Regex;
+    @Nonnull private NodesSpecifier _node2Regex;
+    @Nonnull Pattern _problemRegex;
 
     @JsonCreator
     public IpsecVpnStatusQuestion(
         @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier regex1,
-        @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier regex2) {
+        @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier regex2,
+        @JsonProperty(PROP_PROBLEM_REGEX) String problemRegex) {
       _node1Regex = regex1 == null ? NodesSpecifier.ALL : regex1;
       _node2Regex = regex2 == null ? NodesSpecifier.ALL : regex2;
+      _problemRegex =
+          Strings.isNullOrEmpty(problemRegex)
+              ? Pattern.compile(".*")
+              : Pattern.compile(problemRegex.toUpperCase());
     }
 
     @Override
@@ -263,6 +272,15 @@ public class IpsecVpnStatusQuestionPlugin extends QuestionPlugin {
     public NodesSpecifier getNode2Regex() {
       return _node2Regex;
     }
+
+    @JsonProperty(PROP_PROBLEM_REGEX)
+    public String getProblemRegex() {
+      return _problemRegex.toString();
+    }
+
+    public boolean matchesProblem(Problem problem) {
+      return _problemRegex.matcher(problem.toString()).matches();
+    }
   }
 
   @Override
@@ -272,6 +290,6 @@ public class IpsecVpnStatusQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new IpsecVpnStatusQuestion(null, null);
+    return new IpsecVpnStatusQuestion(null, null, null);
   }
 }
