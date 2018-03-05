@@ -40,7 +40,7 @@ final class OspfProcessMatchersImpl {
   static final class HasOspfNeighbors
       extends FeatureMatcher<OspfProcess, Map<Pair<Ip, Ip>, OspfNeighbor>> {
     HasOspfNeighbors(@Nonnull Matcher<? super Map<Pair<Ip, Ip>, OspfNeighbor>> subMatcher) {
-      super(subMatcher, "OspfProcess with ospfNeighbors", "ospfNeighbors");
+      super(subMatcher, "An OSPF process with ospfNeighbors:", "ospfNeighbors");
     }
 
     @Override
