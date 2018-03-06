@@ -1,9 +1,0 @@
-{
-  "answerElements" : [ {
-    "class" : "org.batfish.question.IpsecVpnCheckQuestionPlugin$IpsecVpnCheckAnswerElement"
-  } ],
-  "question" : {
-    "class" : "org.batfish.question.IpsecVpnCheckQuestionPlugin$IpsecVpnCheckQuestion"
-  },
-  "status" : "SUCCESS"
-}

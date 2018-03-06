@@ -48,7 +48,7 @@ echo # this will check if all interface ips are unique
 get uniqueipassignments
 
 echo # this will check if all loopbacks are being correctly announced within OSPF
-get ospfloopbacks
+get ospfstatus
 
 echo ################
 echo # more interestingly, we can also ask questions about data flow, i.e., the end-to-end impact of all configuration
