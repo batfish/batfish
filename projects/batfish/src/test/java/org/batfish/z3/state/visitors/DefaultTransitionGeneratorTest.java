@@ -990,10 +990,13 @@ public class DefaultTransitionGeneratorTest {
 
     // Just test the DropAclOut rules for Node2
     Set<RuleStatement> node2DropAclOutRules =
-        rules.stream()
+        rules
+            .stream()
             .map(TransformedBasicRuleStatement.class::cast)
-            .filter(rule ->
-                rule.getPostconditionPostTransformationState().equals(new NodeDropAclOut(NODE2)))
+            .filter(
+                rule ->
+                    rule.getPostconditionPostTransformationState()
+                        .equals(new NodeDropAclOut(NODE2)))
             .collect(Collectors.toSet());
 
     // FailOutgoingAclNoMatchSrcNat
