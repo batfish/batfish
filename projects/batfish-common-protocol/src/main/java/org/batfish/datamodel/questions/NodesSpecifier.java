@@ -30,7 +30,9 @@ public class NodesSpecifier {
     ROLE
   }
 
-  public static NodesSpecifier ALL = new NodesSpecifier(".*");
+  public static final NodesSpecifier ALL = new NodesSpecifier(".*");
+
+  public static final NodesSpecifier NONE = new NodesSpecifier("");
 
   private final String _expression;
 
