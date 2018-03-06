@@ -46,6 +46,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -482,6 +483,14 @@ public class CommonUtil {
       s.append((bit != 0) ? '1' : '0');
     }
     return s.toString();
+  }
+
+  public static <T> void forEachWithIndex(Iterable<T> ts, BiConsumer<Integer, T> biConsumer) {
+    int i = 0;
+    for (T t : ts) {
+      biConsumer.accept(i, t);
+      i++;
+    }
   }
 
   public static Path getCanonicalPath(Path path) {

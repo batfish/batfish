@@ -4075,7 +4075,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes,
-      boolean useCompression) {
+      boolean useCompression,
+      int maxChunkSize) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
 
@@ -4132,8 +4133,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
     }
 
-    // build query jobs
-    List<NodJob> jobs =
+    List<Pair<String, String>> originateNodeVrfs =
         activeIngressNodes
             .stream()
             .flatMap(
@@ -4143,22 +4143,56 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .getVrfs()
                         .keySet()
                         .stream()
-                        .map(
-                            ingressVrf -> {
-                              Map<String, Set<String>> nodeVrfs =
-                                  ImmutableMap.of(ingressNode, ImmutableSet.of(ingressVrf));
-                              ReachabilityQuerySynthesizer query =
-                                  new ReachabilityQuerySynthesizer(
-                                      actions,
-                                      headerSpace,
-                                      activeFinalNodes,
-                                      nodeVrfs,
-                                      transitNodes,
-                                      notTransitNodes);
-                              SortedSet<Pair<String, String>> nodes =
-                                  ImmutableSortedSet.of(new Pair<>(ingressNode, ingressVrf));
-                              return new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
-                            }))
+                        .map(ingressVrf -> new Pair<>(ingressNode, ingressVrf)))
+            .collect(Collectors.toList());
+
+    int minChunkSize = 1;
+    int chunkSize =
+        Math.max(
+            minChunkSize,
+            Math.min(
+                maxChunkSize,
+                originateNodeVrfs.size() / Runtime.getRuntime().availableProcessors()));
+
+    // partition originateNodeVrfs into chunks
+    List<List<Pair<String, String>>> originateNodeVrfChunks = new ArrayList<>();
+    CommonUtil.forEachWithIndex(
+        originateNodeVrfs,
+        (index, originateNodeVrf) -> {
+          if (index % chunkSize == 0) {
+            // create a new chunk
+            originateNodeVrfChunks.add(0, new ArrayList<>());
+          }
+          originateNodeVrfChunks.get(0).add(originateNodeVrf);
+        });
+
+    // build query jobs
+    List<NodJob> jobs =
+        originateNodeVrfChunks
+            .stream()
+            .map(ImmutableSortedSet::copyOf)
+            .map(
+                nodeVrfs -> {
+                  SortedMap<String, Set<String>> vrfsByNode = new TreeMap<>();
+                  nodeVrfs.forEach(
+                      nodeVrf -> {
+                        String node = nodeVrf.getFirst();
+                        String vrf = nodeVrf.getSecond();
+                        vrfsByNode.computeIfAbsent(node, key -> new TreeSet<>());
+                        vrfsByNode.get(node).add(vrf);
+                      });
+
+                  ReachabilityQuerySynthesizer query =
+                      new ReachabilityQuerySynthesizer(
+                          actions,
+                          headerSpace,
+                          activeFinalNodes,
+                          vrfsByNode,
+                          transitNodes,
+                          notTransitNodes);
+
+                  return new NodJob(settings, dataPlaneSynthesizer, query, nodeVrfs, tag);
+                })
             .collect(Collectors.toList());
 
     // run jobs and get resulting flows

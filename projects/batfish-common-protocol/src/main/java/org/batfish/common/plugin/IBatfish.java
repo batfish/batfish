@@ -188,7 +188,8 @@ public interface IBatfish extends IPluginConsumer {
       NodesSpecifier notFinalNodeRegex,
       Set<String> transitNodes,
       Set<String> notTransitNodes,
-      boolean useCompression);
+      boolean useCompression,
+      int maxChunkSize);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }
