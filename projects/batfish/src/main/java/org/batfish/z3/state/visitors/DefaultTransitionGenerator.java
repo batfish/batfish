@@ -897,9 +897,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .filter(
                                 fibConditionsByOutInterfaceEntry -> {
                                   String outInterface = fibConditionsByOutInterfaceEntry.getKey();
-                                  // Loopback and Null Interfaces are handled in
-                                  // visitNodeDropNullRoute.
-                                  // DROP_NO_ROUTE is handled in visitNodeDropNoRoute
+                                  /* Loopback and Null Interfaces are handled in
+                                   * visitNodeDropNullRoute.
+                                   * DROP_NO_ROUTE is handled in visitNodeDropNoRoute
+                                   */
                                   return !CommonUtil.isLoopback(outInterface)
                                       && !CommonUtil.isNullInterface(outInterface)
                                       && !outInterface.equals(FibRow.DROP_NO_ROUTE);
