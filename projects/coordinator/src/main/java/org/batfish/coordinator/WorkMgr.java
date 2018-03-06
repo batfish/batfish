@@ -488,6 +488,15 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    /** Delete questions */
+    for (String qName : questionsToDelete) {
+      Path qDir = questionsDir.resolve(qName);
+      if (!Files.exists(qDir)) {
+        throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
+      }
+      CommonUtil.deleteDirectory(qDir);
+    }
+
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
       Path qDir = questionsDir.resolve(entry.getKey());
       if (Files.exists(qDir)) {
@@ -499,15 +508,6 @@ public class WorkMgr extends AbstractCoordinator {
       }
       Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
       CommonUtil.writeFile(qFile, entry.getValue());
-    }
-
-    /** Delete questions */
-    for (String qName : questionsToDelete) {
-      Path qDir = questionsDir.resolve(qName);
-      if (!Files.exists(qDir)) {
-        throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
-      }
-      CommonUtil.deleteDirectory(qDir);
     }
   }
 
