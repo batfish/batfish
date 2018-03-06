@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -3144,7 +3145,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /**
    * Set the roles of each configuration. Use an explicitly provided {@link NodeRoleSpecifier} if
-   * one exists; otherwise use the results of our node-role inference.
+   * one exists; otherwise use the results of our node-role inference. Also set the inferred role
+   * dimensions of each node, based on its name.
    */
   private void processNodeRoles(
       Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
@@ -3160,6 +3162,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       } else {
         SortedSet<String> roles = nodeRolesEntry.getValue();
         config.setRoles(roles);
+      }
+    }
+    Map<String, NavigableMap<Integer, String>> roleDimensions =
+        InferRoles.getRoleDimensions(configurations);
+    for (Map.Entry<String, NavigableMap<Integer, String>> entry : roleDimensions.entrySet()) {
+      String nodeName = entry.getKey();
+      Configuration config = configurations.get(nodeName);
+      if (config == null) {
+        veae.setValid(false);
+      } else {
+        config.setRoleDimensions(entry.getValue());
       }
     }
   }
