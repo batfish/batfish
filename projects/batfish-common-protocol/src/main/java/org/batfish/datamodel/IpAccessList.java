@@ -44,6 +44,11 @@ public class IpAccessList extends ComparableStructure<String> {
       _owner = owner;
       return this;
     }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
   }
 
   private static final String PROP_LINES = "lines";

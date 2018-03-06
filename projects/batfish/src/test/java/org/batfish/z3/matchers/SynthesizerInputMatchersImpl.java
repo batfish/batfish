@@ -3,7 +3,6 @@ package org.batfish.z3.matchers;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
@@ -11,38 +10,34 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.state.AclPermit;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 public class SynthesizerInputMatchersImpl {
 
   static final class HasAclActions
-      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Map<Integer, LineAction>>>> {
-    HasAclActions(
-        @Nonnull Matcher<? super Map<String, Map<String, Map<Integer, LineAction>>>> subMatcher) {
+      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, List<LineAction>>>> {
+    HasAclActions(@Nonnull Matcher<? super Map<String, Map<String, List<LineAction>>>> subMatcher) {
       super(subMatcher, "SynthesizerInput with ACL actions", "ACL actions");
     }
 
     @Override
-    protected Map<String, Map<String, Map<Integer, LineAction>>> featureValueOf(
-        SynthesizerInput actual) {
+    protected Map<String, Map<String, List<LineAction>>> featureValueOf(SynthesizerInput actual) {
       return actual.getAclActions();
     }
   }
 
   static final class HasAclConditions
-      extends FeatureMatcher<
-          SynthesizerInput, Map<String, Map<String, Map<Integer, BooleanExpr>>>> {
+      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, List<BooleanExpr>>>> {
     HasAclConditions(
-        @Nonnull Matcher<? super Map<String, Map<String, Map<Integer, BooleanExpr>>>> subMatcher) {
+        @Nonnull Matcher<? super Map<String, Map<String, List<BooleanExpr>>>> subMatcher) {
       super(subMatcher, "SynthesizerInput with ACL conditions", "ACL conditions");
     }
 
     @Override
-    protected Map<String, Map<String, Map<Integer, BooleanExpr>>> featureValueOf(
-        SynthesizerInput actual) {
+    protected Map<String, Map<String, List<BooleanExpr>>> featureValueOf(SynthesizerInput actual) {
       return actual.getAclConditions();
     }
   }
@@ -139,22 +134,17 @@ public class SynthesizerInputMatchersImpl {
 
   static final class HasSourceNats
       extends FeatureMatcher<
-          SynthesizerInput,
-          Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>> {
+          SynthesizerInput, Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>> {
     HasSourceNats(
         @Nonnull
-            Matcher<
-                    ? super
-                        Map<
-                            String,
-                            Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>>
+            Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
                 subMatcher) {
       super(subMatcher, "SynthesizerInput with source NATs", "source NATs");
     }
 
     @Override
-    protected Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-        featureValueOf(SynthesizerInput actual) {
+    protected Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> featureValueOf(
+        SynthesizerInput actual) {
       return actual.getSourceNats();
     }
   }

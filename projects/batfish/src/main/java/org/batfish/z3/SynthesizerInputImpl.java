@@ -11,7 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -26,9 +25,9 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -38,6 +37,14 @@ import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
+
+  static final IpAccessList DEFAULT_SOURCE_NAT_ACL =
+      new NetworkFactory()
+          .aclBuilder()
+          .setName("~DEFAULT_SOURCE_NAT_ACL~")
+          .setLines(
+              ImmutableList.of(IpAccessListLine.builder().setAction(LineAction.ACCEPT).build()))
+          .build();
 
   public static class Builder {
     private Map<String, Configuration> _configurations;
@@ -127,9 +134,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return lcIfaceName.startsWith("lo");
   }
 
-  private final Map<String, Map<String, Map<Integer, LineAction>>> _aclActions;
+  private final Map<String, Map<String, List<LineAction>>> _aclActions;
 
-  private final Map<String, Map<String, Map<Integer, BooleanExpr>>> _aclConditions;
+  private final Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
   private final Map<String, Configuration> _configurations;
 
@@ -172,8 +179,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-      _sourceNats;
+  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
@@ -230,33 +236,31 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _aclConditions = computeAclConditions();
   }
 
-  private Map<String, Map<String, Map<Integer, LineAction>>> computeAclActions() {
+  private Map<String, Map<String, List<LineAction>>> computeAclActions() {
     return _enabledAcls
         .entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey,
-                e ->
-                    e.getValue()
+                enabledAclsByHostnameEntry ->
+                    enabledAclsByHostnameEntry
+                        .getValue()
                         .entrySet()
                         .stream()
                         .collect(
                             ImmutableMap.toImmutableMap(
                                 Entry::getKey,
-                                e2 -> {
-                                  IpAccessList acl = e2.getValue();
-                                  ImmutableMap.Builder<Integer, LineAction> lineActions =
-                                      ImmutableMap.builder();
-                                  List<IpAccessListLine> lines = acl.getLines();
-                                  for (int i = 0; i < lines.size(); i++) {
-                                    lineActions.put(i, lines.get(i).getAction());
-                                  }
-                                  return lineActions.build();
-                                }))));
+                                enabledAclsByAclNameEntry ->
+                                    enabledAclsByAclNameEntry
+                                        .getValue()
+                                        .getLines()
+                                        .stream()
+                                        .map(IpAccessListLine::getAction)
+                                        .collect(ImmutableList.toImmutableList())))));
   }
 
-  private Map<String, Map<String, Map<Integer, BooleanExpr>>> computeAclConditions() {
+  private Map<String, Map<String, List<BooleanExpr>>> computeAclConditions() {
     return _enabledAcls
         .entrySet()
         .stream()
@@ -270,16 +274,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                         .collect(
                             ImmutableMap.toImmutableMap(
                                 Entry::getKey,
-                                e2 -> {
-                                  IpAccessList acl = e2.getValue();
-                                  ImmutableMap.Builder<Integer, BooleanExpr> lineConditions =
-                                      ImmutableMap.builder();
-                                  List<IpAccessListLine> lines = acl.getLines();
-                                  for (int i = 0; i < lines.size(); i++) {
-                                    lineConditions.put(i, new HeaderSpaceMatchExpr(lines.get(i)));
-                                  }
-                                  return lineConditions.build();
-                                }))));
+                                e2 ->
+                                    e2.getValue()
+                                        .getLines()
+                                        .stream()
+                                        .map(HeaderSpaceMatchExpr::new)
+                                        .collect(ImmutableList.toImmutableList())))));
   }
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
@@ -316,6 +316,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                         if (sourceNatAcl != null) {
                                           interfaceAcls.add(
                                               new Pair<>(sourceNatAcl.getName(), sourceNatAcl));
+                                        } else {
+                                          interfaceAcls.add(
+                                              new Pair<>(
+                                                  DEFAULT_SOURCE_NAT_ACL.getName(),
+                                                  DEFAULT_SOURCE_NAT_ACL));
                                         }
                                       });
 
@@ -485,21 +490,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     for (int i = 0; i < fib.size(); i++) {
       FibRow currentRow = fib.get(i);
       String ifaceOutName = currentRow.getInterface();
-      NodeInterfacePair receiver;
-      if (isLoopbackInterface(ifaceOutName)
-          || CommonUtil.isNullInterface(ifaceOutName)
-          || ifaceOutName.equals(FibRow.DROP_NO_ROUTE)) {
-        receiver = NodeInterfacePair.NONE;
-      } else {
-        receiver = new NodeInterfacePair(currentRow.getNextHop(), currentRow.getNextHopInterface());
-      }
+      NodeInterfacePair receiver = getFibRowReceiver(currentRow, ifaceOutName);
 
       conditionsByInterface
           .computeIfAbsent(ifaceOutName, n -> new HashMap<>())
           .computeIfAbsent(receiver, r -> ImmutableList.builder())
           .add(FibRowMatchExpr.getFibRowConditions(hostname, vrfName, fib, i, currentRow));
     }
-    conditionsByInterface.entrySet().stream();
     return conditionsByInterface
         .entrySet()
         .stream()
@@ -516,6 +513,18 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                 Entry::getKey,
                                 conditionsByReceiverEntry ->
                                     new OrExpr(conditionsByReceiverEntry.getValue().build())))));
+  }
+
+  private NodeInterfacePair getFibRowReceiver(FibRow currentRow, String ifaceOutName) {
+    if (isLoopbackInterface(ifaceOutName)
+        || CommonUtil.isNullInterface(ifaceOutName)
+        || ifaceOutName.equals(FibRow.DROP_NO_ROUTE)) {
+      // TODO what is this? seems like a hack.
+      // better to move these cases to another map that isn't keyed by receiver.
+      return NodeInterfacePair.NONE;
+    } else {
+      return new NodeInterfacePair(currentRow.getNextHop(), currentRow.getNextHopInterface());
+    }
   }
 
   private Map<String, Map<String, String>> computeIncomingAcls() {
@@ -596,8 +605,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 }));
   }
 
-  private Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-      computeSourceNats() {
+  private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {
     return _topologyInterfaces
         .entrySet()
         .stream()
@@ -621,12 +629,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                       .map(
                                           sourceNat -> {
                                             IpAccessList acl = sourceNat.getAcl();
-                                            Optional<BasicStateExpr>
-                                                preconditionPreTransformationState =
-                                                    acl != null
-                                                        ? Optional.of(
-                                                            new AclPermit(hostname, acl.getName()))
-                                                        : Optional.empty();
+                                            String aclName =
+                                                acl == null
+                                                    ? DEFAULT_SOURCE_NAT_ACL.getName()
+                                                    : acl.getName();
+                                            AclPermit preconditionPreTransformationState =
+                                                new AclPermit(hostname, aclName);
                                             BooleanExpr transformationConstraint =
                                                 new RangeMatchExpr(
                                                     TransformationHeaderField.NEW_SRC_IP,
@@ -645,20 +653,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Map<String, Set<String>> computeTopologyInterfaces() {
     Map<String, Set<String>> topologyEdges = new HashMap<>();
-    _enabledEdges
-        .stream()
-        .forEach(
-            enabledEdge ->
-                topologyEdges
-                    .computeIfAbsent(enabledEdge.getNode1(), n -> new HashSet<>())
-                    .add(enabledEdge.getInt1()));
-    _enabledFlowSinks
-        .stream()
-        .forEach(
-            enabledFlowSink ->
-                topologyEdges
-                    .computeIfAbsent(enabledFlowSink.getHostname(), n -> new HashSet<>())
-                    .add(enabledFlowSink.getInterface()));
+    _enabledEdges.forEach(
+        enabledEdge ->
+            topologyEdges
+                .computeIfAbsent(enabledEdge.getNode1(), n -> new HashSet<>())
+                .add(enabledEdge.getInt1()));
+    _enabledFlowSinks.forEach(
+        enabledFlowSink ->
+            topologyEdges
+                .computeIfAbsent(enabledFlowSink.getHostname(), n -> new HashSet<>())
+                .add(enabledFlowSink.getInterface()));
     return topologyEdges
         .entrySet()
         .stream()
@@ -667,7 +671,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Map<Integer, LineAction>>> getAclActions() {
+  public Map<String, Map<String, List<LineAction>>> getAclActions() {
     return _aclActions;
   }
 
@@ -677,7 +681,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
    * that line to be matched.
    */
   @Override
-  public Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions() {
+  public Map<String, Map<String, List<BooleanExpr>>> getAclConditions() {
     return _aclConditions;
   }
 
@@ -738,8 +742,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-      getSourceNats() {
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
     return _sourceNats;
   }
 

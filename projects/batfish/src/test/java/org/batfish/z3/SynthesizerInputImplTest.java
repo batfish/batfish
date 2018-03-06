@@ -25,8 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -139,9 +139,8 @@ public class SynthesizerInputImplTest {
                     .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
                     .build())
             .build();
-    Map<Integer, LineAction> expectedActions =
-        ImmutableMap.of(0, LineAction.ACCEPT, 1, LineAction.REJECT);
-    Map<String, Map<Integer, LineAction>> expectedSrcNodeWithDataPlane =
+    List<LineAction> expectedActions = ImmutableList.of(LineAction.ACCEPT, LineAction.REJECT);
+    Map<String, List<LineAction>> expectedSrcNodeWithDataPlane =
         ImmutableMap.of(
             edgeInterfaceInAcl.getName(),
             expectedActions,
@@ -149,13 +148,13 @@ public class SynthesizerInputImplTest {
             expectedActions,
             iFlowSinkOutAcl.getName(),
             expectedActions);
-    Map<String, Map<Integer, LineAction>> expectedSrcNodeWithoutDataPlane =
-        ImmutableMap.<String, Map<Integer, LineAction>>builder()
+    Map<String, List<LineAction>> expectedSrcNodeWithoutDataPlane =
+        ImmutableMap.<String, List<LineAction>>builder()
             .putAll(expectedSrcNodeWithDataPlane)
             .put(iNoEdgeInAcl.getName(), expectedActions)
             .put(iNoEdgeOutAcl.getName(), expectedActions)
             .build();
-    Map<String, Map<Integer, LineAction>> expectedNextHop =
+    Map<String, List<LineAction>> expectedNextHop =
         ImmutableMap.of(
             nextHopInterfaceInAcl.getName(),
             expectedActions,
@@ -205,12 +204,10 @@ public class SynthesizerInputImplTest {
                     c.getName(),
                     ImmutableMap.of(
                         aclWithoutLines.getName(),
-                        ImmutableMap.of(),
+                        ImmutableList.of(),
                         aclWithLines.getName(),
-                        ImmutableMap.of(
-                            0,
+                        ImmutableList.of(
                             new HeaderSpaceMatchExpr(aclWithLines.getLines().get(0)),
-                            1,
                             new HeaderSpaceMatchExpr(aclWithLines.getLines().get(1))))))));
 
     Configuration srcNode = _cb.build();
@@ -263,8 +260,8 @@ public class SynthesizerInputImplTest {
                 ImmutableMap.of(
                     srcNode.getName(),
                     ImmutableMap.of(
-                        sourceNat1Acl.getName(), ImmutableMap.of(),
-                        sourceNat2Acl.getName(), ImmutableMap.of()),
+                        sourceNat1Acl.getName(), ImmutableList.of(),
+                        sourceNat2Acl.getName(), ImmutableList.of()),
                     nextHop.getName(),
                     ImmutableMap.of()))));
   }
@@ -612,8 +609,7 @@ public class SynthesizerInputImplTest {
                     equalTo(
                         ImmutableList.of(
                             immutableEntry(
-                                Optional.of(
-                                    new AclPermit(srcNode.getName(), sourceNat1Acl.getName())),
+                                new AclPermit(srcNode.getName(), sourceNat1Acl.getName()),
                                 new RangeMatchExpr(
                                     TransformationHeaderField.NEW_SRC_IP,
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
@@ -629,15 +625,13 @@ public class SynthesizerInputImplTest {
                     equalTo(
                         ImmutableList.of(
                             immutableEntry(
-                                Optional.of(
-                                    new AclPermit(srcNode.getName(), sourceNat1Acl.getName())),
+                                new AclPermit(srcNode.getName(), sourceNat1Acl.getName()),
                                 new RangeMatchExpr(
                                     TransformationHeaderField.NEW_SRC_IP,
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
                                     ImmutableSet.of(Range.closed(ip11.asLong(), ip12.asLong())))),
                             immutableEntry(
-                                Optional.of(
-                                    new AclPermit(srcNode.getName(), sourceNat2Acl.getName())),
+                                new AclPermit(srcNode.getName(), sourceNat2Acl.getName()),
                                 new RangeMatchExpr(
                                     TransformationHeaderField.NEW_SRC_IP,
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
@@ -687,5 +681,77 @@ public class SynthesizerInputImplTest {
         hasTopologyInterfaces(
             hasEntry(equalTo(nextHop.getName()), hasItem(nextHopInterface.getName()))));
     assertThat(inputWithoutDataPlane, hasTopologyInterfaces(nullValue()));
+  }
+
+  /**
+   * Test that for a SourceNat with no ACL, the SynthesizerInput will have an "accept everything"
+   * ACL.
+   */
+  @Test
+  public void testSourceNatWithNoAcl() {
+    Configuration srcNode = _cb.build();
+    Configuration nextHop = _cb.build();
+    Vrf srcVrf = _vb.setOwner(srcNode).build();
+    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
+    Ip ip1 = new Ip("1.0.0.0");
+    Ip ip2 = new Ip("1.0.0.10");
+    SourceNat sourceNat = _snb.setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
+    Interface srcInterfaceOneSourceNat =
+        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of(sourceNat)).build();
+    Interface nextHopInterface =
+        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
+    Edge forwardEdge = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
+    Edge backEdge = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setConfigurations(
+                ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
+            .setDataPlane(
+                TestDataPlane.builder()
+                    .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
+                    .build())
+            .build();
+
+    // Acl for the SourceNat is DefaultSourceNatAcl
+    assertThat(
+        inputWithDataPlane,
+        hasSourceNats(
+            hasEntry(
+                equalTo(srcNode.getName()),
+                hasEntry(
+                    equalTo(srcInterfaceOneSourceNat.getName()),
+                    equalTo(
+                        ImmutableList.of(
+                            immutableEntry(
+                                new AclPermit(
+                                    srcNode.getHostname(),
+                                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName()),
+                                new RangeMatchExpr(
+                                    TransformationHeaderField.NEW_SRC_IP,
+                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    ImmutableSet.of(
+                                        Range.closed(ip1.asLong(), ip2.asLong()))))))))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasAclConditions(
+            hasEntry(
+                srcNode.getHostname(),
+                ImmutableMap.of(
+                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
+                    ImmutableList.of(
+                        new HeaderSpaceMatchExpr(
+                            IpAccessListLine.builder()
+                                .setSrcIps(ImmutableList.of(new IpWildcard("0.0.0.0/0")))
+                                .build()))))));
+
+    assertThat(
+        inputWithDataPlane,
+        hasAclActions(
+            hasEntry(
+                srcNode.getHostname(),
+                ImmutableMap.of(
+                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
+                    ImmutableList.of(LineAction.ACCEPT)))));
   }
 }
