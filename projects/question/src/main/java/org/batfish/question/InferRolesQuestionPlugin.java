@@ -7,9 +7,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
@@ -91,32 +89,6 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_MATCHING_NODES_COUNT)
     public void setMatchingNodesCount(int matchingNodesCount) {
       _matchingNodesCount = matchingNodesCount;
-    }
-  }
-
-  // Node names are parsed into a sequence of alphanumeric strings and
-  // delimiters (strings of non-alphanumeric characters).
-  public enum InferRolesCharClass {
-    ALPHANUMERIC,
-    DELIMITER;
-
-    public static InferRolesCharClass charToCharClass(char c) {
-      if (Character.isAlphabetic(c) || Character.isDigit(c)) {
-        return InferRolesCharClass.ALPHANUMERIC;
-      } else {
-        return InferRolesCharClass.DELIMITER;
-      }
-    }
-
-    public String tokenToRegex(String s) {
-      switch (this) {
-        case ALPHANUMERIC:
-          return "\\p{Alnum}+";
-        case DELIMITER:
-          return Pattern.quote(s);
-        default:
-          throw new BatfishException("this case should be unreachable");
-      }
     }
   }
 
