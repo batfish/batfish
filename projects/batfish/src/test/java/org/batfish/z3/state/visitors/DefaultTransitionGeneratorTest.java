@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -15,6 +14,7 @@ import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -988,27 +988,30 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(NodeDropAclOut.State.INSTANCE)));
 
+    // Just test the DropAclOut rules for Node2
+    Set<RuleStatement> node2DropAclOutRules =
+        rules.stream()
+            .map(TransformedBasicRuleStatement.class::cast)
+            .filter(rule ->
+                rule.getPostconditionPostTransformationState().equals(new NodeDropAclOut(NODE2)))
+            .collect(Collectors.toSet());
+
     // FailOutgoingAclNoMatchSrcNat
     assertThat(
-        rules,
-        hasItem(
+        node2DropAclOutRules,
+        containsInAnyOrder(
+            new TransformedBasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(),
+                ImmutableSet.of(new AclDeny(NODE2, ACL1)),
+                ImmutableSet.of(new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1)),
+                new NodeDropAclOut(NODE2)),
             new TransformedBasicRuleStatement(
                 TrueExpr.INSTANCE,
                 ImmutableSet.of(),
                 ImmutableSet.of(new AclDeny(NODE2, ACL2)),
                 ImmutableSet.of(new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2)),
                 new NodeDropAclOut(NODE2))));
-
-    assertThat(
-        rules,
-        not(
-            hasItem(
-                new TransformedBasicRuleStatement(
-                    TrueExpr.INSTANCE,
-                    ImmutableSet.of(),
-                    ImmutableSet.of(),
-                    ImmutableSet.of(new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1)),
-                    new NodeDropAclOut(NODE1)))));
   }
 
   @Test
