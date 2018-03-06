@@ -468,8 +468,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                     Ip localIp = ospfNeighbor.getLocalIp();
                     Ip remoteIp = remoteOspfNeighbor.getLocalIp();
                     IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                    vedges.add(
-                        new VerboseOspfEdge(c, ospfNeighbor, remoteHost, remoteOspfNeighbor, edge));
+                    vedges.add(new VerboseOspfEdge(ospfNeighbor, remoteOspfNeighbor, edge));
                   }
                 }
               }
@@ -491,9 +490,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             SortedSet<RoleEdge> redges = new TreeSet<>();
             for (VerboseOspfEdge vedge : vedges) {
               SortedSet<String> roles1 =
-                  _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
+                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode1(), new TreeSet<>());
               SortedSet<String> roles2 =
-                  _nodeRolesMap.getOrDefault(vedge.getNode2().getName(), new TreeSet<>());
+                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode2(), new TreeSet<>());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   redges.add(new RoleEdge(r1, r2));
@@ -526,8 +525,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                     Ip localIp = ripNeighbor.getLocalIp();
                     Ip remoteIp = remoteRipNeighbor.getLocalIp();
                     IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                    vedges.add(
-                        new VerboseRipEdge(c, ripNeighbor, remoteHost, remoteRipNeighbor, edge));
+                    vedges.add(new VerboseRipEdge(ripNeighbor, remoteRipNeighbor, edge));
                   }
                 }
               }
@@ -549,9 +547,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
             SortedSet<RoleEdge> redges = new TreeSet<>();
             for (VerboseRipEdge vedge : vedges) {
               SortedSet<String> roles1 =
-                  _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
+                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode1(), new TreeSet<>());
               SortedSet<String> roles2 =
-                  _nodeRolesMap.getOrDefault(vedge.getNode2().getName(), new TreeSet<>());
+                  _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode2(), new TreeSet<>());
               for (String r1 : roles1) {
                 for (String r2 : roles2) {
                   redges.add(new RoleEdge(r1, r2));
@@ -586,8 +584,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                       Ip localIp = bgpNeighbor.getLocalIp();
                       Ip remoteIp = remoteBgpNeighbor.getLocalIp();
                       IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                      vedges.add(
-                          new VerboseBgpEdge(c, bgpNeighbor, remoteHost, remoteBgpNeighbor, edge));
+                      vedges.add(new VerboseBgpEdge(bgpNeighbor, remoteBgpNeighbor, edge));
                     }
                   }
                 }
@@ -635,8 +632,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
                       Ip localIp = bgpNeighbor.getLocalIp();
                       Ip remoteIp = remoteBgpNeighbor.getLocalIp();
                       IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                      vedges.add(
-                          new VerboseBgpEdge(c, bgpNeighbor, remoteHost, remoteBgpNeighbor, edge));
+                      vedges.add(new VerboseBgpEdge(bgpNeighbor, remoteBgpNeighbor, edge));
                     }
                   }
                 }
@@ -747,9 +743,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       SortedSet<RoleEdge> redges = new TreeSet<>();
       for (VerboseBgpEdge vedge : vedges) {
         SortedSet<String> roles1 =
-            _nodeRolesMap.getOrDefault(vedge.getNode1().getName(), new TreeSet<>());
+            _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode1(), new TreeSet<>());
         SortedSet<String> roles2 =
-            _nodeRolesMap.getOrDefault(vedge.getNode2().getName(), new TreeSet<>());
+            _nodeRolesMap.getOrDefault(vedge.getEdgeSummary().getNode2(), new TreeSet<>());
         for (String r1 : roles1) {
           for (String r2 : roles2) {
             redges.add(new RoleEdge(r1, r2));

@@ -2,34 +2,31 @@ package org.batfish.datamodel.collections;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.Pair;
-import org.batfish.datamodel.Configuration;
+import java.io.Serializable;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.RipNeighbor;
 
-public final class VerboseRipEdge extends Pair<NodeRipSessionPair, NodeRipSessionPair> {
+public final class VerboseRipEdge implements Serializable, Comparable<VerboseRipEdge> {
 
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
 
   private static final String PROP_NODE1_SESSION = "node1Session";
 
-  private static final String PROP_NODE1 = "node1";
-
   private static final String PROP_NODE2_SESSION = "node2Session";
-
-  private static final String PROP_NODE2 = "node2";
 
   private static final long serialVersionUID = 1L;
 
-  private final IpEdge _edgeSummary;
+  @Nonnull private final IpEdge _edgeSummary;
+  @Nonnull private final RipNeighbor _session1;
+  @Nonnull private final RipNeighbor _session2;
 
   @JsonCreator
   public VerboseRipEdge(
-      @JsonProperty(PROP_NODE1) Configuration node1,
-      @JsonProperty(PROP_NODE1_SESSION) RipNeighbor s1,
-      @JsonProperty(PROP_NODE2) Configuration node2,
-      @JsonProperty(PROP_NODE2_SESSION) RipNeighbor s2,
-      @JsonProperty(PROP_EDGE_SUMMARY) IpEdge e) {
-    super(new NodeRipSessionPair(node1, s1), new NodeRipSessionPair(node2, s2));
+      @Nonnull @JsonProperty(PROP_NODE1_SESSION) RipNeighbor s1,
+      @Nonnull @JsonProperty(PROP_NODE2_SESSION) RipNeighbor s2,
+      @Nonnull @JsonProperty(PROP_EDGE_SUMMARY) IpEdge e) {
+    this._session1 = s1;
+    this._session2 = s2;
     this._edgeSummary = e;
   }
 
@@ -38,23 +35,27 @@ public final class VerboseRipEdge extends Pair<NodeRipSessionPair, NodeRipSessio
     return _edgeSummary;
   }
 
-  @JsonProperty(PROP_NODE1)
-  public Configuration getNode1() {
-    return _first.getHost();
-  }
-
-  @JsonProperty(PROP_NODE2)
-  public Configuration getNode2() {
-    return _second.getHost();
-  }
-
   @JsonProperty(PROP_NODE1_SESSION)
   public RipNeighbor getSession1() {
-    return _first.getSession();
+    return _session1;
   }
 
   @JsonProperty(PROP_NODE2_SESSION)
   public RipNeighbor getSession2() {
-    return _second.getSession();
+    return _session2;
+  }
+
+  @Override
+  public int compareTo(VerboseRipEdge o) {
+    int cmp = _edgeSummary.compareTo(o._edgeSummary);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = _session1.compareTo(o._session1);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = _session2.compareTo(o._session2);
+    return cmp;
   }
 }
