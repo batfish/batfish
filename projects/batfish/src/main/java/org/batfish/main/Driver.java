@@ -70,6 +70,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 public class Driver {
 
@@ -458,6 +460,8 @@ public class Driver {
                   0,
                   PARENT_CHECK_INTERVAL_MS,
                   TimeUnit.MILLISECONDS);
+          SignalHandler handler = signal -> _mainLogger.infof("BFS: Ignoring signal %s\n", signal);
+          Signal.handle(new Signal("INT"), handler);
         }
       }
 
