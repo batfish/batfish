@@ -30,7 +30,7 @@ public class IpsecVpnStatusAnswererTest {
     IkePolicy ikePolicy = new IkePolicy(name + "-ikePolicy");
     ikeGw.setIkePolicy(ikePolicy);
 
-    SortedMap<String, IkeProposal> ikeProposalMap = new TreeMap();
+    SortedMap<String, IkeProposal> ikeProposalMap = new TreeMap<>();
     ikeProposalMap.put(name + "-ikeproposal", ikeProposal);
     ikePolicy.setProposals(ikeProposalMap);
     ikePolicy.setPreSharedKeyHash(pskHash);
@@ -38,7 +38,7 @@ public class IpsecVpnStatusAnswererTest {
     IpsecPolicy ipsecPolicy = new IpsecPolicy(name + "-ipsecpolicy");
     ipsecVpn.setIpsecPolicy(ipsecPolicy);
 
-    SortedMap<String, IpsecProposal> ipsecProposalMap = new TreeMap();
+    SortedMap<String, IpsecProposal> ipsecProposalMap = new TreeMap<>();
     ipsecProposalMap.put(name + "-ipsecproposal", ipsecProposal);
     ipsecPolicy.setProposals(ipsecProposalMap);
 

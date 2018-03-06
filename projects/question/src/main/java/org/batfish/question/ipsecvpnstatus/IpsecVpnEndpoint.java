@@ -56,6 +56,11 @@ public class IpsecVpnEndpoint implements Comparable<IpsecVpnEndpoint> {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _vpnName);
+  }
+
+  @Override
   public String toString() {
     return String.format("hostname: %s vpnname: %s", _hostname, _vpnName);
   }
