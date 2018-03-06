@@ -3,6 +3,8 @@ package org.batfish.question.ipsecvpnstatus;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.Sets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -138,6 +140,32 @@ public class IpsecVpnStatusAnswererTest {
 
     assertThat(
         vpnInfo.getProblems(), equalTo(Collections.singleton(Problem.MULTIPLE_REMOTE_ENDPOINTS)));
+  }
+
+  @Test
+  public void analyzeVpnTestMultipleProblems() {
+    IpsecVpn ipsecVpn =
+        createIpsecVpn(
+            "local", IkeProposal.PSK_3DES_DH2_SHA1, IpsecProposal.NOPFS_ESP_DES_SHA, "key");
+    IpsecVpn remote1 =
+        createIpsecVpn(
+            "remote1", IkeProposal.PSK_3DES_DH2_MD5, IpsecProposal.NOPFS_ESP_DES_MD5, "key-bad");
+
+    ipsecVpn.initCandidateRemoteVpns();
+    ipsecVpn.setRemoteIpsecVpn(remote1);
+    ipsecVpn.getCandidateRemoteIpsecVpns().add(remote1);
+
+    IpsecVpnInfo vpnInfo = IpsecVpnStatusAnswerer.analyzeIpsecVpn(ipsecVpn);
+
+    assertThat(
+        vpnInfo.getProblems(),
+        equalTo(
+            Sets.newTreeSet(
+                Arrays.asList(
+                    Problem.INCOMPATIBLE_IKE_PROPOSALS,
+                    Problem.INCOMPATIBLE_IPSEC_PROPOSALS,
+                    Problem.INCOMPATIBLE_PRE_SHARED_KEY))));
+    assertThat(vpnInfo.getRemoteEndpoint(), equalTo(new IpsecVpnEndpoint(remote1)));
   }
 
   @Test
