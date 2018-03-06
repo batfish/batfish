@@ -248,7 +248,9 @@ public class Driver {
   @Nullable
   public static synchronized Task killTask(String taskId) {
     Task task = _taskLog.get(taskId);
-    if (task == null) {
+    if (_mainSettings.getParentPid() <= 0) {
+      throw new BatfishException("Cannot kill tasks when started in non-watchdog mode");
+    } else if (task == null) {
       throw new BatfishException("Task with provided id not found: " + taskId);
     } else if (task.getStatus().isTerminated()) {
       throw new BatfishException("Task with provided id already terminated " + taskId);
