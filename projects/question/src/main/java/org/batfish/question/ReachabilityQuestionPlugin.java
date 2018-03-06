@@ -118,13 +118,13 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ACTIONS = "actions";
 
-    private static final String DEFAULT_FINAL_NODE_REGEX = ".*";
+    private static final NodesSpecifier DEFAULT_FINAL_NODE_REGEX = NodesSpecifier.ALL;
 
-    private static final String DEFAULT_INGRESS_NODE_REGEX = ".*";
+    private static final NodesSpecifier DEFAULT_INGRESS_NODE_REGEX = NodesSpecifier.ALL;
 
-    private static final String DEFAULT_NOT_FINAL_NODE_REGEX = "";
+    private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = NodesSpecifier.NONE;
 
-    private static final String DEFAULT_NOT_INGRESS_NODE_REGEX = "";
+    private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
 
     private static final SortedSet<String> DEFAULT_TRANSIT_NODES =
         Collections.<String>emptySortedSet();
@@ -224,12 +224,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     public ReachabilityQuestion() {
       _actions = new TreeSet<>(Collections.singleton(ForwardingAction.ACCEPT));
-      _finalNodeRegex = new NodesSpecifier(DEFAULT_FINAL_NODE_REGEX);
+      _finalNodeRegex = DEFAULT_FINAL_NODE_REGEX;
       _headerSpace = new HeaderSpace();
-      _ingressNodeRegex = new NodesSpecifier(DEFAULT_INGRESS_NODE_REGEX);
+      _ingressNodeRegex = DEFAULT_INGRESS_NODE_REGEX;
       _reachabilityType = ReachabilityType.STANDARD;
-      _notFinalNodeRegex = new NodesSpecifier(DEFAULT_NOT_FINAL_NODE_REGEX);
-      _notIngressNodeRegex = new NodesSpecifier(DEFAULT_NOT_INGRESS_NODE_REGEX);
+      _notFinalNodeRegex = DEFAULT_NOT_FINAL_NODE_REGEX;
+      _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
       _transitNodes = DEFAULT_TRANSIT_NODES;
       _notTransitNodes = DEFAULT_NOT_TRANSIT_NODES;
       _useCompression = DEFAULT_USE_COMPRESSION;
