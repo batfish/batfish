@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -218,6 +219,9 @@ public class NodJobTest {
 
     Map<HeaderField, Long> headerConstraints =
         nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
+
+    assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
+    assertThat(headerConstraints, hasKey(BasicHeaderField.SRC_IP));
 
     assertThat(
         headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.1").asLong()));

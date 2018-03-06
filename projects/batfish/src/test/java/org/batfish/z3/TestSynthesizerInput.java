@@ -5,23 +5,22 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public class TestSynthesizerInput implements SynthesizerInput {
 
   public static class Builder {
 
-    private Map<String, Map<String, Map<Integer, LineAction>>> _aclActions;
+    private Map<String, Map<String, List<LineAction>>> _aclActions;
 
-    private Map<String, Map<String, Map<Integer, BooleanExpr>>> _aclConditions;
+    private Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
     private Set<Edge> _enabledEdges;
 
@@ -46,8 +45,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private boolean _simplify;
 
-    private Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-        _sourceNats;
+    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
     private Map<String, Set<String>> _topologyInterfaces;
 
@@ -91,13 +89,12 @@ public class TestSynthesizerInput implements SynthesizerInput {
           _vectorizedParameters);
     }
 
-    public Builder setAclActions(Map<String, Map<String, Map<Integer, LineAction>>> aclActions) {
+    public Builder setAclActions(Map<String, Map<String, List<LineAction>>> aclActions) {
       _aclActions = aclActions;
       return this;
     }
 
-    public Builder setAclConditions(
-        Map<String, Map<String, Map<Integer, BooleanExpr>>> aclConditions) {
+    public Builder setAclConditions(Map<String, Map<String, List<BooleanExpr>>> aclConditions) {
       _aclConditions = aclConditions;
       return this;
     }
@@ -160,7 +157,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
     }
 
     public Builder setSourceNats(
-        Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> sourceNats) {
+        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats) {
       _sourceNats = sourceNats;
       return this;
     }
@@ -180,9 +177,9 @@ public class TestSynthesizerInput implements SynthesizerInput {
     return new Builder();
   }
 
-  private final Map<String, Map<String, Map<Integer, LineAction>>> _aclActions;
+  private final Map<String, Map<String, List<LineAction>>> _aclActions;
 
-  private final Map<String, Map<String, Map<Integer, BooleanExpr>>> _aclConditions;
+  private final Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
   private final Set<Edge> _enabledEdges;
 
@@ -207,16 +204,15 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final boolean _simplify;
 
-  private final Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-      _sourceNats;
+  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
   private final Set<Type> _vectorizedParameters;
 
   private TestSynthesizerInput(
-      Map<String, Map<String, Map<Integer, LineAction>>> aclActions,
-      Map<String, Map<String, Map<Integer, BooleanExpr>>> aclConditions,
+      Map<String, Map<String, List<LineAction>>> aclActions,
+      Map<String, Map<String, List<BooleanExpr>>> aclConditions,
       Set<Edge> enabledEdges,
       Set<NodeInterfacePair> enabledFlowSinks,
       Map<String, Set<String>> enabledInterfaces,
@@ -228,7 +224,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
       Map<String, Set<Ip>> ipsByHostname,
       Map<String, Map<String, String>> outgoingAcls,
       boolean simplify,
-      Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>> sourceNats,
+      Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats,
       Map<String, Set<String>> topologyInterfaces,
       Set<Type> vectorizedParameters) {
     _aclActions = aclActions;
@@ -250,12 +246,12 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Map<Integer, LineAction>>> getAclActions() {
+  public Map<String, Map<String, List<LineAction>>> getAclActions() {
     return _aclActions;
   }
 
   @Override
-  public Map<String, Map<String, Map<Integer, BooleanExpr>>> getAclConditions() {
+  public Map<String, Map<String, List<BooleanExpr>>> getAclConditions() {
     return _aclConditions;
   }
 
@@ -316,8 +312,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, List<Entry<Optional<BasicStateExpr>, BooleanExpr>>>>
-      getSourceNats() {
+  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
     return _sourceNats;
   }
 

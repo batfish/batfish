@@ -32,7 +32,6 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeTransit;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.Query;
 
@@ -49,6 +48,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
   @SuppressWarnings("unused")
   private Set<String> _notTransitNodes;
 
+  @SuppressWarnings("unused")
   private Set<String> _transitNodes;
 
   public ReachabilityQuerySynthesizer(
@@ -162,19 +162,6 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
           throw new BatfishException("unsupported action");
       }
     }
-
-    // check transit constraints (unordered)
-    _transitNodes
-        .stream()
-        .map(NodeTransit::new)
-        .forEach(queryPreconditionPreTransformationStatesBuilder::add);
-
-    /* TODO: re-enable notTransitNodes via stratified negation */
-    //    _notTransitNodes
-    //        .stream()
-    //        .map(NodeTransit::new)
-    //        .map(NotExpr::new)
-    //        .forEach(queryPreconditionPreTransformationStates::add);
 
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     // create rules for injecting symbolic packets into ingress node(s)

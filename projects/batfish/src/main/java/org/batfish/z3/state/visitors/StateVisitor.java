@@ -19,18 +19,17 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeTransit;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PostOutInterface;
+import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
-import org.batfish.z3.state.PreOutInterface;
+import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.Query;
 
 public interface StateVisitor {
@@ -73,8 +72,6 @@ public interface StateVisitor {
 
   void visitNodeDropNullRoute(NodeDropNullRoute.State nodeDropNullRoute);
 
-  void visitNodeTransit(NodeTransit.State nodeTransit);
-
   void visitNumberedQuery(NumberedQuery.State numberedQuery);
 
   void visitOriginate(Originate.State originate);
@@ -87,15 +84,15 @@ public interface StateVisitor {
 
   void visitPostInVrf(PostInVrf.State postInVrf);
 
-  void visitPostOutInterface(PostOutInterface.State postOutInterface);
-
   void visitPreInInterface(PreInInterface.State preInInterface);
 
   void visitPreOut(PreOut.State preOut);
 
   void visitPreOutEdge(PreOutEdge.State preOutEdge);
 
-  void visitPreOutInterface(PreOutInterface.State preOutInterface);
+  void visitPostOutEdge(PostOutEdge.State state);
+
+  void visitPreOutEdgePostNat(PreOutEdgePostNat.State state);
 
   void visitQuery(Query.State query);
 }

@@ -29,18 +29,17 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeTransit;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
-import org.batfish.z3.state.PostOutInterface;
+import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
-import org.batfish.z3.state.PreOutInterface;
+import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.Query;
 import org.batfish.z3.state.StateParameter;
 
@@ -166,11 +165,6 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitNodeTransit(NodeTransit nodeTransit) {
-    return ImmutableList.of(new StateParameter(nodeTransit.getHostname(), NODE));
-  }
-
-  @Override
   public List<StateParameter> visitNumberedQuery(NumberedQuery numberedQuery) {
     return ImmutableList.of(
         new StateParameter(Integer.toString(numberedQuery.getLine()), QUERY_NUMBER));
@@ -208,13 +202,6 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitPostOutInterface(PostOutInterface postOutInterface) {
-    return ImmutableList.of(
-        new StateParameter(postOutInterface.getHostname(), NODE),
-        new StateParameter(postOutInterface.getIface(), INTERFACE));
-  }
-
-  @Override
   public List<StateParameter> visitPreInInterface(PreInInterface preInInterface) {
     return ImmutableList.of(
         new StateParameter(preInInterface.getHostname(), NODE),
@@ -236,10 +223,21 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitPreOutInterface(PreOutInterface preOutInterface) {
+  public List<StateParameter> visitPreOutEdgePostNat(PreOutEdgePostNat preOutEdgePostNat) {
     return ImmutableList.of(
-        new StateParameter(preOutInterface.getHostname(), NODE),
-        new StateParameter(preOutInterface.getIface(), INTERFACE));
+        new StateParameter(preOutEdgePostNat.getSrcNode(), NODE),
+        new StateParameter(preOutEdgePostNat.getSrcIface(), INTERFACE),
+        new StateParameter(preOutEdgePostNat.getDstNode(), NODE),
+        new StateParameter(preOutEdgePostNat.getDstIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPostOutEdge(PostOutEdge postOutEdge) {
+    return ImmutableList.of(
+        new StateParameter(postOutEdge.getSrcNode(), NODE),
+        new StateParameter(postOutEdge.getSrcIface(), INTERFACE),
+        new StateParameter(postOutEdge.getDstNode(), NODE),
+        new StateParameter(postOutEdge.getDstIface(), INTERFACE));
   }
 
   @Override
