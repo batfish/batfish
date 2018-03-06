@@ -1,5 +1,6 @@
 package org.batfish.question.ipsecvpnstatus;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -19,6 +20,33 @@ public class IpsecVpnStatusAnswerer extends Answerer {
     super(question, batfish);
   }
 
+  @VisibleForTesting
+  public static IpsecVpnInfo analyzeIpsecVpn(IpsecVpn ipsecVpn) {
+    SortedSet<Problem> problems = new TreeSet<>();
+    IpsecVpn remoteIpsecVpn = null;
+    if (ipsecVpn.getRemoteIpsecVpn() == null) {
+      problems.add(Problem.MISSING_REMOTE_ENDPOINT);
+    } else {
+      if (ipsecVpn.getCandidateRemoteIpsecVpns().size() != 1) {
+        problems.add(Problem.MULTIPLE_REMOTE_ENDPOINTS);
+      }
+      remoteIpsecVpn = ipsecVpn.getRemoteIpsecVpn();
+      if (!ipsecVpn.compatibleIkeProposals(remoteIpsecVpn)) {
+        problems.add(Problem.INCOMPATIBLE_IKE_PROPOSALS);
+      }
+      if (!ipsecVpn.compatibleIpsecProposals(remoteIpsecVpn)) {
+        problems.add(Problem.INCOMPATIBLE_IPSEC_PROPOSALS);
+      }
+      if (!ipsecVpn.compatiblePreSharedKey(remoteIpsecVpn)) {
+        problems.add(Problem.INCOMPATIBLE_PRE_SHARED_KEY);
+      }
+    }
+    if (problems.size() == 0) {
+      problems.add(Problem.NONE);
+    }
+    return new IpsecVpnInfo(ipsecVpn, problems, remoteIpsecVpn);
+  }
+
   @Override
   public AnswerElement answer() {
     IpsecVpnStatusQuestion question = (IpsecVpnStatusQuestion) _question;
@@ -35,34 +63,11 @@ public class IpsecVpnStatusAnswerer extends Answerer {
         continue;
       }
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-        SortedSet<Problem> problems = new TreeSet<>();
-        IpsecVpn remoteIpsecVpn = null;
-        if (ipsecVpn.getRemoteIpsecVpn() == null) {
-          problems.add(Problem.MISSING_REMOTE_ENDPOINT);
-        } else {
-          if (ipsecVpn.getCandidateRemoteIpsecVpns().size() != 1) {
-            problems.add(Problem.MULTIPLE_REMOTE_ENDPOINTS);
-          }
-          remoteIpsecVpn = ipsecVpn.getRemoteIpsecVpn();
-          String remoteHost = remoteIpsecVpn.getOwner().getHostname();
-          if (!includeNodes2.contains(remoteHost)) {
-            continue;
-          }
-          if (!ipsecVpn.compatibleIkeProposals(remoteIpsecVpn)) {
-            problems.add(Problem.INCOMPATIBLE_IKE_PROPOSALS);
-          }
-          if (!ipsecVpn.compatibleIpsecProposals(remoteIpsecVpn)) {
-            problems.add(Problem.INCOMPATIBLE_IPSEC_PROPOSALS);
-          }
-          if (!ipsecVpn.compatiblePreSharedKey(remoteIpsecVpn)) {
-            problems.add(Problem.INCOMPATIBLE_PRE_SHARED_KEY);
-          }
-        }
-        if (problems.size() == 0) {
-          problems.add(Problem.NONE);
-        }
-        if (problems.stream().anyMatch(v -> question.matchesProblem(v))) {
-          answerElement.getIpsecVpns().add(new IpsecVpnInfo(ipsecVpn, problems, remoteIpsecVpn));
+        IpsecVpnInfo vpnInfo = analyzeIpsecVpn(ipsecVpn);
+        if (vpnInfo.getRemoteEndpoint() != null
+            && includeNodes2.contains(vpnInfo.getRemoteEndpoint().getHostname())
+            && vpnInfo.getProblems().stream().anyMatch(v -> question.matchesProblem(v))) {
+          answerElement.getIpsecVpns().add(vpnInfo);
         }
       }
     }

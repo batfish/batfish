@@ -44,7 +44,7 @@ public class IpsecVpnInfo implements Comparable<IpsecVpnInfo> {
     this(
         new IpsecVpnEndpoint(ipsecVpn),
         problems,
-        remoteEnd == null ? null : new IpsecVpnEndpoint(remoteEnd));
+        (remoteEnd == null) ? null : new IpsecVpnEndpoint(remoteEnd));
   }
 
   @Override

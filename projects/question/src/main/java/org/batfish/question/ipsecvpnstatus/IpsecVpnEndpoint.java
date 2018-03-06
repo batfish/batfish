@@ -3,6 +3,7 @@ package org.batfish.question.ipsecvpnstatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
+import java.util.Objects;
 import org.batfish.datamodel.IpsecVpn;
 
 public class IpsecVpnEndpoint implements Comparable<IpsecVpnEndpoint> {
@@ -31,6 +32,17 @@ public class IpsecVpnEndpoint implements Comparable<IpsecVpnEndpoint> {
     return Comparator.comparing(IpsecVpnEndpoint::getHostname)
         .thenComparing(IpsecVpnEndpoint::getVpnName)
         .compare(this, o);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof IpsecVpnEndpoint)) {
+      return false;
+    }
+    return Objects.equals(_hostname, ((IpsecVpnEndpoint) o)._hostname)
+        && Objects.equals(_vpnName, ((IpsecVpnEndpoint) o)._vpnName);
   }
 
   @JsonProperty(PROP_HOSTNAME)
