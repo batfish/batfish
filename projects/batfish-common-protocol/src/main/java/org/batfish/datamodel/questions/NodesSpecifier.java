@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -61,6 +62,20 @@ public class NodesSpecifier {
     }
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof NodesSpecifier)) {
+      return false;
+    }
+    NodesSpecifier rhs = (NodesSpecifier) obj;
+    return Objects.equals(_expression, rhs._expression)
+        && Objects.equals(_regex.pattern(), rhs._regex.pattern())
+        && Objects.equals(_type, rhs._type);
+  }
+
   @JsonIgnore
   public Set<String> getMatchingNodes(Map<String, Configuration> configurations) {
     Set<String> nodes = new TreeSet<>();
@@ -93,6 +108,11 @@ public class NodesSpecifier {
   @JsonIgnore
   public Type getType() {
     return _type;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expression, _regex.pattern(), _type.ordinal());
   }
 
   @JsonValue
