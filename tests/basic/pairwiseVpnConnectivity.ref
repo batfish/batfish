@@ -1,9 +1,0 @@
-{
-  "answerElements" : [ {
-    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityAnswerElement"
-  } ],
-  "question" : {
-    "class" : "org.batfish.question.PairwiseVpnConnectivityQuestionPlugin$PairwiseVpnConnectivityQuestion"
-  },
-  "status" : "SUCCESS"
-}
