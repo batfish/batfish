@@ -6,7 +6,7 @@ set-background-execution true
 set-fixed-workitem-id 00000000-0000-0000-0000-000000000001
 get sleep duration=100000
 set-fixed-workitem-id 00000000-0000-0000-0000-000000000002
-get sleep duration=0
+get sleep duration=3
 
 # kill the first work and wait for the another one to finish
 kill-work 00000000-0000-0000-0000-000000000001
