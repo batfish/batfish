@@ -232,6 +232,10 @@ interface Ethernet0
  switchport trunk pruning vlan 2-3
  transceiver permit pid all
  transport-mode otn bit-transparent opu2e
+ tx-queue 0
+   bandwidth percent 51
+ tx-queue 1
+   bandwidth percent 49
  tunnel bandwidth receive 1000000
  tunnel bandwidth transmit 1000000
  tunnel destination 3.4.5.6

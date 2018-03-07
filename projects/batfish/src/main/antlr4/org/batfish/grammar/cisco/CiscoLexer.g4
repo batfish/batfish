@@ -7868,6 +7868,11 @@ PENALTY_PERIOD
    'penalty-period'
 ;
 
+PERCENT_LITERAL
+:
+   'percent'
+;
+
 PERIODIC
 :
    'periodic'

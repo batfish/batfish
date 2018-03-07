@@ -373,7 +373,7 @@ if_null_block
       | AUTO
       | AUTOROUTE
       | BANDWIDTH INHERIT
-      | BANDWIDTH PERCENT
+      | BANDWIDTH PERCENT_LITERAL
       | BEACON
       | BFD
       | BGP_POLICY
