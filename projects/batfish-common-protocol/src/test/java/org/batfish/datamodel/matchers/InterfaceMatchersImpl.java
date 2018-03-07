@@ -36,7 +36,7 @@ final class InterfaceMatchersImpl {
 
   static final class HasOspfCost extends FeatureMatcher<Interface, Integer> {
     HasOspfCost(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "an interface with ospfCost", "ospfCost");
+      super(subMatcher, "an interface with ospfCost:", "ospfCost");
     }
 
     @Override

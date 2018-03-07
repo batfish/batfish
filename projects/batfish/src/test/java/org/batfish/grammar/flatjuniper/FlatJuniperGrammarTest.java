@@ -175,7 +175,7 @@ public class FlatJuniperGrammarTest {
     assertThat(summary, hasMetric(nullValue()));
 
     // Interface override
-    assertThat(config.getInterfaces().get("fe-1/0/1.0"), hasOspfCost(equalTo(17)));
+    assertThat(config, hasInterface("fe-1/0/1.0", hasOspfCost(equalTo(17))));
   }
 
   @Test
