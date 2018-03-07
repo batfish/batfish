@@ -34,6 +34,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOspfCost extends FeatureMatcher<Interface, Integer> {
+    HasOspfCost(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an interface with ospfCost:", "ospfCost");
+    }
+
+    @Override
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getOspfCost();
+    }
+  }
+
   static final class HasSourceNats extends FeatureMatcher<Interface, List<SourceNat>> {
     HasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
       super(subMatcher, "sourceNats", "sourceNats");

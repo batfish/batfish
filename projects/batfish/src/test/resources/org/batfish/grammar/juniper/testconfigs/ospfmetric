@@ -1,0 +1,8 @@
+#
+set system host-name ospfmetric
+#
+set protocols ospf area 0.0.0.1 area-range 10.0.0.0/16 override-metric 123 restrict
+set protocols ospf area 0.0.0.2 area-range 10.0.0.0/16
+#
+set interfaces fe-1/0/1 unit 0 family inet address 1.0.0.0/31
+set protocols ospf area 0.0.0.3 interface fe-1/0/1 metric 17
