@@ -2313,6 +2313,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentBgpGroup.setAdvertisePeerAs(true);
   }
 
+  @Override
   public void exitB_authentication_algorithm(B_authentication_algorithmContext ctx) {
     if (ctx.AES_128_CMAC_96() != null) {
       _currentBgpGroup.setAuthenticationAlgorithm(BgpAuthenticationAlgorithm.AES_128_CMAC_96);
@@ -2323,10 +2324,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
+  @Override
   public void exitB_authentication_key(B_authentication_keyContext ctx) {
     _currentBgpGroup.setAuthenticationKey(ctx.key.getText());
   }
 
+  @Override
   public void exitB_authentication_key_chain(B_authentication_key_chainContext ctx) {
     _currentBgpGroup.setAuthenticationKeyChainName(ctx.name.getText());
     int line = ctx.getStart().getLine();
@@ -2995,6 +2998,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOaa_restrict(FlatJuniperParser.Oaa_restrictContext ctx) {
     _currentAreaRangeRestrict = true;
+  }
+
+  @Override
+  public void exitOai_metric(FlatJuniperParser.Oai_metricContext ctx) {
+    int ospfCost = toInt(ctx.DEC());
+    _currentOspfInterface.setOspfCost(ospfCost);
   }
 
   @Override
