@@ -448,18 +448,12 @@ public class WorkMgr extends AbstractCoordinator {
       @Nullable Boolean suggested) {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
-    if (Files.exists(aDir) && newAnalysis) {
-      throw new BatfishException(
-          "Analysis '" + aName + "' already exists for container '" + containerName);
-    }
-    if (!Files.exists(aDir)) {
-      if (!newAnalysis) {
-        throw new BatfishException(
-            "Analysis '" + aName + "' does not exist for container '" + containerName + "'");
-      }
-      if (!aDir.toFile().mkdirs()) {
-        throw new BatfishException("Failed to create analysis directory '" + aDir + "'");
-      }
+
+    this.configureAnalysisValidityCheck(
+        containerName, newAnalysis, aName, questionsToAdd, questionsToDelete, aDir);
+
+    if (newAnalysis) {
+      aDir.toFile().mkdirs();
     }
 
     // Create metadata if it's a new analysis, or update it if suggested is not null
@@ -487,27 +481,60 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
+    /** Delete questionsToDelete and add questionsToAdd */
     Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+    for (String qName : questionsToDelete) {
+      CommonUtil.deleteDirectory(questionsDir.resolve(qName));
+    }
     for (Entry<String, String> entry : questionsToAdd.entrySet()) {
-      Path qDir = questionsDir.resolve(entry.getKey());
-      if (Files.exists(qDir)) {
-        throw new BatfishException(
-            String.format("Question '%s' already exists for analysis '%s'", entry.getKey(), aName));
-      }
-      if (!qDir.toFile().mkdirs()) {
-        throw new BatfishException(String.format("Failed to create question directory '%s'", qDir));
-      }
-      Path qFile = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
+      questionsDir.resolve(entry.getKey()).toFile().mkdirs();
+      Path qFile = questionsDir.resolve(Paths.get(entry.getKey(), BfConsts.RELPATH_QUESTION_FILE));
       CommonUtil.writeFile(qFile, entry.getValue());
     }
+  }
 
-    /** Delete questions */
-    for (String qName : questionsToDelete) {
-      Path qDir = questionsDir.resolve(qName);
-      if (!Files.exists(qDir)) {
-        throw new BatfishException("Question " + qName + " does not exist for analysis " + aName);
+  private void configureAnalysisValidityCheck(
+      String containerName,
+      boolean newAnalysis,
+      String aName,
+      Map<String, String> questionsToAdd,
+      List<String> questionsToDelete,
+      Path aDir) {
+    // Reasons to throw error for a new analysis:
+    // 1. Analysis with same name already exists
+    // 2. questionsToDelete is not empty
+    if (newAnalysis) {
+      if (Files.exists(aDir)) {
+        throw new BatfishException(
+            String.format("Analysis '%s' already exists for container '%s'", aName, containerName));
+      } else if (questionsToDelete.size() != 0) {
+        throw new BatfishException("Cannot delete questions from a new analysis");
       }
-      CommonUtil.deleteDirectory(qDir);
+    } else {
+      // Reasons to throw error for an existing analysis:
+      // 1. Analysis directory does not exist
+      // 2. questionsToDelete includes a question that doesn't exist in the analysis
+      // 3. questionsToAdd includes a question that already exists and won't be deleted
+      if (!Files.exists(aDir)) {
+        throw new BatfishException(
+            String.format("Analysis '%s' does not exist for container '%s'", aName, containerName));
+      }
+      Path questionsDir = aDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
+      for (String qName : questionsToDelete) {
+        Path qDir = questionsDir.resolve(qName);
+        if (!Files.exists(qDir)) {
+          throw new BatfishException(
+              String.format("Question '%s' does not exist for analysis '%s'", qName, aName));
+        }
+      }
+      for (Entry<String, String> entry : questionsToAdd.entrySet()) {
+        if (!questionsToDelete.contains(entry.getKey())
+            && Files.exists(questionsDir.resolve(entry.getKey()))) {
+          throw new BatfishException(
+              String.format(
+                  "Question '%s' already exists for analysis '%s'", entry.getKey(), aName));
+        }
+      }
     }
   }
 
