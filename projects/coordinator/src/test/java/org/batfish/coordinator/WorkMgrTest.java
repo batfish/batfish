@@ -272,7 +272,7 @@ public class WorkMgrTest {
     assertFalse(Files.exists(questionPath.resolve("question2")));
     assertTrue(Files.exists(questionPath.resolve("question3")));
     _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(equalTo("Question question1 does not exist for analysis analysis"));
+    _thrown.expectMessage(equalTo("Question 'question1' does not exist for analysis 'analysis'"));
     questionsToDelete = Lists.newArrayList("question1");
     _manager.configureAnalysis(
         containerName, false, "analysis", Maps.newHashMap(), questionsToDelete, null);
