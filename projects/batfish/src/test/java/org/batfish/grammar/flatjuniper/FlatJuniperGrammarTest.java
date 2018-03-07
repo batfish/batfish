@@ -2,6 +2,7 @@ package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -145,10 +146,11 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspf() throws IOException {
+  public void testOspfMetric() throws IOException {
     Configuration config =
-        BatfishTestUtils.parseTextConfigs(_folder, "org/batfish/grammar/juniper/testconfigs/ospf")
-            .get("ospf");
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/ospfmetric")
+            .get("ospfmetric");
     OspfAreaSummary summary =
         config
             .getDefaultVrf()
@@ -171,6 +173,9 @@ public class FlatJuniperGrammarTest {
             .get(Prefix.parse("10.0.0.0/16"));
     assertThat(summary, isAdvertised());
     assertThat(summary, hasMetric(nullValue()));
+
+    // Interface override
+    assertThat(config.getInterfaces().get("fe-1/0/1.0"), hasOspfCost(equalTo(17)));
   }
 
   @Test

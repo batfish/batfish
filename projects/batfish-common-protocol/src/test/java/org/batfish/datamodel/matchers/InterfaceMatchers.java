@@ -12,6 +12,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
@@ -55,6 +56,14 @@ public final class InterfaceMatchers {
    */
   public static HasOspfArea hasOspfArea(Matcher<OspfArea> subMatcher) {
     return new HasOspfArea(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's OSPF
+   * cost.
+   */
+  public static HasOspfCost hasOspfCost(Matcher<Integer> subMatcher) {
+    return new HasOspfCost(subMatcher);
   }
 
   /**

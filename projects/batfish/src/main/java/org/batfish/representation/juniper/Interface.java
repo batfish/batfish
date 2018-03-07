@@ -231,13 +231,19 @@ public class Interface extends ComparableStructure<String> {
   }
 
   public void inheritUnsetFields() {
-    if (_parent == null || !_inherited) {
+    if (_parent == null || _inherited) {
       return;
     }
     _inherited = true;
     _parent.inheritUnsetFields();
     if (_mtu == null) {
       _mtu = _parent._mtu;
+    }
+    if (_ospfCost == null) {
+      _ospfCost = _parent._ospfCost;
+    }
+    if (_ospfActiveArea == null) {
+      _ospfActiveArea = _parent._ospfActiveArea;
     }
   }
 
@@ -277,8 +283,8 @@ public class Interface extends ComparableStructure<String> {
     _ospfActiveArea = ospfActiveArea;
   }
 
-  public void setOspfCost(int defaultOspfCost) {
-    _ospfCost = defaultOspfCost;
+  public void setOspfCost(int ospfCost) {
+    _ospfCost = ospfCost;
   }
 
   public void setOspfDeadInterval(int seconds) {
