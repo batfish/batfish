@@ -264,6 +264,7 @@ import org.batfish.grammar.cisco.CiscoParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
+import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
@@ -3244,6 +3245,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setAutoState(false);
       }
+    }
+  }
+
+  @Override
+  public void exitIf_bandwidth(If_bandwidthContext ctx) {
+    if (ctx.NO() != null) {
+      _currentInterfaces.forEach(i -> i.setBandwidth(null));
+    } else {
+      double bandwidthBps = toLong(ctx.DEC()) * 1000.0;
+      _currentInterfaces.forEach(i -> i.setBandwidth(bandwidthBps));
     }
   }
 

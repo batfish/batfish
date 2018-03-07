@@ -11,6 +11,11 @@ if_autostate
    NO? AUTOSTATE NEWLINE
 ;
 
+if_bandwidth
+:
+   NO? BANDWIDTH DEC KBPS? NEWLINE
+;
+
 if_channel_group
 :
    CHANNEL_GROUP num = DEC
@@ -367,7 +372,8 @@ if_null_block
       | AUTHENTICATION
       | AUTO
       | AUTOROUTE
-      | BANDWIDTH
+      | BANDWIDTH INHERIT
+      | BANDWIDTH PERCENT
       | BEACON
       | BFD
       | BGP_POLICY
@@ -1111,6 +1117,7 @@ s_interface
    )
    (
       if_autostate
+      | if_bandwidth
       | if_channel_group
       | if_default_gw
       | if_description

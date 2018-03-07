@@ -5438,6 +5438,11 @@ JUMBOMTU
    'jumbomtu'
 ;
 
+KBPS
+:
+   'kbps'
+;
+
 KEEPALIVE
 :
    'keepalive'
