@@ -3253,7 +3253,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.NO() != null) {
       _currentInterfaces.forEach(i -> i.setBandwidth(null));
     } else {
-      double bandwidthBps = toLong(ctx.DEC()) * 1000.0;
+      double bandwidthBps = toLong(ctx.DEC()) * 1000.0D;
       _currentInterfaces.forEach(i -> i.setBandwidth(bandwidthBps));
     }
   }
