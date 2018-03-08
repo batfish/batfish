@@ -710,9 +710,11 @@ public class CommonUtil {
             && localRemoteAs == remoteLocalAs) {
           /*
            * Fairly confident establishing the session is possible here, but still check
-           * routability if needed
+           * routability if needed.
+           * We should check reachability only for eBgp multihop or iBgp
            */
-          if (checkRoutability) {
+          if (checkRoutability
+              && (bgpNeighbor.getEbgpMultihop() || localLocalAs == remoteLocalAs)) {
             /*
              * Ensure that the session can be established by running traceroute in both directions
              */
@@ -724,9 +726,12 @@ public class CommonUtil {
             fb.setIngressNode(bgpNeighbor.getOwner().getHostname());
             fb.setDstIp(remoteAddress);
             fb.setTag("neighbor-resolution");
+            fb.setSrcIp(localAddress);
             Flow forwardFlow = fb.build();
+
             fb.setIngressNode(remoteBgpNeighborCandidate.getOwner().getHostname());
             fb.setDstIp(localAddress);
+            fb.setSrcIp(remoteAddress);
             Flow backwardFlow = fb.build();
             SortedMap<Flow, Set<FlowTrace>> traces =
                 flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow, backwardFlow));
@@ -761,6 +766,8 @@ public class CommonUtil {
         bgpNeighbor.setRemoteBgpNeighbor(hostnameToNeighbor.get(hostnameToNeighbor.firstKey()));
       } else if (finalCandidates.size() == 1) {
         bgpNeighbor.setRemoteBgpNeighbor(finalCandidates.iterator().next());
+      } else {
+        bgpNeighbor.setRemoteBgpNeighbor(null);
       }
     }
   }

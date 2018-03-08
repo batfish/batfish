@@ -763,6 +763,21 @@ public class BdpEngine implements FlowProcessor {
         initRipInternalRoutes(nodes, topology);
       }
 
+      // Prep for traceroutes
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n ->
+                  n._virtualRouters
+                      .values()
+                      .forEach(
+                          vr -> {
+                            vr.moveRibs();
+                            vr.reinitRibsNewIteration();
+                            vr.activateStaticRoutes();
+                          }));
+
       // Update bgp neighbors with routability
       dp.setNodes(nodes);
       computeFibs(nodes);
