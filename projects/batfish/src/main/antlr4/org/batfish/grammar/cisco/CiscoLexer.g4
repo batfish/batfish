@@ -4571,9 +4571,9 @@ GT
    'gt'
 ;
 
-GW_TYPE_PREFIX
+GUARANTEED
 :
-   'gw-type-prefix'
+   'guaranteed'
 ;
 
 GUARD
@@ -4594,6 +4594,11 @@ GUEST_LOGON
 GUEST_MODE
 :
    'guest-mode'
+;
+
+GW_TYPE_PREFIX
+:
+   'gw-type-prefix'
 ;
 
 H225
@@ -5436,6 +5441,11 @@ JUMBO
 JUMBOMTU
 :
    'jumbomtu'
+;
+
+KBPS
+:
+   'kbps'
 ;
 
 KEEPALIVE
@@ -7861,6 +7871,11 @@ PEER_TO_PEER
 PENALTY_PERIOD
 :
    'penalty-period'
+;
+
+PERCENT_LITERAL
+:
+   'percent'
 ;
 
 PERIODIC
