@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
@@ -95,6 +97,9 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
         }
         Configuration c = e.getValue();
         for (Interface iface : c.getInterfaces().values()) {
+          if (!question.getInterfacesSpecifier().matches(iface)) {
+            continue;
+          }
           for (InterfaceAddress address : iface.getAllAddresses()) {
             Ip ip = address.getIp();
             if (!question.getEnabledIpsOnly() || iface.getActive()) {
@@ -112,6 +117,9 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
         for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
           String interfaceName = e2.getKey();
           Interface iface = e2.getValue();
+          if (!question.getInterfacesSpecifier().matches(iface)) {
+            continue;
+          }
           for (InterfaceAddress address : iface.getAllAddresses()) {
             Ip ip = address.getIp();
             if ((!question.getEnabledIpsOnly() || iface.getActive())
@@ -134,6 +142,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
    * question produces the list of IP addresses for which this condition does not hold.
    *
    * @type UniqueIpAssignments multifile
+   * @param interfacesSpecifier Specification for interfaces to consider. Default value is '.*' (all
+   *     interfaces).
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @example bf_answer("UniqueIpAssignments", nodeRegex='as2.*') Answers the question only for
@@ -143,15 +153,25 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ENABLED_IPS_ONLY = "enabledIpsOnly";
 
+    private static final String PROP_INTERFACES_SPECIFIER = "interfacesSpecifier";
+
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private boolean _enabledIpsOnly;
 
+    private InterfacesSpecifier _interfacesSpecifier;
+
     private NodesSpecifier _nodeRegex;
 
-    public UniqueIpAssignmentsQuestion() {
-      _enabledIpsOnly = false;
-      _nodeRegex = NodesSpecifier.ALL;
+    @JsonCreator
+    public UniqueIpAssignmentsQuestion(
+        @JsonProperty(PROP_ENABLED_IPS_ONLY) Boolean enabledIpsOnly,
+        @JsonProperty(PROP_INTERFACES_SPECIFIER) InterfacesSpecifier interfacesSpecifier,
+        @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodesSpecifier) {
+      _enabledIpsOnly = enabledIpsOnly != null && enabledIpsOnly.booleanValue();
+      _interfacesSpecifier =
+          interfacesSpecifier == null ? InterfacesSpecifier.ALL : interfacesSpecifier;
+      _nodeRegex = nodesSpecifier == null ? NodesSpecifier.ALL : nodesSpecifier;
     }
 
     @Override
@@ -169,6 +189,11 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       return _enabledIpsOnly;
     }
 
+    @JsonProperty(PROP_INTERFACES_SPECIFIER)
+    public InterfacesSpecifier getInterfacesSpecifier() {
+      return _interfacesSpecifier;
+    }
+
     @JsonProperty(PROP_NODE_REGEX)
     public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
@@ -176,21 +201,9 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String prettyPrint() {
-      String retString =
-          String.format(
-              "uniqueipassignments %senabledIpsOnly=%s, nodeRegex=\"%s\"",
-              prettyPrintBase(), _enabledIpsOnly, _nodeRegex);
-      return retString;
-    }
-
-    @JsonProperty(PROP_ENABLED_IPS_ONLY)
-    public void setEnabledIpsOnly(boolean enabledIpsOnly) {
-      _enabledIpsOnly = enabledIpsOnly;
-    }
-
-    @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(NodesSpecifier nodeRegex) {
-      _nodeRegex = nodeRegex;
+      return String.format(
+          "uniqueipassignments %senabledIpsOnly=%s, interfacesSpecifier=%s, nodeRegex=\"%s\"",
+          prettyPrintBase(), _enabledIpsOnly, _interfacesSpecifier, _nodeRegex);
     }
   }
 
@@ -201,6 +214,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new UniqueIpAssignmentsQuestion();
+    return new UniqueIpAssignmentsQuestion(null, null, null);
   }
 }
