@@ -83,6 +83,7 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecVpn;
@@ -722,11 +723,13 @@ public class CommonUtil {
               throw new BatfishException("Cannot compute routability without a dataplane");
             }
             Flow.Builder fb = new Flow.Builder();
+            fb.setIpProtocol(IpProtocol.TCP);
             fb.setDstPort(BfConsts.BGP_SESSION_DST_PORT);
-            fb.setIngressNode(bgpNeighbor.getOwner().getHostname());
-            fb.setDstIp(remoteAddress);
             fb.setTag("neighbor-resolution");
+
+            fb.setIngressNode(bgpNeighbor.getOwner().getHostname());
             fb.setSrcIp(localAddress);
+            fb.setDstIp(remoteAddress);
             Flow forwardFlow = fb.build();
 
             fb.setIngressNode(remoteBgpNeighborCandidate.getOwner().getHostname());

@@ -773,8 +773,9 @@ public class BdpEngine implements FlowProcessor {
                       .values()
                       .forEach(
                           vr -> {
-                            vr.moveRibs();
-                            vr.reinitRibsNewIteration();
+                            vr.importRib(vr._mainRib, vr._independentRib);
+                            // Needed for activateStaticRoutes
+                            vr._prevMainRib = vr._mainRib;
                             vr.activateStaticRoutes();
                           }));
 
