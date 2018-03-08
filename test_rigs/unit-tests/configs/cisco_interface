@@ -236,6 +236,8 @@ interface Ethernet0
    bandwidth percent 51
  tx-queue 1
    bandwidth percent 49
+ tx-queue 2
+   bandwidth guaranteed 100000
  tunnel bandwidth receive 1000000
  tunnel bandwidth transmit 1000000
  tunnel destination 3.4.5.6

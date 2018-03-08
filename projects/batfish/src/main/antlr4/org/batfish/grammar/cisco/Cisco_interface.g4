@@ -372,6 +372,7 @@ if_null_block
       | AUTHENTICATION
       | AUTO
       | AUTOROUTE
+      | BANDWIDTH GUARANTEED
       | BANDWIDTH INHERIT
       | BANDWIDTH PERCENT_LITERAL
       | BEACON

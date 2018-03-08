@@ -4571,9 +4571,9 @@ GT
    'gt'
 ;
 
-GW_TYPE_PREFIX
+GUARANTEED
 :
-   'gw-type-prefix'
+   'guaranteed'
 ;
 
 GUARD
@@ -4594,6 +4594,11 @@ GUEST_LOGON
 GUEST_MODE
 :
    'guest-mode'
+;
+
+GW_TYPE_PREFIX
+:
+   'gw-type-prefix'
 ;
 
 H225
