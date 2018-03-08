@@ -1,10 +1,14 @@
 package org.batfish.bdp;
 
 import static java.util.Collections.singletonList;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.isIn;
@@ -17,9 +21,11 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,9 +41,12 @@ import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
+import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -62,11 +71,14 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -97,6 +109,86 @@ public class BdpDataPlanePluginTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static final String CORE_NAME = "core";
+  private static final Prefix TEST_PREFIX = Prefix.parse("9.9.9.9/32");
+  private NetworkFactory _nf;
+  private Configuration.Builder _cb;
+  private Interface.Builder _ib;
+  private BgpNeighbor.Builder _nb;
+  private BgpProcess.Builder _pb;
+  private Vrf.Builder _vb;
+  private RoutingPolicy.Builder _epb;
+
+  @Before
+  public void setup() {
+    _nf = new NetworkFactory();
+    _cb = _nf.configurationBuilder();
+    _ib = _nf.interfaceBuilder();
+    _nb = _nf.bgpNeighborBuilder();
+    _pb = _nf.bgpProcessBuilder();
+    _vb = _nf.vrfBuilder();
+    _epb = _nf.routingPolicyBuilder();
+  }
+
+  private SortedMap<String, Configuration> generateNetworkWithDuplicates() {
+    Ip coreId = new Ip("1.1.1.1");
+    Ip neighborId = new Ip("1.1.1.2");
+    final int interfcePrefixBits = 24;
+    _vb.setName(DEFAULT_VRF_NAME);
+
+    Configuration core =
+        _cb.setHostname(CORE_NAME).setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    _epb.setStatements(ImmutableList.of(new SetDefaultPolicy("DEF")));
+    Vrf corevrf = _vb.setOwner(core).build();
+    _ib.setOwner(core).setVrf(corevrf).setActive(true);
+    _ib.setAddress(new InterfaceAddress(coreId, interfcePrefixBits)).build();
+    _ib.setAddress(new InterfaceAddress(new Ip("9.9.9.9"), interfcePrefixBits))
+        .setName("OUT")
+        .build();
+    BgpProcess coreProc = _pb.setRouterId(coreId).setVrf(corevrf).build();
+    _nb.setOwner(core)
+        .setVrf(corevrf)
+        .setBgpProcess(coreProc)
+        .setRemoteAs(1)
+        .setLocalAs(1)
+        .setLocalIp(coreId)
+        .setPeerAddress(neighborId)
+        .setExportPolicy(_epb.setOwner(core).build().getName())
+        .build();
+    _nb.setRemoteAs(1).setLocalAs(1).setLocalIp(coreId).setPeerAddress(neighborId).build();
+
+    Configuration n1 = _cb.setHostname("n1").build();
+    Vrf n1Vrf = _vb.setOwner(n1).build();
+    _ib.setOwner(n1).setVrf(n1Vrf);
+    BgpProcess n1Proc = _pb.setRouterId(neighborId).setVrf(n1Vrf).build();
+    _nb.setOwner(n1)
+        .setVrf(n1Vrf)
+        .setBgpProcess(n1Proc)
+        .setRemoteAs(1)
+        .setLocalAs(1)
+        .setLocalIp(neighborId)
+        .setPeerAddress(coreId)
+        .setExportPolicy(_epb.setOwner(n1).build().getName())
+        .build();
+
+    Configuration n2 = _cb.setHostname("n2").build();
+    Vrf n2Vrf = _vb.setOwner(n2).build();
+    _ib.setOwner(n2).setVrf(n2Vrf);
+    _ib.setAddress(new InterfaceAddress(neighborId, interfcePrefixBits)).setVrf(n2Vrf).build();
+    BgpProcess n2Proc = _pb.setRouterId(neighborId).setVrf(n2Vrf).build();
+    _nb.setOwner(n2)
+        .setVrf(n2Vrf)
+        .setBgpProcess(n2Proc)
+        .setRemoteAs(1)
+        .setLocalAs(1)
+        .setLocalIp(neighborId)
+        .setPeerAddress(coreId)
+        .setExportPolicy(_epb.setOwner(n2).build().getName())
+        .build();
+
+    return ImmutableSortedMap.of(CORE_NAME, core, "n1", n1, "n2", n2);
+  }
 
   @Test(timeout = 5000)
   public void testComputeFixedPoint() throws IOException {
@@ -928,5 +1020,28 @@ public class BdpDataPlanePluginTest {
 
     // generating fibs should not crash
     dp.getFibRows();
+  }
+
+  @Test
+  public void testBgpNeighborRoutability() throws IOException {
+    // Only connect one neighbor (n2) to core router
+    SortedMap<String, Configuration> configs = generateNetworkWithDuplicates();
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    DataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(false);
+
+    // N2 has proper neighbor relationship
+    Collection<BgpNeighbor> n2Neighbors =
+        configs.get("n2").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
+    assertThat(n2Neighbors, hasSize(1));
+    assertThat(n2Neighbors.iterator().next().getRemoteBgpNeighbor(), is(notNullValue()));
+
+    // N1 does not have a full session established, because it's not reachable
+    Collection<BgpNeighbor> n1Neighbors =
+        configs.get("n1").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
+    assertThat(n1Neighbors, hasSize(1));
+    assertThat(n1Neighbors.iterator().next().getRemoteBgpNeighbor(), is(nullValue()));
   }
 }
