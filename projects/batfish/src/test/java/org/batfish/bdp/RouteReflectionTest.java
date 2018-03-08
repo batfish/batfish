@@ -32,6 +32,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.BdpAnswerElement;
@@ -127,6 +128,11 @@ public class RouteReflectionTest {
     _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+
+    StaticRoute.Builder sb = StaticRoute.builder();
+    vEdge1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(rrEdge1IfaceIp).setNetwork(new Prefix(rrLoopbackIp, 32)).build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
     _nb.setOwner(edge1)
@@ -151,6 +157,10 @@ public class RouteReflectionTest {
     _ib.setAddress(new InterfaceAddress(rrEdge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(rrLoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(rrEdge2IfaceIp, EDGE_PREFIX_LENGTH)).build();
+    vRr.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(edge1IbgpIfaceIp).setNetwork(new Prefix(edge1LoopbackIp, 32)).build(),
+            sb.setNextHopIp(edge2IbgpIfaceIp).setNetwork(new Prefix(edge2LoopbackIp, 32)).build()));
     BgpProcess rrProc = _pb.setRouterId(rrLoopbackIp).setVrf(vRr).build();
     RoutingPolicy rrExportPolicy = _defaultExportPolicyBuilder.setOwner(rr).build();
     _nb.setOwner(rr)
@@ -177,6 +187,9 @@ public class RouteReflectionTest {
     _ib.setAddress(new InterfaceAddress(edge2EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge2LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    vEdge2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(rrEdge2IfaceIp).setNetwork(new Prefix(rrLoopbackIp, 32)).build()));
     BgpProcess edge2Proc = _pb.setRouterId(edge2LoopbackIp).setVrf(vEdge2).build();
     RoutingPolicy edge2EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge2).build();
     _nb.setOwner(edge2)
@@ -248,12 +261,16 @@ public class RouteReflectionTest {
     Ip rr2IbgpIfaceIp = new Ip("10.1.23.3");
     Ip rr2LoopbackIp = new Ip("2.0.0.3");
 
+    StaticRoute.Builder sb = StaticRoute.builder();
     Configuration edge1 = _cb.setHostname(EDGE1_NAME).build();
     Vrf vEdge1 = _vb.setOwner(edge1).build();
     _ib.setOwner(edge1).setVrf(vEdge1);
     _ib.setAddress(new InterfaceAddress(edge1EbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
+    vEdge1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(rr1Edge1IfaceIp).setNetwork(new Prefix(rr1LoopbackIp, 32)).build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
     _nb.setOwner(edge1)
@@ -278,6 +295,10 @@ public class RouteReflectionTest {
     _ib.setAddress(new InterfaceAddress(rr1Edge1IfaceIp, EDGE_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(rr1LoopbackIp, Prefix.MAX_PREFIX_LENGTH)).build();
     _ib.setAddress(new InterfaceAddress(rr1Rr2IfaceIp, EDGE_PREFIX_LENGTH)).build();
+    vRr1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(edge1IbgpIfaceIp).setNetwork(new Prefix(edge1LoopbackIp, 32)).build(),
+            sb.setNextHopIp(rr2IbgpIfaceIp).setNetwork(new Prefix(rr2LoopbackIp, 32)).build()));
     BgpProcess rr1Proc = _pb.setRouterId(rr1LoopbackIp).setVrf(vRr1).build();
     RoutingPolicy rr1ExportPolicy = _defaultExportPolicyBuilder.setOwner(rr1).build();
     _nb.setOwner(rr1)
@@ -299,7 +320,9 @@ public class RouteReflectionTest {
     _ib.setAddress(new InterfaceAddress(rr2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     BgpProcess rr2Proc = _pb.setRouterId(rr2LoopbackIp).setVrf(vRr2).build();
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(rr2).build();
-
+    vRr2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(rr1Rr2IfaceIp).setNetwork(new Prefix(rr1LoopbackIp, 32)).build()));
     Ip rr2ClusterIdForRr1 = useSameClusterIds ? rr1LoopbackIp : rr2LoopbackIp;
     _nb.setOwner(rr2)
         .setVrf(vRr2)
