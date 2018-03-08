@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -4156,17 +4157,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 originateNodeVrfs.size() / Runtime.getRuntime().availableProcessors()));
 
     // partition originateNodeVrfs into chunks
-    List<List<Pair<String, String>>> originateNodeVrfChunks = new LinkedList<>();
-    CommonUtil.forEachWithIndex(
-        originateNodeVrfs,
-        (index, originateNodeVrf) -> {
-          // Invariant: current chunk is the first in the list.
-          if (index % chunkSize == 0) {
-            // create a new chunk
-            originateNodeVrfChunks.add(0, new ArrayList<>());
-          }
-          originateNodeVrfChunks.get(0).add(originateNodeVrf);
-        });
+    List<List<Pair<String, String>>> originateNodeVrfChunks =
+        Lists.partition(originateNodeVrfs, chunkSize);
 
     // build query jobs
     List<NodJob> jobs =
