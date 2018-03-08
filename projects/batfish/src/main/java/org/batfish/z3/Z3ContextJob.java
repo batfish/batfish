@@ -28,14 +28,10 @@ import org.batfish.job.BatfishJobResult;
 public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends BatfishJob<R> {
 
   private static Map<String, HeaderField> HEADER_FIELDS_BY_NAME =
-      Streams.concat(
+      Streams.<HeaderField>concat(
               Arrays.stream(BasicHeaderField.values()),
               Arrays.stream(TransformationHeaderField.values()))
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  // Can't use a method reference here (Enums)
-                  fld -> fld.getName(),
-                  Function.identity()));
+          .collect(ImmutableMap.toImmutableMap(HeaderField::getName, Function.identity()));
 
   protected static Flow createFlow(
       String node, String vrf, Map<String, Long> constraints, String tag) {

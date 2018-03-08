@@ -50,9 +50,9 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     Solver solver = ctx.mkSolver();
     solver.add(smtInput._expr);
 
-    int originateVrfBVSize = _originateVrfInstrumentation.getFieldBits();
+    int originateVrfBvSize = _originateVrfInstrumentation.getFieldBits();
     BitVecExpr originateVrfFieldConst =
-        ctx.mkBVConst(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, originateVrfBVSize);
+        ctx.mkBVConst(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, originateVrfBvSize);
 
     ImmutableMap.Builder<OriginateVrf, Map<String, Long>> models = ImmutableMap.builder();
     // keep refining until no new models
@@ -68,7 +68,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         // refine: different OriginateVrf
         solver.add(
             ctx.mkNot(
-                ctx.mkEq(originateVrfFieldConst, ctx.mkBV(originateVrfId, originateVrfBVSize))));
+                ctx.mkEq(originateVrfFieldConst, ctx.mkBV(originateVrfId, originateVrfBvSize))));
       } catch (QueryUnsatException e) {
         break;
       }
@@ -141,18 +141,16 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         .map(
             entry ->
                 createFlow(
-                    // hostname
+                    /* hostname */
                     entry.getKey().getHostname(),
-                    // VRF name
+                    /* VRF name */
                     entry.getKey().getVrf(),
-                    // field constraints map
+                    /* field constraints map */
                     entry.getValue()))
         .collect(Collectors.toSet());
   }
 
   Map<String, Long> getFieldConstraints(Model model, Map<String, BitVecExpr> variablesAsConsts) {
-    FuncDecl[] decls = model.getConstDecls();
-
     return Arrays.stream(model.getConstDecls())
         .map(FuncDecl::getName)
         .map(Object::toString)
@@ -163,6 +161,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
                     ((BitVecNum) model.getConstInterp(variablesAsConsts.get(field))).getLong()));
   }
 
-  @SuppressWarnings("serial")
-  private static class QueryUnsatException extends Throwable {}
+  private static class QueryUnsatException extends Throwable {
+    static final long serialVersionUID = 0L;
+  }
 }

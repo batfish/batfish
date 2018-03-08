@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -4155,10 +4156,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 originateNodeVrfs.size() / Runtime.getRuntime().availableProcessors()));
 
     // partition originateNodeVrfs into chunks
-    List<List<Pair<String, String>>> originateNodeVrfChunks = new ArrayList<>();
+    List<List<Pair<String, String>>> originateNodeVrfChunks = new LinkedList<>();
     CommonUtil.forEachWithIndex(
         originateNodeVrfs,
         (index, originateNodeVrf) -> {
+          // Invariant: current chunk is the first in the list.
           if (index % chunkSize == 0) {
             // create a new chunk
             originateNodeVrfChunks.add(0, new ArrayList<>());

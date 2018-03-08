@@ -20,8 +20,8 @@ import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.OriginateVrf;
 
 /**
- * A NodInstrumentation that tracks which of several possible OriginateVrf states was used to derive
- * each solution.
+ * A NOD instrumentation that tracks which of several possible OriginateVrf states was used to
+ * derive each solution.
  */
 public class OriginateVrfInstrumentation implements GenericStatementVisitor<Statement> {
 
