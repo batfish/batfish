@@ -8,6 +8,7 @@ import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 public class Ip implements Comparable<Ip>, Serializable {
@@ -96,12 +97,12 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   @Override
-  public int compareTo(Ip rhs) {
+  public int compareTo(@Nullable Ip rhs) {
     return Long.compare(_ip, rhs._ip);
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof Ip)) {

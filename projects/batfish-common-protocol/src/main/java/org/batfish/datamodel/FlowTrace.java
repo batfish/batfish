@@ -1,10 +1,11 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Set;
 
+/** Represents the result of performing a traceroute for a {@link Flow} */
 public class FlowTrace implements Comparable<FlowTrace> {
 
   private static final String PROP_DISPOSITION = "disposition";
@@ -22,7 +23,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
       @JsonProperty(PROP_HOPS) List<FlowTraceHop> hops,
       @JsonProperty(PROP_NOTES) String notes) {
     _disposition = disposition;
-    _hops = hops != null ? hops : Collections.emptyList();
+    _hops = hops != null ? hops : ImmutableList.of();
     _notes = notes;
   }
 
@@ -54,13 +55,7 @@ public class FlowTrace implements Comparable<FlowTrace> {
       return false;
     }
     FlowTrace rhs = (FlowTrace) o;
-    if (_disposition != rhs._disposition) {
-      return false;
-    }
-    if (!_hops.equals(rhs._hops)) {
-      return false;
-    }
-    return true;
+    return _disposition == rhs._disposition && _hops.equals(rhs._hops);
   }
 
   @JsonProperty(PROP_DISPOSITION)
@@ -105,23 +100,22 @@ public class FlowTrace implements Comparable<FlowTrace> {
       String routesStr = routes != null ? (" --- " + routes) : "";
       Edge edge = hop.getEdge();
       int num = i + 1;
-      sb.append(
-          prefixString
-              + "Hop "
-              + num
-              + ": "
-              + edge.getNode1()
-              + ":"
-              + edge.getInt1()
-              + " -> "
-              + edge.getNode2()
-              + ":"
-              + edge.getInt2()
-              + transformedFlowString
-              + routesStr
-              + "\n");
+      sb.append(prefixString)
+          .append("Hop ")
+          .append(num)
+          .append(": ")
+          .append(edge.getNode1())
+          .append(":")
+          .append(edge.getInt1())
+          .append(" -> ")
+          .append(edge.getNode2())
+          .append(":")
+          .append(edge.getInt2())
+          .append(transformedFlowString)
+          .append(routesStr)
+          .append("\n");
     }
-    sb.append(prefixString + _notes + "\n");
+    sb.append(prefixString).append(_notes).append("\n");
     return sb.toString();
   }
 }
