@@ -42,7 +42,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.plugin.DataPlanePlugin;
-import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -111,7 +110,6 @@ public class BdpDataPlanePluginTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static final String CORE_NAME = "core";
-  private static final Prefix TEST_PREFIX = Prefix.parse("9.9.9.9/32");
   private NetworkFactory _nf;
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
@@ -339,11 +337,11 @@ public class BdpDataPlanePluginTest {
     Configuration c =
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
-    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
+    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     /*
      * Instantiate routes
@@ -463,11 +461,11 @@ public class BdpDataPlanePluginTest {
     Configuration c =
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
-    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
+    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
     BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Prefix p = Prefix.ZERO;
@@ -672,8 +670,8 @@ public class BdpDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Prefix bgpPrefix = Prefix.parse("1.1.1.1/32");
-    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Stream<AbstractRoute> r2MatchingRoutes =
         r2Routes.stream().filter(r -> r.getNetwork().equals(bgpPrefix));
     Stream<AbstractRoute> r3MatchingRoutes =
@@ -709,11 +707,11 @@ public class BdpDataPlanePluginTest {
     Configuration c =
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
-    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
+    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     // good for both ebgp and ibgp
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
@@ -783,8 +781,8 @@ public class BdpDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
 
-    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r1Prefixes = r1Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Prefix r1Loopback0Prefix = Prefix.parse("1.0.0.1/32");
@@ -802,11 +800,11 @@ public class BdpDataPlanePluginTest {
     Configuration c =
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
-    c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
+    c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
     Map<String, Node> nodes = new HashMap<String, Node>();
     Node node = new Node(c);
     nodes.put(hostname, node);
-    VirtualRouter vr = new VirtualRouter(Configuration.DEFAULT_VRF_NAME, c);
+    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
     BgpBestPathRib bbr = BgpBestPathRib.initial(vr);
     BgpMultipathRib bmr = new BgpMultipathRib(vr);
     Ip ip1 = new Ip("1.0.0.0");
@@ -885,8 +883,8 @@ public class BdpDataPlanePluginTest {
     batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    SortedSet<AbstractRoute> r2aRoutes = routes.get("r2a").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r2bRoutes = routes.get("r2b").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r2aRoutes = routes.get("r2a").get(DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r2bRoutes = routes.get("r2b").get(DEFAULT_VRF_NAME);
     Set<Prefix> r2aPrefixes =
         r2aRoutes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r2bPrefixes =
@@ -923,8 +921,8 @@ public class BdpDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
 
-    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r2Prefixes = r2Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes = r3Routes.stream().map(r -> r.getNetwork()).collect(Collectors.toSet());
     // 9.9.9.9/32 is the prefix we test with
@@ -956,15 +954,14 @@ public class BdpDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Prefix staticRoutePrefix = Prefix.parse("10.0.0.0/8");
-    SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(DEFAULT_VRF_NAME);
     AbstractRoute r1BdpRoute =
         r1BdpRoutes
             .stream()
             .filter(r -> r.getNetwork().equals(staticRoutePrefix))
             .findFirst()
             .get();
-    SortedSet<Route> r1EnvironmentRoutes =
-        environmentRoutes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<Route> r1EnvironmentRoutes = environmentRoutes.get("r1").get(DEFAULT_VRF_NAME);
     Route r1EnvironmentRoute =
         r1EnvironmentRoutes
             .stream()
@@ -982,7 +979,7 @@ public class BdpDataPlanePluginTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
     Interface i =
         nf.interfaceBuilder()
             .setOwner(c)
@@ -1030,7 +1027,7 @@ public class BdpDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     DataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(false);
+    dataPlanePlugin.computeDataPlane(false);
 
     // N2 has proper neighbor relationship
     Collection<BgpNeighbor> n2Neighbors =
