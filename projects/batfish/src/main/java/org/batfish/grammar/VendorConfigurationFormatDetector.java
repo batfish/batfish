@@ -185,7 +185,12 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkMetamako() {
-    if (_fileText.contains("username admin secret")) {
+    if (_fileText.contains("application metamux") || _fileText.contains("application metawatch")) {
+      return ConfigurationFormat.METAMAKO;
+    }
+    Matcher deviceDescription =
+        Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$").matcher(_fileText);
+    if (deviceDescription.find()) {
       return ConfigurationFormat.METAMAKO;
     }
     return null;
