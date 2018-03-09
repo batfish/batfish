@@ -4087,8 +4087,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         useCompression ? compressionResult._compressedConfigs : loadConfigurations();
     DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
 
-    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
-
     // collect ingress nodes
     Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
     Set<String> notIngressNodes = notIngressNodeRegex.getMatchingNodes(configurations);
@@ -4147,17 +4145,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .map(ingressVrf -> new Pair<>(ingressNode, ingressVrf)))
             .collect(Collectors.toList());
 
-    int minChunkSize = 1;
     int chunkSize =
         Math.max(
-            minChunkSize,
-            Math.min(
-                maxChunkSize,
-                originateNodeVrfs.size() / Runtime.getRuntime().availableProcessors()));
+            1, Math.min(maxChunkSize, originateNodeVrfs.size() / _settings.getAvailableThreads()));
 
     // partition originateNodeVrfs into chunks
     List<List<Pair<String, String>>> originateNodeVrfChunks =
         Lists.partition(originateNodeVrfs, chunkSize);
+
+    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
 
     // build query jobs
     List<NodJob> jobs =

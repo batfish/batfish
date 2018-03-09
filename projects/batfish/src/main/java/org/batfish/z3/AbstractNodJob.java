@@ -162,6 +162,6 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
   }
 
   private static class QueryUnsatException extends Throwable {
-    static final long serialVersionUID = 0L;
+    static final long serialVersionUID = 1L;
   }
 }
