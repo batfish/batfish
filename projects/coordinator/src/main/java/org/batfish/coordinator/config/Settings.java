@@ -408,6 +408,11 @@ public class Settings extends BaseSettings {
     addOption(
         ARG_SERVICE_WORK_PORT, "port for work management service", "port_number_work_service");
 
+    addOption(
+        ARG_SERVICE_WORK_V2_PORT,
+        "port for work management service v2",
+        "port_number_work_v2_service");
+
     addBooleanOption(ARG_SSL_POOL_DISABLE, "disable SSL on pool manager service");
 
     addBooleanOption(
