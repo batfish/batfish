@@ -13063,30 +13063,6 @@
             }
           }
         },
-        "mos_application" : {
-          "configurationFormat" : "CISCO_NX",
-          "name" : "mos_application",
-          "defaultCrossZoneAction" : "ACCEPT",
-          "defaultInboundAction" : "ACCEPT",
-          "deviceType" : "SWITCH",
-          "roleDimensions" : {
-            "0" : "mos",
-            "1" : "application"
-          },
-          "roles" : [
-            "mos-application"
-          ],
-          "vendorFamily" : {
-            "cisco" : {
-              "hostname" : "mos_application"
-            }
-          },
-          "vrfs" : {
-            "default" : {
-              "name" : "default"
-            }
-          }
-        },
         "mos_interface" : {
           "configurationFormat" : "CISCO_NX",
           "name" : "mos_interface",
