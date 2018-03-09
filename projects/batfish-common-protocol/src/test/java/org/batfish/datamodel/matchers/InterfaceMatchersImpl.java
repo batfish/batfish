@@ -23,6 +23,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasMtu extends FeatureMatcher<Interface, Integer> {
+    HasMtu(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an interface with MTU:", "MTU");
+    }
+
+    @Override
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getMtu();
+    }
+  }
+
   static final class HasOspfArea extends FeatureMatcher<Interface, OspfArea> {
     HasOspfArea(@Nonnull Matcher<? super OspfArea> subMatcher) {
       super(subMatcher, "ospfArea", "ospfArea");

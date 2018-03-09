@@ -1703,7 +1703,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterIs_interface(Is_interfaceContext ctx) {
     Map<String, Interface> interfaces = _configuration.getInterfaces();
     String unitFullName = null;
-    String name = ctx.id.name.getText();
+    String name = getInterfaceName(ctx.id);
     int definitionLine = ctx.id.name.getLine();
     String unit = null;
     if (ctx.id.unit != null) {
@@ -3125,7 +3125,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_interface(Popsf_interfaceContext ctx) {
-    String name = ctx.id.name.getText();
+    String name = getInterfaceName(ctx.id);
     int definitionLine = ctx.id.name.getLine();
     String unit = null;
     if (ctx.id.unit != null) {
@@ -3940,7 +3940,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       interfaces = _configuration.getInterfaces();
     }
-    String name = id.name.getText();
+    String name = getInterfaceName(id);
     int definitionLine = id.name.getLine();
     String unit = null;
     if (id.unit != null) {

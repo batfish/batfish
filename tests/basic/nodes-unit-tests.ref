@@ -11364,14 +11364,14 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "xe-0/0/20.0" : {
-              "name" : "xe-0/0/20.0",
+            "xe-0/0/20:0.0" : {
+              "name" : "xe-0/0/20:0.0",
               "accessVlan" : 0,
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
               "declaredNames" : [
-                "xe-0/0/20.0"
+                "xe-0/0/20:0.0"
               ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -11390,14 +11390,14 @@
               "type" : "PHYSICAL",
               "vrf" : "default"
             },
-            "xe-0/0/21.0" : {
-              "name" : "xe-0/0/21.0",
+            "xe-0/0/21:0.0" : {
+              "name" : "xe-0/0/21:0.0",
               "accessVlan" : 0,
               "active" : true,
               "autostate" : true,
               "bandwidth" : 1.0E10,
               "declaredNames" : [
-                "xe-0/0/21.0"
+                "xe-0/0/21:0.0"
               ],
               "isisL1InterfaceMode" : "unset",
               "isisL2InterfaceMode" : "unset",
@@ -11454,8 +11454,8 @@
               "name" : "default",
               "interfaces" : [
                 "xe-0/0/1.0",
-                "xe-0/0/20.0",
-                "xe-0/0/21.0"
+                "xe-0/0/20:0.0",
+                "xe-0/0/21:0.0"
               ],
               "ospfProcess" : {
                 "areas" : {

@@ -11,6 +11,7 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
@@ -48,6 +49,18 @@ public final class InterfaceMatchers {
   public static HasDeclaredNames hasDeclaredNames(@Nonnull String... expectedDeclaredNames) {
     return new HasDeclaredNames(
         containsInAnyOrder(ImmutableSet.copyOf(expectedDeclaredNames).toArray()));
+  }
+
+  /** Provides a matcher that matches if the provided value matches the interface's MTU. */
+  public static HasMtu hasMtu(int value) {
+    return hasMtu(equalTo(value));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's MTU.
+   */
+  public static HasMtu hasMtu(Matcher<? super Integer> subMatcher) {
+    return new HasMtu(subMatcher);
   }
 
   /**

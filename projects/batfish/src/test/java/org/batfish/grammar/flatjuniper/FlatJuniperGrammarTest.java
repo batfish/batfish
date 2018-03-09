@@ -2,6 +2,7 @@ package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -176,6 +178,15 @@ public class FlatJuniperGrammarTest {
 
     // Interface override
     assertThat(config, hasInterface("fe-1/0/1.0", hasOspfCost(equalTo(17))));
+  }
+
+  @Test
+  public void testInterfaceMtu() throws IOException {
+    Configuration c = parseConfig("interfaceMtu");
+
+    /* Properly configured interfaces should be present in respective areas. */
+    assertThat(c.getInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
+    assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
   }
 
   @Test
