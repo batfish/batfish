@@ -184,6 +184,14 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkMetamako() {
+    if (_fileText.contains("username admin secret")) {
+      return ConfigurationFormat.METAMAKO;
+    }
+    return null;
+  }
+
+  @Nullable
   private ConfigurationFormat checkMrv() {
     if (_fileText.contains("System.SystemName")) {
       return ConfigurationFormat.MRV;
@@ -291,6 +299,10 @@ public final class VendorConfigurationFormatDetector {
       return format;
     }
     format = checkIpTables();
+    if (format != null) {
+      return format;
+    }
+    format = checkMetamako();
     if (format != null) {
       return format;
     }
