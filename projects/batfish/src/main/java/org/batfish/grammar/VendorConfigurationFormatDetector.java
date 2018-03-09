@@ -1,6 +1,5 @@
 package org.batfish.grammar;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -17,6 +16,55 @@ public final class VendorConfigurationFormatDetector {
     return new VendorConfigurationFormatDetector(fileText).identifyConfigurationFormat();
   }
 
+  private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
+  private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
+  private static final Pattern ARISTA_PATTERN = Pattern.compile("(?m)^.*boot system flash.*\\.swi");
+  private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
+  private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
+  private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
+  private static final Pattern METAMAKO_MOS_PATTERN =
+      Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$");
+  private static final Pattern MRV_HOSTNAME_PATTERN =
+      Pattern.compile("(?m)^configuration hostname .*$");
+  private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
+  private static final Pattern RANCID_CISCO_NX_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$");
+  private static final Pattern RANCID_CISCO_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$");
+  private static final Pattern RANCID_FORCE_10_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: force10$");
+  private static final Pattern RANCID_FOUNDRY_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: foundry$");
+  private static final Pattern RANCID_JUNIPER_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: juniper$");
+  private static final Pattern RANCID_MRV_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$");
+
+  // checkCisco patterns
+  private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
+  private static final Pattern CISCO_LIKE_PATTERN =
+      Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
+  private static final Pattern CISCO_STYLE_ACL_PATTERN =
+      Pattern.compile("(?m)(^(ip )?access-list.*$)");
+  private static final Pattern NEIGHBOR_ACTIVATE_PATTERN =
+      Pattern.compile("(?m)^ *neighbor.*activate$");
+  private static final Pattern NEIGHBOR_PEER_GROUP_MATCHER =
+      Pattern.compile("(?m)^ *neighbor.*peer-group$");
+  private static final Pattern NEXUS_COMMIT_LINE_PATTERN = Pattern.compile("(?m)^ *commit *$");
+  private static final Pattern NEXUS_FEATURE_LINE_PATTERN =
+      Pattern.compile("(?m)^ *(no)?  *feature  *[^ ].*$");
+
+  // checkJuniper patterns
+  private static final Pattern FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN =
+      Pattern.compile("(?m)^set (groups [^ ][^ ]* )?system host-name ");
+  private static final Pattern FLATTENED_JUNIPER_PATTERN =
+      Pattern.compile(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER));
+  private static final Pattern JUNIPER_ACL_PATTERN = Pattern.compile("(?m)^firewall *\\{");
+  private static final Pattern JUNIPER_POLICY_OPTIONS_PATTERN =
+      Pattern.compile("(?m)^policy-options *\\{");
+  private static final Pattern JUNIPER_SNMP_PATTERN = Pattern.compile("(?m)^snmp *\\{");
+  private static final Pattern SET_PATTERN = Pattern.compile("(?m)^set ");
+
   private String _fileText;
 
   private char _firstChar;
@@ -27,17 +75,19 @@ public final class VendorConfigurationFormatDetector {
     _fileText = fileText;
   }
 
+  private boolean fileTextMatches(Pattern pattern) {
+    return pattern.matcher(_fileText).find();
+  }
+
   private void configureHeuristicBlacklist() {
-    Matcher bannerMatcher = Pattern.compile("(?m)^banner ").matcher(_fileText);
-    if (bannerMatcher.find()) {
+    if (fileTextMatches(BANNER_PATTERN)) {
       _notJuniper = true;
     }
   }
 
   @Nullable
   private ConfigurationFormat checkAlcatelAos() {
-    Matcher alcatelAosMatcher = Pattern.compile("(?m)^system name").matcher(_fileText);
-    if (alcatelAosMatcher.find()) {
+    if (fileTextMatches(ALCATEL_AOS_PATTERN)) {
       return ConfigurationFormat.ALCATEL_AOS;
     }
     return null;
@@ -45,8 +95,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkArista() {
-    Matcher aristaMatcher = Pattern.compile("(?m)^.*boot system flash.*\\.swi").matcher(_fileText);
-    if (aristaMatcher.find()) {
+    if (fileTextMatches(ARISTA_PATTERN)) {
       return ConfigurationFormat.ARISTA;
     }
     return null;
@@ -54,8 +103,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkBlade() {
-    Matcher bladeNetworkMatcher = Pattern.compile("(?m)^switch-type").matcher(_fileText);
-    if (bladeNetworkMatcher.find()) {
+    if (fileTextMatches(BLADE_NETWORK_PATTERN)) {
       return ConfigurationFormat.BLADENETWORK;
     }
     return null;
@@ -63,8 +111,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkCadant() {
-    Matcher cadantNetworkMatcher = Pattern.compile("(?m)^shelfname").matcher(_fileText);
-    if (cadantNetworkMatcher.find()) {
+    if (fileTextMatches(CADANT_NETWORK_PATTERN)) {
       return ConfigurationFormat.CADANT;
     }
     return null;
@@ -72,32 +119,23 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkCisco() {
-    Matcher asaVersionLine = Pattern.compile("(?m)(^ASA Version.*$)").matcher(_fileText);
-    Matcher ciscoLike =
-        Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)").matcher(_fileText);
-    Matcher ciscoStyleAcl = Pattern.compile("(?m)(^(ip )?access-list.*$)").matcher(_fileText);
-    Matcher nexusCommitLine = Pattern.compile("(?m)^ *commit *$").matcher(_fileText);
-    Matcher nexusFeatureLine =
-        Pattern.compile("(?m)^ *(no)?  *feature  *[^ ].*$").matcher(_fileText);
-    Matcher neighborActivateMatcher =
-        Pattern.compile("(?m)^ *neighbor.*activate$").matcher(_fileText);
-    Matcher neighborPeerGroupMatcher =
-        Pattern.compile("(?m)^ *neighbor.*peer-group$").matcher(_fileText);
-    if (asaVersionLine.find()) {
+    if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
     }
-    if (nexusFeatureLine.find()) {
+    if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
     }
-    if (ciscoLike.find() || _firstChar == '!' || ciscoStyleAcl.find()) {
+    if (fileTextMatches(CISCO_LIKE_PATTERN)
+        || _firstChar == '!'
+        || fileTextMatches(CISCO_STYLE_ACL_PATTERN)) {
       if (_fileText.contains("exit-address-family")
-          || neighborActivateMatcher.find()
-          || neighborPeerGroupMatcher.find()) {
+          || fileTextMatches(NEIGHBOR_ACTIVATE_PATTERN)
+          || fileTextMatches(NEIGHBOR_PEER_GROUP_MATCHER)) {
         return ConfigurationFormat.CISCO_IOS;
       } else {
         return ConfigurationFormat.CISCO_NX;
       }
-    } else if (nexusCommitLine.find()) {
+    } else if (fileTextMatches(NEXUS_COMMIT_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
     }
     return null;
@@ -123,8 +161,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkF5() {
-    Matcher configurationHostname = Pattern.compile("(?m)^tmsh .*$").matcher(_fileText);
-    if (configurationHostname.find()) {
+    if (fileTextMatches(F5_HOSTNAME_PATTERN)) {
       return ConfigurationFormat.F5;
     }
     return null;
@@ -152,21 +189,11 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkJuniper() {
     if (_notJuniper) {
       return null;
-    }
-    Matcher setMatcher = Pattern.compile("(?m)^set ").matcher(_fileText);
-    Matcher flattenedJuniperMatcher =
-        Pattern.compile(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER)).matcher(_fileText);
-    Matcher flatJuniperHostnameDeclarationMatcher =
-        Pattern.compile("(?m)^set (groups [^ ][^ ]* )?system host-name ").matcher(_fileText);
-    Matcher juniperAclMatcher = Pattern.compile("(?m)^firewall *\\{").matcher(_fileText);
-    Matcher juniperPolicyOptionsMatcher =
-        Pattern.compile("(?m)^policy-options *\\{").matcher(_fileText);
-    Matcher juniperSnmpMatcher = Pattern.compile("(?m)^snmp *\\{").matcher(_fileText);
-    if (_fileText.contains("set hostname")) {
+    } else if (_fileText.contains("set hostname")) {
       return ConfigurationFormat.JUNIPER_SWITCH;
-    } else if (flattenedJuniperMatcher.find(0)
-        || flatJuniperHostnameDeclarationMatcher.find(0)
-        || (_fileText.contains("apply-groups") && setMatcher.find(0))) {
+    } else if (FLATTENED_JUNIPER_PATTERN.matcher(_fileText).find(0)
+        || FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN.matcher(_fileText).find(0)
+        || (_fileText.contains("apply-groups") && SET_PATTERN.matcher(_fileText).find(0))) {
       return ConfigurationFormat.FLAT_JUNIPER;
     } else if (_firstChar == '#'
         || (_fileText.contains("version")
@@ -175,9 +202,9 @@ public final class VendorConfigurationFormatDetector {
             && _fileText.contains("}")
             && _fileText.contains("host-name")
             && _fileText.contains("interfaces"))
-        || juniperAclMatcher.find()
-        || juniperPolicyOptionsMatcher.find()
-        || juniperSnmpMatcher.find()) {
+        || fileTextMatches(JUNIPER_ACL_PATTERN)
+        || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
+        || fileTextMatches(JUNIPER_SNMP_PATTERN)) {
       return ConfigurationFormat.JUNIPER;
     }
     return null;
@@ -185,12 +212,9 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkMetamako() {
-    if (_fileText.contains("application metamux") || _fileText.contains("application metawatch")) {
-      return ConfigurationFormat.METAMAKO;
-    }
-    Matcher deviceDescription =
-        Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$").matcher(_fileText);
-    if (deviceDescription.find()) {
+    if (_fileText.contains("application metamux")
+        || _fileText.contains("application metawatch")
+        || fileTextMatches(METAMAKO_MOS_PATTERN)) {
       return ConfigurationFormat.METAMAKO;
     }
     return null;
@@ -206,9 +230,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkMrvCommands() {
-    Matcher configurationHostname =
-        Pattern.compile("(?m)^configuration hostname .*$").matcher(_fileText);
-    if (configurationHostname.find()) {
+    if (fileTextMatches(MRV_HOSTNAME_PATTERN)) {
       return ConfigurationFormat.MRV_COMMANDS;
     }
     return null;
@@ -216,8 +238,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkMss() {
-    Matcher mssMatcher = Pattern.compile("(?m)^set system name").matcher(_fileText);
-    if (mssMatcher.find()) {
+    if (fileTextMatches(MSS_PATTERN)) {
       return ConfigurationFormat.MSS;
     }
     return null;
@@ -225,28 +246,18 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkRancid() {
-    Matcher rancidCisco = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$").matcher(_fileText);
-    Matcher rancidCiscoNx =
-        Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$").matcher(_fileText);
-    Matcher rancidForce10 =
-        Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: force10$").matcher(_fileText);
-    Matcher rancidFoundry =
-        Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: foundry$").matcher(_fileText);
-    Matcher rancidJuniper =
-        Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: juniper$").matcher(_fileText);
-    Matcher rancidMrv = Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$").matcher(_fileText);
-    if (rancidCisco.find()) {
+    if (fileTextMatches(RANCID_CISCO_PATTERN)) {
       return checkCisco(); // unfortunately, old RANCID cannot distinguish
       // subtypes
-    } else if (rancidCiscoNx.find()) {
+    } else if (fileTextMatches(RANCID_CISCO_NX_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
-    } else if (rancidForce10.find()) {
+    } else if (fileTextMatches(RANCID_FORCE_10_PATTERN)) {
       return ConfigurationFormat.FORCE10;
-    } else if (rancidFoundry.find()) {
+    } else if (fileTextMatches(RANCID_FOUNDRY_PATTERN)) {
       return ConfigurationFormat.FOUNDRY;
-    } else if (rancidJuniper.find()) {
+    } else if (fileTextMatches(RANCID_JUNIPER_PATTERN)) {
       return checkJuniper();
-    } else if (rancidMrv.find()) {
+    } else if (fileTextMatches(RANCID_MRV_PATTERN)) {
       return ConfigurationFormat.MRV;
     }
     return null;
