@@ -309,6 +309,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
-    _sb.append(varIntExpr.getHeaderField().getName());
+    _sb.append(varIntExpr.getField().getName());
   }
 }

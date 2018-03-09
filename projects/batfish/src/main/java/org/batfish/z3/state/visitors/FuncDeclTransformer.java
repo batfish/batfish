@@ -1,21 +1,16 @@
 package org.batfish.z3.state.visitors;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.Streams;
 import com.microsoft.z3.BitVecSort;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.FuncDecl;
-import java.util.Arrays;
-import org.batfish.z3.BasicHeaderField;
-import org.batfish.z3.HeaderField;
-import org.batfish.z3.TransformationHeaderField;
+import java.util.List;
 import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationStateExpr;
 
 public class FuncDeclTransformer implements GeneralStateVisitor {
 
-  private final Supplier<BitVecSort[]> _basicParameterTypes;
+  private final BitVecSort[] _basicStateVariableSorts;
 
   private final Context _ctx;
 
@@ -23,24 +18,16 @@ public class FuncDeclTransformer implements GeneralStateVisitor {
 
   private String _name;
 
-  private final Supplier<BitVecSort[]> _transformationParameterTypes;
+  private final BitVecSort[] _transformationStateVariableSorts;
 
-  public FuncDeclTransformer(Context ctx) {
+  public FuncDeclTransformer(
+      Context ctx,
+      List<BitVecSort> basicStateVariableSorts,
+      List<BitVecSort> transformationStateVariableSorts) {
     _ctx = ctx;
-    _basicParameterTypes =
-        () ->
-            Arrays.stream(BasicHeaderField.values())
-                .map(HeaderField::getSize)
-                .map(_ctx::mkBitVecSort)
-                .toArray(BitVecSort[]::new);
-    _transformationParameterTypes =
-        () ->
-            Streams.concat(
-                    Arrays.stream(_basicParameterTypes.get()),
-                    Arrays.stream(TransformationHeaderField.values())
-                        .map(HeaderField::getSize)
-                        .map(_ctx::mkBitVecSort))
-                .toArray(BitVecSort[]::new);
+    _basicStateVariableSorts = basicStateVariableSorts.stream().toArray(BitVecSort[]::new);
+    _transformationStateVariableSorts =
+        transformationStateVariableSorts.stream().toArray(BitVecSort[]::new);
   }
 
   public FuncDecl toFuncDecl(String name, State state) {
@@ -51,11 +38,11 @@ public class FuncDeclTransformer implements GeneralStateVisitor {
 
   @Override
   public void visitBasicStateExpr(BasicStateExpr.State basicState) {
-    _funcDecl = _ctx.mkFuncDecl(_name, _basicParameterTypes.get(), _ctx.mkBoolSort());
+    _funcDecl = _ctx.mkFuncDecl(_name, _basicStateVariableSorts, _ctx.mkBoolSort());
   }
 
   @Override
   public void visitTransformationStateExpr(TransformationStateExpr.State transformationState) {
-    _funcDecl = _ctx.mkFuncDecl(_name, _transformationParameterTypes.get(), _ctx.mkBoolSort());
+    _funcDecl = _ctx.mkFuncDecl(_name, _transformationStateVariableSorts, _ctx.mkBoolSort());
   }
 }

@@ -151,9 +151,7 @@ public class BatfishJobExecutor {
       return Executors.newSingleThreadExecutor();
     }
     // if parallel processing is allowed
-    int maxConcurrentThreads = Runtime.getRuntime().availableProcessors();
-    int numConcurrentThreads = Math.min(maxConcurrentThreads, _settings.getJobs());
-    return Executors.newFixedThreadPool(numConcurrentThreads);
+    return Executors.newFixedThreadPool(_settings.getAvailableThreads());
   }
 
   <

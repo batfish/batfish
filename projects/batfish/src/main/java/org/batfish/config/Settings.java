@@ -600,6 +600,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return nullablePath(_config.getString(BfConsts.ARG_ANSWER_JSON_PATH));
   }
 
+  public int getAvailableThreads() {
+    return Math.min(Runtime.getRuntime().availableProcessors(), getJobs());
+  }
+
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
   }
