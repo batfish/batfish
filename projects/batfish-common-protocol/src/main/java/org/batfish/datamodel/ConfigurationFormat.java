@@ -24,6 +24,7 @@ public enum ConfigurationFormat {
   IPTABLES("iptables"),
   JUNIPER("juniper"),
   JUNIPER_SWITCH("juniper"),
+  METAMAKO("metamako"),
   MRV("mrv"),
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
