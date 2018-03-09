@@ -1,6 +1,8 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -9,9 +11,10 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
@@ -24,14 +27,24 @@ import org.batfish.job.BatfishJobResult;
 
 public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends BatfishJob<R> {
 
+  private static Map<String, HeaderField> HEADER_FIELDS_BY_NAME =
+      Streams.<HeaderField>concat(
+              Arrays.stream(BasicHeaderField.values()),
+              Arrays.stream(TransformationHeaderField.values()))
+          .collect(ImmutableMap.toImmutableMap(HeaderField::getName, Function.identity()));
+
   protected static Flow createFlow(
-      String node, String vrf, Map<HeaderField, Long> constraints, String tag) {
+      String node, String vrf, Map<String, Long> constraints, String tag) {
     Flow.Builder flowBuilder = new Flow.Builder();
     flowBuilder.setIngressNode(node);
     flowBuilder.setIngressVrf(vrf);
     flowBuilder.setTag(tag);
     constraints.forEach(
-        (headerField, value) -> {
+        (name, value) -> {
+          if (!HEADER_FIELDS_BY_NAME.containsKey(name)) {
+            return;
+          }
+          HeaderField headerField = HEADER_FIELDS_BY_NAME.get(name);
           if (headerField instanceof BasicHeaderField) {
             switch ((BasicHeaderField) headerField) {
               case DST_IP:
@@ -166,15 +179,17 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     BoolExpr solverInput;
     if (answer.getArgs().length > 0) {
 
+      Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
       List<BitVecExpr> reversedVars =
           Lists.reverse(
               program
                   .getNodContext()
-                  .getVariablesAsConsts()
-                  .entrySet()
+                  .getVariableNames()
                   .stream()
-                  .filter(entry -> BasicHeaderField.basicHeaderFieldNames.contains(entry.getKey()))
-                  .map(Entry::getValue)
+                  .filter(
+                      name ->
+                          !TransformationHeaderField.transformationHeaderFieldNames.contains(name))
+                  .map(variablesAsConsts::get)
                   .collect(Collectors.toList()));
 
       Expr substitutedAnswer = answer.substituteVars(reversedVars.toArray(new Expr[] {}));

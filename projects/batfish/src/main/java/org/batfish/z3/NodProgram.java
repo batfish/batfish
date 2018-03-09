@@ -86,12 +86,8 @@ public class NodProgram {
     _queries.forEach(
         query -> sb.append(String.format("(query %s)\n", query.getFuncDecl().getName())));
 
-    String[] variablesAsNames =
-        Streams.<HeaderField>concat(
-                Arrays.stream(BasicHeaderField.values()),
-                Arrays.stream(TransformationHeaderField.values()))
-            .map(HeaderField::getName)
-            .toArray(String[]::new);
+    String[] variablesAsNames = _context.getVariableNames().stream().toArray(String[]::new);
+
     String[] variablesAsDebruijnIndices =
         IntStream.range(0, variablesAsNames.length)
             .mapToObj(index -> String.format("(:var %d)", index))

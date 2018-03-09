@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Model;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.z3.state.OriginateVrf;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -61,6 +61,7 @@ public class NodJobTest {
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
+  private OriginateVrf _originateVrf;
 
   private NodJob getNodJob(HeaderSpace headerSpace) {
     ReachabilityQuerySynthesizer querySynthesizer =
@@ -100,6 +101,7 @@ public class NodJobTest {
     _srcNode = cb.build();
     _dstNode = cb.build();
     _srcVrf = vb.setOwner(_srcNode).build();
+    _originateVrf = new OriginateVrf(_srcNode.getHostname(), _srcVrf.getName());
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
     Ip poolIp1 = new Ip("1.0.0.10");
@@ -174,22 +176,27 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Model model = nodJob.getSmtModel(z3Context, smtInput._expr);
-    assertThat(model, notNullValue());
+    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
+        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(1));
+    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf));
+    Map<String, Long> fieldConstraints = fieldConstraintsByOriginateVrf.get(_originateVrf);
 
-    Map<HeaderField, Long> headerConstraints =
-        nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
+    // Only one OriginateVrf choice, so this must be 0
+    assertThat(
+        fieldConstraints,
+        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+    assertThat(
+        fieldConstraints,
+        hasEntry(BasicHeaderField.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
+    assertThat(
+        fieldConstraints,
+        hasEntry(
+            equalTo(BasicHeaderField.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
+    assertThat(
+        fieldConstraints, hasEntry(BasicHeaderField.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
-    assertThat(
-        headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.0").asLong()));
-    assertThat(
-        headerConstraints,
-        hasEntry(equalTo(BasicHeaderField.SRC_IP), not(equalTo(new Ip("3.0.0.0").asLong()))));
-    assertThat(
-        headerConstraints,
-        hasEntry(equalTo(BasicHeaderField.SRC_IP), equalTo(new Ip("1.0.0.10").asLong())));
-
-    Set<Flow> flows = nodJob.getFlows(model, headerConstraints);
+    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
     List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
@@ -214,20 +221,25 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Model model = nodJob.getSmtModel(z3Context, smtInput._expr);
-    assertThat(model, notNullValue());
-
-    Map<HeaderField, Long> headerConstraints =
-        nodJob.getHeaderConstraints(model, smtInput._variablesAsConsts);
-
-    assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
-    assertThat(headerConstraints, hasKey(BasicHeaderField.SRC_IP));
+    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
+        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(1));
+    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf));
+    Map<String, Long> fieldConstraints = fieldConstraintsByOriginateVrf.get(_originateVrf);
 
     assertThat(
-        headerConstraints, hasEntry(BasicHeaderField.ORIG_SRC_IP, new Ip("3.0.0.1").asLong()));
-    assertThat(headerConstraints, hasEntry(BasicHeaderField.SRC_IP, new Ip("3.0.0.1").asLong()));
+        fieldConstraints,
+        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+    assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
+    assertThat(fieldConstraints, hasKey(BasicHeaderField.SRC_IP.getName()));
 
-    Set<Flow> flows = nodJob.getFlows(model, headerConstraints);
+    assertThat(
+        fieldConstraints,
+        hasEntry(BasicHeaderField.ORIG_SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(BasicHeaderField.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
+
+    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
     List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 

@@ -92,7 +92,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           question.getNotFinalNodeRegex(),
           question.getTransitNodes(),
           question.getNotTransitNodes(),
-          question.getUseCompression());
+          question.getUseCompression(),
+          question.getMaxChunkSize());
     }
   }
 
@@ -121,6 +122,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final NodesSpecifier DEFAULT_FINAL_NODE_REGEX = NodesSpecifier.ALL;
 
     private static final NodesSpecifier DEFAULT_INGRESS_NODE_REGEX = NodesSpecifier.ALL;
+
+    private static final int DEFAULT_MAX_CHUNK_SIZE = 1;
 
     private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = NodesSpecifier.NONE;
 
@@ -202,7 +205,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_USE_COMPRESSION = "useCompression";
 
+    private static final String PROP_MAX_CHUNK_SIZE = "maxChunkSize";
+
     private SortedSet<ForwardingAction> _actions;
+
+    private int _maxChunkSize;
 
     private NodesSpecifier _finalNodeRegex;
 
@@ -227,11 +234,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _finalNodeRegex = DEFAULT_FINAL_NODE_REGEX;
       _headerSpace = new HeaderSpace();
       _ingressNodeRegex = DEFAULT_INGRESS_NODE_REGEX;
-      _reachabilityType = ReachabilityType.STANDARD;
+      _maxChunkSize = DEFAULT_MAX_CHUNK_SIZE;
       _notFinalNodeRegex = DEFAULT_NOT_FINAL_NODE_REGEX;
-      _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
-      _transitNodes = DEFAULT_TRANSIT_NODES;
       _notTransitNodes = DEFAULT_NOT_TRANSIT_NODES;
+      _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
+      _reachabilityType = ReachabilityType.STANDARD;
+      _transitNodes = DEFAULT_TRANSIT_NODES;
       _useCompression = DEFAULT_USE_COMPRESSION;
     }
 
@@ -293,6 +301,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_IP_PROTOCOLS)
     public SortedSet<IpProtocol> getIpProtocols() {
       return _headerSpace.getIpProtocols();
+    }
+
+    @JsonProperty(PROP_MAX_CHUNK_SIZE)
+    public int getMaxChunkSize() {
+      return _maxChunkSize;
     }
 
     @Override
@@ -596,6 +609,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_IP_PROTOCOLS)
     public void setIpProtocols(SortedSet<IpProtocol> ipProtocols) {
       _headerSpace.setIpProtocols(ipProtocols);
+    }
+
+    @JsonProperty(PROP_MAX_CHUNK_SIZE)
+    public void setMaxChunkSize(int maxChunkSize) {
+      _maxChunkSize = maxChunkSize;
     }
 
     @JsonProperty(PROP_NEGATE_HEADER)

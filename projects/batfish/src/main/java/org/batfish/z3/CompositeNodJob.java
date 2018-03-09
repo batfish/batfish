@@ -41,9 +41,12 @@ public class CompositeNodJob extends AbstractNodJob {
     for (int i = 0; i < _numPrograms; i++) {
       Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
       QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
-      ReachabilityProgram baseProgram = dataPlaneSynthesizer.synthesizeNodDataPlaneProgram();
+      ReachabilityProgram baseProgram =
+          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodDataPlaneProgram());
       ReachabilityProgram queryProgram =
-          querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput());
+          instrumentReachabilityProgram(
+              querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput()));
+
       NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
       variablesAsConsts.putAll(program.getNodContext().getVariablesAsConsts());
       answers[i] = computeSmtConstraintsViaNod(program, _querySynthesizers.get(i).getNegate());

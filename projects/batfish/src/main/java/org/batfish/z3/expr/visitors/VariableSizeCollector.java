@@ -10,8 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.z3.BasicHeaderField;
-import org.batfish.z3.HeaderField;
-import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.Field;
 import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
@@ -57,8 +56,8 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
               .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
               .collect(ImmutableSet.toImmutableSet());
 
-  public static Map<String, Integer> collectVariableSizes(SynthesizerInput input, Statement s) {
-    VariableSizeCollector variableSizeCollector = new VariableSizeCollector(input);
+  public static Map<String, Integer> collectVariableSizes(Statement s) {
+    VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
     s.accept(variableSizeCollector);
     return variableSizeCollector
         ._variableSizes
@@ -67,13 +66,9 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
-  @SuppressWarnings("unused")
-  private final SynthesizerInput _input;
-
   private final ImmutableSet.Builder<Entry<String, Integer>> _variableSizes;
 
-  private VariableSizeCollector(SynthesizerInput input) {
-    _input = input;
+  private VariableSizeCollector() {
     _variableSizes = ImmutableSet.builder();
   }
 
@@ -218,7 +213,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
-    HeaderField headerField = varIntExpr.getHeaderField();
-    _variableSizes.add(Maps.immutableEntry(headerField.getName(), headerField.getSize()));
+    Field field = varIntExpr.getField();
+    _variableSizes.add(Maps.immutableEntry(field.getName(), field.getSize()));
   }
 }

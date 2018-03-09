@@ -43,7 +43,7 @@ public class BitVecExprTransformer implements GenericIntExprVisitor<BitVecExpr> 
 
   @Override
   public BitVecExpr visitVarIntExpr(VarIntExpr varIntExpr) {
-    String headerField = varIntExpr.getHeaderField().getName();
+    String headerField = varIntExpr.getField().getName();
     BitVecExpr ret = _nodContext.getVariables().get(headerField);
     if (ret == null) {
       throw new BatfishException("nodContext missing mapping for variable: '" + headerField + "'");
