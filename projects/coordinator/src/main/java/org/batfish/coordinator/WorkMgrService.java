@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1320,30 +1321,29 @@ public class WorkMgrService {
       List<String> testrigList = Main.getWorkMgr().listTestrigs(containerName);
 
       for (String testrig : testrigList) {
-        String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
-        TestrigMetadata trMetadata = Main.getWorkMgr().getTestrigMetadata(containerName, testrig);
+        try {
+          String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
+          TestrigMetadata trMetadata = Main.getWorkMgr().getTestrigMetadata(containerName, testrig);
 
-        JSONObject jObject =
-            new JSONObject()
-                .put(CoordConsts.SVC_KEY_TESTRIG_NAME, testrig)
-                .put(CoordConsts.SVC_KEY_TESTRIG_INFO, testrigInfo)
-                .put(
-                    CoordConsts.SVC_KEY_TESTRIG_METADATA,
-                    new BatfishObjectMapper().writeValueAsString(trMetadata));
+          JSONObject jObject =
+              new JSONObject()
+                  .put(CoordConsts.SVC_KEY_TESTRIG_NAME, testrig)
+                  .put(CoordConsts.SVC_KEY_TESTRIG_INFO, testrigInfo)
+                  .put(
+                      CoordConsts.SVC_KEY_TESTRIG_METADATA,
+                      new BatfishObjectMapper().writeValueAsString(trMetadata));
 
-        retArray.put(jObject);
+          retArray.put(jObject);
+        } catch (Exception e) {
+          _logger.warnf(
+              "Error listing testrig %s in container %s: %s",
+              containerName, testrig, Throwables.getStackTraceAsString(e));
+        }
       }
 
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_TESTRIG_LIST, retArray));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
-      _logger.errorf("WMS:listTestrigs exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
-      _logger.errorf("WMS:listTestrigs exception: %s", stackTrace);
+      _logger.errorf("WMS:listTestrigs exception: %s", ExceptionUtils.getStackTrace(e));
       return failureResponse(e.getMessage());
     }
   }
