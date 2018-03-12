@@ -570,12 +570,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                     }));
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(true, enabledInterfaces);
     Map<String, Set<Ip>> map = new HashMap<>();
+    // ipOwners may not contain all nodes (i.e. a node may not own any IPs),
+    // so frst initialize to make sure there is an entry for each node.
+    _enabledInterfaces.keySet().forEach(node -> map.put(node,new HashSet<>()));
     ipOwners.forEach(
         (ip, owners) -> {
           for (String owner : owners) {
-            map.computeIfAbsent(owner, o -> new HashSet<>()).add(ip);
+            map.get(owner).add(ip);
           }
         });
+    ipOwners.forEach((ip, owners) -> owners.forEach(owner -> map.get(owner).add(ip)));
     return map.entrySet()
         .stream()
         .collect(
