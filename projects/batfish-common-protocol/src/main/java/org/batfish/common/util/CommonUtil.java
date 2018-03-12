@@ -739,8 +739,8 @@ public class CommonUtil {
             fb.setIngressNode(remoteBgpNeighborCandidate.getOwner().getHostname());
             fb.setSrcIp(remoteAddress);
             fb.setDstIp(localAddress);
-            fb.setSrcPort(NamedPort.BGP.number());
-            fb.setDstPort(NamedPort.EPHEMERAL_LOWEST.number());
+            fb.setSrcPort(forwardFlow.getDstPort());
+            fb.setDstPort(forwardFlow.getSrcPort());
             Flow backwardFlow = fb.build();
             SortedMap<Flow, Set<FlowTrace>> traces =
                 flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow, backwardFlow));
