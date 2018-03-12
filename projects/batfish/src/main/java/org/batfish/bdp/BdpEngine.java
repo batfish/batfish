@@ -779,7 +779,7 @@ public class BdpEngine implements FlowProcessor {
                             vr.activateStaticRoutes();
                           }));
 
-      // Update bgp neighbors with routability
+      // Update bgp neighbors with reachability
       dp.setNodes(nodes);
       computeFibs(nodes);
       dp.setTopology(topology);
