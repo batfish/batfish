@@ -581,7 +581,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             map.get(owner).add(ip);
           }
         });
-    ipOwners.forEach((ip, owners) -> owners.forEach(owner -> map.get(owner).add(ip)));
     return map.entrySet()
         .stream()
         .collect(
