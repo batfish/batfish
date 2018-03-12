@@ -543,6 +543,27 @@ public class SynthesizerInputImplTest {
             equalTo(ImmutableMap.of(c.getName(), ImmutableSet.of(ipEnabled1, ipEnabled2)))));
   }
 
+  /**
+   * Hosts that own no IPs should be assigned an empty set by computeIpsByHostname
+   */
+  @Test
+  public void testComputeIpsByHostname_noIps() {
+    Configuration c = _cb.build();
+    Vrf v = _vb.setOwner(c).build();
+    _ib.setOwner(c)
+        .setVrf(v)
+        .build();
+
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setConfigurations(ImmutableMap.of(c.getName(), c))
+            .setDataPlane(TestDataPlane.builder().build()).build();
+    assertThat(
+        inputWithDataPlane,
+        hasIpsByHostname(
+            equalTo(ImmutableMap.of(c.getName(), ImmutableSet.of()))));
+  }
+
   @Test
   public void testComputeSourceNats() {
     Configuration srcNode = _cb.build();
