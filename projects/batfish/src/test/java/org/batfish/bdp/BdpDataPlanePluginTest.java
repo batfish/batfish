@@ -1020,7 +1020,7 @@ public class BdpDataPlanePluginTest {
   }
 
   @Test
-  public void testBgpNeighborRoutability() throws IOException {
+  public void testBgpNeighborReachability() throws IOException {
     // Only connect one neighbor (n2) to core router
     SortedMap<String, Configuration> configs = generateNetworkWithDuplicates();
 

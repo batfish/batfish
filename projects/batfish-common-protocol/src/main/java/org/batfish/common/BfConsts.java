@@ -8,8 +8,6 @@ package org.batfish.common;
 
 public class BfConsts {
 
-  public static final int BGP_SESSION_DST_PORT = 179;
-
   public enum TaskStatus {
     InProgress,
     RequeueFailure,

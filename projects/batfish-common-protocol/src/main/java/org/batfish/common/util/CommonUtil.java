@@ -49,6 +49,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -87,6 +88,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
@@ -615,16 +617,16 @@ public class CommonUtil {
    *
    * @param configurations map of all configurations, keyed by hostname
    * @param ipOwners mapping of Ips to a set of nodes (hostnames) that owns those IPs
-   * @param checkRoutability whether bgp neighbor rechability should be checked
-   * @param flowProcessor dataplane plugin to use to check routability. Must not be {@code null} if
-   *     {@code checkRoutability = true}
-   * @param dp dataplane to use to check routability. Must not be {@code null} if {@code
-   *     checkRoutability = true}
+   * @param checkReachability whether bgp neighbor reachability should be checked
+   * @param flowProcessor dataplane plugin to use to check reachability. Must not be {@code null} if
+   *     {@code checkReachability = true}
+   * @param dp dataplane to use to check reachability. Must not be {@code null} if {@code
+   *     checkReachability = true}
    */
   public static void initRemoteBgpNeighbors(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
-      boolean checkRoutability,
+      boolean checkReachability,
       @Nullable FlowProcessor flowProcessor,
       @Nullable DataPlane dp) {
     // TODO: handle duplicate ips on different vrfs
@@ -711,20 +713,21 @@ public class CommonUtil {
             && localRemoteAs == remoteLocalAs) {
           /*
            * Fairly confident establishing the session is possible here, but still check
-           * routability if needed.
+           * reachability if needed.
            * We should check reachability only for eBgp multihop or iBgp
            */
-          if (checkRoutability
+          if (checkReachability
               && (bgpNeighbor.getEbgpMultihop() || localLocalAs == remoteLocalAs)) {
             /*
              * Ensure that the session can be established by running traceroute in both directions
              */
             if (flowProcessor == null || dp == null) {
-              throw new BatfishException("Cannot compute neighbor routability without a dataplane");
+              throw new BatfishException(
+                  "Cannot compute neighbor reachability without a dataplane");
             }
             Flow.Builder fb = new Flow.Builder();
             fb.setIpProtocol(IpProtocol.TCP);
-            fb.setDstPort(BfConsts.BGP_SESSION_DST_PORT);
+            fb.setDstPort(NamedPort.BGP.number());
             fb.setTag("neighbor-resolution");
 
             fb.setIngressNode(bgpNeighbor.getOwner().getHostname());
@@ -742,10 +745,13 @@ public class CommonUtil {
             if (traces
                 .values()
                 .stream()
-                .flatMap(Set::stream)
-                .anyMatch(tr -> tr.getDisposition() != FlowDisposition.ACCEPTED)) {
+                .map(
+                    fts ->
+                        fts.stream()
+                            .allMatch(ft -> ft.getDisposition() != FlowDisposition.ACCEPTED))
+                .anyMatch(Predicate.isEqual(true))) {
               /*
-               * If any traceroute fails, do not consider the neighbor valid
+               * If either flow has all traceroutes fail, do not consider the neighbor valid
                */
               continue;
             }
