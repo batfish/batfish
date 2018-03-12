@@ -727,17 +727,20 @@ public class CommonUtil {
             }
             Flow.Builder fb = new Flow.Builder();
             fb.setIpProtocol(IpProtocol.TCP);
-            fb.setDstPort(NamedPort.BGP.number());
             fb.setTag("neighbor-resolution");
 
             fb.setIngressNode(bgpNeighbor.getOwner().getHostname());
             fb.setSrcIp(localAddress);
             fb.setDstIp(remoteAddress);
+            fb.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
+            fb.setDstPort(NamedPort.BGP.number());
             Flow forwardFlow = fb.build();
 
             fb.setIngressNode(remoteBgpNeighborCandidate.getOwner().getHostname());
-            fb.setDstIp(localAddress);
             fb.setSrcIp(remoteAddress);
+            fb.setDstIp(localAddress);
+            fb.setSrcPort(NamedPort.BGP.number());
+            fb.setDstPort(NamedPort.EPHEMERAL_LOWEST.number());
             Flow backwardFlow = fb.build();
             SortedMap<Flow, Set<FlowTrace>> traces =
                 flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow, backwardFlow));
