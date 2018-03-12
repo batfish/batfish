@@ -720,7 +720,7 @@ public class CommonUtil {
              * Ensure that the session can be established by running traceroute in both directions
              */
             if (flowProcessor == null || dp == null) {
-              throw new BatfishException("Cannot compute routability without a dataplane");
+              throw new BatfishException("Cannot compute neighbor routability without a dataplane");
             }
             Flow.Builder fb = new Flow.Builder();
             fb.setIpProtocol(IpProtocol.TCP);

@@ -888,6 +888,19 @@ public class BdpEngine implements FlowProcessor {
           return true;
         }
         compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
+
+        computeFibs(nodes);
+        initRemoteBgpNeighbors(
+            nodes
+                .entrySet()
+                .stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey, e -> e.getValue().getConfiguration())),
+            dp.getIpOwners(),
+            true,
+            this,
+            dp);
       } while (checkDependentRoutesChanged(
           dependentRoutesChanged,
           evenDependentRoutesChanged,
