@@ -86,17 +86,11 @@ public class BoolExprTransformer
 
   private final Expr[] _to;
 
-  private final Expr[] _transformationStateArguments;
-
   private BoolExprTransformer(SynthesizerInput input, NodContext nodContext) {
     _input = input;
     _nodContext = nodContext;
     _basicStateArguments =
         Arrays.stream(nodContext.getBasicStateVarIntExprs())
-            .map(varIntExpr -> BitVecExprTransformer.toBitVecExpr(varIntExpr, _nodContext))
-            .toArray(Expr[]::new);
-    _transformationStateArguments =
-        Arrays.stream(nodContext.getTranformationStateVarIntExprs())
             .map(varIntExpr -> BitVecExprTransformer.toBitVecExpr(varIntExpr, _nodContext))
             .toArray(Expr[]::new);
     Set<String> variables = nodContext.getVariables().keySet();
@@ -128,7 +122,7 @@ public class BoolExprTransformer
   private Expr[] getTransformationRelationArgs(
       SynthesizerInput input, TransformationStateExpr stateExpr) {
     /* TODO: support vectorized state parameters */
-    return _transformationStateArguments;
+    return _basicStateArguments;
   }
 
   @Override
@@ -286,10 +280,12 @@ public class BoolExprTransformer
         .forEach(preconditions::add);
     return ctx.mkImplies(
         ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
-        toBoolExpr(
-            transformationRuleStatement.getPostconditionTransformationState(),
-            _input,
-            _nodContext));
+        (BoolExpr)
+            toBoolExpr(
+                    transformationRuleStatement.getPostconditionTransformationState(),
+                    _input,
+                    _nodContext)
+                .substitute(_from, _to));
   }
 
   @Override
@@ -328,9 +324,7 @@ public class BoolExprTransformer
         .stream()
         .map(
             preconditionPostTransformationState ->
-                (BoolExpr)
-                    toBoolExpr(preconditionPostTransformationState, _input, _nodContext)
-                        .substitute(_from, _to))
+                toBoolExpr(preconditionPostTransformationState, _input, _nodContext))
         .forEach(preconditions::add);
     transformedBasicRuleStatement
         .getPreconditionTransformationStates()
@@ -341,12 +335,10 @@ public class BoolExprTransformer
         .forEach(preconditions::add);
     return ctx.mkImplies(
         ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
-        (BoolExpr)
-            toBoolExpr(
-                    transformedBasicRuleStatement.getPostconditionPostTransformationState(),
-                    _input,
-                    _nodContext)
-                .substitute(_from, _to));
+        toBoolExpr(
+            transformedBasicRuleStatement.getPostconditionPostTransformationState(),
+            _input,
+            _nodContext));
   }
 
   @Override

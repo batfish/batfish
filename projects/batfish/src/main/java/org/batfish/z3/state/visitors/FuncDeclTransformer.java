@@ -18,16 +18,9 @@ public class FuncDeclTransformer implements GeneralStateVisitor {
 
   private String _name;
 
-  private final BitVecSort[] _transformationStateVariableSorts;
-
-  public FuncDeclTransformer(
-      Context ctx,
-      List<BitVecSort> basicStateVariableSorts,
-      List<BitVecSort> transformationStateVariableSorts) {
+  public FuncDeclTransformer(Context ctx, List<BitVecSort> basicStateVariableSorts) {
     _ctx = ctx;
     _basicStateVariableSorts = basicStateVariableSorts.stream().toArray(BitVecSort[]::new);
-    _transformationStateVariableSorts =
-        transformationStateVariableSorts.stream().toArray(BitVecSort[]::new);
   }
 
   public FuncDecl toFuncDecl(String name, State state) {
@@ -43,6 +36,6 @@ public class FuncDeclTransformer implements GeneralStateVisitor {
 
   @Override
   public void visitTransformationStateExpr(TransformationStateExpr.State transformationState) {
-    _funcDecl = _ctx.mkFuncDecl(_name, _transformationStateVariableSorts, _ctx.mkBoolSort());
+    _funcDecl = _ctx.mkFuncDecl(_name, _basicStateVariableSorts, _ctx.mkBoolSort());
   }
 }
