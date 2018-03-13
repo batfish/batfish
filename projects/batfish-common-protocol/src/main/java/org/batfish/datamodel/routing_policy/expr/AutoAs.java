@@ -42,7 +42,7 @@ public class AutoAs extends AsExpr {
     Prefix peerPrefix = new Prefix(peerAddress, Prefix.MAX_PREFIX_LENGTH);
     BgpNeighbor neighbor = proc.getNeighbors().get(peerPrefix);
     if (neighbor == null) {
-      throw new BatfishException("Expected a peer with address: " + peerAddress.toString());
+      throw new BatfishException("Expected a peer with address: " + peerAddress);
     }
     if (direction == Direction.IN) {
       as = neighbor.getRemoteAs();

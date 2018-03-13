@@ -76,19 +76,17 @@ public class Main {
     return _poolManager;
   }
 
+  @Nullable
   public static Map<String, String> getQuestionTemplates() {
 
     List<Path> questionTemplateDir = _settings.getQuestionTemplateDirs();
 
-    if (questionTemplateDir == null || questionTemplateDir.size() == 0) {
+    if (questionTemplateDir == null || questionTemplateDir.isEmpty()) {
       return null;
     }
 
     Map<String, String> questionTemplates = new HashMap<>();
-    questionTemplateDir.forEach(
-        (dir) -> {
-          readQuestionTemplates(dir, questionTemplates);
-        });
+    questionTemplateDir.forEach((dir) -> readQuestionTemplates(dir, questionTemplates));
 
     return questionTemplates;
   }
