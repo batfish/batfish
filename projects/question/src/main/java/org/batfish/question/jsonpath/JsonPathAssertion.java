@@ -80,7 +80,7 @@ public class JsonPathAssertion {
             expectedEntries.add(expectedEntry);
           } catch (IOException e) {
             throw new BatfishException(
-                "Could not convert '" + nodeEntry.toString() + "' to JsonPathResultEntry", e);
+                "Could not convert '" + nodeEntry + "' to JsonPathResultEntry", e);
           }
         }
         SetView<JsonPathResultEntry> difference1 = Sets.difference(expectedEntries, resultEntries);

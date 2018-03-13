@@ -78,9 +78,7 @@ final class BatfishStorage {
       throw new BatfishException(
           "Error reading vendor-independent configs directory: '" + indepDir + "'", e);
     }
-    SortedMap<String, Configuration> configurations =
-        deserializeObjects(namesByPath, Configuration.class);
-    return configurations;
+    return deserializeObjects(namesByPath, Configuration.class);
   }
 
   @Nullable
