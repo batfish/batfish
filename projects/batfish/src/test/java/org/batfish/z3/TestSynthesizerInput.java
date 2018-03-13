@@ -24,8 +24,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private Set<Edge> _enabledEdges;
 
-    private Set<NodeInterfacePair> _enabledFlowSinks;
-
     private Map<String, Set<String>> _enabledInterfaces;
 
     private Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
@@ -55,7 +53,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
       _enabledEdges = ImmutableSet.of();
-      _enabledFlowSinks = ImmutableSet.of();
       _enabledInterfaces = ImmutableMap.of();
       _enabledInterfacesByNodeVrf = ImmutableMap.of();
       _enabledNodes = ImmutableSet.of();
@@ -74,7 +71,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
           _aclActions,
           _aclConditions,
           _enabledEdges,
-          _enabledFlowSinks,
           _enabledInterfaces,
           _enabledInterfacesByNodeVrf,
           _enabledNodes,
@@ -101,11 +97,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     public Builder setEnabledEdges(Set<Edge> enabledEdges) {
       _enabledEdges = enabledEdges;
-      return this;
-    }
-
-    public Builder setEnabledFlowSinks(Set<NodeInterfacePair> enabledFlowSinks) {
-      _enabledFlowSinks = enabledFlowSinks;
       return this;
     }
 
@@ -183,8 +174,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Set<Edge> _enabledEdges;
 
-  private final Set<NodeInterfacePair> _enabledFlowSinks;
-
   private final Map<String, Set<String>> _enabledInterfaces;
 
   private final Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
@@ -214,7 +203,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
       Map<String, Map<String, List<LineAction>>> aclActions,
       Map<String, Map<String, List<BooleanExpr>>> aclConditions,
       Set<Edge> enabledEdges,
-      Set<NodeInterfacePair> enabledFlowSinks,
       Map<String, Set<String>> enabledInterfaces,
       Map<String, Map<String, Set<String>>> enabledInterfacesByNodeVrf,
       Set<String> enabledNodes,
@@ -230,7 +218,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
     _aclActions = aclActions;
     _aclConditions = aclConditions;
     _enabledEdges = enabledEdges;
-    _enabledFlowSinks = enabledFlowSinks;
     _enabledInterfaces = enabledInterfaces;
     _enabledInterfacesByNodeVrf = enabledInterfacesByNodeVrf;
     _enabledNodes = enabledNodes;
@@ -258,11 +245,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<Edge> getEnabledEdges() {
     return _enabledEdges;
-  }
-
-  @Override
-  public Set<NodeInterfacePair> getEnabledFlowSinks() {
-    return _enabledFlowSinks;
   }
 
   @Override
@@ -317,7 +299,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Set<String>> getTopologyInterfaces() {
+  public Map<String, Set<String>> getTraversableInterfaces() {
     return _topologyInterfaces;
   }
 

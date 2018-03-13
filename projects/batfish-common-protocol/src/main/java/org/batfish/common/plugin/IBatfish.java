@@ -31,7 +31,6 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -50,9 +49,6 @@ public interface IBatfish extends IPluginConsumer {
   void checkDataPlane();
 
   void checkEnvironmentExists();
-
-  Set<NodeInterfacePair> computeFlowSinks(
-      Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 

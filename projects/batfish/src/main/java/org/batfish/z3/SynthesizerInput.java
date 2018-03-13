@@ -36,8 +36,6 @@ public interface SynthesizerInput {
 
   Set<Edge> getEnabledEdges();
 
-  Set<NodeInterfacePair> getEnabledFlowSinks();
-
   /** Mapping: hostname -> interfaces */
   Map<String, Set<String>> getEnabledInterfaces();
 
@@ -50,9 +48,9 @@ public interface SynthesizerInput {
   Map<String, Set<String>> getEnabledVrfs();
 
   /**
-   * Mapping: hostname -> vrf -> outgoingInterface -> receivingNodeAndInterface -> condition There
-   * are three special cases of receivingNodeAndInterface that do not correspond to the topology: 1)
-   * No route. 2) Null route. 3) Flow sink.
+   * Mapping: hostname -> vrf -> outgoingInterface -> receivingNodeAndInterface -> condition <br>
+   * There are three special cases of receivingNodeAndInterface that do not correspond to the
+   * topology: 1) No route. 2) Null route. 3) Flow sink.
    */
   Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> getFibConditions();
 
@@ -73,8 +71,8 @@ public interface SynthesizerInput {
    */
   Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
 
-  /** Mapping: hostname -> interfacesOnSomeEdge */
-  Map<String, Set<String>> getTopologyInterfaces();
+  /** Mapping: hostname -> interfacesAllowedToBelongToAnEdge */
+  Map<String, Set<String>> getTraversableInterfaces();
 
   /**
    * Set of parameter types that should be vectorized rather than baked into name of relations.<br>

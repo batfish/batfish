@@ -157,7 +157,7 @@ public class SynthesizerInputMatchersImpl {
 
     @Override
     protected Map<String, Set<String>> featureValueOf(SynthesizerInput actual) {
-      return actual.getTopologyInterfaces();
+      return actual.getTraversableInterfaces();
     }
   }
 

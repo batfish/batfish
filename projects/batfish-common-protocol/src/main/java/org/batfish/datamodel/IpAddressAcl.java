@@ -2,8 +2,9 @@ package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
-public class IpAddressAcl {
+public class IpAddressAcl implements IpSpace {
 
   public static class Builder {
 
@@ -24,9 +25,7 @@ public class IpAddressAcl {
   }
 
   public static final IpAddressAcl PERMIT_ALL =
-      IpAddressAcl.builder()
-          .setLines(ImmutableList.of(new IpAddressAclLine(IpSpace.ANY, LineAction.ACCEPT)))
-          .build();
+      IpAddressAcl.builder().setLines(ImmutableList.of(IpAddressAclLine.PERMIT_ALL)).build();
 
   public static final IpAddressAcl DENY_ALL = IpAddressAcl.builder().build();
 
@@ -43,13 +42,14 @@ public class IpAddressAcl {
   private LineAction action(Ip ip) {
     return _lines
         .stream()
-        .filter(line -> line.getIpSpace().contains(ip))
+        .filter(line -> line.getIpSpace().contains(ip) ^ line.getNegate())
         .map(IpAddressAclLine::getAction)
         .findFirst()
         .orElse(LineAction.REJECT);
   }
 
-  public boolean permits(Ip ip) {
+  @Override
+  public boolean contains(@Nonnull Ip ip) {
     return action(ip) == LineAction.ACCEPT;
   }
 }

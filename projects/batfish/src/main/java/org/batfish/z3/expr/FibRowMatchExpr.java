@@ -1,15 +1,7 @@
 package org.batfish.z3.expr;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.collections.FibRow;
-import org.batfish.z3.BasicHeaderField;
-
 public class FibRowMatchExpr {
-
+  /*
   public static BooleanExpr getFibRowConditions(
       String hostname, String vrfName, List<FibRow> fib, int i, FibRow currentRow) {
     Set<FibRow> notRows = new TreeSet<>();
@@ -72,4 +64,5 @@ public class FibRowMatchExpr {
     BooleanExpr conditions = new AndExpr(conditionsBuilder.build());
     return conditions;
   }
+  */
 }

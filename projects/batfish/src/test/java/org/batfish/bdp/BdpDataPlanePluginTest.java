@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,7 +59,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -923,10 +921,10 @@ public class BdpDataPlanePluginTest {
             ImmutableMap.of(c.getName(), c),
             topology,
             Collections.emptySet(),
-            ImmutableSet.of(new NodeInterfacePair(c.getName(), i.getName())),
             new BdpAnswerElement());
 
     // generating fibs should not crash
-    dp.getFibRows();
+    dp.getFibs();
+    /* TODO: more tests for new fib stuff */
   }
 }

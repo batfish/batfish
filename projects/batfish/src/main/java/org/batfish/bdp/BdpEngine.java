@@ -401,7 +401,6 @@ public class BdpEngine {
       Map<String, Configuration> configurations,
       Topology topology,
       Set<BgpAdvertisement> externalAdverts,
-      Set<NodeInterfacePair> flowSinks,
       BdpAnswerElement ae) {
     _logger.resetTimer();
     BdpDataPlane dp = new BdpDataPlane();
@@ -433,7 +432,6 @@ public class BdpEngine {
       computeFibs(nodes);
       dp.setNodes(nodes);
       dp.setTopology(topology);
-      dp.setFlowSinks(flowSinks);
       ae.setVersion(Version.getVersion());
     }
     _logger.printElapsedTime();

@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class IpSpaceTest {
 
-  private static class Contains extends FeatureMatcher<IpSpace, Boolean> {
+  private static class Contains extends FeatureMatcher<IpWildcardSetIpSpace, Boolean> {
 
     private final Ip _ip;
 
@@ -19,7 +19,7 @@ public class IpSpaceTest {
     }
 
     @Override
-    protected Boolean featureValueOf(IpSpace actual) {
+    protected Boolean featureValueOf(IpWildcardSetIpSpace actual) {
       return actual.contains(_ip);
     }
   }
@@ -30,13 +30,13 @@ public class IpSpaceTest {
 
   @Test
   public void testIpSpace() {
-    IpSpace any = IpSpace.builder().including(IpWildcard.ANY).build();
-    IpSpace justMax = IpSpace.builder().including(new IpWildcard(Ip.MAX)).build();
-    IpSpace anyExceptMax =
-        IpSpace.builder().including(IpWildcard.ANY).excluding(new IpWildcard(Ip.MAX)).build();
-    IpSpace none1 = IpSpace.builder().build();
-    IpSpace none2 = IpSpace.builder().including(IpWildcard.ANY).excluding(IpWildcard.ANY).build();
-    IpSpace someButNotMax = IpSpace.builder().including(new IpWildcard("1.2.3.4")).build();
+    IpWildcardSetIpSpace any = IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
+    IpWildcardSetIpSpace justMax = IpWildcardSetIpSpace.builder().including(new IpWildcard(Ip.MAX)).build();
+    IpWildcardSetIpSpace anyExceptMax =
+        IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).excluding(new IpWildcard(Ip.MAX)).build();
+    IpWildcardSetIpSpace none1 = IpWildcardSetIpSpace.builder().build();
+    IpWildcardSetIpSpace none2 = IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).excluding(IpWildcard.ANY).build();
+    IpWildcardSetIpSpace someButNotMax = IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.4")).build();
 
     /*
      * Contains every IP, so should contain Ip.MAX

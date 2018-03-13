@@ -211,8 +211,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _simplify = simplify;
     _vectorizedParameters = vectorizedParameters;
     if (dataPlane != null) {
-      _fibs = ImmutableMap.copyOf(dataPlane.getFibRows());
-      _flowSinks = ImmutableSet.copyOf(dataPlane.getFlowSinks());
       _enabledFlowSinks = computeEnabledFlowSinks();
       _ipsByHostname = computeIpsByHostname();
       _fibConditions = computeFibConditions();
@@ -747,7 +745,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Set<String>> getTopologyInterfaces() {
+  public Map<String, Set<String>> getTraversableInterfaces() {
     return _topologyInterfaces;
   }
 

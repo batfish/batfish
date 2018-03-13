@@ -20,7 +20,6 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.IbgpTopology;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 @AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
@@ -47,11 +46,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
       boolean differentialContext, Map<String, Configuration> configurations, Topology topology) {
     BdpAnswerElement ae = new BdpAnswerElement();
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
-    Set<NodeInterfacePair> flowSinks =
-        _batfish.computeFlowSinks(configurations, differentialContext, topology);
     BdpDataPlane dp =
         _engine.computeDataPlane(
-            differentialContext, configurations, topology, externalAdverts, flowSinks, ae);
+            differentialContext, configurations, topology, externalAdverts, ae);
     double averageRoutes =
         dp.getNodes()
             .values()

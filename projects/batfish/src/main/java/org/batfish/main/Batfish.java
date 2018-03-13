@@ -1015,58 +1015,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return topology;
   }
 
-  @Override
-  public Set<NodeInterfacePair> computeFlowSinks(
-      Map<String, Configuration> configurations, boolean differentialContext, Topology topology) {
-    Set<NodeInterfacePair> flowSinks = null;
-    if (differentialContext) {
-      pushBaseEnvironment();
-      flowSinks = new LinkedHashSet<>(loadDataPlane().getFlowSinks());
-      popEnvironment();
-    }
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    if (differentialContext) {
-      flowSinks.removeIf(
-          nodeInterfacePair -> blacklistNodes.contains(nodeInterfacePair.getHostname()));
-    }
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-      if (differentialContext) {
-        flowSinks.remove(blacklistInterface);
-      }
-    }
-    if (!differentialContext) {
-      flowSinks = computeFlowSinks(configurations, topology);
-    }
-    return ImmutableSet.copyOf(flowSinks);
-  }
-
-  private Set<NodeInterfacePair> computeFlowSinks(
-      Map<String, Configuration> configurations, Topology topology) {
-    // TODO: confirm VRFs are handled correctly
-    ImmutableSet.Builder<NodeInterfacePair> flowSinksBuilder = new ImmutableSet.Builder<>();
-    ImmutableSet.Builder<NodeInterfacePair> topologyInterfacesBuilder =
-        new ImmutableSet.Builder<>();
-    for (Edge edge : topology.getEdges()) {
-      topologyInterfacesBuilder.add(edge.getInterface1());
-      topologyInterfacesBuilder.add(edge.getInterface2());
-    }
-    Set<NodeInterfacePair> topologyInterfaces = topologyInterfacesBuilder.build();
-    for (Configuration node : configurations.values()) {
-      String hostname = node.getHostname();
-      for (Interface iface : node.getInterfaces().values()) {
-        String ifaceName = iface.getName();
-        NodeInterfacePair p = new NodeInterfacePair(hostname, ifaceName);
-        if (iface.getActive()
-            && !iface.isLoopback(node.getConfigurationFormat())
-            && !topologyInterfaces.contains(p)) {
-          flowSinksBuilder.add(p);
-        }
-      }
-    }
-    return flowSinksBuilder.build();
-  }
-
   public <KeyT, ResultT> void computeNodFirstUnsatOutput(
       List<NodFirstUnsatJob<KeyT, ResultT>> jobs, Map<KeyT, ResultT> output) {
     _logger.info("\n*** EXECUTING NOD UNSAT JOBS ***\n");

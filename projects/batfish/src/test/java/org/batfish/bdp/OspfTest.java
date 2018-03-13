@@ -304,7 +304,6 @@ public class OspfTest {
             configurations,
             topology,
             Collections.emptySet(),
-            Collections.emptySet(),
             new BdpAnswerElement());
 
     return engine.getRoutes(dp);
