@@ -310,7 +310,7 @@ public abstract class Question implements IQuestion {
     if (_differential) {
       retString += String.format("differential=%s", _differential);
     }
-    if (retString == "") {
+    if (retString.isEmpty()) {
       return "";
     } else {
       return retString + ", ";

@@ -72,15 +72,13 @@ public class HostInterfaceTest {
     Prefix nonShared1Prefix = Prefix.parse("2.0.0.2/24");
     Prefix nonShared2Prefix = Prefix.parse("3.0.0.2/24");
     String ifaceSharedText =
-        "{\"name\":\"shared_interface\", \"prefix\":\""
-            + sharedAddress.toString()
-            + "\", \"shared\":true}";
+        "{\"name\":\"shared_interface\", \"prefix\":\"" + sharedAddress + "\", \"shared\":true}";
     String ifaceNonShared1Text =
         "{\"name\":\"non_shared1_interface\", \"prefix\":\""
-            + nonShared1Prefix.toString()
+            + nonShared1Prefix
             + "\", \"shared\":false}";
     String ifaceNonShared2Text =
-        "{\"name\":\"non_shared2_interface\", \"prefix\":\"" + nonShared2Prefix.toString() + "\"}";
+        "{\"name\":\"non_shared2_interface\", \"prefix\":\"" + nonShared2Prefix + "\"}";
 
     HostInterface sharedHostInterface = _mapper.readValue(ifaceSharedText, HostInterface.class);
     HostInterface nonShared1HostInterface =
