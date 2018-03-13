@@ -737,8 +737,8 @@ public class CommonUtil {
             Flow forwardFlow = fb.build();
 
             fb.setIngressNode(remoteBgpNeighborCandidate.getOwner().getHostname());
-            fb.setSrcIp(remoteAddress);
-            fb.setDstIp(localAddress);
+            fb.setSrcIp(forwardFlow.getDstIp());
+            fb.setDstIp(forwardFlow.getSrcIp());
             fb.setSrcPort(forwardFlow.getDstPort());
             fb.setDstPort(forwardFlow.getSrcPort());
             Flow backwardFlow = fb.build();
