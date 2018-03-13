@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
@@ -48,6 +49,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -70,16 +73,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
+import org.batfish.common.plugin.FlowProcessor;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
@@ -611,67 +621,185 @@ public class CommonUtil {
     return time;
   }
 
+  /**
+   * Initialize BGP neighbors for all nodes.
+   *
+   * @param configurations map of all configurations, keyed by hostname
+   * @param ipOwners mapping of Ips to a set of nodes (hostnames) that owns those IPs
+   * @param checkReachability whether bgp neighbor reachability should be checked
+   * @param flowProcessor dataplane plugin to use to check reachability. Must not be {@code null} if
+   *     {@code checkReachability = true}
+   * @param dp dataplane to use to check reachability. Must not be {@code null} if {@code
+   *     checkReachability = true}
+   */
   public static void initRemoteBgpNeighbors(
-      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners) {
+      Map<String, Configuration> configurations,
+      Map<Ip, Set<String>> ipOwners,
+      boolean checkReachability,
+      @Nullable FlowProcessor flowProcessor,
+      @Nullable DataPlane dp) {
     // TODO: handle duplicate ips on different vrfs
     Map<BgpNeighbor, Ip> remoteAddresses = new IdentityHashMap<>();
     Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<>();
+
+    /*
+     * Construct maps indicating which neighbor owns which Ip Address
+     */
     for (Configuration node : configurations.values()) {
       String hostname = node.getHostname();
       for (Vrf vrf : node.getVrfs().values()) {
         BgpProcess proc = vrf.getBgpProcess();
-        if (proc != null) {
-          for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-            bgpNeighbor.initCandidateRemoteBgpNeighbors();
-            if (bgpNeighbor.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
-              throw new BatfishException(
-                  hostname
-                      + ": Do not support dynamic bgp sessions at this time: "
-                      + bgpNeighbor.getPrefix());
-            }
-            Ip remoteAddress = bgpNeighbor.getAddress();
-            if (remoteAddress == null) {
-              throw new BatfishException(
-                  hostname
-                      + ": Could not determine remote address of bgp neighbor: "
-                      + bgpNeighbor);
-            }
-            Ip localAddress = bgpNeighbor.getLocalIp();
-            if (localAddress == null
-                || !ipOwners.containsKey(localAddress)
-                || !ipOwners.get(localAddress).contains(hostname)) {
-              continue;
-            }
-            remoteAddresses.put(bgpNeighbor, remoteAddress);
-            Set<BgpNeighbor> localAddressOwners =
-                localAddresses.computeIfAbsent(
-                    localAddress, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-            localAddressOwners.add(bgpNeighbor);
+        if (proc == null) {
+          // nothing to do if no bgp process on this VRF
+          continue;
+        }
+        for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
+          /*
+           * Begin by initializing candidate neighbors to an empty set
+           */
+          bgpNeighbor.initCandidateRemoteBgpNeighbors();
+
+          // Skip things we don't handle
+          if (bgpNeighbor.getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
+            throw new BatfishException(
+                hostname
+                    + ": Do not support dynamic bgp sessions at this time: "
+                    + bgpNeighbor.getPrefix());
           }
+
+          Ip remoteAddress = bgpNeighbor.getAddress();
+          if (remoteAddress == null) {
+            throw new BatfishException(
+                hostname + ": Could not determine remote address of bgp neighbor: " + bgpNeighbor);
+          }
+          Ip localAddress = bgpNeighbor.getLocalIp();
+          if (localAddress == null
+              || !ipOwners.containsKey(localAddress)
+              || !ipOwners.get(localAddress).contains(hostname)) {
+            // Local address is not owned by anybody
+            continue;
+          }
+
+          remoteAddresses.put(bgpNeighbor, remoteAddress);
+          // Add this neighbor as owner of its local address
+          localAddresses
+              .computeIfAbsent(
+                  localAddress, k -> Collections.newSetFromMap(new IdentityHashMap<>()))
+              .add(bgpNeighbor);
         }
       }
     }
+    /*
+     * For each neighbor, construct the set of candidate neighbors, then filter out impossible
+     * sessions.
+     */
     for (Entry<BgpNeighbor, Ip> e : remoteAddresses.entrySet()) {
       BgpNeighbor bgpNeighbor = e.getKey();
       Ip remoteAddress = e.getValue();
       Ip localAddress = bgpNeighbor.getLocalIp();
       int localLocalAs = bgpNeighbor.getLocalAs();
       int localRemoteAs = bgpNeighbor.getRemoteAs();
+
+      /*
+       * Let the set of candidate neighbors be set of neighbors that own the remoteAddress
+       */
       Set<BgpNeighbor> remoteBgpNeighborCandidates = localAddresses.get(remoteAddress);
-      if (remoteBgpNeighborCandidates != null) {
-        for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
-          int remoteLocalAs = remoteBgpNeighborCandidate.getLocalAs();
-          int remoteRemoteAs = remoteBgpNeighborCandidate.getRemoteAs();
-          Ip reciprocalRemoteIp = remoteBgpNeighborCandidate.getAddress();
-          if (localAddress.equals(reciprocalRemoteIp)
-              && localLocalAs == remoteRemoteAs
-              && localRemoteAs == remoteLocalAs) {
+      if (remoteBgpNeighborCandidates == null) {
+        // No possible remote neighbors
+        continue;
+      }
+      /*
+       * Filter the set of candidate neighbors based on these checks:
+       * - Remote neighbor's remote address is the same as our local address
+       * - Remote neighbor's remote AS is the same as our local AS (and vice-versa)
+       */
+      for (BgpNeighbor remoteBgpNeighborCandidate : remoteBgpNeighborCandidates) {
+        int remoteLocalAs = remoteBgpNeighborCandidate.getLocalAs();
+        int remoteRemoteAs = remoteBgpNeighborCandidate.getRemoteAs();
+        Ip reciprocalRemoteIp = remoteBgpNeighborCandidate.getAddress();
+        if (localAddress.equals(reciprocalRemoteIp)
+            && localLocalAs == remoteRemoteAs
+            && localRemoteAs == remoteLocalAs) {
+          /*
+           * Fairly confident establishing the session is possible here, but still check
+           * reachability if needed.
+           * We should check reachability only for eBgp multihop or iBgp
+           */
+          if (checkReachability
+              && (bgpNeighbor.getEbgpMultihop() || localLocalAs == remoteLocalAs)) {
+            /*
+             * Ensure that the session can be established by running traceroute in both directions
+             */
+            if (flowProcessor == null || dp == null) {
+              throw new BatfishException(
+                  "Cannot compute neighbor reachability without a dataplane");
+            }
+            Flow.Builder fb = new Flow.Builder();
+            fb.setIpProtocol(IpProtocol.TCP);
+            fb.setTag("neighbor-resolution");
+
+            fb.setIngressNode(bgpNeighbor.getOwner().getHostname());
+            fb.setSrcIp(localAddress);
+            fb.setDstIp(remoteAddress);
+            fb.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
+            fb.setDstPort(NamedPort.BGP.number());
+            Flow forwardFlow = fb.build();
+
+            fb.setIngressNode(remoteBgpNeighborCandidate.getOwner().getHostname());
+            fb.setSrcIp(forwardFlow.getDstIp());
+            fb.setDstIp(forwardFlow.getSrcIp());
+            fb.setSrcPort(forwardFlow.getDstPort());
+            fb.setDstPort(forwardFlow.getSrcPort());
+            Flow backwardFlow = fb.build();
+            SortedMap<Flow, Set<FlowTrace>> traces =
+                flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow, backwardFlow));
+
+            if (traces
+                .values()
+                .stream()
+                .map(
+                    fts ->
+                        fts.stream()
+                            .allMatch(ft -> ft.getDisposition() != FlowDisposition.ACCEPTED))
+                .anyMatch(Predicate.isEqual(true))) {
+              /*
+               * If either flow has all traceroutes fail, do not consider the neighbor valid
+               */
+              continue;
+            }
             bgpNeighbor.getCandidateRemoteBgpNeighbors().add(remoteBgpNeighborCandidate);
-            bgpNeighbor.setRemoteBgpNeighbor(remoteBgpNeighborCandidate);
+          } else {
+            bgpNeighbor.getCandidateRemoteBgpNeighbors().add(remoteBgpNeighborCandidate);
           }
         }
       }
+      Set<BgpNeighbor> finalCandidates = bgpNeighbor.getCandidateRemoteBgpNeighbors();
+      if (finalCandidates.size() > 1) {
+        /* If we still have not narrowed it down to a single neighbor,
+         * pick based on sorted hostnames
+         */
+        SortedMap<String, BgpNeighbor> hostnameToNeighbor =
+            finalCandidates
+                .stream()
+                .collect(
+                    ImmutableSortedMap.toImmutableSortedMap(
+                        String::compareTo, k -> k.getOwner().getHostname(), Function.identity()));
+        bgpNeighbor.setRemoteBgpNeighbor(hostnameToNeighbor.get(hostnameToNeighbor.firstKey()));
+      } else if (finalCandidates.size() == 1) {
+        bgpNeighbor.setRemoteBgpNeighbor(finalCandidates.iterator().next());
+      } else {
+        bgpNeighbor.setRemoteBgpNeighbor(null);
+      }
     }
+  }
+
+  /**
+   * See {@link #initRemoteBgpNeighbors(Map, Map, boolean, FlowProcessor, DataPlane)}. Equivalent to
+   * {@code initRemoteBgpNeighbors(Map, Map, false, null, null)}
+   */
+  public static void initRemoteBgpNeighbors(
+      Map<String, Configuration> configurations, Map<Ip, Set<String>> ipOwners) {
+    initRemoteBgpNeighbors(configurations, ipOwners, false, null, null);
   }
 
   @VisibleForTesting
