@@ -705,6 +705,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _vrf;
   }
 
+  /** Initialize candidate neighbors to an empty set */
   public void initCandidateRemoteBgpNeighbors() {
     _candidateRemoteBgpNeighbors = new LinkedHashSet<>();
   }
