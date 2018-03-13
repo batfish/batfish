@@ -1,5 +1,8 @@
 package org.batfish.bdp;
 
+import static org.batfish.common.util.CommonUtil.initRemoteBgpNeighbors;
+
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -26,11 +29,13 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
+import org.batfish.common.plugin.FlowProcessor;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
@@ -51,7 +56,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-public class BdpEngine {
+public class BdpEngine implements FlowProcessor {
 
   private static final String TRACEROUTE_INGRESS_NODE_INTERFACE_NAME =
       "traceroute_source_interface";
@@ -415,7 +420,7 @@ public class BdpEngine {
         Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
         dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       }
-      CommonUtil.initRemoteBgpNeighbors(configurations, dp.getIpOwners());
+      initRemoteBgpNeighbors(configurations, dp.getIpOwners());
       SortedMap<String, Node> nodes = new TreeMap<>();
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
       SortedMap<Integer, SortedSet<Prefix>> iterationOscillatingPrefixes = new TreeMap<>();
@@ -756,6 +761,36 @@ public class BdpEngine {
         initRipInternalRoutes(nodes, topology);
       }
 
+      // Prep for traceroutes
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n ->
+                  n._virtualRouters
+                      .values()
+                      .forEach(
+                          vr -> {
+                            vr.importRib(vr._mainRib, vr._independentRib);
+                            // Needed for activateStaticRoutes
+                            vr._prevMainRib = vr._mainRib;
+                            vr.activateStaticRoutes();
+                          }));
+
+      // Update bgp neighbors with reachability
+      dp.setNodes(nodes);
+      computeFibs(nodes);
+      dp.setTopology(topology);
+      initRemoteBgpNeighbors(
+          nodes
+              .entrySet()
+              .stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration())),
+          dp.getIpOwners(),
+          true,
+          this,
+          dp);
       // END DONE ONCE
 
       /*
@@ -851,6 +886,19 @@ public class BdpEngine {
           return true;
         }
         compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
+
+        computeFibs(nodes);
+        initRemoteBgpNeighbors(
+            nodes
+                .entrySet()
+                .stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey, e -> e.getValue().getConfiguration())),
+            dp.getIpOwners(),
+            true,
+            this,
+            dp);
       } while (checkDependentRoutesChanged(
           dependentRoutesChanged,
           evenDependentRoutesChanged,
@@ -1588,8 +1636,10 @@ public class BdpEngine {
     return continueToNextNextHopInterface;
   }
 
-  SortedMap<Flow, Set<FlowTrace>> processFlows(BdpDataPlane dp, Set<Flow> flows) {
+  @Override
+  public SortedMap<Flow, Set<FlowTrace>> processFlows(DataPlane dataPlane, Set<Flow> flows) {
     Map<Flow, Set<FlowTrace>> flowTraces = new ConcurrentHashMap<>();
+    BdpDataPlane dp = (BdpDataPlane) dataPlane;
     flows
         .parallelStream()
         .forEach(
