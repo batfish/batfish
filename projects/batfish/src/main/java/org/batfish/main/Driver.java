@@ -73,6 +73,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
+@SuppressWarnings("restriction")
 public class Driver {
 
   public enum RunMode {
