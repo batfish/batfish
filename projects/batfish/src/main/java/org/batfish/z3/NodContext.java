@@ -27,11 +27,7 @@ public class NodContext {
 
   private final List<BitVecSort> _basicStateVariableSorts;
 
-  private final List<BitVecSort> _transformationStateVariableSorts;
-
   private final VarIntExpr[] _basicStateVarIntExprs;
-
-  private final VarIntExpr[] _tranformationStateVarIntExprs;
 
   private final ImmutableList<String> _variableNames;
 
@@ -103,8 +99,6 @@ public class NodContext {
             .filter(nm -> !TransformationHeaderField.transformationHeaderFieldNames.contains(nm))
             .map(varIntExprs::get)
             .toArray(VarIntExpr[]::new);
-    _tranformationStateVarIntExprs =
-        _variableNames.stream().map(varIntExprs::get).toArray(VarIntExpr[]::new);
 
     _basicStateVariableSorts =
         _variableNames
@@ -113,10 +107,8 @@ public class NodContext {
             .map(variableSorts::get)
             .collect(Collectors.toList());
 
-    _transformationStateVariableSorts =
-        _variableNames.stream().map(variableSorts::get).collect(Collectors.toList());
     FuncDeclTransformer funcDeclTransformer =
-        new FuncDeclTransformer(ctx, _basicStateVariableSorts, _transformationStateVariableSorts);
+        new FuncDeclTransformer(ctx, _basicStateVariableSorts);
     _relationDeclarations =
         Arrays.stream(programs)
             .flatMap(
@@ -164,10 +156,6 @@ public class NodContext {
     return _basicStateVariableSorts;
   }
 
-  public List<BitVecSort> getTransformationStateVariableSorts() {
-    return _transformationStateVariableSorts;
-  }
-
   public Context getContext() {
     return _context;
   }
@@ -186,10 +174,6 @@ public class NodContext {
 
   public VarIntExpr[] getBasicStateVarIntExprs() {
     return _basicStateVarIntExprs;
-  }
-
-  public VarIntExpr[] getTranformationStateVarIntExprs() {
-    return _tranformationStateVarIntExprs;
   }
 
   public ImmutableList<String> getVariableNames() {
