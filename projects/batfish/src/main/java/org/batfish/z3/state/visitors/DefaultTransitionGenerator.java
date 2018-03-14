@@ -13,6 +13,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TransformationHeaderField;
@@ -46,7 +47,6 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
-import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
@@ -311,12 +311,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNeighborUnreachable(org.batfish.z3.state.NeighborUnreachable.State state) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
     // PostInForMe
     _input
@@ -405,7 +399,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNodeDropAclIn(NodeDropAclIn.State nodeDropAclIn) {
     // FailIncomingAcl
     _input
-        .getTraversableInterfaces()
+        .getTopologyInterfaces()
         .entrySet()
         .stream()
         .flatMap(
@@ -542,12 +536,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
   public void visitNumberedQuery(NumberedQuery.State numberedQuery) {}
 
   @Override
@@ -606,7 +594,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitPostInInterface(PostInInterface.State postInInterface) {
     // PassIncomingAcl
     _input
-        .getTraversableInterfaces()
+        .getTopologyInterfaces()
         .entrySet()
         .stream()
         .flatMap(
@@ -706,108 +694,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
                           new PreOutEdgePostNat(node1, iface1, node2, iface2));
               return new BasicRuleStatement(
                   TrueExpr.INSTANCE, aclStates, new PostOutEdge(node1, iface1, node2, iface2));
-            })
-        .forEach(_rules::add);
-  }
-
-  @Override
-  public void visitPreInInterface(PreInInterface.State preInInterface) {
-    // PostOutNeighbor
-    _input
-        .getEnabledEdges()
-        .stream()
-        .map(
-            edge ->
-                new BasicRuleStatement(
-                    ImmutableSet.of(new PostOutEdge(edge)),
-                    new PreInInterface(edge.getNode2(), edge.getInt2())))
-        .forEach(_rules::add);
-  }
-
-  @Override
-  public void visitPreOut(PreOut.State preOut) {
-    // PostInNotMine
-    _input
-        .getIpsByHostname()
-        .entrySet()
-        .stream()
-        .map(
-            ipsByHostnameEntry -> {
-              String hostname = ipsByHostnameEntry.getKey();
-              BooleanExpr ipForeignToCurrentNode =
-                  new NotExpr(
-                      HeaderSpaceMatchExpr.matchDstIp(
-                          ipsByHostnameEntry
-                              .getValue()
-                              .stream()
-                              .map(IpWildcard::new)
-                              .collect(ImmutableSet.toImmutableSet())));
-              return new BasicRuleStatement(
-                  ipForeignToCurrentNode,
-                  ImmutableSet.of(new PostIn(hostname)),
-                  new PreOut(hostname));
-            })
-        .forEach(_rules::add);
-  }
-
-  @Override
-  public void visitPreOutEdge(PreOutEdge.State preOutEdge) {
-    // DestinationRouting
-    _input
-        .getFibConditions()
-        .entrySet()
-        .stream()
-        .flatMap(
-            fibConditionsByHostnameEntry -> {
-              String hostname = fibConditionsByHostnameEntry.getKey();
-              return fibConditionsByHostnameEntry
-                  .getValue()
-                  .entrySet()
-                  .stream()
-                  .flatMap(
-                      fibConditionsByVrfEntry -> {
-                        String vrfName = fibConditionsByVrfEntry.getKey();
-                        return fibConditionsByVrfEntry
-                            .getValue()
-                            .entrySet()
-                            .stream()
-                            .filter(
-                                fibConditionsByOutInterfaceEntry -> {
-                                  String outInterface = fibConditionsByOutInterfaceEntry.getKey();
-                                  /*
-                                   * Loopback and Null Interfaces are handled in
-                                   * visitNodeDropNullRoute.
-                                   * DROP_NO_ROUTE is handled in visitNodeDropNoRoute
-                                   */
-                                  return !CommonUtil.isLoopback(outInterface)
-                                      && !CommonUtil.isNullInterface(outInterface)
-                                      && !outInterface.equals(FibRow.DROP_NO_ROUTE);
-                                })
-                            .flatMap(
-                                fibConditionsByOutInterfaceEntry -> {
-                                  String outInterface = fibConditionsByOutInterfaceEntry.getKey();
-                                  return fibConditionsByOutInterfaceEntry
-                                      .getValue()
-                                      .entrySet()
-                                      .stream()
-                                      .map(
-                                          fibConditionsByReceiverEntry -> {
-                                            NodeInterfacePair receiver =
-                                                fibConditionsByReceiverEntry.getKey();
-                                            BooleanExpr conditions =
-                                                fibConditionsByReceiverEntry.getValue();
-                                            String inNode = receiver.getHostname();
-                                            String inInterface = receiver.getInterface();
-                                            return new BasicRuleStatement(
-                                                conditions,
-                                                ImmutableSet.of(
-                                                    new PostInVrf(hostname, vrfName),
-                                                    new PreOut(hostname)),
-                                                new PreOutEdge(
-                                                    hostname, outInterface, inNode, inInterface));
-                                          });
-                                });
-                      });
             })
         .forEach(_rules::add);
   }
@@ -938,6 +824,108 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
               visitPreOutEdgePostNat_generateNoMatchSourceNatRules(node1, iface1, node2, iface2);
             });
+  }
+
+  @Override
+  public void visitPreInInterface(PreInInterface.State preInInterface) {
+    // PostOutNeighbor
+    _input
+        .getEnabledEdges()
+        .stream()
+        .map(
+            edge ->
+                new BasicRuleStatement(
+                    ImmutableSet.of(new PostOutEdge(edge)),
+                    new PreInInterface(edge.getNode2(), edge.getInt2())))
+        .forEach(_rules::add);
+  }
+
+  @Override
+  public void visitPreOut(PreOut.State preOut) {
+    // PostInNotMine
+    _input
+        .getIpsByHostname()
+        .entrySet()
+        .stream()
+        .map(
+            ipsByHostnameEntry -> {
+              String hostname = ipsByHostnameEntry.getKey();
+              BooleanExpr ipForeignToCurrentNode =
+                  new NotExpr(
+                      HeaderSpaceMatchExpr.matchDstIp(
+                          ipsByHostnameEntry
+                              .getValue()
+                              .stream()
+                              .map(IpWildcard::new)
+                              .collect(ImmutableSet.toImmutableSet())));
+              return new BasicRuleStatement(
+                  ipForeignToCurrentNode,
+                  ImmutableSet.of(new PostIn(hostname)),
+                  new PreOut(hostname));
+            })
+        .forEach(_rules::add);
+  }
+
+  @Override
+  public void visitPreOutEdge(PreOutEdge.State preOutEdge) {
+    // DestinationRouting
+    _input
+        .getFibConditions()
+        .entrySet()
+        .stream()
+        .flatMap(
+            fibConditionsByHostnameEntry -> {
+              String hostname = fibConditionsByHostnameEntry.getKey();
+              return fibConditionsByHostnameEntry
+                  .getValue()
+                  .entrySet()
+                  .stream()
+                  .flatMap(
+                      fibConditionsByVrfEntry -> {
+                        String vrfName = fibConditionsByVrfEntry.getKey();
+                        return fibConditionsByVrfEntry
+                            .getValue()
+                            .entrySet()
+                            .stream()
+                            .filter(
+                                fibConditionsByOutInterfaceEntry -> {
+                                  String outInterface = fibConditionsByOutInterfaceEntry.getKey();
+                                  /*
+                                   * Loopback and Null Interfaces are handled in
+                                   * visitNodeDropNullRoute.
+                                   * DROP_NO_ROUTE is handled in visitNodeDropNoRoute
+                                   */
+                                  return !CommonUtil.isLoopback(outInterface)
+                                      && !CommonUtil.isNullInterface(outInterface)
+                                      && !outInterface.equals(FibRow.DROP_NO_ROUTE);
+                                })
+                            .flatMap(
+                                fibConditionsByOutInterfaceEntry -> {
+                                  String outInterface = fibConditionsByOutInterfaceEntry.getKey();
+                                  return fibConditionsByOutInterfaceEntry
+                                      .getValue()
+                                      .entrySet()
+                                      .stream()
+                                      .map(
+                                          fibConditionsByReceiverEntry -> {
+                                            NodeInterfacePair receiver =
+                                                fibConditionsByReceiverEntry.getKey();
+                                            BooleanExpr conditions =
+                                                fibConditionsByReceiverEntry.getValue();
+                                            String inNode = receiver.getHostname();
+                                            String inInterface = receiver.getInterface();
+                                            return new BasicRuleStatement(
+                                                conditions,
+                                                ImmutableSet.of(
+                                                    new PostInVrf(hostname, vrfName),
+                                                    new PreOut(hostname)),
+                                                new PreOutEdge(
+                                                    hostname, outInterface, inNode, inInterface));
+                                          });
+                                });
+                      });
+            })
+        .forEach(_rules::add);
   }
 
   @Override

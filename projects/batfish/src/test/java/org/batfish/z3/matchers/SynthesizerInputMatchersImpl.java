@@ -53,18 +53,6 @@ public class SynthesizerInputMatchersImpl {
     }
   }
 
-  static final class HasEnabledFlowSinks
-      extends FeatureMatcher<SynthesizerInput, Set<NodeInterfacePair>> {
-    HasEnabledFlowSinks(@Nonnull Matcher<? super Set<NodeInterfacePair>> subMatcher) {
-      super(subMatcher, "SynthesizerInput with enabled flowSinks", "enabled flowSinks");
-    }
-
-    @Override
-    protected Set<NodeInterfacePair> featureValueOf(SynthesizerInput actual) {
-      return actual.getEnabledFlowSinks();
-    }
-  }
-
   static final class HasEnabledInterfaces
       extends FeatureMatcher<SynthesizerInput, Map<String, Set<String>>> {
     HasEnabledInterfaces(@Nonnull Matcher<? super Map<String, Set<String>>> subMatcher) {

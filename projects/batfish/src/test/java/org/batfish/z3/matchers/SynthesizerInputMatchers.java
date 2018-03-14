@@ -13,7 +13,6 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
-import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledFlowSinks;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
@@ -50,15 +49,6 @@ public class SynthesizerInputMatchers {
    */
   public static HasEnabledEdges hasEnabledEdges(Matcher<? super Set<Edge>> subMatcher) {
     return new HasEnabledEdges(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's enabled flowSinks.
-   */
-  public static HasEnabledFlowSinks hasEnabledFlowSinks(
-      Matcher<? super Set<NodeInterfacePair>> subMatcher) {
-    return new HasEnabledFlowSinks(subMatcher);
   }
 
   /**
