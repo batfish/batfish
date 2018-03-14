@@ -76,7 +76,6 @@ public class Settings extends BaseSettings {
   private Path _containersLocation;
   private String _dbAuthorizerConnString;
   private long _dbCacheExpiryMs;
-  private boolean _defaultKeyListings;
   private String _driverClass;
   private Path _fileAuthorizerPermsFile;
   private Path _fileAuthorizerRootDir;
@@ -141,10 +140,6 @@ public class Settings extends BaseSettings {
 
   public String getDbAuthorizerConnString() {
     return _dbAuthorizerConnString;
-  }
-
-  public boolean getDefaultKeyListings() {
-    return _defaultKeyListings;
   }
 
   public String getDriverClass() {
@@ -351,9 +346,6 @@ public class Settings extends BaseSettings {
   private void initOptions() {
     addOption(ARG_AUTHORIZER_TYPE, "type of authorizer to use", "authorizer type");
 
-    addBooleanOption(
-        ARG_ALLOW_DEFAULT_KEY_LISTINGS, "allow default API key to list containers and testrigs");
-
     addOption(ARG_CONTAINERS_LOCATION, "where to store containers", "containers_location");
 
     addOption(
@@ -443,7 +435,6 @@ public class Settings extends BaseSettings {
     _authorizerType = Authorizer.Type.valueOf(getStringOptionValue(ARG_AUTHORIZER_TYPE));
     _dbAuthorizerConnString = getStringOptionValue(ARG_DB_AUTHORIZER_CONN_STRING);
     _dbCacheExpiryMs = getLongOptionValue(ARG_DB_AUTHORIZER_CACHE_EXPIRY_MS);
-    _defaultKeyListings = getBooleanOptionValue(ARG_ALLOW_DEFAULT_KEY_LISTINGS);
     _driverClass = getStringOptionValue(ARG_DRIVER_CLASS);
     _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));

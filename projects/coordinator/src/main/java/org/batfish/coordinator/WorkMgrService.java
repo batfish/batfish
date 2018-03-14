@@ -41,7 +41,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
-import org.batfish.coordinator.config.Settings;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -54,7 +53,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 public class WorkMgrService {
 
   BatfishLogger _logger = Main.getLogger();
-  Settings _settings = Main.getSettings();
 
   private static JSONArray successResponse(Object entity) {
     return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, entity));
@@ -1125,10 +1123,6 @@ public class WorkMgrService {
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-
-      if (!_settings.getDefaultKeyListings() && apiKey.equals(CoordConsts.DEFAULT_API_KEY)) {
-        throw new AccessControlException("Listing containers is not allowed with Default API key");
-      }
 
       SortedSet<String> containerList = Main.getWorkMgr().listContainers(apiKey);
 
