@@ -15,7 +15,6 @@ import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.OriginateVrf;
 
@@ -82,11 +81,5 @@ public class OriginateVrfInstrumentation implements GenericStatementVisitor<Stat
   public Statement visitTransformationRuleStatement(
       TransformationRuleStatement transformationRuleStatement) {
     return transformationRuleStatement;
-  }
-
-  @Override
-  public Statement visitTransformedBasicRuleStatement(
-      TransformedBasicRuleStatement transformedBasicRuleStatement) {
-    return transformedBasicRuleStatement;
   }
 }

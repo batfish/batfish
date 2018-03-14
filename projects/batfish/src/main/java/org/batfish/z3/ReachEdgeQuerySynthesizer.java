@@ -6,11 +6,11 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
@@ -44,8 +44,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
 
   @Override
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
-    ImmutableSet.Builder<BasicStateExpr> queryPreconditionPreTransformationStates =
-        ImmutableSet.<BasicStateExpr>builder()
+    ImmutableSet.Builder<StateExpr> queryPreconditionPreTransformationStates =
+        ImmutableSet.<StateExpr>builder()
             .add(new PreOutEdge(_edge))
             .add(new PreInInterface(_edge.getNode2(), _edge.getInt2()));
     if (_requireAcceptance) {
