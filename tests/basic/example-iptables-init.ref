@@ -32,7 +32,7 @@
         "z2-host1" : "PASSED",
         "z2-host2" : "PASSED"
       },
-      "version" : "0.36.0",
+      "version" : "0.36.1",
       "warnings" : {
         "r1" : {
           "Red flags" : {
@@ -63,7 +63,7 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "version" : "0.36.0"
+      "version" : "0.36.1"
     },
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",

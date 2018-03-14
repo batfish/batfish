@@ -3,7 +3,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement",
       "valid" : true,
-      "version" : "0.36.0"
+      "version" : "0.36.1"
     }
   ],
   "status" : "SUCCESS",
