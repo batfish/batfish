@@ -73,6 +73,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
+@SuppressWarnings("restriction")
 public class Driver {
 
   public enum RunMode {
@@ -130,6 +131,9 @@ public class Driver {
 
   private static final Cache<Snapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
+
+  private static final Cache<Snapshot, SortedMap<String, Configuration>>
+      CACHED_COMPRESSED_TESTRIGS = buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
 
@@ -548,6 +552,7 @@ public class Driver {
       final Batfish batfish =
           new Batfish(
               settings,
+              CACHED_COMPRESSED_TESTRIGS,
               CACHED_TESTRIGS,
               CACHED_COMPRESSED_DATA_PLANES,
               CACHED_DATA_PLANES,
