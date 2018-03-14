@@ -53,6 +53,7 @@ public class BatfishTestUtils {
     Settings settings = new Settings(new String[] {});
     settings.setLogger(new BatfishLogger("debug", false));
     final Cache<Snapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
+    final Cache<Snapshot, SortedMap<String, Configuration>> compressedTestrigs = makeTestrigCache();
 
     Path containerDir = tempFolder.newFolder().toPath();
     settings.setContainerDir(containerDir);
@@ -67,6 +68,7 @@ public class BatfishTestUtils {
     Batfish batfish =
         new Batfish(
             settings,
+            compressedTestrigs,
             testrigs,
             makeDataPlaneCache(),
             makeDataPlaneCache(),
@@ -126,6 +128,7 @@ public class BatfishTestUtils {
     Batfish batfish =
         new Batfish(
             settings,
+            makeTestrigCache(),
             makeTestrigCache(),
             makeDataPlaneCache(),
             makeDataPlaneCache(),
