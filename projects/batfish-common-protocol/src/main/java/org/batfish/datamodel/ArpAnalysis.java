@@ -17,4 +17,7 @@ public interface ArpAnalysis {
 
   /** Mapping: edge -> dstIpsForWhichArpReplySent */
   Map<Edge, IpSpace> getArpTrueEdge();
+
+  /** Mapping: hostname -> vrfName -> outInterface -> dstIpsForWhichNoArpResponse */
+  Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
 }

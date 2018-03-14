@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -20,9 +21,19 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
           String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
       _arpRequests;
 
+  private final Map<Edge, IpSpace> _arpTrueEdge;
+
   private final Map<Edge, IpSpace> _arpTrueEdgeDestIp;
 
   private final Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
+
+  private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
+
+  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
+
+  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpDestIp;
+
+  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpNextHopIp;
 
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWhereDstIpCanBeArpIp;
@@ -31,9 +42,12 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>> _routesWithNextHop;
 
+  private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      _routesWithNextHopIpArpFalse;
+
   private final Map<Edge, Set<AbstractRoute>> _routesWithNextHopIpArpTrue;
 
-  private final Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
+  private final Map<String, Map<String, IpSpace>> _someoneReplies;
 
   public DataPlaneArpAnalysis(
       Map<String, Configuration> configurations,
@@ -43,41 +57,19 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     _routesWithNextHop = computeRoutesWithNextHop(fibs);
     _ipsRoutedOutInterfaces = computeIpsRoutedOutInterfaces(ribs);
     _arpReplies = computeArpReplies(configurations, ribs, fibs);
+    _someoneReplies = computeSomeoneReplies(topology);
+    _routesWithNextHopIpArpFalse = computeRoutesWithNextHopIpArpFalse(fibs);
+    _neighborUnreachableArpNextHopIp = computeNeighborUnreachableArpNextHopIp(ribs);
     _routesWithNextHopIpArpTrue = computeRoutesWithNextHopIpArpTrue(fibs, topology);
     _arpTrueEdgeNextHopIp = computeArpTrueEdgeNextHopIp(configurations, ribs);
     _routesWhereDstIpCanBeArpIp = computeRoutesWhereDstIpCanBeArpIp(fibs);
+    _neighborUnreachableArpDestIp = computeNeighborUnreachableArpDestIp(ribs);
+    _neighborUnreachable = computeNeighborUnreachable();
     _routesWithDestIpEdge = computeRoutesWithDestIpEdge(fibs, topology);
     _arpTrueEdgeDestIp = computeArpTrueEdgeDestIp(configurations, ribs);
     _arpTrueEdge = computeArpTrueEdge();
 
     _arpRequests = computeArpRequests(fibs, topology);
-  }
-
-  private Map<String, Map<String, IpSpace>> computeIpsRoutedOutInterfaces(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
-    return _routesWithNextHop
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                routesWithNextHopByHostnameEntry -> {
-                  String hostname = routesWithNextHopByHostnameEntry.getKey();
-                  ImmutableMap.Builder<String, IpSpace> ipsRoutedOutInterfacesByInterface =
-                      ImmutableMap.builder();
-                  routesWithNextHopByHostnameEntry
-                      .getValue()
-                      .forEach(
-                          (vrf, routesWithNextHopByInterface) -> {
-                            GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrf);
-                            routesWithNextHopByInterface.forEach(
-                                (iface, routes) -> {
-                                  ipsRoutedOutInterfacesByInterface.put(
-                                      iface, computeRouteMatchConditions(routes, rib));
-                                });
-                          });
-                  return ipsRoutedOutInterfacesByInterface.build();
-                }));
   }
 
   /**
@@ -208,6 +200,26 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     }
   }
 
+  private Map<Edge, IpSpace> computeArpTrueEdge() {
+    return Sets.union(_arpTrueEdgeDestIp.keySet(), _arpTrueEdgeNextHopIp.keySet())
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(),
+                edge -> {
+                  ImmutableList.Builder<IpAddressAclLine> lines = ImmutableList.builder();
+                  IpSpace dstIp = _arpTrueEdgeDestIp.get(edge);
+                  if (dstIp != null) {
+                    lines.add(IpAddressAclLine.builder().setIpSpace(dstIp).build());
+                  }
+                  IpSpace nextHopIp = _arpTrueEdgeNextHopIp.get(edge);
+                  if (nextHopIp != null) {
+                    lines.add(IpAddressAclLine.builder().setIpSpace(nextHopIp).build());
+                  }
+                  return IpAddressAcl.builder().setLines(lines.build()).build();
+                }));
+  }
+
   private Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
@@ -243,33 +255,6 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                   .build(),
                               IpAddressAclLine.PERMIT_ALL))
                       .build();
-                }));
-  }
-
-  private final Map<Edge, IpSpace> _arpTrueEdge;
-
-  @Override
-  public Map<Edge, IpSpace> getArpTrueEdge() {
-    return _arpTrueEdge;
-  }
-
-  private Map<Edge, IpSpace> computeArpTrueEdge() {
-    return Sets.union(_arpTrueEdgeDestIp.keySet(), _arpTrueEdgeNextHopIp.keySet())
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(),
-                edge -> {
-                  ImmutableList.Builder<IpAddressAclLine> lines = ImmutableList.builder();
-                  IpSpace dstIp = _arpTrueEdgeDestIp.get(edge);
-                  if (dstIp != null) {
-                    lines.add(IpAddressAclLine.builder().setIpSpace(dstIp).build());
-                  }
-                  IpSpace nextHopIp = _arpTrueEdgeNextHopIp.get(edge);
-                  if (nextHopIp != null) {
-                    lines.add(IpAddressAclLine.builder().setIpSpace(nextHopIp).build());
-                  }
-                  return IpAddressAcl.builder().setLines(lines.build()).build();
                 }));
   }
 
@@ -361,6 +346,188 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         .forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(new IpWildcard(ip)));
     IpWildcardSetIpSpace ipsAssignedToThisInterface = ipsAssignedToThisInterfaceBuilder.build();
     return ipsAssignedToThisInterface;
+  }
+
+  private Map<String, Map<String, IpSpace>> computeIpsRoutedOutInterfaces(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return _routesWithNextHop
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routesWithNextHopByHostnameEntry -> {
+                  String hostname = routesWithNextHopByHostnameEntry.getKey();
+                  ImmutableMap.Builder<String, IpSpace> ipsRoutedOutInterfacesByInterface =
+                      ImmutableMap.builder();
+                  routesWithNextHopByHostnameEntry
+                      .getValue()
+                      .forEach(
+                          (vrf, routesWithNextHopByInterface) -> {
+                            GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrf);
+                            routesWithNextHopByInterface.forEach(
+                                (iface, routes) -> {
+                                  ipsRoutedOutInterfacesByInterface.put(
+                                      iface, computeRouteMatchConditions(routes, rib));
+                                });
+                          });
+                  return ipsRoutedOutInterfacesByInterface.build();
+                }));
+  }
+
+  private Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
+    Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable =
+        new HashMap<>();
+    computeNeighborUnreachableHelper(neighborUnreachable, _neighborUnreachableArpDestIp);
+    computeNeighborUnreachableHelper(neighborUnreachable, _neighborUnreachableArpNextHopIp);
+    return neighborUnreachable
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                neighborUnreachableByHostnameEntry ->
+                    neighborUnreachableByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                neighborUnreachableByVrfEntry ->
+                                    neighborUnreachableByVrfEntry
+                                        .getValue()
+                                        .entrySet()
+                                        .stream()
+                                        .collect(
+                                            ImmutableMap.toImmutableMap(
+                                                Entry::getKey /* outInterface */,
+                                                neighborUnreachableByOutInterfaceEntry ->
+                                                    IpAddressAcl.builder()
+                                                        .setLines(
+                                                            neighborUnreachableByOutInterfaceEntry
+                                                                .getValue()
+                                                                .build()
+                                                                .stream()
+                                                                .map(
+                                                                    ipSpace ->
+                                                                        IpAddressAclLine.builder()
+                                                                            .setIpSpace(ipSpace)
+                                                                            .build())
+                                                                .collect(
+                                                                    ImmutableList
+                                                                        .toImmutableList()))
+                                                        .build()))))));
+  }
+
+  private Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpDestIp(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return _routesWhereDstIpCanBeArpIp
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routesWhereDstIpCanBeArpIpByHostnameEntry -> {
+                  String hostname = routesWhereDstIpCanBeArpIpByHostnameEntry.getKey();
+                  return routesWhereDstIpCanBeArpIpByHostnameEntry
+                      .getValue()
+                      .entrySet()
+                      .stream()
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey /* vrf */,
+                              routesWhereDstIpCanBeArpIpByVrfEntry -> {
+                                String vrf = routesWhereDstIpCanBeArpIpByVrfEntry.getKey();
+                                return routesWhereDstIpCanBeArpIpByVrfEntry
+                                    .getValue()
+                                    .entrySet()
+                                    .stream()
+                                    .collect(
+                                        ImmutableMap.toImmutableMap(
+                                            Entry::getKey /* outInterface */,
+                                            routesWhereDstIpCanBeArpIpByInterfaceEntry -> {
+                                              String outInterface =
+                                                  routesWhereDstIpCanBeArpIpByInterfaceEntry
+                                                      .getKey();
+                                              Set<AbstractRoute> routes =
+                                                  routesWhereDstIpCanBeArpIpByInterfaceEntry
+                                                      .getValue();
+                                              IpSpace someoneReplies =
+                                                  _someoneReplies.get(hostname).get(outInterface);
+                                              GenericRib<AbstractRoute> rib =
+                                                  ribs.get(hostname).get(vrf);
+                                              IpSpace ipsRoutedOutInterface =
+                                                  computeRouteMatchConditions(routes, rib);
+                                              return IpAddressAcl.builder()
+                                                  .setLines(
+                                                      ImmutableList.of(
+                                                          IpAddressAclLine.builder()
+                                                              .setIpSpace(someoneReplies)
+                                                              .setAction(LineAction.REJECT)
+                                                              .build(),
+                                                          IpAddressAclLine.builder()
+                                                              .setIpSpace(ipsRoutedOutInterface)
+                                                              .build()))
+                                                  .build();
+                                            }));
+                              }));
+                }));
+  }
+
+  private Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpNextHopIp(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return _routesWithNextHopIpArpFalse
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routesWithNextHopIpArpFalseByHostnameEntry -> {
+                  String hostname = routesWithNextHopIpArpFalseByHostnameEntry.getKey();
+                  return routesWithNextHopIpArpFalseByHostnameEntry
+                      .getValue()
+                      .entrySet()
+                      .stream()
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey /* vrf */,
+                              routesWithNextHopIpArpFalseByVrfEntry -> {
+                                String vrf = routesWithNextHopIpArpFalseByVrfEntry.getKey();
+                                return routesWithNextHopIpArpFalseByVrfEntry
+                                    .getValue()
+                                    .entrySet()
+                                    .stream()
+                                    .collect(
+                                        ImmutableMap.toImmutableMap(
+                                            Entry::getKey /* outInterface */,
+                                            routesWithNextHopIpArpFalseByOutInterfaceEntry ->
+                                                computeRouteMatchConditions(
+                                                    routesWithNextHopIpArpFalseByOutInterfaceEntry
+                                                        .getValue(),
+                                                    ribs.get(hostname).get(vrf))));
+                              }));
+                }));
+  }
+
+  private void computeNeighborUnreachableHelper(
+      Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable,
+      Map<String, Map<String, Map<String, IpSpace>>> part) {
+    part.forEach(
+        (hostname, partByVrf) -> {
+          Map<String, Map<String, ImmutableList.Builder<IpSpace>>> neighborUnreachableByVrf =
+              neighborUnreachable.computeIfAbsent(hostname, n -> new HashMap<>());
+          partByVrf.forEach(
+              (vrf, partByOutInterface) -> {
+                Map<String, ImmutableList.Builder<IpSpace>> neighborUnreachableByOutInterface =
+                    neighborUnreachableByVrf.computeIfAbsent(vrf, n -> new HashMap<>());
+                partByOutInterface.forEach(
+                    (outInterface, ipSpace) ->
+                        neighborUnreachableByOutInterface
+                            .computeIfAbsent(outInterface, n -> ImmutableList.builder())
+                            .add(ipSpace));
+              });
+        });
   }
 
   /** Compute for each VRF of each node the IPs that are routable. */
@@ -484,6 +651,61 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
+  private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
+      computeRoutesWithNextHopIpArpFalse(Map<String, Map<String, Fib>> fibs) {
+    return _routesWithNextHop
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routesWithNextHopByHostnameEntry -> {
+                  String hostname = routesWithNextHopByHostnameEntry.getKey();
+                  return routesWithNextHopByHostnameEntry
+                      .getValue()
+                      .entrySet()
+                      .stream()
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey /* vrf */,
+                              routesWithNextHopByVrfEntry ->
+                                  routesWithNextHopByVrfEntry
+                                      .getValue()
+                                      .entrySet()
+                                      .stream()
+                                      .collect(
+                                          ImmutableMap.toImmutableMap(
+                                              Entry::getKey /* outInterface */,
+                                              routesWithNextHopByOutInterfaceEntry -> {
+                                                String outInterface =
+                                                    routesWithNextHopByOutInterfaceEntry.getKey();
+                                                IpSpace someoneReplies =
+                                                    _someoneReplies.get(hostname).get(outInterface);
+                                                Set<AbstractRoute> candidateRoutes =
+                                                    routesWithNextHopByOutInterfaceEntry.getValue();
+                                                Fib fib = fibs.get(hostname).get(outInterface);
+                                                return candidateRoutes
+                                                    .stream()
+                                                    .filter(
+                                                        candidateRoute ->
+                                                            fib.getNextHopInterfaces()
+                                                                .get(candidateRoute)
+                                                                .get(outInterface)
+                                                                .keySet()
+                                                                .stream()
+                                                                .filter(
+                                                                    ip ->
+                                                                        ip
+                                                                            != Route
+                                                                                .UNSET_ROUTE_NEXT_HOP_IP)
+                                                                .anyMatch(
+                                                                    Predicates.not(
+                                                                        someoneReplies::contains)))
+                                                    .collect(ImmutableSet.toImmutableSet());
+                                              }))));
+                }));
+  }
+
   private Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
       Map<String, Map<String, Fib>> fibs, Topology topology) {
     ImmutableMap.Builder<Edge, Set<AbstractRoute>> routesByEdgeBuilder = ImmutableMap.builder();
@@ -522,6 +744,40 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     return routesByEdgeBuilder.build();
   }
 
+  private Map<String, Map<String, IpSpace>> computeSomeoneReplies(Topology topology) {
+    Map<String, Map<String, ImmutableList.Builder<IpAddressAclLine>>> someoneRepliesByNode =
+        new HashMap<>();
+    topology
+        .getEdges()
+        .forEach(
+            edge ->
+                someoneRepliesByNode
+                    .computeIfAbsent(edge.getNode1(), n -> new HashMap<>())
+                    .computeIfAbsent(edge.getInt1(), i -> ImmutableList.builder())
+                    .add(
+                        IpAddressAclLine.builder()
+                            .setIpSpace(_arpReplies.get(edge.getNode2()).get(edge.getInt2()))
+                            .build()));
+    return someoneRepliesByNode
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                someoneRepliesByNodeEntry ->
+                    someoneRepliesByNodeEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* interface */,
+                                someoneRepliesByInterfaceEntry ->
+                                    IpAddressAcl.builder()
+                                        .setLines(someoneRepliesByInterfaceEntry.getValue().build())
+                                        .build()))));
+  }
+
   @Override
   public Map<String, Map<String, IpSpace>> getArpReplies() {
     return _arpReplies;
@@ -531,6 +787,16 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   public Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
       getArpRequests() {
     return _arpRequests;
+  }
+
+  @Override
+  public Map<Edge, IpSpace> getArpTrueEdge() {
+    return _arpTrueEdge;
+  }
+
+  @Override
+  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
+    return _neighborUnreachable;
   }
 
   private Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface(Fib fib) {
