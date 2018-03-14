@@ -439,6 +439,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
+  private final Cache<Snapshot, SortedMap<String, Configuration>> _cachedCompressedConfigurations;
+
   private final Cache<Snapshot, SortedMap<String, Configuration>> _cachedConfigurations;
 
   private final Cache<TestrigSettings, DataPlane> _cachedCompressedDataPlanes;
@@ -473,6 +475,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
+      Cache<Snapshot, SortedMap<String, Configuration>> cachedCompressedConfigurations,
       Cache<Snapshot, SortedMap<String, Configuration>> cachedConfigurations,
       Cache<TestrigSettings, DataPlane> cachedCompressedDataPlanes,
       Cache<TestrigSettings, DataPlane> cachedDataPlanes,
@@ -482,6 +485,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
+    _cachedCompressedConfigurations = cachedCompressedConfigurations;
     _cachedConfigurations = cachedConfigurations;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
@@ -917,6 +921,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private CompressDataPlaneResult computeCompressedDataPlane() {
     CompressDataPlaneResult result = computeCompressedDataPlane(new HeaderSpace());
+    _cachedCompressedConfigurations.put(getSnapshot(), new TreeMap<>(result._compressedConfigs));
     saveDataPlane(result._compressedDataPlane, result._answerElement, true);
     return result;
   }
@@ -952,6 +957,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
+    _storage.storeCompressedConfigurations(configs, _testrigSettings.getName());
     return new CompressDataPlaneResult(configs, result._dataPlane, result._answerElement);
   }
 
@@ -1832,6 +1838,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings;
   }
 
+  private Snapshot getSnapshot() {
+    return new Snapshot(
+        _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName());
+  }
+
   private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
     Set<Edge> consumedEdges = new LinkedHashSet<>();
     for (Edge edge : edges) {
@@ -2218,11 +2229,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
-    Snapshot snapshot =
-        new Snapshot(
-            _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName());
+    Snapshot snapshot = getSnapshot();
     _logger.debugf("Loading configurations for %s", snapshot);
     return loadConfigurations(snapshot);
+  }
+
+  private SortedMap<String, Configuration> loadCompressedConfigurations(Snapshot snapshot) {
+    // Do we already have configurations in the cache?
+    SortedMap<String, Configuration> configurations =
+        _cachedCompressedConfigurations.getIfPresent(snapshot);
+    if (configurations != null) {
+      return configurations;
+    }
+    _logger.debugf("Loading configurations for %s, cache miss", snapshot);
+
+    // Next, see if we have an up-to-date, environment-specific configurations on disk.
+    configurations = _storage.loadConfigurations(snapshot.getTestrig(), true);
+    if (configurations != null) {
+      return configurations;
+    } else {
+      computeCompressedDataPlane();
+      configurations = _cachedCompressedConfigurations.getIfPresent(snapshot);
+      if (configurations == null) {
+        throw new BatfishException("Could not compute compressed configs");
+      }
+      return configurations;
+    }
   }
 
   /**
@@ -2238,7 +2270,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getTestrig());
+    configurations = _storage.loadConfigurations(snapshot.getTestrig(), false);
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2256,7 +2288,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.infof("Repairing configurations for testrig %s", _testrigSettings.getName());
     repairConfigurations();
     SortedMap<String, Configuration> configurations =
-        _storage.loadConfigurations(_testrigSettings.getName());
+        _storage.loadConfigurations(_testrigSettings.getName(), false);
     Verify.verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
@@ -4081,11 +4113,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
 
+    // specialized compression
+    /*
     CompressDataPlaneResult compressionResult =
         useCompression ? computeCompressedDataPlane(headerSpace) : null;
     Map<String, Configuration> configurations =
         useCompression ? compressionResult._compressedConfigs : loadConfigurations();
     DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
+    */
+
+    // general compression
+    Snapshot snapshot = getSnapshot();
+    Map<String, Configuration> configurations =
+        useCompression ? loadCompressedConfigurations(snapshot) : loadConfigurations();
+    DataPlane dataPlane = loadDataPlane(useCompression);
+
+    if (configurations == null) {
+      throw new BatfishException("error loading configurations");
+    }
+
+    if (dataPlane == null) {
+      throw new BatfishException("error loading data plane");
+    }
 
     // collect ingress nodes
     Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);

@@ -49,9 +49,13 @@ final class BatfishStorage {
    * configurations is not already present, then this function returns {@code null}.
    */
   @Nullable
-  public SortedMap<String, Configuration> loadConfigurations(String testrig) {
+  public SortedMap<String, Configuration> loadConfigurations(String testrig, boolean compressed) {
     Path testrigDir = getTestrigDir(testrig);
-    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+    Path indepDir =
+        testrigDir.resolve(
+            compressed
+                ? BfConsts.RELPATH_COMPRESSED_CONFIG_DIR
+                : BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
 
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
@@ -88,6 +92,38 @@ final class BatfishStorage {
       return null;
     }
     return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
+  }
+
+  public void storeCompressedConfigurations(
+      Map<String, Configuration> configurations, String testrig) {
+    String batchName =
+        String.format(
+            "Serializing %s compressed configuration structures for testrig %s",
+            configurations.size(), testrig);
+    _logger.infof("\n*** %s***\n", batchName.toUpperCase());
+    AtomicInteger progressCount = _newBatch.apply(batchName, configurations.size());
+
+    Path testrigDir = getTestrigDir(testrig);
+    if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create testrig directory '%s'", testrigDir));
+    }
+
+    Path outputDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
+
+    // Delete any existing output, then recreate.
+    CommonUtil.deleteDirectory(outputDir);
+    if (!outputDir.toFile().exists() && !outputDir.toFile().mkdirs()) {
+      throw new BatfishException(
+          String.format("Unable to create output directory '%s'", outputDir));
+    }
+
+    configurations.forEach(
+        (name, c) -> {
+          Path currentOutputPath = outputDir.resolve(name);
+          serializeObject(c, currentOutputPath);
+          progressCount.incrementAndGet();
+        });
   }
 
   /**
