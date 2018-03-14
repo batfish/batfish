@@ -45,18 +45,28 @@ final class BatfishStorage {
   }
 
   /**
+   * Returns the compressed configuration files for the given testrig. If a serialized copy of these
+   * configurations is not already present, then this function returns {@code null}.
+   */
+  @Nullable
+  public SortedMap<String, Configuration> loadCompressedConfigurations(String testrig) {
+    Path testrigDir = getTestrigDir(testrig);
+    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
+    return loadConfigurations(testrig, indepDir);
+  }
+
+  /**
    * Returns the configuration files for the given testrig. If a serialized copy of these
    * configurations is not already present, then this function returns {@code null}.
    */
   @Nullable
-  public SortedMap<String, Configuration> loadConfigurations(String testrig, boolean compressed) {
+  public SortedMap<String, Configuration> loadConfigurations(String testrig) {
     Path testrigDir = getTestrigDir(testrig);
-    Path indepDir =
-        testrigDir.resolve(
-            compressed
-                ? BfConsts.RELPATH_COMPRESSED_CONFIG_DIR
-                : BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+    Path indepDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+    return loadConfigurations(testrig, indepDir);
+  }
 
+  public SortedMap<String, Configuration> loadConfigurations(String testrig, Path indepDir) {
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
       _logger.debugf("Unable to load configs for %s from disk: no cache directory", testrig);
@@ -94,16 +104,14 @@ final class BatfishStorage {
     return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
   }
 
+  /**
+   * Stores the configurations into the compressed config path for the given testrig. Will replace
+   * any previously-stored compressed configurations.
+   */
   public void storeCompressedConfigurations(
       Map<String, Configuration> configurations, String testrig) {
-    String batchName =
-        String.format(
-            "Serializing %s compressed configuration structures for testrig %s",
-            configurations.size(), testrig);
-    _logger.infof("\n*** %s***\n", batchName.toUpperCase());
-    AtomicInteger progressCount = _newBatch.apply(batchName, configurations.size());
-
     Path testrigDir = getTestrigDir(testrig);
+
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
       throw new BatfishException(
           String.format("Unable to create testrig directory '%s'", testrigDir));
@@ -111,19 +119,11 @@ final class BatfishStorage {
 
     Path outputDir = testrigDir.resolve(BfConsts.RELPATH_COMPRESSED_CONFIG_DIR);
 
-    // Delete any existing output, then recreate.
-    CommonUtil.deleteDirectory(outputDir);
-    if (!outputDir.toFile().exists() && !outputDir.toFile().mkdirs()) {
-      throw new BatfishException(
-          String.format("Unable to create output directory '%s'", outputDir));
-    }
-
-    configurations.forEach(
-        (name, c) -> {
-          Path currentOutputPath = outputDir.resolve(name);
-          serializeObject(c, currentOutputPath);
-          progressCount.incrementAndGet();
-        });
+    String batchName =
+        String.format(
+            "Serializing %s compressed configuration structures for testrig %s",
+            configurations.size(), testrig);
+    storeConfigurations(outputDir, batchName, configurations);
   }
 
   /**
@@ -134,13 +134,6 @@ final class BatfishStorage {
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement convertAnswerElement,
       String testrig) {
-    String batchName =
-        String.format(
-            "Serializing %s vendor-independent configuration structures for testrig %s",
-            configurations.size(), testrig);
-    _logger.infof("\n*** %s***\n", batchName.toUpperCase());
-    AtomicInteger progressCount = _newBatch.apply(batchName, configurations.size());
-
     Path testrigDir = getTestrigDir(testrig);
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
       throw new BatfishException(
@@ -153,6 +146,19 @@ final class BatfishStorage {
     serializeObject(convertAnswerElement, ccaePath);
 
     Path outputDir = testrigDir.resolve(BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+
+    String batchName =
+        String.format(
+            "Serializing %s vendor-independent configuration structures for testrig %s",
+            configurations.size(), testrig);
+
+    storeConfigurations(outputDir, batchName, configurations);
+  }
+
+  private void storeConfigurations(
+      Path outputDir, String batchName, Map<String, Configuration> configurations) {
+    _logger.infof("\n*** %s***\n", batchName.toUpperCase());
+    AtomicInteger progressCount = _newBatch.apply(batchName, configurations.size());
 
     // Delete any existing output, then recreate.
     CommonUtil.deleteDirectory(outputDir);

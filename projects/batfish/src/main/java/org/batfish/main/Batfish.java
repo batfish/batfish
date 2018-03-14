@@ -2244,7 +2244,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getTestrig(), true);
+    configurations = _storage.loadCompressedConfigurations(snapshot.getTestrig());
     if (configurations != null) {
       return configurations;
     } else {
@@ -2270,7 +2270,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getTestrig(), false);
+    configurations = _storage.loadConfigurations(snapshot.getTestrig());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2288,7 +2288,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.infof("Repairing configurations for testrig %s", _testrigSettings.getName());
     repairConfigurations();
     SortedMap<String, Configuration> configurations =
-        _storage.loadConfigurations(_testrigSettings.getName(), false);
+        _storage.loadConfigurations(_testrigSettings.getName());
     Verify.verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
@@ -4125,7 +4125,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // general compression
     Snapshot snapshot = getSnapshot();
     Map<String, Configuration> configurations =
-        useCompression ? loadCompressedConfigurations(snapshot) : loadConfigurations();
+        useCompression ? loadCompressedConfigurations(snapshot) : loadConfigurations(snapshot);
     DataPlane dataPlane = loadDataPlane(useCompression);
 
     if (configurations == null) {

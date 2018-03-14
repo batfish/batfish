@@ -45,14 +45,14 @@ public class BatfishStorageTest {
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
 
     _storage.storeConfigurations(configs, new ConvertConfigurationAnswerElement(), "sometr");
-    Map<String, Configuration> deserialized = _storage.loadConfigurations("sometr", false);
+    Map<String, Configuration> deserialized = _storage.loadConfigurations("sometr");
     assertThat(deserialized, not(nullValue()));
     assertThat(deserialized.keySet(), equalTo(Sets.newHashSet("node1")));
   }
 
   @Test
   public void loadMissingConfigurationsReturnsNull() {
-    assertThat(_storage.loadConfigurations("nonexistent", false), nullValue());
+    assertThat(_storage.loadConfigurations("nonexistent"), nullValue());
   }
 
   @Test
@@ -69,6 +69,6 @@ public class BatfishStorageTest {
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
     _storage.storeConfigurations(configs, oldConvertAnswer, trname);
 
-    assertThat(_storage.loadConfigurations(trname, false), nullValue());
+    assertThat(_storage.loadConfigurations(trname), nullValue());
   }
 }
