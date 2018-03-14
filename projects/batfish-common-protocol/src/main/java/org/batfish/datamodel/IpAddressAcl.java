@@ -4,6 +4,10 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
+/**
+ * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
+ * denied if it is not.
+ */
 public class IpAddressAcl implements IpSpace {
 
   public static class Builder {
@@ -42,7 +46,7 @@ public class IpAddressAcl implements IpSpace {
   private LineAction action(Ip ip) {
     return _lines
         .stream()
-        .filter(line -> line.getIpSpace().contains(ip) ^ line.getNegate())
+        .filter(line -> line.getIpSpace().contains(ip) ^ line.getMatchComplement())
         .map(IpAddressAclLine::getAction)
         .findFirst()
         .orElse(LineAction.REJECT);

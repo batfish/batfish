@@ -300,11 +300,7 @@ public class OspfTest {
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     BdpDataPlane dp =
         engine.computeDataPlane(
-            false,
-            configurations,
-            topology,
-            Collections.emptySet(),
-            new BdpAnswerElement());
+            false, configurations, topology, Collections.emptySet(), new BdpAnswerElement());
 
     return engine.getRoutes(dp);
   }

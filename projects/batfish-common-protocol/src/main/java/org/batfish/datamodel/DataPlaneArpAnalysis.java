@@ -233,12 +233,12 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                           ImmutableList.of(
                               IpAddressAclLine.builder()
                                   .setIpSpace(dstIpMatchesSomeRoutePrefix)
-                                  .setNegate(true)
+                                  .setMatchComplement(true)
                                   .setAction(LineAction.REJECT)
                                   .build(),
                               IpAddressAclLine.builder()
                                   .setIpSpace(recvReplies)
-                                  .setNegate(true)
+                                  .setMatchComplement(true)
                                   .setAction(LineAction.REJECT)
                                   .build(),
                               IpAddressAclLine.PERMIT_ALL))

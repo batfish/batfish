@@ -1,6 +1,7 @@
 package org.batfish.bdp;
 
 import static java.util.Comparator.naturalOrder;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;

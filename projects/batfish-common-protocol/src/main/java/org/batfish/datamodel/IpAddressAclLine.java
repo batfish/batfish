@@ -13,15 +13,15 @@ public class IpAddressAclLine {
 
     private IpSpace _ipSpace;
 
-    private boolean _negate;
+    private boolean _matchComplement;
 
     private Builder() {
       _action = LineAction.ACCEPT;
-      _negate = false;
+      _matchComplement = false;
     }
 
     public IpAddressAclLine build() {
-      return new IpAddressAclLine(_ipSpace, _action, _negate);
+      return new IpAddressAclLine(_ipSpace, _action, _matchComplement);
     }
 
     public Builder setAction(LineAction action) {
@@ -34,8 +34,8 @@ public class IpAddressAclLine {
       return this;
     }
 
-    public Builder setNegate(boolean negate) {
-      _negate = negate;
+    public Builder setMatchComplement(boolean matchComplement) {
+      _matchComplement = matchComplement;
       return this;
     }
   }
@@ -48,12 +48,13 @@ public class IpAddressAclLine {
 
   private final IpSpace _ipSpace;
 
-  private final boolean _negate;
+  private final boolean _matchComplement;
 
-  private IpAddressAclLine(@Nonnull IpSpace ipSpace, @Nonnull LineAction action, boolean negate) {
+  private IpAddressAclLine(
+      @Nonnull IpSpace ipSpace, @Nonnull LineAction action, boolean matchComplement) {
     _ipSpace = ipSpace;
     _action = action;
-    _negate = negate;
+    _matchComplement = matchComplement;
   }
 
   public LineAction getAction() {
@@ -64,7 +65,8 @@ public class IpAddressAclLine {
     return _ipSpace;
   }
 
-  public boolean getNegate() {
-    return _negate;
+  /** Match the complement of the {@code IpSpace} of this line. */
+  public boolean getMatchComplement() {
+    return _matchComplement;
   }
 }

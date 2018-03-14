@@ -24,7 +24,7 @@ public interface GenericRib<R extends AbstractRoute> extends Serializable {
   SortedSet<Prefix> getPrefixes();
 
   /** Get all the IPs for which there is a matching route */
-  IpWildcardSetIpSpace getRoutableIps();
+  IpSpace getRoutableIps();
 
   /**
    * For each prefix appearing in a route in the RIB, get the IPs for which the longest-prefix match

@@ -6,7 +6,10 @@ import java.util.Arrays;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-/** Represents a space of IPv4 addresses. */
+/**
+ * Represents a space of IPv4 addresses using a whitelist and blacklist of {@link IpWildcard}s. The
+ * blacklist takes priority, so if an {@link Ip} is matched by both lists, it is not in the space.
+ */
 public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
 
   public static class Builder {
@@ -43,7 +46,8 @@ public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
     }
   }
 
-  public static final IpWildcardSetIpSpace ANY = IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
+  public static final IpWildcardSetIpSpace ANY =
+      IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
 
   /** */
   private static final long serialVersionUID = 1L;

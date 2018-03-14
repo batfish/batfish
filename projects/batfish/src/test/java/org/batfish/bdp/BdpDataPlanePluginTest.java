@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -68,7 +67,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;

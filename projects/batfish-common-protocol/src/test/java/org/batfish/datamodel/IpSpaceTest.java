@@ -31,12 +31,18 @@ public class IpSpaceTest {
   @Test
   public void testIpSpace() {
     IpWildcardSetIpSpace any = IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).build();
-    IpWildcardSetIpSpace justMax = IpWildcardSetIpSpace.builder().including(new IpWildcard(Ip.MAX)).build();
+    IpWildcardSetIpSpace justMax =
+        IpWildcardSetIpSpace.builder().including(new IpWildcard(Ip.MAX)).build();
     IpWildcardSetIpSpace anyExceptMax =
-        IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).excluding(new IpWildcard(Ip.MAX)).build();
+        IpWildcardSetIpSpace.builder()
+            .including(IpWildcard.ANY)
+            .excluding(new IpWildcard(Ip.MAX))
+            .build();
     IpWildcardSetIpSpace none1 = IpWildcardSetIpSpace.builder().build();
-    IpWildcardSetIpSpace none2 = IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).excluding(IpWildcard.ANY).build();
-    IpWildcardSetIpSpace someButNotMax = IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.4")).build();
+    IpWildcardSetIpSpace none2 =
+        IpWildcardSetIpSpace.builder().including(IpWildcard.ANY).excluding(IpWildcard.ANY).build();
+    IpWildcardSetIpSpace someButNotMax =
+        IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.4")).build();
 
     /*
      * Contains every IP, so should contain Ip.MAX

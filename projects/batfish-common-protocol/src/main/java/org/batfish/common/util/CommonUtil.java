@@ -832,7 +832,8 @@ public class CommonUtil {
               .stream()
               .map(address -> new IpWildcard(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
-      IpWildcardSetIpSpace ipSpace = IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
+      IpWildcardSetIpSpace ipSpace =
+          IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces
           .stream()
           .flatMap(i -> i.getSourceNats().stream())
@@ -943,7 +944,8 @@ public class CommonUtil {
   public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
     Map<IpsecVpn, Ip> vpnRemoteIps = new IdentityHashMap<>();
     Map<Ip, Set<IpsecVpn>> externalIpVpnMap = new HashMap<>();
-    SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp = initPrivateIpsByPublicIp(configurations);
+    SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp =
+        initPrivateIpsByPublicIp(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
         Ip remoteIp = ipsecVpn.getIkeGateway().getAddress();
