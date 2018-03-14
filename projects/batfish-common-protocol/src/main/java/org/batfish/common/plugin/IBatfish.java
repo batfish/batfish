@@ -81,6 +81,11 @@ public interface IBatfish extends IPluginConsumer {
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
+  /**
+   * Get batfish settings
+   *
+   * @return the {@link ImmutableConfiguration} that represents batfish settings.
+   */
   ImmutableConfiguration getSettingsConfiguration();
 
   String getTaskId();
