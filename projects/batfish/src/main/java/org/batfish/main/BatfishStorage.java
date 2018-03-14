@@ -66,7 +66,7 @@ final class BatfishStorage {
     return loadConfigurations(testrig, indepDir);
   }
 
-  public SortedMap<String, Configuration> loadConfigurations(String testrig, Path indepDir) {
+  private SortedMap<String, Configuration> loadConfigurations(String testrig, Path indepDir) {
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
       _logger.debugf("Unable to load configs for %s from disk: no cache directory", testrig);
