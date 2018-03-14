@@ -227,8 +227,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitQueryStatement(QueryStatement queryStatement) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(new IdExpr("query"), queryStatement.getSubExpression()));
+    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("query"), queryStatement.getStateExpr()));
   }
 
   @Override

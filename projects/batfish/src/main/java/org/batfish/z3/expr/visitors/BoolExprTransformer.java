@@ -214,7 +214,7 @@ public class BoolExprTransformer
 
   @Override
   public BoolExpr visitQueryStatement(QueryStatement queryStatement) {
-    return transformStateExpr(queryStatement.getSubExpression());
+    return transformStateExpr(queryStatement.getStateExpr());
   }
 
   @Override

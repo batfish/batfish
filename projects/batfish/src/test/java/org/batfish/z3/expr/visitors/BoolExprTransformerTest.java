@@ -98,6 +98,19 @@ public class BoolExprTransformerTest {
   }
 
   @Test
+  public void testStateExprToBoolExpr() {
+    // TODO: better test
+    assertThat(toBoolExpr(_stateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
+  }
+
+  @Test
+  public void testTransformationStateExprToBoolExpr() {
+    // TODO: better test
+    assertThat(
+        toBoolExpr(_transformationStateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
+  }
+
+  @Test
   public void testVisitAndExpr() {
     BooleanExpr p1Batfish = newBooleanAtom();
     BooleanExpr p2Batfish = newBooleanAtom();
@@ -107,12 +120,6 @@ public class BoolExprTransformerTest {
     assertThat(
         toBoolExpr(new AndExpr(of(p1Batfish, p2Batfish)), _input, _nodContext),
         equalTo(_ctx.mkAnd(p1Z3, p2Z3)));
-  }
-
-  @Test
-  public void testVisitBasicStateExpr() {
-    // TODO: better test
-    assertThat(toBoolExpr(_stateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 
   @Test
@@ -289,13 +296,6 @@ public class BoolExprTransformerTest {
   @Test
   public void testVisitSaneExpr() {
     assertThat(toBoolExpr(SaneExpr.INSTANCE, _input, _nodContext), instanceOf(BoolExpr.class));
-  }
-
-  @Test
-  public void testVisitTransformationStateExpr() {
-    // TODO: better test
-    assertThat(
-        toBoolExpr(_transformationStateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 
   @Test

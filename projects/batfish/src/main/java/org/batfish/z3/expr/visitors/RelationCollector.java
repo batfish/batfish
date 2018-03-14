@@ -38,8 +38,8 @@ public class RelationCollector implements VoidStatementVisitor {
 
   @Override
   public void visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
-    basicRuleStatement.getPreconditionStates().forEach(this::visitStateExpr);
-    visitStateExpr(basicRuleStatement.getPostconditionState());
+    basicRuleStatement.getPreconditionStates().forEach(this::collectStateExpr);
+    collectStateExpr(basicRuleStatement.getPostconditionState());
   }
 
   @Override
@@ -47,10 +47,10 @@ public class RelationCollector implements VoidStatementVisitor {
 
   @Override
   public void visitQueryStatement(QueryStatement queryStatement) {
-    visitStateExpr(queryStatement.getSubExpression());
+    collectStateExpr(queryStatement.getStateExpr());
   }
 
-  private void visitStateExpr(StateExpr stateExpr) {
+  private void collectStateExpr(StateExpr stateExpr) {
     _relations.add(
         Maps.immutableEntry(
             BoolExprTransformer.getNodName(_input, stateExpr), stateExpr.getState()));
@@ -61,10 +61,10 @@ public class RelationCollector implements VoidStatementVisitor {
       TransformationRuleStatement transformationRuleStatement) {
     transformationRuleStatement
         .getPreconditionPreTransformationStates()
-        .forEach(this::visitStateExpr);
+        .forEach(this::collectStateExpr);
     transformationRuleStatement
         .getPreconditionPostTransformationStates()
-        .forEach(this::visitStateExpr);
-    visitStateExpr(transformationRuleStatement.getPostconditionTransformationState());
+        .forEach(this::collectStateExpr);
+    collectStateExpr(transformationRuleStatement.getPostconditionTransformationState());
   }
 }

@@ -23,7 +23,7 @@ import org.batfish.z3.expr.VarIntExpr;
 public interface GenericExprVisitor<R> {
   R visitAndExpr(AndExpr andExpr);
 
-  R visitBasicStateExpr(StateExpr basicStateExpr);
+  R visitStateExpr(StateExpr stateExpr);
 
   R visitBitVecExpr(BitVecExpr bitVecExpr);
 

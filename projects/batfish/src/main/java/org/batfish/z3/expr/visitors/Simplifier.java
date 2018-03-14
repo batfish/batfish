@@ -129,8 +129,8 @@ public class Simplifier
   }
 
   @Override
-  public StateExpr visitBasicStateExpr(StateExpr basicStateExpr) {
-    return basicStateExpr;
+  public StateExpr visitStateExpr(StateExpr stateExpr) {
+    return stateExpr;
   }
 
   @Override

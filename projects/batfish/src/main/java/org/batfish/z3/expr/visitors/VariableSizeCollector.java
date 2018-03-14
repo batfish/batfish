@@ -148,7 +148,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitQueryStatement(QueryStatement queryStatement) {
-    queryStatement.getSubExpression().accept(this);
+    queryStatement.getStateExpr().accept(this);
   }
 
   @Override
