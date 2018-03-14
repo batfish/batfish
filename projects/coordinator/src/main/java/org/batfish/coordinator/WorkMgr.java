@@ -507,7 +507,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (Files.exists(aDir)) {
         throw new BatfishException(
             String.format("Analysis '%s' already exists for container '%s'", aName, containerName));
-      } else if (questionsToDelete.size() != 0) {
+      } else if (!questionsToDelete.isEmpty()) {
         throw new BatfishException("Cannot delete questions from a new analysis");
       }
     } else {

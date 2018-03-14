@@ -35,7 +35,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.TestBooleanAtom;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -270,7 +269,6 @@ public class DefaultTransitionGeneratorTest {
                         Configuration.NODE_NONE_NAME,
                         Interface.FLOW_SINK_TERMINATION_NAME)),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
                 new PreOutEdgePostNat(
                     NODE1,
                     INTERFACE3,
@@ -285,7 +283,6 @@ public class DefaultTransitionGeneratorTest {
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1)),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1))));
     assertThat(
         rules,
@@ -293,7 +290,6 @@ public class DefaultTransitionGeneratorTest {
             new TransformationRuleStatement(
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2)),
-                ImmutableSet.of(),
                 ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2))));
     assertThat(
@@ -303,7 +299,6 @@ public class DefaultTransitionGeneratorTest {
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1)),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE1, INTERFACE2, NODE2, INTERFACE1))));
     assertThat(
         rules,
@@ -311,7 +306,6 @@ public class DefaultTransitionGeneratorTest {
             new TransformationRuleStatement(
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2)),
-                ImmutableSet.of(),
                 ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE1, INTERFACE2, NODE2, INTERFACE2))));
     assertThat(
@@ -321,7 +315,6 @@ public class DefaultTransitionGeneratorTest {
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1)),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1))));
     assertThat(
         rules,
@@ -329,7 +322,6 @@ public class DefaultTransitionGeneratorTest {
             new TransformationRuleStatement(
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2)),
-                ImmutableSet.of(),
                 ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE2))));
     assertThat(
@@ -339,7 +331,6 @@ public class DefaultTransitionGeneratorTest {
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1)),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE1))));
     assertThat(
         rules,
@@ -347,7 +338,6 @@ public class DefaultTransitionGeneratorTest {
             new TransformationRuleStatement(
                 newSrcIpEqualsCurrentSrcIp,
                 ImmutableSet.of(new PreOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2)),
-                ImmutableSet.of(),
                 ImmutableSet.of(),
                 new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2))));
   }
@@ -992,28 +982,25 @@ public class DefaultTransitionGeneratorTest {
     Set<RuleStatement> node2DropAclOutRules =
         rules
             .stream()
-            .map(TransformedBasicRuleStatement.class::cast)
-            .filter(
-                rule ->
-                    rule.getPostconditionPostTransformationState()
-                        .equals(new NodeDropAclOut(NODE2)))
+            .map(BasicRuleStatement.class::cast)
+            .filter(rule -> rule.getPostconditionState().equals(new NodeDropAclOut(NODE2)))
             .collect(Collectors.toSet());
 
     // FailOutgoingAclNoMatchSrcNat
     assertThat(
         node2DropAclOutRules,
         containsInAnyOrder(
-            new TransformedBasicRuleStatement(
+            new BasicRuleStatement(
                 TrueExpr.INSTANCE,
-                ImmutableSet.of(),
-                ImmutableSet.of(new AclDeny(NODE2, ACL1)),
-                ImmutableSet.of(new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1)),
+                ImmutableSet.of(
+                    new AclDeny(NODE2, ACL1),
+                    new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1)),
                 new NodeDropAclOut(NODE2)),
-            new TransformedBasicRuleStatement(
+            new BasicRuleStatement(
                 TrueExpr.INSTANCE,
-                ImmutableSet.of(),
-                ImmutableSet.of(new AclDeny(NODE2, ACL2)),
-                ImmutableSet.of(new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2)),
+                ImmutableSet.of(
+                    new AclDeny(NODE2, ACL2),
+                    new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2)),
                 new NodeDropAclOut(NODE2))));
   }
 
@@ -1382,28 +1369,26 @@ public class DefaultTransitionGeneratorTest {
     assertThat(
         rules,
         hasItem(
-            new TransformedBasicRuleStatement(
+            new BasicRuleStatement(
                 TrueExpr.INSTANCE,
-                ImmutableSet.of(),
-                ImmutableSet.of(new AclPermit(NODE1, ACL1)),
-                ImmutableSet.of(new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1)),
+                ImmutableSet.of(
+                    new AclPermit(NODE1, ACL1),
+                    new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1)),
                 new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
-            new TransformedBasicRuleStatement(
+            new BasicRuleStatement(
                 TrueExpr.INSTANCE,
-                ImmutableSet.of(),
-                ImmutableSet.of(new AclPermit(NODE1, ACL2)),
-                ImmutableSet.of(new PreOutEdgePostNat(NODE1, INTERFACE2, NODE2, INTERFACE2)),
+                ImmutableSet.of(
+                    new AclPermit(NODE1, ACL2),
+                    new PreOutEdgePostNat(NODE1, INTERFACE2, NODE2, INTERFACE2)),
                 new PostOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
-            new TransformedBasicRuleStatement(
+            new BasicRuleStatement(
                 TrueExpr.INSTANCE,
-                ImmutableSet.of(),
-                ImmutableSet.of(),
                 ImmutableSet.of(new PreOutEdgePostNat(NODE1, INTERFACE3, NODE2, INTERFACE3)),
                 new PostOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE3))));
   }
@@ -1756,7 +1741,6 @@ public class DefaultTransitionGeneratorTest {
                 new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
                 new AclPermit(NODE1, NAT_ACL1)),
             ImmutableSet.of(),
-            ImmutableSet.of(),
             new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
 
     RuleStatement denyRule =
@@ -1766,7 +1750,6 @@ public class DefaultTransitionGeneratorTest {
                 new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
             ImmutableSet.of(
                 new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclDeny(NODE1, NAT_ACL1)),
-            ImmutableSet.of(),
             ImmutableSet.of(),
             new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
 
@@ -1804,7 +1787,6 @@ public class DefaultTransitionGeneratorTest {
                     Interface.FLOW_SINK_TERMINATION_NAME),
                 new AclPermit(NODE1, NAT_ACL1)),
             ImmutableSet.of(),
-            ImmutableSet.of(),
             new PreOutEdgePostNat(
                 NODE1,
                 INTERFACE1,
@@ -1823,7 +1805,6 @@ public class DefaultTransitionGeneratorTest {
                     Configuration.NODE_NONE_NAME,
                     Interface.FLOW_SINK_TERMINATION_NAME),
                 new AclDeny(NODE1, NAT_ACL1)),
-            ImmutableSet.of(),
             ImmutableSet.of(),
             new PreOutEdgePostNat(
                 NODE1,
@@ -1857,7 +1838,6 @@ public class DefaultTransitionGeneratorTest {
                     INTERFACE1,
                     Configuration.NODE_NONE_NAME,
                     Interface.FLOW_SINK_TERMINATION_NAME)),
-            ImmutableSet.of(),
             ImmutableSet.of(),
             new PreOutEdgePostNat(
                 NODE1,

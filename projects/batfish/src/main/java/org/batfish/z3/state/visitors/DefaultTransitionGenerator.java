@@ -17,15 +17,14 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -160,7 +159,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .map(
                                 lineCriteria -> {
                                   int line = lineNumber.getAndIncrement();
-                                  Set<BasicStateExpr> preconditionStates =
+                                  Set<StateExpr> preconditionStates =
                                       line > 0
                                           ? ImmutableSet.of(
                                               new AclLineNoMatch(hostname, acl, line - 1))
@@ -196,7 +195,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .map(
                                 lineCriteria -> {
                                   int line = lineNumber.getAndIncrement();
-                                  Set<BasicStateExpr> preconditionStates =
+                                  Set<StateExpr> preconditionStates =
                                       line > 0
                                           ? ImmutableSet.of(
                                               new AclLineNoMatch(hostname, acl, line - 1))
@@ -444,15 +443,13 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String outAcl = _input.getOutgoingAcls().get(node1).get(iface1);
               // There has to be an ACL -- no ACL is an implicit Permit.
               if (outAcl != null) {
-                Set<BasicStateExpr> postTransformationPreStates =
-                    ImmutableSet.of(new AclDeny(node1, outAcl));
+                Set<StateExpr> postTransformationPreStates =
+                    ImmutableSet.of(
+                        new AclDeny(node1, outAcl),
+                        new PreOutEdgePostNat(node1, iface1, node2, iface2));
                 _rules.add(
-                    new TransformedBasicRuleStatement(
-                        TrueExpr.INSTANCE,
-                        ImmutableSet.of(),
-                        postTransformationPreStates,
-                        ImmutableSet.of(new PreOutEdgePostNat(node1, iface1, node2, iface2)),
-                        new NodeDropAclOut(node1)));
+                    new BasicRuleStatement(
+                        TrueExpr.INSTANCE, postTransformationPreStates, new NodeDropAclOut(node1)));
               }
             });
   }
@@ -622,8 +619,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .map(
                       ifaceName -> {
                         String inAcl = incomingAcls.get(ifaceName);
-                        Set<BasicStateExpr> preconditionStates;
-                        BasicStateExpr preIn = new PreInInterface(hostname, ifaceName);
+                        Set<StateExpr> preconditionStates;
+                        StateExpr preIn = new PreInInterface(hostname, ifaceName);
                         if (inAcl != null) {
                           preconditionStates =
                               ImmutableSet.of(new AclPermit(hostname, inAcl), preIn);
@@ -701,16 +698,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
               String outAcl = _input.getOutgoingAcls().get(node1).get(iface1);
-              Set<BasicStateExpr> aclStates =
+              Set<StateExpr> aclStates =
                   outAcl == null
-                      ? ImmutableSet.of()
-                      : ImmutableSet.of(new AclPermit(node1, outAcl));
-              return new TransformedBasicRuleStatement(
-                  TrueExpr.INSTANCE,
-                  ImmutableSet.of(),
-                  aclStates,
-                  ImmutableSet.of(new PreOutEdgePostNat(node1, iface1, node2, iface2)),
-                  new PostOutEdge(node1, iface1, node2, iface2));
+                      ? ImmutableSet.of(new PreOutEdgePostNat(node1, iface1, node2, iface2))
+                      : ImmutableSet.of(
+                          new AclPermit(node1, outAcl),
+                          new PreOutEdgePostNat(node1, iface1, node2, iface2));
+              return new BasicRuleStatement(
+                  TrueExpr.INSTANCE, aclStates, new PostOutEdge(node1, iface1, node2, iface2));
             })
         .forEach(_rules::add);
   }
@@ -862,7 +857,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
     List<Entry<AclPermit, BooleanExpr>> sourceNats = _input.getSourceNats().get(node1).get(iface1);
 
     for (int natNumber = 0; natNumber < sourceNats.size(); natNumber++) {
-      ImmutableSet.Builder<BasicStateExpr> preStates = ImmutableSet.builder();
+      ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
 
       preStates.add(new PreOutEdge(node1, iface1, node2, iface2));
 
@@ -884,7 +879,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
               transformationExpr,
               preStates.build(),
               ImmutableSet.of(),
-              ImmutableSet.of(),
               new PreOutEdgePostNat(node1, iface1, node2, iface2)));
     }
   }
@@ -897,7 +891,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
             .getOrDefault(node1, ImmutableMap.of())
             .getOrDefault(iface1, ImmutableList.of());
 
-    ImmutableSet.Builder<BasicStateExpr> preStates = ImmutableSet.builder();
+    ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
     preStates.add(new PreOutEdge(node1, iface1, node2, iface2));
 
     sourceNats
@@ -912,7 +906,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
                 new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
                 new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
             preStates.build(),
-            ImmutableSet.of(),
             ImmutableSet.of(),
             new PreOutEdgePostNat(node1, iface1, node2, iface2)));
   }

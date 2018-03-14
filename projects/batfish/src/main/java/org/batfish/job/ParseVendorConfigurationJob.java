@@ -147,7 +147,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                 _file,
                 new BatfishException("Error preprocessing banner", e));
           }
-        } while (newFileText != fileText);
+        } while (!newFileText.equals(fileText));
         _logger.info("OK\n");
         CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText, _settings, format);
         combinedParser = ciscoParser;

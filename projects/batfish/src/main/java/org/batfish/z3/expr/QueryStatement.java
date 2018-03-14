@@ -4,10 +4,10 @@ import java.util.Objects;
 
 public class QueryStatement extends Statement {
 
-  private final StateExpr _subExpression;
+  private final StateExpr _stateExpr;
 
   public QueryStatement(StateExpr expr) {
-    _subExpression = expr;
+    _stateExpr = expr;
   }
 
   @Override
@@ -20,17 +20,17 @@ public class QueryStatement extends Statement {
     visitor.visitQueryStatement(this);
   }
 
-  public StateExpr getSubExpression() {
-    return _subExpression;
+  public StateExpr getStateExpr() {
+    return _stateExpr;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_subExpression);
+    return Objects.hash(_stateExpr);
   }
 
   @Override
   public boolean statementEquals(Statement e) {
-    return Objects.equals(_subExpression, ((QueryStatement) e)._subExpression);
+    return Objects.equals(_stateExpr, ((QueryStatement) e)._stateExpr);
   }
 }

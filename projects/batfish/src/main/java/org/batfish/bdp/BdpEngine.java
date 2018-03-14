@@ -1079,7 +1079,7 @@ public class BdpEngine implements FlowProcessor {
     sb.append("\n");
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> initialRoutes;
     initialRoutes = iterationAbsRoutes.get(first);
-    sb.append("Initial routes (iteration " + first + "):\n");
+    sb.append("Initial routes (iteration ").append(first).append("):\n");
     initialRoutes.forEach(
         (hostname, routesByVrf) -> {
           routesByVrf.forEach(
@@ -1096,7 +1096,11 @@ public class BdpEngine implements FlowProcessor {
           iterationAbsRoutes.get(i);
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
           new TreeMap<>();
-      sb.append("Changed routes (iteration " + (i - 1) + " ==> " + i + "):\n");
+      sb.append("Changed routes (iteration ")
+          .append(i - 1)
+          .append(" ==> ")
+          .append(i)
+          .append("):\n");
       Set<String> hosts = new LinkedHashSet<>();
       hosts.addAll(baseRoutesByHostname.keySet());
       hosts.addAll(deltaRoutesByHostname.keySet());

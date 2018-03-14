@@ -10,13 +10,13 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.Drop;
@@ -71,15 +71,15 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder = ImmutableList.builder();
 
     // create query condition for action at final node(s)
-    ImmutableList.Builder<BasicStateExpr> finalActions = ImmutableList.builder();
-    ImmutableList.Builder<BasicStateExpr> queryPreconditionPreTransformationStatesBuilder =
+    ImmutableList.Builder<StateExpr> finalActions = ImmutableList.builder();
+    ImmutableList.Builder<StateExpr> queryPreconditionPreTransformationStatesBuilder =
         ImmutableList.builder();
     for (ForwardingAction action : _actions) {
       switch (action) {
         case ACCEPT:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr accept = new NodeAccept(finalNode);
+              StateExpr accept = new NodeAccept(finalNode);
               finalActions.add(accept);
             }
           } else {
@@ -94,7 +94,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case DROP:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr drop = new NodeDrop(finalNode);
+              StateExpr drop = new NodeDrop(finalNode);
               finalActions.add(drop);
             }
           } else {
@@ -105,7 +105,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case DROP_ACL:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr drop = new NodeDropAcl(finalNode);
+              StateExpr drop = new NodeDropAcl(finalNode);
               finalActions.add(drop);
             }
           } else {
@@ -116,7 +116,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case DROP_ACL_IN:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr drop = new NodeDropAclIn(finalNode);
+              StateExpr drop = new NodeDropAclIn(finalNode);
               finalActions.add(drop);
             }
           } else {
@@ -127,7 +127,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case DROP_ACL_OUT:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr drop = new NodeDropAclOut(finalNode);
+              StateExpr drop = new NodeDropAclOut(finalNode);
               finalActions.add(drop);
             }
           } else {
@@ -138,7 +138,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case DROP_NO_ROUTE:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr drop = new NodeDropNoRoute(finalNode);
+              StateExpr drop = new NodeDropNoRoute(finalNode);
               finalActions.add(drop);
             }
           } else {
@@ -149,7 +149,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
         case DROP_NULL_ROUTE:
           if (_finalNodes.size() > 0) {
             for (String finalNode : _finalNodes) {
-              BasicStateExpr drop = new NodeDropNullRoute(finalNode);
+              StateExpr drop = new NodeDropNullRoute(finalNode);
               finalActions.add(drop);
             }
           } else {
@@ -177,7 +177,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
                 new OriginateVrf(ingressNode, ingressVrf)));
       }
     }
-    List<BasicStateExpr> queryPreconditionPreTransformationStates =
+    List<StateExpr> queryPreconditionPreTransformationStates =
         queryPreconditionPreTransformationStatesBuilder.build();
     BooleanExpr queryConditions = new AndExpr(queryConditionsBuilder.build());
     finalActions
@@ -187,7 +187,7 @@ public class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
             finalAction ->
                 new BasicRuleStatement(
                     queryConditions,
-                    ImmutableSet.<BasicStateExpr>builder()
+                    ImmutableSet.<StateExpr>builder()
                         .add(finalAction)
                         .addAll(queryPreconditionPreTransformationStates)
                         .build(),
