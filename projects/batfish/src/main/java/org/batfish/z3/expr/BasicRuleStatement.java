@@ -10,36 +10,35 @@ import java.util.Set;
  */
 public class BasicRuleStatement extends RuleStatement {
 
-  private final BasicStateExpr _postconditionState;
+  private final StateExpr _postconditionState;
 
   private final BooleanExpr _preconditionStateIndependentConstraints;
 
-  private final Set<BasicStateExpr> _preconditionStates;
+  private final Set<StateExpr> _preconditionStates;
 
-  public BasicRuleStatement(BasicStateExpr postconditionState) {
+  public BasicRuleStatement(StateExpr postconditionState) {
     this(TrueExpr.INSTANCE, ImmutableSet.of(), postconditionState);
   }
 
-  public BasicRuleStatement(BasicStateExpr preconditionState, BasicStateExpr postconditionState) {
+  public BasicRuleStatement(StateExpr preconditionState, StateExpr postconditionState) {
     this(TrueExpr.INSTANCE, ImmutableSet.of(preconditionState), postconditionState);
   }
 
   public BasicRuleStatement(
-      BooleanExpr preconditionStateIndependentConstraints, BasicStateExpr postconditionState) {
+      BooleanExpr preconditionStateIndependentConstraints, StateExpr postconditionState) {
     this(preconditionStateIndependentConstraints, ImmutableSet.of(), postconditionState);
   }
 
   public BasicRuleStatement(
       BooleanExpr preconditionStateIndependentConstraints,
-      Set<BasicStateExpr> preconditionStates,
-      BasicStateExpr postconditionState) {
+      Set<StateExpr> preconditionStates,
+      StateExpr postconditionState) {
     _postconditionState = postconditionState;
     _preconditionStateIndependentConstraints = preconditionStateIndependentConstraints;
     _preconditionStates = preconditionStates;
   }
 
-  public BasicRuleStatement(
-      Set<BasicStateExpr> preconditionStates, BasicStateExpr postconditionState) {
+  public BasicRuleStatement(Set<StateExpr> preconditionStates, StateExpr postconditionState) {
     this(TrueExpr.INSTANCE, preconditionStates, postconditionState);
   }
 
@@ -53,7 +52,7 @@ public class BasicRuleStatement extends RuleStatement {
     visitor.visitBasicRuleStatement(this);
   }
 
-  public BasicStateExpr getPostconditionState() {
+  public StateExpr getPostconditionState() {
     return _postconditionState;
   }
 
@@ -61,7 +60,7 @@ public class BasicRuleStatement extends RuleStatement {
     return _preconditionStateIndependentConstraints;
   }
 
-  public Set<BasicStateExpr> getPreconditionStates() {
+  public Set<StateExpr> getPreconditionStates() {
     return _preconditionStates;
   }
 

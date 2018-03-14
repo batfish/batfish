@@ -7,18 +7,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.VoidStatementVisitor;
 
-public class RelationCollector implements VoidStateExprVisitor, VoidStatementVisitor {
+public class RelationCollector implements VoidStatementVisitor {
 
   public static Map<String, State> collectRelations(SynthesizerInput input, Statement statement) {
     RelationCollector relationCollector = new RelationCollector(input);
@@ -41,13 +38,8 @@ public class RelationCollector implements VoidStateExprVisitor, VoidStatementVis
 
   @Override
   public void visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
-    basicRuleStatement.getPreconditionStates().forEach(s -> s.accept(this));
-    basicRuleStatement.getPostconditionState().accept(this);
-  }
-
-  @Override
-  public void visitBasicStateExpr(BasicStateExpr basicStateExpr) {
-    visitStateExpr(basicStateExpr);
+    basicRuleStatement.getPreconditionStates().forEach(this::visitStateExpr);
+    visitStateExpr(basicRuleStatement.getPostconditionState());
   }
 
   @Override
@@ -55,7 +47,7 @@ public class RelationCollector implements VoidStateExprVisitor, VoidStatementVis
 
   @Override
   public void visitQueryStatement(QueryStatement queryStatement) {
-    queryStatement.getSubExpression().accept(this);
+    visitStateExpr(queryStatement.getSubExpression());
   }
 
   private void visitStateExpr(StateExpr stateExpr) {
@@ -69,31 +61,10 @@ public class RelationCollector implements VoidStateExprVisitor, VoidStatementVis
       TransformationRuleStatement transformationRuleStatement) {
     transformationRuleStatement
         .getPreconditionPreTransformationStates()
-        .forEach(s -> s.accept(this));
+        .forEach(this::visitStateExpr);
     transformationRuleStatement
         .getPreconditionPostTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformationRuleStatement.getPreconditionTransformationStates().forEach(s -> s.accept(this));
-    transformationRuleStatement.getPostconditionTransformationState().accept(this);
-  }
-
-  @Override
-  public void visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
-    visitStateExpr(transformationStateExpr);
-  }
-
-  @Override
-  public void visitTransformedBasicRuleStatement(
-      TransformedBasicRuleStatement transformedBasicRuleStatement) {
-    transformedBasicRuleStatement
-        .getPreconditionPreTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformedBasicRuleStatement
-        .getPreconditionPostTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformedBasicRuleStatement
-        .getPreconditionTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformedBasicRuleStatement.getPostconditionPostTransformationState().accept(this);
+        .forEach(this::visitStateExpr);
+    visitStateExpr(transformationRuleStatement.getPostconditionTransformationState());
   }
 }

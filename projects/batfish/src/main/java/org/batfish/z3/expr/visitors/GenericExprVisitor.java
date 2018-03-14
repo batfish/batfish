@@ -1,7 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
@@ -17,14 +16,14 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TransformationStateExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
 public interface GenericExprVisitor<R> {
   R visitAndExpr(AndExpr andExpr);
 
-  R visitBasicStateExpr(BasicStateExpr basicStateExpr);
+  R visitBasicStateExpr(StateExpr basicStateExpr);
 
   R visitBitVecExpr(BitVecExpr bitVecExpr);
 
@@ -55,8 +54,6 @@ public interface GenericExprVisitor<R> {
   R visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr);
 
   R visitSaneExpr(SaneExpr saneExpr);
-
-  R visitTransformationStateExpr(TransformationStateExpr transformationStateExpr);
 
   R visitTrueExpr(TrueExpr trueExpr);
 

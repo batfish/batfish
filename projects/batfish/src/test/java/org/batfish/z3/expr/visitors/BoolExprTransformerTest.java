@@ -28,7 +28,6 @@ import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
@@ -41,10 +40,10 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TestBooleanAtom;
 import org.batfish.z3.expr.TestIntAtom;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformationStateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.PreOutEdgePostNat;
@@ -57,7 +56,7 @@ public class BoolExprTransformerTest {
 
   private int _atomCounter;
 
-  private BasicStateExpr _basicStateExpr;
+  private StateExpr _stateExpr;
 
   private Context _ctx;
 
@@ -65,7 +64,7 @@ public class BoolExprTransformerTest {
 
   private NodContext _nodContext;
 
-  private TransformationStateExpr _transformationStateExpr;
+  private StateExpr _transformationStateExpr;
 
   private BooleanExpr newBooleanAtom() {
     return new TestBooleanAtom(_atomCounter++, _ctx);
@@ -77,7 +76,7 @@ public class BoolExprTransformerTest {
 
   @Before
   public void setup() {
-    _basicStateExpr = Accept.INSTANCE;
+    _stateExpr = Accept.INSTANCE;
     _transformationStateExpr = new PreOutEdgePostNat("host1", "interface1", "host2", "interface2");
     _ctx = new Context();
     _input = TestSynthesizerInput.builder().build();
@@ -88,7 +87,7 @@ public class BoolExprTransformerTest {
                 .setInput(_input)
                 .setRules(
                     of(
-                        new BasicRuleStatement(_basicStateExpr),
+                        new BasicRuleStatement(_stateExpr),
                         new TransformationRuleStatement(_transformationStateExpr)))
                 .build());
   }
@@ -113,7 +112,7 @@ public class BoolExprTransformerTest {
   @Test
   public void testVisitBasicStateExpr() {
     // TODO: better test
-    assertThat(toBoolExpr(_basicStateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
+    assertThat(toBoolExpr(_stateExpr, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 
   @Test

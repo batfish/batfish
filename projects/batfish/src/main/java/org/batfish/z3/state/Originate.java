@@ -1,12 +1,12 @@
 package org.batfish.z3.state;
 
-import org.batfish.z3.expr.BasicStateExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class Originate extends BasicStateExpr {
+public class Originate extends StateExpr {
 
-  public static class State extends BasicStateExpr.State {
+  public static class State extends StateExpr.State {
 
     public static final State INSTANCE = new State();
 

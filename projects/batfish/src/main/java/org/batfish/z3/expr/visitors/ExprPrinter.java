@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
@@ -27,8 +26,6 @@ import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
@@ -123,11 +120,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitBasicStateExpr(BasicStateExpr basicStateExpr) {
-    visitStateExpr(basicStateExpr);
-  }
-
-  @Override
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {
     List<Expr> subExpressions =
         ImmutableList.of(
@@ -206,7 +198,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
     } else {
       // bin
       StringBuilder numStringBuilder = new StringBuilder();
-      numString = "#b";
       numStringBuilder.append("#b");
       for (int pos = bits - 1; pos >= 0; pos--) {
         long mask = 1L << pos;
@@ -272,34 +263,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
             new ListExpr(
                 ImmutableList.copyOf(
                     transformationRuleStatement.getPreconditionPostTransformationStates())),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformationRuleStatement.getPreconditionTransformationStates())),
             transformationRuleStatement.getPostconditionTransformationState()));
-  }
-
-  @Override
-  public void visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
-    visitStateExpr(transformationStateExpr);
-  }
-
-  @Override
-  public void visitTransformedBasicRuleStatement(
-      TransformedBasicRuleStatement transformedBasicRuleStatement) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("transformed-basic-rule"),
-            transformedBasicRuleStatement.getPreconditionStateIndependentConstraints(),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformedBasicRuleStatement.getPreconditionPreTransformationStates())),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformedBasicRuleStatement.getPreconditionPostTransformationStates())),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformedBasicRuleStatement.getPreconditionTransformationStates())),
-            transformedBasicRuleStatement.getPostconditionPostTransformationState()));
   }
 
   @Override

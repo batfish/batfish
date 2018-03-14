@@ -4,17 +4,14 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.z3.BasicHeaderField;
 import org.batfish.z3.Field;
-import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BasicStateExpr;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
@@ -32,10 +29,9 @@ import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TransformationStateExpr;
-import org.batfish.z3.expr.TransformedBasicRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
@@ -45,14 +41,6 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   private static final Supplier<Set<Entry<String, Integer>>> BASIC_STATE_VARIABLE_SIZES =
       () ->
           Arrays.stream(BasicHeaderField.values())
-              .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
-              .collect(ImmutableSet.toImmutableSet());
-
-  private static final Supplier<Set<Entry<String, Integer>>> TRANSFORMATION_STATE_VARIABLE_SIZES =
-      () ->
-          Streams.concat(
-                  Arrays.stream(BasicHeaderField.values()),
-                  Arrays.stream(TransformationHeaderField.values()))
               .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
               .collect(ImmutableSet.toImmutableSet());
 
@@ -85,7 +73,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   }
 
   @Override
-  public void visitBasicStateExpr(BasicStateExpr basicStateExpr) {
+  public void visitStateExpr(StateExpr stateExpr) {
     _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
   }
 
@@ -183,29 +171,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
     transformationRuleStatement
         .getPreconditionPostTransformationStates()
         .forEach(s -> s.accept(this));
-    transformationRuleStatement.getPreconditionTransformationStates().forEach(s -> s.accept(this));
     transformationRuleStatement.getPostconditionTransformationState().accept(this);
-  }
-
-  @Override
-  public void visitTransformationStateExpr(TransformationStateExpr transformationStateExpr) {
-    _variableSizes.addAll(TRANSFORMATION_STATE_VARIABLE_SIZES.get());
-  }
-
-  @Override
-  public void visitTransformedBasicRuleStatement(
-      TransformedBasicRuleStatement transformedBasicRuleStatement) {
-    transformedBasicRuleStatement.getPreconditionStateIndependentConstraints().accept(this);
-    transformedBasicRuleStatement
-        .getPreconditionPreTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformedBasicRuleStatement
-        .getPreconditionPostTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformedBasicRuleStatement
-        .getPreconditionTransformationStates()
-        .forEach(s -> s.accept(this));
-    transformedBasicRuleStatement.getPostconditionPostTransformationState().accept(this);
   }
 
   @Override
