@@ -52,6 +52,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.Answerer;
@@ -1836,6 +1837,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Settings getSettings() {
     return _settings;
+  }
+
+  @Override
+  public ImmutableConfiguration getSettingsConfiguration() {
+    return _settings.getImmutableConfiguration();
   }
 
   private Snapshot getSnapshot() {
