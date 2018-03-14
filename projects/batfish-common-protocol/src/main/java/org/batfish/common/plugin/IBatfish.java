@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.Directory;
 import org.batfish.datamodel.AbstractRoute;
@@ -79,6 +80,13 @@ public interface IBatfish extends IPluginConsumer {
   Map<String, String> getQuestionTemplates();
 
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
+
+  /**
+   * Get batfish settings
+   *
+   * @return the {@link ImmutableConfiguration} that represents batfish settings.
+   */
+  ImmutableConfiguration getSettingsConfiguration();
 
   String getTaskId();
 
