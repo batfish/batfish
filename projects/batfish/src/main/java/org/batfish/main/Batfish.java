@@ -1197,10 +1197,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<Path, String> namesByPath, Class<S> outputClass) {
     String outputClassName = outputClass.getName();
     BatfishLogger logger = getLogger();
-    Map<String, byte[]> dataByName = new TreeMap<>();
+    Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
     AtomicInteger readCompleted =
         newBatch(
-            "Reading and unpacking files containing '" + outputClassName + "' instances",
+            "Reading, unpacking, and deserializing files containing '"
+                + outputClassName
+                + "' instances",
             namesByPath.size());
     namesByPath.forEach(
         (inputPath, name) -> {
@@ -1210,29 +1212,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   + " '"
                   + name
                   + "' from '"
-                  + inputPath.toString()
+                  + inputPath
                   + "'");
-          byte[] data = fromLz4File(inputPath);
+          S object = deserializeObject(inputPath, outputClass);
+          unsortedOutput.put(name, object);
           logger.debug(" ...OK\n");
-          dataByName.put(name, data);
           readCompleted.incrementAndGet();
         });
-    Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
-    AtomicInteger deserializeCompleted =
-        newBatch("Deserializing '" + outputClassName + "' instances", dataByName.size());
-    dataByName
-        .entrySet()
-        .parallelStream()
-        .forEach(
-            entry -> {
-              String name = entry.getKey();
-              byte[] data = entry.getValue();
-              S object = deserializeObject(data, outputClass);
-              unsortedOutput.put(name, object);
-              deserializeCompleted.incrementAndGet();
-            });
-    SortedMap<String, S> output = new TreeMap<>(unsortedOutput);
-    return output;
+    return new TreeMap<>(unsortedOutput);
   }
 
   public Map<String, GenericConfigObject> deserializeVendorConfigurations(
