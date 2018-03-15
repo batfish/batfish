@@ -1,11 +1,16 @@
 package org.batfish.main;
 
+import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
+import static org.batfish.common.plugin.PluginConsumer.detectFormat;
+
 import com.google.common.base.Throwables;
+import com.google.common.io.Closer;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PushbackInputStream;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -18,12 +23,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
+import net.jpountz.lz4.LZ4FrameInputStream;
+import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Version;
+import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -139,9 +146,25 @@ final class BatfishStorage {
    */
   private static <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
       throws BatfishException {
-    try (FileInputStream fis = new FileInputStream(inputFile.toFile());
-        GZIPInputStream gis = new GZIPInputStream(fis, 8192 /* enlarge buffer */);
-        ObjectInputStream ois = new ObjectInputStream(gis)) {
+    try (Closer closer = Closer.create()) {
+      FileInputStream fis = closer.register(new FileInputStream(inputFile.toFile()));
+      PushbackInputStream pbstream = new PushbackInputStream(fis, DEFAULT_HEADER_LENGTH_BYTES);
+      Format f = detectFormat(pbstream);
+      ObjectInputStream ois;
+      if (f == Format.GZIP) {
+        GZIPInputStream gis =
+            closer.register(new GZIPInputStream(pbstream, 8192 /* enlarge buffer */));
+        ois = new ObjectInputStream(gis);
+      } else if (f == Format.LZ4) {
+        LZ4FrameInputStream lis = closer.register(new LZ4FrameInputStream(pbstream));
+        ois = new ObjectInputStream(lis);
+      } else if (f == Format.JAVA_SERIALIZED) {
+        ois = new ObjectInputStream(pbstream);
+      } else {
+        throw new BatfishException(
+            String.format("Could not detect format of the file %s", inputFile));
+      }
+      closer.register(ois);
       return outputClass.cast(ois.readObject());
     } catch (IOException | ClassNotFoundException e) {
       throw new BatfishException(
@@ -184,7 +207,7 @@ final class BatfishStorage {
   private static void serializeObject(Serializable object, Path outputFile) {
     try {
       try (OutputStream out = Files.newOutputStream(outputFile);
-          GZIPOutputStream gos = new GZIPOutputStream(out, 8192 /* enlarged buffer size */);
+          LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
           ObjectOutputStream oos = new ObjectOutputStream(gos)) {
         oos.writeObject(object);
       }

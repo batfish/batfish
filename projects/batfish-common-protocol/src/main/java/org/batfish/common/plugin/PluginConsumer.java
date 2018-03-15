@@ -42,7 +42,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     UNKNOWN
   }
 
-  private static final int DEFAULT_HEADER_LENGTH_BYTES = 4;
+  public static final int DEFAULT_HEADER_LENGTH_BYTES = 4;
 
   private static final int GZIP_HEADER_LENGTH_BYTES = 2;
 
