@@ -174,10 +174,9 @@ public class CommonUtil {
   }
 
   public static boolean checkJsonEqual(Object a, Object b) {
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
     try {
-      String aString = mapper.writeValueAsString(a);
-      String bString = mapper.writeValueAsString(b);
+      String aString = BatfishObjectMapper.writePrettyString(a);
+      String bString = BatfishObjectMapper.writePrettyString(b);
       JSONAssert.assertEquals(aString, bString, false);
       return true;
     } catch (Exception e) {
