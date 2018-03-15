@@ -72,12 +72,13 @@ public abstract class PluginConsumer implements IPluginConsumer {
   /**
    * Deserialize object from given bytes into and instance of {@link S}
    *
-   * @deprecated in favor of {@link #deserializeObject(Path, Class)}
+   * @deprecated in favor of {@link #deserializeObject(Path, Class)} or {@link
+   *     #deserializeObject(InputStream, Class, Format)}
    */
   @Deprecated
   protected <S extends Serializable> S deserializeObject(byte[] data, Class<S> outputClass) {
     try (ByteArrayInputStream stream = new ByteArrayInputStream(data)) {
-      return deserializeObject(stream, outputClass, Format.UNKNOWN);
+      return deserializeObject(stream, outputClass, detectFormat(new PushbackInputStream(stream)));
     } catch (IOException e) {
       throw new BatfishException(
           "Failed to deserialize object of type '" + outputClass.getCanonicalName() + "' from data",
