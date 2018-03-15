@@ -11,6 +11,7 @@ import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -24,6 +25,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1200,40 +1202,40 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
+  /**
+   * Deserialize a bunch of objects
+   *
+   * @param namesByPath Mapping of object paths to their names
+   * @param outputClass the class type for {@link S}
+   * @param <S> desired type of objects
+   * @return a map of objects keyed by their name (from {@code namesByPath})
+   */
   public <S extends Serializable> SortedMap<String, S> deserializeObjects(
       Map<Path, String> namesByPath, Class<S> outputClass) {
     String outputClassName = outputClass.getName();
     BatfishLogger logger = getLogger();
-    Map<String, byte[]> dataByName = new TreeMap<>();
     AtomicInteger readCompleted =
         newBatch(
-            "Reading and unpacking files containing '" + outputClassName + "' instances",
+            "Reading, unpacking, and deserializing files containing '"
+                + outputClassName
+                + "' instances",
             namesByPath.size());
-    namesByPath.forEach(
-        (inputPath, name) -> {
-          logger.debugf(
-              "Reading and gunzipping: {} '{}' from '{}'", outputClassName, name, inputPath);
-          byte[] data = fromGzipFile(inputPath);
-          logger.debug(" ...OK\n");
-          dataByName.put(name, data);
-          readCompleted.incrementAndGet();
-        });
-    Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
-    AtomicInteger deserializeCompleted =
-        newBatch("Deserializing '" + outputClassName + "' instances", dataByName.size());
-    dataByName
+    return namesByPath
         .entrySet()
         .parallelStream()
-        .forEach(
-            entry -> {
-              String name = entry.getKey();
-              byte[] data = entry.getValue();
-              S object = deserializeObject(data, outputClass);
-              unsortedOutput.put(name, object);
-              deserializeCompleted.incrementAndGet();
-            });
-    SortedMap<String, S> output = new TreeMap<>(unsortedOutput);
-    return output;
+        .map(
+            e -> {
+              logger.debugf(
+                  "Reading and unzipping: %s '%s' from %s%n",
+                  outputClassName, e.getValue(), e.getKey());
+              S object = deserializeObject(e.getKey(), outputClass);
+              logger.debug(" ...OK\n");
+              readCompleted.incrementAndGet();
+              return new SimpleImmutableEntry<>(e.getValue(), object);
+            })
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                String::compareTo, Entry::getKey, Entry::getValue));
   }
 
   public Map<String, GenericConfigObject> deserializeVendorConfigurations(
