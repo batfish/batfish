@@ -1629,7 +1629,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String qName,
-      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
+      @FormDataParam(CoordConsts.SVC_KEY_FILE) String questionJson) {
     try {
       _logger.infof("WMS:uploadQuestion %s %s %s/%s\n", apiKey, containerName, testrigName, qName);
 
@@ -1642,7 +1642,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().uploadQuestion(containerName, qName, fileStream);
+      Main.getWorkMgr().uploadQuestion(containerName, qName, questionJson);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded question"));
 
