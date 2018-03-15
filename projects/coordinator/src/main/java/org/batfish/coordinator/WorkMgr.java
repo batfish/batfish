@@ -1538,8 +1538,7 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteIfExists(zipFile);
   }
 
-  public void uploadQuestion(
-      String containerName, String qName, InputStream fileStream, InputStream paramFileStream) {
+  public void uploadQuestion(String containerName, String qName, InputStream fileStream) {
     Path containerDir = getdirContainer(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
