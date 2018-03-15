@@ -35,7 +35,7 @@ import org.batfish.common.util.BatfishObjectInputStream;
 public abstract class PluginConsumer implements IPluginConsumer {
 
   /** Supported formats we can deserialize from */
-  private enum Format {
+  public enum Format {
     JAVA_SERIALIZED,
     LZ4,
     GZIP,
@@ -151,7 +151,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
    *
    * @return a {@link Format} value.
    */
-  private static Format detectFormat(PushbackInputStream stream) throws IOException {
+  public static Format detectFormat(PushbackInputStream stream) throws IOException {
     byte[] header = new byte[DEFAULT_HEADER_LENGTH_BYTES];
     ByteStreams.readFully(stream, header);
     Format format;
@@ -199,7 +199,7 @@ public abstract class PluginConsumer implements IPluginConsumer {
     }
   }
 
-  /** Serializes the given object to a file with the given output name, using LZ4 compression. */
+  /** Serializes the given object to a file with the given output name. */
   public void serializeObject(Serializable object, Path outputFile) {
     try {
       try (Closer closer = Closer.create()) {
