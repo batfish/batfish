@@ -1,15 +1,10 @@
 package org.batfish.datamodel;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public interface IpSpace {
-  public static final IpSpace UNIVERSE =
-      new IpSpace() {
-        @Override
-        public boolean contains(@Nonnull Ip ip) {
-          return true;
-        }
-      };
+  <R> R accept(GenericIpSpaceVisitor<R> ipSpaceVisitor);
 
   boolean contains(@Nonnull Ip ip);
 }

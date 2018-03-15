@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.AclPermit;
@@ -85,26 +84,6 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Set<String>> featureValueOf(SynthesizerInput actual) {
       return actual.getEnabledVrfs();
-    }
-  }
-
-  static final class HasFibConditions
-      extends FeatureMatcher<
-          SynthesizerInput,
-          Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>> {
-    HasFibConditions(
-        @Nonnull
-            Matcher<
-                    ? super
-                        Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>>
-                subMatcher) {
-      super(subMatcher, "SynthesizerInput with fibConditions", "fibConditions");
-    }
-
-    @Override
-    protected Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-        featureValueOf(SynthesizerInput actual) {
-      return actual.getFibConditions();
     }
   }
 

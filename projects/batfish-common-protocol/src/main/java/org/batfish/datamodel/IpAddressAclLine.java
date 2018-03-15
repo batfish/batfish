@@ -4,9 +4,6 @@ import javax.annotation.Nonnull;
 
 public class IpAddressAclLine {
 
-  public static final IpAddressAclLine PERMIT_ALL =
-      IpAddressAclLine.builder().setIpSpace(IpSpace.UNIVERSE).build();
-
   public static class Builder {
 
     private LineAction _action;
@@ -39,6 +36,9 @@ public class IpAddressAclLine {
       return this;
     }
   }
+
+  public static final IpAddressAclLine PERMIT_ALL =
+      IpAddressAclLine.builder().setIpSpace(UniverseIpSpace.INSTANCE).build();
 
   public static Builder builder() {
     return new Builder();

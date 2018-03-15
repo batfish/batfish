@@ -35,6 +35,10 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpNextHopIp;
 
+  private final Map<String, Map<String, IpSpace>> _nullableIps;
+
+  private final Map<String, Map<String, IpSpace>> _routableIps;
+
   private final Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
       _routesWhereDstIpCanBeArpIp;
 
@@ -54,6 +58,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
+    _nullableIps = computeNullableIps(ribs, fibs);
+    _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(fibs);
     _ipsRoutedOutInterfaces = computeIpsRoutedOutInterfaces(ribs);
     _arpReplies = computeArpReplies(configurations, ribs, fibs);
@@ -530,6 +536,62 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         });
   }
 
+  private Map<String, Map<String, IpSpace>> computeNullableIps(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
+      Map<String, Map<String, Fib>> fibs) {
+    return fibs.entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                fibsByHostnameEntry -> {
+                  String hostname = fibsByHostnameEntry.getKey();
+                  return fibsByHostnameEntry
+                      .getValue()
+                      .entrySet()
+                      .stream()
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey /* vrf */,
+                              fibsByVrfEntry -> {
+                                String vrf = fibsByVrfEntry.getKey();
+                                Fib fib = fibsByVrfEntry.getValue();
+                                GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrf);
+                                Set<AbstractRoute> nullRoutes =
+                                    fib.getNextHopInterfaces()
+                                        .entrySet()
+                                        .stream()
+                                        .filter(
+                                            nextHopInterfacesByRouteEntry ->
+                                                nextHopInterfacesByRouteEntry
+                                                    .getValue()
+                                                    .keySet()
+                                                    .contains(Interface.NULL_INTERFACE_NAME))
+                                        .map(Entry::getKey)
+                                        .collect(ImmutableSet.toImmutableSet());
+                                return computeRouteMatchConditions(nullRoutes, rib);
+                              }));
+                }));
+  }
+
+  private Map<String, Map<String, IpSpace>> computeRoutableIps(
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    return ribs.entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                ribsByHostnameEntry ->
+                    ribsByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                ribsByVrfEntry -> ribsByVrfEntry.getValue().getRoutableIps()))));
+  }
+
   /** Compute for each VRF of each node the IPs that are routable. */
   private Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
@@ -797,6 +859,16 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   @Override
   public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
     return _neighborUnreachable;
+  }
+
+  @Override
+  public Map<String, Map<String, IpSpace>> getNullableIps() {
+    return _nullableIps;
+  }
+
+  @Override
+  public Map<String, Map<String, IpSpace>> getRoutableIps() {
+    return _routableIps;
   }
 
   private Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface(Fib fib) {

@@ -20,4 +20,10 @@ public interface ArpAnalysis {
 
   /** Mapping: hostname -> vrfName -> outInterface -> dstIpsForWhichNoArpResponse */
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
+
+  /** Mapping: hostname -> vrfName -> nullableIps */
+  Map<String, Map<String, IpSpace>> getNullableIps();
+
+  /** Mapping: hostname -> vrfName -> routableIps */
+  Map<String, Map<String, IpSpace>> getRoutableIps();
 }

@@ -15,6 +15,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -207,6 +208,11 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
       numString = numStringBuilder.toString();
     }
     _sb.append(numString);
+  }
+
+  @Override
+  public void visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+    printExpr(matchIpSpaceExpr.getExpr());
   }
 
   @Override

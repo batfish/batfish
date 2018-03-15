@@ -21,7 +21,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.collections.FibRow;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.TestSynthesizerInput;
@@ -1714,48 +1713,6 @@ public class DefaultTransitionGeneratorTest {
                 new PreOutEdge(NODE2, INTERFACE4, NODE1, INTERFACE4))));
   }
 
-  /** Test the transitions generated for PreOutEdgePostNat for an edge with a source nat. */
-  @Test
-  public void testVisitPreOutEdgePostNat_topologyInterfaceWithNAT() {
-    SynthesizerInput input =
-        TestSynthesizerInput.builder()
-            .setEnabledEdges(ImmutableSet.of(new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2)))
-            .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
-            .setSourceNats(
-                ImmutableMap.of(
-                    NODE1,
-                    ImmutableMap.of(
-                        INTERFACE1,
-                        ImmutableList.of(
-                            Maps.immutableEntry(
-                                new AclPermit(NODE1, NAT_ACL1), new TestBooleanAtom(1, null))))))
-            .build();
-    List<RuleStatement> rules =
-        DefaultTransitionGenerator.generateTransitions(
-            input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
-
-    RuleStatement permitRule =
-        new TransformationRuleStatement(
-            new TestBooleanAtom(1, null),
-            ImmutableSet.of(
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                new AclPermit(NODE1, NAT_ACL1)),
-            ImmutableSet.of(),
-            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
-
-    RuleStatement denyRule =
-        new TransformationRuleStatement(
-            new EqExpr(
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
-            ImmutableSet.of(
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclDeny(NODE1, NAT_ACL1)),
-            ImmutableSet.of(),
-            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
-
-    assertThat(rules, containsInAnyOrder(permitRule, denyRule));
-  }
-
   /** Test the transitions generated for PreOutEdgePostNat for a flow sink with NAT */
   @Test
   public void testVisitPreOutEdgePostNat_flowSinkNAT() {
@@ -1845,5 +1802,47 @@ public class DefaultTransitionGeneratorTest {
                 Configuration.NODE_NONE_NAME,
                 Interface.FLOW_SINK_TERMINATION_NAME));
     assertThat(rules, contains(rule));
+  }
+
+  /** Test the transitions generated for PreOutEdgePostNat for an edge with a source nat. */
+  @Test
+  public void testVisitPreOutEdgePostNat_topologyInterfaceWithNAT() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setEnabledEdges(ImmutableSet.of(new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2)))
+            .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
+            .setSourceNats(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        INTERFACE1,
+                        ImmutableList.of(
+                            Maps.immutableEntry(
+                                new AclPermit(NODE1, NAT_ACL1), new TestBooleanAtom(1, null))))))
+            .build();
+    List<RuleStatement> rules =
+        DefaultTransitionGenerator.generateTransitions(
+            input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
+
+    RuleStatement permitRule =
+        new TransformationRuleStatement(
+            new TestBooleanAtom(1, null),
+            ImmutableSet.of(
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
+                new AclPermit(NODE1, NAT_ACL1)),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+
+    RuleStatement denyRule =
+        new TransformationRuleStatement(
+            new EqExpr(
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
+                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
+            ImmutableSet.of(
+                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclDeny(NODE1, NAT_ACL1)),
+            ImmutableSet.of(),
+            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+
+    assertThat(rules, containsInAnyOrder(permitRule, denyRule));
   }
 }

@@ -86,6 +86,7 @@ import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DataPlaneArpAnalysis;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
@@ -4226,12 +4227,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 logic...");
+    Topology topology = new Topology(dataPlane.getTopologyEdges());
     Synthesizer s =
         new Synthesizer(
             SynthesizerInputImpl.builder()
                 .setConfigurations(configurations)
-                .setDataPlane(dataPlane)
+                .setArpAnalysis(
+                    new DataPlaneArpAnalysis(
+                        configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
                 .setSimplify(_settings.getSimplify())
+                .setTopology(topology)
                 .build());
 
     List<String> warnings = s.getWarnings();

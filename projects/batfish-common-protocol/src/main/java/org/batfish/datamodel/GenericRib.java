@@ -19,18 +19,18 @@ public interface GenericRib<R extends AbstractRoute> extends Serializable {
    */
   int comparePreference(R lhs, R rhs);
 
+  /**
+   * For each prefix appearing in a route in the RIB, get the IPs for which the longest-prefix match
+   * is a route of that prefix.
+   */
+  Map<Prefix, IpSpace> getMatchingIps();
+
   MultiSet<Prefix> getPrefixCount();
 
   SortedSet<Prefix> getPrefixes();
 
   /** Get all the IPs for which there is a matching route */
   IpSpace getRoutableIps();
-
-  /**
-   * For each prefix appearing in a route in the RIB, get the IPs for which the longest-prefix match
-   * is a route of that prefix.
-   */
-  Map<Prefix, IpSpace> getMatchingIps();
 
   /** Return a set of routes this RIB contains. */
   Set<R> getRoutes();

@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
@@ -28,10 +29,10 @@ public class IpAddressAcl implements IpSpace {
     }
   }
 
+  public static final IpAddressAcl DENY_ALL = IpAddressAcl.builder().build();
+
   public static final IpAddressAcl PERMIT_ALL =
       IpAddressAcl.builder().setLines(ImmutableList.of(IpAddressAclLine.PERMIT_ALL)).build();
-
-  public static final IpAddressAcl DENY_ALL = IpAddressAcl.builder().build();
 
   public static Builder builder() {
     return new Builder();
@@ -41,6 +42,11 @@ public class IpAddressAcl implements IpSpace {
 
   private IpAddressAcl(List<IpAddressAclLine> lines) {
     _lines = lines;
+  }
+
+  @Override
+  public <R> R accept(GenericIpSpaceVisitor<R> ipSpaceVisitor) {
+    return ipSpaceVisitor.visitIpAddressAcl(this);
   }
 
   private LineAction action(Ip ip) {
@@ -55,5 +61,9 @@ public class IpAddressAcl implements IpSpace {
   @Override
   public boolean contains(@Nonnull Ip ip) {
     return action(ip) == LineAction.ACCEPT;
+  }
+
+  public List<IpAddressAclLine> getLines() {
+    return _lines;
   }
 }

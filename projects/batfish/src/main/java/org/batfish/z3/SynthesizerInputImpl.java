@@ -12,42 +12,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Function;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.ArpAnalysis;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.Topology;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
-import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
-  static final IpAccessList DEFAULT_SOURCE_NAT_ACL =
-      new NetworkFactory()
-          .aclBuilder()
-          .setName("~DEFAULT_SOURCE_NAT_ACL~")
-          .setLines(
-              ImmutableList.of(IpAccessListLine.builder().setAction(LineAction.ACCEPT).build()))
-          .build();
-
   public static class Builder {
-    private Map<String, Configuration> _configurations;
+    private ArpAnalysis _arpAnalysis;
 
-    private DataPlane _dataPlane;
+    private Map<String, Configuration> _configurations;
 
     private Map<String, Set<String>> _disabledAcls;
 
@@ -58,6 +50,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     private Map<String, Set<String>> _disabledVrfs;
 
     private boolean _simplify;
+
+    private Topology _topology;
 
     private Set<Type> _vectorizedParameters;
 
@@ -72,23 +66,24 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     public SynthesizerInputImpl build() {
       return new SynthesizerInputImpl(
+          _arpAnalysis,
           _configurations,
-          _dataPlane,
           _disabledAcls,
           _disabledInterfaces,
           _disabledNodes,
           _disabledVrfs,
           _simplify,
+          _topology,
           _vectorizedParameters);
+    }
+
+    public Builder setArpAnalysis(ArpAnalysis arpAnalysis) {
+      _arpAnalysis = arpAnalysis;
+      return this;
     }
 
     public Builder setConfigurations(Map<String, Configuration> configurations) {
       _configurations = configurations;
-      return this;
-    }
-
-    public Builder setDataPlane(DataPlane dataPlane) {
-      _dataPlane = dataPlane;
       return this;
     }
 
@@ -117,24 +112,35 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
+    public Builder setTopology(Topology topology) {
+      _topology = topology;
+      return this;
+    }
+
     public Builder setVectorizedParameters(Set<Type> vectorizedParameters) {
       _vectorizedParameters = vectorizedParameters;
       return this;
     }
   }
 
+  static final IpAccessList DEFAULT_SOURCE_NAT_ACL =
+      new NetworkFactory()
+          .aclBuilder()
+          .setName("~DEFAULT_SOURCE_NAT_ACL~")
+          .setLines(
+              ImmutableList.of(IpAccessListLine.builder().setAction(LineAction.ACCEPT).build()))
+          .build();
+
   public static Builder builder() {
     return new Builder();
-  }
-
-  private static boolean isLoopbackInterface(String ifaceName) {
-    String lcIfaceName = ifaceName.toLowerCase();
-    return lcIfaceName.startsWith("lo");
   }
 
   private final Map<String, Map<String, List<LineAction>>> _aclActions;
 
   private final Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
+
+  private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+      _arpTrueEdge;
 
   private final Map<String, Configuration> _configurations;
 
@@ -152,8 +158,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Set<Edge> _enabledEdges;
 
-  private final Set<NodeInterfacePair> _enabledFlowSinks;
-
   private final Map<String, Set<String>> _enabledInterfaces;
 
   private final Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
@@ -162,18 +166,17 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Set<String>> _enabledVrfs;
 
-  private final Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-      _fibConditions;
-
-  private final Map<String, Map<String, SortedSet<FibRow>>> _fibs;
-
-  private final Set<NodeInterfacePair> _flowSinks;
-
   private final Map<String, Map<String, String>> _incomingAcls;
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+
+  private final Map<String, Map<String, BooleanExpr>> _nullableIps;
+
   private final Map<String, Map<String, String>> _outgoingAcls;
+
+  private final Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
 
@@ -184,13 +187,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private final Set<Type> _vectorizedParameters;
 
   public SynthesizerInputImpl(
+      ArpAnalysis arpAnalysis,
       Map<String, Configuration> configurations,
-      DataPlane dataPlane,
       Map<String, Set<String>> disabledAcls,
       Map<String, Set<String>> disabledInterfaces,
       Set<String> disabledNodes,
       Map<String, Set<String>> disabledVrfs,
       boolean simplify,
+      Topology topology,
       Set<Type> vectorizedParameters) {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
@@ -208,20 +212,22 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _outgoingAcls = computeOutgoingAcls();
     _simplify = simplify;
     _vectorizedParameters = vectorizedParameters;
-    if (dataPlane != null) {
-      _enabledFlowSinks = computeEnabledFlowSinks();
+    if (arpAnalysis != null) {
+      _arpTrueEdge = computeArpTrueEdge(arpAnalysis.getArpTrueEdge());
+      _neighborUnreachable = computeNeighborUnreachable(arpAnalysis.getNeighborUnreachable());
+      _nullableIps = computeNullableIps(arpAnalysis.getNullableIps());
+      _routableIps = computeRoutableIps(arpAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
-      _fibConditions = computeFibConditions();
-      _edges = ImmutableSet.copyOf(dataPlane.getTopologyEdges());
+      _edges = topology.getEdges();
       _enabledEdges = computeEnabledEdges();
       _topologyInterfaces = computeTopologyInterfaces();
       _sourceNats = computeSourceNats();
     } else {
-      _fibs = null;
-      _flowSinks = null;
-      _enabledFlowSinks = null;
+      _arpTrueEdge = null;
+      _neighborUnreachable = null;
+      _nullableIps = null;
+      _routableIps = null;
       _ipsByHostname = null;
-      _fibConditions = null;
       _edges = null;
       _enabledEdges = null;
       _topologyInterfaces = null;
@@ -276,6 +282,69 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                         .stream()
                                         .map(HeaderSpaceMatchExpr::new)
                                         .collect(ImmutableList.toImmutableList())))));
+  }
+
+  private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+      computeArpTrueEdge(Map<Edge, IpSpace> arpTrueEdge) {
+    Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> output =
+        new HashMap<>();
+    arpTrueEdge.forEach(
+        (edge, ipSpace) -> {
+          String hostname = edge.getNode1();
+          String outInterface = edge.getInt1();
+          String vrf = _configurations.get(hostname).getInterfaces().get(outInterface).getVrfName();
+          String recvNode = edge.getNode2();
+          String recvInterface = edge.getInt2();
+          output
+              .computeIfAbsent(hostname, n -> new HashMap<>())
+              .computeIfAbsent(vrf, n -> new HashMap<>())
+              .computeIfAbsent(outInterface, n -> new HashMap<>())
+              .computeIfAbsent(recvNode, n -> new HashMap<>())
+              .put(recvInterface, new IpSpaceMatchExpr(ipSpace, false, true));
+        });
+
+    return output
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                outputByHostnameEntry ->
+                    outputByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                outputByVrfEntry ->
+                                    outputByVrfEntry
+                                        .getValue()
+                                        .entrySet()
+                                        .stream()
+                                        .collect(
+                                            ImmutableMap.toImmutableMap(
+                                                Entry::getKey /* outInterface */,
+                                                outputByOutInterfaceEntry ->
+                                                    outputByOutInterfaceEntry
+                                                        .getValue()
+                                                        .entrySet()
+                                                        .stream()
+                                                        .collect(
+                                                            ImmutableMap.toImmutableMap(
+                                                                Entry::getKey /* recvNode */,
+                                                                outputByRecvNodeEntry ->
+                                                                    outputByRecvNodeEntry
+                                                                        .getValue()
+                                                                        .entrySet()
+                                                                        .stream()
+                                                                        .collect(
+                                                                            ImmutableMap
+                                                                                .toImmutableMap(
+                                                                                    Entry
+                                                                                        ::getKey /* recvInterface */,
+                                                                                    Entry
+                                                                                        ::getValue))))))))));
   }
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
@@ -362,17 +431,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  private Set<NodeInterfacePair> computeEnabledFlowSinks() {
-    return _flowSinks
-        .stream()
-        .filter(
-            f -> {
-              Set<String> enabledInterfaces = _enabledInterfaces.get(f.getHostname());
-              return enabledInterfaces != null && enabledInterfaces.contains(f.getInterface());
-            })
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
   private Map<String, Set<String>> computeEnabledInterfaces() {
     return _enabledInterfacesByNodeVrf
         .entrySet()
@@ -451,78 +509,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 }));
   }
 
-  private Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-      computeFibConditions() {
-    return _configurations
-        .entrySet()
-        .stream()
-        .filter(e -> !_disabledNodes.contains(e.getKey()))
-        .filter(e -> _fibs.containsKey(e.getKey()))
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                e -> {
-                  String hostname = e.getKey();
-                  Configuration c = e.getValue();
-                  Set<String> disabledVrfs = _disabledVrfs.get(hostname);
-                  return c.getVrfs()
-                      .keySet()
-                      .stream()
-                      .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
-                      .filter(_fibs.get(hostname)::containsKey)
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Function.identity(),
-                              vrfName -> computeFibConditionsByInterface(hostname, vrfName)));
-                }));
-  }
-
-  private Map<String, Map<NodeInterfacePair, BooleanExpr>> computeFibConditionsByInterface(
-      String hostname, String vrfName) {
-    Map<String, Map<NodeInterfacePair, ImmutableList.Builder<BooleanExpr>>> conditionsByInterface =
-        new HashMap<>();
-    SortedSet<FibRow> fibSet = _fibs.get(hostname).get(vrfName);
-    List<FibRow> fib = ImmutableList.copyOf(fibSet);
-    for (int i = 0; i < fib.size(); i++) {
-      FibRow currentRow = fib.get(i);
-      String ifaceOutName = currentRow.getInterface();
-      NodeInterfacePair receiver = getFibRowReceiver(currentRow, ifaceOutName);
-
-      conditionsByInterface
-          .computeIfAbsent(ifaceOutName, n -> new HashMap<>())
-          .computeIfAbsent(receiver, r -> ImmutableList.builder())
-          .add(FibRowMatchExpr.getFibRowConditions(hostname, vrfName, fib, i, currentRow));
-    }
-    return conditionsByInterface
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                conditionsByInterfaceEntry ->
-                    conditionsByInterfaceEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey,
-                                conditionsByReceiverEntry ->
-                                    new OrExpr(conditionsByReceiverEntry.getValue().build())))));
-  }
-
-  private NodeInterfacePair getFibRowReceiver(FibRow currentRow, String ifaceOutName) {
-    if (isLoopbackInterface(ifaceOutName)
-        || CommonUtil.isNullInterface(ifaceOutName)
-        || ifaceOutName.equals(FibRow.DROP_NO_ROUTE)) {
-      // TODO what is this? seems like a hack.
-      // better to move these cases to another map that isn't keyed by receiver.
-      return NodeInterfacePair.NONE;
-    } else {
-      return new NodeInterfacePair(currentRow.getNextHop(), currentRow.getNextHopInterface());
-    }
-  }
-
   private Map<String, Map<String, String>> computeIncomingAcls() {
     return _enabledInterfaces
         .entrySet()
@@ -583,6 +569,59 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             ImmutableMap.toImmutableMap(Entry::getKey, e -> ImmutableSet.copyOf(e.getValue())));
   }
 
+  private Map<String, Map<String, Map<String, BooleanExpr>>> computeNeighborUnreachable(
+      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
+    return neighborUnreachable
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                neighborUnreachableByHostnameEntry ->
+                    neighborUnreachableByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                neighborUnreachableByVrfEntry ->
+                                    neighborUnreachableByVrfEntry
+                                        .getValue()
+                                        .entrySet()
+                                        .stream()
+                                        .collect(
+                                            ImmutableMap.toImmutableMap(
+                                                Entry::getKey /* interface */,
+                                                neighborUnreachableByOutInterfaceEntry ->
+                                                    new IpSpaceMatchExpr(
+                                                        neighborUnreachableByOutInterfaceEntry
+                                                            .getValue(),
+                                                        false,
+                                                        true)))))));
+  }
+
+  private Map<String, Map<String, BooleanExpr>> computeNullableIps(
+      Map<String, Map<String, IpSpace>> nullableIps) {
+    return nullableIps
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                nullableIpsByHostnameEntry ->
+                    nullableIpsByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                nullableIpsByVrfEntry ->
+                                    new IpSpaceMatchExpr(
+                                        nullableIpsByVrfEntry.getValue(), false, true)))));
+  }
+
   private Map<String, Map<String, String>> computeOutgoingAcls() {
     return _enabledInterfaces
         .entrySet()
@@ -604,6 +643,27 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                               ifaceName ->
                                   c.getInterfaces().get(ifaceName).getOutgoingFilterName()));
                 }));
+  }
+
+  private Map<String, Map<String, BooleanExpr>> computeRoutableIps(
+      Map<String, Map<String, IpSpace>> routableIps) {
+    return routableIps
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* hostname */,
+                routableIpsByHostnameEntry ->
+                    routableIpsByHostnameEntry
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey /* vrf */,
+                                routableIpsByVrfEntry ->
+                                    new IpSpaceMatchExpr(
+                                        routableIpsByVrfEntry.getValue(), false, true)))));
   }
 
   private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {
@@ -659,11 +719,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             topologyEdges
                 .computeIfAbsent(enabledEdge.getNode1(), n -> new HashSet<>())
                 .add(enabledEdge.getInt1()));
-    _enabledFlowSinks.forEach(
-        enabledFlowSink ->
-            topologyEdges
-                .computeIfAbsent(enabledFlowSink.getHostname(), n -> new HashSet<>())
-                .add(enabledFlowSink.getInterface()));
     return topologyEdges
         .entrySet()
         .stream()
@@ -686,14 +741,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _aclConditions;
   }
 
-  @Override
-  public Set<Edge> getEnabledEdges() {
-    return _enabledEdges;
+  public Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+      getArpTrueEdge() {
+    return _arpTrueEdge;
   }
 
   @Override
-  public Set<NodeInterfacePair> getEnabledFlowSinks() {
-    return _enabledFlowSinks;
+  public Set<Edge> getEnabledEdges() {
+    return _enabledEdges;
   }
 
   @Override
@@ -717,12 +772,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-      getFibConditions() {
-    return _fibConditions;
-  }
-
-  @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
   }
@@ -732,9 +781,23 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _ipsByHostname;
   }
 
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
+    return _neighborUnreachable;
+  }
+
+  @Override
+  public Map<String, Map<String, BooleanExpr>> getNullableIps() {
+    return _nullableIps;
+  }
+
   @Override
   public Map<String, Map<String, String>> getOutgoingAcls() {
     return _outgoingAcls;
+  }
+
+  @Override
+  public Map<String, Map<String, BooleanExpr>> getRoutableIps() {
+    return _routableIps;
   }
 
   @Override

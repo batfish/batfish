@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * Represents a space of IPv4 addresses using a whitelist and blacklist of {@link IpWildcard}s. The
@@ -66,8 +67,21 @@ public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
   }
 
   @Override
+  public <R> R accept(GenericIpSpaceVisitor<R> ipSpaceVisitor) {
+    return ipSpaceVisitor.visitIpWildcardSetIpSpace(this);
+  }
+
+  @Override
   public boolean contains(@Nonnull Ip ip) {
     return _blacklist.stream().noneMatch(w -> w.contains(ip))
         && _whitelist.stream().anyMatch(w -> w.contains(ip));
+  }
+
+  public Set<IpWildcard> getBlacklist() {
+    return _blacklist;
+  }
+
+  public Set<IpWildcard> getWhitelist() {
+    return _whitelist;
   }
 }

@@ -7,7 +7,6 @@ import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
@@ -34,6 +33,12 @@ public interface SynthesizerInput {
    */
   Map<String, Map<String, List<BooleanExpr>>> getAclConditions();
 
+  /**
+   * Mapping: hostname -> vrfName -> outInterface -> recvNode -> recvInterface ->
+   * dstIpConstraintForWhichArpReplySent
+   */
+  Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> getArpTrueEdge();
+
   Set<Edge> getEnabledEdges();
 
   /** Mapping: hostname -> interfaces */
@@ -47,21 +52,23 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> vrfs */
   Map<String, Set<String>> getEnabledVrfs();
 
-  /**
-   * Mapping: hostname -> vrf -> outgoingInterface -> receivingNodeAndInterface -> condition <br>
-   * There are three special cases of receivingNodeAndInterface that do not correspond to the
-   * topology: 1) No route. 2) Null route. 3) Flow sink.
-   */
-  Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> getFibConditions();
-
   /** Mapping: hostname -> interface-> incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
 
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
 
+  /** Mapping: hostname -> vrfName -> outInterface -> dstIpConstraintForWhichNoArpReplySent */
+  Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
+
+  /** Mapping: hostname -> vrfName -> nullableIps */
+  Map<String, Map<String, BooleanExpr>> getNullableIps();
+
   /** Mapping: hostname -> interface-> outgoingAcl */
   Map<String, Map<String, String>> getOutgoingAcls();
+
+  /** Mapping: hostname -> vrfName -> routableIps */
+  Map<String, Map<String, BooleanExpr>> getRoutableIps();
 
   /** Whether to run simplifier on AST after rule generation */
   boolean getSimplify();
