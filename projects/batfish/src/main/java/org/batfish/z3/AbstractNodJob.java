@@ -46,7 +46,8 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
    * Try to find a model for each OriginateVrf. If an OriginateVrf does not have an entry in the
    * Map, then the query is unsat when originating from there.
    */
-  Map<OriginateVrf, Map<String, Long>> getOriginateVrfConstraints(Context ctx, SmtInput smtInput) {
+  protected Map<OriginateVrf, Map<String, Long>> getOriginateVrfConstraints(Context ctx,
+      SmtInput smtInput) {
     Solver solver = ctx.mkSolver();
     solver.add(smtInput._expr);
 
@@ -77,7 +78,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     return models.build();
   }
 
-  private Map<String, Long> getSolution(Solver solver, Map<String, BitVecExpr> variablesAsConsts)
+  protected Map<String, Long> getSolution(Solver solver, Map<String, BitVecExpr> variablesAsConsts)
       throws QueryUnsatException {
     Status solverStatus = solver.check();
     switch (solverStatus) {
@@ -161,7 +162,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
                     ((BitVecNum) model.getConstInterp(variablesAsConsts.get(field))).getLong()));
   }
 
-  private static class QueryUnsatException extends Throwable {
+  protected static class QueryUnsatException extends Throwable {
     static final long serialVersionUID = 1L;
   }
 }
