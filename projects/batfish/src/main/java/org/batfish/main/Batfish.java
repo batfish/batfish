@@ -140,6 +140,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilitySettings;
@@ -2579,9 +2580,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement multipath(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder, boolean useCompression) {
+      ReachabilitySettings reachabilitySettings, boolean useCompression) {
     return singleReachability(
-        reachabilitySettingsBuilder,
+        reachabilitySettings,
         ImmutableSet.of(),
         useCompression,
         MultipathInconsistencyQuerySynthesizer.builder());
@@ -2863,8 +2864,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement pathDiff(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder, boolean useCompression) {
+  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -2909,7 +2909,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
       ReachEdgeQuerySynthesizer reachQuery =
           new ReachEdgeQuerySynthesizer(
-              ingressNode, vrf, edge, true, reachabilitySettingsBuilder.getHeaderSpace());
+              ingressNode, vrf, edge, true, reachabilitySettings.getHeaderSpace());
       ReachEdgeQuerySynthesizer noReachQuery =
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
@@ -2940,7 +2940,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(
-                ingressNode, vrf, missingEdge, true, reachabilitySettingsBuilder.getHeaderSpace());
+                ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
         SortedSet<Pair<String, String>> nodes = ImmutableSortedSet.of(new Pair<>(ingressNode, vrf));
         CompositeNodJob job =
@@ -3336,7 +3336,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement reducedReachability(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder, boolean useCompression) {
+      ReachabilitySettings reachabilitySettings, boolean useCompression) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3345,23 +3345,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseEnvironment();
     Map<String, Configuration> baseConfigurations = loadConfigurations();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
-    ReachabilitySettings baseReachabilitySettings =
-        reachabilitySettingsBuilder.build(baseConfigurations);
     popEnvironment();
 
     // load diff configurations and generate diff data plane
     pushDeltaEnvironment();
     Map<String, Configuration> diffConfigurations = loadConfigurations();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
-    ReachabilitySettings diffReachabilitySettings =
-        reachabilitySettingsBuilder.build(diffConfigurations);
     popEnvironment();
 
-    Set<String> ingressNodes =
-        ImmutableSet.copyOf(
-            Sets.intersection(
-                baseReachabilitySettings.getIngressNodes(),
-                diffReachabilitySettings.getIngressNodes()));
+    Set<String> ingressNodes;
+    try {
+      ingressNodes =
+          ImmutableSet.copyOf(
+              Sets.intersection(
+                  reachabilitySettings.computeActiveIngressNodes(baseConfigurations),
+                  reachabilitySettings.computeActiveIngressNodes(diffConfigurations)));
+    } catch (InvalidReachabilitySettingsException e) {
+      return e.getInvalidSettingsAnswer();
+    }
 
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
@@ -3396,11 +3397,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                               StandardReachabilityQuerySynthesizer acceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
                                       .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
-                                      .setHeaderSpace(reachabilitySettingsBuilder.getHeaderSpace())
+                                      .setHeaderSpace(reachabilitySettings.getHeaderSpace())
                                       .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())
                                       .setTransitNodes(ImmutableSet.of())
-                                      .setNotTransitNodes(ImmutableSet.of())
+                                      .setNonTransitNodes(ImmutableSet.of())
                                       .build();
                               StandardReachabilityQuerySynthesizer notAcceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
@@ -3409,7 +3410,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                       .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())
                                       .setTransitNodes(ImmutableSet.of())
-                                      .setNotTransitNodes(ImmutableSet.of())
+                                      .setNonTransitNodes(ImmutableSet.of())
                                       .build();
                               notAcceptQuery.setNegate(true);
                               SortedSet<Pair<String, String>> nodes =
@@ -4023,7 +4024,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private AnswerElement singleReachability(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder,
+      ReachabilitySettings reachabilitySettings,
       Set<ForwardingAction> actions,
       boolean useCompression,
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
@@ -4053,18 +4054,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("error loading data plane");
     }
 
-    ReachabilitySettings reachabilitySettings = reachabilitySettingsBuilder.build(configurations);
-    Set<String> activeIngressNodes = reachabilitySettings.getIngressNodes();
-    Set<String> activeFinalNodes = reachabilitySettings.getFinalNodes();
-    HeaderSpace headerSpace = reachabilitySettings.getHeaderSpace();
-    Set<String> transitNodes = reachabilitySettings.getTransitNodes();
-    Set<String> notTransitNodes = reachabilitySettings.getNotTransitNodes();
-    int maxChunkSize = reachabilitySettings.getMaxChunkSize();
-    AnswerElement invalidSettingsAnswer = reachabilitySettings.getInvalidSettingsAnswer();
-    if (invalidSettingsAnswer != null) {
-      return invalidSettingsAnswer;
-    }
+    Set<String> activeIngressNodes;
+    Set<String> activeFinalNodes;
+    HeaderSpace headerSpace;
+    Set<String> transitNodes;
+    Set<String> nonTransitNodes;
+    int maxChunkSize;
 
+    try {
+      activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(configurations);
+      activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(configurations);
+      headerSpace = reachabilitySettings.getHeaderSpace();
+      transitNodes = reachabilitySettings.computeActiveTransitNodes(configurations);
+      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(configurations);
+      maxChunkSize = reachabilitySettings.getMaxChunkSize();
+      reachabilitySettings.validateTransitNodes(configurations);
+    } catch (InvalidReachabilitySettingsException e) {
+      return e.getInvalidSettingsAnswer();
+    }
     List<Pair<String, String>> originateNodeVrfs =
         activeIngressNodes
             .stream()
@@ -4111,7 +4118,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           .setFinalNodes(activeFinalNodes)
                           .setIngressNodeVrfs(vrfsByNode)
                           .setTransitNodes(transitNodes)
-                          .setNotTransitNodes(notTransitNodes)
+                          .setNonTransitNodes(nonTransitNodes)
                           .build();
 
                   return new NodJob(settings, dataPlaneSynthesizer, query, nodeVrfs, tag);
@@ -4198,11 +4205,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement standard(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder,
+      ReachabilitySettings reachabilitySettings,
       Set<ForwardingAction> actions,
       boolean useCompression) {
     return singleReachability(
-        reachabilitySettingsBuilder,
+        reachabilitySettings,
         actions,
         useCompression,
         StandardReachabilityQuerySynthesizer.builder());

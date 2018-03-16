@@ -122,15 +122,13 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder, boolean useCompression);
+  AnswerElement multipath(ReachabilitySettings reachabilitySettings, boolean useCompression);
 
   AtomicInteger newBatch(String description, int jobs);
 
   AssertionAst parseAssertion(String text);
 
-  AnswerElement pathDiff(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder, boolean useCompression);
+  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression);
 
   void popEnvironment();
 
@@ -146,7 +144,7 @@ public interface IBatfish extends IPluginConsumer {
   String readExternalBgpAnnouncementsFile();
 
   AnswerElement reducedReachability(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder, boolean useCompression);
+      ReachabilitySettings reachabilitySettings, boolean useCompression);
 
   void registerAnswerer(
       String questionName,
@@ -190,7 +188,7 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   AnswerElement standard(
-      ReachabilitySettings.Builder reachabilitySettingsBuilder,
+      ReachabilitySettings reachabilitySettings,
       Set<ForwardingAction> actions,
       boolean useCompression);
 

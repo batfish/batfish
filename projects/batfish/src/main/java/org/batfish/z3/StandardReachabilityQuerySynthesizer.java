@@ -43,7 +43,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     @Override
     public StandardReachabilityQuerySynthesizer build() {
       return new StandardReachabilityQuerySynthesizer(
-          _actions, _headerSpace, _finalNodes, _ingressNodeVrfs, _transitNodes, _notTransitNodes);
+          _actions, _headerSpace, _finalNodes, _ingressNodeVrfs, _transitNodes, _nonTransitNodes);
     }
 
     @Override
@@ -78,8 +78,8 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       @Nonnull Set<String> finalNodes,
       @Nonnull Map<String, Set<String>> ingressNodeVrfs,
       @Nonnull Set<String> transitNodes,
-      @Nonnull Set<String> notTransitNodes) {
-    super(headerSpace, ingressNodeVrfs, transitNodes, notTransitNodes);
+      @Nonnull Set<String> nonTransitNodes) {
+    super(headerSpace, ingressNodeVrfs, transitNodes, nonTransitNodes);
     _actions = actions;
     _finalNodes = finalNodes;
   }

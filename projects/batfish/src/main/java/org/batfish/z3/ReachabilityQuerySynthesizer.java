@@ -22,7 +22,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
     protected Map<String, Set<String>> _ingressNodeVrfs;
 
-    protected Set<String> _notTransitNodes;
+    protected Set<String> _nonTransitNodes;
 
     protected Set<String> _transitNodes;
 
@@ -44,8 +44,8 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       return getThis();
     }
 
-    public T setNotTransitNodes(Set<String> notTransitNodes) {
-      _notTransitNodes = notTransitNodes;
+    public T setNonTransitNodes(Set<String> nonTransitNodes) {
+      _nonTransitNodes = nonTransitNodes;
       return getThis();
     }
 
@@ -59,7 +59,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   protected final Map<String, Set<String>> _ingressNodeVrfs;
 
-  protected final Set<String> _notTransitNodes;
+  protected final Set<String> _nonTransitNodes;
 
   protected final Set<String> _transitNodes;
 
@@ -67,11 +67,11 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Map<String, Set<String>> ingressNodeVrfs,
       @Nonnull Set<String> transitNodes,
-      @Nonnull Set<String> notTransitNodes) {
+      @Nonnull Set<String> nonTransitNodes) {
     _headerSpace = headerSpace;
     _ingressNodeVrfs = ingressNodeVrfs;
     _transitNodes = transitNodes;
-    _notTransitNodes = notTransitNodes;
+    _nonTransitNodes = nonTransitNodes;
   }
 
   protected final void addOriginateRules(ImmutableList.Builder<RuleStatement> rules) {

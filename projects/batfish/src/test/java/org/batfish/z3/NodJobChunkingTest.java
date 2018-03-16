@@ -165,7 +165,7 @@ public class NodJobChunkingTest {
                     _srcNode1.getHostname(), ImmutableSet.of(_srcVrf1.getName()),
                     _srcNode2.getHostname(), ImmutableSet.of(_srcVrf2.getName())))
             .setTransitNodes(ImmutableSet.of())
-            .setNotTransitNodes(ImmutableSet.of())
+            .setNonTransitNodes(ImmutableSet.of())
             .build();
     SortedSet<Pair<String, String>> ingressNodes =
         ImmutableSortedSet.of(

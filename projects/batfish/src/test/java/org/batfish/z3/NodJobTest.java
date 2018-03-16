@@ -72,7 +72,7 @@ public class NodJobTest {
             .setIngressNodeVrfs(
                 ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())))
             .setTransitNodes(ImmutableSet.of())
-            .setNotTransitNodes(ImmutableSet.of())
+            .setNonTransitNodes(ImmutableSet.of())
             .build();
     SortedSet<Pair<String, String>> ingressNodes =
         ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));

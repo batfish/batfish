@@ -70,21 +70,25 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(question._reachabilitySettings, question.getUseCompression());
+      return _batfish.multipath(
+          question._reachabilitySettings.build(), question.getUseCompression());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
-      return _batfish.pathDiff(question._reachabilitySettings, question.getUseCompression());
+      return _batfish.pathDiff(
+          question._reachabilitySettings.build(), question.getUseCompression());
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
       return _batfish.reducedReachability(
-          question._reachabilitySettings, question.getUseCompression());
+          question._reachabilitySettings.build(), question.getUseCompression());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {
       return _batfish.standard(
-          question._reachabilitySettings, question.getActions(), question.getUseCompression());
+          question._reachabilitySettings.build(),
+          question.getActions(),
+          question.getUseCompression());
     }
   }
 
@@ -97,7 +101,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
    *
    * @type Reachability dataplane
    * @param transitNodes set of transit nodes (packet must transit through all of them)
-   * @param notTransitNodes set of non-transit nodes (packet does not transit through any of them)
+   * @param nonTransitNodes set of non-transit nodes (packet does not transit through any of them)
    * @param DetailsComing Details coming.
    * @example bf_answer("Reachability", dstIps=["2.128.0.101"], dstPorts=[53], ipProtocols=["UDP"],
    *     actions=["drop"]) Finds all (starting node, packet header) combinations that cannot reach
@@ -118,7 +122,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
 
-    private static final NodesSpecifier DEFAULT_NOT_TRANSIT_NODES = NodesSpecifier.NONE;
+    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = NodesSpecifier.NONE;
 
     private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
 
@@ -174,7 +178,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
 
-    private static final String PROP_NOT_TRANSIT_NODES = "notTransitNodes";
+    private static final String PROP_NON_TRANSIT_NODES = "notTransitNodes";
 
     private static final String PROP_PACKET_LENGTHS = "packetLengths";
 
@@ -212,7 +216,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       setIngressNodeRegex(DEFAULT_INGRESS_NODE_REGEX);
       setMaxChunkSize(DEFAULT_MAX_CHUNK_SIZE);
       setNotFinalNodeRegex(DEFAULT_NOT_FINAL_NODE_REGEX);
-      setNotTransitNodes(DEFAULT_NOT_TRANSIT_NODES);
+      setNonTransitNodes(DEFAULT_NON_TRANSIT_NODES);
       setNotIngressNodeRegex(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
       setTransitNodes(DEFAULT_TRANSIT_NODES);
@@ -354,9 +358,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return _reachabilitySettings.getHeaderSpace().getNotSrcProtocols();
     }
 
-    @JsonProperty(PROP_NOT_TRANSIT_NODES)
-    public NodesSpecifier getNotTransitNodes() {
-      return _reachabilitySettings.getNotTransitNodes();
+    @JsonProperty(PROP_NON_TRANSIT_NODES)
+    public NodesSpecifier getNonTransitNodes() {
+      return _reachabilitySettings.getNonTransitNodes();
     }
 
     @JsonProperty(PROP_PACKET_LENGTHS)
@@ -511,8 +515,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotSrcProtocols() != null && !getNotSrcProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
         }
-        if (!getNotTransitNodes().equals(DEFAULT_NOT_TRANSIT_NODES)) {
-          retString += String.format(", %s=%s", PROP_NOT_TRANSIT_NODES, getNotTransitNodes());
+        if (!getNonTransitNodes().equals(DEFAULT_NON_TRANSIT_NODES)) {
+          retString += String.format(", %s=%s", PROP_NON_TRANSIT_NODES, getNonTransitNodes());
         }
         return retString;
       } catch (Exception e) {
@@ -648,9 +652,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _reachabilitySettings.getHeaderSpace().setNotSrcProtocols(new TreeSet<>(notSrcProtocols));
     }
 
-    @JsonProperty(PROP_NOT_TRANSIT_NODES)
-    public void setNotTransitNodes(NodesSpecifier notTransitNodes) {
-      _reachabilitySettings.setNotTransitNodes(notTransitNodes);
+    @JsonProperty(PROP_NON_TRANSIT_NODES)
+    public void setNonTransitNodes(NodesSpecifier nonTransitNodes) {
+      _reachabilitySettings.setNonTransitNodes(nonTransitNodes);
     }
 
     @JsonProperty(PROP_PACKET_LENGTHS)
