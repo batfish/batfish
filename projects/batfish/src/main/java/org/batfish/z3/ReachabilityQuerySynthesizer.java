@@ -3,6 +3,7 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
@@ -63,10 +64,10 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
   protected final Set<String> _transitNodes;
 
   public ReachabilityQuerySynthesizer(
-      HeaderSpace headerSpace,
-      Map<String, Set<String>> ingressNodeVrfs,
-      Set<String> transitNodes,
-      Set<String> notTransitNodes) {
+      @Nonnull HeaderSpace headerSpace,
+      @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      @Nonnull Set<String> transitNodes,
+      @Nonnull Set<String> notTransitNodes) {
     _headerSpace = headerSpace;
     _ingressNodeVrfs = ingressNodeVrfs;
     _transitNodes = transitNodes;

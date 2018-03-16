@@ -68,6 +68,7 @@ public class NodJobTest {
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
+            .setHeaderSpace(headerSpace)
             .setIngressNodeVrfs(
                 ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())))
             .setTransitNodes(ImmutableSet.of())

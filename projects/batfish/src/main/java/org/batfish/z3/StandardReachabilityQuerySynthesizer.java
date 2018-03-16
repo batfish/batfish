@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
@@ -72,12 +73,12 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
   private final Set<String> _finalNodes;
 
   private StandardReachabilityQuerySynthesizer(
-      Set<ForwardingAction> actions,
-      HeaderSpace headerSpace,
-      Set<String> finalNodes,
-      Map<String, Set<String>> ingressNodeVrfs,
-      Set<String> transitNodes,
-      Set<String> notTransitNodes) {
+      @Nonnull Set<ForwardingAction> actions,
+      @Nonnull HeaderSpace headerSpace,
+      @Nonnull Set<String> finalNodes,
+      @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      @Nonnull Set<String> transitNodes,
+      @Nonnull Set<String> notTransitNodes) {
     super(headerSpace, ingressNodeVrfs, transitNodes, notTransitNodes);
     _actions = actions;
     _finalNodes = finalNodes;
