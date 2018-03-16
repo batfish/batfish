@@ -1,6 +1,5 @@
 package org.batfish.question;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.Collections;
@@ -21,6 +20,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.ReachabilitySettings;
 
 @AutoService(Plugin.class)
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
@@ -70,30 +70,21 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(question.getHeaderSpace(), question.getIngressNodeRegex());
+      return _batfish.multipath(question._reachabilitySettings, question.getUseCompression());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
-      return _batfish.pathDiff(question.getHeaderSpace());
+      return _batfish.pathDiff(question._reachabilitySettings, question.getUseCompression());
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
       return _batfish.reducedReachability(
-          question.getHeaderSpace(), question.getIngressNodeRegex());
+          question._reachabilitySettings, question.getUseCompression());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {
       return _batfish.standard(
-          question.getHeaderSpace(),
-          question.getActions(),
-          question.getIngressNodeRegex(),
-          question.getNotIngressNodeRegex(),
-          question.getFinalNodeRegex(),
-          question.getNotFinalNodeRegex(),
-          question.getTransitNodes(),
-          question.getNotTransitNodes(),
-          question.getUseCompression(),
-          question.getMaxChunkSize());
+          question._reachabilitySettings, question.getActions(), question.getUseCompression());
     }
   }
 
@@ -117,8 +108,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
    */
   public static class ReachabilityQuestion extends Question implements IReachabilityQuestion {
 
-    private static final String PROP_ACTIONS = "actions";
-
     private static final NodesSpecifier DEFAULT_FINAL_NODE_REGEX = NodesSpecifier.ALL;
 
     private static final NodesSpecifier DEFAULT_INGRESS_NODE_REGEX = NodesSpecifier.ALL;
@@ -129,13 +118,13 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
 
-    private static final SortedSet<String> DEFAULT_TRANSIT_NODES =
-        Collections.<String>emptySortedSet();
+    private static final NodesSpecifier DEFAULT_NOT_TRANSIT_NODES = NodesSpecifier.NONE;
 
-    private static final SortedSet<String> DEFAULT_NOT_TRANSIT_NODES =
-        Collections.<String>emptySortedSet();
+    private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
 
     private static final boolean DEFAULT_USE_COMPRESSION = false;
+
+    private static final String PROP_ACTIONS = "actions";
 
     private static final String PROP_DST_IPS = "dstIps";
 
@@ -154,6 +143,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final String PROP_INGRESS_NODE_REGEX = "ingressNodeRegex";
 
     private static final String PROP_IP_PROTOCOLS = "ipProtocols";
+
+    private static final String PROP_MAX_CHUNK_SIZE = "maxChunkSize";
 
     private static final String PROP_NEGATE_HEADER = "negateHeader";
 
@@ -183,6 +174,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
 
+    private static final String PROP_NOT_TRANSIT_NODES = "notTransitNodes";
+
     private static final String PROP_PACKET_LENGTHS = "packetLengths";
 
     private static final String PROP_REACHABILITY_TYPE = "type";
@@ -201,45 +194,28 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_TRANSIT_NODES = "transitNodes";
 
-    private static final String PROP_NOT_TRANSIT_NODES = "notTransitNodes";
-
     private static final String PROP_USE_COMPRESSION = "useCompression";
-
-    private static final String PROP_MAX_CHUNK_SIZE = "maxChunkSize";
 
     private SortedSet<ForwardingAction> _actions;
 
-    private int _maxChunkSize;
-
-    private NodesSpecifier _finalNodeRegex;
-
-    private final HeaderSpace _headerSpace;
-
-    private NodesSpecifier _ingressNodeRegex;
-
-    private NodesSpecifier _notFinalNodeRegex;
-
-    private NodesSpecifier _notIngressNodeRegex;
-
-    private SortedSet<String> _transitNodes;
-
-    private SortedSet<String> _notTransitNodes;
+    private ReachabilitySettings.Builder _reachabilitySettings;
 
     private ReachabilityType _reachabilityType;
 
     private boolean _useCompression;
 
     public ReachabilityQuestion() {
+      _reachabilitySettings = ReachabilitySettings.builder();
       _actions = new TreeSet<>(Collections.singleton(ForwardingAction.ACCEPT));
-      _finalNodeRegex = DEFAULT_FINAL_NODE_REGEX;
-      _headerSpace = new HeaderSpace();
-      _ingressNodeRegex = DEFAULT_INGRESS_NODE_REGEX;
-      _maxChunkSize = DEFAULT_MAX_CHUNK_SIZE;
-      _notFinalNodeRegex = DEFAULT_NOT_FINAL_NODE_REGEX;
-      _notTransitNodes = DEFAULT_NOT_TRANSIT_NODES;
-      _notIngressNodeRegex = DEFAULT_NOT_INGRESS_NODE_REGEX;
+      setFinalNodeRegex(DEFAULT_FINAL_NODE_REGEX);
+      setHeaderSpace(new HeaderSpace());
+      setIngressNodeRegex(DEFAULT_INGRESS_NODE_REGEX);
+      setMaxChunkSize(DEFAULT_MAX_CHUNK_SIZE);
+      setNotFinalNodeRegex(DEFAULT_NOT_FINAL_NODE_REGEX);
+      setNotTransitNodes(DEFAULT_NOT_TRANSIT_NODES);
+      setNotIngressNodeRegex(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
-      _transitNodes = DEFAULT_TRANSIT_NODES;
+      setTransitNodes(DEFAULT_TRANSIT_NODES);
       _useCompression = DEFAULT_USE_COMPRESSION;
     }
 
@@ -255,57 +231,52 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_DST_IPS)
     public SortedSet<IpWildcard> getDstIps() {
-      return _headerSpace.getDstIps();
+      return _reachabilitySettings.getHeaderSpace().getDstIps();
     }
 
     @JsonProperty(PROP_DST_PORTS)
     public SortedSet<SubRange> getDstPorts() {
-      return _headerSpace.getDstPorts();
+      return _reachabilitySettings.getHeaderSpace().getDstPorts();
     }
 
     @JsonProperty(PROP_DST_PROTOCOLS)
     public SortedSet<Protocol> getDstProtocols() {
-      return _headerSpace.getDstProtocols();
+      return _reachabilitySettings.getHeaderSpace().getDstProtocols();
     }
 
     @JsonProperty(PROP_FINAL_NODE_REGEX)
     public NodesSpecifier getFinalNodeRegex() {
-      return _finalNodeRegex;
+      return _reachabilitySettings.getFinalNodes();
     }
 
     @JsonProperty(PROP_FRAGMENT_OFFSETS)
     public SortedSet<SubRange> getFragmentOffsets() {
-      return _headerSpace.getFragmentOffsets();
-    }
-
-    @JsonIgnore
-    public HeaderSpace getHeaderSpace() {
-      return _headerSpace;
+      return _reachabilitySettings.getHeaderSpace().getFragmentOffsets();
     }
 
     @JsonProperty(PROP_ICMP_CODES)
     public SortedSet<SubRange> getIcmpCodes() {
-      return _headerSpace.getIcmpCodes();
+      return _reachabilitySettings.getHeaderSpace().getIcmpCodes();
     }
 
     @JsonProperty(PROP_ICMP_TYPES)
     public SortedSet<SubRange> getIcmpTypes() {
-      return _headerSpace.getIcmpTypes();
+      return _reachabilitySettings.getHeaderSpace().getIcmpTypes();
     }
 
     @JsonProperty(PROP_INGRESS_NODE_REGEX)
     public NodesSpecifier getIngressNodeRegex() {
-      return _ingressNodeRegex;
+      return _reachabilitySettings.getIngressNodes();
     }
 
     @JsonProperty(PROP_IP_PROTOCOLS)
     public SortedSet<IpProtocol> getIpProtocols() {
-      return _headerSpace.getIpProtocols();
+      return _reachabilitySettings.getHeaderSpace().getIpProtocols();
     }
 
     @JsonProperty(PROP_MAX_CHUNK_SIZE)
     public int getMaxChunkSize() {
-      return _maxChunkSize;
+      return _reachabilitySettings.getMaxChunkSize();
     }
 
     @Override
@@ -315,87 +286,82 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NEGATE_HEADER)
     public boolean getNegateHeader() {
-      return _headerSpace.getNegate();
+      return _reachabilitySettings.getHeaderSpace().getNegate();
     }
 
     @JsonProperty(PROP_NOT_DST_IPS)
     public SortedSet<IpWildcard> getNotDstIps() {
-      return _headerSpace.getNotDstIps();
+      return _reachabilitySettings.getHeaderSpace().getNotDstIps();
     }
 
     @JsonProperty(PROP_NOT_DST_PORTS)
     public SortedSet<SubRange> getNotDstPorts() {
-      return _headerSpace.getNotDstPorts();
+      return _reachabilitySettings.getHeaderSpace().getNotDstPorts();
     }
 
     @JsonProperty(PROP_NOT_DST_PROTOCOLS)
     public SortedSet<Protocol> getNotDstProtocols() {
-      return _headerSpace.getNotDstProtocols();
+      return _reachabilitySettings.getHeaderSpace().getNotDstProtocols();
     }
 
     @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
     public NodesSpecifier getNotFinalNodeRegex() {
-      return _notFinalNodeRegex;
+      return _reachabilitySettings.getNotFinalNodes();
     }
 
     @JsonProperty(PROP_NOT_FRAGMENT_OFFSETS)
     private SortedSet<SubRange> getNotFragmentOffsets() {
-      return _headerSpace.getNotFragmentOffsets();
+      return _reachabilitySettings.getHeaderSpace().getNotFragmentOffsets();
     }
 
     @JsonProperty(PROP_NOT_ICMP_CODES)
     public SortedSet<SubRange> getNotIcmpCodes() {
-      return _headerSpace.getNotIcmpCodes();
+      return _reachabilitySettings.getHeaderSpace().getNotIcmpCodes();
     }
 
     @JsonProperty(PROP_NOT_ICMP_TYPES)
     public SortedSet<SubRange> getNotIcmpTypes() {
-      return _headerSpace.getNotIcmpTypes();
+      return _reachabilitySettings.getHeaderSpace().getNotIcmpTypes();
     }
 
     @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
     public NodesSpecifier getNotIngressNodeRegex() {
-      return _notIngressNodeRegex;
-    }
-
-    @JsonProperty(PROP_TRANSIT_NODES)
-    public SortedSet<String> getTransitNodes() {
-      return _transitNodes;
-    }
-
-    @JsonProperty(PROP_NOT_TRANSIT_NODES)
-    public SortedSet<String> getNotTransitNodes() {
-      return _notTransitNodes;
+      return _reachabilitySettings.getNotIngressNodes();
     }
 
     @JsonProperty(PROP_NOT_IP_PROTOCOLS)
     public SortedSet<IpProtocol> getNotIpProtocols() {
-      return _headerSpace.getNotIpProtocols();
+      return _reachabilitySettings.getHeaderSpace().getNotIpProtocols();
     }
 
     @JsonProperty(PROP_NOT_PACKET_LENGTHS)
     public SortedSet<SubRange> getNotPacketLengths() {
-      return _headerSpace.getNotPacketLengths();
+      return _reachabilitySettings.getHeaderSpace().getNotPacketLengths();
     }
 
     @JsonProperty(PROP_NOT_SRC_IPS)
     public SortedSet<IpWildcard> getNotSrcIps() {
-      return _headerSpace.getNotSrcIps();
+      return _reachabilitySettings.getHeaderSpace().getNotSrcIps();
     }
 
     @JsonProperty(PROP_NOT_SRC_PORTS)
     public SortedSet<SubRange> getNotSrcPorts() {
-      return _headerSpace.getNotSrcPorts();
+      return _reachabilitySettings.getHeaderSpace().getNotSrcPorts();
     }
 
     @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
     public SortedSet<Protocol> getNotSrcProtocols() {
-      return _headerSpace.getNotSrcProtocols();
+      return _reachabilitySettings.getHeaderSpace().getNotSrcProtocols();
+    }
+
+    @JsonProperty(PROP_NOT_TRANSIT_NODES)
+    public NodesSpecifier getNotTransitNodes() {
+      return _reachabilitySettings.getNotTransitNodes();
     }
 
     @JsonProperty(PROP_PACKET_LENGTHS)
     public SortedSet<SubRange> getPacketLengths() {
-      return _headerSpace.getPacketLengths();
+      return _reachabilitySettings.getHeaderSpace().getPacketLengths();
     }
 
     @JsonProperty(PROP_REACHABILITY_TYPE)
@@ -405,32 +371,37 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_IPS)
     public SortedSet<IpWildcard> getSrcIps() {
-      return _headerSpace.getSrcIps();
+      return _reachabilitySettings.getHeaderSpace().getSrcIps();
     }
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
-      return _headerSpace.getSrcOrDstIps();
+      return _reachabilitySettings.getHeaderSpace().getSrcOrDstIps();
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PORTS)
     public SortedSet<SubRange> getSrcOrDstPorts() {
-      return _headerSpace.getSrcOrDstPorts();
+      return _reachabilitySettings.getHeaderSpace().getSrcOrDstPorts();
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
     public SortedSet<Protocol> getSrcOrDstProtocols() {
-      return _headerSpace.getSrcOrDstProtocols();
+      return _reachabilitySettings.getHeaderSpace().getSrcOrDstProtocols();
     }
 
     @JsonProperty(PROP_SRC_PORTS)
     public SortedSet<SubRange> getSrcPorts() {
-      return _headerSpace.getSrcPorts();
+      return _reachabilitySettings.getHeaderSpace().getSrcPorts();
     }
 
     @JsonProperty(PROP_SRC_PROTOCOLS)
     public SortedSet<Protocol> getSrcProtocols() {
-      return _headerSpace.getSrcProtocols();
+      return _reachabilitySettings.getHeaderSpace().getSrcProtocols();
+    }
+
+    @JsonProperty(PROP_TRANSIT_NODES)
+    public NodesSpecifier getTransitNodes() {
+      return _reachabilitySettings.getTransitNodes();
     }
 
     @JsonProperty(PROP_USE_COMPRESSION)
@@ -458,8 +429,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getDstProtocols() != null && !getDstProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_DST_PROTOCOLS, getDstProtocols());
         }
-        if (!_finalNodeRegex.equals(DEFAULT_FINAL_NODE_REGEX)) {
-          retString += String.format(", %s=%s", PROP_FINAL_NODE_REGEX, _finalNodeRegex);
+        if (!getFinalNodeRegex().equals(DEFAULT_FINAL_NODE_REGEX)) {
+          retString += String.format(", %s=%s", PROP_FINAL_NODE_REGEX, getFinalNodeRegex());
         }
         if (getFragmentOffsets() != null && !getFragmentOffsets().isEmpty()) {
           retString += String.format(", %s=%s", PROP_FRAGMENT_OFFSETS, getFragmentOffsets());
@@ -470,8 +441,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getIcmpTypes() != null && !getIcmpTypes().isEmpty()) {
           retString += String.format(", %s=%s", PROP_ICMP_TYPES, getIcmpTypes());
         }
-        if (!_ingressNodeRegex.equals(DEFAULT_INGRESS_NODE_REGEX)) {
-          retString += String.format(", %s=%s", PROP_INGRESS_NODE_REGEX, _ingressNodeRegex);
+        if (!getIngressNodeRegex().equals(DEFAULT_INGRESS_NODE_REGEX)) {
+          retString += String.format(", %s=%s", PROP_INGRESS_NODE_REGEX, getIngressNodeRegex());
         }
         if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_IP_PROTOCOLS, getIpProtocols());
@@ -497,8 +468,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getSrcOrDstProtocols() != null && !getSrcOrDstProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_SRC_OR_DST_PROTOCOLS, getSrcOrDstProtocols());
         }
-        if (_transitNodes != null && !_transitNodes.isEmpty()) {
-          retString += String.format(", %s=%s", PROP_TRANSIT_NODES, _transitNodes);
+        if (!getTransitNodes().equals(DEFAULT_TRANSIT_NODES)) {
+          retString += String.format(", %s=%s", PROP_TRANSIT_NODES, getTransitNodes());
         }
         if (getNotDstIps() != null && !getNotDstIps().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_DST_IPS, getNotDstIps());
@@ -509,8 +480,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotDstProtocols() != null && !getNotDstProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_DST_PROTOCOLS, getNotDstProtocols());
         }
-        if (!_notFinalNodeRegex.equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
-          retString += String.format(", %s=%s", PROP_NOT_FINAL_NODE_REGEX, _notFinalNodeRegex);
+        if (!getNotFinalNodeRegex().equals(DEFAULT_NOT_FINAL_NODE_REGEX)) {
+          retString += String.format(", %s=%s", PROP_NOT_FINAL_NODE_REGEX, getNotFinalNodeRegex());
         }
         if (getNotFragmentOffsets() != null && !getNotFragmentOffsets().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_FRAGMENT_OFFSETS, getNotFragmentOffsets());
@@ -521,8 +492,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotIcmpTypes() != null && !getNotIcmpTypes().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_ICMP_TYPES, getNotIcmpTypes());
         }
-        if (!_notIngressNodeRegex.equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
-          retString += String.format(", %s=%s", PROP_NOT_INGRESS_NODE_REGEX, _notIngressNodeRegex);
+        if (!getNotIngressNodeRegex().equals(DEFAULT_NOT_INGRESS_NODE_REGEX)) {
+          retString +=
+              String.format(", %s=%s", PROP_NOT_INGRESS_NODE_REGEX, getNotIngressNodeRegex());
         }
         if (getNotIpProtocols() != null && !getNotIpProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_IP_PROTOCOLS, getNotIpProtocols());
@@ -539,8 +511,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getNotSrcProtocols() != null && !getNotSrcProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_NOT_SRC_PROTOCOLS, getNotSrcProtocols());
         }
-        if (_notTransitNodes != null && !_notTransitNodes.isEmpty()) {
-          retString += String.format(", %s=%s", PROP_NOT_TRANSIT_NODES, _notTransitNodes);
+        if (!getNotTransitNodes().equals(DEFAULT_NOT_TRANSIT_NODES)) {
+          retString += String.format(", %s=%s", PROP_NOT_TRANSIT_NODES, getNotTransitNodes());
         }
         return retString;
       } catch (Exception e) {
@@ -561,130 +533,129 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     @JsonProperty(PROP_DST_IPS)
     public void setDstIps(SortedSet<IpWildcard> dstIps) {
-      _headerSpace.setDstIps(new TreeSet<>(dstIps));
+      _reachabilitySettings.getHeaderSpace().setDstIps(new TreeSet<>(dstIps));
     }
 
     @JsonProperty(PROP_DST_PORTS)
     public void setDstPorts(SortedSet<SubRange> dstPorts) {
-      _headerSpace.setDstPorts(new TreeSet<>(dstPorts));
+      _reachabilitySettings.getHeaderSpace().setDstPorts(new TreeSet<>(dstPorts));
     }
 
     @Override
     @JsonProperty(PROP_DST_PROTOCOLS)
     public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
-      _headerSpace.setDstProtocols(new TreeSet<>(dstProtocols));
+      _reachabilitySettings.getHeaderSpace().setDstProtocols(new TreeSet<>(dstProtocols));
     }
 
     @JsonProperty(PROP_FINAL_NODE_REGEX)
     public void setFinalNodeRegex(NodesSpecifier regex) {
-      _finalNodeRegex = regex;
+      _reachabilitySettings.setFinalNodes(regex);
     }
 
-    @JsonProperty(PROP_TRANSIT_NODES)
-    public void setTransitNodes(SortedSet<String> transitNodes) {
-      _transitNodes = transitNodes;
-    }
-
-    @JsonProperty(PROP_NOT_TRANSIT_NODES)
-    public void setNotTransitNodes(SortedSet<String> notTransitNodes) {
-      _notTransitNodes = notTransitNodes;
+    private void setHeaderSpace(HeaderSpace headerSpace) {
+      _reachabilitySettings.setHeaderSpace(headerSpace);
     }
 
     @JsonProperty(PROP_ICMP_CODES)
     public void setIcmpCodes(SortedSet<SubRange> icmpCodes) {
-      _headerSpace.setIcmpCodes(new TreeSet<>(icmpCodes));
+      _reachabilitySettings.getHeaderSpace().setIcmpCodes(new TreeSet<>(icmpCodes));
     }
 
     @JsonProperty(PROP_ICMP_TYPES)
     public void setIcmpTypes(SortedSet<SubRange> icmpTypes) {
-      _headerSpace.setIcmpTypes(new TreeSet<>(icmpTypes));
+      _reachabilitySettings.getHeaderSpace().setIcmpTypes(new TreeSet<>(icmpTypes));
     }
 
     @Override
     @JsonProperty(PROP_INGRESS_NODE_REGEX)
     public void setIngressNodeRegex(NodesSpecifier regex) {
-      _ingressNodeRegex = regex;
+      _reachabilitySettings.setIngressNodes(regex);
     }
 
     @JsonProperty(PROP_IP_PROTOCOLS)
     public void setIpProtocols(SortedSet<IpProtocol> ipProtocols) {
-      _headerSpace.setIpProtocols(ipProtocols);
+      _reachabilitySettings.getHeaderSpace().setIpProtocols(ipProtocols);
     }
 
     @JsonProperty(PROP_MAX_CHUNK_SIZE)
     public void setMaxChunkSize(int maxChunkSize) {
-      _maxChunkSize = maxChunkSize;
+      _reachabilitySettings.setMaxChunkSize(maxChunkSize);
     }
 
     @JsonProperty(PROP_NEGATE_HEADER)
     public void setNegateHeader(boolean negateHeader) {
-      _headerSpace.setNegate(negateHeader);
+      _reachabilitySettings.getHeaderSpace().setNegate(negateHeader);
     }
 
     @JsonProperty(PROP_NOT_DST_IPS)
     public void setNotDstIps(SortedSet<IpWildcard> notDstIps) {
-      _headerSpace.setNotDstIps(new TreeSet<>(notDstIps));
+      _reachabilitySettings.getHeaderSpace().setNotDstIps(new TreeSet<>(notDstIps));
     }
 
     @JsonProperty(PROP_NOT_DST_PORTS)
     public void setNotDstPorts(SortedSet<SubRange> notDstPorts) {
-      _headerSpace.setNotDstPorts(new TreeSet<>(notDstPorts));
+      _reachabilitySettings.getHeaderSpace().setNotDstPorts(new TreeSet<>(notDstPorts));
     }
 
     @Override
     @JsonProperty(PROP_NOT_DST_PROTOCOLS)
     public void setNotDstProtocols(SortedSet<Protocol> notDstProtocols) {
-      _headerSpace.setNotDstProtocols(new TreeSet<>(notDstProtocols));
+      _reachabilitySettings.getHeaderSpace().setNotDstProtocols(new TreeSet<>(notDstProtocols));
     }
 
     @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
     public void setNotFinalNodeRegex(NodesSpecifier notFinalNodeRegex) {
-      _notFinalNodeRegex = notFinalNodeRegex;
+      _reachabilitySettings.setNotFinalNodeRegex(notFinalNodeRegex);
     }
 
     @JsonProperty(PROP_NOT_ICMP_CODES)
     public void setNotIcmpCodes(SortedSet<SubRange> notIcmpCodes) {
-      _headerSpace.setNotIcmpCodes(new TreeSet<>(notIcmpCodes));
+      _reachabilitySettings.getHeaderSpace().setNotIcmpCodes(new TreeSet<>(notIcmpCodes));
     }
 
     @JsonProperty(PROP_NOT_ICMP_TYPES)
     public void setNotIcmpTypes(SortedSet<SubRange> notIcmpType) {
-      _headerSpace.setNotIcmpTypes(new TreeSet<>(notIcmpType));
+      _reachabilitySettings.getHeaderSpace().setNotIcmpTypes(new TreeSet<>(notIcmpType));
     }
 
     @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
     public void setNotIngressNodeRegex(NodesSpecifier notIngressNodeRegex) {
-      _notIngressNodeRegex = notIngressNodeRegex;
+      _reachabilitySettings.setNotIngressNodeRegex(notIngressNodeRegex);
     }
 
     @JsonProperty(PROP_NOT_IP_PROTOCOLS)
     public void setNotIpProtocols(SortedSet<IpProtocol> notIpProtocols) {
-      _headerSpace.setNotIpProtocols(notIpProtocols);
+      _reachabilitySettings.getHeaderSpace().setNotIpProtocols(notIpProtocols);
     }
 
     @JsonProperty(PROP_NOT_PACKET_LENGTHS)
     public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
-      _headerSpace.setNotPacketLengths(new TreeSet<>(notPacketLengths));
+      _reachabilitySettings.getHeaderSpace().setNotPacketLengths(new TreeSet<>(notPacketLengths));
     }
 
     @JsonProperty(PROP_NOT_SRC_IPS)
     public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
-      _headerSpace.setNotSrcIps(new TreeSet<>(notSrcIps));
+      _reachabilitySettings.getHeaderSpace().setNotSrcIps(new TreeSet<>(notSrcIps));
     }
 
     @JsonProperty(PROP_NOT_SRC_PORTS)
     public void setNotSrcPortRange(SortedSet<SubRange> notSrcPorts) {
-      _headerSpace.setNotSrcPorts(new TreeSet<>(notSrcPorts));
+      _reachabilitySettings.getHeaderSpace().setNotSrcPorts(new TreeSet<>(notSrcPorts));
     }
 
     @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
     public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
-      _headerSpace.setNotSrcProtocols(new TreeSet<>(notSrcProtocols));
+      _reachabilitySettings.getHeaderSpace().setNotSrcProtocols(new TreeSet<>(notSrcProtocols));
+    }
+
+    @JsonProperty(PROP_NOT_TRANSIT_NODES)
+    public void setNotTransitNodes(NodesSpecifier notTransitNodes) {
+      _reachabilitySettings.setNotTransitNodes(notTransitNodes);
     }
 
     @JsonProperty(PROP_PACKET_LENGTHS)
     public void setPacketLengths(SortedSet<SubRange> packetLengths) {
-      _headerSpace.setPacketLengths(new TreeSet<>(packetLengths));
+      _reachabilitySettings.getHeaderSpace().setPacketLengths(new TreeSet<>(packetLengths));
     }
 
     @JsonProperty(PROP_REACHABILITY_TYPE)
@@ -709,32 +680,37 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_IPS)
     public void setSrcIps(SortedSet<IpWildcard> srcIps) {
-      _headerSpace.setSrcIps(new TreeSet<>(srcIps));
+      _reachabilitySettings.getHeaderSpace().setSrcIps(new TreeSet<>(srcIps));
     }
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public void setSrcOrDstIps(SortedSet<IpWildcard> srcOrDstIps) {
-      _headerSpace.setSrcOrDstIps(new TreeSet<>(srcOrDstIps));
+      _reachabilitySettings.getHeaderSpace().setSrcOrDstIps(new TreeSet<>(srcOrDstIps));
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PORTS)
     public void setSrcOrDstPorts(SortedSet<SubRange> srcOrDstPorts) {
-      _headerSpace.setSrcOrDstPorts(new TreeSet<>(srcOrDstPorts));
+      _reachabilitySettings.getHeaderSpace().setSrcOrDstPorts(new TreeSet<>(srcOrDstPorts));
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
     public void setSrcOrDstProtocols(SortedSet<Protocol> srcOrDstProtocols) {
-      _headerSpace.setSrcOrDstProtocols(new TreeSet<>(srcOrDstProtocols));
+      _reachabilitySettings.getHeaderSpace().setSrcOrDstProtocols(new TreeSet<>(srcOrDstProtocols));
     }
 
     @JsonProperty(PROP_SRC_PORTS)
     public void setSrcPorts(SortedSet<SubRange> srcPorts) {
-      _headerSpace.setSrcPorts(new TreeSet<>(srcPorts));
+      _reachabilitySettings.getHeaderSpace().setSrcPorts(new TreeSet<>(srcPorts));
     }
 
     @JsonProperty(PROP_SRC_PROTOCOLS)
     public void setSrcProtocols(SortedSet<Protocol> srcProtocols) {
-      _headerSpace.setSrcProtocols(new TreeSet<>(srcProtocols));
+      _reachabilitySettings.getHeaderSpace().setSrcProtocols(new TreeSet<>(srcProtocols));
+    }
+
+    @JsonProperty(PROP_TRANSIT_NODES)
+    public void setTransitNodes(NodesSpecifier transitNodes) {
+      _reachabilitySettings.setTransitNodes(transitNodes);
     }
 
     @JsonProperty(PROP_USE_COMPRESSION)
