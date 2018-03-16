@@ -16,11 +16,14 @@ import java.io.IOException;
 
 public final class BatfishObjectMapper {
   private static final ObjectMapper MAPPER = baseMapper();
+
   private static final ObjectWriter WRITER = MAPPER.writer();
+
   private static final PrettyPrinter PRETTY_PRINTER = new PrettyPrinter();
 
   private static final ObjectWriter PRETTY_WRITER =
       baseMapper().enable(SerializationFeature.INDENT_OUTPUT).writer(PRETTY_PRINTER);
+
   private static final ObjectWriter VERBOSE_WRITER =
       baseMapper()
           .enable(SerializationFeature.INDENT_OUTPUT)
