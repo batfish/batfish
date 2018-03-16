@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import javax.annotation.Nonnull;
 
-public class IpAddressAclLine {
+public class AclIpSpaceLine {
 
   public static class Builder {
 
@@ -17,8 +17,8 @@ public class IpAddressAclLine {
       _matchComplement = false;
     }
 
-    public IpAddressAclLine build() {
-      return new IpAddressAclLine(_ipSpace, _action, _matchComplement);
+    public AclIpSpaceLine build() {
+      return new AclIpSpaceLine(_ipSpace, _action, _matchComplement);
     }
 
     public Builder setAction(LineAction action) {
@@ -37,8 +37,8 @@ public class IpAddressAclLine {
     }
   }
 
-  public static final IpAddressAclLine PERMIT_ALL =
-      IpAddressAclLine.builder().setIpSpace(UniverseIpSpace.INSTANCE).build();
+  public static final AclIpSpaceLine PERMIT_ALL =
+      AclIpSpaceLine.builder().setIpSpace(UniverseIpSpace.INSTANCE).build();
 
   public static Builder builder() {
     return new Builder();
@@ -50,7 +50,7 @@ public class IpAddressAclLine {
 
   private final boolean _matchComplement;
 
-  private IpAddressAclLine(
+  private AclIpSpaceLine(
       @Nonnull IpSpace ipSpace, @Nonnull LineAction action, boolean matchComplement) {
     _ipSpace = ipSpace;
     _action = action;

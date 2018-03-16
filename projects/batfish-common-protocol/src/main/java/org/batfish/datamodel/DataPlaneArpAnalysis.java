@@ -198,9 +198,9 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                             .anyMatch(
                                 receiverReplies -> receiverReplies.contains(arpIpChoice.getIp()));
                     if (someoneWillReply) {
-                      return ImmutableSet.of(IpAddressAcl.PERMIT_ALL);
+                      return ImmutableSet.of(AclIpSpace.PERMIT_ALL);
                     } else {
-                      return ImmutableSet.of(IpAddressAcl.DENY_ALL);
+                      return ImmutableSet.of(AclIpSpace.DENY_ALL);
                     }
                   }));
     }
@@ -213,16 +213,16 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
             ImmutableMap.toImmutableMap(
                 Function.identity(),
                 edge -> {
-                  ImmutableList.Builder<IpAddressAclLine> lines = ImmutableList.builder();
+                  ImmutableList.Builder<AclIpSpaceLine> lines = ImmutableList.builder();
                   IpSpace dstIp = _arpTrueEdgeDestIp.get(edge);
                   if (dstIp != null) {
-                    lines.add(IpAddressAclLine.builder().setIpSpace(dstIp).build());
+                    lines.add(AclIpSpaceLine.builder().setIpSpace(dstIp).build());
                   }
                   IpSpace nextHopIp = _arpTrueEdgeNextHopIp.get(edge);
                   if (nextHopIp != null) {
-                    lines.add(IpAddressAclLine.builder().setIpSpace(nextHopIp).build());
+                    lines.add(AclIpSpaceLine.builder().setIpSpace(nextHopIp).build());
                   }
-                  return IpAddressAcl.builder().setLines(lines.build()).build();
+                  return AclIpSpace.builder().setLines(lines.build()).build();
                 }));
   }
 
@@ -246,20 +246,20 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                   String recvNode = edge.getNode2();
                   String recvInterface = edge.getInt2();
                   IpSpace recvReplies = _arpReplies.get(recvNode).get(recvInterface);
-                  return IpAddressAcl.builder()
+                  return AclIpSpace.builder()
                       .setLines(
                           ImmutableList.of(
-                              IpAddressAclLine.builder()
+                              AclIpSpaceLine.builder()
                                   .setIpSpace(dstIpMatchesSomeRoutePrefix)
                                   .setMatchComplement(true)
                                   .setAction(LineAction.REJECT)
                                   .build(),
-                              IpAddressAclLine.builder()
+                              AclIpSpaceLine.builder()
                                   .setIpSpace(recvReplies)
                                   .setMatchComplement(true)
                                   .setAction(LineAction.REJECT)
                                   .build(),
-                              IpAddressAclLine.PERMIT_ALL))
+                              AclIpSpaceLine.PERMIT_ALL))
                       .build();
                 }));
   }
@@ -324,23 +324,23 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private IpSpace computeInterfaceArpReplies(
       Interface iface, IpSpace routableIpsForThisVrf, IpSpace ipsRoutedThroughInterface) {
-    ImmutableList.Builder<IpAddressAclLine> lines = ImmutableList.builder();
+    ImmutableList.Builder<AclIpSpaceLine> lines = ImmutableList.builder();
     IpSpace ipsAssignedToThisInterface = computeIpsAssignedToThisInterface(iface);
     /* Accept IPs assigned to this interface */
-    lines.add(IpAddressAclLine.builder().setIpSpace(ipsAssignedToThisInterface).build());
+    lines.add(AclIpSpaceLine.builder().setIpSpace(ipsAssignedToThisInterface).build());
 
     if (iface.getProxyArp()) {
       /* Reject IPs routed through this interface */
       lines.add(
-          IpAddressAclLine.builder()
+          AclIpSpaceLine.builder()
               .setIpSpace(ipsRoutedThroughInterface)
               .setAction(LineAction.REJECT)
               .build());
 
       /* Accept all other routable IPs */
-      lines.add(IpAddressAclLine.builder().setIpSpace(routableIpsForThisVrf).build());
+      lines.add(AclIpSpaceLine.builder().setIpSpace(routableIpsForThisVrf).build());
     }
-    return IpAddressAcl.builder().setLines(lines.build()).build();
+    return AclIpSpace.builder().setLines(lines.build()).build();
   }
 
   private IpSpace computeIpsAssignedToThisInterface(Interface iface) {
@@ -409,7 +409,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                             ImmutableMap.toImmutableMap(
                                                 Entry::getKey /* outInterface */,
                                                 neighborUnreachableByOutInterfaceEntry ->
-                                                    IpAddressAcl.builder()
+                                                    AclIpSpace.builder()
                                                         .setLines(
                                                             neighborUnreachableByOutInterfaceEntry
                                                                 .getValue()
@@ -417,7 +417,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                                                 .stream()
                                                                 .map(
                                                                     ipSpace ->
-                                                                        IpAddressAclLine.builder()
+                                                                        AclIpSpaceLine.builder()
                                                                             .setIpSpace(ipSpace)
                                                                             .build())
                                                                 .collect(
@@ -465,14 +465,14 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                                   ribs.get(hostname).get(vrf);
                                               IpSpace ipsRoutedOutInterface =
                                                   computeRouteMatchConditions(routes, rib);
-                                              return IpAddressAcl.builder()
+                                              return AclIpSpace.builder()
                                                   .setLines(
                                                       ImmutableList.of(
-                                                          IpAddressAclLine.builder()
+                                                          AclIpSpaceLine.builder()
                                                               .setIpSpace(someoneReplies)
                                                               .setAction(LineAction.REJECT)
                                                               .build(),
-                                                          IpAddressAclLine.builder()
+                                                          AclIpSpaceLine.builder()
                                                               .setIpSpace(ipsRoutedOutInterface)
                                                               .build()))
                                                   .build();
@@ -614,7 +614,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   private IpSpace computeRouteMatchConditions(
       Set<AbstractRoute> routes, GenericRib<AbstractRoute> rib) {
     Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();
-    return IpAddressAcl.builder()
+    return AclIpSpace.builder()
         .setLines(
             routes
                 .stream()
@@ -622,7 +622,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 .collect(ImmutableSet.toImmutableSet())
                 .stream()
                 .map(matchingIps::get)
-                .map(ipSpace -> IpAddressAclLine.builder().setIpSpace(ipSpace).build())
+                .map(ipSpace -> AclIpSpaceLine.builder().setIpSpace(ipSpace).build())
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
@@ -807,7 +807,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   private Map<String, Map<String, IpSpace>> computeSomeoneReplies(Topology topology) {
-    Map<String, Map<String, ImmutableList.Builder<IpAddressAclLine>>> someoneRepliesByNode =
+    Map<String, Map<String, ImmutableList.Builder<AclIpSpaceLine>>> someoneRepliesByNode =
         new HashMap<>();
     topology
         .getEdges()
@@ -817,7 +817,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                     .computeIfAbsent(edge.getNode1(), n -> new HashMap<>())
                     .computeIfAbsent(edge.getInt1(), i -> ImmutableList.builder())
                     .add(
-                        IpAddressAclLine.builder()
+                        AclIpSpaceLine.builder()
                             .setIpSpace(_arpReplies.get(edge.getNode2()).get(edge.getInt2()))
                             .build()));
     return someoneRepliesByNode
@@ -835,7 +835,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                             ImmutableMap.toImmutableMap(
                                 Entry::getKey /* interface */,
                                 someoneRepliesByInterfaceEntry ->
-                                    IpAddressAcl.builder()
+                                    AclIpSpace.builder()
                                         .setLines(someoneRepliesByInterfaceEntry.getValue().build())
                                         .build()))));
   }

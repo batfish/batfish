@@ -1,8 +1,8 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.datamodel.IpAddressAcl;
-import org.batfish.datamodel.IpAddressAclLine;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -34,20 +34,20 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
     return (BooleanExpr) o;
   }
 
-  private BooleanExpr matchIpAddressAclLineSpace(IpAddressAclLine line) {
+  private BooleanExpr matchAclIpSpaceLineSpace(AclIpSpaceLine line) {
     BooleanExpr matchSpace = line.getIpSpace().accept(this);
     return line.getMatchComplement() ? new NotExpr(matchSpace) : matchSpace;
   }
 
   @Override
-  public BooleanExpr visitIpAddressAcl(IpAddressAcl ipAddressAcl) {
+  public BooleanExpr visitAclIpSpace(AclIpSpace aclIpSpace) {
     ImmutableList.Builder<BooleanExpr> lineSpaceMatchConditions = ImmutableList.builder();
     ImmutableList.Builder<BooleanExpr> dontMatchPrevious = ImmutableList.builder();
-    ipAddressAcl
+    aclIpSpace
         .getLines()
         .forEach(
             line -> {
-              BooleanExpr matchCurrentInIsolation = matchIpAddressAclLineSpace(line);
+              BooleanExpr matchCurrentInIsolation = matchAclIpSpaceLineSpace(line);
               if (line.getAction() == LineAction.ACCEPT) {
                 lineSpaceMatchConditions.add(
                     new AndExpr(

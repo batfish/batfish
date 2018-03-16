@@ -9,51 +9,51 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
  * denied if it is not.
  */
-public class IpAddressAcl implements IpSpace {
+public class AclIpSpace implements IpSpace {
 
   public static class Builder {
 
-    private List<IpAddressAclLine> _lines;
+    private List<AclIpSpaceLine> _lines;
 
     private Builder() {
       _lines = ImmutableList.of();
     }
 
-    public IpAddressAcl build() {
-      return new IpAddressAcl(_lines);
+    public AclIpSpace build() {
+      return new AclIpSpace(_lines);
     }
 
-    public Builder setLines(List<IpAddressAclLine> lines) {
+    public Builder setLines(List<AclIpSpaceLine> lines) {
       _lines = lines;
       return this;
     }
   }
 
-  public static final IpAddressAcl DENY_ALL = IpAddressAcl.builder().build();
+  public static final AclIpSpace DENY_ALL = AclIpSpace.builder().build();
 
-  public static final IpAddressAcl PERMIT_ALL =
-      IpAddressAcl.builder().setLines(ImmutableList.of(IpAddressAclLine.PERMIT_ALL)).build();
+  public static final AclIpSpace PERMIT_ALL =
+      AclIpSpace.builder().setLines(ImmutableList.of(AclIpSpaceLine.PERMIT_ALL)).build();
 
   public static Builder builder() {
     return new Builder();
   }
 
-  private final List<IpAddressAclLine> _lines;
+  private final List<AclIpSpaceLine> _lines;
 
-  private IpAddressAcl(List<IpAddressAclLine> lines) {
+  private AclIpSpace(List<AclIpSpaceLine> lines) {
     _lines = lines;
   }
 
   @Override
   public <R> R accept(GenericIpSpaceVisitor<R> ipSpaceVisitor) {
-    return ipSpaceVisitor.visitIpAddressAcl(this);
+    return ipSpaceVisitor.visitAclIpSpace(this);
   }
 
   private LineAction action(Ip ip) {
     return _lines
         .stream()
         .filter(line -> line.getIpSpace().contains(ip) ^ line.getMatchComplement())
-        .map(IpAddressAclLine::getAction)
+        .map(AclIpSpaceLine::getAction)
         .findFirst()
         .orElse(LineAction.REJECT);
   }
@@ -63,7 +63,7 @@ public class IpAddressAcl implements IpSpace {
     return action(ip) == LineAction.ACCEPT;
   }
 
-  public List<IpAddressAclLine> getLines() {
+  public List<AclIpSpaceLine> getLines() {
     return _lines;
   }
 }
