@@ -1,7 +1,6 @@
 package org.batfish.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.BiFunction;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -55,10 +54,9 @@ public abstract class Answerer {
     _batfish.pushDeltaEnvironment();
     AnswerElement after = create(_question, _batfish).answer();
     _batfish.popEnvironment();
-    ObjectMapper mapper = new BatfishObjectMapper();
     try {
-      String beforeJsonStr = mapper.writeValueAsString(before);
-      String afterJsonStr = mapper.writeValueAsString(after);
+      String beforeJsonStr = BatfishObjectMapper.writePrettyString(before);
+      String afterJsonStr = BatfishObjectMapper.writePrettyString(after);
       JSONObject beforeJson = new JSONObject(beforeJsonStr);
       JSONObject afterJson = new JSONObject(afterJsonStr);
       JsonDiff diff = new JsonDiff(beforeJson, afterJson);

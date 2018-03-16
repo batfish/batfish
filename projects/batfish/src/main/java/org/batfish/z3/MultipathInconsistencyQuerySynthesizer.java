@@ -10,6 +10,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.Query;
@@ -59,7 +60,8 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     addOriginateRules(rules);
     rules.add(
-        new BasicRuleStatement(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE));
+        new BasicRuleStatement(
+            SaneExpr.INSTANCE, ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE));
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
