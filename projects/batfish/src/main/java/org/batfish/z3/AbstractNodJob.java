@@ -46,8 +46,8 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
    * Try to find a model for each OriginateVrf. If an OriginateVrf does not have an entry in the
    * Map, then the query is unsat when originating from there.
    */
-  protected Map<OriginateVrf, Map<String, Long>> getOriginateVrfConstraints(Context ctx,
-      SmtInput smtInput) {
+  protected Map<OriginateVrf, Map<String, Long>> getOriginateVrfConstraints(
+      Context ctx, SmtInput smtInput) {
     Solver solver = ctx.mkSolver();
     solver.add(smtInput._expr);
 
