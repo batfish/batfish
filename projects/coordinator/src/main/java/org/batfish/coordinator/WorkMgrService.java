@@ -1628,7 +1628,6 @@ public class WorkMgrService {
    * @param testrigName The name of the testrig about which to ask the question
    * @param qName The name of the question
    * @param fileStream The stream from which the question is read
-   * @param paramFileStream The stream from which the parameters are read
    * @return TODO: document JSON response
    */
   @POST
@@ -1641,8 +1640,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_QUESTION_NAME) String qName,
-      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream,
-      @FormDataParam(CoordConsts.SVC_KEY_FILE2) InputStream paramFileStream) {
+      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
     try {
       _logger.infof("WMS:uploadQuestion %s %s %s/%s\n", apiKey, containerName, testrigName, qName);
 
@@ -1655,7 +1653,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      Main.getWorkMgr().uploadQuestion(containerName, qName, fileStream, paramFileStream);
+      Main.getWorkMgr().uploadQuestion(containerName, qName, fileStream);
 
       return successResponse(new JSONObject().put("result", "successfully uploaded question"));
 
