@@ -64,18 +64,16 @@ public class NodJobTest {
   private OriginateVrf _originateVrf;
 
   private NodJob getNodJob(HeaderSpace headerSpace) {
-    ReachabilityQuerySynthesizer querySynthesizer =
-        new ReachabilityQuerySynthesizer(
-            ImmutableSet.of(ForwardingAction.ACCEPT),
-            headerSpace,
-            // finalNodes
-            ImmutableSet.of(_dstNode.getHostname()),
-            // ingressNodeVrfs
-            ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())),
-            // transitNodes
-            ImmutableSet.of(),
-            // notTransitNodes
-            ImmutableSet.of());
+    StandardReachabilityQuerySynthesizer querySynthesizer =
+        StandardReachabilityQuerySynthesizer.builder()
+            .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+            .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
+            .setHeaderSpace(headerSpace)
+            .setIngressNodeVrfs(
+                ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())))
+            .setTransitNodes(ImmutableSet.of())
+            .setNonTransitNodes(ImmutableSet.of())
+            .build();
     SortedSet<Pair<String, String>> ingressNodes =
         ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
     return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag");
