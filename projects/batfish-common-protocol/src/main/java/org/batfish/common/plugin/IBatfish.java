@@ -18,7 +18,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
@@ -35,8 +34,8 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
@@ -123,13 +122,13 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex);
+  AnswerElement multipath(ReachabilitySettings reachabilitySettings, boolean useCompression);
 
   AtomicInteger newBatch(String description, int jobs);
 
   AssertionAst parseAssertion(String text);
 
-  AnswerElement pathDiff(HeaderSpace headerSpace);
+  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression);
 
   void popEnvironment();
 
@@ -144,7 +143,8 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex);
+  AnswerElement reducedReachability(
+      ReachabilitySettings reachabilitySettings, boolean useCompression);
 
   void registerAnswerer(
       String questionName,
@@ -188,16 +188,9 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
   AnswerElement standard(
-      HeaderSpace headerSpace,
+      ReachabilitySettings reachabilitySettings,
       Set<ForwardingAction> actions,
-      NodesSpecifier ingressNodeRegex,
-      NodesSpecifier notIngressNodeRegex,
-      NodesSpecifier finalNodeRegex,
-      NodesSpecifier notFinalNodeRegex,
-      Set<String> transitNodes,
-      Set<String> notTransitNodes,
-      boolean useCompression,
-      int maxChunkSize);
+      boolean useCompression);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }
