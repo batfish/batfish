@@ -2,9 +2,8 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.Collections;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -112,17 +111,20 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
    */
   public static class ReachabilityQuestion extends Question implements IReachabilityQuestion {
 
+    private static final SortedSet<ForwardingAction> DEFAULT_ACTIONS =
+        ImmutableSortedSet.of(ForwardingAction.ACCEPT);
+
     private static final NodesSpecifier DEFAULT_FINAL_NODE_REGEX = NodesSpecifier.ALL;
 
     private static final NodesSpecifier DEFAULT_INGRESS_NODE_REGEX = NodesSpecifier.ALL;
 
     private static final int DEFAULT_MAX_CHUNK_SIZE = 1;
 
+    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = NodesSpecifier.NONE;
+
     private static final NodesSpecifier DEFAULT_NOT_FINAL_NODE_REGEX = NodesSpecifier.NONE;
 
     private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
-
-    private static final NodesSpecifier DEFAULT_NON_TRANSIT_NODES = NodesSpecifier.NONE;
 
     private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
 
@@ -152,6 +154,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NEGATE_HEADER = "negateHeader";
 
+    private static final String PROP_NON_TRANSIT_NODES = "notTransitNodes";
+
     private static final String PROP_NOT_DST_IPS = "notDstIps";
 
     private static final String PROP_NOT_DST_PORTS = "notDstPorts";
@@ -177,8 +181,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
 
     private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
-
-    private static final String PROP_NON_TRANSIT_NODES = "notTransitNodes";
 
     private static final String PROP_PACKET_LENGTHS = "packetLengths";
 
@@ -210,7 +212,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     public ReachabilityQuestion() {
       _reachabilitySettings = ReachabilitySettings.builder();
-      _actions = new TreeSet<>(Collections.singleton(ForwardingAction.ACCEPT));
+      _actions = DEFAULT_ACTIONS;
       setFinalNodeRegex(DEFAULT_FINAL_NODE_REGEX);
       setHeaderSpace(new HeaderSpace());
       setIngressNodeRegex(DEFAULT_INGRESS_NODE_REGEX);
@@ -293,6 +295,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return _reachabilitySettings.getHeaderSpace().getNegate();
     }
 
+    @JsonProperty(PROP_NON_TRANSIT_NODES)
+    public NodesSpecifier getNonTransitNodes() {
+      return _reachabilitySettings.getNonTransitNodes();
+    }
+
     @JsonProperty(PROP_NOT_DST_IPS)
     public SortedSet<IpWildcard> getNotDstIps() {
       return _reachabilitySettings.getHeaderSpace().getNotDstIps();
@@ -356,11 +363,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
     public SortedSet<Protocol> getNotSrcProtocols() {
       return _reachabilitySettings.getHeaderSpace().getNotSrcProtocols();
-    }
-
-    @JsonProperty(PROP_NON_TRANSIT_NODES)
-    public NodesSpecifier getNonTransitNodes() {
-      return _reachabilitySettings.getNonTransitNodes();
     }
 
     @JsonProperty(PROP_PACKET_LENGTHS)
@@ -531,24 +533,26 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     @JsonProperty(PROP_ACTIONS)
     public void setActions(SortedSet<ForwardingAction> actionSet) {
-      _actions = new TreeSet<>(actionSet);
+      _actions = ImmutableSortedSet.copyOf(actionSet);
     }
 
     @Override
     @JsonProperty(PROP_DST_IPS)
     public void setDstIps(SortedSet<IpWildcard> dstIps) {
-      _reachabilitySettings.getHeaderSpace().setDstIps(new TreeSet<>(dstIps));
+      _reachabilitySettings.getHeaderSpace().setDstIps(ImmutableSortedSet.copyOf(dstIps));
     }
 
     @JsonProperty(PROP_DST_PORTS)
     public void setDstPorts(SortedSet<SubRange> dstPorts) {
-      _reachabilitySettings.getHeaderSpace().setDstPorts(new TreeSet<>(dstPorts));
+      _reachabilitySettings.getHeaderSpace().setDstPorts(ImmutableSortedSet.copyOf(dstPorts));
     }
 
     @Override
     @JsonProperty(PROP_DST_PROTOCOLS)
     public void setDstProtocols(SortedSet<Protocol> dstProtocols) {
-      _reachabilitySettings.getHeaderSpace().setDstProtocols(new TreeSet<>(dstProtocols));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setDstProtocols(ImmutableSortedSet.copyOf(dstProtocols));
     }
 
     @JsonProperty(PROP_FINAL_NODE_REGEX)
@@ -562,12 +566,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_ICMP_CODES)
     public void setIcmpCodes(SortedSet<SubRange> icmpCodes) {
-      _reachabilitySettings.getHeaderSpace().setIcmpCodes(new TreeSet<>(icmpCodes));
+      _reachabilitySettings.getHeaderSpace().setIcmpCodes(ImmutableSortedSet.copyOf(icmpCodes));
     }
 
     @JsonProperty(PROP_ICMP_TYPES)
     public void setIcmpTypes(SortedSet<SubRange> icmpTypes) {
-      _reachabilitySettings.getHeaderSpace().setIcmpTypes(new TreeSet<>(icmpTypes));
+      _reachabilitySettings.getHeaderSpace().setIcmpTypes(ImmutableSortedSet.copyOf(icmpTypes));
     }
 
     @Override
@@ -591,20 +595,27 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _reachabilitySettings.getHeaderSpace().setNegate(negateHeader);
     }
 
+    @JsonProperty(PROP_NON_TRANSIT_NODES)
+    public void setNonTransitNodes(NodesSpecifier nonTransitNodes) {
+      _reachabilitySettings.setNonTransitNodes(nonTransitNodes);
+    }
+
     @JsonProperty(PROP_NOT_DST_IPS)
     public void setNotDstIps(SortedSet<IpWildcard> notDstIps) {
-      _reachabilitySettings.getHeaderSpace().setNotDstIps(new TreeSet<>(notDstIps));
+      _reachabilitySettings.getHeaderSpace().setNotDstIps(ImmutableSortedSet.copyOf(notDstIps));
     }
 
     @JsonProperty(PROP_NOT_DST_PORTS)
     public void setNotDstPorts(SortedSet<SubRange> notDstPorts) {
-      _reachabilitySettings.getHeaderSpace().setNotDstPorts(new TreeSet<>(notDstPorts));
+      _reachabilitySettings.getHeaderSpace().setNotDstPorts(ImmutableSortedSet.copyOf(notDstPorts));
     }
 
     @Override
     @JsonProperty(PROP_NOT_DST_PROTOCOLS)
     public void setNotDstProtocols(SortedSet<Protocol> notDstProtocols) {
-      _reachabilitySettings.getHeaderSpace().setNotDstProtocols(new TreeSet<>(notDstProtocols));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setNotDstProtocols(ImmutableSortedSet.copyOf(notDstProtocols));
     }
 
     @JsonProperty(PROP_NOT_FINAL_NODE_REGEX)
@@ -614,12 +625,16 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_ICMP_CODES)
     public void setNotIcmpCodes(SortedSet<SubRange> notIcmpCodes) {
-      _reachabilitySettings.getHeaderSpace().setNotIcmpCodes(new TreeSet<>(notIcmpCodes));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setNotIcmpCodes(ImmutableSortedSet.copyOf(notIcmpCodes));
     }
 
     @JsonProperty(PROP_NOT_ICMP_TYPES)
     public void setNotIcmpTypes(SortedSet<SubRange> notIcmpType) {
-      _reachabilitySettings.getHeaderSpace().setNotIcmpTypes(new TreeSet<>(notIcmpType));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setNotIcmpTypes(ImmutableSortedSet.copyOf(notIcmpType));
     }
 
     @JsonProperty(PROP_NOT_INGRESS_NODE_REGEX)
@@ -634,32 +649,33 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_PACKET_LENGTHS)
     public void setNotPacketLengths(SortedSet<SubRange> notPacketLengths) {
-      _reachabilitySettings.getHeaderSpace().setNotPacketLengths(new TreeSet<>(notPacketLengths));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setNotPacketLengths(ImmutableSortedSet.copyOf(notPacketLengths));
     }
 
     @JsonProperty(PROP_NOT_SRC_IPS)
     public void setNotSrcIps(SortedSet<IpWildcard> notSrcIps) {
-      _reachabilitySettings.getHeaderSpace().setNotSrcIps(new TreeSet<>(notSrcIps));
+      _reachabilitySettings.getHeaderSpace().setNotSrcIps(ImmutableSortedSet.copyOf(notSrcIps));
     }
 
     @JsonProperty(PROP_NOT_SRC_PORTS)
     public void setNotSrcPortRange(SortedSet<SubRange> notSrcPorts) {
-      _reachabilitySettings.getHeaderSpace().setNotSrcPorts(new TreeSet<>(notSrcPorts));
+      _reachabilitySettings.getHeaderSpace().setNotSrcPorts(ImmutableSortedSet.copyOf(notSrcPorts));
     }
 
     @JsonProperty(PROP_NOT_SRC_PROTOCOLS)
     public void setNotSrcProtocols(SortedSet<Protocol> notSrcProtocols) {
-      _reachabilitySettings.getHeaderSpace().setNotSrcProtocols(new TreeSet<>(notSrcProtocols));
-    }
-
-    @JsonProperty(PROP_NON_TRANSIT_NODES)
-    public void setNonTransitNodes(NodesSpecifier nonTransitNodes) {
-      _reachabilitySettings.setNonTransitNodes(nonTransitNodes);
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setNotSrcProtocols(ImmutableSortedSet.copyOf(notSrcProtocols));
     }
 
     @JsonProperty(PROP_PACKET_LENGTHS)
     public void setPacketLengths(SortedSet<SubRange> packetLengths) {
-      _reachabilitySettings.getHeaderSpace().setPacketLengths(new TreeSet<>(packetLengths));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setPacketLengths(ImmutableSortedSet.copyOf(packetLengths));
     }
 
     @JsonProperty(PROP_REACHABILITY_TYPE)
@@ -684,32 +700,38 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_IPS)
     public void setSrcIps(SortedSet<IpWildcard> srcIps) {
-      _reachabilitySettings.getHeaderSpace().setSrcIps(new TreeSet<>(srcIps));
+      _reachabilitySettings.getHeaderSpace().setSrcIps(ImmutableSortedSet.copyOf(srcIps));
     }
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public void setSrcOrDstIps(SortedSet<IpWildcard> srcOrDstIps) {
-      _reachabilitySettings.getHeaderSpace().setSrcOrDstIps(new TreeSet<>(srcOrDstIps));
+      _reachabilitySettings.getHeaderSpace().setSrcOrDstIps(ImmutableSortedSet.copyOf(srcOrDstIps));
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PORTS)
     public void setSrcOrDstPorts(SortedSet<SubRange> srcOrDstPorts) {
-      _reachabilitySettings.getHeaderSpace().setSrcOrDstPorts(new TreeSet<>(srcOrDstPorts));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setSrcOrDstPorts(ImmutableSortedSet.copyOf(srcOrDstPorts));
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PROTOCOLS)
     public void setSrcOrDstProtocols(SortedSet<Protocol> srcOrDstProtocols) {
-      _reachabilitySettings.getHeaderSpace().setSrcOrDstProtocols(new TreeSet<>(srcOrDstProtocols));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setSrcOrDstProtocols(ImmutableSortedSet.copyOf(srcOrDstProtocols));
     }
 
     @JsonProperty(PROP_SRC_PORTS)
     public void setSrcPorts(SortedSet<SubRange> srcPorts) {
-      _reachabilitySettings.getHeaderSpace().setSrcPorts(new TreeSet<>(srcPorts));
+      _reachabilitySettings.getHeaderSpace().setSrcPorts(ImmutableSortedSet.copyOf(srcPorts));
     }
 
     @JsonProperty(PROP_SRC_PROTOCOLS)
     public void setSrcProtocols(SortedSet<Protocol> srcProtocols) {
-      _reachabilitySettings.getHeaderSpace().setSrcProtocols(new TreeSet<>(srcProtocols));
+      _reachabilitySettings
+          .getHeaderSpace()
+          .setSrcProtocols(ImmutableSortedSet.copyOf(srcProtocols));
     }
 
     @JsonProperty(PROP_TRANSIT_NODES)
