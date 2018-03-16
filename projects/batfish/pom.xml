@@ -1,5 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -25,8 +26,10 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
-                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14</ignoredUnusedDeclaredDependency>
-                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service</ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
+                  </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -61,7 +64,8 @@
             <configuration>
               <includes>**/CiscoLexer.g4,**/CiscoParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/cisco</libDirectory>
-              <statusDirectory>${project.build.directory}/maven-status/antlr4-cisco</statusDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-cisco
+              </statusDirectory>
             </configuration>
           </execution>
           <execution>
@@ -70,9 +74,11 @@
               <goal>antlr4</goal>
             </goals>
             <configuration>
-               <includes>**/FlatJuniperLexer.g4,**/FlatJuniperParser.g4</includes>
-              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper</libDirectory>
-              <statusDirectory>${project.build.directory}/maven-status/antlr4-flatjuniper</statusDirectory>
+              <includes>**/FlatJuniperLexer.g4,**/FlatJuniperParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatjuniper
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-flatjuniper
+              </statusDirectory>
             </configuration>
           </execution>
           <execution>
@@ -83,7 +89,8 @@
             <configuration>
               <includes>**/FlatVyosLexer.g4,**/FlatVyosParser.g4</includes>
               <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/flatvyos</libDirectory>
-              <statusDirectory>${project.build.directory}/maven-status/antlr4-flatvyos</statusDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-flatvyos
+              </statusDirectory>
             </configuration>
           </execution>
           <execution>
@@ -118,7 +125,9 @@
         <executions>
           <execution>
             <id>check</id>
-            <goals><goal>check</goal></goals>
+            <goals>
+              <goal>check</goal>
+            </goals>
             <configuration>
               <failOnViolation>true</failOnViolation>
             </configuration>
@@ -126,7 +135,9 @@
 
           <execution>
             <id>cpd-check</id>
-            <goals><goal>cpd-check</goal></goals>
+            <goals>
+              <goal>cpd-check</goal>
+            </goals>
             <configuration>
               <failOnViolation>false</failOnViolation>
             </configuration>
@@ -251,6 +262,11 @@
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jettison</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lz4</groupId>
+      <artifactId>lz4-java</artifactId>
     </dependency>
 
     <!-- Runtime dependencies to add logging. -->

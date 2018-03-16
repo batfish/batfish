@@ -155,20 +155,18 @@ public class NodJobChunkingTest {
   }
 
   private NodJob getNodJob() {
-    ReachabilityQuerySynthesizer querySynthesizer =
-        new ReachabilityQuerySynthesizer(
-            ImmutableSet.of(ForwardingAction.ACCEPT),
-            new HeaderSpace(),
-            // finalNodes
-            ImmutableSet.of(_dstNode.getHostname()),
-            // ingressNodeVrfs
-            ImmutableMap.of(
-                _srcNode1.getHostname(), ImmutableSet.of(_srcVrf1.getName()),
-                _srcNode2.getHostname(), ImmutableSet.of(_srcVrf2.getName())),
-            // transitNodes
-            ImmutableSet.of(),
-            // notTransitNodes
-            ImmutableSet.of());
+    StandardReachabilityQuerySynthesizer querySynthesizer =
+        StandardReachabilityQuerySynthesizer.builder()
+            .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+            .setHeaderSpace(new HeaderSpace())
+            .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
+            .setIngressNodeVrfs(
+                ImmutableMap.of(
+                    _srcNode1.getHostname(), ImmutableSet.of(_srcVrf1.getName()),
+                    _srcNode2.getHostname(), ImmutableSet.of(_srcVrf2.getName())))
+            .setTransitNodes(ImmutableSet.of())
+            .setNonTransitNodes(ImmutableSet.of())
+            .build();
     SortedSet<Pair<String, String>> ingressNodes =
         ImmutableSortedSet.of(
             new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),

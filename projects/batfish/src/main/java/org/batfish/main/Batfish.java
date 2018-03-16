@@ -5,12 +5,12 @@ import static java.util.stream.Collectors.toMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Predicates;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -24,6 +24,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +53,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.Answerer;
@@ -129,7 +131,6 @@ import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -140,8 +141,10 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
@@ -185,6 +188,7 @@ import org.batfish.z3.NodSatJob;
 import org.batfish.z3.QuerySynthesizer;
 import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
+import org.batfish.z3.StandardReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.codehaus.jettison.json.JSONArray;
@@ -1148,40 +1152,40 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
+  /**
+   * Deserialize a bunch of objects
+   *
+   * @param namesByPath Mapping of object paths to their names
+   * @param outputClass the class type for {@link S}
+   * @param <S> desired type of objects
+   * @return a map of objects keyed by their name (from {@code namesByPath})
+   */
   public <S extends Serializable> SortedMap<String, S> deserializeObjects(
       Map<Path, String> namesByPath, Class<S> outputClass) {
     String outputClassName = outputClass.getName();
     BatfishLogger logger = getLogger();
-    Map<String, byte[]> dataByName = new TreeMap<>();
     AtomicInteger readCompleted =
         newBatch(
-            "Reading and unpacking files containing '" + outputClassName + "' instances",
+            "Reading, unpacking, and deserializing files containing '"
+                + outputClassName
+                + "' instances",
             namesByPath.size());
-    namesByPath.forEach(
-        (inputPath, name) -> {
-          logger.debugf(
-              "Reading and gunzipping: {} '{}' from '{}'", outputClassName, name, inputPath);
-          byte[] data = fromGzipFile(inputPath);
-          logger.debug(" ...OK\n");
-          dataByName.put(name, data);
-          readCompleted.incrementAndGet();
-        });
-    Map<String, S> unsortedOutput = new ConcurrentHashMap<>();
-    AtomicInteger deserializeCompleted =
-        newBatch("Deserializing '" + outputClassName + "' instances", dataByName.size());
-    dataByName
+    return namesByPath
         .entrySet()
         .parallelStream()
-        .forEach(
-            entry -> {
-              String name = entry.getKey();
-              byte[] data = entry.getValue();
-              S object = deserializeObject(data, outputClass);
-              unsortedOutput.put(name, object);
-              deserializeCompleted.incrementAndGet();
-            });
-    SortedMap<String, S> output = new TreeMap<>(unsortedOutput);
-    return output;
+        .map(
+            e -> {
+              logger.debugf(
+                  "Reading and unzipping: %s '%s' from %s%n",
+                  outputClassName, e.getValue(), e.getKey());
+              S object = deserializeObject(e.getKey(), outputClass);
+              logger.debug(" ...OK\n");
+              readCompleted.incrementAndGet();
+              return new SimpleImmutableEntry<>(e.getValue(), object);
+            })
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                String::compareTo, Entry::getKey, Entry::getValue));
   }
 
   public Map<String, GenericConfigObject> deserializeVendorConfigurations(
@@ -1785,6 +1789,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Settings getSettings() {
     return _settings;
+  }
+
+  @Override
+  public ImmutableConfiguration getSettingsConfiguration() {
+    return _settings.getImmutableConfiguration();
   }
 
   private Snapshot getSnapshot() {
@@ -2519,39 +2528,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
-    Settings settings = getSettings();
-    String tag = getFlowTag(_testrigSettings);
-    Map<String, Configuration> configurations = loadConfigurations();
-    Set<Flow> flows = null;
-    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane();
-    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
-    List<NodJob> jobs =
-        configurations
-            .entrySet()
-            .stream()
-            .filter(e -> !ingressNodes.contains(e.getKey()))
-            .flatMap(
-                e -> {
-                  String node = e.getKey();
-                  Configuration c = e.getValue();
-                  return c.getVrfs()
-                      .keySet()
-                      .stream()
-                      .map(
-                          vrf -> {
-                            MultipathInconsistencyQuerySynthesizer query =
-                                new MultipathInconsistencyQuerySynthesizer(node, vrf, headerSpace);
-                            SortedSet<Pair<String, String>> nodes =
-                                ImmutableSortedSet.of(new Pair<>(node, vrf));
-                            return new NodJob(settings, dataPlaneSynthesizer, query, nodes, tag);
-                          });
-                })
-            .collect(Collectors.toList());
-    flows = computeNodOutput(jobs);
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+  public AnswerElement multipath(
+      ReachabilitySettings reachabilitySettings, boolean useCompression) {
+    return singleReachability(
+        reachabilitySettings,
+        ImmutableSet.of(),
+        useCompression,
+        MultipathInconsistencyQuerySynthesizer.builder());
   }
 
   @Override
@@ -2830,7 +2813,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement pathDiff(HeaderSpace headerSpace) {
+  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -2874,7 +2857,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String vrf =
           diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
       ReachEdgeQuerySynthesizer reachQuery =
-          new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, headerSpace);
+          new ReachEdgeQuerySynthesizer(
+              ingressNode, vrf, edge, true, reachabilitySettings.getHeaderSpace());
       ReachEdgeQuerySynthesizer noReachQuery =
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
@@ -2904,7 +2888,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getVrf()
                 .getName();
         ReachEdgeQuerySynthesizer reachQuery =
-            new ReachEdgeQuerySynthesizer(ingressNode, vrf, missingEdge, true, headerSpace);
+            new ReachEdgeQuerySynthesizer(
+                ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
         SortedSet<Pair<String, String>> nodes = ImmutableSortedSet.of(new Pair<>(ingressNode, vrf));
         CompositeNodJob job =
@@ -3300,7 +3285,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement reducedReachability(
-      HeaderSpace headerSpace, NodesSpecifier ingressNodeRegex) {
+      ReachabilitySettings reachabilitySettings, boolean useCompression) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3317,9 +3302,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
     popEnvironment();
 
-    Set<String> commonNodes =
-        ImmutableSet.copyOf(
-            Sets.intersection(baseConfigurations.keySet(), diffConfigurations.keySet()));
+    Set<String> ingressNodes;
+    try {
+      ingressNodes =
+          ImmutableSet.copyOf(
+              Sets.intersection(
+                  reachabilitySettings.computeActiveIngressNodes(baseConfigurations),
+                  reachabilitySettings.computeActiveIngressNodes(diffConfigurations)));
+    } catch (InvalidReachabilitySettingsException e) {
+      return e.getInvalidSettingsAnswer();
+    }
 
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
@@ -3336,13 +3328,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ImmutableList.of(
             baseDataPlaneSynthesizer, diffDataPlaneSynthesizer, baseDataPlaneSynthesizer);
 
-    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(baseConfigurations);
-
     // generate base reachability and diff blackhole and blacklist queries
     List<CompositeNodJob> jobs =
-        commonNodes
+        ingressNodes
             .stream()
-            .filter(Predicates.not(ingressNodes::contains))
             .flatMap(
                 node ->
                     baseConfigurations
@@ -3354,19 +3343,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
                             vrf -> {
                               Map<String, Set<String>> ingressNodeVrfs =
                                   ImmutableMap.of(node, ImmutableSet.of(vrf));
-                              ReachabilityQuerySynthesizer acceptQuery =
-                                  new ReachabilityQuerySynthesizer(
-                                      ImmutableSet.of(ForwardingAction.ACCEPT), headerSpace,
-                                      ImmutableSet.of(), ingressNodeVrfs,
-                                      ImmutableSet.of(), ImmutableSet.of());
-                              ReachabilityQuerySynthesizer notAcceptQuery =
-                                  new ReachabilityQuerySynthesizer(
-                                      Collections.singleton(ForwardingAction.ACCEPT),
-                                      new HeaderSpace(),
-                                      ImmutableSet.of(),
-                                      ingressNodeVrfs,
-                                      ImmutableSet.of(),
-                                      ImmutableSet.of());
+                              StandardReachabilityQuerySynthesizer acceptQuery =
+                                  StandardReachabilityQuerySynthesizer.builder()
+                                      .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+                                      .setHeaderSpace(reachabilitySettings.getHeaderSpace())
+                                      .setIngressNodeVrfs(ingressNodeVrfs)
+                                      .setFinalNodes(ImmutableSet.of())
+                                      .setTransitNodes(ImmutableSet.of())
+                                      .setNonTransitNodes(ImmutableSet.of())
+                                      .build();
+                              StandardReachabilityQuerySynthesizer notAcceptQuery =
+                                  StandardReachabilityQuerySynthesizer.builder()
+                                      .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+                                      .setHeaderSpace(new HeaderSpace())
+                                      .setIngressNodeVrfs(ingressNodeVrfs)
+                                      .setFinalNodes(ImmutableSet.of())
+                                      .setTransitNodes(ImmutableSet.of())
+                                      .setNonTransitNodes(ImmutableSet.of())
+                                      .build();
                               notAcceptQuery.setNegate(true);
                               SortedSet<Pair<String, String>> nodes =
                                   ImmutableSortedSet.of(new Pair<>(node, vrf));
@@ -3978,6 +3972,117 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _terminatingExceptionMessage = terminatingExceptionMessage;
   }
 
+  private AnswerElement singleReachability(
+      ReachabilitySettings reachabilitySettings,
+      Set<ForwardingAction> actions,
+      boolean useCompression,
+      ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
+    Settings settings = getSettings();
+    String tag = getFlowTag(_testrigSettings);
+
+    // specialized compression
+    /*
+    CompressDataPlaneResult compressionResult =
+        useCompression ? computeCompressedDataPlane(headerSpace) : null;
+    Map<String, Configuration> configurations =
+        useCompression ? compressionResult._compressedConfigs : loadConfigurations();
+    DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
+    */
+
+    // general compression
+    Snapshot snapshot = getSnapshot();
+    Map<String, Configuration> configurations =
+        useCompression ? loadCompressedConfigurations(snapshot) : loadConfigurations(snapshot);
+    DataPlane dataPlane = loadDataPlane(useCompression);
+
+    if (configurations == null) {
+      throw new BatfishException("error loading configurations");
+    }
+
+    if (dataPlane == null) {
+      throw new BatfishException("error loading data plane");
+    }
+
+    Set<String> activeIngressNodes;
+    Set<String> activeFinalNodes;
+    HeaderSpace headerSpace;
+    Set<String> transitNodes;
+    Set<String> nonTransitNodes;
+    int maxChunkSize;
+
+    try {
+      activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(configurations);
+      activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(configurations);
+      headerSpace = reachabilitySettings.getHeaderSpace();
+      transitNodes = reachabilitySettings.computeActiveTransitNodes(configurations);
+      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(configurations);
+      maxChunkSize = reachabilitySettings.getMaxChunkSize();
+      reachabilitySettings.validateTransitNodes(configurations);
+    } catch (InvalidReachabilitySettingsException e) {
+      return e.getInvalidSettingsAnswer();
+    }
+    List<Pair<String, String>> originateNodeVrfs =
+        activeIngressNodes
+            .stream()
+            .flatMap(
+                ingressNode ->
+                    configurations
+                        .get(ingressNode)
+                        .getVrfs()
+                        .keySet()
+                        .stream()
+                        .map(ingressVrf -> new Pair<>(ingressNode, ingressVrf)))
+            .collect(Collectors.toList());
+
+    int chunkSize =
+        Math.max(
+            1, Math.min(maxChunkSize, originateNodeVrfs.size() / _settings.getAvailableThreads()));
+
+    // partition originateNodeVrfs into chunks
+    List<List<Pair<String, String>>> originateNodeVrfChunks =
+        Lists.partition(originateNodeVrfs, chunkSize);
+
+    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
+
+    // build query jobs
+    List<NodJob> jobs =
+        originateNodeVrfChunks
+            .stream()
+            .map(ImmutableSortedSet::copyOf)
+            .map(
+                nodeVrfs -> {
+                  SortedMap<String, Set<String>> vrfsByNode = new TreeMap<>();
+                  nodeVrfs.forEach(
+                      nodeVrf -> {
+                        String node = nodeVrf.getFirst();
+                        String vrf = nodeVrf.getSecond();
+                        vrfsByNode.computeIfAbsent(node, key -> new TreeSet<>());
+                        vrfsByNode.get(node).add(vrf);
+                      });
+
+                  ReachabilityQuerySynthesizer query =
+                      builder
+                          .setActions(actions)
+                          .setHeaderSpace(headerSpace)
+                          .setFinalNodes(activeFinalNodes)
+                          .setIngressNodeVrfs(vrfsByNode)
+                          .setTransitNodes(transitNodes)
+                          .setNonTransitNodes(nonTransitNodes)
+                          .build();
+
+                  return new NodJob(settings, dataPlaneSynthesizer, query, nodeVrfs, tag);
+                })
+            .collect(Collectors.toList());
+
+    // run jobs and get resulting flows
+    Set<Flow> flows = computeNodOutput(jobs);
+
+    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+
+    AnswerElement answerElement = getHistory();
+    return answerElement;
+  }
+
   @Override
   public AnswerElement smtBlackhole(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this, _settings);
@@ -4049,146 +4154,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement standard(
-      HeaderSpace headerSpace,
+      ReachabilitySettings reachabilitySettings,
       Set<ForwardingAction> actions,
-      NodesSpecifier ingressNodeRegex,
-      NodesSpecifier notIngressNodeRegex,
-      NodesSpecifier finalNodeRegex,
-      NodesSpecifier notFinalNodeRegex,
-      Set<String> transitNodes,
-      Set<String> notTransitNodes,
-      boolean useCompression,
-      int maxChunkSize) {
-    Settings settings = getSettings();
-    String tag = getFlowTag(_testrigSettings);
-
-    // specialized compression
-    /*
-    CompressDataPlaneResult compressionResult =
-        useCompression ? computeCompressedDataPlane(headerSpace) : null;
-    Map<String, Configuration> configurations =
-        useCompression ? compressionResult._compressedConfigs : loadConfigurations();
-    DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
-    */
-
-    // general compression
-    Snapshot snapshot = getSnapshot();
-    Map<String, Configuration> configurations =
-        useCompression ? loadCompressedConfigurations(snapshot) : loadConfigurations(snapshot);
-    DataPlane dataPlane = loadDataPlane(useCompression);
-
-    if (configurations == null) {
-      throw new BatfishException("error loading configurations");
-    }
-
-    if (dataPlane == null) {
-      throw new BatfishException("error loading data plane");
-    }
-
-    // collect ingress nodes
-    Set<String> ingressNodes = ingressNodeRegex.getMatchingNodes(configurations);
-    Set<String> notIngressNodes = notIngressNodeRegex.getMatchingNodes(configurations);
-    Set<String> activeIngressNodes = Sets.difference(ingressNodes, notIngressNodes);
-    if (activeIngressNodes.isEmpty()) {
-      return new StringAnswerElement(
-          "NOTHING TO DO: No nodes both match ingressNodeRegex: '"
-              + ingressNodeRegex
-              + "' and fail to match notIngressNodeRegex: '"
-              + notIngressNodeRegex
-              + "'");
-    }
-
-    // collect final nodes
-    Set<String> finalNodes = finalNodeRegex.getMatchingNodes(configurations);
-    Set<String> notFinalNodes = notFinalNodeRegex.getMatchingNodes(configurations);
-    Set<String> activeFinalNodes = Sets.difference(finalNodes, notFinalNodes);
-    if (activeFinalNodes.isEmpty()) {
-      return new StringAnswerElement(
-          "NOTHING TO DO: No nodes both match finalNodeRegex: '"
-              + finalNodeRegex
-              + "' and fail to match notFinalNodeRegex: '"
-              + notFinalNodeRegex
-              + "'");
-    }
-
-    // check transit nodes
-    Set<String> allNodes = configurations.keySet();
-    Set<String> invalidTransitNodes = Sets.difference(transitNodes, allNodes);
-    if (!invalidTransitNodes.isEmpty()) {
-      return new StringAnswerElement(
-          String.format("Unknown transit nodes %s", invalidTransitNodes));
-    }
-    Set<String> invalidNotTransitNodes = Sets.difference(notTransitNodes, allNodes);
-    if (!invalidNotTransitNodes.isEmpty()) {
-      return new StringAnswerElement(
-          String.format("Unknown notTransit nodes %s", invalidNotTransitNodes));
-    }
-    Set<String> illegalTransitNodes = Sets.intersection(transitNodes, notTransitNodes);
-    if (!illegalTransitNodes.isEmpty()) {
-      return new StringAnswerElement(
-          String.format(
-              "Same node %s can not be in both transit and notTransit", illegalTransitNodes));
-    }
-
-    List<Pair<String, String>> originateNodeVrfs =
-        activeIngressNodes
-            .stream()
-            .flatMap(
-                ingressNode ->
-                    configurations
-                        .get(ingressNode)
-                        .getVrfs()
-                        .keySet()
-                        .stream()
-                        .map(ingressVrf -> new Pair<>(ingressNode, ingressVrf)))
-            .collect(Collectors.toList());
-
-    int chunkSize =
-        Math.max(
-            1, Math.min(maxChunkSize, originateNodeVrfs.size() / _settings.getAvailableThreads()));
-
-    // partition originateNodeVrfs into chunks
-    List<List<Pair<String, String>>> originateNodeVrfChunks =
-        Lists.partition(originateNodeVrfs, chunkSize);
-
-    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
-
-    // build query jobs
-    List<NodJob> jobs =
-        originateNodeVrfChunks
-            .stream()
-            .map(ImmutableSortedSet::copyOf)
-            .map(
-                nodeVrfs -> {
-                  SortedMap<String, Set<String>> vrfsByNode = new TreeMap<>();
-                  nodeVrfs.forEach(
-                      nodeVrf -> {
-                        String node = nodeVrf.getFirst();
-                        String vrf = nodeVrf.getSecond();
-                        vrfsByNode.computeIfAbsent(node, key -> new TreeSet<>());
-                        vrfsByNode.get(node).add(vrf);
-                      });
-
-                  ReachabilityQuerySynthesizer query =
-                      new ReachabilityQuerySynthesizer(
-                          actions,
-                          headerSpace,
-                          activeFinalNodes,
-                          vrfsByNode,
-                          transitNodes,
-                          notTransitNodes);
-
-                  return new NodJob(settings, dataPlaneSynthesizer, query, nodeVrfs, tag);
-                })
-            .collect(Collectors.toList());
-
-    // run jobs and get resulting flows
-    Set<Flow> flows = computeNodOutput(jobs);
-
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+      boolean useCompression) {
+    return singleReachability(
+        reachabilitySettings,
+        actions,
+        useCompression,
+        StandardReachabilityQuerySynthesizer.builder());
   }
 
   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {

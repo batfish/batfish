@@ -17,6 +17,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ConfigurationUtils;
+import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 
@@ -210,5 +211,9 @@ public abstract class BaseSettings {
     if (_config.getProperty(key) == null) {
       _config.setProperty(key, value);
     }
+  }
+
+  public ImmutableConfiguration getImmutableConfiguration() {
+    return ConfigurationUtils.unmodifiableConfiguration(_config);
   }
 }

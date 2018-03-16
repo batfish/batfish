@@ -407,6 +407,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     }
   }
 
+  public static final String ARG_CHECK_BGP_REACHABILITY = "checkbgpsessionreachability";
+
   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
   private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
@@ -1029,6 +1031,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_TOKENS, 10);
     setDefaultProperty(ARG_MAX_PARSE_TREE_PRINT_LENGTH, 0);
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
+    setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(BfConsts.ARG_OUTPUT_ENV, null);
     setDefaultProperty(BfConsts.ARG_PEDANTIC_AS_ERROR, false);
@@ -1116,6 +1119,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS,
         "Set to true to record all iterations, including during oscillation. Ignores max recorded "
             + "iterations value.");
+
+    addBooleanOption(
+        ARG_CHECK_BGP_REACHABILITY,
+        "whether to check BGP session reachability during data plane computation");
 
     addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
 
@@ -1389,6 +1396,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getIntOptionValue(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
+    getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
     getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
     getStringOptionValue(ARG_COORDINATOR_HOST);
