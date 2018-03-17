@@ -813,7 +813,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
-      throws ClassNotFoundException, JsonProcessingException, JSONException {
+      throws JsonProcessingException, JSONException {
 
     ParseVendorConfigurationAnswerElement pvcae =
         deserializeObject(
