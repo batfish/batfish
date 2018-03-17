@@ -1534,7 +1534,14 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteIfExists(zipFile);
   }
 
-  public void uploadQuestion(String containerName, String qName, InputStream fileStream) {
+  public void uploadQuestion(String containerName, String qName, String questionJson) {
+    // Validate the question before saving it to disk.
+    try {
+      Question.parseQuestion(questionJson);
+    } catch (Exception e) {
+      throw new BatfishException(String.format("Invalid question %s/%s", containerName, qName), e);
+    }
+
     Path containerDir = getdirContainer(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
@@ -1545,7 +1552,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Failed to create directory: '" + qDir + "'");
     }
     Path file = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    CommonUtil.writeStreamToFile(fileStream, file);
+    CommonUtil.writeFile(file, questionJson);
   }
 
   public void uploadTestrig(
