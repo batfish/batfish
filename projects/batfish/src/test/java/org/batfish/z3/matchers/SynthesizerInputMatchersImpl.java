@@ -41,6 +41,28 @@ public class SynthesizerInputMatchersImpl {
     }
   }
 
+  static final class HasArpTrueEdge
+      extends FeatureMatcher<
+          SynthesizerInput,
+          Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>> {
+    HasArpTrueEdge(
+        @Nonnull
+            Matcher<
+                    ? super
+                        Map<
+                            String,
+                            Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>>
+                subMatcher) {
+      super(subMatcher, "SynthesizerInput with arpTrueEdge:", "arpTrueEdge");
+    }
+
+    @Override
+    protected Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+        featureValueOf(SynthesizerInput actual) {
+      return actual.getArpTrueEdge();
+    }
+  }
+
   static final class HasEnabledEdges extends FeatureMatcher<SynthesizerInput, Set<Edge>> {
     HasEnabledEdges(@Nonnull Matcher<? super Set<Edge>> subMatcher) {
       super(subMatcher, "SynthesizerInput with enabled edges", "enabled edges");
@@ -96,6 +118,20 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Set<Ip>> featureValueOf(SynthesizerInput actual) {
       return actual.getIpsByHostname();
+    }
+  }
+
+  static final class HasNeighborUnreachable
+      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Map<String, BooleanExpr>>>> {
+    HasNeighborUnreachable(
+        @Nonnull Matcher<? super Map<String, Map<String, Map<String, BooleanExpr>>>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with neighborUnreachable:", "neighborUnreachable");
+    }
+
+    @Override
+    protected Map<String, Map<String, Map<String, BooleanExpr>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getNeighborUnreachable();
     }
   }
 

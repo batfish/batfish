@@ -128,7 +128,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public void visitLitIntExpr(LitIntExpr litIntExpr) {}
 
   @Override
-  public void visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+  public void visitIpSpaceMatchExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
     matchIpSpaceExpr.getExpr().accept(this);
   }
 

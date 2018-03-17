@@ -1,0 +1,123 @@
+package org.batfish.datamodel;
+
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
+import java.util.Set;
+
+public class TestArpAnalysis implements ArpAnalysis {
+
+  public static class Builder {
+
+    private Map<String, Map<String, IpSpace>> _arpReplies;
+
+    private Map<
+            String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
+        _arpRequests;
+
+    private Map<Edge, IpSpace> _arpTrueEdge;
+
+    private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
+
+    private Map<String, Map<String, IpSpace>> _nullableIps;
+
+    private Map<String, Map<String, IpSpace>> _routableIps;
+
+    private Builder() {
+      _arpReplies = ImmutableMap.of();
+      _arpRequests = ImmutableMap.of();
+      _arpTrueEdge = ImmutableMap.of();
+      _neighborUnreachable = ImmutableMap.of();
+      _nullableIps = ImmutableMap.of();
+      _routableIps = ImmutableMap.of();
+    }
+
+    public TestArpAnalysis build() {
+      return new TestArpAnalysis(this);
+    }
+
+    public Builder setArpReplies(Map<String, Map<String, IpSpace>> arpReplies) {
+      _arpReplies = arpReplies;
+      return this;
+    }
+
+    public Builder setArpRequests(
+        Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
+            arpRequests) {
+      _arpRequests = arpRequests;
+      return this;
+    }
+
+    public Builder setArpTrueEdge(Map<Edge, IpSpace> arpTrueEdge) {
+      _arpTrueEdge = arpTrueEdge;
+      return this;
+    }
+
+    public Builder setNeighborUnreachable(
+        Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
+      _neighborUnreachable = neighborUnreachable;
+      return this;
+    }
+
+    public Builder setNullableIps(Map<String, Map<String, IpSpace>> nullableIps) {
+      _nullableIps = nullableIps;
+      return this;
+    }
+
+    public Builder setRoutableIps(Map<String, Map<String, IpSpace>> routableIps) {
+      _routableIps = routableIps;
+      return this;
+    }
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  private final Map<String, Map<String, IpSpace>> _arpReplies;
+
+  private final Map<
+          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
+      _arpRequests;
+
+  private final Map<Edge, IpSpace> _arpTrueEdge;
+
+  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
+
+  private final Map<String, Map<String, IpSpace>> _nullableIps;
+
+  private final Map<String, Map<String, IpSpace>> _routableIps;
+
+  public TestArpAnalysis(Builder builder) {
+    _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
+    _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
+    _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
+    _neighborUnreachable = ImmutableMap.copyOf(builder._neighborUnreachable);
+    _nullableIps = ImmutableMap.copyOf(builder._nullableIps);
+    _routableIps = ImmutableMap.copyOf(builder._routableIps);
+  }
+
+  public Map<String, Map<String, IpSpace>> getArpReplies() {
+    return _arpReplies;
+  }
+
+  public Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
+      getArpRequests() {
+    return _arpRequests;
+  }
+
+  public Map<Edge, IpSpace> getArpTrueEdge() {
+    return _arpTrueEdge;
+  }
+
+  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
+    return _neighborUnreachable;
+  }
+
+  public Map<String, Map<String, IpSpace>> getNullableIps() {
+    return _nullableIps;
+  }
+
+  public Map<String, Map<String, IpSpace>> getRoutableIps() {
+    return _routableIps;
+  }
+}

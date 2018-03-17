@@ -44,7 +44,7 @@ public interface ExprVisitor {
 
   void visitLitIntExpr(LitIntExpr litIntExpr);
 
-  void visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr);
+  void visitIpSpaceMatchExpr(IpSpaceMatchExpr matchIpSpaceExpr);
 
   void visitNotExpr(NotExpr notExpr);
 

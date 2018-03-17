@@ -464,12 +464,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
     _input
         .getNullableIps()
         .forEach(
-            (hostname, routableIpsByVrf) ->
-                routableIpsByVrf.forEach(
-                    (vrf, routableIps) ->
+            (hostname, nullableIpsByVrf) ->
+                nullableIpsByVrf.forEach(
+                    (vrf, nullableIps) ->
                         _rules.add(
                             new BasicRuleStatement(
-                                new NotExpr(routableIps),
+                                nullableIps,
                                 ImmutableSet.of(new PostInVrf(hostname, vrf), new PreOut(hostname)),
                                 new NodeDropNullRoute(hostname)))));
   }

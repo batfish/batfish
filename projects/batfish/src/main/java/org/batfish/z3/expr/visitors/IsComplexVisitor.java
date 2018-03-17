@@ -88,7 +88,7 @@ public class IsComplexVisitor implements ExprVisitor {
   }
 
   @Override
-  public void visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+  public void visitIpSpaceMatchExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
     matchIpSpaceExpr.getExpr().accept(this);
   }
 

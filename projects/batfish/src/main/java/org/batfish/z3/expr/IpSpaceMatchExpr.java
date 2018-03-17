@@ -16,7 +16,7 @@ public class IpSpaceMatchExpr extends BooleanExpr {
 
   @Override
   public void accept(ExprVisitor visitor) {
-    visitor.visitMatchIpSpaceExpr(this);
+    visitor.visitIpSpaceMatchExpr(this);
   }
 
   @Override

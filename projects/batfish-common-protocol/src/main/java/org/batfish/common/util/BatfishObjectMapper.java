@@ -47,7 +47,6 @@ public final class BatfishObjectMapper {
    * Returns a {@link ObjectWriter} configured to Batfish JSON standards. The JSON produced is not
    * pretty-printed; see {@link #prettyWriter} for that.
    */
-  @SuppressWarnings("unused") // Seems like it should be used some day.
   public static ObjectWriter writer() {
     return WRITER;
   }

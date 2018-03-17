@@ -149,9 +149,7 @@ public class NodJobChunkingTest {
   }
 
   private void setupSynthesizer() {
-    SynthesizerInput input =
-        SynthesizerInputImpl.builder().setConfigurations(_configs).setDataPlane(_dataPlane).build();
-    _synthesizer = new Synthesizer(input);
+    _synthesizer = new Synthesizer(Batfish.computeSynthesizerInput(_configs, _dataPlane, true));
   }
 
   private NodJob getNodJob() {

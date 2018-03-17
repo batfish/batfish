@@ -11,11 +11,13 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasArpTrueEdge;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasNeighborUnreachable;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasSourceNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
 import org.batfish.z3.state.AclPermit;
@@ -39,6 +41,16 @@ public class SynthesizerInputMatchers {
   public static HasAclConditions hasAclConditions(
       Matcher<? super Map<String, Map<String, List<BooleanExpr>>>> subMatcher) {
     return new HasAclConditions(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's arpTrueEdge.
+   */
+  public static HasArpTrueEdge hasArpTrueEdge(
+      Matcher<? super Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>>
+          subMatcher) {
+    return new HasArpTrueEdge(subMatcher);
   }
 
   /**
@@ -82,6 +94,15 @@ public class SynthesizerInputMatchers {
   public static HasIpsByHostname hasIpsByHostname(
       Matcher<? super Map<String, Set<Ip>>> subMatcher) {
     return new HasIpsByHostname(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's neighborUnreachable.
+   */
+  public static HasNeighborUnreachable hasNeighborUnreachable(
+      Matcher<? super Map<String, Map<String, Map<String, BooleanExpr>>>> subMatcher) {
+    return new HasNeighborUnreachable(subMatcher);
   }
 
   /**

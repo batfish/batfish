@@ -4193,17 +4193,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 logic...");
-    Topology topology = new Topology(dataPlane.getTopologyEdges());
+
     Synthesizer s =
         new Synthesizer(
-            SynthesizerInputImpl.builder()
-                .setConfigurations(configurations)
-                .setArpAnalysis(
-                    new DataPlaneArpAnalysis(
-                        configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
-                .setSimplify(_settings.getSimplify())
-                .setTopology(topology)
-                .build());
+            computeSynthesizerInput(configurations, dataPlane, _settings.getSimplify()));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4216,6 +4209,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.printElapsedTime();
     return s;
+  }
+
+  public static SynthesizerInputImpl computeSynthesizerInput(
+      Map<String, Configuration> configurations, DataPlane dataPlane, boolean simplify) {
+    Topology topology = new Topology(dataPlane.getTopologyEdges());
+    return SynthesizerInputImpl.builder()
+        .setConfigurations(configurations)
+        .setArpAnalysis(
+            new DataPlaneArpAnalysis(
+                configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+        .setSimplify(simplify)
+        .setTopology(topology)
+        .build();
   }
 
   private Answer validateEnvironment() {

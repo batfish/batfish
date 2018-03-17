@@ -159,8 +159,8 @@ public class NodJobTest {
   }
 
   private void setupSynthesizer() {
-    SynthesizerInput input =
-        SynthesizerInputImpl.builder().setConfigurations(_configs).setDataPlane(_dataPlane).build();
+    // TODO: fix
+    SynthesizerInput input = SynthesizerInputImpl.builder().setConfigurations(_configs).build();
     _synthesizer = new Synthesizer(input);
   }
 
