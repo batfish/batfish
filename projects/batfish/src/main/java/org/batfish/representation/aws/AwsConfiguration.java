@@ -60,11 +60,11 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return _warnings;
   }
 
-  public Map<String, Configuration> toConfigurations(Warnings warnings) {
+  public Map<String, Configuration> toConfigurations(Warnings warnings, BatfishLogger logger) {
     _warnings = warnings;
 
     for (Region region : _regions.values()) {
-      region.toConfigurationNodes(this, _configurationNodes);
+      region.toConfigurationNodes(this, _configurationNodes, logger);
     }
 
     return _configurationNodes;
