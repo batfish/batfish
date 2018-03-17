@@ -75,7 +75,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
         configurations.put(_name, configuration);
       } else {
-        configurations = ((AwsConfiguration) _configObject).toConfigurations(_warnings);
+        configurations = ((AwsConfiguration) _configObject).toConfigurations(_warnings, _logger);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {
