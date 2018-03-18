@@ -86,6 +86,7 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -3161,7 +3162,6 @@ public class Client extends AbstractClient implements IClient {
   private boolean test(List<String> options, List<String> parameters) throws IOException {
     boolean failingTest = false;
     boolean missingReferenceFile = false;
-    boolean testPassed = false;
     int testCommandIndex = 1;
     if (!isValidArgument(options, parameters, 1, 2, Integer.MAX_VALUE, Command.TEST)) {
       return false;
@@ -3197,11 +3197,23 @@ public class Client extends AbstractClient implements IClient {
     boolean testCommandSucceeded = processCommand(testCommand, testoutWriter);
     testoutWriter.close();
 
-    String testOutput = "uninitialized";
+    String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
+    boolean testPassed = false;
 
-    if (!failingTest && testCommandSucceeded) {
+    if (failingTest) {
+      if (!testCommandSucceeded) {
+        // Command failed in the client.
+        testPassed = true;
+      } else {
+        try {
+          Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
+          testPassed = (testAnswer.getStatus() == AnswerStatus.FAILURE);
+        } catch (JsonProcessingException e) {
+          // pass here and let the test fail.
+        }
+      }
+    } else if (testCommandSucceeded) {
       try {
-        testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
         try {
           Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
           testOutput = getTestComparisonString(testAnswer, comparisonMode);
@@ -3219,8 +3231,6 @@ public class Client extends AbstractClient implements IClient {
         _logger.errorf(
             "Exception in comparing test results: %s\n", ExceptionUtils.getStackTrace(e));
       }
-    } else if (failingTest) {
-      testPassed = !testCommandSucceeded;
     }
 
     StringBuilder sb = new StringBuilder();
@@ -3237,7 +3247,7 @@ public class Client extends AbstractClient implements IClient {
         testCommandText,
         failingTest ? "results in error as expected" : "matches " + referenceFileName,
         testPassed ? "Pass" : "Fail");
-    if (!failingTest && !testPassed) {
+    if (!testPassed) {
       String outFileName = referenceFile + ".testout";
       CommonUtil.writeFile(Paths.get(outFileName), testOutput);
       _logger.outputf("Copied output to %s\n", outFileName);
