@@ -5,11 +5,11 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 # example testrig
-test tests/basic/init.ref init-testrig test_rigs/example basic-example
-test tests/basic/init-delta.ref init-delta-testrig test_rigs/example-with-delta basic-example-delta
-test tests/basic/genDp.ref generate-dataplane
-test tests/basic/genDp-delta.ref generate-delta-dataplane
-test tests/basic/topology.ref get-object testrig_pojo_topology
+test -compareall tests/basic/init.ref init-testrig test_rigs/example basic-example
+test -compareall tests/basic/init-delta.ref init-delta-testrig test_rigs/example-with-delta basic-example-delta
+test -compareall tests/basic/genDp.ref generate-dataplane
+test -compareall tests/basic/genDp-delta.ref generate-delta-dataplane
+test -compareall tests/basic/topology.ref get-object testrig_pojo_topology
 test tests/basic/aclReachability.ref get aclReachability
 test tests/basic/assert.ref get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"},{"assertion":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"assertion":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
@@ -47,34 +47,34 @@ test tests/basic/inferPolicies.ref get inferPolicies
 test tests/basic/roleConsistency.ref get roleConsistency propertyName="LoggingServers"
 test tests/basic/nsRoleConsistency.ref get namedStructureRoleConsistency hypothesis="sameName", structType="CommunityList"
 
-#this test has non-deterministic output; commented for now
-#test tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
+# takes toooo long. need to constrain to be useful.
+# test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
 # init-environment
-test tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
-test tests/basic/genDp-env.ref generate-delta-dataplane
+test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]
+test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
 # failure case with non-existent interface -- but the stack trace returned in the answer is bad mojo the test
 #test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
 
 # example2 testrig
-test tests/basic/init-example2.ref init-testrig test_rigs/example2 basic-example2
-test tests/basic/inferRoles.ref get inferRoles
+test -compareall tests/basic/init-example2.ref init-testrig test_rigs/example2 basic-example2
+test -compareall tests/basic/inferRoles.ref get inferRoles
 test tests/basic/roleNeighbors2.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 
 # disable-as-reuse
-test tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse basic-dc-as-reuse
+test -compareall tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse basic-dc-as-reuse
 test tests/basic/routes-dc-as-reuse.ref get routes
 
 # snat
-test tests/basic/init-snat.ref init-testrig test_rigs/snat basic-snat
+test -compareall tests/basic/init-snat.ref init-testrig test_rigs/snat basic-snat
 test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dst="1.2.3.4"
 
 # parsing unit-tests through nodes question
-test tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests basic-unit-tests
+test -compareall tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests basic-unit-tests
 test tests/basic/nodes-unit-tests.ref get nodes summary=false
 
 # iptables
-test tests/basic/example-iptables-init.ref init-testrig test_rigs/example-iptables
+test -compareall tests/basic/example-iptables-init.ref init-testrig test_rigs/example-iptables
 test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DROP"]
 # TODO fix notTransitNodes #993
 # test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes=["z1-firewall"], actions=["ACCEPT"]

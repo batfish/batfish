@@ -1,56 +1,28 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
-      "fail" : false,
-      "passing" : {
-        "0" : {
-          "asPathList" : false,
-          "assertion" : "(eq 15 (pathsize '$.nodes[*]'))",
-          "summary" : false
-        },
-        "1" : {
-          "asPathList" : false,
-          "assertion" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))",
-          "summary" : false
-        },
-        "2" : {
-          "asPathList" : false,
-          "assertion" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))",
-          "summary" : false
-        },
-        "3" : {
-          "asPathList" : false,
-          "assertion" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))",
-          "summary" : false
-        }
-      }
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertQuestion",
-    "assertions" : [
-      {
+[
+  {
+    "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
+    "fail" : false,
+    "passing" : {
+      "0" : {
         "asPathList" : false,
         "assertion" : "(eq 15 (pathsize '$.nodes[*]'))",
         "summary" : false
       },
-      {
+      "1" : {
         "asPathList" : false,
         "assertion" : "(eq 0 (pathsize '$.nodes[\"as1border\"]'))",
         "summary" : false
       },
-      {
+      "2" : {
         "asPathList" : false,
         "assertion" : "(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))",
         "summary" : false
       },
-      {
+      "3" : {
         "asPathList" : false,
         "assertion" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))",
         "summary" : false
       }
-    ]
-  },
-  "status" : "SUCCESS"
-}
+    }
+  }
+]
