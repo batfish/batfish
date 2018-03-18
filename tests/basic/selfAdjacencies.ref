@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.SelfAdjacenciesQuestionPlugin$SelfAdjacenciesAnswerElement",
     "selfAdjacencies" : {
       "as3core1" : {
         "90.90.90.0/24" : [

@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
     "againstEnvironment" : false,
     "detail" : false,
     "detailRoutesByHostname" : {

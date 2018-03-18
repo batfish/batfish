@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.datamodel.answers.RunAnalysisAnswerElement",
     "answers" : {
       "unusedstructures" : {
         "answerElements" : [

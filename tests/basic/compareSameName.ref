@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
     "equivalenceSetsMap" : {
       "AsPathAccessList" : {
         "structureClassName" : "AsPathAccessList"

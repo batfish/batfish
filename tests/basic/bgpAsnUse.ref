@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.BgpAsnUseQuestionPlugin$BgpAsnUseAnswerElement",
     "asns" : {
       "1" : [
         "as1border1",

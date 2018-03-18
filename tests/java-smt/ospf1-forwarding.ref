@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
     "result" : {
       "model" : {
         "|0_CONTROL-FORWARDING_R1_Serial0|" : "false",

@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
     "added" : [
       {
         "administrativeCost" : 200,
