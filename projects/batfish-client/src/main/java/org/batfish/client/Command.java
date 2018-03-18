@@ -89,6 +89,13 @@ public enum Command {
   TEST("test"),
   UPLOAD_CUSTOM_OBJECT("upload-custom");
 
+  public enum TestComparisonMode {
+    COMPAREANSWER,
+    COMPAREALL,
+    COMPAREFAILURES,
+    COMPARESUMMARY
+  }
+
   private static final Map<String, Command> _nameMap = buildNameMap();
 
   private static final Map<Command, Pair<String, String>> _usageMap = buildUsageMap();
@@ -325,7 +332,11 @@ public enum Command {
         new Pair<>(
             "<plugin-id> [key1=value1, [key2=value2], ...], ",
             "Update the settings for sync testrigs plugin"));
-    descs.put(TEST, new Pair<>("<reference file> <command>", "Show base testrig and environment"));
+    descs.put(
+        TEST,
+        new Pair<>(
+            "[-comparall|-compareanswer|-comparesummary|-comparefailures] <ref file> <command>",
+            "Show base testrig and environment"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));
     return descs;

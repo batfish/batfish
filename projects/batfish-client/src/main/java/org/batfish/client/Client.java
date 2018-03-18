@@ -52,6 +52,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
@@ -1451,6 +1452,22 @@ public class Client extends AbstractClient implements IClient {
 
   public Settings getSettings() {
     return _settings;
+  }
+
+  private String getTestComparisonString(Answer answer, TestComparisonMode comparisonMode)
+      throws JsonProcessingException {
+    switch (comparisonMode) {
+      case COMPAREANSWER:
+        return BatfishObjectMapper.writePrettyString(answer.getAnswerElements());
+      case COMPAREALL:
+        return BatfishObjectMapper.writePrettyString(answer);
+      case COMPAREFAILURES:
+        return BatfishObjectMapper.writePrettyString(answer.getSummary().getNumFailed());
+      case COMPARESUMMARY:
+        return BatfishObjectMapper.writePrettyString(answer.getSummary());
+      default:
+        throw new BatfishException("Unhandled TestComparisonMode: " + comparisonMode);
+    }
   }
 
   public void handleSigInt() {
@@ -3142,8 +3159,13 @@ public class Client extends AbstractClient implements IClient {
     boolean missingReferenceFile = false;
     boolean testPassed = false;
     int testCommandIndex = 1;
-    if (!isValidArgument(options, parameters, 0, 2, Integer.MAX_VALUE, Command.TEST)) {
+    if (!isValidArgument(options, parameters, 1, 2, Integer.MAX_VALUE, Command.TEST)) {
       return false;
+    }
+    TestComparisonMode comparisonMode = TestComparisonMode.COMPAREANSWER;
+    if (options.size() > 0) {
+      String opt = options.get(0).toUpperCase();
+      comparisonMode = TestComparisonMode.valueOf(opt.substring(1, opt.length())); // remove '-'
     }
     if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
       testCommandIndex++;
@@ -3174,43 +3196,30 @@ public class Client extends AbstractClient implements IClient {
 
     if (!failingTest && testCommandSucceeded) {
       try {
-
         // rewrite new answer string using local implementation
         String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
-
-        String testAnswerString = testOutput;
-
+        String testString = testOutput;
         try {
           Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
-          testAnswerString = BatfishObjectMapper.writePrettyString(testAnswer);
+          testString = getTestComparisonString(testAnswer, comparisonMode);
         } catch (JsonProcessingException e) {
-          // not all outputs of process command are of Answer.class type
-          // in that case, we use the exact string as initialized above for
-          // comparison
-          testAnswerString = testAnswerString.trim();
+          // when the output is not valid json, we use the exact string
+          testString = testString.trim();
         }
 
         if (!missingReferenceFile) {
           String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
-
-          String referenceAnswerString = referenceOutput;
-
-          // rewrite reference string using local implementation
-          Answer referenceAnswer;
+          String referenceString = referenceOutput;
           try {
-            referenceAnswer = BatfishObjectMapper.mapper().readValue(referenceOutput, Answer.class);
-            referenceAnswerString = BatfishObjectMapper.writePrettyString(referenceAnswer);
+            Answer referenceAnswer =
+                BatfishObjectMapper.mapper().readValue(referenceOutput, Answer.class);
+            referenceString = getTestComparisonString(referenceAnswer, comparisonMode);
           } catch (JsonProcessingException e) {
-            // not all outputs of process command are of Answer.class type
-            // in that case, we use the exact string as initialized above
-            // for comparison
-            referenceAnswerString = referenceAnswerString.trim();
+            referenceString = referenceString.trim();
           }
 
-          // due to options chosen in BatfishObjectMapper, if json
-          // outputs were equal, then strings should be equal
-
-          if (referenceAnswerString.equals(testAnswerString)) {
+          // due to BatfishObjectMapper options, if json outputs were equal, strings should be equal
+          if (referenceString.equals(testString)) {
             testPassed = true;
           }
         }
