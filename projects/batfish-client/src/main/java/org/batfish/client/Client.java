@@ -85,6 +85,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -1457,7 +1458,11 @@ public class Client extends AbstractClient implements IClient {
       throws JsonProcessingException {
     switch (comparisonMode) {
       case COMPAREANSWER:
-        return BatfishObjectMapper.writePrettyString(answer.getAnswerElements());
+        // Use an array rather than a list to serialize the answer elements; this preserves
+        // the type information. See https://github.com/FasterXML/jackson-databind/issues/336,
+        // though this is a different workaround.
+        AnswerElement[] elements = answer.getAnswerElements().toArray(new AnswerElement[0]);
+        return BatfishObjectMapper.writePrettyString(elements);
       case COMPAREALL:
         return BatfishObjectMapper.writePrettyString(answer);
       case COMPAREFAILURES:
