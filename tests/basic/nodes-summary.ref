@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesAnswerElement",
     "nodesSummary" : {
       "as1border1" : {
         "communityLists" : [

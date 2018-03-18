@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.OspfSessionCheckQuestionPlugin$OspfSessionCheckAnswerElement",
     "allOspfNeighbors" : {
       "as1border1" : {
         "default" : {

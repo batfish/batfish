@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.symbolic.answers.SmtManyAnswerElement",
     "result" : {
       "R1<-->R2" : {
         "verified" : true

@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.PerRoleQuestionPlugin$PerRoleAnswerElement",
     "answers" : {
       "border" : {
         "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",

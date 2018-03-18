@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesAnswerElement",
     "problems" : {
       "undefined:route-map:usage:bgp inbound route-map:filter-bogons" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'filter-bogons'",

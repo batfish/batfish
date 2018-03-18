@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
     "roleEbgpNeighbors" : [
       {
         "role1" : "border",

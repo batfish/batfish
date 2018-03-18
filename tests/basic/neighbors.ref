@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
     "ebgpNeighbors" : [
       {
         "ip1" : "10.12.11.1",

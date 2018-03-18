@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
     "roleConsistencyQuestions" : [
       {
         "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",

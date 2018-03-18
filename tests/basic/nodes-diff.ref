@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.NodesQuestionPlugin$NodesDiffAnswerElement",
     "configDiff" : {
       "as1border2" : {
         "class" : "org.batfish.datamodel.ConfigurationDiff",

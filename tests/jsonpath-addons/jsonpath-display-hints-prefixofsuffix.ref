@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
     "results" : {
       "0" : {
         "extractedValues" : {

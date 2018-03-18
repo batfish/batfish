@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
     "fileMap" : {
       "lhr-border-02" : "lhr-border-02.cfg"
     },
@@ -9,6 +10,7 @@
     "version" : "0.36.0"
   },
   {
+    "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "unusedStructures" : {
       "lhr-border-02" : {
         "extended ip access-list" : {
@@ -21,6 +23,7 @@
     "version" : "0.36.0"
   },
   {
+    "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
     "parseStatus" : {
       "lhr-border-02" : "PASSED"
     }

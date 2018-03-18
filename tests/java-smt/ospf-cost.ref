@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
     "result" : {
       "forwardingModel" : [
         "R1,Ethernet0/1 --> R2,Ethernet0/0 (OSPF)",

@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
     "fail" : false,
     "passing" : {
       "0" : {

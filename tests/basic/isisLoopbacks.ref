@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.IsisLoopbacksQuestionPlugin$IsisLoopbacksAnswerElement",
     "inactive" : {
       "as1border1" : [
         "Loopback0"

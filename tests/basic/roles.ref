@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.RolesQuestionPlugin$RolesAnswerElement",
     "completeRoleMap" : {
       "border" : [
         "as1border1",

@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
     "problems" : {
       "unused:bgp group:as1" : {
         "description" : "Unused structure of type: 'bgp group' with name: 'as1'",

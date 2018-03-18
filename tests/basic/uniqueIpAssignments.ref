@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.question.UniqueIpAssignmentsQuestionPlugin$UniqueIpAssignmentsAnswerElement",
     "duplicateIps" : {
       "2.1.1.2" : [
         {

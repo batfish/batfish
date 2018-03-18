@@ -1,5 +1,6 @@
 [
   {
+    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
     "fileMap" : {
       "as1border1" : "as1border1.cfg",
       "as1border2" : "as1border2.cfg",
@@ -41,6 +42,7 @@
     "version" : "0.36.0"
   },
   {
+    "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
     "undefinedReferences" : {
       "as2core2" : {
         "route-map" : {
@@ -191,6 +193,7 @@
     }
   },
   {
+    "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
     "parseStatus" : {
       "as1border1" : "PASSED",
       "as1border2" : "PASSED",
