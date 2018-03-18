@@ -3190,6 +3190,10 @@ public class Client extends AbstractClient implements IClient {
       missingReferenceFile = true;
     }
 
+    // Delete any existing testout filename before running this test.
+    Path failedTestoutPath = Paths.get(referenceFile + ".testout");
+    CommonUtil.deleteIfExists(failedTestoutPath);
+
     File testoutFile = Files.createTempFile("test", "out").toFile();
     testoutFile.deleteOnExit();
     FileWriter testoutWriter = new FileWriter(testoutFile);
@@ -3248,9 +3252,8 @@ public class Client extends AbstractClient implements IClient {
         failingTest ? "results in error as expected" : "matches " + referenceFileName,
         testPassed ? "Pass" : "Fail");
     if (!testPassed) {
-      String outFileName = referenceFile + ".testout";
-      CommonUtil.writeFile(Paths.get(outFileName), testOutput);
-      _logger.outputf("Copied output to %s\n", outFileName);
+      CommonUtil.writeFile(failedTestoutPath, testOutput);
+      _logger.outputf("Copied output to %s\n", failedTestoutPath);
     }
     return true;
   }
