@@ -1,13 +1,9 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
-      "parseStatus" : {
-        "as1r1" : "PASSED",
-        "host1" : "PASSED",
-        "host1.iptables" : "FAILED"
-      }
+[
+  {
+    "parseStatus" : {
+      "as1r1" : "PASSED",
+      "host1" : "PASSED",
+      "host1.iptables" : "FAILED"
     }
-  ],
-  "status" : "SUCCESS"
-}
+  }
+]

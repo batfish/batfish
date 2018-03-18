@@ -1,15 +1,3 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.SmtManyAnswerElement"
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.SmtLocalConsistencyQuestionPlugin$LocalConsistencyQuestion",
-    "differential" : false,
-    "failures" : 0,
-    "fullModel" : true,
-    "strict" : false
-  },
-  "status" : "SUCCESS"
-}
+[
+  { }
+]

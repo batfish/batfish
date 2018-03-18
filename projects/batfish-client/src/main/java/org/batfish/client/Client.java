@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.Arrays;
@@ -3188,38 +3187,26 @@ public class Client extends AbstractClient implements IClient {
 
     File testoutFile = Files.createTempFile("test", "out").toFile();
     testoutFile.deleteOnExit();
-
     FileWriter testoutWriter = new FileWriter(testoutFile);
 
     boolean testCommandSucceeded = processCommand(testCommand, testoutWriter);
     testoutWriter.close();
 
+    String testOutput = "uninitialized";
+
     if (!failingTest && testCommandSucceeded) {
       try {
-        // rewrite new answer string using local implementation
-        String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
-        String testString = testOutput;
+        testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
         try {
           Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
-          testString = getTestComparisonString(testAnswer, comparisonMode);
+          testOutput = getTestComparisonString(testAnswer, comparisonMode);
         } catch (JsonProcessingException e) {
-          // when the output is not valid json, we use the exact string
-          testString = testString.trim();
+          // when the output cannot be converted to Answer, we use the exact string read from file
         }
 
         if (!missingReferenceFile) {
           String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
-          String referenceString = referenceOutput;
-          try {
-            Answer referenceAnswer =
-                BatfishObjectMapper.mapper().readValue(referenceOutput, Answer.class);
-            referenceString = getTestComparisonString(referenceAnswer, comparisonMode);
-          } catch (JsonProcessingException e) {
-            referenceString = referenceString.trim();
-          }
-
-          // due to BatfishObjectMapper options, if json outputs were equal, strings should be equal
-          if (referenceString.equals(testString)) {
+          if (referenceOutput.equals(testOutput)) {
             testPassed = true;
           }
         }
@@ -3239,19 +3226,15 @@ public class Client extends AbstractClient implements IClient {
     sb.append("'");
     String testCommandText = sb.toString();
 
-    String message =
-        "Test: "
-            + testCommandText
-            + (failingTest ? " results in error as expected" : " matches " + referenceFileName)
-            + (testPassed ? ": Pass\n" : ": Fail\n");
-
-    _logger.output(message);
+    _logger.outputf(
+        "Test [%s]: %s %s: %s\n",
+        comparisonMode,
+        testCommandText,
+        failingTest ? "results in error as expected" : "matches " + referenceFileName,
+        testPassed ? "Pass" : "Fail");
     if (!failingTest && !testPassed) {
       String outFileName = referenceFile + ".testout";
-      Files.move(
-          Paths.get(testoutFile.getAbsolutePath()),
-          Paths.get(referenceFile + ".testout"),
-          StandardCopyOption.REPLACE_EXISTING);
+      CommonUtil.writeFile(Paths.get(outFileName), testOutput);
       _logger.outputf("Copied output to %s\n", outFileName);
     }
     return true;

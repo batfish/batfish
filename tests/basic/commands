@@ -47,7 +47,8 @@ test tests/basic/inferPolicies.ref get inferPolicies
 test tests/basic/roleConsistency.ref get roleConsistency propertyName="LoggingServers"
 test tests/basic/nsRoleConsistency.ref get namedStructureRoleConsistency hypothesis="sameName", structType="CommunityList"
 
-test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
+# takes toooo long. need to constrain to be useful.
+# test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
 
 # init-environment
 test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="newenv", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet0/0"}]

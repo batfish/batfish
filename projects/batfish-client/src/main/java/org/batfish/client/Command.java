@@ -1,8 +1,10 @@
 package org.batfish.client;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 
@@ -335,8 +337,12 @@ public enum Command {
     descs.put(
         TEST,
         new Pair<>(
-            "[-comparall|-compareanswer|-comparesummary|-comparefailures] <ref file> <command>",
-            "Show base testrig and environment"));
+            "["
+                + Arrays.stream(TestComparisonMode.values())
+                    .map(v -> '-' + v.toString())
+                    .collect(Collectors.joining("|"))
+                + "] <ref file> <command>",
+            "Run the command and compare its output to the ref file (used for testing)"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));
     return descs;

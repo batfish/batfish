@@ -1,17 +1,7 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
-      "result" : {
-        "verified" : true
-      }
+[
+  {
+    "result" : {
+      "verified" : true
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.SmtRoutingLoopQuestionPlugin$RoutingLoopQuestion",
-    "differential" : false,
-    "failures" : 0,
-    "fullModel" : true
-  },
-  "status" : "SUCCESS"
-}
+  }
+]

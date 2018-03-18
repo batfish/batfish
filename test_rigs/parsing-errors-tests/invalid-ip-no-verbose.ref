@@ -1,20 +1,9 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
-      "parseStatus" : {
-        "as1r1" : "PASSED",
-        "host1" : "PASSED",
-        "host1.iptables" : "FAILED"
-      }
+[
+  {
+    "parseStatus" : {
+      "as1r1" : "PASSED",
+      "host1" : "PASSED",
+      "host1.iptables" : "FAILED"
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
-    "differential" : false,
-    "environmentRoutes" : false,
-    "summary" : false,
-    "verboseError" : false
-  },
-  "status" : "SUCCESS"
-}
+  }
+]
