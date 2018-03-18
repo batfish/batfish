@@ -1,317 +1,305 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
-      "roleConsistencyQuestions" : [
-        {
-          "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
-          "differential" : false,
-          "propertyName" : "LoggingServers",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          }
-        },
-        {
-          "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
-          "differential" : false,
-          "propertyName" : "NtpServers",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          }
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameName",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
+[
+  {
+    "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
+    "roleConsistencyQuestions" : [
+      {
+        "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
+        "differential" : false,
+        "propertyName" : "LoggingServers",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
             ]
           },
-          "structType" : "CommunityList"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameName",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "Interface"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameName",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameName",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameName",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "Vrf"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameDefinition",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "CommunityList"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameDefinition",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
-          "differential" : false,
-          "hypothesis" : "sameDefinition",
-          "roleSpecifier" : {
-            "inferred" : false,
-            "roleMap" : {
-              "border" : [
-                "as2border1",
-                "as2border2"
-              ],
-              "core" : [
-                "as2core1",
-                "as2core2"
-              ],
-              "dept" : [
-                "as2dept1"
-              ],
-              "dist" : [
-                "as2dist1",
-                "as2dist2"
-              ]
-            },
-            "roleRegexes" : [
-              "[a-z]*\\d([a-z]+).*",
-              "([a-z]+)\\d"
-            ]
-          },
-          "structType" : "RouteFilterList"
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
         }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesQuestion",
-    "differential" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+      },
+      {
+        "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
+        "differential" : false,
+        "propertyName" : "NtpServers",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        }
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameName",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameName",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "Interface"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameName",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameName",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameName",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "Vrf"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameDefinition",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameDefinition",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
+        "differential" : false,
+        "hypothesis" : "sameDefinition",
+        "roleSpecifier" : {
+          "inferred" : false,
+          "roleMap" : {
+            "border" : [
+              "as2border1",
+              "as2border2"
+            ],
+            "core" : [
+              "as2core1",
+              "as2core2"
+            ],
+            "dept" : [
+              "as2dept1"
+            ],
+            "dist" : [
+              "as2dist1",
+              "as2dist2"
+            ]
+          },
+          "roleRegexes" : [
+            "[a-z]*\\d([a-z]+).*",
+            "([a-z]+)\\d"
+          ]
+        },
+        "structType" : "RouteFilterList"
+      }
+    ]
   }
-}
+]

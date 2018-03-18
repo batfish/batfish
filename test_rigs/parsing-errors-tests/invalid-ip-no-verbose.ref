@@ -12,9 +12,15 @@
   "question" : {
     "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
     "differential" : false,
+    "environmentBgpTables" : false,
     "environmentRoutes" : false,
     "summary" : false,
     "verboseError" : false
   },
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

@@ -1,733 +1,714 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsAnswerElement",
-      "bgpAdvertisements" : {
-        "as2border2" : [
-          {
-            "asPath" : [
-              [
-                3
-              ],
-              [
-                1
-              ]
+[
+  {
+    "class" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsAnswerElement",
+    "bgpAdvertisements" : {
+      "as2border2" : [
+        {
+          "asPath" : [
+            [
+              3
             ],
-            "communities" : [
-              65539,
-              196610
+            [
+              1
+            ]
+          ],
+          "communities" : [
+            65539,
+            196610
+          ],
+          "dstIp" : "10.23.21.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "1.0.1.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "3.1.1.1",
+          "srcIp" : "10.23.21.3",
+          "srcNode" : "as3border1",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              3
             ],
-            "dstIp" : "10.23.21.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "1.0.1.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "3.1.1.1",
-            "srcIp" : "10.23.21.3",
-            "srcNode" : "as3border1",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ],
-              [
-                1
-              ]
+            [
+              1
+            ]
+          ],
+          "communities" : [
+            65539,
+            196610
+          ],
+          "dstIp" : "10.23.21.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "1.0.2.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "3.1.1.1",
+          "srcIp" : "10.23.21.3",
+          "srcNode" : "as3border1",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              3
+            ]
+          ],
+          "communities" : [
+            196610
+          ],
+          "dstIp" : "10.23.21.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "3.0.1.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "3.1.1.1",
+          "srcIp" : "10.23.21.3",
+          "srcNode" : "as3border1",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              3
+            ]
+          ],
+          "communities" : [
+            196610
+          ],
+          "dstIp" : "10.23.21.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "3.0.2.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "3.1.1.1",
+          "srcIp" : "10.23.21.3",
+          "srcNode" : "as3border1",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              2
             ],
-            "communities" : [
-              65539,
-              196610
+            [
+              1
+            ]
+          ],
+          "communities" : [
+            65538,
+            131075
+          ],
+          "dstIp" : "10.23.21.3",
+          "dstNode" : "as3border1",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 50,
+          "network" : "1.0.1.0/24",
+          "nextHopIp" : "10.23.21.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "10.23.21.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              2
             ],
-            "dstIp" : "10.23.21.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "1.0.2.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "3.1.1.1",
-            "srcIp" : "10.23.21.3",
-            "srcNode" : "as3border1",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ]
-            ],
-            "communities" : [
-              196610
-            ],
-            "dstIp" : "10.23.21.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "3.0.1.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "3.1.1.1",
-            "srcIp" : "10.23.21.3",
-            "srcNode" : "as3border1",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ]
-            ],
-            "communities" : [
-              196610
-            ],
-            "dstIp" : "10.23.21.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "3.0.2.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "3.1.1.1",
-            "srcIp" : "10.23.21.3",
-            "srcNode" : "as3border1",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                2
-              ],
-              [
-                1
-              ]
-            ],
-            "communities" : [
-              65538,
-              131075
-            ],
-            "dstIp" : "10.23.21.3",
-            "dstNode" : "as3border1",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 50,
-            "network" : "1.0.1.0/24",
-            "nextHopIp" : "10.23.21.2",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "10.23.21.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                2
-              ],
-              [
-                1
-              ]
-            ],
-            "communities" : [
-              65538,
-              131075
-            ],
-            "dstIp" : "10.23.21.3",
-            "dstNode" : "as3border1",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 50,
-            "network" : "1.0.2.0/24",
-            "nextHopIp" : "10.23.21.2",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "10.23.21.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                2
-              ]
-            ],
-            "communities" : [
-              131075
-            ],
-            "dstIp" : "10.23.21.3",
-            "dstNode" : "as3border1",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 50,
-            "network" : "2.128.0.0/16",
-            "nextHopIp" : "10.23.21.2",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "10.23.21.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "bgp",
-            "srcVrf" : "default",
-            "type" : "ebgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                1
-              ]
-            ],
-            "clusterList" : [
-              33620481
-            ],
-            "communities" : [
-              65538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "1.0.1.0/24",
-            "nextHopIp" : "10.12.11.1",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.1",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                1
-              ]
-            ],
-            "clusterList" : [
-              33620481
-            ],
-            "communities" : [
-              65538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "1.0.2.0/24",
-            "nextHopIp" : "10.12.11.1",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.1",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [ ],
-            "clusterList" : [
-              33620481
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 0,
-            "network" : "2.128.0.0/16",
-            "nextHopIp" : "2.1.1.1",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.1",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620481
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.0.0/24",
-            "nextHopIp" : "2.34.101.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.1",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620481
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.0.0/24",
-            "nextHopIp" : "2.34.201.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.2",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620481
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.1.0/24",
-            "nextHopIp" : "2.34.101.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.1",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620481
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.1.0/24",
-            "nextHopIp" : "2.34.201.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.2",
-            "srcIp" : "2.1.2.1",
-            "srcNode" : "as2core1",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                1
-              ]
-            ],
-            "clusterList" : [
-              33620482
-            ],
-            "communities" : [
-              65538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "1.0.1.0/24",
-            "nextHopIp" : "10.12.11.1",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.1",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                1
-              ]
-            ],
-            "clusterList" : [
-              33620482
-            ],
-            "communities" : [
-              65538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "1.0.2.0/24",
-            "nextHopIp" : "10.12.11.1",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.1",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [ ],
-            "clusterList" : [
-              33620482
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 0,
-            "network" : "2.128.0.0/16",
-            "nextHopIp" : "2.1.1.1",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.1",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620482
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.0.0/24",
-            "nextHopIp" : "2.34.101.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.1",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620482
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.0.0/24",
-            "nextHopIp" : "2.34.201.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.2",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620482
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.1.0/24",
-            "nextHopIp" : "2.34.101.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.1",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [
-              [
-                65001
-              ]
-            ],
-            "clusterList" : [
-              33620482
-            ],
-            "communities" : [
-              4259905538
-            ],
-            "dstIp" : "2.1.1.2",
-            "dstNode" : "as2border2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "2.128.1.0/24",
-            "nextHopIp" : "2.34.201.4",
-            "originType" : "igp",
-            "originatorIp" : "2.1.3.2",
-            "srcIp" : "2.1.2.2",
-            "srcNode" : "as2core2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_received",
-            "weight" : 0
-          },
-          {
-            "asPath" : [ ],
-            "dstIp" : "2.1.2.1",
-            "dstNode" : "as2core1",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 0,
-            "network" : "2.128.0.0/16",
-            "nextHopIp" : "2.1.1.2",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "2.1.1.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ]
-            ],
-            "communities" : [
-              196610
-            ],
-            "dstIp" : "2.1.2.1",
-            "dstNode" : "as2core1",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "3.0.1.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "2.1.1.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ]
-            ],
-            "communities" : [
-              196610
-            ],
-            "dstIp" : "2.1.2.1",
-            "dstNode" : "as2core1",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "3.0.2.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "2.1.1.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [ ],
-            "dstIp" : "2.1.2.2",
-            "dstNode" : "as2core2",
-            "dstVrf" : "default",
-            "localPreference" : 100,
-            "med" : 0,
-            "network" : "2.128.0.0/16",
-            "nextHopIp" : "2.1.1.2",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "2.1.1.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ]
-            ],
-            "communities" : [
-              196610
-            ],
-            "dstIp" : "2.1.2.2",
-            "dstNode" : "as2core2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "3.0.1.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "2.1.1.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_sent",
-            "weight" : -1
-          },
-          {
-            "asPath" : [
-              [
-                3
-              ]
-            ],
-            "communities" : [
-              196610
-            ],
-            "dstIp" : "2.1.2.2",
-            "dstNode" : "as2core2",
-            "dstVrf" : "default",
-            "localPreference" : 350,
-            "med" : 50,
-            "network" : "3.0.2.0/24",
-            "nextHopIp" : "10.23.21.3",
-            "originType" : "igp",
-            "originatorIp" : "2.1.1.2",
-            "srcIp" : "2.1.1.2",
-            "srcNode" : "as2border2",
-            "srcProtocol" : "ibgp",
-            "srcVrf" : "default",
-            "type" : "ibgp_sent",
-            "weight" : -1
-          }
-        ]
-      }
+            [
+              1
+            ]
+          ],
+          "communities" : [
+            65538,
+            131075
+          ],
+          "dstIp" : "10.23.21.3",
+          "dstNode" : "as3border1",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 50,
+          "network" : "1.0.2.0/24",
+          "nextHopIp" : "10.23.21.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "10.23.21.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              2
+            ]
+          ],
+          "communities" : [
+            131075
+          ],
+          "dstIp" : "10.23.21.3",
+          "dstNode" : "as3border1",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 50,
+          "network" : "2.128.0.0/16",
+          "nextHopIp" : "10.23.21.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "10.23.21.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "bgp",
+          "srcVrf" : "default",
+          "type" : "ebgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              1
+            ]
+          ],
+          "clusterList" : [
+            33620481
+          ],
+          "communities" : [
+            65538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "1.0.1.0/24",
+          "nextHopIp" : "10.12.11.1",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.1",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              1
+            ]
+          ],
+          "clusterList" : [
+            33620481
+          ],
+          "communities" : [
+            65538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "1.0.2.0/24",
+          "nextHopIp" : "10.12.11.1",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.1",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [ ],
+          "clusterList" : [
+            33620481
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 0,
+          "network" : "2.128.0.0/16",
+          "nextHopIp" : "2.1.1.1",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.1",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620481
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.0.0/24",
+          "nextHopIp" : "2.34.101.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.1",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620481
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.0.0/24",
+          "nextHopIp" : "2.34.201.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.2",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620481
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.1.0/24",
+          "nextHopIp" : "2.34.101.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.1",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620481
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.1.0/24",
+          "nextHopIp" : "2.34.201.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.2",
+          "srcIp" : "2.1.2.1",
+          "srcNode" : "as2core1",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              1
+            ]
+          ],
+          "clusterList" : [
+            33620482
+          ],
+          "communities" : [
+            65538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "1.0.1.0/24",
+          "nextHopIp" : "10.12.11.1",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.1",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              1
+            ]
+          ],
+          "clusterList" : [
+            33620482
+          ],
+          "communities" : [
+            65538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "1.0.2.0/24",
+          "nextHopIp" : "10.12.11.1",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.1",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [ ],
+          "clusterList" : [
+            33620482
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 0,
+          "network" : "2.128.0.0/16",
+          "nextHopIp" : "2.1.1.1",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.1",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620482
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.0.0/24",
+          "nextHopIp" : "2.34.101.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.1",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620482
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.0.0/24",
+          "nextHopIp" : "2.34.201.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.2",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620482
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.1.0/24",
+          "nextHopIp" : "2.34.101.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.1",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [
+            [
+              65001
+            ]
+          ],
+          "clusterList" : [
+            33620482
+          ],
+          "communities" : [
+            4259905538
+          ],
+          "dstIp" : "2.1.1.2",
+          "dstNode" : "as2border2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "2.128.1.0/24",
+          "nextHopIp" : "2.34.201.4",
+          "originType" : "igp",
+          "originatorIp" : "2.1.3.2",
+          "srcIp" : "2.1.2.2",
+          "srcNode" : "as2core2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_received",
+          "weight" : 0
+        },
+        {
+          "asPath" : [ ],
+          "dstIp" : "2.1.2.1",
+          "dstNode" : "as2core1",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 0,
+          "network" : "2.128.0.0/16",
+          "nextHopIp" : "2.1.1.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "2.1.1.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              3
+            ]
+          ],
+          "communities" : [
+            196610
+          ],
+          "dstIp" : "2.1.2.1",
+          "dstNode" : "as2core1",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "3.0.1.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "2.1.1.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              3
+            ]
+          ],
+          "communities" : [
+            196610
+          ],
+          "dstIp" : "2.1.2.1",
+          "dstNode" : "as2core1",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "3.0.2.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "2.1.1.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [ ],
+          "dstIp" : "2.1.2.2",
+          "dstNode" : "as2core2",
+          "dstVrf" : "default",
+          "localPreference" : 100,
+          "med" : 0,
+          "network" : "2.128.0.0/16",
+          "nextHopIp" : "2.1.1.2",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "2.1.1.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              3
+            ]
+          ],
+          "communities" : [
+            196610
+          ],
+          "dstIp" : "2.1.2.2",
+          "dstNode" : "as2core2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "3.0.1.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "2.1.1.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_sent",
+          "weight" : -1
+        },
+        {
+          "asPath" : [
+            [
+              3
+            ]
+          ],
+          "communities" : [
+            196610
+          ],
+          "dstIp" : "2.1.2.2",
+          "dstNode" : "as2core2",
+          "dstVrf" : "default",
+          "localPreference" : 350,
+          "med" : 50,
+          "network" : "3.0.2.0/24",
+          "nextHopIp" : "10.23.21.3",
+          "originType" : "igp",
+          "originatorIp" : "2.1.1.2",
+          "srcIp" : "2.1.1.2",
+          "srcNode" : "as2border2",
+          "srcProtocol" : "ibgp",
+          "srcVrf" : "default",
+          "type" : "ibgp_sent",
+          "weight" : -1
+        }
+      ]
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.BgpAdvertisementsQuestionPlugin$BgpAdvertisementsQuestion",
-    "differential" : false,
-    "ebgp" : true,
-    "fromEnvironment" : false,
-    "ibgp" : true,
-    "nodeRegex" : "as2border2",
-    "prefixSpace" : [ ],
-    "received" : true,
-    "sent" : true
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
   }
-}
+]

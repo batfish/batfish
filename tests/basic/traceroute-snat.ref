@@ -1,122 +1,108 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.datamodel.FlowHistory",
-      "traces" : {
-        "Flow<ingressNode:host1 ingressVrf:default srcIp:172.20.0.1 dstIp:1.2.3.4 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
-          "environments" : {
-            "BASE" : {
-              "envName" : "env_default",
-              "testrigName" : "basic-snat"
-            }
-          },
-          "flow" : {
-            "dscp" : 0,
-            "dstIp" : "1.2.3.4",
-            "dstPort" : 0,
-            "ecn" : 0,
-            "fragmentOffset" : 0,
-            "icmpCode" : 255,
-            "icmpVar" : 255,
-            "ingressNode" : "host1",
-            "ingressVrf" : "default",
-            "ipProtocol" : "IP",
-            "packetLength" : 0,
-            "srcIp" : "172.20.0.1",
-            "srcPort" : 0,
-            "state" : "NEW",
-            "tag" : "BASE",
-            "tcpFlagsAck" : 0,
-            "tcpFlagsCwr" : 0,
-            "tcpFlagsEce" : 0,
-            "tcpFlagsFin" : 0,
-            "tcpFlagsPsh" : 0,
-            "tcpFlagsRst" : 0,
-            "tcpFlagsSyn" : 0,
-            "tcpFlagsUrg" : 0
-          },
-          "paths" : {
-            "BASE" : [
-              {
-                "disposition" : "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK",
-                "hops" : [
-                  {
-                    "edge" : {
-                      "node1" : "host1",
-                      "node1interface" : "eth0",
-                      "node2" : "us_switch",
-                      "node2interface" : "Ethernet2"
-                    },
-                    "routes" : [
-                      "StaticRoute<0.0.0.0/0,nhip:172.20.0.0,nhint:eth0>_fnhip:172.20.0.0"
-                    ]
-                  },
-                  {
-                    "edge" : {
-                      "node1" : "us_switch",
-                      "node1interface" : "Ethernet1",
-                      "node2" : "us_border",
-                      "node2interface" : "Ethernet1"
-                    },
-                    "routes" : [
-                      "StaticRoute<0.0.0.0/0,nhip:172.16.0.0,nhint:dynamic>_fnhip:172.16.0.0"
-                    ]
-                  },
-                  {
-                    "edge" : {
-                      "node1" : "us_border",
-                      "node1interface" : "Ethernet2",
-                      "node2" : "(none)",
-                      "node2interface" : "null_interface"
-                    },
-                    "routes" : [
-                      "BgpRoute<1.0.0.0/8,nhip:10.0.0.0,nhint:dynamic>_fnhip:10.0.0.0"
-                    ],
-                    "transformedFlow" : {
-                      "dscp" : 0,
-                      "dstIp" : "1.2.3.4",
-                      "dstPort" : 0,
-                      "ecn" : 0,
-                      "fragmentOffset" : 0,
-                      "icmpCode" : 255,
-                      "icmpVar" : 255,
-                      "ingressNode" : "host1",
-                      "ingressVrf" : "default",
-                      "ipProtocol" : "IP",
-                      "packetLength" : 0,
-                      "srcIp" : "10.10.10.10",
-                      "srcPort" : 0,
-                      "state" : "NEW",
-                      "tag" : "BASE",
-                      "tcpFlagsAck" : 0,
-                      "tcpFlagsCwr" : 0,
-                      "tcpFlagsEce" : 0,
-                      "tcpFlagsFin" : 0,
-                      "tcpFlagsPsh" : 0,
-                      "tcpFlagsRst" : 0,
-                      "tcpFlagsSyn" : 0,
-                      "tcpFlagsUrg" : 0
-                    }
-                  }
-                ],
-                "notes" : "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK"
-              }
-            ]
+[
+  {
+    "class" : "org.batfish.datamodel.FlowHistory",
+    "traces" : {
+      "Flow<ingressNode:host1 ingressVrf:default srcIp:172.20.0.1 dstIp:1.2.3.4 ipProtocol:IP dscp: 0 ecn:0 fragmentOffset:0 packetLength:0 state:NEW tag:BASE>" : {
+        "environments" : {
+          "BASE" : {
+            "envName" : "env_default",
+            "testrigName" : "basic-snat"
           }
+        },
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.2.3.4",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "172.20.0.1",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "paths" : {
+          "BASE" : [
+            {
+              "disposition" : "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK",
+              "hops" : [
+                {
+                  "edge" : {
+                    "node1" : "host1",
+                    "node1interface" : "eth0",
+                    "node2" : "us_switch",
+                    "node2interface" : "Ethernet2"
+                  },
+                  "routes" : [
+                    "StaticRoute<0.0.0.0/0,nhip:172.20.0.0,nhint:eth0>_fnhip:172.20.0.0"
+                  ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "us_switch",
+                    "node1interface" : "Ethernet1",
+                    "node2" : "us_border",
+                    "node2interface" : "Ethernet1"
+                  },
+                  "routes" : [
+                    "StaticRoute<0.0.0.0/0,nhip:172.16.0.0,nhint:dynamic>_fnhip:172.16.0.0"
+                  ]
+                },
+                {
+                  "edge" : {
+                    "node1" : "us_border",
+                    "node1interface" : "Ethernet2",
+                    "node2" : "(none)",
+                    "node2interface" : "null_interface"
+                  },
+                  "routes" : [
+                    "BgpRoute<1.0.0.0/8,nhip:10.0.0.0,nhint:dynamic>_fnhip:10.0.0.0"
+                  ],
+                  "transformedFlow" : {
+                    "dscp" : 0,
+                    "dstIp" : "1.2.3.4",
+                    "dstPort" : 0,
+                    "ecn" : 0,
+                    "fragmentOffset" : 0,
+                    "icmpCode" : 255,
+                    "icmpVar" : 255,
+                    "ingressNode" : "host1",
+                    "ingressVrf" : "default",
+                    "ipProtocol" : "IP",
+                    "packetLength" : 0,
+                    "srcIp" : "10.10.10.10",
+                    "srcPort" : 0,
+                    "state" : "NEW",
+                    "tag" : "BASE",
+                    "tcpFlagsAck" : 0,
+                    "tcpFlagsCwr" : 0,
+                    "tcpFlagsEce" : 0,
+                    "tcpFlagsFin" : 0,
+                    "tcpFlagsPsh" : 0,
+                    "tcpFlagsRst" : 0,
+                    "tcpFlagsSyn" : 0,
+                    "tcpFlagsUrg" : 0
+                  }
+                }
+              ],
+              "notes" : "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK"
+            }
+          ]
         }
       }
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.TracerouteQuestionPlugin$TracerouteQuestion",
-    "differential" : false,
-    "dst" : "1.2.3.4",
-    "ingressNode" : "host1"
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
   }
-}
+]
