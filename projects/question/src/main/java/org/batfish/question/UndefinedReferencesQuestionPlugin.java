@@ -27,8 +27,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
         _undefinedReferences;
 
     public UndefinedReferencesAnswerElement() {
-      _summary = new AnswerSummary();
       _undefinedReferences = new TreeMap<>();
+      setSummary(new AnswerSummary());
     }
 
     public SortedMap<

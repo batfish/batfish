@@ -26,8 +26,8 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
         _unusedStructures;
 
     public UnusedStructuresAnswerElement() {
-      _summary = new AnswerSummary();
       _unusedStructures = new TreeMap<>();
+      setSummary(new AnswerSummary());
     }
 
     public SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>

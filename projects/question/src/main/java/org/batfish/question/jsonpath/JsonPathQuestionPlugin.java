@@ -58,7 +58,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     public JsonPathAnswerElement() {
       // don't initialize _debug, so we won't serialize when its null (common case)
       _results = new TreeMap<>();
-      _summary = new AnswerSummary();
+      setSummary(new AnswerSummary());
     }
 
     public void addDebugInfo(String key, Object value) {
