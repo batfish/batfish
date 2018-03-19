@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
@@ -257,109 +256,57 @@ public class Region implements Serializable {
   }
 
   public void toConfigurationNodes(
-      AwsConfiguration awsConfiguration,
-      Map<String, Configuration> configurationNodes,
-      BatfishLogger logger) {
+      AwsConfiguration awsConfiguration, Map<String, Configuration> configurationNodes) {
 
     // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
 
     for (Vpc vpc : getVpcs().values()) {
-      try {
-        Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting VPC %s: %s\n", vpc.getId(), e.getMessage());
-      }
+      Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
-      try {
-        Configuration cfgNode = elasticsearchDomain.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting Elasticsearch instance %s: %s\n",
-            elasticsearchDomain.getId(), e.getMessage());
-      }
+      Configuration cfgNode = elasticsearchDomain.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      try {
-        Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting Internet Gateway %s: %s\n",
-            igw.getId(), e.getMessage());
-      }
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
       awsConfiguration
           .getWarnings()
           .redFlag("NAT functionality not yet implemented for " + ngw.getId());
-      try {
-        Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting NAT Gateway %s: %s\n", ngw.getId(), e.getMessage());
-      }
+      Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
-      try {
-        Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting VPN Gateway %s: %s\n", vgw.getId(), e.getMessage());
-      }
+      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (Instance instance : getInstances().values()) {
-      try {
-        Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this);
-        cfgNode.setDeviceType(DeviceType.HOST);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting EC2 instance %s: %s\n",
-            instance.getId(), e.getMessage());
-      }
+      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this);
+      cfgNode.setDeviceType(DeviceType.HOST);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
-      try {
-        Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting RDS instance %s: %s\n",
-            rdsInstance.getId(), e.getMessage());
-      }
+      Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (Subnet subnet : getSubnets().values()) {
-      try {
-        Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this);
-        configurationNodes.put(cfgNode.getName(), cfgNode);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting Subnet %s: %s\n", subnet.getId(), e.getMessage());
-      }
+      Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this);
+      configurationNodes.put(cfgNode.getName(), cfgNode);
     }
 
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
-      try {
-        vpnConnection.applyToVpnGateway(awsConfiguration, this);
-      } catch (BatfishException e) {
-        logger.warnf(
-            "Encountered error while converting VPN Connection %s: %s\n",
-            vpnConnection.getId(), e.getMessage());
-      }
+      vpnConnection.applyToVpnGateway(awsConfiguration, this);
     }
 
     // TODO: for now, set all interfaces to have the same bandwidth
