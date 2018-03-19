@@ -21,12 +21,12 @@ public class AclIpSpaceLine {
       return new AclIpSpaceLine(_ipSpace, _action, _matchComplement);
     }
 
-    public Builder setAction(LineAction action) {
+    public Builder setAction(@Nonnull LineAction action) {
       _action = action;
       return this;
     }
 
-    public Builder setIpSpace(IpSpace ipSpace) {
+    public Builder setIpSpace(@Nonnull IpSpace ipSpace) {
       _ipSpace = ipSpace;
       return this;
     }

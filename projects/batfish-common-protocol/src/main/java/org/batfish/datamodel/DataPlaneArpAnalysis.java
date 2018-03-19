@@ -17,10 +17,6 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  private final Map<
-          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-      _arpRequests;
-
   private final Map<Edge, IpSpace> _arpTrueEdge;
 
   private final Map<Edge, IpSpace> _arpTrueEdgeDestIp;
@@ -74,8 +70,6 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     _routesWithDestIpEdge = computeRoutesWithDestIpEdge(fibs, topology);
     _arpTrueEdgeDestIp = computeArpTrueEdgeDestIp(configurations, ribs);
     _arpTrueEdge = computeArpTrueEdge();
-
-    _arpRequests = computeArpRequests(fibs, topology);
   }
 
   /**
@@ -133,77 +127,6 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                           interfaces.get(iface), routableIpsForThisVrf, ipsRoutedOutIface)));
         });
     return arpRepliesByInterfaceBuilder.build();
-  }
-
-  private Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-      computeArpRequests(Map<String, Map<String, Fib>> fibs, Topology topology) {
-    return fibs.entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey, // hostname
-                fibsByNodeEntry -> {
-                  String hostname = fibsByNodeEntry.getKey();
-                  return fibsByNodeEntry
-                      .getValue()
-                      .entrySet()
-                      .stream()
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Entry::getKey, // vrfName
-                              fibsByVrfEntry -> {
-                                String vrfName = fibsByVrfEntry.getKey();
-                                return computeFibArpRequests(
-                                    hostname, vrfName, fibsByVrfEntry.getValue(), topology);
-                              }));
-                }));
-  }
-
-  private Map<ArpIpChoice, Set<IpSpace>> computeArpRequestsFromNextHopIps(
-      String hostname,
-      String vrfName,
-      String outInterface,
-      Set<Ip> nextHopIps,
-      Set<NodeInterfacePair> receivers) {
-    Set<ArpIpChoice> arpIpChoices =
-        nextHopIps.stream().map(ArpIpChoice::of).collect(ImmutableSet.toImmutableSet());
-    if (arpIpChoices.equals(ImmutableSet.of(ArpIpChoice.USE_DST_IP))) {
-      /*
-       * The union of legal ARP replies of each peer (replyingNode,replyingInterface)
-       * of the outgoing interface.The ACL is the one generated for the peer
-       * (node,interface) pair by algorithm 1.
-       */
-      return ImmutableMap.of(
-          ArpIpChoice.USE_DST_IP,
-          receivers
-              .stream()
-              .map(receiver -> _arpReplies.get(receiver.getHostname()).get(receiver.getInterface()))
-              .collect(ImmutableSet.toImmutableSet()));
-    } else {
-      /* All nextHopIps should be actual IPs. */
-      return arpIpChoices
-          .stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Function.identity(),
-                  arpIpChoice -> {
-                    boolean someoneWillReply =
-                        receivers
-                            .stream()
-                            .map(
-                                receiver ->
-                                    _arpReplies
-                                        .get(receiver.getHostname())
-                                        .get(receiver.getInterface()))
-                            .anyMatch(
-                                receiverReplies -> receiverReplies.contains(arpIpChoice.getIp()));
-                    if (someoneWillReply) {
-                      return ImmutableSet.of(AclIpSpace.PERMIT_ALL);
-                    } else {
-                      return ImmutableSet.of(AclIpSpace.DENY_ALL);
-                    }
-                  }));
-    }
   }
 
   private Map<Edge, IpSpace> computeArpTrueEdge() {
@@ -282,44 +205,6 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                   Set<AbstractRoute> routes = routesWithNextHopIpArpTrueEntry.getValue();
                   return computeRouteMatchConditions(routes, rib);
                 }));
-  }
-
-  private Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>> computeFibArpRequests(
-      String hostname, String vrfName, Fib fib, Topology topology) {
-    return fib.getNextHopInterfaces()
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* route */,
-                nextHopInterfacesByRouteEntry ->
-                    nextHopInterfacesByRouteEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* outInterface */,
-                                nextHopInfoByOutInterfaceEntry -> {
-                                  String outInterface = nextHopInfoByOutInterfaceEntry.getKey();
-                                  Set<Edge> outInterfaceEdges =
-                                      topology
-                                          .getInterfaceEdges()
-                                          .get(new NodeInterfacePair(hostname, outInterface));
-                                  Set<NodeInterfacePair> receivers =
-                                      outInterfaceEdges
-                                          .stream()
-                                          .filter(
-                                              edge ->
-                                                  edge.getNode1().equals(hostname)
-                                                      && edge.getInt1().equals(outInterface))
-                                          .map(Edge::getInterface2)
-                                          .collect(ImmutableSet.toImmutableSet());
-                                  Set<Ip> nextHopIps =
-                                      nextHopInfoByOutInterfaceEntry.getValue().keySet();
-                                  return computeArpRequestsFromNextHopIps(
-                                      hostname, vrfName, outInterface, nextHopIps, receivers);
-                                }))));
   }
 
   private IpSpace computeInterfaceArpReplies(
@@ -460,7 +345,10 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                                   routesWhereDstIpCanBeArpIpByInterfaceEntry
                                                       .getValue();
                                               IpSpace someoneReplies =
-                                                  _someoneReplies.get(hostname).get(outInterface);
+                                                  _someoneReplies
+                                                      .get(hostname)
+                                                      .getOrDefault(
+                                                          outInterface, EmptyIpSpace.INSTANCE);
                                               GenericRib<AbstractRoute> rib =
                                                   ribs.get(hostname).get(vrf);
                                               IpSpace ipsRoutedOutInterface =
@@ -730,20 +618,23 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Entry::getKey /* vrf */,
-                              routesWithNextHopByVrfEntry ->
-                                  routesWithNextHopByVrfEntry
-                                      .getValue()
-                                      .entrySet()
-                                      .stream()
-                                      .collect(
-                                          ImmutableMap.toImmutableMap(
-                                              Entry::getKey /* outInterface */,
-                                              routesWithNextHopByOutInterfaceEntry -> {
-                                                return computeRoutesWithNextHopIpFalseForInterface(
-                                                    fibs,
-                                                    hostname,
-                                                    routesWithNextHopByOutInterfaceEntry);
-                                              }))));
+                              routesWithNextHopByVrfEntry -> {
+                                String vrf = routesWithNextHopByVrfEntry.getKey();
+                                return routesWithNextHopByVrfEntry
+                                    .getValue()
+                                    .entrySet()
+                                    .stream()
+                                    .collect(
+                                        ImmutableMap.toImmutableMap(
+                                            Entry::getKey /* outInterface */,
+                                            routesWithNextHopByOutInterfaceEntry -> {
+                                              Fib fib = fibs.get(hostname).get(vrf);
+                                              return computeRoutesWithNextHopIpFalseForInterface(
+                                                  fib,
+                                                  hostname,
+                                                  routesWithNextHopByOutInterfaceEntry);
+                                            }));
+                              }));
                 }));
   }
 
@@ -756,7 +647,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 (vrf, routesWithNextHopByInterface) ->
                     routesWithNextHopByInterface.forEach(
                         (outInterface, candidateRoutes) -> {
-                          Fib fib = fibs.get(hostname).get(outInterface);
+                          Fib fib = fibs.get(hostname).get(vrf);
                           NodeInterfacePair out = new NodeInterfacePair(hostname, outInterface);
                           Set<NodeInterfacePair> receivers = topology.getNeighbors(out);
                           receivers.forEach(
@@ -786,13 +677,12 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   private Set<AbstractRoute> computeRoutesWithNextHopIpFalseForInterface(
-      Map<String, Map<String, Fib>> fibs,
+      Fib fib,
       String hostname,
       Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
     String outInterface = routesWithNextHopByOutInterfaceEntry.getKey();
     IpSpace someoneReplies = _someoneReplies.get(hostname).get(outInterface);
     Set<AbstractRoute> candidateRoutes = routesWithNextHopByOutInterfaceEntry.getValue();
-    Fib fib = fibs.get(hostname).get(outInterface);
     return candidateRoutes
         .stream()
         .filter(
@@ -844,12 +734,6 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   @Override
   public Map<String, Map<String, IpSpace>> getArpReplies() {
     return _arpReplies;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-      getArpRequests() {
-    return _arpRequests;
   }
 
   @Override

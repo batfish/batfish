@@ -28,6 +28,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DataPlaneArpAnalysis;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
@@ -44,6 +45,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -159,8 +161,17 @@ public class NodJobTest {
   }
 
   private void setupSynthesizer() {
-    // TODO: fix
-    SynthesizerInput input = SynthesizerInputImpl.builder().setConfigurations(_configs).build();
+    Topology topology = new Topology(_dataPlane.getTopologyEdges());
+    SynthesizerInput input =
+        SynthesizerInputImpl.builder()
+            .setConfigurations(_configs)
+            .setArpAnalysis(
+                new DataPlaneArpAnalysis(
+                    _configs, _dataPlane.getRibs(), _dataPlane.getFibs(), topology))
+            .setSimplify(false)
+            .setTopology(topology)
+            .build();
+
     _synthesizer = new Synthesizer(input);
   }
 

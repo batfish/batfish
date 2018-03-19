@@ -3338,7 +3338,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                   ImmutableMap.of(node, ImmutableSet.of(vrf));
                               StandardReachabilityQuerySynthesizer acceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
-                                      .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+                                      .setActions(
+                                          ImmutableSet.of(
+                                              ForwardingAction.ACCEPT,
+                                              ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(reachabilitySettings.getHeaderSpace())
                                       .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())
@@ -3347,7 +3350,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                       .build();
                               StandardReachabilityQuerySynthesizer notAcceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
-                                      .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+                                      .setActions(
+                                          ImmutableSet.of(
+                                              ForwardingAction.ACCEPT,
+                                              ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(new HeaderSpace())
                                       .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())

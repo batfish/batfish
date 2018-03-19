@@ -51,6 +51,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private List<SourceNat> _sourceNats;
 
+    private boolean _proxyArp;
+
     private InterfaceAddress _address;
 
     private Vrf _vrf;
@@ -82,6 +84,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getInterfaces().put(name, iface);
       }
+      iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);
       iface.setAddress(_address);
       if (_address != null) {
@@ -160,6 +163,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setSourceNats(List<SourceNat> sourceNats) {
       _sourceNats = sourceNats;
+      return this;
+    }
+
+    public Builder setProxyArp(boolean proxyArp) {
+      _proxyArp = proxyArp;
       return this;
     }
 
