@@ -35,6 +35,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     long elapsedTime;
     _logger.infof("Processing: \"%s\"", _name);
     Map<String, Configuration> configurations = new HashMap<>();
+    Map<String, Warnings> warningsByHost = new HashMap<>();
     ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     try {
       // We have only two options: AWS VPCs or router configs
@@ -74,8 +75,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         }
 
         configurations.put(_name, configuration);
+        warningsByHost.put(_name, _warnings);
       } else {
-        configurations = ((AwsConfiguration) _configObject).toConfigurations(_warnings, _logger);
+        configurations =
+            ((AwsConfiguration) _configObject).toConfigurations(_warnings, warningsByHost);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {
@@ -88,6 +91,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(
-        elapsedTime, _logger.getHistory(), _warnings, _name, configurations, answerElement);
+        elapsedTime, _logger.getHistory(), warningsByHost, _name, configurations, answerElement);
   }
 }

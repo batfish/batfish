@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -110,7 +111,8 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     }
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_dbInstanceIdentifier, "aws");
 
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
@@ -121,12 +123,10 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     for (String sGroupId : _securityGroups) {
       SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
       if (sGroup == null) {
-        awsVpcConfig
-            .getWarnings()
-            .redFlag(
-                String.format(
-                    "Security group \"%s\" for RDS instance \"%s\" not found",
-                    sGroupId, _dbInstanceIdentifier));
+        warnings.pedantic(
+            String.format(
+                "Security group \"%s\" for RDS instance \"%s\" not found",
+                sGroupId, _dbInstanceIdentifier));
         continue;
       }
 
@@ -149,12 +149,10 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     for (String subnetId : subnets) {
       Subnet subnet = region.getSubnets().get(subnetId);
       if (subnet == null) {
-        awsVpcConfig
-            .getWarnings()
-            .redFlag(
-                String.format(
-                    "Subnet \"%s\" for RDS instance \"%s\" not found",
-                    subnetId, _dbInstanceIdentifier));
+        warnings.redFlag(
+            String.format(
+                "Subnet \"%s\" for RDS instance \"%s\" not found",
+                subnetId, _dbInstanceIdentifier));
         continue;
       }
 

@@ -143,9 +143,3 @@ test tests/java-smt/differential2.ref get smt-reachability finalNodeRegex="R3", 
 # Test BDD-based encoding of route-maps and ACLs
 init-testrig test_rigs/smt-examples/BDD1 tr-bdd1
 test tests/java-smt/roles1.ref get smt-roles equivType=policy
-
-# z3 timeout - 1 millisecond
-add-batfish-option z3timeout 1
-init-testrig test_rigs/fattree-examples/fattree2
-test tests/java-smt/z3timeout.ref -error get smt-reachability dstIps=['70.0.2.0']
-

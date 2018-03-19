@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
@@ -260,53 +261,69 @@ public class Region implements Serializable {
 
     // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
-
     for (Vpc vpc : getVpcs().values()) {
-      Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
-      Configuration cfgNode = elasticsearchDomain.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode =
+          elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
-      awsConfiguration
-          .getWarnings()
-          .redFlag("NAT functionality not yet implemented for " + ngw.getId());
-      Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
+      Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
-      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (Instance instance : getInstances().values()) {
-      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
-      Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (Subnet subnet : getSubnets().values()) {
-      Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
-      vpnConnection.applyToVpnGateway(awsConfiguration, this);
+      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
+      awsConfiguration.getWarningsByHost().put(vpnConnection.getId(), warnings);
     }
 
     // TODO: for now, set all interfaces to have the same bandwidth

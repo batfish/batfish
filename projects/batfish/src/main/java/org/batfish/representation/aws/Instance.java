@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -171,7 +172,8 @@ public class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
     String name = _tags.getOrDefault("Name", _instanceId);
@@ -183,12 +185,9 @@ public class Instance implements AwsVpcEntity, Serializable {
       SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
 
       if (sGroup == null) {
-        awsVpcConfig
-            .getWarnings()
-            .redFlag(
-                String.format(
-                    "Security group \"%s\" for instance \"%s\" not found",
-                    sGroupId, _instanceId));
+        warnings.pedantic(
+            String.format(
+                "Security group \"%s\" for instance \"%s\" not found", sGroupId, _instanceId));
         continue;
       }
 
@@ -205,12 +204,10 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       NetworkInterface netInterface = region.getNetworkInterfaces().get(interfaceId);
       if (netInterface == null) {
-        awsVpcConfig
-            .getWarnings()
-            .redFlag(
-                String.format(
-                    "Network interface \"%s\" for instance \"%s\" not found",
-                    interfaceId, _instanceId));
+        warnings.redFlag(
+            String.format(
+                "Network interface \"%s\" for instance \"%s\" not found",
+                interfaceId, _instanceId));
         continue;
       }
 
@@ -231,22 +228,15 @@ public class Instance implements AwsVpcEntity, Serializable {
 
       for (Ip ip : netInterface.getIpAddressAssociations().keySet()) {
         if (!ifaceSubnet.contains(ip)) {
-          awsVpcConfig
-              .getWarnings()
-              .redFlag(
-                  String.format(
-                      "Instance subnet \"%s\" does not contain private ip: \"%s\"",
-                      ifaceSubnet, ip));
+          warnings.pedantic(
+              String.format(
+                  "Instance subnet \"%s\" does not contain private ip: \"%s\"", ifaceSubnet, ip));
           continue;
         }
 
         if (ip.equals(ifaceSubnet.getEndIp())) {
-          awsVpcConfig
-              .getWarnings()
-              .redFlag(
-                  String.format(
-                      "Expected end address \"%s\" to be used by generated subnet node",
-                      ip));
+          warnings.pedantic(
+              String.format("Expected end address \"%s\" to be used by generated subnet node", ip));
           continue;
         }
 

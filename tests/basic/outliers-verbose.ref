@@ -1,2293 +1,2278 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersAnswerElement",
-      "namedStructureOutliers" : [
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as1core1",
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3border1",
-            "as3border2",
-            "as3core1"
-          ],
-          "hypothesis" : "sameDefinition",
+[
+  {
+    "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersAnswerElement",
+    "namedStructureOutliers" : [
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as1core1",
+          "as2border1",
+          "as2border2",
+          "as2core1",
+          "as2core2",
+          "as2dept1",
+          "as2dist1",
+          "as2dist2",
+          "as3border1",
+          "as3border2",
+          "as3core1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "Ethernet0/0",
+        "structDefinition" : {
           "name" : "Ethernet0/0",
-          "structDefinition" : {
-            "name" : "Ethernet0/0",
-            "accessVlan" : 0,
-            "active" : false,
-            "autostate" : true,
-            "bandwidth" : 1.0E7,
-            "declaredNames" : [
-              "Ethernet0/0"
-            ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
+          "accessVlan" : 0,
+          "active" : false,
+          "autostate" : true,
+          "bandwidth" : 1.0E7,
+          "declaredNames" : [
+            "Ethernet0/0"
+          ],
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : false,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : false,
+          "ospfPointToPoint" : false,
+          "proxyArp" : true,
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "PHYSICAL",
+          "vrf" : "default"
         },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as2dept1",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as2_community",
-          "structDefinition" : {
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "regex" : "(,|\\{|\\}|^|$| )2:"
-              }
-            ],
-            "name" : "as2_community",
-            "invertMatch" : false
-          },
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as1_community",
-          "structDefinition" : {
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "regex" : "(,|\\{|\\}|^|$| )1:"
-              }
-            ],
-            "name" : "as1_community",
-            "invertMatch" : false
-          },
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as3_community",
-          "structDefinition" : {
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "regex" : "(,|\\{|\\}|^|$| )3:"
-              }
-            ],
-            "name" : "as3_community",
-            "invertMatch" : false
-          },
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "101",
-          "structDefinition" : {
-            "name" : "101",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "1.0.1.0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "1.0.2.0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "101",
-          "structDefinition" : {
-            "name" : "101",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as2dept1",
-            "as2dist1",
-            "as2dist2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "105",
-          "structDefinition" : {
-            "name" : "105",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "1.0.1.0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "1.0.2.0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "3.0.1.0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "3.0.2.0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2dist1",
-            "as2dist2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "dept_community",
-          "structDefinition" : {
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "regex" : "(,|\\{|\\}|^|$| )65001:"
-              }
-            ],
-            "name" : "dept_community",
-            "invertMatch" : false
-          },
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "filter::FORWARD",
-          "structDefinition" : {
-            "name" : "filter::FORWARD",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "mangle::FORWARD",
-          "structDefinition" : {
-            "name" : "mangle::FORWARD",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "mangle::INPUT",
-          "structDefinition" : {
-            "name" : "mangle::INPUT",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "mangle::OUTPUT",
-          "structDefinition" : {
-            "name" : "mangle::OUTPUT",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "mangle::POSTROUTING",
-          "structDefinition" : {
-            "name" : "mangle::POSTROUTING",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "mangle::PREROUTING",
-          "structDefinition" : {
-            "name" : "mangle::PREROUTING",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "nat::OUTPUT",
-          "structDefinition" : {
-            "name" : "nat::OUTPUT",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "nat::POSTROUTING",
-          "structDefinition" : {
-            "name" : "nat::POSTROUTING",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1",
-            "host2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "nat::PREROUTING",
-          "structDefinition" : {
-            "name" : "nat::PREROUTING",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2dist1",
-            "as2dist2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "105",
-          "structDefinition" : {
-            "name" : "105",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as3border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "default_list",
-          "structDefinition" : {
-            "name" : "default_list",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "0-0",
-                "prefix" : "0.0.0.0/0"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as2border1",
-            "as2border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "outbound_routes",
-          "structDefinition" : {
-            "name" : "outbound_routes",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "2.128.0.0/9"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as2dist1",
-            "as2dist2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as2dist_to_dept",
-          "structDefinition" : {
-            "name" : "as2dist_to_dept",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as2dist_to_dept~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "105"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 50
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                      "communities" : [
-                        {
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 2
-                          },
-                          "suffix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 65001
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as2dist1",
-            "as2dist2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "dept_to_as2dist",
-          "structDefinition" : {
-            "name" : "dept_to_as2dist",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~dept_to_as2dist~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                    "name" : "dept_community"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "103",
-          "outliers" : [
-            "as1border2"
-          ],
-          "structDefinition" : {
-            "name" : "103",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "3.0.1.0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.255.0"
-                ],
-                "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-                "negate" : false,
-                "srcIps" : [
-                  "3.0.2.0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "103",
-          "outliers" : [
-            "as1border2"
-          ],
-          "structDefinition" : {
-            "name" : "103",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as4_community",
-          "structDefinition" : {
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "regex" : "(,|\\{|\\}|^|$| )4:"
-              }
-            ],
-            "name" : "as4_community",
-            "invertMatch" : false
-          },
-          "structType" : "CommunityList"
-        },
-        {
-          "conformers" : [
-            "as2border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "INSIDE_TO_AS1",
-          "structDefinition" : {
-            "name" : "INSIDE_TO_AS1",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "1.0.0.0/8"
-                ],
-                "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
-                "negate" : false,
-                "srcIps" : [
-                  "2.0.0.0/8"
-                ]
-              },
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "deny   ip any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "INSIDE_TO_AS3",
-          "structDefinition" : {
-            "name" : "INSIDE_TO_AS3",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "3.0.0.0/8"
-                ],
-                "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
-                "negate" : false,
-                "srcIps" : [
-                  "2.0.0.0/8"
-                ]
-              },
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "deny   ip any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2dept1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "RESTRICT_HOST_TRAFFIC_IN",
-          "structDefinition" : {
-            "name" : "RESTRICT_HOST_TRAFFIC_IN",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "permit ip 2.128.0.0 0.0.255.255 any",
-                "negate" : false,
-                "srcIps" : [
-                  "2.128.0.0/16"
-                ]
-              },
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "deny   ip any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "ipProtocols" : [
-                  "ICMP"
-                ],
-                "name" : "permit icmp any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2dept1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "RESTRICT_HOST_TRAFFIC_OUT",
-          "structDefinition" : {
-            "name" : "RESTRICT_HOST_TRAFFIC_OUT",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "2.128.0.0/16"
-                ],
-                "name" : "permit ip any 2.128.0.0 0.0.255.255",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              },
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "2.128.0.0/16"
-                ],
-                "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
-                "negate" : false,
-                "srcIps" : [
-                  "1.128.0.0/16"
-                ]
-              },
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "deny   ip any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2core1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "blocktelnet",
-          "structDefinition" : {
-            "name" : "blocktelnet",
-            "lines" : [
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "dstPorts" : [
-                  "23-23"
-                ],
-                "ipProtocols" : [
-                  "TCP"
-                ],
-                "name" : "deny   tcp any any eq telnet",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "permit ip any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as4-prefixes",
-          "structDefinition" : {
-            "name" : "as4-prefixes",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "8-32",
-                "prefix" : "4.0.0.0/8"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as1_to_as4",
-          "structDefinition" : {
-            "name" : "as1_to_as4",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                "metric" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                  "value" : 50
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                "expr" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                  "communities" : [
-                    {
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                        "value" : 1
-                      },
-                      "suffix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                        "value" : 4
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnTrue"
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as2dept1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as2_to_dept",
-          "structDefinition" : {
-            "name" : "as2_to_dept",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as2_to_dept~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                    "name" : "as2_community"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as4_to_as1",
-          "structDefinition" : {
-            "name" : "as4_to_as1",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as4_to_as1~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                      "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                        "name" : "as4_community"
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                        "name" : "as4-prefixes"
-                      }
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as2dept1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "dept_to_as2",
-          "structDefinition" : {
-            "name" : "dept_to_as2",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~dept_to_as2~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "102"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 50
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                      "communities" : [
-                        {
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 65001
-                          },
-                          "suffix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 2
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "102",
-          "outliers" : [
-            "as2dept1"
-          ],
-          "structDefinition" : {
-            "name" : "102",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "8-8",
-                "prefix" : "2.0.0.0/8"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "2.128.0.0/16"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "host1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "eth0",
-          "outliers" : [
-            "host2"
-          ],
-          "structDefinition" : {
-            "name" : "eth0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "2.128.0.101/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "eth0"
-            ],
-            "incomingFilter" : "filter::INPUT",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "outgoingFilter" : "filter::OUTPUT",
-            "prefix" : "2.128.0.101/24",
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
-        },
-        {
-          "conformers" : [
-            "as2border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "OUTSIDE_TO_INSIDE",
-          "outliers" : [
-            "as2border2"
-          ],
-          "structDefinition" : {
-            "name" : "OUTSIDE_TO_INSIDE",
-            "lines" : [
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
-                "negate" : false,
-                "srcIps" : [
-                  "2.0.0.0/8"
-                ]
-              },
-              {
-                "action" : "REJECT",
-                "dstIps" : [
-                  "2.128.1.101"
-                ],
-                "name" : "deny   ip any host 2.128.1.101",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "0.0.0.0/0"
-                ],
-                "name" : "permit ip any any",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "filter::INPUT",
-          "outliers" : [
-            "host2"
-          ],
-          "structDefinition" : {
-            "name" : "filter::INPUT",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstPorts" : [
-                  "53-53"
-                ],
-                "ipProtocols" : [
-                  "UDP"
-                ],
-                "name" : "-p udp --dport 53 -j ACCEPT",
-                "negate" : false
-              },
-              {
-                "action" : "ACCEPT",
-                "dstPorts" : [
-                  "22-22"
-                ],
-                "ipProtocols" : [
-                  "TCP"
-                ],
-                "name" : "-p tcp --dport 22 -j ACCEPT",
-                "negate" : false
-              },
-              {
-                "action" : "REJECT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "host1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "filter::OUTPUT",
-          "outliers" : [
-            "host2"
-          ],
-          "structDefinition" : {
-            "name" : "filter::OUTPUT",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "name" : "default",
-                "negate" : false
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "102",
-          "outliers" : [
-            "as2dept1",
-            "as2dist1",
-            "as2dist2"
-          ],
-          "structDefinition" : {
-            "name" : "102",
-            "lines" : [
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.0.0.0"
-                ],
-                "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-                "negate" : false,
-                "srcIps" : [
-                  "2.0.0.0"
-                ]
-              },
-              {
-                "action" : "ACCEPT",
-                "dstIps" : [
-                  "255.255.0.0"
-                ],
-                "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-                "negate" : false,
-                "srcIps" : [
-                  "2.128.0.0"
-                ]
-              }
-            ]
-          },
-          "structType" : "IpAccessList"
-        },
-        {
-          "conformers" : [
-            "as2border1",
-            "as2border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as1_to_as2",
-          "outliers" : [
-            "as1border1",
-            "as1border2"
-          ],
-          "structDefinition" : {
-            "name" : "as1_to_as2",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as1_to_as2~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                    "name" : "as1_community"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                      "communities" : [
-                        {
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 1
-                          },
-                          "suffix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 2
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as1_to_as3",
-          "outliers" : [
-            "as3border1",
-            "as3border2"
-          ],
-          "structDefinition" : {
-            "name" : "as1_to_as3",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as1_to_as3~1~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "comment" : "~RMCLAUSE~as1_to_as3~2~",
-                    "falseStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnLocalDefaultAction"
-                      }
-                    ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                        "name" : "102"
-                      }
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                        "metric" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                          "value" : 50
-                        }
-                      },
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                        "expr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                          "communities" : [
-                            {
-                              "prefix" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                "value" : 1
-                              },
-                              "suffix" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                "value" : 3
-                              }
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "101"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 50
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                      "communities" : [
-                        {
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 1
-                          },
-                          "suffix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 3
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as2_to_as1",
-          "outliers" : [
-            "as2border1",
-            "as2border2"
-          ],
-          "structDefinition" : {
-            "name" : "as2_to_as1",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as2_to_as1~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                    "name" : "as2_community"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as2border1",
-            "as2border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as2_to_as3",
-          "outliers" : [
-            "as3border1",
-            "as3border2"
-          ],
-          "structDefinition" : {
-            "name" : "as2_to_as3",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as2_to_as3~1~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "comment" : "~RMCLAUSE~as2_to_as3~2~",
-                    "falseStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnLocalDefaultAction"
-                      }
-                    ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                        "name" : "outbound_routes"
-                      }
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                        "metric" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                          "value" : 50
-                        }
-                      },
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                        "expr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                          "communities" : [
-                            {
-                              "prefix" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                "value" : 2
-                              },
-                              "suffix" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                                "value" : 3
-                              }
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "101"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 50
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                      "communities" : [
-                        {
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 2
-                          },
-                          "suffix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 3
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as3_to_as1",
-          "outliers" : [
-            "as3border1",
-            "as3border2"
-          ],
-          "structDefinition" : {
-            "name" : "as3_to_as1",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as3_to_as1~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                    "name" : "as3_community"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as2border1",
-            "as2border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "as3_to_as2",
-          "outliers" : [
-            "as3border1",
-            "as3border2"
-          ],
-          "structDefinition" : {
-            "name" : "as3_to_as2",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~as3_to_as2~100~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                    "name" : "as3_community"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 350
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
-                      "communities" : [
-                        {
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 3
-                          },
-                          "suffix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
-                            "value" : 2
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
-          "structType" : "RoutingPolicy"
-        },
-        {
-          "conformers" : [
-            "as1border1",
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "inbound_route_filter",
-          "outliers" : [
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ],
-          "structDefinition" : {
-            "name" : "inbound_route_filter",
-            "lines" : [
-              {
-                "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "1.0.0.0/8"
-              },
-              {
-                "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
-              }
-            ]
-          },
-          "structType" : "RouteFilterList"
-        },
-        {
-          "conformers" : [
-            "as2core1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "GigabitEthernet3/0",
-          "outliers" : [
-            "as2core2",
-            "as2dept1",
-            "as3core1"
-          ],
-          "structDefinition" : {
-            "name" : "GigabitEthernet3/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "2.23.12.2/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet3/0"
-            ],
-            "incomingFilter" : "blocktelnet",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfArea" : 1,
-            "ospfCost" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "2.23.12.2/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
-        },
-        {
-          "conformers" : [
-            "as1border2"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "GigabitEthernet2/0",
-          "outliers" : [
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3core1"
-          ],
-          "structDefinition" : {
-            "name" : "GigabitEthernet2/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "10.14.22.1/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet2/0"
-            ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "10.14.22.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
-        },
-        {
-          "conformers" : [
-            "as1border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "GigabitEthernet0/0",
-          "outliers" : [
-            "as1border2",
-            "as1core1",
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3border1",
-            "as3border2",
-            "as3core1"
-          ],
-          "structDefinition" : {
-            "name" : "GigabitEthernet0/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "1.0.1.1/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet0/0"
-            ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfArea" : 1,
-            "ospfCost" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "1.0.1.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
-        },
-        {
-          "conformers" : [
-            "as1border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "GigabitEthernet1/0",
-          "outliers" : [
-            "as1border2",
-            "as1core1",
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3border1",
-            "as3border2",
-            "as3core1"
-          ],
-          "structDefinition" : {
-            "name" : "GigabitEthernet1/0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "10.12.11.1/24"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet1/0"
-            ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "prefix" : "10.12.11.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
-        },
-        {
-          "conformers" : [
-            "as1border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "Loopback0",
-          "outliers" : [
-            "as1border2",
-            "as1core1",
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3border1",
-            "as3border2",
-            "as3core1"
-          ],
-          "structDefinition" : {
-            "name" : "Loopback0",
-            "accessVlan" : 0,
-            "active" : true,
-            "allPrefixes" : [
-              "1.1.1.1/32"
-            ],
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "Loopback0"
-            ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfArea" : 1,
-            "ospfCost" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : true,
-            "ospfPointToPoint" : false,
-            "prefix" : "1.1.1.1/32",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOOPBACK",
-            "vrf" : "default"
-          },
-          "structType" : "Interface"
-        },
-        {
-          "conformers" : [
-            "as1border1"
-          ],
-          "hypothesis" : "sameDefinition",
-          "name" : "default",
-          "outliers" : [
-            "as1border2",
-            "as1core1",
-            "as2border1",
-            "as2border2",
-            "as2core1",
-            "as2core2",
-            "as2dept1",
-            "as2dist1",
-            "as2dist2",
-            "as3border1",
-            "as3border2",
-            "as3core1",
-            "host1",
-            "host2"
-          ],
-          "structDefinition" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
-              "multipathIbgp" : true,
-              "neighbors" : {
-                "1.10.1.1/32" : {
-                  "name" : "1.10.1.1/32",
-                  "additionalPathsReceive" : true,
-                  "additionalPathsSelectAll" : true,
-                  "additionalPathsSend" : true,
-                  "address" : "1.10.1.1",
-                  "advertiseExternal" : false,
-                  "advertiseInactive" : true,
-                  "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
-                  "clusterId" : 16843009,
-                  "defaultMetric" : 0,
-                  "dynamic" : false,
-                  "ebgpMultihop" : false,
-                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
-                  "group" : "as1",
-                  "localAs" : 1,
-                  "localIp" : "1.1.1.1",
-                  "remoteAs" : 1,
-                  "remotePrefix" : "1.10.1.1/32",
-                  "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
-                },
-                "3.2.2.2/32" : {
-                  "name" : "3.2.2.2/32",
-                  "additionalPathsReceive" : true,
-                  "additionalPathsSelectAll" : true,
-                  "additionalPathsSend" : true,
-                  "address" : "3.2.2.2",
-                  "advertiseExternal" : false,
-                  "advertiseInactive" : true,
-                  "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
-                  "clusterId" : 16843009,
-                  "defaultMetric" : 0,
-                  "dynamic" : false,
-                  "ebgpMultihop" : false,
-                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
-                  "group" : "bad-ebgp",
-                  "localAs" : 1,
-                  "remoteAs" : 666,
-                  "remotePrefix" : "3.2.2.2/32",
-                  "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
-                },
-                "5.6.7.8/32" : {
-                  "name" : "5.6.7.8/32",
-                  "additionalPathsReceive" : true,
-                  "additionalPathsSelectAll" : true,
-                  "additionalPathsSend" : true,
-                  "address" : "5.6.7.8",
-                  "advertiseExternal" : false,
-                  "advertiseInactive" : true,
-                  "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
-                  "clusterId" : 16843009,
-                  "defaultMetric" : 0,
-                  "dynamic" : false,
-                  "ebgpMultihop" : false,
-                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
-                  "group" : "xanadu",
-                  "localAs" : 1,
-                  "remoteAs" : 555,
-                  "remotePrefix" : "5.6.7.8/32",
-                  "routeReflectorClient" : false,
-                  "sendCommunity" : false,
-                  "vrf" : "default"
-                },
-                "10.12.11.2/32" : {
-                  "name" : "10.12.11.2/32",
-                  "additionalPathsReceive" : true,
-                  "additionalPathsSelectAll" : true,
-                  "additionalPathsSend" : true,
-                  "address" : "10.12.11.2",
-                  "advertiseExternal" : false,
-                  "advertiseInactive" : true,
-                  "allowLocalAsIn" : false,
-                  "allowRemoteAsOut" : false,
-                  "clusterId" : 16843009,
-                  "defaultMetric" : 0,
-                  "dynamic" : false,
-                  "ebgpMultihop" : false,
-                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
-                  "exportPolicySources" : [
-                    "as1_to_as2"
-                  ],
-                  "group" : "as2",
-                  "importPolicy" : "as2_to_as1",
-                  "importPolicySources" : [
-                    "as2_to_as1"
-                  ],
-                  "localAs" : 1,
-                  "localIp" : "10.12.11.1",
-                  "remoteAs" : 2,
-                  "remotePrefix" : "10.12.11.2/32",
-                  "routeReflectorClient" : false,
-                  "sendCommunity" : true,
-                  "vrf" : "default"
-                }
-              },
-              "routerId" : "1.1.1.1",
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "interfaces" : [
-              "Ethernet0/0",
-              "GigabitEthernet0/0",
-              "GigabitEthernet1/0",
-              "Loopback0"
-            ],
-            "ospfProcess" : {
-              "areas" : {
-                "1" : {
-                  "name" : 1,
-                  "interfaces" : [
-                    "GigabitEthernet0/0",
-                    "Loopback0"
-                  ]
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "processId" : "1",
-              "referenceBandwidth" : 1.0E8,
-              "routerId" : "1.1.1.1"
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as2border1",
+          "as2border2",
+          "as2dept1",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as2_community",
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "regex" : "(,|\\{|\\}|^|$| )2:"
             }
+          ],
+          "name" : "as2_community",
+          "invertMatch" : false
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as1_community",
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "regex" : "(,|\\{|\\}|^|$| )1:"
+            }
+          ],
+          "name" : "as1_community",
+          "invertMatch" : false
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as3_community",
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "regex" : "(,|\\{|\\}|^|$| )3:"
+            }
+          ],
+          "name" : "as3_community",
+          "invertMatch" : false
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "101",
+        "structDefinition" : {
+          "name" : "101",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "1.0.1.0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "1.0.2.0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "101",
+        "structDefinition" : {
+          "name" : "101",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "1.0.1.0/24"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "1.0.2.0/24"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as2dept1",
+          "as2dist1",
+          "as2dist2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "105",
+        "structDefinition" : {
+          "name" : "105",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "1.0.1.0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "1.0.2.0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "3.0.1.0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "3.0.2.0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2dist1",
+          "as2dist2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "dept_community",
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "regex" : "(,|\\{|\\}|^|$| )65001:"
+            }
+          ],
+          "name" : "dept_community",
+          "invertMatch" : false
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "filter::FORWARD",
+        "structDefinition" : {
+          "name" : "filter::FORWARD",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "mangle::FORWARD",
+        "structDefinition" : {
+          "name" : "mangle::FORWARD",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "mangle::INPUT",
+        "structDefinition" : {
+          "name" : "mangle::INPUT",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "mangle::OUTPUT",
+        "structDefinition" : {
+          "name" : "mangle::OUTPUT",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "mangle::POSTROUTING",
+        "structDefinition" : {
+          "name" : "mangle::POSTROUTING",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "mangle::PREROUTING",
+        "structDefinition" : {
+          "name" : "mangle::PREROUTING",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "nat::OUTPUT",
+        "structDefinition" : {
+          "name" : "nat::OUTPUT",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "nat::POSTROUTING",
+        "structDefinition" : {
+          "name" : "nat::POSTROUTING",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "nat::PREROUTING",
+        "structDefinition" : {
+          "name" : "nat::PREROUTING",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2dist1",
+          "as2dist2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "105",
+        "structDefinition" : {
+          "name" : "105",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "1.0.1.0/24"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "1.0.2.0/24"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "3.0.1.0/24"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "3.0.2.0/24"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as3border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "default_list",
+        "structDefinition" : {
+          "name" : "default_list",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "0-0",
+              "prefix" : "0.0.0.0/0"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as2border1",
+          "as2border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "outbound_routes",
+        "structDefinition" : {
+          "name" : "outbound_routes",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "16-32",
+              "prefix" : "2.128.0.0/9"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as2dist1",
+          "as2dist2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as2dist_to_dept",
+        "structDefinition" : {
+          "name" : "as2dist_to_dept",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as2dist_to_dept~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "105"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 50
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 2
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 65001
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as2dist1",
+          "as2dist2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "dept_to_as2dist",
+        "structDefinition" : {
+          "name" : "dept_to_as2dist",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~dept_to_as2dist~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "name" : "dept_community"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "103",
+        "outliers" : [
+          "as1border2"
+        ],
+        "structDefinition" : {
+          "name" : "103",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "3.0.1.0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.255.0"
+              ],
+              "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
+              "negate" : false,
+              "srcIps" : [
+                "3.0.2.0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "103",
+        "outliers" : [
+          "as1border2"
+        ],
+        "structDefinition" : {
+          "name" : "103",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "3.0.1.0/24"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "24-24",
+              "prefix" : "3.0.2.0/24"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as4_community",
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "regex" : "(,|\\{|\\}|^|$| )4:"
+            }
+          ],
+          "name" : "as4_community",
+          "invertMatch" : false
+        },
+        "structType" : "CommunityList"
+      },
+      {
+        "conformers" : [
+          "as2border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "INSIDE_TO_AS1",
+        "structDefinition" : {
+          "name" : "INSIDE_TO_AS1",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "1.0.0.0/8"
+              ],
+              "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
+              "negate" : false,
+              "srcIps" : [
+                "2.0.0.0/8"
+              ]
+            },
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "deny   ip any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "INSIDE_TO_AS3",
+        "structDefinition" : {
+          "name" : "INSIDE_TO_AS3",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "3.0.0.0/8"
+              ],
+              "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
+              "negate" : false,
+              "srcIps" : [
+                "2.0.0.0/8"
+              ]
+            },
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "deny   ip any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2dept1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "RESTRICT_HOST_TRAFFIC_IN",
+        "structDefinition" : {
+          "name" : "RESTRICT_HOST_TRAFFIC_IN",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "permit ip 2.128.0.0 0.0.255.255 any",
+              "negate" : false,
+              "srcIps" : [
+                "2.128.0.0/16"
+              ]
+            },
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "deny   ip any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "ipProtocols" : [
+                "ICMP"
+              ],
+              "name" : "permit icmp any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2dept1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "RESTRICT_HOST_TRAFFIC_OUT",
+        "structDefinition" : {
+          "name" : "RESTRICT_HOST_TRAFFIC_OUT",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "2.128.0.0/16"
+              ],
+              "name" : "permit ip any 2.128.0.0 0.0.255.255",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            },
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "2.128.0.0/16"
+              ],
+              "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+              "negate" : false,
+              "srcIps" : [
+                "1.128.0.0/16"
+              ]
+            },
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "deny   ip any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2core1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "blocktelnet",
+        "structDefinition" : {
+          "name" : "blocktelnet",
+          "lines" : [
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "dstPorts" : [
+                "23-23"
+              ],
+              "ipProtocols" : [
+                "TCP"
+              ],
+              "name" : "deny   tcp any any eq telnet",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "permit ip any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as4-prefixes",
+        "structDefinition" : {
+          "name" : "as4-prefixes",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "8-32",
+              "prefix" : "4.0.0.0/8"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as1_to_as4",
+        "structDefinition" : {
+          "name" : "as1_to_as4",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+              "metric" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                "value" : 50
+              }
+            },
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+              "expr" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                "communities" : [
+                  {
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                      "value" : 1
+                    },
+                    "suffix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                      "value" : 4
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+              "type" : "ReturnTrue"
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as2dept1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as2_to_dept",
+        "structDefinition" : {
+          "name" : "as2_to_dept",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as2_to_dept~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "name" : "as2_community"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as4_to_as1",
+        "structDefinition" : {
+          "name" : "as4_to_as1",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as4_to_as1~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                "conjuncts" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                      "name" : "as4_community"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "as4-prefixes"
+                    }
+                  }
+                ]
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as2dept1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "dept_to_as2",
+        "structDefinition" : {
+          "name" : "dept_to_as2",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~dept_to_as2~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "102"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 50
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 65001
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "102",
+        "outliers" : [
+          "as2dept1"
+        ],
+        "structDefinition" : {
+          "name" : "102",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "8-8",
+              "prefix" : "2.0.0.0/8"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "16-16",
+              "prefix" : "2.128.0.0/16"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "host1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "eth0",
+        "outliers" : [
+          "host2"
+        ],
+        "structDefinition" : {
+          "name" : "eth0",
+          "accessVlan" : 0,
+          "active" : true,
+          "allPrefixes" : [
+            "2.128.0.101/24"
+          ],
+          "autostate" : true,
+          "bandwidth" : 1.0E9,
+          "declaredNames" : [
+            "eth0"
+          ],
+          "incomingFilter" : "filter::INPUT",
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : false,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : false,
+          "ospfPointToPoint" : false,
+          "outgoingFilter" : "filter::OUTPUT",
+          "prefix" : "2.128.0.101/24",
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "PHYSICAL",
+          "vrf" : "default"
+        },
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as2border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "OUTSIDE_TO_INSIDE",
+        "outliers" : [
+          "as2border2"
+        ],
+        "structDefinition" : {
+          "name" : "OUTSIDE_TO_INSIDE",
+          "lines" : [
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
+              "negate" : false,
+              "srcIps" : [
+                "2.0.0.0/8"
+              ]
+            },
+            {
+              "action" : "REJECT",
+              "dstIps" : [
+                "2.128.1.101"
+              ],
+              "name" : "deny   ip any host 2.128.1.101",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "0.0.0.0/0"
+              ],
+              "name" : "permit ip any any",
+              "negate" : false,
+              "srcIps" : [
+                "0.0.0.0/0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "filter::INPUT",
+        "outliers" : [
+          "host2"
+        ],
+        "structDefinition" : {
+          "name" : "filter::INPUT",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstPorts" : [
+                "53-53"
+              ],
+              "ipProtocols" : [
+                "UDP"
+              ],
+              "name" : "-p udp --dport 53 -j ACCEPT",
+              "negate" : false
+            },
+            {
+              "action" : "ACCEPT",
+              "dstPorts" : [
+                "22-22"
+              ],
+              "ipProtocols" : [
+                "TCP"
+              ],
+              "name" : "-p tcp --dport 22 -j ACCEPT",
+              "negate" : false
+            },
+            {
+              "action" : "REJECT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "host1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "filter::OUTPUT",
+        "outliers" : [
+          "host2"
+        ],
+        "structDefinition" : {
+          "name" : "filter::OUTPUT",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "name" : "default",
+              "negate" : false
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "102",
+        "outliers" : [
+          "as2dept1",
+          "as2dist1",
+          "as2dist2"
+        ],
+        "structDefinition" : {
+          "name" : "102",
+          "lines" : [
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.0.0.0"
+              ],
+              "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
+              "negate" : false,
+              "srcIps" : [
+                "2.0.0.0"
+              ]
+            },
+            {
+              "action" : "ACCEPT",
+              "dstIps" : [
+                "255.255.0.0"
+              ],
+              "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
+              "negate" : false,
+              "srcIps" : [
+                "2.128.0.0"
+              ]
+            }
+          ]
+        },
+        "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as2border1",
+          "as2border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as1_to_as2",
+        "outliers" : [
+          "as1border1",
+          "as1border2"
+        ],
+        "structDefinition" : {
+          "name" : "as1_to_as2",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as1_to_as2~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "name" : "as1_community"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 1
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as1_to_as3",
+        "outliers" : [
+          "as3border1",
+          "as3border2"
+        ],
+        "structDefinition" : {
+          "name" : "as1_to_as3",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as1_to_as3~1~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~as1_to_as3~2~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "102"
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                      "metric" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                        "value" : 50
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 1
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 3
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "101"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 50
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 1
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 3
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as2_to_as1",
+        "outliers" : [
+          "as2border1",
+          "as2border2"
+        ],
+        "structDefinition" : {
+          "name" : "as2_to_as1",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as2_to_as1~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "name" : "as2_community"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as2border1",
+          "as2border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as2_to_as3",
+        "outliers" : [
+          "as3border1",
+          "as3border2"
+        ],
+        "structDefinition" : {
+          "name" : "as2_to_as3",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as2_to_as3~1~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                  "comment" : "~RMCLAUSE~as2_to_as3~2~",
+                  "falseStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnLocalDefaultAction"
+                    }
+                  ],
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "outbound_routes"
+                    }
+                  },
+                  "trueStatements" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                      "metric" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                        "value" : 50
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                        "communities" : [
+                          {
+                            "prefix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 2
+                            },
+                            "suffix" : {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                              "value" : 3
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                      "type" : "ReturnTrue"
+                    }
+                  ]
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "101"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 50
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 2
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 3
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as3_to_as1",
+        "outliers" : [
+          "as3border1",
+          "as3border2"
+        ],
+        "structDefinition" : {
+          "name" : "as3_to_as1",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as3_to_as1~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "name" : "as3_community"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as2border1",
+          "as2border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "as3_to_as2",
+        "outliers" : [
+          "as3border1",
+          "as3border2"
+        ],
+        "structDefinition" : {
+          "name" : "as3_to_as2",
+          "statements" : [
+            {
+              "class" : "org.batfish.datamodel.routing_policy.statement.If",
+              "comment" : "~RMCLAUSE~as3_to_as2~100~",
+              "falseStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnLocalDefaultAction"
+                }
+              ],
+              "guard" : {
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "name" : "as3_community"
+                }
+              },
+              "trueStatements" : [
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                  "localPreference" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                    "value" : 350
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.InlineCommunitySet",
+                    "communities" : [
+                      {
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 3
+                        },
+                        "suffix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf",
+                          "value" : 2
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                  "type" : "ReturnTrue"
+                }
+              ]
+            }
+          ]
+        },
+        "structType" : "RoutingPolicy"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "inbound_route_filter",
+        "outliers" : [
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "structDefinition" : {
+          "name" : "inbound_route_filter",
+          "lines" : [
+            {
+              "action" : "REJECT",
+              "lengthRange" : "8-32",
+              "prefix" : "1.0.0.0/8"
+            },
+            {
+              "action" : "ACCEPT",
+              "lengthRange" : "0-32",
+              "prefix" : "0.0.0.0/0"
+            }
+          ]
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as2core1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "GigabitEthernet3/0",
+        "outliers" : [
+          "as2core2",
+          "as2dept1",
+          "as3core1"
+        ],
+        "structDefinition" : {
+          "name" : "GigabitEthernet3/0",
+          "accessVlan" : 0,
+          "active" : true,
+          "allPrefixes" : [
+            "2.23.12.2/24"
+          ],
+          "autostate" : true,
+          "bandwidth" : 1.0E9,
+          "declaredNames" : [
+            "GigabitEthernet3/0"
+          ],
+          "incomingFilter" : "blocktelnet",
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfArea" : 1,
+          "ospfCost" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : true,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : false,
+          "ospfPointToPoint" : false,
+          "prefix" : "2.23.12.2/24",
+          "proxyArp" : true,
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "PHYSICAL",
+          "vrf" : "default"
+        },
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as1border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "GigabitEthernet2/0",
+        "outliers" : [
+          "as2border1",
+          "as2border2",
+          "as2core1",
+          "as2core2",
+          "as2dept1",
+          "as2dist1",
+          "as2dist2",
+          "as3core1"
+        ],
+        "structDefinition" : {
+          "name" : "GigabitEthernet2/0",
+          "accessVlan" : 0,
+          "active" : true,
+          "allPrefixes" : [
+            "10.14.22.1/24"
+          ],
+          "autostate" : true,
+          "bandwidth" : 1.0E9,
+          "declaredNames" : [
+            "GigabitEthernet2/0"
+          ],
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : false,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : false,
+          "ospfPointToPoint" : false,
+          "prefix" : "10.14.22.1/24",
+          "proxyArp" : true,
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "PHYSICAL",
+          "vrf" : "default"
+        },
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as1border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "GigabitEthernet0/0",
+        "outliers" : [
+          "as1border2",
+          "as1core1",
+          "as2border1",
+          "as2border2",
+          "as2core1",
+          "as2core2",
+          "as2dept1",
+          "as2dist1",
+          "as2dist2",
+          "as3border1",
+          "as3border2",
+          "as3core1"
+        ],
+        "structDefinition" : {
+          "name" : "GigabitEthernet0/0",
+          "accessVlan" : 0,
+          "active" : true,
+          "allPrefixes" : [
+            "1.0.1.1/24"
+          ],
+          "autostate" : true,
+          "bandwidth" : 1.0E9,
+          "declaredNames" : [
+            "GigabitEthernet0/0"
+          ],
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfArea" : 1,
+          "ospfCost" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : true,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : false,
+          "ospfPointToPoint" : false,
+          "prefix" : "1.0.1.1/24",
+          "proxyArp" : true,
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "PHYSICAL",
+          "vrf" : "default"
+        },
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as1border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "GigabitEthernet1/0",
+        "outliers" : [
+          "as1border2",
+          "as1core1",
+          "as2border1",
+          "as2border2",
+          "as2core1",
+          "as2core2",
+          "as2dept1",
+          "as2dist1",
+          "as2dist2",
+          "as3border1",
+          "as3border2",
+          "as3core1"
+        ],
+        "structDefinition" : {
+          "name" : "GigabitEthernet1/0",
+          "accessVlan" : 0,
+          "active" : true,
+          "allPrefixes" : [
+            "10.12.11.1/24"
+          ],
+          "autostate" : true,
+          "bandwidth" : 1.0E9,
+          "declaredNames" : [
+            "GigabitEthernet1/0"
+          ],
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : false,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : false,
+          "ospfPointToPoint" : false,
+          "prefix" : "10.12.11.1/24",
+          "proxyArp" : true,
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "PHYSICAL",
+          "vrf" : "default"
+        },
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as1border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "Loopback0",
+        "outliers" : [
+          "as1border2",
+          "as1core1",
+          "as2border1",
+          "as2border2",
+          "as2core1",
+          "as2core2",
+          "as2dept1",
+          "as2dist1",
+          "as2dist2",
+          "as3border1",
+          "as3border2",
+          "as3core1"
+        ],
+        "structDefinition" : {
+          "name" : "Loopback0",
+          "accessVlan" : 0,
+          "active" : true,
+          "allPrefixes" : [
+            "1.1.1.1/32"
+          ],
+          "autostate" : true,
+          "bandwidth" : 1.0E12,
+          "declaredNames" : [
+            "Loopback0"
+          ],
+          "isisL1InterfaceMode" : "unset",
+          "isisL2InterfaceMode" : "unset",
+          "mtu" : 1500,
+          "nativeVlan" : 1,
+          "ospfArea" : 1,
+          "ospfCost" : 1,
+          "ospfDeadInterval" : 0,
+          "ospfEnabled" : true,
+          "ospfHelloMultiplier" : 0,
+          "ospfPassive" : true,
+          "ospfPointToPoint" : false,
+          "prefix" : "1.1.1.1/32",
+          "proxyArp" : true,
+          "ripEnabled" : false,
+          "ripPassive" : false,
+          "spanningTreePortfast" : false,
+          "switchportMode" : "NONE",
+          "switchportTrunkEncapsulation" : "DOT1Q",
+          "type" : "LOOPBACK",
+          "vrf" : "default"
+        },
+        "structType" : "Interface"
+      },
+      {
+        "conformers" : [
+          "as1border1"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "default",
+        "outliers" : [
+          "as1border2",
+          "as1core1",
+          "as2border1",
+          "as2border2",
+          "as2core1",
+          "as2core2",
+          "as2dept1",
+          "as2dist1",
+          "as2dist2",
+          "as3border1",
+          "as3border2",
+          "as3core1",
+          "host1",
+          "host2"
+        ],
+        "structDefinition" : {
+          "name" : "default",
+          "bgpProcess" : {
+            "multipathEbgp" : true,
+            "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+            "multipathIbgp" : true,
+            "neighbors" : {
+              "1.10.1.1/32" : {
+                "name" : "1.10.1.1/32",
+                "additionalPathsReceive" : true,
+                "additionalPathsSelectAll" : true,
+                "additionalPathsSend" : true,
+                "address" : "1.10.1.1",
+                "advertiseExternal" : false,
+                "advertiseInactive" : true,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 16843009,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
+                "group" : "as1",
+                "localAs" : 1,
+                "localIp" : "1.1.1.1",
+                "remoteAs" : 1,
+                "remotePrefix" : "1.10.1.1/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : true,
+                "vrf" : "default"
+              },
+              "3.2.2.2/32" : {
+                "name" : "3.2.2.2/32",
+                "additionalPathsReceive" : true,
+                "additionalPathsSelectAll" : true,
+                "additionalPathsSend" : true,
+                "address" : "3.2.2.2",
+                "advertiseExternal" : false,
+                "advertiseInactive" : true,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 16843009,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
+                "group" : "bad-ebgp",
+                "localAs" : 1,
+                "remoteAs" : 666,
+                "remotePrefix" : "3.2.2.2/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false,
+                "vrf" : "default"
+              },
+              "5.6.7.8/32" : {
+                "name" : "5.6.7.8/32",
+                "additionalPathsReceive" : true,
+                "additionalPathsSelectAll" : true,
+                "additionalPathsSend" : true,
+                "address" : "5.6.7.8",
+                "advertiseExternal" : false,
+                "advertiseInactive" : true,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 16843009,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
+                "group" : "xanadu",
+                "localAs" : 1,
+                "remoteAs" : 555,
+                "remotePrefix" : "5.6.7.8/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : false,
+                "vrf" : "default"
+              },
+              "10.12.11.2/32" : {
+                "name" : "10.12.11.2/32",
+                "additionalPathsReceive" : true,
+                "additionalPathsSelectAll" : true,
+                "additionalPathsSend" : true,
+                "address" : "10.12.11.2",
+                "advertiseExternal" : false,
+                "advertiseInactive" : true,
+                "allowLocalAsIn" : false,
+                "allowRemoteAsOut" : false,
+                "clusterId" : 16843009,
+                "defaultMetric" : 0,
+                "dynamic" : false,
+                "ebgpMultihop" : false,
+                "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
+                "exportPolicySources" : [
+                  "as1_to_as2"
+                ],
+                "group" : "as2",
+                "importPolicy" : "as2_to_as1",
+                "importPolicySources" : [
+                  "as2_to_as1"
+                ],
+                "localAs" : 1,
+                "localIp" : "10.12.11.1",
+                "remoteAs" : 2,
+                "remotePrefix" : "10.12.11.2/32",
+                "routeReflectorClient" : false,
+                "sendCommunity" : true,
+                "vrf" : "default"
+              }
+            },
+            "routerId" : "1.1.1.1",
+            "tieBreaker" : "ARRIVAL_ORDER"
           },
-          "structType" : "Vrf"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersQuestion",
-    "differential" : false,
-    "hypothesis" : "sameDefinition",
-    "nodeRegex" : ".*",
-    "verbose" : true
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+          "interfaces" : [
+            "Ethernet0/0",
+            "GigabitEthernet0/0",
+            "GigabitEthernet1/0",
+            "Loopback0"
+          ],
+          "ospfProcess" : {
+            "areas" : {
+              "1" : {
+                "name" : 1,
+                "interfaces" : [
+                  "GigabitEthernet0/0",
+                  "Loopback0"
+                ]
+              }
+            },
+            "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+            "processId" : "1",
+            "referenceBandwidth" : 1.0E8,
+            "routerId" : "1.1.1.1"
+          }
+        },
+        "structType" : "Vrf"
+      }
+    ]
   }
-}
+]

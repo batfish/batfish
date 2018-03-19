@@ -2013,14 +2013,12 @@
         },
         "nat-08c21704416f06046" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046",
-            "2" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046"
           }
         },
         "nat-09fd8f73171d2d9a3" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-08c21704416f06046",
-            "2" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
+            "1" : "MISCELLANEOUS: NAT functionality not yet implemented for nat-09fd8f73171d2d9a3"
           }
         },
         "neighbor" : {

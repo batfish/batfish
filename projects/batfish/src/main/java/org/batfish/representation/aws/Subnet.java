@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -171,7 +172,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return _vpnGatewayId;
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_subnetId, "aws");
 
     // add one interface that faces the instances
