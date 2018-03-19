@@ -35,7 +35,7 @@ import org.batfish.question.OspfStatusQuestionPlugin.OspfStatusAnswerElement.Osp
 @AutoService(Plugin.class)
 public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
-  public static class OspfStatusAnswerElement implements AnswerElement {
+  public static class OspfStatusAnswerElement extends AnswerElement {
 
     public enum OspfStatus {
       ENABLED_ACTIVE,

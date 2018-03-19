@@ -21,7 +21,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
 
-  public static class BgpAsnUseAnswerElement implements AnswerElement {
+  public static class BgpAsnUseAnswerElement extends AnswerElement {
 
     public static final String PROP_ASNS = "asns";
 

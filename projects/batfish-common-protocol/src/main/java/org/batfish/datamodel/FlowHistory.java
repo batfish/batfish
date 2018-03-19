@@ -12,7 +12,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Environment;
 
-public class FlowHistory implements AnswerElement {
+public class FlowHistory extends AnswerElement {
 
   public static class FlowHistoryInfo {
 

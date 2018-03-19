@@ -36,7 +36,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
 
-  public static class OspfSessionCheckAnswerElement implements AnswerElement {
+  public static class OspfSessionCheckAnswerElement extends AnswerElement {
 
     private static final String PROP_ALL_OSPF_NEIGHBORS = "allOspfNeighbors";
 

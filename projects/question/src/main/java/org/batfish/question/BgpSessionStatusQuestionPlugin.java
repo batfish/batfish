@@ -149,7 +149,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class BgpSessionStatusAnswerElement implements AnswerElement {
+  public static class BgpSessionStatusAnswerElement extends AnswerElement {
 
     private static final String PROP_BGP_SESSIONS = "bgpSessions";
 

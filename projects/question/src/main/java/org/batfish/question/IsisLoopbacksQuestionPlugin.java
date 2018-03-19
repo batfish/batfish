@@ -21,7 +21,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
-  public static class IsisLoopbacksAnswerElement implements AnswerElement {
+  public static class IsisLoopbacksAnswerElement extends AnswerElement {
 
     private SortedMap<String, SortedSet<String>> _inactive;
 

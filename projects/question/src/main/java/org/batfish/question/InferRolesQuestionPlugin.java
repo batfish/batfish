@@ -20,7 +20,7 @@ import org.batfish.role.InferRoles;
 @AutoService(Plugin.class)
 public class InferRolesQuestionPlugin extends QuestionPlugin {
 
-  public static class InferRolesAnswerElement implements AnswerElement {
+  public static class InferRolesAnswerElement extends AnswerElement {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 

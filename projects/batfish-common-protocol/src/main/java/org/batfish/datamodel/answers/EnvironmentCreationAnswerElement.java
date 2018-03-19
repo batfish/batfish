@@ -1,6 +1,6 @@
 package org.batfish.datamodel.answers;
 
-public class EnvironmentCreationAnswerElement implements AnswerElement {
+public class EnvironmentCreationAnswerElement extends AnswerElement {
 
   private String _newEnvironmentName;
 

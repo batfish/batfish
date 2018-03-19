@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.answers.AnswerElement;
 
-public class SmtDeterminismAnswerElement implements AnswerElement {
+public class SmtDeterminismAnswerElement extends AnswerElement {
 
   private static final String PROP_FLOW = "flow";
 

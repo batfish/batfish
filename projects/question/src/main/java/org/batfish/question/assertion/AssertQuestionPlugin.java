@@ -31,7 +31,7 @@ import org.batfish.question.QuestionPlugin;
 @AutoService(Plugin.class)
 public class AssertQuestionPlugin extends QuestionPlugin {
 
-  public static class AssertAnswerElement implements AnswerElement {
+  public static class AssertAnswerElement extends AnswerElement {
 
     private Boolean _fail;
 

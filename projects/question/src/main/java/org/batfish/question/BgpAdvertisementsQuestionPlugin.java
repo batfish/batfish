@@ -27,7 +27,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
 
-  public static class BgpAdvertisementsAnswerElement implements AnswerElement {
+  public static class BgpAdvertisementsAnswerElement extends AnswerElement {
 
     private static final String PROP_BGP_ADVERTISEMENTS = "bgpAdvertisements";
 

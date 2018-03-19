@@ -17,7 +17,7 @@ import org.batfish.datamodel.answers.AnswerElement;
  */
 public class BatfishException extends RuntimeException {
 
-  public static class BatfishStackTrace implements Serializable, AnswerElement {
+  public static class BatfishStackTrace extends AnswerElement implements Serializable {
 
     private static final String PROP_LINES = "answer";
 

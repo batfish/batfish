@@ -7,7 +7,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.Prefix;
 
-public class BdpAnswerElement implements DataPlaneAnswerElement {
+public class BdpAnswerElement extends DataPlaneAnswerElement {
 
   private static final String MAIN_RIB_ROUTES_BY_ITERATION = "mainRibRoutesByIteration";
 
