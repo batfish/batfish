@@ -25,7 +25,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
-  public static class ClusterNodesAnswerElement implements AnswerElement {
+  public static class ClusterNodesAnswerElement extends AnswerElement {
 
     private static final String PROP_CLUSTERS = "clusters";
 

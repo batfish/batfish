@@ -3,13 +3,13 @@ package org.batfish.datamodel.answers;
 import java.util.SortedMap;
 import org.batfish.common.ParseTreeSentences;
 
-public interface ParseAnswerElement extends InitStepAnswerElement {
+public abstract class ParseAnswerElement extends InitStepAnswerElement {
 
-  SortedMap<String, ParseStatus> getParseStatus();
+  public abstract SortedMap<String, ParseStatus> getParseStatus();
 
-  SortedMap<String, ParseTreeSentences> getParseTrees();
+  public abstract SortedMap<String, ParseTreeSentences> getParseTrees();
 
-  void setParseStatus(SortedMap<String, ParseStatus> parseStatus);
+  public abstract void setParseStatus(SortedMap<String, ParseStatus> parseStatus);
 
-  void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees);
+  public abstract void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees);
 }

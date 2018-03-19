@@ -28,7 +28,7 @@ import org.batfish.role.OutliersHypothesis;
 @AutoService(Plugin.class)
 public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
 
-  public static class RoleConsistencyAnswerElement implements AnswerElement {
+  public static class RoleConsistencyAnswerElement extends AnswerElement {
 
     private static final String PROP_ANSWERS = "answers";
 

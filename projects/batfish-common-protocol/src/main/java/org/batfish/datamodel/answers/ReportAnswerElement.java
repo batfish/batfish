@@ -3,7 +3,7 @@ package org.batfish.datamodel.answers;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReportAnswerElement implements AnswerElement {
+public class ReportAnswerElement extends AnswerElement {
 
   private List<Object> _jsonAnswers;
 

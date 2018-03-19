@@ -2,7 +2,7 @@ package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-public class StringAnswerElement implements AnswerElement {
+public class StringAnswerElement extends AnswerElement {
 
   private String _answer;
 

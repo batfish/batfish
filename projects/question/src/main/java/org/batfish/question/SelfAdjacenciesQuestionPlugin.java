@@ -29,7 +29,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
-  public static class SelfAdjacenciesAnswerElement implements AnswerElement {
+  public static class SelfAdjacenciesAnswerElement extends AnswerElement {
 
     public static class InterfaceIpPair extends Pair<String, Ip> {
 

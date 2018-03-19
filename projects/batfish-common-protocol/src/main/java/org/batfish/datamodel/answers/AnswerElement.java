@@ -8,17 +8,19 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public interface AnswerElement {
+public abstract class AnswerElement {
 
-  String PROP_SUMMARY = "summary";
+  public static final String PROP_SUMMARY = "summary";
+
+  protected AnswerSummary _summary;
 
   @Nullable
   @JsonProperty(PROP_SUMMARY)
-  default AnswerSummary getSummary() {
-    return null;
+  public final AnswerSummary getSummary() {
+    return _summary;
   }
 
-  default String prettyPrint() {
+  public String prettyPrint() {
     try {
       return BatfishObjectMapper.writePrettyString(this);
     } catch (JsonProcessingException e) {
@@ -27,5 +29,7 @@ public interface AnswerElement {
   }
 
   @JsonProperty(PROP_SUMMARY)
-  default void setSummary(AnswerSummary summary) {}
+  public final void setSummary(AnswerSummary summary) {
+    _summary = summary;
+  }
 }

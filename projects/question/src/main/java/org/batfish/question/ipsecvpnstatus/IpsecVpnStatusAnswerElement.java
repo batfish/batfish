@@ -6,7 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.answers.AnswerElement;
 
-public class IpsecVpnStatusAnswerElement implements AnswerElement {
+public class IpsecVpnStatusAnswerElement extends AnswerElement {
 
   private static final String PROP_IPSEC_VPNS = "ipsecVpns";
 

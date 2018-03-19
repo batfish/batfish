@@ -21,7 +21,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
 
-  public static class UniqueBgpPrefixOriginationAnswerElement implements AnswerElement {
+  public static class UniqueBgpPrefixOriginationAnswerElement extends AnswerElement {
 
     private SortedMap<String, SortedMap<String, PrefixSpace>> _intersections;
 

@@ -45,7 +45,7 @@ import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 @AutoService(Plugin.class)
 public class JsonPathQuestionPlugin extends QuestionPlugin {
 
-  public static class JsonPathAnswerElement implements AnswerElement {
+  public static class JsonPathAnswerElement extends AnswerElement {
 
     private static final String PROP_DEBUG = "debug";
 
@@ -55,12 +55,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     private SortedMap<Integer, JsonPathResult> _results;
 
-    private AnswerSummary _summary;
-
     public JsonPathAnswerElement() {
       // don't initialize _debug, so we won't serialize when its null (common case)
       _results = new TreeMap<>();
-      _summary = new AnswerSummary();
+      setSummary(new AnswerSummary());
     }
 
     public void addDebugInfo(String key, Object value) {
@@ -81,11 +79,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_RESULTS)
     public SortedMap<Integer, JsonPathResult> getResults() {
       return _results;
-    }
-
-    @Override
-    public AnswerSummary getSummary() {
-      return _summary;
     }
 
     @Override
@@ -315,7 +308,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class JsonPathDiffAnswerElement implements AnswerElement {
+  public static class JsonPathDiffAnswerElement extends AnswerElement {
 
     static String prettyPrint(SortedMap<Integer, JsonPathDiffResult> results) {
       StringBuilder sb = new StringBuilder();

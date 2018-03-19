@@ -22,18 +22,12 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
   public static class UnusedStructuresAnswerElement extends ProblemsAnswerElement {
 
-    private AnswerSummary _summary = new AnswerSummary();
-
     private SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
         _unusedStructures;
 
     public UnusedStructuresAnswerElement() {
       _unusedStructures = new TreeMap<>();
-    }
-
-    @Override
-    public AnswerSummary getSummary() {
-      return _summary;
+      setSummary(new AnswerSummary());
     }
 
     public SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
@@ -57,11 +51,6 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                 });
           });
       return sb.toString();
-    }
-
-    @Override
-    public void setSummary(AnswerSummary summary) {
-      _summary = summary;
     }
 
     public void setUnusedStructures(

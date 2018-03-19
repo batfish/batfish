@@ -11,7 +11,8 @@ import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-public class ConvertConfigurationAnswerElement implements InitStepAnswerElement, Serializable {
+public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
+    implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;

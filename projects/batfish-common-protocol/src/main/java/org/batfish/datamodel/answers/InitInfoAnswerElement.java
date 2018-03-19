@@ -10,7 +10,7 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-public class InitInfoAnswerElement implements AnswerElement {
+public class InitInfoAnswerElement extends AnswerElement {
 
   private SortedMap<String, List<BatfishStackTrace>> _errors;
 

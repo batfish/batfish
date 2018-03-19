@@ -8,7 +8,8 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-public class ParseVendorConfigurationAnswerElement implements ParseAnswerElement, Serializable {
+public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
+    implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;

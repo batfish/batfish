@@ -19,7 +19,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class RolesQuestionPlugin extends QuestionPlugin {
 
-  public static class RolesAnswerElement implements AnswerElement {
+  public static class RolesAnswerElement extends AnswerElement {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
