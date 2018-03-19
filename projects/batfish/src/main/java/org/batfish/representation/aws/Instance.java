@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -171,7 +172,8 @@ public class Instance implements AwsVpcEntity, Serializable {
     }
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
     String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
     String name = _tags.getOrDefault("Name", _instanceId);

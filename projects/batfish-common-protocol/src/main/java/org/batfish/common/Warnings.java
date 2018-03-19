@@ -165,6 +165,17 @@ public class Warnings implements Serializable {
     _unimplementedRecord = unimplementedRecord;
   }
 
+  public Warnings(Warnings other) {
+    this();
+    _pedanticAsError = other._pedanticAsError;
+    _pedanticRecord = other._pedanticRecord;
+    _printParseTree = other._printParseTree;
+    _redFlagAsError = other._redFlagAsError;
+    _redFlagRecord = other._redFlagRecord;
+    _unimplementedAsError = other._unimplementedAsError;
+    _unimplementedRecord = other._unimplementedRecord;
+  }
+
   public boolean getPedanticAsError() {
     return _pedanticAsError;
   }

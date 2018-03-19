@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.StaticRoute;
@@ -35,7 +36,8 @@ public class InternetGateway implements AwsVpcEntity, Serializable {
     return _internetGatewayId;
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_internetGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
