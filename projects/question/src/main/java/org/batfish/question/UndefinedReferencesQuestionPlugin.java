@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Problem;
@@ -26,6 +27,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
         _undefinedReferences;
 
     public UndefinedReferencesAnswerElement() {
+      _summary = new AnswerSummary();
       _undefinedReferences = new TreeMap<>();
     }
 
