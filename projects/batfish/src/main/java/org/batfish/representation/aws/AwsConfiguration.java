@@ -28,6 +28,8 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
 
   private transient Warnings _warnings;
 
+  private transient Map<String, Warnings> _warningsByHost;
+
   public AwsConfiguration() {
     _currentGeneratedIpAsLong = INITIAL_GENERATED_IP;
   }
@@ -60,8 +62,14 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return _warnings;
   }
 
-  public Map<String, Configuration> toConfigurations(Warnings warnings) {
+  public Map<String, Warnings> getWarningsByHost() {
+    return _warningsByHost;
+  }
+
+  public Map<String, Configuration> toConfigurations(
+      Warnings warnings, Map<String, Warnings> warningsByHost) {
     _warnings = warnings;
+    _warningsByHost = warningsByHost;
 
     for (Region region : _regions.values()) {
       region.toConfigurationNodes(this, _configurationNodes);
