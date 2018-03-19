@@ -124,11 +124,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       _results = results;
     }
 
-    @Override
-    public void setSummary(AnswerSummary summary) {
-      _summary = summary;
-    }
-
     public void updateSummary() {
       _summary.reset();
       for (JsonPathResult result : _results.values()) {

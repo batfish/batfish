@@ -16,7 +16,7 @@ public abstract class AnswerElement {
 
   @Nullable
   @JsonProperty(PROP_SUMMARY)
-  public AnswerSummary getSummary() {
+  public final AnswerSummary getSummary() {
     return _summary;
   }
 
@@ -29,7 +29,7 @@ public abstract class AnswerElement {
   }
 
   @JsonProperty(PROP_SUMMARY)
-  public void setSummary(AnswerSummary summary) {
+  public final void setSummary(AnswerSummary summary) {
     _summary = summary;
   }
 }
