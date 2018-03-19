@@ -810,6 +810,7 @@
   "question" : {
     "class" : "org.batfish.question.InitInfoQuestionPlugin$InitInfoQuestion",
     "differential" : false,
+    "environmentBgpTables" : false,
     "environmentRoutes" : true,
     "summary" : false,
     "verboseError" : false

@@ -1,521 +1,497 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.PerRoleQuestionPlugin$PerRoleAnswerElement",
-      "answers" : {
-        "border" : {
-          "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
-          "equivalenceSetsMap" : {
-            "AsPathAccessList" : {
-              "structureClassName" : "AsPathAccessList"
-            },
-            "AuthenticationKeyChain" : {
-              "structureClassName" : "AuthenticationKeyChain"
-            },
-            "CommunityList" : {
-              "structureClassName" : "CommunityList"
-            },
-            "IkeGateway" : {
-              "structureClassName" : "IkeGateway"
-            },
-            "IkePolicy" : {
-              "structureClassName" : "IkePolicy"
-            },
-            "IkeProposal" : {
-              "structureClassName" : "IkeProposal"
-            },
-            "Ip6AccessList" : {
-              "structureClassName" : "Ip6AccessList"
-            },
-            "IpAccessList" : {
-              "structureClassName" : "IpAccessList",
-              "sameNamedStructures" : {
-                "103" : [
-                  {
-                    "nodes" : [
-                      "as1border1",
-                      "as2border1",
-                      "as2border2",
-                      "as3border1",
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border2"
-                  }
-                ],
-                "OUTSIDE_TO_INSIDE" : [
-                  {
-                    "nodes" : [
-                      "as2border1"
-                    ],
-                    "representativeElement" : "as2border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as2border2"
-                    ],
-                    "representativeElement" : "as2border2"
-                  }
-                ]
-              }
-            },
-            "IpsecPolicy" : {
-              "structureClassName" : "IpsecPolicy"
-            },
-            "IpsecProposal" : {
-              "structureClassName" : "IpsecProposal"
-            },
-            "IpsecVpn" : {
-              "structureClassName" : "IpsecVpn"
-            },
-            "Route6FilterList" : {
-              "structureClassName" : "Route6FilterList"
-            },
-            "RouteFilterList" : {
-              "structureClassName" : "RouteFilterList",
-              "sameNamedStructures" : {
-                "103" : [
-                  {
-                    "nodes" : [
-                      "as1border1",
-                      "as2border1",
-                      "as2border2",
-                      "as3border1",
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border2"
-                  }
-                ],
-                "inbound_route_filter" : [
-                  {
-                    "nodes" : [
-                      "as1border1",
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as2border1",
-                      "as2border2"
-                    ],
-                    "representativeElement" : "as2border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as3border1",
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as3border1"
-                  }
-                ]
-              }
-            },
-            "RoutingPolicy" : {
-              "structureClassName" : "RoutingPolicy",
-              "sameNamedStructures" : {
-                "as1_to_as2" : [
-                  {
-                    "nodes" : [
-                      "as1border1"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border2"
-                  },
-                  {
-                    "nodes" : [
-                      "as2border1",
-                      "as2border2"
-                    ],
-                    "representativeElement" : "as2border1"
-                  }
-                ],
-                "as1_to_as3" : [
-                  {
-                    "nodes" : [
-                      "as1border1",
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as3border1",
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as3border1"
-                  }
-                ],
-                "as2_to_as1" : [
-                  {
-                    "nodes" : [
-                      "as1border1",
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as2border1",
-                      "as2border2"
-                    ],
-                    "representativeElement" : "as2border1"
-                  }
-                ],
-                "as2_to_as3" : [
-                  {
-                    "nodes" : [
-                      "as2border1",
-                      "as2border2"
-                    ],
-                    "representativeElement" : "as2border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as3border1",
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as3border1"
-                  }
-                ],
-                "as3_to_as1" : [
-                  {
-                    "nodes" : [
-                      "as1border1",
-                      "as1border2"
-                    ],
-                    "representativeElement" : "as1border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as3border1",
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as3border1"
-                  }
-                ],
-                "as3_to_as2" : [
-                  {
-                    "nodes" : [
-                      "as2border1",
-                      "as2border2"
-                    ],
-                    "representativeElement" : "as2border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as3border1"
-                    ],
-                    "representativeElement" : "as3border1"
-                  },
-                  {
-                    "nodes" : [
-                      "as3border2"
-                    ],
-                    "representativeElement" : "as3border2"
-                  }
-                ]
-              }
-            },
-            "Zone" : {
-              "structureClassName" : "Zone"
+[
+  {
+    "class" : "org.batfish.question.PerRoleQuestionPlugin$PerRoleAnswerElement",
+    "answers" : {
+      "border" : {
+        "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
+        "equivalenceSetsMap" : {
+          "AsPathAccessList" : {
+            "structureClassName" : "AsPathAccessList"
+          },
+          "AuthenticationKeyChain" : {
+            "structureClassName" : "AuthenticationKeyChain"
+          },
+          "CommunityList" : {
+            "structureClassName" : "CommunityList"
+          },
+          "IkeGateway" : {
+            "structureClassName" : "IkeGateway"
+          },
+          "IkePolicy" : {
+            "structureClassName" : "IkePolicy"
+          },
+          "IkeProposal" : {
+            "structureClassName" : "IkeProposal"
+          },
+          "Ip6AccessList" : {
+            "structureClassName" : "Ip6AccessList"
+          },
+          "IpAccessList" : {
+            "structureClassName" : "IpAccessList",
+            "sameNamedStructures" : {
+              "103" : [
+                {
+                  "nodes" : [
+                    "as1border1",
+                    "as2border1",
+                    "as2border2",
+                    "as3border1",
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                }
+              ],
+              "OUTSIDE_TO_INSIDE" : [
+                {
+                  "nodes" : [
+                    "as2border1"
+                  ],
+                  "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
+                }
+              ]
             }
           },
-          "nodes" : [
-            "as1border1",
-            "as1border2",
-            "as2border1",
-            "as2border2",
-            "as3border1",
-            "as3border2"
-          ]
+          "IpsecPolicy" : {
+            "structureClassName" : "IpsecPolicy"
+          },
+          "IpsecProposal" : {
+            "structureClassName" : "IpsecProposal"
+          },
+          "IpsecVpn" : {
+            "structureClassName" : "IpsecVpn"
+          },
+          "Route6FilterList" : {
+            "structureClassName" : "Route6FilterList"
+          },
+          "RouteFilterList" : {
+            "structureClassName" : "RouteFilterList",
+            "sameNamedStructures" : {
+              "103" : [
+                {
+                  "nodes" : [
+                    "as1border1",
+                    "as2border1",
+                    "as2border2",
+                    "as3border1",
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                }
+              ],
+              "inbound_route_filter" : [
+                {
+                  "nodes" : [
+                    "as1border1",
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border1",
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border1",
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border1"
+                }
+              ]
+            }
+          },
+          "RoutingPolicy" : {
+            "structureClassName" : "RoutingPolicy",
+            "sameNamedStructures" : {
+              "as1_to_as2" : [
+                {
+                  "nodes" : [
+                    "as1border1"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as2border1",
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border1"
+                }
+              ],
+              "as1_to_as3" : [
+                {
+                  "nodes" : [
+                    "as1border1",
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border1",
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border1"
+                }
+              ],
+              "as2_to_as1" : [
+                {
+                  "nodes" : [
+                    "as1border1",
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border1",
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border1"
+                }
+              ],
+              "as2_to_as3" : [
+                {
+                  "nodes" : [
+                    "as2border1",
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border1",
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border1"
+                }
+              ],
+              "as3_to_as1" : [
+                {
+                  "nodes" : [
+                    "as1border1",
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border1",
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border1"
+                }
+              ],
+              "as3_to_as2" : [
+                {
+                  "nodes" : [
+                    "as2border1",
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
+                  ],
+                  "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
+                }
+              ]
+            }
+          },
+          "Zone" : {
+            "structureClassName" : "Zone"
+          }
         },
-        "core" : {
-          "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
-          "equivalenceSetsMap" : {
-            "AsPathAccessList" : {
-              "structureClassName" : "AsPathAccessList"
-            },
-            "AuthenticationKeyChain" : {
-              "structureClassName" : "AuthenticationKeyChain"
-            },
-            "CommunityList" : {
-              "structureClassName" : "CommunityList"
-            },
-            "IkeGateway" : {
-              "structureClassName" : "IkeGateway"
-            },
-            "IkePolicy" : {
-              "structureClassName" : "IkePolicy"
-            },
-            "IkeProposal" : {
-              "structureClassName" : "IkeProposal"
-            },
-            "Ip6AccessList" : {
-              "structureClassName" : "Ip6AccessList"
-            },
-            "IpAccessList" : {
-              "structureClassName" : "IpAccessList"
-            },
-            "IpsecPolicy" : {
-              "structureClassName" : "IpsecPolicy"
-            },
-            "IpsecProposal" : {
-              "structureClassName" : "IpsecProposal"
-            },
-            "IpsecVpn" : {
-              "structureClassName" : "IpsecVpn"
-            },
-            "Route6FilterList" : {
-              "structureClassName" : "Route6FilterList"
-            },
-            "RouteFilterList" : {
-              "structureClassName" : "RouteFilterList"
-            },
-            "RoutingPolicy" : {
-              "structureClassName" : "RoutingPolicy"
-            },
-            "Zone" : {
-              "structureClassName" : "Zone"
-            }
+        "nodes" : [
+          "as2border2",
+          "as1border2",
+          "as3border2",
+          "as1border1",
+          "as2border1",
+          "as3border1"
+        ]
+      },
+      "core" : {
+        "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
+        "equivalenceSetsMap" : {
+          "AsPathAccessList" : {
+            "structureClassName" : "AsPathAccessList"
           },
-          "nodes" : [
-            "as1core1",
-            "as2core1",
-            "as2core2",
-            "as3core1"
-          ]
+          "AuthenticationKeyChain" : {
+            "structureClassName" : "AuthenticationKeyChain"
+          },
+          "CommunityList" : {
+            "structureClassName" : "CommunityList"
+          },
+          "IkeGateway" : {
+            "structureClassName" : "IkeGateway"
+          },
+          "IkePolicy" : {
+            "structureClassName" : "IkePolicy"
+          },
+          "IkeProposal" : {
+            "structureClassName" : "IkeProposal"
+          },
+          "Ip6AccessList" : {
+            "structureClassName" : "Ip6AccessList"
+          },
+          "IpAccessList" : {
+            "structureClassName" : "IpAccessList"
+          },
+          "IpsecPolicy" : {
+            "structureClassName" : "IpsecPolicy"
+          },
+          "IpsecProposal" : {
+            "structureClassName" : "IpsecProposal"
+          },
+          "IpsecVpn" : {
+            "structureClassName" : "IpsecVpn"
+          },
+          "Route6FilterList" : {
+            "structureClassName" : "Route6FilterList"
+          },
+          "RouteFilterList" : {
+            "structureClassName" : "RouteFilterList"
+          },
+          "RoutingPolicy" : {
+            "structureClassName" : "RoutingPolicy"
+          },
+          "Zone" : {
+            "structureClassName" : "Zone"
+          }
         },
-        "dept" : {
-          "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
-          "equivalenceSetsMap" : {
-            "AsPathAccessList" : {
-              "structureClassName" : "AsPathAccessList"
-            },
-            "AuthenticationKeyChain" : {
-              "structureClassName" : "AuthenticationKeyChain"
-            },
-            "CommunityList" : {
-              "structureClassName" : "CommunityList"
-            },
-            "IkeGateway" : {
-              "structureClassName" : "IkeGateway"
-            },
-            "IkePolicy" : {
-              "structureClassName" : "IkePolicy"
-            },
-            "IkeProposal" : {
-              "structureClassName" : "IkeProposal"
-            },
-            "Ip6AccessList" : {
-              "structureClassName" : "Ip6AccessList"
-            },
-            "IpAccessList" : {
-              "structureClassName" : "IpAccessList"
-            },
-            "IpsecPolicy" : {
-              "structureClassName" : "IpsecPolicy"
-            },
-            "IpsecProposal" : {
-              "structureClassName" : "IpsecProposal"
-            },
-            "IpsecVpn" : {
-              "structureClassName" : "IpsecVpn"
-            },
-            "Route6FilterList" : {
-              "structureClassName" : "Route6FilterList"
-            },
-            "RouteFilterList" : {
-              "structureClassName" : "RouteFilterList"
-            },
-            "RoutingPolicy" : {
-              "structureClassName" : "RoutingPolicy"
-            },
-            "Zone" : {
-              "structureClassName" : "Zone"
-            }
+        "nodes" : [
+          "as1core1",
+          "as2core1",
+          "as2core2",
+          "as3core1"
+        ]
+      },
+      "dept" : {
+        "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
+        "equivalenceSetsMap" : {
+          "AsPathAccessList" : {
+            "structureClassName" : "AsPathAccessList"
           },
-          "nodes" : [
-            "as2dept1"
-          ]
+          "AuthenticationKeyChain" : {
+            "structureClassName" : "AuthenticationKeyChain"
+          },
+          "CommunityList" : {
+            "structureClassName" : "CommunityList"
+          },
+          "IkeGateway" : {
+            "structureClassName" : "IkeGateway"
+          },
+          "IkePolicy" : {
+            "structureClassName" : "IkePolicy"
+          },
+          "IkeProposal" : {
+            "structureClassName" : "IkeProposal"
+          },
+          "Ip6AccessList" : {
+            "structureClassName" : "Ip6AccessList"
+          },
+          "IpAccessList" : {
+            "structureClassName" : "IpAccessList"
+          },
+          "IpsecPolicy" : {
+            "structureClassName" : "IpsecPolicy"
+          },
+          "IpsecProposal" : {
+            "structureClassName" : "IpsecProposal"
+          },
+          "IpsecVpn" : {
+            "structureClassName" : "IpsecVpn"
+          },
+          "Route6FilterList" : {
+            "structureClassName" : "Route6FilterList"
+          },
+          "RouteFilterList" : {
+            "structureClassName" : "RouteFilterList"
+          },
+          "RoutingPolicy" : {
+            "structureClassName" : "RoutingPolicy"
+          },
+          "Zone" : {
+            "structureClassName" : "Zone"
+          }
         },
-        "dist" : {
-          "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
-          "equivalenceSetsMap" : {
-            "AsPathAccessList" : {
-              "structureClassName" : "AsPathAccessList"
-            },
-            "AuthenticationKeyChain" : {
-              "structureClassName" : "AuthenticationKeyChain"
-            },
-            "CommunityList" : {
-              "structureClassName" : "CommunityList"
-            },
-            "IkeGateway" : {
-              "structureClassName" : "IkeGateway"
-            },
-            "IkePolicy" : {
-              "structureClassName" : "IkePolicy"
-            },
-            "IkeProposal" : {
-              "structureClassName" : "IkeProposal"
-            },
-            "Ip6AccessList" : {
-              "structureClassName" : "Ip6AccessList"
-            },
-            "IpAccessList" : {
-              "structureClassName" : "IpAccessList"
-            },
-            "IpsecPolicy" : {
-              "structureClassName" : "IpsecPolicy"
-            },
-            "IpsecProposal" : {
-              "structureClassName" : "IpsecProposal"
-            },
-            "IpsecVpn" : {
-              "structureClassName" : "IpsecVpn"
-            },
-            "Route6FilterList" : {
-              "structureClassName" : "Route6FilterList"
-            },
-            "RouteFilterList" : {
-              "structureClassName" : "RouteFilterList"
-            },
-            "RoutingPolicy" : {
-              "structureClassName" : "RoutingPolicy"
-            },
-            "Zone" : {
-              "structureClassName" : "Zone"
-            }
+        "nodes" : [
+          "as2dept1"
+        ]
+      },
+      "dist" : {
+        "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
+        "equivalenceSetsMap" : {
+          "AsPathAccessList" : {
+            "structureClassName" : "AsPathAccessList"
           },
-          "nodes" : [
-            "as2dist1",
-            "as2dist2"
-          ]
+          "AuthenticationKeyChain" : {
+            "structureClassName" : "AuthenticationKeyChain"
+          },
+          "CommunityList" : {
+            "structureClassName" : "CommunityList"
+          },
+          "IkeGateway" : {
+            "structureClassName" : "IkeGateway"
+          },
+          "IkePolicy" : {
+            "structureClassName" : "IkePolicy"
+          },
+          "IkeProposal" : {
+            "structureClassName" : "IkeProposal"
+          },
+          "Ip6AccessList" : {
+            "structureClassName" : "Ip6AccessList"
+          },
+          "IpAccessList" : {
+            "structureClassName" : "IpAccessList"
+          },
+          "IpsecPolicy" : {
+            "structureClassName" : "IpsecPolicy"
+          },
+          "IpsecProposal" : {
+            "structureClassName" : "IpsecProposal"
+          },
+          "IpsecVpn" : {
+            "structureClassName" : "IpsecVpn"
+          },
+          "Route6FilterList" : {
+            "structureClassName" : "Route6FilterList"
+          },
+          "RouteFilterList" : {
+            "structureClassName" : "RouteFilterList"
+          },
+          "RoutingPolicy" : {
+            "structureClassName" : "RoutingPolicy"
+          },
+          "Zone" : {
+            "structureClassName" : "Zone"
+          }
         },
-        "host" : {
-          "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
-          "equivalenceSetsMap" : {
-            "AsPathAccessList" : {
-              "structureClassName" : "AsPathAccessList"
-            },
-            "AuthenticationKeyChain" : {
-              "structureClassName" : "AuthenticationKeyChain"
-            },
-            "CommunityList" : {
-              "structureClassName" : "CommunityList"
-            },
-            "IkeGateway" : {
-              "structureClassName" : "IkeGateway"
-            },
-            "IkePolicy" : {
-              "structureClassName" : "IkePolicy"
-            },
-            "IkeProposal" : {
-              "structureClassName" : "IkeProposal"
-            },
-            "Ip6AccessList" : {
-              "structureClassName" : "Ip6AccessList"
-            },
-            "IpAccessList" : {
-              "structureClassName" : "IpAccessList",
-              "sameNamedStructures" : {
-                "filter::INPUT" : [
-                  {
-                    "nodes" : [
-                      "host1"
-                    ],
-                    "representativeElement" : "host1"
-                  },
-                  {
-                    "nodes" : [
-                      "host2"
-                    ],
-                    "representativeElement" : "host2"
-                  }
-                ],
-                "filter::OUTPUT" : [
-                  {
-                    "nodes" : [
-                      "host1"
-                    ],
-                    "representativeElement" : "host1"
-                  },
-                  {
-                    "nodes" : [
-                      "host2"
-                    ],
-                    "representativeElement" : "host2"
-                  }
-                ]
-              }
-            },
-            "IpsecPolicy" : {
-              "structureClassName" : "IpsecPolicy"
-            },
-            "IpsecProposal" : {
-              "structureClassName" : "IpsecProposal"
-            },
-            "IpsecVpn" : {
-              "structureClassName" : "IpsecVpn"
-            },
-            "Route6FilterList" : {
-              "structureClassName" : "Route6FilterList"
-            },
-            "RouteFilterList" : {
-              "structureClassName" : "RouteFilterList"
-            },
-            "RoutingPolicy" : {
-              "structureClassName" : "RoutingPolicy"
-            },
-            "Zone" : {
-              "structureClassName" : "Zone"
+        "nodes" : [
+          "as2dist1",
+          "as2dist2"
+        ]
+      },
+      "host" : {
+        "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameAnswerElement",
+        "equivalenceSetsMap" : {
+          "AsPathAccessList" : {
+            "structureClassName" : "AsPathAccessList"
+          },
+          "AuthenticationKeyChain" : {
+            "structureClassName" : "AuthenticationKeyChain"
+          },
+          "CommunityList" : {
+            "structureClassName" : "CommunityList"
+          },
+          "IkeGateway" : {
+            "structureClassName" : "IkeGateway"
+          },
+          "IkePolicy" : {
+            "structureClassName" : "IkePolicy"
+          },
+          "IkeProposal" : {
+            "structureClassName" : "IkeProposal"
+          },
+          "Ip6AccessList" : {
+            "structureClassName" : "Ip6AccessList"
+          },
+          "IpAccessList" : {
+            "structureClassName" : "IpAccessList",
+            "sameNamedStructures" : {
+              "filter::INPUT" : [
+                {
+                  "nodes" : [
+                    "host1"
+                  ],
+                  "representativeElement" : "host1"
+                },
+                {
+                  "nodes" : [
+                    "host2"
+                  ],
+                  "representativeElement" : "host2"
+                }
+              ],
+              "filter::OUTPUT" : [
+                {
+                  "nodes" : [
+                    "host1"
+                  ],
+                  "representativeElement" : "host1"
+                },
+                {
+                  "nodes" : [
+                    "host2"
+                  ],
+                  "representativeElement" : "host2"
+                }
+              ]
             }
           },
-          "nodes" : [
-            "host1",
-            "host2"
-          ]
-        }
+          "IpsecPolicy" : {
+            "structureClassName" : "IpsecPolicy"
+          },
+          "IpsecProposal" : {
+            "structureClassName" : "IpsecProposal"
+          },
+          "IpsecVpn" : {
+            "structureClassName" : "IpsecVpn"
+          },
+          "Route6FilterList" : {
+            "structureClassName" : "Route6FilterList"
+          },
+          "RouteFilterList" : {
+            "structureClassName" : "RouteFilterList"
+          },
+          "RoutingPolicy" : {
+            "structureClassName" : "RoutingPolicy"
+          },
+          "Zone" : {
+            "structureClassName" : "Zone"
+          }
+        },
+        "nodes" : [
+          "host1",
+          "host2"
+        ]
       }
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.PerRoleQuestionPlugin$PerRoleQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*",
-    "question" : {
-      "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
-      "differential" : false,
-      "excludedNamedStructTypes" : [
-        "Interface",
-        "Vrf"
-      ],
-      "missing" : false,
-      "nodeRegex" : "\\Qhost1\\E|\\Qhost2\\E",
-      "singletons" : false
-    }
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
   }
-}
+]

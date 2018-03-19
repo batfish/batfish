@@ -1,20 +1,5 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersAnswerElement"
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersQuestion",
-    "differential" : false,
-    "hypothesis" : "sameServers",
-    "nodeRegex" : ".*",
-    "verbose" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+[
+  {
+    "class" : "org.batfish.question.OutliersQuestionPlugin$OutliersAnswerElement"
   }
-}
+]

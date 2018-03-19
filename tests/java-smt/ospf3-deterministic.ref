@@ -1,26 +1,5 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement"
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.SmtDeterministicQuestionPlugin$DeterministicQuestion",
-    "baseEnvType" : "any",
-    "benchmark" : false,
-    "deltaEnvType" : "any",
-    "differential" : false,
-    "envDiff" : false,
-    "failures" : 0,
-    "fullModel" : false,
-    "minimize" : false,
-    "modelOverflow" : false,
-    "useAbstraction" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+[
+  {
+    "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement"
   }
-}
+]

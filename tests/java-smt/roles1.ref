@@ -1,127 +1,113 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.RoleAnswerElement",
-      "exportBgpEcs" : [
-        [
-          "R1,Serial1 --> _,_",
-          "R1,Serial2 --> _,_",
-          "R1,Serial3 --> _,_",
-          "R1,Serial4 --> _,_"
-        ],
-        [
-          "R1,Serial10 --> _,_",
-          "R1,Serial11 --> _,_"
-        ],
-        [
-          "R1,Serial12 --> _,_",
-          "R1,Serial13 --> _,_"
-        ],
-        [
-          "R1,Serial14 --> _,_",
-          "R1,Serial15 --> _,_"
-        ],
-        [
-          "R1,Serial5 --> _,_",
-          "R1,Serial6 --> _,_"
-        ],
-        [
-          "R1,Serial7 --> _,_"
-        ],
-        [
-          "R1,Serial8 --> _,_",
-          "R1,Serial9 --> _,_"
-        ]
+[
+  {
+    "class" : "org.batfish.symbolic.answers.RoleAnswerElement",
+    "exportBgpEcs" : [
+      [
+        "R1,Serial1 --> _,_",
+        "R1,Serial2 --> _,_",
+        "R1,Serial3 --> _,_",
+        "R1,Serial4 --> _,_"
       ],
-      "importBgpEcs" : [
-        [
-          "R1,Serial1 --> _,_",
-          "R1,Serial2 --> _,_",
-          "R1,Serial3 --> _,_",
-          "R1,Serial4 --> _,_"
-        ],
-        [
-          "R1,Serial10 --> _,_",
-          "R1,Serial11 --> _,_"
-        ],
-        [
-          "R1,Serial12 --> _,_",
-          "R1,Serial13 --> _,_"
-        ],
-        [
-          "R1,Serial14 --> _,_",
-          "R1,Serial15 --> _,_"
-        ],
-        [
-          "R1,Serial5 --> _,_",
-          "R1,Serial6 --> _,_"
-        ],
-        [
-          "R1,Serial7 --> _,_"
-        ],
-        [
-          "R1,Serial8 --> _,_",
-          "R1,Serial9 --> _,_"
-        ]
+      [
+        "R1,Serial10 --> _,_",
+        "R1,Serial11 --> _,_"
       ],
-      "incomingAclEcs" : [
-        [
-          "R1,Serial1 --> _,_",
-          "R1,Serial2 --> _,_"
-        ],
-        [
-          "R1,Serial10 --> _,_",
-          "R1,Serial11 --> _,_",
-          "R1,Serial12 --> _,_",
-          "R1,Serial13 --> _,_",
-          "R1,Serial14 --> _,_",
-          "R1,Serial15 --> _,_",
-          "R1,Serial7 --> _,_",
-          "R1,Serial8 --> _,_",
-          "R1,Serial9 --> _,_"
-        ],
-        [
-          "R1,Serial3 --> _,_"
-        ],
-        [
-          "R1,Serial4 --> _,_",
-          "R1,Serial5 --> _,_"
-        ],
-        [
-          "R1,Serial6 --> _,_"
-        ]
+      [
+        "R1,Serial12 --> _,_",
+        "R1,Serial13 --> _,_"
       ],
-      "outgoingAclEcs" : [
-        [
-          "R1,Serial1 --> _,_",
-          "R1,Serial10 --> _,_",
-          "R1,Serial11 --> _,_",
-          "R1,Serial12 --> _,_",
-          "R1,Serial13 --> _,_",
-          "R1,Serial14 --> _,_",
-          "R1,Serial15 --> _,_",
-          "R1,Serial2 --> _,_",
-          "R1,Serial3 --> _,_",
-          "R1,Serial4 --> _,_",
-          "R1,Serial5 --> _,_",
-          "R1,Serial6 --> _,_",
-          "R1,Serial7 --> _,_",
-          "R1,Serial8 --> _,_",
-          "R1,Serial9 --> _,_"
-        ]
+      [
+        "R1,Serial14 --> _,_",
+        "R1,Serial15 --> _,_"
+      ],
+      [
+        "R1,Serial5 --> _,_",
+        "R1,Serial6 --> _,_"
+      ],
+      [
+        "R1,Serial7 --> _,_"
+      ],
+      [
+        "R1,Serial8 --> _,_",
+        "R1,Serial9 --> _,_"
       ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.datamodel.questions.smt.RoleQuestion",
-    "differential" : false,
-    "equivType" : "policy",
-    "nodeRegex" : ".*"
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+    ],
+    "importBgpEcs" : [
+      [
+        "R1,Serial1 --> _,_",
+        "R1,Serial2 --> _,_",
+        "R1,Serial3 --> _,_",
+        "R1,Serial4 --> _,_"
+      ],
+      [
+        "R1,Serial10 --> _,_",
+        "R1,Serial11 --> _,_"
+      ],
+      [
+        "R1,Serial12 --> _,_",
+        "R1,Serial13 --> _,_"
+      ],
+      [
+        "R1,Serial14 --> _,_",
+        "R1,Serial15 --> _,_"
+      ],
+      [
+        "R1,Serial5 --> _,_",
+        "R1,Serial6 --> _,_"
+      ],
+      [
+        "R1,Serial7 --> _,_"
+      ],
+      [
+        "R1,Serial8 --> _,_",
+        "R1,Serial9 --> _,_"
+      ]
+    ],
+    "incomingAclEcs" : [
+      [
+        "R1,Serial1 --> _,_",
+        "R1,Serial2 --> _,_"
+      ],
+      [
+        "R1,Serial10 --> _,_",
+        "R1,Serial11 --> _,_",
+        "R1,Serial12 --> _,_",
+        "R1,Serial13 --> _,_",
+        "R1,Serial14 --> _,_",
+        "R1,Serial15 --> _,_",
+        "R1,Serial7 --> _,_",
+        "R1,Serial8 --> _,_",
+        "R1,Serial9 --> _,_"
+      ],
+      [
+        "R1,Serial3 --> _,_"
+      ],
+      [
+        "R1,Serial4 --> _,_",
+        "R1,Serial5 --> _,_"
+      ],
+      [
+        "R1,Serial6 --> _,_"
+      ]
+    ],
+    "outgoingAclEcs" : [
+      [
+        "R1,Serial1 --> _,_",
+        "R1,Serial10 --> _,_",
+        "R1,Serial11 --> _,_",
+        "R1,Serial12 --> _,_",
+        "R1,Serial13 --> _,_",
+        "R1,Serial14 --> _,_",
+        "R1,Serial15 --> _,_",
+        "R1,Serial2 --> _,_",
+        "R1,Serial3 --> _,_",
+        "R1,Serial4 --> _,_",
+        "R1,Serial5 --> _,_",
+        "R1,Serial6 --> _,_",
+        "R1,Serial7 --> _,_",
+        "R1,Serial8 --> _,_",
+        "R1,Serial9 --> _,_"
+      ]
+    ]
   }
-}
+]

@@ -104,6 +104,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.ArrayUtils;
+import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -165,8 +166,8 @@ public class ClientTest {
             GET.commandName(), usage.getFirst(), usage.getSecond());
     String additionalMessage =
         String.format(
-            "Test: 'get' matches %s: Fail\nCopied output to %s.testout\n",
-            tempFilePath.toString(), tempFilePath.toString());
+            "Test [%s]: 'get' matches %s: Fail\nCopied output to %s.testout\n",
+            TestComparisonMode.COMPAREANSWER, tempFilePath.toString(), tempFilePath.toString());
     testProcessCommandWithValidInput(TEST, parameters, expected + additionalMessage);
   }
 

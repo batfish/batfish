@@ -1,16 +1,5 @@
-{
-  "answerElements" : [ {
+[
+  {
     "class" : "org.batfish.datamodel.FlowHistory"
-  } ],
-  "question" : {
-    "class" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
-    "dstIps" : [ "3.0.1.2" ],
-    "dstPorts" : [ "0-0" ],
-    "ingressNodeRegex" : "host1",
-    "ipProtocols" : [ "TCP" ],
-    "srcIps" : [ "2.128.0.0" ],
-    "srcPorts" : [ "0-0" ],
-    "type" : "multipath"
-  },
-  "status" : "SUCCESS"
-}
+  }
+]

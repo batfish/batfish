@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Duration;
 import java.util.Arrays;
@@ -52,6 +51,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
 import org.batfish.client.config.Settings.RunMode;
@@ -85,6 +85,8 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -1451,6 +1453,26 @@ public class Client extends AbstractClient implements IClient {
 
   public Settings getSettings() {
     return _settings;
+  }
+
+  private String getTestComparisonString(Answer answer, TestComparisonMode comparisonMode)
+      throws JsonProcessingException {
+    switch (comparisonMode) {
+      case COMPAREANSWER:
+        // Use an array rather than a list to serialize the answer elements; this preserves
+        // the type information. See https://github.com/FasterXML/jackson-databind/issues/336,
+        // though this is a different workaround.
+        AnswerElement[] elements = answer.getAnswerElements().toArray(new AnswerElement[0]);
+        return BatfishObjectMapper.writePrettyString(elements);
+      case COMPAREALL:
+        return BatfishObjectMapper.writePrettyString(answer);
+      case COMPAREFAILURES:
+        return BatfishObjectMapper.writePrettyString(answer.getSummary().getNumFailed());
+      case COMPARESUMMARY:
+        return BatfishObjectMapper.writePrettyString(answer.getSummary());
+      default:
+        throw new BatfishException("Unhandled TestComparisonMode: " + comparisonMode);
+    }
   }
 
   public void handleSigInt() {
@@ -3140,10 +3162,14 @@ public class Client extends AbstractClient implements IClient {
   private boolean test(List<String> options, List<String> parameters) throws IOException {
     boolean failingTest = false;
     boolean missingReferenceFile = false;
-    boolean testPassed = false;
     int testCommandIndex = 1;
-    if (!isValidArgument(options, parameters, 0, 2, Integer.MAX_VALUE, Command.TEST)) {
+    if (!isValidArgument(options, parameters, 1, 2, Integer.MAX_VALUE, Command.TEST)) {
       return false;
+    }
+    TestComparisonMode comparisonMode = TestComparisonMode.COMPAREANSWER;
+    if (options.size() > 0) {
+      String opt = options.get(0).toUpperCase();
+      comparisonMode = TestComparisonMode.valueOf(opt.substring(1, opt.length())); // remove '-'
     }
     if (parameters.get(testCommandIndex).equals(FLAG_FAILING_TEST)) {
       testCommandIndex++;
@@ -3164,53 +3190,44 @@ public class Client extends AbstractClient implements IClient {
       missingReferenceFile = true;
     }
 
+    // Delete any existing testout filename before running this test.
+    Path failedTestoutPath = Paths.get(referenceFile + ".testout");
+    CommonUtil.deleteIfExists(failedTestoutPath);
+
     File testoutFile = Files.createTempFile("test", "out").toFile();
     testoutFile.deleteOnExit();
-
     FileWriter testoutWriter = new FileWriter(testoutFile);
 
     boolean testCommandSucceeded = processCommand(testCommand, testoutWriter);
     testoutWriter.close();
 
-    if (!failingTest && testCommandSucceeded) {
-      try {
+    String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
+    boolean testPassed = false;
 
-        // rewrite new answer string using local implementation
-        String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
-
-        String testAnswerString = testOutput;
-
+    if (failingTest) {
+      if (!testCommandSucceeded) {
+        // Command failed in the client.
+        testPassed = true;
+      } else {
         try {
           Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
-          testAnswerString = BatfishObjectMapper.writePrettyString(testAnswer);
+          testPassed = (testAnswer.getStatus() == AnswerStatus.FAILURE);
         } catch (JsonProcessingException e) {
-          // not all outputs of process command are of Answer.class type
-          // in that case, we use the exact string as initialized above for
-          // comparison
-          testAnswerString = testAnswerString.trim();
+          // pass here and let the test fail.
+        }
+      }
+    } else if (testCommandSucceeded) {
+      try {
+        try {
+          Answer testAnswer = BatfishObjectMapper.mapper().readValue(testOutput, Answer.class);
+          testOutput = getTestComparisonString(testAnswer, comparisonMode);
+        } catch (JsonProcessingException e) {
+          // when the output cannot be converted to Answer, we use the exact string read from file
         }
 
         if (!missingReferenceFile) {
           String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
-
-          String referenceAnswerString = referenceOutput;
-
-          // rewrite reference string using local implementation
-          Answer referenceAnswer;
-          try {
-            referenceAnswer = BatfishObjectMapper.mapper().readValue(referenceOutput, Answer.class);
-            referenceAnswerString = BatfishObjectMapper.writePrettyString(referenceAnswer);
-          } catch (JsonProcessingException e) {
-            // not all outputs of process command are of Answer.class type
-            // in that case, we use the exact string as initialized above
-            // for comparison
-            referenceAnswerString = referenceAnswerString.trim();
-          }
-
-          // due to options chosen in BatfishObjectMapper, if json
-          // outputs were equal, then strings should be equal
-
-          if (referenceAnswerString.equals(testAnswerString)) {
+          if (referenceOutput.equals(testOutput)) {
             testPassed = true;
           }
         }
@@ -3218,8 +3235,6 @@ public class Client extends AbstractClient implements IClient {
         _logger.errorf(
             "Exception in comparing test results: %s\n", ExceptionUtils.getStackTrace(e));
       }
-    } else if (failingTest) {
-      testPassed = !testCommandSucceeded;
     }
 
     StringBuilder sb = new StringBuilder();
@@ -3230,20 +3245,15 @@ public class Client extends AbstractClient implements IClient {
     sb.append("'");
     String testCommandText = sb.toString();
 
-    String message =
-        "Test: "
-            + testCommandText
-            + (failingTest ? " results in error as expected" : " matches " + referenceFileName)
-            + (testPassed ? ": Pass\n" : ": Fail\n");
-
-    _logger.output(message);
-    if (!failingTest && !testPassed) {
-      String outFileName = referenceFile + ".testout";
-      Files.move(
-          Paths.get(testoutFile.getAbsolutePath()),
-          Paths.get(referenceFile + ".testout"),
-          StandardCopyOption.REPLACE_EXISTING);
-      _logger.outputf("Copied output to %s\n", outFileName);
+    _logger.outputf(
+        "Test [%s]: %s %s: %s\n",
+        comparisonMode,
+        testCommandText,
+        failingTest ? "results in error as expected" : "matches " + referenceFileName,
+        testPassed ? "Pass" : "Fail");
+    if (!testPassed) {
+      CommonUtil.writeFile(failedTestoutPath, testOutput);
+      _logger.outputf("Copied output to %s\n", failedTestoutPath);
     }
     return true;
   }

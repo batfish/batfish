@@ -1,37 +1,11 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
-      "flowHistory" : {
-        "class" : "org.batfish.datamodel.FlowHistory"
-      },
-      "result" : {
-        "verified" : true
-      }
+[
+  {
+    "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
+    "flowHistory" : {
+      "class" : "org.batfish.datamodel.FlowHistory"
+    },
+    "result" : {
+      "verified" : true
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.SmtReachabilityQuestionPlugin$ReachabilityQuestion",
-    "baseEnvType" : "any",
-    "deltaEnvType" : "any",
-    "differential" : false,
-    "dstIps" : [
-      "2.128.0.0/24"
-    ],
-    "envDiff" : false,
-    "failNode1Regex" : ".*",
-    "failNode2Regex" : ".*",
-    "failures" : 1,
-    "finalIfaceRegex" : "FastEthernet1/0",
-    "finalNodeRegex" : "as2dept1",
-    "fullModel" : false,
-    "ingressNodeRegex" : "as2border.*",
-    "minimize" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
   }
-}
+]

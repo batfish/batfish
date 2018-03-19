@@ -1,8 +1,10 @@
 package org.batfish.client;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 
@@ -88,6 +90,13 @@ public enum Command {
   SYNC_TESTRIGS_UPDATE_SETTINGS("sync-testrigs-update-settings"),
   TEST("test"),
   UPLOAD_CUSTOM_OBJECT("upload-custom");
+
+  public enum TestComparisonMode {
+    COMPAREANSWER,
+    COMPAREALL,
+    COMPAREFAILURES,
+    COMPARESUMMARY
+  }
 
   private static final Map<String, Command> _nameMap = buildNameMap();
 
@@ -325,7 +334,15 @@ public enum Command {
         new Pair<>(
             "<plugin-id> [key1=value1, [key2=value2], ...], ",
             "Update the settings for sync testrigs plugin"));
-    descs.put(TEST, new Pair<>("<reference file> <command>", "Show base testrig and environment"));
+    descs.put(
+        TEST,
+        new Pair<>(
+            "["
+                + Arrays.stream(TestComparisonMode.values())
+                    .map(v -> '-' + v.toString())
+                    .collect(Collectors.joining("|"))
+                + "] <ref file> <command>",
+            "Run the command and compare its output to the ref file (used for testing)"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));
     return descs;
