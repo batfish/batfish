@@ -55,8 +55,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     private SortedMap<Integer, JsonPathResult> _results;
 
-    private AnswerSummary _summary;
-
     public JsonPathAnswerElement() {
       // don't initialize _debug, so we won't serialize when its null (common case)
       _results = new TreeMap<>();
@@ -81,11 +79,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_RESULTS)
     public SortedMap<Integer, JsonPathResult> getResults() {
       return _results;
-    }
-
-    @Override
-    public AnswerSummary getSummary() {
-      return _summary;
     }
 
     @Override

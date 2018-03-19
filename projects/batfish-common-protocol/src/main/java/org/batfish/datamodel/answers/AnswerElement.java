@@ -3,7 +3,7 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
@@ -12,9 +12,9 @@ public abstract class AnswerElement {
 
   public static final String PROP_SUMMARY = "summary";
 
-  private AnswerSummary _summary;
+  protected AnswerSummary _summary = new AnswerSummary();
 
-  @Nullable
+  @Nonnull
   @JsonProperty(PROP_SUMMARY)
   public final AnswerSummary getSummary() {
     return _summary;
