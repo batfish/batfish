@@ -1,12 +1,14 @@
 package org.batfish.datamodel.answers;
 
+import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 
-public class ParseEnvironmentRoutingTablesAnswerElement extends ParseAnswerElement {
+public class ParseEnvironmentRoutingTablesAnswerElement extends ParseAnswerElement
+    implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;

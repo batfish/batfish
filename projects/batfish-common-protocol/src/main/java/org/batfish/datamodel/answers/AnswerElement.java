@@ -3,13 +3,12 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public abstract class AnswerElement implements Serializable {
+public abstract class AnswerElement {
 
   public static final String PROP_SUMMARY = "summary";
 

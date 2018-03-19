@@ -1,13 +1,14 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.Prefix;
 
-public class BdpAnswerElement extends DataPlaneAnswerElement {
+public class BdpAnswerElement extends DataPlaneAnswerElement implements Serializable {
 
   private static final String MAIN_RIB_ROUTES_BY_ITERATION = "mainRibRoutesByIteration";
 

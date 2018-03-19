@@ -1,5 +1,6 @@
 package org.batfish.datamodel.answers;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -10,7 +11,8 @@ import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 
-public class ConvertConfigurationAnswerElement extends InitStepAnswerElement {
+public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
+    implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
