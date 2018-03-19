@@ -41,7 +41,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 @AutoService(Plugin.class)
 public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
-  public static class CompareSameNameAnswerElement implements AnswerElement {
+  public static class CompareSameNameAnswerElement extends AnswerElement {
 
     private static final String PROP_EQUIVALENCE_SETS_MAP = "equivalenceSetsMap";
 

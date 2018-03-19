@@ -34,7 +34,7 @@ import org.batfish.role.OutliersHypothesis;
 @AutoService(Plugin.class)
 public class OutliersQuestionPlugin extends QuestionPlugin {
 
-  public static class OutliersAnswerElement implements AnswerElement {
+  public static class OutliersAnswerElement extends AnswerElement {
 
     private static final String PROP_NAMED_STRUCTURE_OUTLIERS = "namedStructureOutliers";
 

@@ -6,7 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.answers.AnswerElement;
 
-public class LoadQuestionAnswerElement implements AnswerElement {
+public class LoadQuestionAnswerElement extends AnswerElement {
 
   private static final String PROP_ADDED = "added";
 

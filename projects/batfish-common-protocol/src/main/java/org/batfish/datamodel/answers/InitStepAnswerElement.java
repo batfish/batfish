@@ -4,13 +4,13 @@ import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 
-public interface InitStepAnswerElement extends AnswerElement {
+public abstract class InitStepAnswerElement extends AnswerElement {
 
-  SortedMap<String, BatfishException.BatfishStackTrace> getErrors();
+  public abstract SortedMap<String, BatfishException.BatfishStackTrace> getErrors();
 
-  SortedMap<String, Warnings> getWarnings();
+  public abstract SortedMap<String, Warnings> getWarnings();
 
-  void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors);
+  public abstract void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors);
 
-  void setWarnings(SortedMap<String, Warnings> warnings);
+  public abstract void setWarnings(SortedMap<String, Warnings> warnings);
 }

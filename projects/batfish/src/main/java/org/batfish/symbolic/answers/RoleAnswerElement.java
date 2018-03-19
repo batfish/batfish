@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.SortedSet;
 import org.batfish.datamodel.answers.AnswerElement;
 
-public class RoleAnswerElement implements AnswerElement {
+public class RoleAnswerElement extends AnswerElement {
 
   private static final String PROP_IMPORT_BGP_ECS = "importBgpEcs";
 

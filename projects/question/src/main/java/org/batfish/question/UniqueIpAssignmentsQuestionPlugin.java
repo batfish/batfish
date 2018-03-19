@@ -28,7 +28,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
-  public static class UniqueIpAssignmentsAnswerElement implements AnswerElement {
+  public static class UniqueIpAssignmentsAnswerElement extends AnswerElement {
 
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> _duplicateIps;
 

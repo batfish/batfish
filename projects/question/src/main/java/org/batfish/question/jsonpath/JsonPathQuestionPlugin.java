@@ -45,7 +45,7 @@ import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 @AutoService(Plugin.class)
 public class JsonPathQuestionPlugin extends QuestionPlugin {
 
-  public static class JsonPathAnswerElement implements AnswerElement {
+  public static class JsonPathAnswerElement extends AnswerElement {
 
     private static final String PROP_DEBUG = "debug";
 
@@ -122,6 +122,11 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_RESULTS)
     public void setResults(SortedMap<Integer, JsonPathResult> results) {
       _results = results;
+    }
+
+    @Override
+    public void setSummary(AnswerSummary summary) {
+      _summary = summary;
     }
 
     public void updateSummary() {
@@ -315,7 +320,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class JsonPathDiffAnswerElement implements AnswerElement {
+  public static class JsonPathDiffAnswerElement extends AnswerElement {
 
     static String prettyPrint(SortedMap<Integer, JsonPathDiffResult> results) {
       StringBuilder sb = new StringBuilder();

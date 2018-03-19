@@ -3,22 +3,25 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
-public interface AnswerElement {
+public abstract class AnswerElement implements Serializable {
 
-  String PROP_SUMMARY = "summary";
+  public static final String PROP_SUMMARY = "summary";
+
+  private AnswerSummary _summary;
 
   @Nullable
   @JsonProperty(PROP_SUMMARY)
-  default AnswerSummary getSummary() {
-    return null;
+  public AnswerSummary getSummary() {
+    return _summary;
   }
 
-  default String prettyPrint() {
+  public String prettyPrint() {
     try {
       return BatfishObjectMapper.writePrettyString(this);
     } catch (JsonProcessingException e) {
@@ -27,5 +30,7 @@ public interface AnswerElement {
   }
 
   @JsonProperty(PROP_SUMMARY)
-  default void setSummary(AnswerSummary summary) {}
+  public void setSummary(AnswerSummary summary) {
+    _summary = summary;
+  }
 }

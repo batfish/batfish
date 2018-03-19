@@ -30,7 +30,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class RoutesQuestionPlugin extends QuestionPlugin {
 
-  public static class RoutesAnswerElement implements AnswerElement {
+  public static class RoutesAnswerElement extends AnswerElement {
 
     private static final String PROP_ADDED = "added";
 
