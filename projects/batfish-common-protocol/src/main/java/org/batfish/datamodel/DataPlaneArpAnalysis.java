@@ -739,31 +739,10 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                           ImmutableMap.toImmutableMap(
                                               Entry::getKey /* outInterface */,
                                               routesWithNextHopByOutInterfaceEntry -> {
-                                                String outInterface =
-                                                    routesWithNextHopByOutInterfaceEntry.getKey();
-                                                IpSpace someoneReplies =
-                                                    _someoneReplies.get(hostname).get(outInterface);
-                                                Set<AbstractRoute> candidateRoutes =
-                                                    routesWithNextHopByOutInterfaceEntry.getValue();
-                                                Fib fib = fibs.get(hostname).get(outInterface);
-                                                return candidateRoutes
-                                                    .stream()
-                                                    .filter(
-                                                        candidateRoute ->
-                                                            fib.getNextHopInterfaces()
-                                                                .get(candidateRoute)
-                                                                .get(outInterface)
-                                                                .keySet()
-                                                                .stream()
-                                                                .filter(
-                                                                    ip ->
-                                                                        ip
-                                                                            != Route
-                                                                                .UNSET_ROUTE_NEXT_HOP_IP)
-                                                                .anyMatch(
-                                                                    Predicates.not(
-                                                                        someoneReplies::contains)))
-                                                    .collect(ImmutableSet.toImmutableSet());
+                                                return computeRoutesWithNextHopIpFalseForInterface(
+                                                    fibs,
+                                                    hostname,
+                                                    routesWithNextHopByOutInterfaceEntry);
                                               }))));
                 }));
   }
@@ -804,6 +783,28 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                               });
                         })));
     return routesByEdgeBuilder.build();
+  }
+
+  private Set<AbstractRoute> computeRoutesWithNextHopIpFalseForInterface(
+      Map<String, Map<String, Fib>> fibs,
+      String hostname,
+      Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
+    String outInterface = routesWithNextHopByOutInterfaceEntry.getKey();
+    IpSpace someoneReplies = _someoneReplies.get(hostname).get(outInterface);
+    Set<AbstractRoute> candidateRoutes = routesWithNextHopByOutInterfaceEntry.getValue();
+    Fib fib = fibs.get(hostname).get(outInterface);
+    return candidateRoutes
+        .stream()
+        .filter(
+            candidateRoute ->
+                fib.getNextHopInterfaces()
+                    .get(candidateRoute)
+                    .get(outInterface)
+                    .keySet()
+                    .stream()
+                    .filter(ip -> ip != Route.UNSET_ROUTE_NEXT_HOP_IP)
+                    .anyMatch(Predicates.not(someoneReplies::contains)))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private Map<String, Map<String, IpSpace>> computeSomeoneReplies(Topology topology) {
