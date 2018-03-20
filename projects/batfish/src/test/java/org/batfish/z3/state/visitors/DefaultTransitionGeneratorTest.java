@@ -43,6 +43,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -50,6 +51,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
@@ -64,15 +66,15 @@ import org.junit.Test;
 
 public class DefaultTransitionGeneratorTest {
 
-  private static final BooleanExpr B1 = b(1);
-
-  private static final BooleanExpr B2 = b(2);
-
   private static final String ACL1 = "acl1";
 
   private static final String ACL2 = "acl2";
 
   private static final String ACL3 = "acl3";
+
+  private static final BooleanExpr B1 = b(1);
+
+  private static final BooleanExpr B2 = b(2);
 
   private static final String INTERFACE1 = "interface1";
 
@@ -105,6 +107,10 @@ public class DefaultTransitionGeneratorTest {
   private static final String VRF1 = "vrf1";
 
   private static final String VRF2 = "vrf2";
+
+  private static BooleanExpr b(int num) {
+    return new TestBooleanAtom(num);
+  }
 
   private Map<String, Map<String, List<LineAction>>> aclActions() {
     List<LineAction> acl1ActionsByLine =
@@ -661,6 +667,34 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
+  public void testVisitNeighborUnreachable() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setNeighborUnreachable(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1))),
+                    NODE2,
+                    ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(2)))))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NeighborUnreachable.State.INSTANCE)));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new NodeNeighborUnreachable(NODE1), NeighborUnreachable.INSTANCE)));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new NodeNeighborUnreachable(NODE2), NeighborUnreachable.INSTANCE)));
+  }
+
+  @Test
   public void testVisitNodeAccept() {
     SynthesizerInput input =
         TestSynthesizerInput.builder()
@@ -958,6 +992,56 @@ public class DefaultTransitionGeneratorTest {
                 B2,
                 ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
                 new NodeDropNullRoute(NODE2))));
+  }
+
+  @Test
+  public void testVisitNodeNeighborUnreachable() {
+    SynthesizerInput input =
+        TestSynthesizerInput.builder()
+            .setNeighborUnreachable(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        VRF1,
+                        ImmutableMap.of(INTERFACE1, b(1), INTERFACE2, b(2)),
+                        VRF2,
+                        ImmutableMap.of(INTERFACE3, b(3))),
+                    NODE2,
+                    ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(4)))))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NodeNeighborUnreachable.State.INSTANCE)));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(1),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeNeighborUnreachable(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(2),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeNeighborUnreachable(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(3),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new NodeNeighborUnreachable(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(4),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new NodeNeighborUnreachable(NODE2))));
   }
 
   @Test
@@ -1432,10 +1516,6 @@ public class DefaultTransitionGeneratorTest {
                         ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))),
                 ImmutableSet.of(new PostIn(NODE2)),
                 new PreOut(NODE2))));
-  }
-
-  private static BooleanExpr b(int num) {
-    return new TestBooleanAtom(num);
   }
 
   @Test
