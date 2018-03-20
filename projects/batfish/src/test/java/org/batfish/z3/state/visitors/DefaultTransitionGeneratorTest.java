@@ -64,9 +64,9 @@ import org.junit.Test;
 
 public class DefaultTransitionGeneratorTest {
 
-  private static final BooleanExpr B1 = new TestBooleanAtom(1);
+  private static final BooleanExpr B1 = b(1);
 
-  private static final BooleanExpr B2 = new TestBooleanAtom(2);
+  private static final BooleanExpr B2 = b(2);
 
   private static final String ACL1 = "acl1";
 
@@ -97,6 +97,10 @@ public class DefaultTransitionGeneratorTest {
   private static final String NODE1 = "node1";
 
   private static final String NODE2 = "node2";
+
+  private static final String NODE3 = "node3";
+
+  private static final String NODE4 = "node4";
 
   private static final String VRF1 = "vrf1";
 
@@ -1430,6 +1434,10 @@ public class DefaultTransitionGeneratorTest {
                 new PreOut(NODE2))));
   }
 
+  private static BooleanExpr b(int num) {
+    return new TestBooleanAtom(num);
+  }
+
   @Test
   public void testVisitPreOutEdge() {
     SynthesizerInput input =
@@ -1440,7 +1448,23 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(
                         VRF1,
                         ImmutableMap.of(
-                            INTERFACE1, ImmutableMap.of(NODE2, ImmutableMap.of(INTERFACE2, B1))))))
+                            INTERFACE1,
+                            ImmutableMap.of(
+                                NODE3,
+                                ImmutableMap.of(INTERFACE3, b(1), INTERFACE4, b(2)),
+                                NODE4,
+                                ImmutableMap.of(INTERFACE3, b(3))),
+                            INTERFACE2,
+                            ImmutableMap.of(NODE3, ImmutableMap.of(INTERFACE3, b(4)))),
+                        VRF2,
+                        ImmutableMap.of(
+                            INTERFACE3, ImmutableMap.of(NODE3, ImmutableMap.of(INTERFACE3, b(5))))),
+                    NODE2,
+                    ImmutableMap.of(
+                        VRF1,
+                        ImmutableMap.of(
+                            INTERFACE1,
+                            ImmutableMap.of(NODE3, ImmutableMap.of(INTERFACE3, b(6)))))))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1452,9 +1476,44 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                B1,
+                b(1),
                 ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2))));
+                new PreOutEdge(NODE1, INTERFACE1, NODE3, INTERFACE3))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(2),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE1, NODE3, INTERFACE4))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(3),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE1, NODE4, INTERFACE3))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(4),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE2, NODE3, INTERFACE3))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(5),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutEdge(NODE1, INTERFACE3, NODE3, INTERFACE3))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(6),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutEdge(NODE2, INTERFACE1, NODE3, INTERFACE3))));
   }
 
   /** Test the transitions generated for PreOutEdgePostNat for an edge with a source nat. */
