@@ -17,7 +17,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
@@ -118,13 +117,13 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(ReachabilitySettings reachabilitySettings, boolean useCompression);
+  AnswerElement multipath(ReachabilitySettings reachabilitySettings);
 
   AtomicInteger newBatch(String description, int jobs);
 
   AssertionAst parseAssertion(String text);
 
-  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression);
+  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings);
 
   void popEnvironment();
 
@@ -139,8 +138,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(
-      ReachabilitySettings reachabilitySettings, boolean useCompression);
+  AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings);
 
   void registerAnswerer(
       String questionName,
@@ -183,10 +181,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
-  AnswerElement standard(
-      ReachabilitySettings reachabilitySettings,
-      Set<ForwardingAction> actions,
-      boolean useCompression);
+  AnswerElement standard(ReachabilitySettings reachabilitySettings);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }

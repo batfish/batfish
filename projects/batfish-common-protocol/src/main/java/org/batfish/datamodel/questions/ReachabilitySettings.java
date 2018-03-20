@@ -1,14 +1,19 @@
 package org.batfish.datamodel.questions;
 
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 
 public class ReachabilitySettings {
 
   public static class Builder {
+
+    private SortedSet<ForwardingAction> _actions;
 
     private NodesSpecifier _finalNodes;
 
@@ -26,8 +31,14 @@ public class ReachabilitySettings {
 
     private NodesSpecifier _transitNodes;
 
+    private boolean _useCompression;
+
     public ReachabilitySettings build() {
       return new ReachabilitySettings(this);
+    }
+
+    public SortedSet<ForwardingAction> getActions() {
+      return _actions;
     }
 
     public NodesSpecifier getFinalNodes() {
@@ -62,6 +73,15 @@ public class ReachabilitySettings {
       return _transitNodes;
     }
 
+    public boolean getUseCompression() {
+      return _useCompression;
+    }
+
+    public Builder setActions(Iterable<ForwardingAction> actions) {
+      _actions = ImmutableSortedSet.copyOf(actions);
+      return this;
+    }
+
     public void setFinalNodes(NodesSpecifier finalNodes) {
       _finalNodes = finalNodes;
     }
@@ -93,11 +113,18 @@ public class ReachabilitySettings {
     public void setTransitNodes(NodesSpecifier transitNodes) {
       _transitNodes = transitNodes;
     }
+
+    public Builder setUseCompression(boolean useCompression) {
+      _useCompression = useCompression;
+      return this;
+    }
   }
 
   public static Builder builder() {
     return new Builder();
   }
+
+  private final SortedSet<ForwardingAction> _actions;
 
   private final NodesSpecifier _finalNodes;
 
@@ -115,6 +142,8 @@ public class ReachabilitySettings {
 
   private final NodesSpecifier _transitNodes;
 
+  private final boolean _useCompression;
+
   private ReachabilitySettings(Builder builder) {
     _finalNodes = builder._finalNodes;
     _notFinalNodes = builder._notFinalNodes;
@@ -124,6 +153,8 @@ public class ReachabilitySettings {
     _maxChunkSize = builder._maxChunkSize;
     _transitNodes = builder._transitNodes;
     _nonTransitNodes = builder._nonTransitNodes;
+    _useCompression = builder._useCompression;
+    _actions = builder._actions;
   }
 
   public Set<String> computeActiveFinalNodes(Map<String, Configuration> configurations)
@@ -166,6 +197,10 @@ public class ReachabilitySettings {
     return _transitNodes.getMatchingNodes(configurations);
   }
 
+  public SortedSet<ForwardingAction> getActions() {
+    return _actions;
+  }
+
   public NodesSpecifier getFinalNodes() {
     return _finalNodes;
   }
@@ -188,6 +223,10 @@ public class ReachabilitySettings {
 
   public NodesSpecifier getTransitNodes() {
     return _transitNodes;
+  }
+
+  public boolean getUseCompression() {
+    return _useCompression;
   }
 
   public void validateTransitNodes(Map<String, Configuration> configurations)

@@ -2527,13 +2527,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(
-      ReachabilitySettings reachabilitySettings, boolean useCompression) {
+  public AnswerElement multipath(ReachabilitySettings reachabilitySettings) {
     return singleReachability(
-        reachabilitySettings,
-        ImmutableSet.of(),
-        useCompression,
-        MultipathInconsistencyQuerySynthesizer.builder());
+        reachabilitySettings, MultipathInconsistencyQuerySynthesizer.builder());
   }
 
   @Override
@@ -2807,7 +2803,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression) {
+  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3277,8 +3273,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement reducedReachability(
-      ReachabilitySettings reachabilitySettings, boolean useCompression) {
+  public AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3975,11 +3970,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private AnswerElement singleReachability(
       ReachabilitySettings reachabilitySettings,
-      Set<ForwardingAction> actions,
-      boolean useCompression,
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
+    Set<ForwardingAction> actions = reachabilitySettings.getActions();
+    boolean useCompression = reachabilitySettings.getUseCompression();
 
     // specialized compression
     /*
@@ -4154,15 +4149,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement standard(
-      ReachabilitySettings reachabilitySettings,
-      Set<ForwardingAction> actions,
-      boolean useCompression) {
-    return singleReachability(
-        reachabilitySettings,
-        actions,
-        useCompression,
-        StandardReachabilityQuerySynthesizer.builder());
+  public AnswerElement standard(ReachabilitySettings reachabilitySettings) {
+    return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
