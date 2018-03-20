@@ -817,15 +817,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private Warnings buildWarnings() {
+  public static Warnings buildWarnings(Settings settings) {
     return new Warnings(
-        _settings.getPedanticAsError(),
-        _settings.getPedanticRecord() && _logger.isActive(BatfishLogger.LEVEL_PEDANTIC),
-        _settings.getRedFlagAsError(),
-        _settings.getRedFlagRecord() && _logger.isActive(BatfishLogger.LEVEL_REDFLAG),
-        _settings.getUnimplementedAsError(),
-        _settings.getUnimplementedRecord() && _logger.isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
-        _settings.getPrintParseTree());
+        settings.getPedanticAsError(),
+        settings.getPedanticRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_PEDANTIC),
+        settings.getRedFlagAsError(),
+        settings.getRedFlagRecord() && settings.getLogger().isActive(BatfishLogger.LEVEL_REDFLAG),
+        settings.getUnimplementedAsError(),
+        settings.getUnimplementedRecord()
+            && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED),
+        settings.getPrintParseTree());
   }
 
   private void checkBaseDirExists() {
@@ -1083,10 +1084,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = new TreeMap<>();
     List<ConvertConfigurationJob> jobs = new ArrayList<>();
     for (Entry<String, GenericConfigObject> config : vendorConfigurations.entrySet()) {
-      Warnings warnings = buildWarnings();
       GenericConfigObject vc = config.getValue();
-      ConvertConfigurationJob job =
-          new ConvertConfigurationJob(_settings, vc, config.getKey(), warnings);
+      ConvertConfigurationJob job = new ConvertConfigurationJob(_settings, vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -1320,7 +1319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path inputFile = configFile.getKey();
       String fileText = configFile.getValue();
-      Warnings warnings = buildWarnings();
+      Warnings warnings = buildWarnings(_settings);
       String name = inputFile.getFileName().toString();
       Path outputFile = outputConfigDir.resolve(name);
       FlattenVendorConfigurationJob job =
@@ -2507,7 +2506,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           .getWarnings()
           .forEach(
               (hostname, initStepWarnings) -> {
-                Warnings combined = warnings.computeIfAbsent(hostname, h -> buildWarnings());
+                Warnings combined =
+                    warnings.computeIfAbsent(hostname, h -> buildWarnings(_settings));
                 combined.getPedanticWarnings().addAll(initStepWarnings.getPedanticWarnings());
                 combined.getRedFlagWarnings().addAll(initStepWarnings.getRedFlagWarnings());
                 combined
@@ -2655,7 +2655,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!configurations.containsKey(hostname)) {
         continue;
       }
-      Warnings warnings = buildWarnings();
+      Warnings warnings = buildWarnings(_settings);
       ParseEnvironmentBgpTableJob job =
           new ParseEnvironmentBgpTableJob(
               _settings, fileText, hostname, currentFile, warnings, _bgpTablePlugins);
@@ -2689,7 +2689,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         continue;
       }
 
-      Warnings warnings = buildWarnings();
+      Warnings warnings = buildWarnings(_settings);
       ParseEnvironmentRoutingTableJob job =
           new ParseEnvironmentRoutingTableJob(_settings, fileText, currentFile, warnings, this);
       jobs.add(job);
@@ -2788,7 +2788,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path currentFile = vendorFile.getKey();
       String fileText = vendorFile.getValue();
 
-      Warnings warnings = buildWarnings();
+      Warnings warnings = buildWarnings(_settings);
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings, fileText, currentFile, warnings, configurationFormat);

@@ -1,22 +1,8 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.RolesQuestionPlugin$RolesAnswerElement",
-      "roleSpecifier" : {
-        "inferred" : true
-      }
+[
+  {
+    "class" : "org.batfish.question.RolesQuestionPlugin$RolesAnswerElement",
+    "roleSpecifier" : {
+      "inferred" : true
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.RolesQuestionPlugin$RolesQuestion",
-    "differential" : false,
-    "inferred" : true,
-    "nodeRegex" : ".*"
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
   }
-}
+]

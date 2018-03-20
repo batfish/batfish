@@ -1,36 +1,5 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.datamodel.FlowHistory"
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.ReachabilityQuestionPlugin$ReachabilityQuestion",
-    "actions" : [
-      "ACCEPT"
-    ],
-    "differential" : false,
-    "dstIps" : [
-      "10.0.3.20",
-      "10.0.3.21"
-    ],
-    "finalNodeRegex" : ".*",
-    "ingressNodeRegex" : ".*",
-    "negateHeader" : false,
-    "notIngressNodeRegex" : "z1-.*",
-    "notIpProtocols" : [
-      "OSPF"
-    ],
-    "notSrcIps" : [
-      "10.0.3.0/24",
-      "10.0.4.0/24"
-    ],
-    "type" : "standard"
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+[
+  {
+    "class" : "org.batfish.datamodel.FlowHistory"
   }
-}
+]

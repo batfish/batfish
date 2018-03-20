@@ -1,139 +1,131 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
-      "added" : [
-        {
-          "administrativeCost" : 200,
-          "metric" : 20,
-          "network" : "4.0.0.0/8",
-          "nextHop" : "(unknown)",
-          "nextHopInterface" : "dynamic",
-          "nextHopIp" : "10.14.22.4",
-          "node" : "as1border1",
-          "protocol" : "ibgp",
-          "tag" : -1,
-          "vrf" : "default"
-        },
-        {
-          "administrativeCost" : 20,
-          "metric" : 20,
-          "network" : "4.0.0.0/8",
-          "nextHop" : "(unknown)",
-          "nextHopInterface" : "dynamic",
-          "nextHopIp" : "10.14.22.4",
-          "node" : "as1border2",
-          "protocol" : "bgp",
-          "tag" : -1,
-          "vrf" : "default"
-        },
-        {
-          "administrativeCost" : 200,
-          "metric" : 20,
-          "network" : "4.0.0.0/8",
-          "nextHop" : "(unknown)",
-          "nextHopInterface" : "dynamic",
-          "nextHopIp" : "10.14.22.4",
-          "node" : "as1core1",
-          "protocol" : "ibgp",
-          "tag" : -1,
-          "vrf" : "default"
-        }
-      ],
-      "routesByHostname" : {
-        "as1border1" : {
-          "default" : [
-            {
-              "administrativeCost" : 200,
-              "metric" : 20,
-              "network" : "4.0.0.0/8",
-              "nextHop" : "(unknown)",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "10.14.22.4",
-              "node" : "as1border1",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            }
-          ]
-        },
-        "as1border2" : {
-          "default" : [
-            {
-              "administrativeCost" : 20,
-              "metric" : 20,
-              "network" : "4.0.0.0/8",
-              "nextHop" : "(unknown)",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "10.14.22.4",
-              "node" : "as1border2",
-              "protocol" : "bgp",
-              "tag" : -1,
-              "vrf" : "default"
-            }
-          ]
-        },
-        "as1core1" : {
-          "default" : [
-            {
-              "administrativeCost" : 200,
-              "metric" : 20,
-              "network" : "4.0.0.0/8",
-              "nextHop" : "(unknown)",
-              "nextHopInterface" : "dynamic",
-              "nextHopIp" : "10.14.22.4",
-              "node" : "as1core1",
-              "protocol" : "ibgp",
-              "tag" : -1,
-              "vrf" : "default"
-            }
-          ]
-        },
-        "as2border1" : {
-          "default" : [ ]
-        },
-        "as2border2" : {
-          "default" : [ ]
-        },
-        "as2core1" : {
-          "default" : [ ]
-        },
-        "as2core2" : {
-          "default" : [ ]
-        },
-        "as2dept1" : {
-          "default" : [ ]
-        },
-        "as2dist1" : {
-          "default" : [ ]
-        },
-        "as2dist2" : {
-          "default" : [ ]
-        },
-        "as3border1" : {
-          "default" : [ ]
-        },
-        "as3border2" : {
-          "default" : [ ]
-        },
-        "as3core1" : {
-          "default" : [ ]
-        },
-        "host1" : {
-          "default" : [ ]
-        },
-        "host2" : {
-          "default" : [ ]
-        }
+[
+  {
+    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesAnswerElement",
+    "added" : [
+      {
+        "administrativeCost" : 200,
+        "metric" : 20,
+        "network" : "4.0.0.0/8",
+        "nextHop" : "(unknown)",
+        "nextHopInterface" : "dynamic",
+        "nextHopIp" : "10.14.22.4",
+        "node" : "as1border1",
+        "protocol" : "ibgp",
+        "tag" : -1,
+        "vrf" : "default"
+      },
+      {
+        "administrativeCost" : 20,
+        "metric" : 20,
+        "network" : "4.0.0.0/8",
+        "nextHop" : "(unknown)",
+        "nextHopInterface" : "dynamic",
+        "nextHopIp" : "10.14.22.4",
+        "node" : "as1border2",
+        "protocol" : "bgp",
+        "tag" : -1,
+        "vrf" : "default"
+      },
+      {
+        "administrativeCost" : 200,
+        "metric" : 20,
+        "network" : "4.0.0.0/8",
+        "nextHop" : "(unknown)",
+        "nextHopInterface" : "dynamic",
+        "nextHopIp" : "10.14.22.4",
+        "node" : "as1core1",
+        "protocol" : "ibgp",
+        "tag" : -1,
+        "vrf" : "default"
+      }
+    ],
+    "againstEnvironment" : false,
+    "detail" : false,
+    "routesByHostname" : {
+      "as1border1" : {
+        "default" : [
+          {
+            "administrativeCost" : 200,
+            "metric" : 20,
+            "network" : "4.0.0.0/8",
+            "nextHop" : "(unknown)",
+            "nextHopInterface" : "dynamic",
+            "nextHopIp" : "10.14.22.4",
+            "node" : "as1border1",
+            "protocol" : "ibgp",
+            "tag" : -1,
+            "vrf" : "default"
+          }
+        ]
+      },
+      "as1border2" : {
+        "default" : [
+          {
+            "administrativeCost" : 20,
+            "metric" : 20,
+            "network" : "4.0.0.0/8",
+            "nextHop" : "(unknown)",
+            "nextHopInterface" : "dynamic",
+            "nextHopIp" : "10.14.22.4",
+            "node" : "as1border2",
+            "protocol" : "bgp",
+            "tag" : -1,
+            "vrf" : "default"
+          }
+        ]
+      },
+      "as1core1" : {
+        "default" : [
+          {
+            "administrativeCost" : 200,
+            "metric" : 20,
+            "network" : "4.0.0.0/8",
+            "nextHop" : "(unknown)",
+            "nextHopInterface" : "dynamic",
+            "nextHopIp" : "10.14.22.4",
+            "node" : "as1core1",
+            "protocol" : "ibgp",
+            "tag" : -1,
+            "vrf" : "default"
+          }
+        ]
+      },
+      "as2border1" : {
+        "default" : [ ]
+      },
+      "as2border2" : {
+        "default" : [ ]
+      },
+      "as2core1" : {
+        "default" : [ ]
+      },
+      "as2core2" : {
+        "default" : [ ]
+      },
+      "as2dept1" : {
+        "default" : [ ]
+      },
+      "as2dist1" : {
+        "default" : [ ]
+      },
+      "as2dist2" : {
+        "default" : [ ]
+      },
+      "as3border1" : {
+        "default" : [ ]
+      },
+      "as3border2" : {
+        "default" : [ ]
+      },
+      "as3core1" : {
+        "default" : [ ]
+      },
+      "host1" : {
+        "default" : [ ]
+      },
+      "host2" : {
+        "default" : [ ]
       }
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.RoutesQuestionPlugin$RoutesQuestion",
-    "differential" : true,
-    "fromEnvironment" : false,
-    "nodeRegex" : ".*",
-    "prefixSpace" : [ ]
-  },
-  "status" : "SUCCESS"
-}
+  }
+]

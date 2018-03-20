@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -81,7 +82,8 @@ public class Route implements Serializable {
       @Nullable Ip igwAddress,
       @Nullable Ip vgwAddress,
       Subnet subnet,
-      Configuration subnetCfgNode) {
+      Configuration subnetCfgNode,
+      Warnings warnings) {
     // setting the common properties
     StaticRoute.Builder srBuilder =
         StaticRoute.builder()
@@ -177,14 +179,12 @@ public class Route implements Serializable {
           Configuration remoteVpcCfgNode =
               awsConfiguration.getConfigurationNodes().get(remoteVpcId);
           if (remoteVpcCfgNode == null) {
-            awsConfiguration
-                .getWarnings()
-                .redFlag(
-                    "VPC \""
-                        + localVpcId
-                        + "\" cannot peer with non-existent VPC: \""
-                        + remoteVpcId
-                        + "\"");
+            warnings.redFlag(
+                "VPC \""
+                    + localVpcId
+                    + "\" cannot peer with non-existent VPC: \""
+                    + remoteVpcId
+                    + "\"");
             return null;
           }
 
@@ -226,14 +226,12 @@ public class Route implements Serializable {
 
         case Instance:
           // TODO: create route for instance
-          awsConfiguration
-              .getWarnings()
-              .redFlag(
-                  "Skipping creating route to "
-                      + _destinationCidrBlock
-                      + " for instance: \""
-                      + _target
-                      + "\"");
+          warnings.redFlag(
+              "Skipping creating route to "
+                  + _destinationCidrBlock
+                  + " for instance: \""
+                  + _target
+                  + "\"");
           return null;
 
         default:

@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Version;
 
-public class ValidateEnvironmentAnswerElement implements AnswerElement, Serializable {
+public class ValidateEnvironmentAnswerElement extends AnswerElement implements Serializable {
 
   private static final String PROP_UNDEFINED_INTERFACE_BLACKLIST_INTERFACES =
       "undefinedInterfaceBlacklistInterfaces";

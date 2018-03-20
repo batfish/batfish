@@ -305,8 +305,8 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       @JsonProperty(PROP_MED) long med,
       @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @JsonProperty(PROP_AS_PATH) @Nonnull AsPath asPath,
-      @JsonProperty(PROP_COMMUNITIES) @Nonnull SortedSet<Long> communities,
-      @JsonProperty(PROP_CLUSTER_LIST) @Nonnull SortedSet<Long> clusterList,
+      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
       @JsonProperty(PROP_WEIGHT) int weight) {
     _type = type;
     _network = network;

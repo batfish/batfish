@@ -11,7 +11,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class FileTreeQuestionPlugin extends QuestionPlugin {
 
-  public static class FileTreeAnswerElement implements AnswerElement {
+  public static class FileTreeAnswerElement extends AnswerElement {
 
     Directory _testRigRoot;
 

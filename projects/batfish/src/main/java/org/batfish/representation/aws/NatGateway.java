@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.codehaus.jettison.json.JSONArray;
@@ -58,7 +59,8 @@ public class NatGateway implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsConfiguration, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_natGatewayId, "aws");
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 

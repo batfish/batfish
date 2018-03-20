@@ -31,7 +31,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 @AutoService(Plugin.class)
 public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
 
-  public static class BgpLoopbacksAnswerElement implements AnswerElement {
+  public static class BgpLoopbacksAnswerElement extends AnswerElement {
 
     private SortedMap<String, SortedSet<String>> _exported;
 
