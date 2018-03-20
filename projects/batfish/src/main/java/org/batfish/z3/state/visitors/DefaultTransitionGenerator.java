@@ -462,14 +462,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNodeDropNullRoute(NodeDropNullRoute.State nodeDropNullRoute) {
     // DestinationRouting
     _input
-        .getNullableIps()
+        .getNullRoutedIps()
         .forEach(
-            (hostname, nullableIpsByVrf) ->
-                nullableIpsByVrf.forEach(
-                    (vrf, nullableIps) ->
+            (hostname, nullRoutedIpsByVrf) ->
+                nullRoutedIpsByVrf.forEach(
+                    (vrf, nullRoutedIps) ->
                         _rules.add(
                             new BasicRuleStatement(
-                                nullableIps,
+                                nullRoutedIps,
                                 ImmutableSet.of(new PostInVrf(hostname, vrf), new PreOut(hostname)),
                                 new NodeDropNullRoute(hostname)))));
   }

@@ -913,7 +913,7 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitNodeDropNullRoute() {
     SynthesizerInput input =
         TestSynthesizerInput.builder()
-            .setNullableIps(
+            .setNullRoutedIps(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(VRF1, B1, VRF2, B2),

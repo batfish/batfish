@@ -61,8 +61,8 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> vrfName -> outInterface -> dstIpConstraintForWhichNoArpReplySent */
   Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
 
-  /** Mapping: hostname -> vrfName -> nullableIps */
-  Map<String, Map<String, BooleanExpr>> getNullableIps();
+  /** Mapping: hostname -> vrfName -> nullRoutedIps */
+  Map<String, Map<String, BooleanExpr>> getNullRoutedIps();
 
   /** Mapping: hostname -> interface-> outgoingAcl */
   Map<String, Map<String, String>> getOutgoingAcls();

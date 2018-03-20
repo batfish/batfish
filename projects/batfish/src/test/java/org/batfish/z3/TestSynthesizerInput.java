@@ -40,7 +40,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
-    private Map<String, Map<String, BooleanExpr>> _nullableIps;
+    private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
     private Map<String, Map<String, String>> _outgoingAcls;
 
@@ -66,7 +66,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
       _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
-      _nullableIps = ImmutableMap.of();
+      _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
       _sourceNats = ImmutableMap.of();
@@ -87,7 +87,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
           _incomingAcls,
           _ipsByHostname,
           _neighborUnreachable,
-          _nullableIps,
+          _nullRoutedIps,
           _outgoingAcls,
           _routableIps,
           _simplify,
@@ -154,8 +154,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setNullableIps(Map<String, Map<String, BooleanExpr>> nullableIps) {
-      _nullableIps = nullableIps;
+    public Builder setNullRoutedIps(Map<String, Map<String, BooleanExpr>> nullRoutedIps) {
+      _nullRoutedIps = nullRoutedIps;
       return this;
     }
 
@@ -218,7 +218,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
-  private final Map<String, Map<String, BooleanExpr>> _nullableIps;
+  private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
 
@@ -244,7 +244,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
       Map<String, Map<String, String>> incomingAcls,
       Map<String, Set<Ip>> ipsByHostname,
       Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable,
-      Map<String, Map<String, BooleanExpr>> nullableIps,
+      Map<String, Map<String, BooleanExpr>> nullRoutedIps,
       Map<String, Map<String, String>> outgoingAcls,
       Map<String, Map<String, BooleanExpr>> routableIps,
       boolean simplify,
@@ -262,7 +262,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
     _incomingAcls = incomingAcls;
     _ipsByHostname = ipsByHostname;
     _neighborUnreachable = neighborUnreachable;
-    _nullableIps = nullableIps;
+    _nullRoutedIps = nullRoutedIps;
     _outgoingAcls = outgoingAcls;
     _routableIps = routableIps;
     _simplify = simplify;
@@ -328,8 +328,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, BooleanExpr>> getNullableIps() {
-    return _nullableIps;
+  public Map<String, Map<String, BooleanExpr>> getNullRoutedIps() {
+    return _nullRoutedIps;
   }
 
   @Override

@@ -31,7 +31,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpNextHopIp;
 
-  private final Map<String, Map<String, IpSpace>> _nullableIps;
+  private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
@@ -54,7 +54,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
-    _nullableIps = computeNullableIps(ribs, fibs);
+    _nullRoutedIps = computeNullRoutedIps(ribs, fibs);
     _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(fibs);
     _ipsRoutedOutInterfaces = computeIpsRoutedOutInterfaces(ribs);
@@ -424,7 +424,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         });
   }
 
-  private Map<String, Map<String, IpSpace>> computeNullableIps(
+  private Map<String, Map<String, IpSpace>> computeNullRoutedIps(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs) {
     return fibs.entrySet()
@@ -750,8 +750,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   @Override
-  public Map<String, Map<String, IpSpace>> getNullableIps() {
-    return _nullableIps;
+  public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
+    return _nullRoutedIps;
   }
 
   @Override

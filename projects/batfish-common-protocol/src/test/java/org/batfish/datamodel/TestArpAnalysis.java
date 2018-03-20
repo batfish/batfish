@@ -18,7 +18,7 @@ public class TestArpAnalysis implements ArpAnalysis {
 
     private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
-    private Map<String, Map<String, IpSpace>> _nullableIps;
+    private Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
     private Map<String, Map<String, IpSpace>> _routableIps;
 
@@ -27,7 +27,7 @@ public class TestArpAnalysis implements ArpAnalysis {
       _arpRequests = ImmutableMap.of();
       _arpTrueEdge = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
-      _nullableIps = ImmutableMap.of();
+      _nullRoutedIps = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
     }
 
@@ -58,8 +58,8 @@ public class TestArpAnalysis implements ArpAnalysis {
       return this;
     }
 
-    public Builder setNullableIps(Map<String, Map<String, IpSpace>> nullableIps) {
-      _nullableIps = nullableIps;
+    public Builder setNullRoutedIps(Map<String, Map<String, IpSpace>> nullRoutedIps) {
+      _nullRoutedIps = nullRoutedIps;
       return this;
     }
 
@@ -83,7 +83,7 @@ public class TestArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
 
-  private final Map<String, Map<String, IpSpace>> _nullableIps;
+  private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
@@ -92,7 +92,7 @@ public class TestArpAnalysis implements ArpAnalysis {
     _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
     _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
     _neighborUnreachable = ImmutableMap.copyOf(builder._neighborUnreachable);
-    _nullableIps = ImmutableMap.copyOf(builder._nullableIps);
+    _nullRoutedIps = ImmutableMap.copyOf(builder._nullRoutedIps);
     _routableIps = ImmutableMap.copyOf(builder._routableIps);
   }
 
@@ -113,8 +113,8 @@ public class TestArpAnalysis implements ArpAnalysis {
     return _neighborUnreachable;
   }
 
-  public Map<String, Map<String, IpSpace>> getNullableIps() {
-    return _nullableIps;
+  public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
+    return _nullRoutedIps;
   }
 
   public Map<String, Map<String, IpSpace>> getRoutableIps() {

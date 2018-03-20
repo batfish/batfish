@@ -172,7 +172,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
-  private final Map<String, Map<String, BooleanExpr>> _nullableIps;
+  private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
 
@@ -215,7 +215,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     if (arpAnalysis != null) {
       _arpTrueEdge = computeArpTrueEdge(arpAnalysis.getArpTrueEdge());
       _neighborUnreachable = computeNeighborUnreachable(arpAnalysis.getNeighborUnreachable());
-      _nullableIps = computeNullableIps(arpAnalysis.getNullableIps());
+      _nullRoutedIps = computeNullRoutedIps(arpAnalysis.getNullRoutedIps());
       _routableIps = computeRoutableIps(arpAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
       _edges = topology.getEdges();
@@ -225,7 +225,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     } else {
       _arpTrueEdge = null;
       _neighborUnreachable = null;
-      _nullableIps = null;
+      _nullRoutedIps = null;
       _routableIps = null;
       _ipsByHostname = null;
       _edges = null;
@@ -601,25 +601,25 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                                         true)))))));
   }
 
-  private Map<String, Map<String, BooleanExpr>> computeNullableIps(
-      Map<String, Map<String, IpSpace>> nullableIps) {
-    return nullableIps
+  private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(
+      Map<String, Map<String, IpSpace>> nullRoutedIps) {
+    return nullRoutedIps
         .entrySet()
         .stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey /* hostname */,
-                nullableIpsByHostnameEntry ->
-                    nullableIpsByHostnameEntry
+                nullRoutedIpsByHostnameEntry ->
+                    nullRoutedIpsByHostnameEntry
                         .getValue()
                         .entrySet()
                         .stream()
                         .collect(
                             ImmutableMap.toImmutableMap(
                                 Entry::getKey /* vrf */,
-                                nullableIpsByVrfEntry ->
+                                nullRoutedIpsByVrfEntry ->
                                     new IpSpaceMatchExpr(
-                                        nullableIpsByVrfEntry.getValue(), false, true)))));
+                                        nullRoutedIpsByVrfEntry.getValue(), false, true)))));
   }
 
   private Map<String, Map<String, String>> computeOutgoingAcls() {
@@ -786,8 +786,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, BooleanExpr>> getNullableIps() {
-    return _nullableIps;
+  public Map<String, Map<String, BooleanExpr>> getNullRoutedIps() {
+    return _nullRoutedIps;
   }
 
   @Override

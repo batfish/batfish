@@ -14,11 +14,11 @@ public interface ArpAnalysis {
   Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable();
 
   /**
-   * Mapping: hostname -> vrfName -> nullableIps <br>
+   * Mapping: hostname -> vrfName -> nullRoutedIps <br>
    * A nullable IP is a destination IP for which there is a longest-prefix-match route that discards
    * the packet rather than forwarding it out some interface.
    */
-  Map<String, Map<String, IpSpace>> getNullableIps();
+  Map<String, Map<String, IpSpace>> getNullRoutedIps();
 
   /**
    * Mapping: hostname -> vrfName -> routableIps <br>
