@@ -6,7 +6,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.questions.IQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.EquivalenceType;
@@ -29,7 +28,7 @@ public class SmtRoleQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class OldRoleQuestion extends Question implements IQuestion {
+  public static class OldRoleQuestion extends Question {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
