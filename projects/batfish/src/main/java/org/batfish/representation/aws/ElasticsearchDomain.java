@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -75,7 +76,8 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     }
   }
 
-  public Configuration toConfigurationNode(AwsConfiguration awsVpcConfig, Region region) {
+  public Configuration toConfigurationNode(
+      AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_domainName, "aws");
 
     String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
