@@ -6,6 +6,7 @@ import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
 import org.batfish.common.Warnings;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.InterfaceAddress;
@@ -26,7 +27,9 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
 
   private Map<String, Region> _regions = new HashMap<>();
 
-  private transient Warnings _warnings;
+  private Settings _settings;
+
+  private transient Map<String, Warnings> _warningsByHost;
 
   public AwsConfiguration() {
     _currentGeneratedIpAsLong = INITIAL_GENERATED_IP;
@@ -56,12 +59,18 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
     return new Pair<>(val, val2);
   }
 
-  public Warnings getWarnings() {
-    return _warnings;
+  public Settings getSettings() {
+    return _settings;
   }
 
-  public Map<String, Configuration> toConfigurations(Warnings warnings) {
-    _warnings = warnings;
+  public Map<String, Warnings> getWarningsByHost() {
+    return _warningsByHost;
+  }
+
+  public Map<String, Configuration> toConfigurations(
+      Settings settings, Map<String, Warnings> warningsByHost) {
+    _warningsByHost = warningsByHost;
+    _settings = settings;
 
     for (Region region : _regions.values()) {
       region.toConfigurationNodes(this, _configurationNodes);

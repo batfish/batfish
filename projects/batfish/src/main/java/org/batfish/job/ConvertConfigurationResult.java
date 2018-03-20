@@ -18,7 +18,7 @@ public class ConvertConfigurationResult
 
   private String _name;
 
-  private Warnings _warnings;
+  private Map<String, Warnings> _warningsByHost;
 
   public ConvertConfigurationResult(
       long elapsedTime, BatfishLoggerHistory history, String name, Throwable failureCause) {
@@ -29,13 +29,13 @@ public class ConvertConfigurationResult
   public ConvertConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
-      Warnings warnings,
+      Map<String, Warnings> warningsByHost,
       String name,
       Map<String, Configuration> configurations,
       ConvertConfigurationAnswerElement answerElement) {
     super(elapsedTime, history);
     _name = name;
-    _warnings = warnings;
+    _warningsByHost = warningsByHost;
     _configurations = configurations;
     _answerElement = answerElement;
   }
@@ -65,8 +65,8 @@ public class ConvertConfigurationResult
           throw new BatfishException("Duplicate hostname: " + hostname);
         } else {
           configurations.put(hostname, config);
-          if (!_warnings.isEmpty()) {
-            answerElement.getWarnings().put(hostname, _warnings);
+          if (_warningsByHost.containsKey(hostname) && !_warningsByHost.get(hostname).isEmpty()) {
+            answerElement.getWarnings().put(hostname, _warningsByHost.get(hostname));
           }
           if (!_answerElement.getUnusedStructures().isEmpty()) {
             answerElement.getUnusedStructures().putAll(_answerElement.getUnusedStructures());
