@@ -12,6 +12,7 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
+import org.batfish.main.Batfish;
 import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -262,14 +263,14 @@ public class Region implements Serializable {
     // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
     for (Vpc vpc : getVpcs().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode =
           elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
@@ -277,14 +278,14 @@ public class Region implements Serializable {
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
       Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
@@ -292,14 +293,14 @@ public class Region implements Serializable {
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (Instance instance : getInstances().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
@@ -307,21 +308,21 @@ public class Region implements Serializable {
     }
 
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (Subnet subnet : getSubnets().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
-      Warnings warnings = new Warnings(awsConfiguration.getWarnings());
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
       awsConfiguration.getWarningsByHost().put(vpnConnection.getId(), warnings);
     }
