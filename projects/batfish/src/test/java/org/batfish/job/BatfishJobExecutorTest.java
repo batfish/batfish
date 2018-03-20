@@ -160,7 +160,7 @@ public class BatfishJobExecutorTest {
     }
   }
 
-  private class BfTestAnswerElement implements AnswerElement {
+  private class BfTestAnswerElement extends AnswerElement {
     private Set<String> _outputs;
 
     public BfTestAnswerElement() {

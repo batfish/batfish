@@ -81,7 +81,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class NeighborsAnswerElement implements AnswerElement {
+  public static class NeighborsAnswerElement extends AnswerElement {
 
     private static final String PROP_EBGP_NEIGHBORS = "ebgpNeighbors";
 

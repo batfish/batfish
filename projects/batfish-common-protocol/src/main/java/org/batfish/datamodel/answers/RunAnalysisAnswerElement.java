@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class RunAnalysisAnswerElement implements AnswerElement {
+public class RunAnalysisAnswerElement extends AnswerElement {
 
   private static final String PROP_ANSWERS = "answers";
 

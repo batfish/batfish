@@ -22,19 +22,13 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
   public static class UndefinedReferencesAnswerElement extends ProblemsAnswerElement {
 
-    private AnswerSummary _summary = new AnswerSummary();
-
     private SortedMap<
             String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         _undefinedReferences;
 
     public UndefinedReferencesAnswerElement() {
       _undefinedReferences = new TreeMap<>();
-    }
-
-    @Override
-    public AnswerSummary getSummary() {
-      return _summary;
+      setSummary(new AnswerSummary());
     }
 
     public SortedMap<
@@ -63,11 +57,6 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
                 });
           });
       return sb.toString();
-    }
-
-    @Override
-    public void setSummary(AnswerSummary summary) {
-      _summary = summary;
     }
 
     public void setUndefinedReferences(

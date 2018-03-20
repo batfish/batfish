@@ -26,7 +26,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class PerRoleQuestionPlugin extends QuestionPlugin {
 
-  public static class PerRoleAnswerElement implements AnswerElement {
+  public static class PerRoleAnswerElement extends AnswerElement {
 
     private static final String PROP_ANSWERS = "answers";
 
