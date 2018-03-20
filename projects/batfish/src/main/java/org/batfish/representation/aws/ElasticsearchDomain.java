@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -87,11 +86,14 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     List<IpAccessListLine> outboundRules = new LinkedList<>();
     for (String sGroupId : _securityGroups) {
       SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
-
       if (sGroup == null) {
-        throw new BatfishException(
-            String.format("Security group for Elasticsearch domain %s not found", _domainName));
+        warnings.pedantic(
+            String.format(
+                "Security group \"%s\" for Elasticsearch domain \"%s\" not found",
+                sGroupId, _domainName));
+        continue;
       }
+
       sGroup.addInOutAccessLines(inboundRules, outboundRules);
     }
 
@@ -108,9 +110,10 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     for (String subnetId : _subnets) {
       Subnet subnet = region.getSubnets().get(subnetId);
       if (subnet == null) {
-        throw new BatfishException(
+        warnings.redFlag(
             String.format(
-                "Subnet %s for Elasticsearch domain %s not found", subnetId, _domainName));
+                "Subnet \"%s\" for Elasticsearch domain \"%s\" not found", subnetId, _domainName));
+        continue;
       }
       String instancesIfaceName = String.format("%s-%s", _domainName, subnetId);
       Ip instancesIfaceIp = subnet.getNextIp();
