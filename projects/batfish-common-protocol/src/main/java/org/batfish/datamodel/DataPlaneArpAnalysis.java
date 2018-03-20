@@ -667,7 +667,9 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                                     .keySet() /* nextHopIps */
                                                     .stream()
                                                     .filter(
-                                                        ip -> ip != Route.UNSET_ROUTE_NEXT_HOP_IP)
+                                                        ip ->
+                                                            !ip.equals(
+                                                                Route.UNSET_ROUTE_NEXT_HOP_IP))
                                                     .anyMatch(recvReplies::contains))
                                         .collect(ImmutableSet.toImmutableSet());
                                 routesByEdgeBuilder.put(edge, routes);
@@ -681,7 +683,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
       String hostname,
       Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
     String outInterface = routesWithNextHopByOutInterfaceEntry.getKey();
-    IpSpace someoneReplies = _someoneReplies.get(hostname).get(outInterface);
+    IpSpace someoneReplies =
+        _someoneReplies.get(hostname).getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
     Set<AbstractRoute> candidateRoutes = routesWithNextHopByOutInterfaceEntry.getValue();
     return candidateRoutes
         .stream()
@@ -692,7 +695,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                     .get(outInterface)
                     .keySet()
                     .stream()
-                    .filter(ip -> ip != Route.UNSET_ROUTE_NEXT_HOP_IP)
+                    .filter(ip -> !ip.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
                     .anyMatch(Predicates.not(someoneReplies::contains)))
         .collect(ImmutableSet.toImmutableSet());
   }
