@@ -19,14 +19,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
   private String _name;
 
-  private Warnings _warnings;
-
-  public ConvertConfigurationJob(
-      Settings settings, Object configObject, String name, Warnings warnings) {
+  public ConvertConfigurationJob(Settings settings, Object configObject, String name) {
     super(settings);
     _configObject = configObject;
     _name = name;
-    _warnings = warnings;
   }
 
   @Override
@@ -40,8 +36,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     try {
       // We have only two options: AWS VPCs or router configs
       if (VendorConfiguration.class.isInstance(_configObject)) {
+        Warnings warnings = Batfish.buildWarnings(_settings);
         VendorConfiguration vendorConfiguration = ((VendorConfiguration) _configObject);
-        vendorConfiguration.setWarnings(_warnings);
+        vendorConfiguration.setWarnings(warnings);
         vendorConfiguration.setAnswerElement(answerElement);
         Configuration configuration = vendorConfiguration.toVendorIndependentConfiguration();
         if (configuration.getDefaultCrossZoneAction() == null) {
@@ -70,15 +67,15 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           // iptablesConfig = oh.getIptablesVendorConfig();
         }
         if (iptablesConfig != null) {
-          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, _warnings);
-          iptablesConfig.applyAsOverlay(configuration, _warnings);
+          iptablesConfig.addAsIpAccessLists(configuration, vendorConfiguration, warnings);
+          iptablesConfig.applyAsOverlay(configuration, warnings);
         }
 
         configurations.put(_name, configuration);
-        warningsByHost.put(_name, _warnings);
+        warningsByHost.put(_name, warnings);
       } else {
         configurations =
-            ((AwsConfiguration) _configObject).toConfigurations(_warnings, warningsByHost);
+            ((AwsConfiguration) _configObject).toConfigurations(_settings, warningsByHost);
       }
       _logger.info(" ...OK\n");
     } catch (Exception e) {
@@ -87,7 +84,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       return new ConvertConfigurationResult(
           elapsedTime, _logger.getHistory(), _name, new BatfishException(error, e));
     } finally {
-      Batfish.logWarnings(_logger, _warnings);
+      warningsByHost.forEach((hostname, warnings) -> Batfish.logWarnings(_logger, warnings));
+      ;
     }
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(

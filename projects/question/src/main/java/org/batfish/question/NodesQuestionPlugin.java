@@ -29,7 +29,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class NodesQuestionPlugin extends QuestionPlugin {
 
-  public static class NodesAnswerElement implements AnswerElement {
+  public static class NodesAnswerElement extends AnswerElement {
 
     public static class NodeSummary {
 
@@ -365,7 +365,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class NodesDiffAnswerElement implements AnswerElement {
+  public static class NodesDiffAnswerElement extends AnswerElement {
 
     private static final String PROP_CONFIG_DIFF = "configDiff";
 

@@ -12,7 +12,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class FileMapQuestionPlugin extends QuestionPlugin {
 
-  public static class FileMapAnswerElement implements AnswerElement {
+  public static class FileMapAnswerElement extends AnswerElement {
 
     SortedMap<String, String> _fileMap;
 

@@ -15,7 +15,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class ParseTreesQuestionPlugin extends QuestionPlugin {
 
-  public static class ParseTreesAnswerElement implements AnswerElement {
+  public static class ParseTreesAnswerElement extends AnswerElement {
 
     private SortedMap<String, ParseTreeSentences> _parseTrees;
 

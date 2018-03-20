@@ -7,8 +7,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 
-public class ParseEnvironmentRoutingTablesAnswerElement
-    implements ParseAnswerElement, Serializable {
+public class ParseEnvironmentRoutingTablesAnswerElement extends ParseAnswerElement
+    implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
