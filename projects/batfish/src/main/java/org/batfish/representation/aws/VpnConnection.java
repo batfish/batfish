@@ -195,6 +195,13 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
   public void applyToVpnGateway(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+    if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
+      warnings.redFlag(
+          String.format(
+              "VPN Gateway \"%s\" referred by VPN connection \"%s\" not found",
+              _vpnGatewayId, _vpnConnectionId));
+      return;
+    }
     Configuration vpnGatewayCfgNode = awsConfiguration.getConfigurationNodes().get(_vpnGatewayId);
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       int idNum = i + 1;
