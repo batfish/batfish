@@ -3,10 +3,9 @@ package org.batfish.datamodel.questions.smt;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.questions.IQuestion;
 import org.batfish.datamodel.questions.Question;
 
-public class RoleQuestion extends Question implements IQuestion {
+public class RoleQuestion extends Question {
 
   private static final String PROP_NODE_REGEX = "nodeRegex";
 
