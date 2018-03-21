@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
@@ -40,10 +42,13 @@ public class AclIpSpace implements IpSpace {
     return new Builder();
   }
 
+  private final Supplier<Integer> _hash;
+
   private final List<AclIpSpaceLine> _lines;
 
   private AclIpSpace(List<AclIpSpaceLine> lines) {
     _lines = lines;
+    _hash = Suppliers.memoize(() -> Objects.hash(_lines));
   }
 
   @Override
@@ -82,7 +87,7 @@ public class AclIpSpace implements IpSpace {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_lines);
+    return _hash.get();
   }
 
   @Override
