@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +28,6 @@ public final class Interface extends ComparableStructure<String> {
   public static class Builder extends NetworkFactoryBuilder<Interface> {
 
     private boolean _active;
-
-    private Set<InterfaceAddress> _allAddresses;
 
     private Double _bandwidth;
 
@@ -52,6 +51,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private Configuration _owner;
 
+    private Set<InterfaceAddress> _secondaryAddresses;
+
     private List<SourceNat> _sourceNats;
 
     private boolean _proxyArp;
@@ -62,7 +63,7 @@ public final class Interface extends ComparableStructure<String> {
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
-      _allAddresses = ImmutableSet.of();
+      _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
     }
 
@@ -70,8 +71,13 @@ public final class Interface extends ComparableStructure<String> {
     public Interface build() {
       String name = _name != null ? _name : generateName();
       Interface iface = new Interface(name, _owner);
+      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       iface.setActive(_active);
-      iface.setAllAddresses(_allAddresses);
+      if (_address != null) {
+        iface.setAddress(_address);
+        allAddresses.add(_address);
+      }
+      iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setIncomingFilter(_incomingFilter);
@@ -91,10 +97,6 @@ public final class Interface extends ComparableStructure<String> {
       }
       iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);
-      iface.setAddress(_address);
-      if (_address != null) {
-        iface.setAllAddresses(Collections.singleton(_address));
-      }
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
@@ -111,8 +113,10 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setAllAddresses(Iterable<InterfaceAddress> allAddresses) {
-      _allAddresses = ImmutableSet.copyOf(allAddresses);
+    public Builder setAddresses(
+        InterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
+      _address = primaryAddress;
+      _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
     }
 
@@ -178,6 +182,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setProxyArp(boolean proxyArp) {
       _proxyArp = proxyArp;
+      return this;
+    }
+
+    public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
+      _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
     }
 

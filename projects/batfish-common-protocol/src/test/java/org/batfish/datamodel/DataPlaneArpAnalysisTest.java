@@ -5,11 +5,13 @@ import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -101,8 +103,7 @@ public class DataPlaneArpAnalysisTest {
   public void testComputeIpsAssignedToThisInterface() {
     InterfaceAddress primary = new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength());
     InterfaceAddress secondary = new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength());
-    Interface i =
-        _ib.setAddress(primary).setAllAddresses(ImmutableSet.of(primary, secondary)).build();
+    Interface i = _ib.setAddresses(primary, ImmutableSet.of(secondary)).build();
     DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
 
     assertThat(
@@ -110,7 +111,7 @@ public class DataPlaneArpAnalysisTest {
     assertThat(
         dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i), containsIp(P2.getStartIp()));
     assertThat(
-        dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i), containsIp(P2.getEndIp()));
+        dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i), not(containsIp(P2.getEndIp())));
   }
 
   @Test
