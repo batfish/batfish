@@ -338,9 +338,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       _answerElement = new InferPoliciesAnswerElement();
 
       _answerElement.addRoleConsistencyQuestions(serverConsistencyPolicies());
-      System.err.println(
-          "After running, the server consistency policies are: "
-              + _answerElement._roleConsistencyQuestions);
       _answerElement.addRoleConsistencyQuestions(
           namedStructureConsistencyPolicies(OutliersHypothesis.SAME_NAME));
       _answerElement.addRoleConsistencyQuestions(
