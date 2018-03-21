@@ -1,8 +1,10 @@
 package org.batfish.datamodel;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -77,11 +79,36 @@ public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
         && _whitelist.stream().anyMatch(w -> w.contains(ip));
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || !(o instanceof IpWildcardSetIpSpace)) {
+      return false;
+    }
+    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
+    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
+  }
+
   public Set<IpWildcard> getBlacklist() {
     return _blacklist;
   }
 
   public Set<IpWildcard> getWhitelist() {
     return _whitelist;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_blacklist, _whitelist);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("blacklist", _blacklist)
+        .add("whitelist", _whitelist)
+        .toString();
   }
 }

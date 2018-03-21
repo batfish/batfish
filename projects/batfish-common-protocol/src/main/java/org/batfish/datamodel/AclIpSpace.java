@@ -1,7 +1,9 @@
 package org.batfish.datamodel;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -63,7 +65,28 @@ public class AclIpSpace implements IpSpace {
     return action(ip) == LineAction.ACCEPT;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || !(o instanceof AclIpSpace)) {
+      return false;
+    }
+    return Objects.equals(_lines, ((AclIpSpace) o)._lines);
+  }
+
   public List<AclIpSpaceLine> getLines() {
     return _lines;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_lines);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("lines", _lines).toString();
   }
 }

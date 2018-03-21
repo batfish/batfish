@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -72,6 +73,42 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     _arpTrueEdge = computeArpTrueEdge();
   }
 
+  @VisibleForTesting
+  DataPlaneArpAnalysis(
+      Map<String, Map<String, IpSpace>> arpReplies,
+      Map<Edge, IpSpace> arpTrueEdge,
+      Map<Edge, IpSpace> arpTrueEdgeDestIp,
+      Map<Edge, IpSpace> arpTrueEdgeNextHopIp,
+      Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
+      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable,
+      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableArpDestIp,
+      Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachableArpNextHopIp,
+      Map<String, Map<String, IpSpace>> nullRoutedIps,
+      Map<String, Map<String, IpSpace>> routableIps,
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp,
+      Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge,
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse,
+      Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue,
+      Map<String, Map<String, IpSpace>> someoneReplies) {
+    _nullRoutedIps = nullRoutedIps;
+    _routableIps = routableIps;
+    _routesWithNextHop = routesWithNextHop;
+    _ipsRoutedOutInterfaces = ipsRoutedOutInterfaces;
+    _arpReplies = arpReplies;
+    _someoneReplies = someoneReplies;
+    _routesWithNextHopIpArpFalse = routesWithNextHopIpArpFalse;
+    _neighborUnreachableArpNextHopIp = neighborUnreachableArpNextHopIp;
+    _routesWithNextHopIpArpTrue = routesWithNextHopIpArpTrue;
+    _arpTrueEdgeNextHopIp = arpTrueEdgeNextHopIp;
+    _routesWhereDstIpCanBeArpIp = routesWhereDstIpCanBeArpIp;
+    _neighborUnreachableArpDestIp = neighborUnreachableArpDestIp;
+    _neighborUnreachable = neighborUnreachable;
+    _routesWithDestIpEdge = routesWithDestIpEdge;
+    _arpTrueEdgeDestIp = arpTrueEdgeDestIp;
+    _arpTrueEdge = arpTrueEdge;
+  }
+
   /**
    * Compute an IP address ACL for each interface of each node permitting only those IPs for which
    * the node would send out an ARP reply on that interface: <br>
@@ -81,7 +118,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
    * through the interface.<br>
    * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
    */
-  private Map<String, Map<String, IpSpace>> computeArpReplies(
+  @VisibleForTesting
+  Map<String, Map<String, IpSpace>> computeArpReplies(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs) {
@@ -105,7 +143,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<String, IpSpace> computeArpRepliesByInterface(
+  @VisibleForTesting
+  Map<String, IpSpace> computeArpRepliesByInterface(
       Map<String, Interface> interfaces,
       Map<String, Fib> fibsByVrf,
       Map<String, IpSpace> routableIpsByVrf,
@@ -129,7 +168,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     return arpRepliesByInterfaceBuilder.build();
   }
 
-  private Map<Edge, IpSpace> computeArpTrueEdge() {
+  @VisibleForTesting
+  Map<Edge, IpSpace> computeArpTrueEdge() {
     return Sets.union(_arpTrueEdgeDestIp.keySet(), _arpTrueEdgeNextHopIp.keySet())
         .stream()
         .collect(
@@ -149,7 +189,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
+  @VisibleForTesting
+  Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWithDestIpEdge
@@ -187,7 +228,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<Edge, IpSpace> computeArpTrueEdgeNextHopIp(
+  @VisibleForTesting
+  Map<Edge, IpSpace> computeArpTrueEdgeNextHopIp(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWithNextHopIpArpTrue
@@ -207,7 +249,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private IpSpace computeInterfaceArpReplies(
+  @VisibleForTesting
+  IpSpace computeInterfaceArpReplies(
       Interface iface, IpSpace routableIpsForThisVrf, IpSpace ipsRoutedThroughInterface) {
     ImmutableList.Builder<AclIpSpaceLine> lines = ImmutableList.builder();
     IpSpace ipsAssignedToThisInterface = computeIpsAssignedToThisInterface(iface);
@@ -228,7 +271,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     return AclIpSpace.builder().setLines(lines.build()).build();
   }
 
-  private IpSpace computeIpsAssignedToThisInterface(Interface iface) {
+  @VisibleForTesting
+  IpSpace computeIpsAssignedToThisInterface(Interface iface) {
     IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
     iface
         .getAllAddresses()
@@ -239,7 +283,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     return ipsAssignedToThisInterface;
   }
 
-  private Map<String, Map<String, IpSpace>> computeIpsRoutedOutInterfaces(
+  @VisibleForTesting
+  Map<String, Map<String, IpSpace>> computeIpsRoutedOutInterfaces(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWithNextHop
         .entrySet()
@@ -266,7 +311,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable() {
     Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable =
         new HashMap<>();
     computeNeighborUnreachableHelper(neighborUnreachable, _neighborUnreachableArpDestIp);
@@ -311,7 +357,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                                         .build()))))));
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpDestIp(
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpDestIp(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWhereDstIpCanBeArpIp
         .entrySet()
@@ -369,7 +416,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpNextHopIp(
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachableArpNextHopIp(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return _routesWithNextHopIpArpFalse
         .entrySet()
@@ -404,7 +452,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private void computeNeighborUnreachableHelper(
+  @VisibleForTesting
+  void computeNeighborUnreachableHelper(
       Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable,
       Map<String, Map<String, Map<String, IpSpace>>> part) {
     part.forEach(
@@ -424,7 +473,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         });
   }
 
-  private Map<String, Map<String, IpSpace>> computeNullRoutedIps(
+  @VisibleForTesting
+  Map<String, Map<String, IpSpace>> computeNullRoutedIps(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs) {
     return fibs.entrySet()
@@ -462,7 +512,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<String, Map<String, IpSpace>> computeRoutableIps(
+  @VisibleForTesting
+  Map<String, Map<String, IpSpace>> computeRoutableIps(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return ribs.entrySet()
         .stream()
@@ -481,7 +532,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   /** Compute for each VRF of each node the IPs that are routable. */
-  private Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
+  @VisibleForTesting
+  Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return ribs.entrySet()
         .stream()
@@ -499,8 +551,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                                 ribsByVrfEntry -> ribsByVrfEntry.getValue().getRoutableIps()))));
   }
 
-  private IpSpace computeRouteMatchConditions(
-      Set<AbstractRoute> routes, GenericRib<AbstractRoute> rib) {
+  @VisibleForTesting
+  IpSpace computeRouteMatchConditions(Set<AbstractRoute> routes, GenericRib<AbstractRoute> rib) {
     Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();
     return AclIpSpace.builder()
         .setLines(
@@ -515,8 +567,9 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         .build();
   }
 
-  private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      computeRoutesWhereDstIpCanBeArpIp(Map<String, Map<String, Fib>> fibs) {
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWhereDstIpCanBeArpIp(
+      Map<String, Map<String, Fib>> fibs) {
     return _routesWithNextHop
         .entrySet()
         .stream()
@@ -562,7 +615,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<Edge, Set<AbstractRoute>> computeRoutesWithDestIpEdge(
+  @VisibleForTesting
+  Map<Edge, Set<AbstractRoute>> computeRoutesWithDestIpEdge(
       Map<String, Map<String, Fib>> fibs, Topology topology) {
     ImmutableMap.Builder<Edge, Set<AbstractRoute>> routesByEdgeBuilder = ImmutableMap.builder();
     _routesWhereDstIpCanBeArpIp.forEach(
@@ -579,7 +633,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     return routesByEdgeBuilder.build();
   }
 
-  private Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
       Map<String, Map<String, Fib>> fibs) {
     return fibs.entrySet()
         .stream()
@@ -596,13 +651,14 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                               Entry::getKey /* vrf */,
                               fibsByVrfEntry -> {
                                 Fib fib = fibsByVrfEntry.getValue();
-                                return getRoutesByNextHopInterface(fib);
+                                return fib.getRoutesByNextHopInterface();
                               }));
                 }));
   }
 
-  private Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      computeRoutesWithNextHopIpArpFalse(Map<String, Map<String, Fib>> fibs) {
+  @VisibleForTesting
+  Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHopIpArpFalse(
+      Map<String, Map<String, Fib>> fibs) {
     return _routesWithNextHop
         .entrySet()
         .stream()
@@ -638,7 +694,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                 }));
   }
 
-  private Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
+  @VisibleForTesting
+  Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
       Map<String, Map<String, Fib>> fibs, Topology topology) {
     ImmutableMap.Builder<Edge, Set<AbstractRoute>> routesByEdgeBuilder = ImmutableMap.builder();
     _routesWithNextHop.forEach(
@@ -678,7 +735,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     return routesByEdgeBuilder.build();
   }
 
-  private Set<AbstractRoute> computeRoutesWithNextHopIpFalseForInterface(
+  @VisibleForTesting
+  Set<AbstractRoute> computeRoutesWithNextHopIpFalseForInterface(
       Fib fib,
       String hostname,
       Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
@@ -700,7 +758,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  private Map<String, Map<String, IpSpace>> computeSomeoneReplies(Topology topology) {
+  @VisibleForTesting
+  Map<String, Map<String, IpSpace>> computeSomeoneReplies(Topology topology) {
     Map<String, Map<String, ImmutableList.Builder<AclIpSpaceLine>>> someoneRepliesByNode =
         new HashMap<>();
     topology
@@ -757,27 +816,5 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   @Override
   public Map<String, Map<String, IpSpace>> getRoutableIps() {
     return _routableIps;
-  }
-
-  private Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface(Fib fib) {
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> fibNextHopInterfaces =
-        fib.getNextHopInterfaces();
-    Map<String, ImmutableSet.Builder<AbstractRoute>> routesByNextHopInterface = new HashMap<>();
-    fibNextHopInterfaces.forEach(
-        (route, nextHopInterfaceMap) ->
-            nextHopInterfaceMap
-                .keySet()
-                .forEach(
-                    nextHopInterface ->
-                        routesByNextHopInterface
-                            .computeIfAbsent(nextHopInterface, n -> ImmutableSet.builder())
-                            .add(route)));
-    return routesByNextHopInterface
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* interfaceName */,
-                routesByNextHopInterfaceEntry -> routesByNextHopInterfaceEntry.getValue().build()));
   }
 }

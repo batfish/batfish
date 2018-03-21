@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +27,8 @@ public final class Interface extends ComparableStructure<String> {
   public static class Builder extends NetworkFactoryBuilder<Interface> {
 
     private boolean _active;
+
+    private Set<InterfaceAddress> _allAddresses;
 
     private Double _bandwidth;
 
@@ -59,6 +62,7 @@ public final class Interface extends ComparableStructure<String> {
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _allAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
     }
 
@@ -67,6 +71,7 @@ public final class Interface extends ComparableStructure<String> {
       String name = _name != null ? _name : generateName();
       Interface iface = new Interface(name, _owner);
       iface.setActive(_active);
+      iface.setAllAddresses(_allAddresses);
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
       iface.setIncomingFilter(_incomingFilter);
@@ -103,6 +108,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setActive(boolean active) {
       _active = active;
+      return this;
+    }
+
+    public Builder setAllAddresses(Iterable<InterfaceAddress> allAddresses) {
+      _allAddresses = ImmutableSet.copyOf(allAddresses);
       return this;
     }
 

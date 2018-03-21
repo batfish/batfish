@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import org.batfish.common.BatfishException;
 
 public class Fib implements Serializable {
@@ -16,11 +19,6 @@ public class Fib implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
-
-  /** Mapping: route -> nexthopinterface -> nextHopIp -> interfaceRoutes */
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces() {
-    return _nextHopInterfaces;
-  }
 
   private final GenericRib<AbstractRoute> _rib;
 
@@ -77,6 +75,11 @@ public class Fib implements Serializable {
     }
   }
 
+  /** Mapping: route -> nexthopinterface -> nextHopIp -> interfaceRoutes */
+  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces() {
+    return _nextHopInterfaces;
+  }
+
   public Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
     Map<String, Map<Ip, Set<AbstractRoute>>> outputNextHopInterfaces = new TreeMap<>();
     Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(ip);
@@ -105,5 +108,25 @@ public class Fib implements Serializable {
       nextHopInterfacesByRoute.put(nextHopRoute, nextHopInterfaces);
     }
     return nextHopInterfacesByRoute;
+  }
+
+  public Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
+    Map<String, ImmutableSet.Builder<AbstractRoute>> routesByNextHopInterface = new HashMap<>();
+    _nextHopInterfaces.forEach(
+        (route, nextHopInterfaceMap) ->
+            nextHopInterfaceMap
+                .keySet()
+                .forEach(
+                    nextHopInterface ->
+                        routesByNextHopInterface
+                            .computeIfAbsent(nextHopInterface, n -> ImmutableSet.builder())
+                            .add(route)));
+    return routesByNextHopInterface
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* interfaceName */,
+                routesByNextHopInterfaceEntry -> routesByNextHopInterfaceEntry.getValue().build()));
   }
 }

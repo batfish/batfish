@@ -3,11 +3,9 @@ package org.batfish.bdp;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -22,8 +20,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.collections.MultiSet;
-import org.batfish.datamodel.collections.TreeMultiSet;
 
 /**
  * Implements general RIB (Routing Information Base) semantics. RIB stores routes for different
@@ -480,16 +476,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   }
 
   @Override
-  public final MultiSet<Prefix> getPrefixCount() {
-    MultiSet<Prefix> prefixCount = new TreeMultiSet<>();
-    for (R route : getRoutes()) {
-      Prefix prefix = route.getNetwork();
-      prefixCount.add(prefix);
-    }
-    return prefixCount;
-  }
-
-  @Override
   public final SortedSet<Prefix> getPrefixes() {
     SortedSet<Prefix> prefixes = new TreeSet<>();
     Set<R> routes = getRoutes();
@@ -505,22 +491,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
     return _allRoutes;
-  }
-
-  @Override
-  public final Map<Integer, Map<Ip, List<AbstractRoute>>> getRoutesByPrefixPopularity() {
-    Map<Integer, Map<Ip, List<AbstractRoute>>> map = new TreeMap<>();
-    MultiSet<Prefix> prefixCountSet = getPrefixCount();
-    for (AbstractRoute route : getRoutes()) {
-      Prefix prefix = route.getNetwork();
-      int prefixCount = prefixCountSet.count(prefix);
-      Map<Ip, List<AbstractRoute>> byIp = map.computeIfAbsent(prefixCount, k -> new TreeMap<>());
-      Ip nextHopIp = route.getNextHopIp();
-      List<AbstractRoute> routesByPopularity =
-          byIp.computeIfAbsent(nextHopIp, k -> new ArrayList<>());
-      routesByPopularity.add(route);
-    }
-    return map;
   }
 
   @Override
