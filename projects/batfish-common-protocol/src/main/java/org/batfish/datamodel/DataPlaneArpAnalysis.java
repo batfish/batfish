@@ -59,7 +59,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
     _routableIps = computeRoutableIps(ribs);
     _routesWithNextHop = computeRoutesWithNextHop(fibs);
     _ipsRoutedOutInterfaces = computeIpsRoutedOutInterfaces(ribs);
-    _arpReplies = computeArpReplies(configurations, ribs, fibs);
+    _arpReplies = computeArpReplies(configurations, ribs);
     _someoneReplies = computeSomeoneReplies(topology);
     _routesWithNextHopIpArpFalse = computeRoutesWithNextHopIpArpFalse(fibs);
     _neighborUnreachableArpNextHopIp = computeNeighborUnreachableArpNextHopIp(ribs);
@@ -121,8 +121,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   @VisibleForTesting
   Map<String, Map<String, IpSpace>> computeArpReplies(
       Map<String, Configuration> configurations,
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
-      Map<String, Map<String, Fib>> fibs) {
+      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     Map<String, Map<String, IpSpace>> routableIpsByNodeVrf = computeRoutableIpsByNodeVrf(ribs);
     return ribs.entrySet()
         .stream()
@@ -199,9 +198,8 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                   String recvNode = edge.getNode2();
                   String recvInterface = edge.getInt2();
                   IpSpace recvReplies = _arpReplies.get(recvNode).get(recvInterface);
-                  return AclIpSpace.rejecting(
-                          dstIpMatchesSomeRoutePrefix.complement(), recvReplies.complement())
-                      .thenPermitting(UniverseIpSpace.INSTANCE)
+                  return AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
+                      .thenPermitting(recvReplies)
                       .build();
                 }));
   }

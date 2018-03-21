@@ -11,12 +11,16 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import org.junit.Before;
 import org.junit.Test;
 
 public class DataPlaneArpAnalysisTest {
+
+  private static final Edge E1 = new Edge("c1", "i1", "c2", "i2");
 
   private static final String INTERFACE1 = "interface1";
 
@@ -32,14 +36,6 @@ public class DataPlaneArpAnalysisTest {
 
   private static final Prefix P3 = Prefix.parse("3.0.0.0/24");
 
-  private Configuration.Builder _cb;
-
-  private Interface.Builder _ib;
-
-  private NetworkFactory _nf;
-
-  private Vrf.Builder _vb;
-
   private Map<String, Map<String, IpSpace>> _arpReplies;
 
   private Map<Edge, IpSpace> _arpTrueEdge;
@@ -48,6 +44,10 @@ public class DataPlaneArpAnalysisTest {
 
   private Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
 
+  private Configuration.Builder _cb;
+
+  private Interface.Builder _ib;
+
   private Map<String, Map<String, IpSpace>> _ipsRoutedOutInterfaces;
 
   private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
@@ -55,6 +55,8 @@ public class DataPlaneArpAnalysisTest {
   private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpDestIp;
 
   private Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachableArpNextHopIp;
+
+  private NetworkFactory _nf;
 
   private Map<String, Map<String, IpSpace>> _nullRoutedIps;
 
@@ -71,6 +73,8 @@ public class DataPlaneArpAnalysisTest {
   private Map<Edge, Set<AbstractRoute>> _routesWithNextHopIpArpTrue;
 
   private Map<String, Map<String, IpSpace>> _someoneReplies;
+
+  private Vrf.Builder _vb;
 
   private DataPlaneArpAnalysis initDataPlaneArpAnalysis() {
     return new DataPlaneArpAnalysis(
@@ -101,7 +105,86 @@ public class DataPlaneArpAnalysisTest {
   }
 
   @Test
-  public void testComputeArpReplies() {}
+  public void testComputeArpReplies() {
+    Configuration c1 = _cb.build();
+    Configuration c2 = _cb.build();
+    Vrf vrf1 = _vb.setOwner(c1).build();
+    Vrf vrf2 = _vb.setOwner(c2).build();
+    Interface i1 =
+        _ib.setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setProxyArp(true)
+            .build();
+    Interface i2 =
+        _ib.setOwner(c2)
+            .setVrf(vrf2)
+            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
+            .setProxyArp(false)
+            .build();
+    IpSpace ipsRoutedOutI1 =
+        IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
+    IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
+    Map<String, Configuration> configurations = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c1.getName(),
+            ImmutableSortedMap.of(
+                vrf1.getName(), MockRib.builder().setRoutableIps(UniverseIpSpace.INSTANCE).build()),
+            c2.getName(),
+            ImmutableSortedMap.of(
+                vrf2.getName(),
+                MockRib.builder().setRoutableIps(UniverseIpSpace.INSTANCE).build()));
+    _ipsRoutedOutInterfaces =
+        ImmutableMap.of(
+            c1.getName(),
+            ImmutableMap.of(i1.getName(), ipsRoutedOutI1),
+            c2.getName(),
+            ImmutableMap.of(i2.getName(), ipsRoutedOutI2));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, IpSpace>> result =
+        dataPlaneArpAnalysis.computeArpReplies(configurations, ribs);
+
+    /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getName()), hasEntry(equalTo(i1.getName()), containsIp(P1.getStartIp()))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getName()),
+            hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp())))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getName()),
+            hasEntry(equalTo(i1.getName()), not(containsIp(P3.getStartIp())))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1.getName()), hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp()))));
+    /* No proxy-arp: just match interface ip*/
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c2.getName()), hasEntry(equalTo(i2.getName()), containsIp(P2.getStartIp()))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c2.getName()),
+            hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp())))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c2.getName()),
+            hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp())))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c2.getName()),
+            hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp())))));
+  }
 
   @Test
   public void testComputeArpRepliesByInterface() {
@@ -120,7 +203,6 @@ public class DataPlaneArpAnalysisTest {
     IpSpace ipsRoutedOutI1 =
         IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
     IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
-    //    IpSpace ipsRoutedOutI1 = Sets.union(P1, P2)
     Map<String, Interface> interfaces = ImmutableMap.of(i1.getName(), i1, i2.getName(), i2);
     Map<String, IpSpace> routableIpsByVrf =
         ImmutableMap.of(
@@ -142,6 +224,77 @@ public class DataPlaneArpAnalysisTest {
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp()))));
+  }
+
+  @Test
+  public void testComputeArpTrueEdge() {
+    IpSpace nextHopIpSpace = new MockIpSpace(1);
+    IpSpace dstIpSpace = new MockIpSpace(2);
+    _arpTrueEdgeDestIp = ImmutableMap.of(E1, dstIpSpace);
+    _arpTrueEdgeNextHopIp = ImmutableMap.of(E1, nextHopIpSpace);
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<Edge, IpSpace> result = dataPlaneArpAnalysis.computeArpTrueEdge();
+
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(E1),
+            isAclIpSpaceThat(
+                hasLines(
+                    containsInAnyOrder(
+                        AclIpSpaceLine.permit(nextHopIpSpace),
+                        AclIpSpaceLine.permit(dstIpSpace))))));
+  }
+
+  @Test
+  public void testComputeArpTrueEdgeDestIp() {
+    Configuration c1 = _cb.build();
+    Configuration c2 = _cb.build();
+    Vrf vrf1 = _vb.setOwner(c1).build();
+    Vrf vrf2 = _vb.setOwner(c2).build();
+    Interface i1 =
+        _ib.setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .build();
+    Ip i2Ip = new Ip(P1.getStartIp().asLong() + 1);
+    Interface i2 =
+        _ib.setOwner(c2)
+            .setVrf(vrf2)
+            .setAddress(new InterfaceAddress(i2Ip, P1.getPrefixLength()))
+            .build();
+    Map<String, Configuration> configurations = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c1.getName(),
+            ImmutableSortedMap.of(
+                vrf1.getName(),
+                MockRib.builder()
+                    .setMatchingIps(
+                        ImmutableMap.of(
+                            P1,
+                            AclIpSpace.rejecting(
+                                    new Prefix(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH))
+                                .thenPermitting(P1)
+                                .build()))
+                    .build()));
+    Edge edge = new Edge(c1.getName(), i1.getName(), c2.getName(), i2.getName());
+    _routesWithDestIpEdge =
+        ImmutableMap.of(edge, ImmutableSet.of(new ConnectedRoute(P1, i1.getName())));
+    _arpReplies =
+        ImmutableMap.of(
+            c2.getName(),
+            ImmutableMap.of(
+                i2.getName(), AclIpSpace.permitting(i2Ip).thenPermitting(P1.getEndIp()).build()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<Edge, IpSpace> result = dataPlaneArpAnalysis.computeArpTrueEdgeDestIp(configurations, ribs);
+
+    /* Respond to request for IP on i2. */
+    assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
+    /* Do not make ARP request for IP matched by more specific route not going out i1.  */
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))));
+    /* Do not receive response for IP i2 does not own. */
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getStartIp()))));
   }
 
   @Test
