@@ -94,6 +94,10 @@ public class JsonPathQuery {
     _assertion = assertion;
   }
 
+  public void setDisplayHints(DisplayHints displayHints) {
+    _displayHints = displayHints;
+  }
+
   public void setExceptions(Set<JsonPathException> exceptions) {
     _exceptions = (exceptions == null) ? new HashSet<>() : exceptions;
   }

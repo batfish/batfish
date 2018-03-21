@@ -17,7 +17,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.OutlierSet;
-import org.batfish.datamodel.questions.IRoleConsistencyQuestion;
+import org.batfish.datamodel.questions.AbstractRoleConsistencyQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
@@ -124,8 +124,7 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
    * @param propertyName A string representing the name of the configuration property to check.
    *     Allowed values are DnsServers, LoggingServers, NtpServers, SnmpTrapServers, TacacsServers.
    */
-  public static final class RoleConsistencyQuestion extends Question
-      implements IRoleConsistencyQuestion {
+  public static final class RoleConsistencyQuestion extends AbstractRoleConsistencyQuestion {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
@@ -143,11 +142,13 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
       return false;
     }
 
+    @Override
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public Optional<NodeRoleSpecifier> getRoleSpecifier() {
       return Optional.ofNullable(_roleSpecifier);
     }
 
+    @Override
     @JsonIgnore
     public OutliersHypothesis getHypothesis() {
       return OutliersHypothesis.SAME_SERVERS;
