@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-public class TestDataPlane implements DataPlane {
+public class MockDataPlane implements DataPlane {
 
   public static class Builder {
 
@@ -23,8 +23,8 @@ public class TestDataPlane implements DataPlane {
       _topologyEdges = ImmutableSortedSet.of();
     }
 
-    public TestDataPlane build() {
-      return new TestDataPlane(_fibs, _ribs, _topologyEdges);
+    public MockDataPlane build() {
+      return new MockDataPlane(_fibs, _ribs, _topologyEdges);
     }
 
     public Builder setRibs(SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
@@ -51,7 +51,7 @@ public class TestDataPlane implements DataPlane {
 
   private final SortedSet<Edge> _topologyEdges;
 
-  private TestDataPlane(
+  private MockDataPlane(
       Map<String, Map<String, Fib>> fibs,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       SortedSet<Edge> topologyEdges) {

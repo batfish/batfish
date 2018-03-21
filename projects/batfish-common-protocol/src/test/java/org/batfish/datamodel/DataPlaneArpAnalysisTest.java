@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,16 +19,16 @@ public class DataPlaneArpAnalysisTest {
 
   private static final String INTERFACE2 = "interface2";
 
-  private static final IpSpace IPSPACE1 = new TestIpSpace(1);
+  private static final IpSpace IPSPACE1 = new MockIpSpace(1);
 
-  private static final IpSpace IPSPACE2 = new TestIpSpace(2);
+  private static final IpSpace IPSPACE2 = new MockIpSpace(2);
 
   private static final Prefix P1 = Prefix.parse("1.0.0.0/8");
 
   private static final Prefix P2 = Prefix.parse("2.0.0.0/16");
 
   private static final Prefix P3 = Prefix.parse("3.0.0.0/24");
-  
+
   private Configuration.Builder _cb;
 
   private Interface.Builder _ib;
@@ -96,7 +95,6 @@ public class DataPlaneArpAnalysisTest {
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _vb = _nf.vrfBuilder();
     _ib = _nf.interfaceBuilder();
-  
   }
 
   @Test
@@ -119,8 +117,8 @@ public class DataPlaneArpAnalysisTest {
   public void testComputeRouteMatchConditions() {
     Set<AbstractRoute> routes =
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
-    TestRib rib =
-        TestRib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
+    MockRib rib =
+        MockRib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
     DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
 
     /* Resulting IP space should permit matching IPs */

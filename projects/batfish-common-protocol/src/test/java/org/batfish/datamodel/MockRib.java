@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public class TestRib implements GenericRib<AbstractRoute> {
+public class MockRib implements GenericRib<AbstractRoute> {
 
   public static class Builder {
 
@@ -36,8 +36,8 @@ public class TestRib implements GenericRib<AbstractRoute> {
       _routes = ImmutableSet.of();
     }
 
-    public TestRib build() {
-      return new TestRib(this);
+    public MockRib build() {
+      return new MockRib(this);
     }
 
     public Builder setLongestPrefixMatchResults(
@@ -106,7 +106,7 @@ public class TestRib implements GenericRib<AbstractRoute> {
 
   private final Set<AbstractRoute> _routes;
 
-  private TestRib(Builder builder) {
+  private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
     _matchingIps = builder._matchingIps;
     _mergeRouteTrues = builder._mergeRouteTrues;

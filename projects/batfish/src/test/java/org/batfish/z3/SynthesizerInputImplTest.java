@@ -38,11 +38,11 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MockArpAnalysis;
+import org.batfish.datamodel.MockIpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
-import org.batfish.datamodel.TestArpAnalysis;
-import org.batfish.datamodel.TestIpSpace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -127,7 +127,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
     List<LineAction> expectedActions = ImmutableList.of(LineAction.ACCEPT, LineAction.REJECT);
@@ -230,7 +230,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setConfigurations(
                 ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(
                 new Topology(
                     ImmutableSortedSet.of(
@@ -258,8 +258,8 @@ public class SynthesizerInputImplTest {
     String nextHopInterface1 = "nextHopInterface1";
     String nextHop2 = "nextHop2";
     String nextHopInterface2 = "nextHopInterface2";
-    IpSpace ipSpace1 = new TestIpSpace(1);
-    IpSpace ipSpace2 = new TestIpSpace(2);
+    IpSpace ipSpace1 = new MockIpSpace(1);
+    IpSpace ipSpace2 = new MockIpSpace(2);
     IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
     IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
     Edge edge1 =
@@ -272,7 +272,7 @@ public class SynthesizerInputImplTest {
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
             .setArpAnalysis(
-                TestArpAnalysis.builder()
+                MockArpAnalysis.builder()
                     .setArpTrueEdge(ImmutableMap.of(edge1, ipSpace1, edge2, ipSpace2))
                     .build())
             .setTopology(new Topology(ImmutableSortedSet.of(edge1, edge2)))
@@ -314,7 +314,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(
                 new Topology(ImmutableSortedSet.of(expectedEnabledEdge, expectedDisabledEdge)))
             .build();
@@ -438,7 +438,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of()))
             .build();
 
@@ -459,7 +459,7 @@ public class SynthesizerInputImplTest {
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
             .setConfigurations(ImmutableMap.of(c.getName(), c))
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of()))
             .build();
     assertThat(
@@ -473,8 +473,8 @@ public class SynthesizerInputImplTest {
     Vrf vrf = _vb.setOwner(node).build();
     Interface iface1 = _ib.setOwner(node).setVrf(vrf).build();
     Interface iface2 = _ib.build();
-    IpSpace ipSpace1 = new TestIpSpace(1);
-    IpSpace ipSpace2 = new TestIpSpace(2);
+    IpSpace ipSpace1 = new MockIpSpace(1);
+    IpSpace ipSpace2 = new MockIpSpace(2);
     IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
     IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
 
@@ -483,7 +483,7 @@ public class SynthesizerInputImplTest {
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
             .setArpAnalysis(
-                TestArpAnalysis.builder()
+                MockArpAnalysis.builder()
                     .setNeighborUnreachable(
                         ImmutableMap.of(
                             node.getName(),
@@ -543,7 +543,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(
                 new Topology(
                     ImmutableSortedSet.of(
@@ -616,7 +616,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
 
@@ -658,7 +658,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setConfigurations(
                 ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
-            .setArpAnalysis(TestArpAnalysis.builder().build())
+            .setArpAnalysis(MockArpAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
 

@@ -13,7 +13,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
-public class TestSynthesizerInput implements SynthesizerInput {
+public class MockSynthesizerInput implements SynthesizerInput {
 
   public static class Builder {
 
@@ -74,8 +74,8 @@ public class TestSynthesizerInput implements SynthesizerInput {
       _vectorizedParameters = ImmutableSet.of();
     }
 
-    public TestSynthesizerInput build() {
-      return new TestSynthesizerInput(
+    public MockSynthesizerInput build() {
+      return new MockSynthesizerInput(
           _aclActions,
           _aclConditions,
           _arpTrueEdge,
@@ -232,7 +232,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Set<Type> _vectorizedParameters;
 
-  private TestSynthesizerInput(
+  private MockSynthesizerInput(
       Map<String, Map<String, List<LineAction>>> aclActions,
       Map<String, Map<String, List<BooleanExpr>>> aclConditions,
       Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> arpTrueEdge,

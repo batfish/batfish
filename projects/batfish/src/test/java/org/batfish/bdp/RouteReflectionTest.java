@@ -223,7 +223,7 @@ public class RouteReflectionTest {
             .build();
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
@@ -356,7 +356,7 @@ public class RouteReflectionTest {
             .build();
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);

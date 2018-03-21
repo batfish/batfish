@@ -3,11 +3,11 @@ package org.batfish.datamodel;
 import java.util.Objects;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class TestIpSpace implements IpSpace {
+public class MockIpSpace implements IpSpace {
 
   private final int _num;
 
-  public TestIpSpace(int num) {
+  public MockIpSpace(int num) {
     _num = num;
   }
 
@@ -28,10 +28,10 @@ public class TestIpSpace implements IpSpace {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof TestIpSpace)) {
+    if (o == null || !(o instanceof MockIpSpace)) {
       return false;
     }
-    return _num == ((TestIpSpace) o)._num;
+    return _num == ((MockIpSpace) o)._num;
   }
 
   @Override

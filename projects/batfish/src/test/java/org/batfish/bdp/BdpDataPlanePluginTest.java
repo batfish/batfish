@@ -526,7 +526,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationPrintingEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpPrintAllIterations(true);
@@ -551,7 +551,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationPrintingNotEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpMaxRecordedIterations(0);
@@ -578,7 +578,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationNoPrinting() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpMaxRecordedIterations(0);
@@ -604,7 +604,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationRecoveryEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(1);
     settings.setBdpPrintAllIterations(false);
@@ -621,7 +621,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationRecoveryNotEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(1);
     settings.setBdpMaxRecordedIterations(0);
@@ -638,7 +638,7 @@ public class BdpDataPlanePluginTest {
     testBgpOscillationRecovery(settings);
   }
 
-  private void testBgpOscillationRecovery(TestBdpSettings bdpSettings) throws IOException {
+  private void testBgpOscillationRecovery(MockBdpSettings bdpSettings) throws IOException {
     String testrigName = "bgp-oscillation";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -1000,7 +1000,7 @@ public class BdpDataPlanePluginTest {
     vrf.getStaticRoutes().add(srJustInterface);
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false),
             (a, b) -> new AtomicInteger());
     Topology topology = new Topology(Collections.emptySortedSet());

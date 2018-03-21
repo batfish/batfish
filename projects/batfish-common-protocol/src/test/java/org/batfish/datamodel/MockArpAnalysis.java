@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 
-public class TestArpAnalysis implements ArpAnalysis {
+public class MockArpAnalysis implements ArpAnalysis {
 
   public static class Builder {
 
@@ -31,8 +31,8 @@ public class TestArpAnalysis implements ArpAnalysis {
       _routableIps = ImmutableMap.of();
     }
 
-    public TestArpAnalysis build() {
-      return new TestArpAnalysis(this);
+    public MockArpAnalysis build() {
+      return new MockArpAnalysis(this);
     }
 
     public Builder setArpReplies(Map<String, Map<String, IpSpace>> arpReplies) {
@@ -87,7 +87,7 @@ public class TestArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
-  public TestArpAnalysis(Builder builder) {
+  public MockArpAnalysis(Builder builder) {
     _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
     _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
     _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);

@@ -7,7 +7,7 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
 
-public class TestIntAtom extends IntExpr {
+public class MockIntAtom extends IntExpr {
 
   private final Context _ctx;
 
@@ -15,7 +15,7 @@ public class TestIntAtom extends IntExpr {
 
   private final int _numBits;
 
-  public TestIntAtom(int i, int numBits, Context ctx) {
+  public MockIntAtom(int i, int numBits, Context ctx) {
     _name = String.format("BVConst%d", i);
     _numBits = numBits;
     _ctx = ctx;
@@ -47,7 +47,7 @@ public class TestIntAtom extends IntExpr {
 
   @Override
   public boolean exprEquals(Expr e) {
-    return Objects.equals(_name, ((TestIntAtom) e)._name);
+    return Objects.equals(_name, ((MockIntAtom) e)._name);
   }
 
   @Override

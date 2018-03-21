@@ -18,17 +18,17 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.MockBooleanAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.TestBooleanAtom;
 import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -109,7 +109,7 @@ public class DefaultTransitionGeneratorTest {
   private static final String VRF2 = "vrf2";
 
   private static BooleanExpr b(int num) {
-    return new TestBooleanAtom(num);
+    return new MockBooleanAtom(num);
   }
 
   private Map<String, Map<String, List<LineAction>>> aclActions() {
@@ -143,7 +143,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testPreOutEdgePostNat() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
                     new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
@@ -235,7 +235,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitAccept() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -247,7 +247,7 @@ public class DefaultTransitionGeneratorTest {
 
   @Test
   public void testVisitAclDeny() {
-    SynthesizerInput input = TestSynthesizerInput.builder().setAclActions(aclActions()).build();
+    SynthesizerInput input = MockSynthesizerInput.builder().setAclActions(aclActions()).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -311,7 +311,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitAclLineMatch() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setAclConditions(aclConditions()).build();
+        MockSynthesizerInput.builder().setAclConditions(aclConditions()).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -420,7 +420,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitAclLineNoMatch() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setAclConditions(aclConditions()).build();
+        MockSynthesizerInput.builder().setAclConditions(aclConditions()).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -533,7 +533,7 @@ public class DefaultTransitionGeneratorTest {
 
   @Test
   public void testVisitAclPermit() {
-    SynthesizerInput input = TestSynthesizerInput.builder().setAclActions(aclActions()).build();
+    SynthesizerInput input = MockSynthesizerInput.builder().setAclActions(aclActions()).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -577,7 +577,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitDrop() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -589,7 +589,7 @@ public class DefaultTransitionGeneratorTest {
 
   @Test
   public void testVisitDropAcl() {
-    SynthesizerInput input = TestSynthesizerInput.builder().build();
+    SynthesizerInput input = MockSynthesizerInput.builder().build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -607,7 +607,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitDropAclIn() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -622,7 +622,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitDropAclOut() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -637,7 +637,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitDropNoRoute() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -652,7 +652,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitDropNullRoute() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -669,7 +669,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNeighborUnreachable() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setNeighborUnreachable(
                 ImmutableMap.of(
                     NODE1,
@@ -697,7 +697,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeAccept() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledNodes(ImmutableSet.of(NODE1, NODE2))
             .setIpsByHostname(
                 ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
@@ -729,7 +729,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeDrop() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -755,7 +755,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeDropAcl() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
+        MockSynthesizerInput.builder().setEnabledNodes(ImmutableSet.of(NODE1, NODE2)).build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
@@ -777,7 +777,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeDropAclIn() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setIncomingAcls(
                 ImmutableMap.of(
                     NODE1,
@@ -826,7 +826,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeDropAclOut() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
                     new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
@@ -903,7 +903,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeDropNoRoute() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setRoutableIps(
                 ImmutableMap.of(
                     NODE1,
@@ -950,7 +950,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeDropNullRoute() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setNullRoutedIps(
                 ImmutableMap.of(
                     NODE1,
@@ -997,7 +997,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitNodeNeighborUnreachable() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setNeighborUnreachable(
                 ImmutableMap.of(
                     NODE1,
@@ -1047,7 +1047,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitOriginate() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledVrfs(
                 ImmutableMap.of(
                     NODE1, ImmutableSet.of(VRF1, VRF2), NODE2, ImmutableSet.of(VRF1, VRF2)))
@@ -1075,7 +1075,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPostIn() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledNodes(ImmutableSet.of(NODE1, NODE2))
             .setEnabledInterfaces(
                 ImmutableMap.of(
@@ -1111,7 +1111,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPostInInterface() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setIncomingAcls(
                 ImmutableMap.of(
                     NODE1,
@@ -1170,7 +1170,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPostInVrf() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledInterfacesByNodeVrf(
                 ImmutableMap.of(
                     NODE1,
@@ -1251,7 +1251,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPostOutEdge() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
                     new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
@@ -1328,7 +1328,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPreInInterface() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledEdges(
                 ImmutableSet.of(
                     new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
@@ -1488,7 +1488,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPreOut() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setIpsByHostname(
                 ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
             .build();
@@ -1521,7 +1521,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPreOutEdge() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setArpTrueEdge(
                 ImmutableMap.of(
                     NODE1,
@@ -1600,7 +1600,7 @@ public class DefaultTransitionGeneratorTest {
   @Test
   public void testVisitPreOutEdgePostNat_topologyInterfaceWithNAT() {
     SynthesizerInput input =
-        TestSynthesizerInput.builder()
+        MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(new Edge(NODE1, INTERFACE1, NODE2, INTERFACE2)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
             .setSourceNats(
