@@ -74,9 +74,9 @@ public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
   }
 
   @Override
-  public boolean contains(@Nonnull Ip ip) {
-    return _blacklist.stream().noneMatch(w -> w.contains(ip))
-        && _whitelist.stream().anyMatch(w -> w.contains(ip));
+  public boolean containsIp(@Nonnull Ip ip) {
+    return _blacklist.stream().noneMatch(w -> w.containsIp(ip))
+        && _whitelist.stream().anyMatch(w -> w.containsIp(ip));
   }
 
   @Override

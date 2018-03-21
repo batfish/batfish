@@ -1568,7 +1568,7 @@ public class BdpEngine implements FlowProcessor {
             neighborUnreachable = true;
           } else {
             for (InterfaceAddress address : int2.getAllAddresses()) {
-              if (address.getPrefix().contains(arpIp)) {
+              if (address.getPrefix().containsIp(arpIp)) {
                 neighborUnreachable = true;
                 break;
               }

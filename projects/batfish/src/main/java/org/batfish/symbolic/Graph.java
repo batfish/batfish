@@ -546,7 +546,7 @@ public class Graph {
             Ip ip = ipList.get(i);
             BgpNeighbor n = ns.get(i);
             Interface iface = ge.getStart();
-            if (ip != null && iface.getAddress().getPrefix().contains(ip)) {
+            if (ip != null && iface.getAddress().getPrefix().containsIp(ip)) {
               _ebgpNeighbors.put(ge, n);
             }
           }
@@ -606,7 +606,7 @@ public class Graph {
             for (Entry<String, Ip> ipEntry : ips.entrySet()) {
               String r = ipEntry.getKey();
               Ip ip = ipEntry.getValue();
-              if (!router.equals(r) && pfx.contains(ip)) {
+              if (!router.equals(r) && pfx.containsIp(ip)) {
                 neighbors.put(router, r, n);
               }
             }

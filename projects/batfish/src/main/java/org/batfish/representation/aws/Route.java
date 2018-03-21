@@ -131,7 +131,7 @@ public class Route implements Serializable {
             Set<Ip> networkInterfaceIps = new TreeSet<>();
             networkInterfaceIps.addAll(networkInterface.getIpAddressAssociations().keySet());
             Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
-            if (!subnet.getCidrBlock().contains(lowestIp)) {
+            if (!subnet.getCidrBlock().containsIp(lowestIp)) {
               throw new BatfishException(
                   "Ip of network interface specified in static route not in containing subnet");
             }

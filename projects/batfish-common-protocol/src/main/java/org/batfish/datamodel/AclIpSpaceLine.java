@@ -7,34 +7,18 @@ import javax.annotation.Nonnull;
 
 public class AclIpSpaceLine {
 
-  @Override
-  public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    if (_action != LineAction.ACCEPT) {
-      helper.add("action", _action);
-    }
-    helper.add("ipSpace", _ipSpace);
-    if (_matchComplement) {
-      helper.add("matchComplement", _matchComplement);
-    }
-    return helper.toString();
-  }
-
   public static class Builder {
 
     private LineAction _action;
 
     private IpSpace _ipSpace;
 
-    private boolean _matchComplement;
-
     private Builder() {
       _action = LineAction.ACCEPT;
-      _matchComplement = false;
     }
 
     public AclIpSpaceLine build() {
-      return new AclIpSpaceLine(_ipSpace, _action, _matchComplement);
+      return new AclIpSpaceLine(_ipSpace, _action);
     }
 
     public Builder setAction(@Nonnull LineAction action) {
@@ -46,11 +30,6 @@ public class AclIpSpaceLine {
       _ipSpace = ipSpace;
       return this;
     }
-
-    public Builder setMatchComplement(boolean matchComplement) {
-      _matchComplement = matchComplement;
-      return this;
-    }
   }
 
   public static final AclIpSpaceLine PERMIT_ALL =
@@ -60,17 +39,21 @@ public class AclIpSpaceLine {
     return new Builder();
   }
 
+  public static AclIpSpaceLine permit(IpSpace ipSpace) {
+    return builder().setIpSpace(ipSpace).build();
+  }
+
+  public static AclIpSpaceLine reject(IpSpace ipSpace) {
+    return builder().setIpSpace(ipSpace).setAction(LineAction.REJECT).build();
+  }
+
   private final LineAction _action;
 
   private final IpSpace _ipSpace;
 
-  private final boolean _matchComplement;
-
-  private AclIpSpaceLine(
-      @Nonnull IpSpace ipSpace, @Nonnull LineAction action, boolean matchComplement) {
+  private AclIpSpaceLine(@Nonnull IpSpace ipSpace, @Nonnull LineAction action) {
     _ipSpace = ipSpace;
     _action = action;
-    _matchComplement = matchComplement;
   }
 
   @Override
@@ -82,9 +65,7 @@ public class AclIpSpaceLine {
       return false;
     }
     AclIpSpaceLine rhs = (AclIpSpaceLine) o;
-    return Objects.equals(_action, rhs._action)
-        && Objects.equals(_ipSpace, rhs._ipSpace)
-        && _matchComplement == rhs._matchComplement;
+    return Objects.equals(_action, rhs._action) && Objects.equals(_ipSpace, rhs._ipSpace);
   }
 
   public LineAction getAction() {
@@ -95,13 +76,18 @@ public class AclIpSpaceLine {
     return _ipSpace;
   }
 
-  /** Match the complement of the {@code IpSpace} of this line. */
-  public boolean getMatchComplement() {
-    return _matchComplement;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_action.ordinal(), _ipSpace);
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(_action.ordinal(), _ipSpace, _matchComplement);
+  public String toString() {
+    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
+    if (_action != LineAction.ACCEPT) {
+      helper.add("action", _action);
+    }
+    helper.add("ipSpace", _ipSpace);
+    return helper.toString();
   }
 }

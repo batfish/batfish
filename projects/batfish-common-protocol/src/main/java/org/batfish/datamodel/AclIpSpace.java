@@ -4,8 +4,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Streams;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -17,18 +20,44 @@ public class AclIpSpace implements IpSpace {
 
   public static class Builder {
 
-    private List<AclIpSpaceLine> _lines;
+    private ImmutableList.Builder<AclIpSpaceLine> _lines;
 
     private Builder() {
-      _lines = ImmutableList.of();
+      _lines = ImmutableList.builder();
     }
 
     public AclIpSpace build() {
-      return new AclIpSpace(_lines);
+      return new AclIpSpace(_lines.build());
     }
 
     public Builder setLines(List<AclIpSpaceLine> lines) {
-      _lines = lines;
+      _lines = ImmutableList.<AclIpSpaceLine>builder().addAll(lines);
+      return this;
+    }
+
+    public Builder thenPermitting(IpSpace... ipSpaces) {
+      return thenPermitting(Arrays.stream(ipSpaces));
+    }
+
+    public Builder thenPermitting(Iterable<IpSpace> ipSpaces) {
+      return thenPermitting(Streams.stream(ipSpaces));
+    }
+
+    public Builder thenPermitting(Stream<IpSpace> ipSpaces) {
+      ipSpaces.map(AclIpSpaceLine::permit).forEach(_lines::add);
+      return this;
+    }
+
+    public Builder thenRejecting(IpSpace... ipSpaces) {
+      return thenRejecting(Arrays.stream(ipSpaces));
+    }
+
+    public Builder thenRejecting(Iterable<IpSpace> ipSpaces) {
+      return thenRejecting(Streams.stream(ipSpaces));
+    }
+
+    private Builder thenRejecting(Stream<IpSpace> ipSpaces) {
+      ipSpaces.map(AclIpSpaceLine::reject).forEach(_lines::add);
       return this;
     }
   }
@@ -40,6 +69,26 @@ public class AclIpSpace implements IpSpace {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  public static Builder permitting(IpSpace... ipSpaces) {
+    return new Builder().thenPermitting(ipSpaces);
+  }
+
+  public static Builder permitting(Iterable<IpSpace> ipSpaces) {
+    return new Builder().thenPermitting(ipSpaces);
+  }
+
+  public static Builder permitting(Stream<IpSpace> ipSpaces) {
+    return new Builder().thenPermitting(ipSpaces);
+  }
+
+  public static Builder rejecting(IpSpace... ipSpaces) {
+    return new Builder().thenRejecting(ipSpaces);
+  }
+
+  public static Builder rejecting(Iterable<IpSpace> ipSpaces) {
+    return new Builder().thenRejecting(ipSpaces);
   }
 
   private final Supplier<Integer> _hash;
@@ -59,14 +108,14 @@ public class AclIpSpace implements IpSpace {
   private LineAction action(Ip ip) {
     return _lines
         .stream()
-        .filter(line -> line.getIpSpace().contains(ip) ^ line.getMatchComplement())
+        .filter(line -> line.getIpSpace().containsIp(ip))
         .map(AclIpSpaceLine::getAction)
         .findFirst()
         .orElse(LineAction.REJECT);
   }
 
   @Override
-  public boolean contains(@Nonnull Ip ip) {
+  public boolean containsIp(@Nonnull Ip ip) {
     return action(ip) == LineAction.ACCEPT;
   }
 

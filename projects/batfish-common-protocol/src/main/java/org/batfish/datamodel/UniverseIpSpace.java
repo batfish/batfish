@@ -15,7 +15,7 @@ public class UniverseIpSpace implements IpSpace {
   }
 
   @Override
-  public boolean contains(@Nonnull Ip ip) {
+  public boolean containsIp(@Nonnull Ip ip) {
     return true;
   }
 }

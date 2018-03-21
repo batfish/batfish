@@ -20,7 +20,7 @@ public class IpSpaceTest {
 
     @Override
     protected Boolean featureValueOf(IpWildcardSetIpSpace actual) {
-      return actual.contains(_ip);
+      return actual.containsIp(_ip);
     }
   }
 

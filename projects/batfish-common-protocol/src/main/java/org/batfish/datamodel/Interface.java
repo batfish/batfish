@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -111,6 +111,11 @@ public final class Interface extends ComparableStructure<String> {
     public Builder setActive(boolean active) {
       _active = active;
       return this;
+    }
+
+    public Builder setAddresses(
+        InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
+      return setAddresses(primaryAddress, Arrays.asList(secondaryAddresses));
     }
 
     public Builder setAddresses(

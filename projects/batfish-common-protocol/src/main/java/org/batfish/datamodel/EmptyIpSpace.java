@@ -14,7 +14,7 @@ public class EmptyIpSpace implements IpSpace {
   }
 
   @Override
-  public boolean contains(Ip ip) {
+  public boolean containsIp(Ip ip) {
     return false;
   }
 }

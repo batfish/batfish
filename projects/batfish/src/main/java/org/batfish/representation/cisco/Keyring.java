@@ -31,7 +31,7 @@ public class Keyring extends DefinedStructure<String> {
   }
 
   public boolean match(Ip localAddress, Prefix matchIdentity) {
-    return localAddress.equals(_localAddress) && matchIdentity.contains(_remoteAddress);
+    return localAddress.equals(_localAddress) && matchIdentity.containsIp(_remoteAddress);
   }
 
   public void setKey(String key) {

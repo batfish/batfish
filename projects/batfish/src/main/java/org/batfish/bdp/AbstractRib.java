@@ -221,7 +221,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       Set<R> longestPrefixMatches = new HashSet<>();
       for (R route : _routes) {
         Prefix prefix = route.getNetwork();
-        if (prefix.contains(address)) {
+        if (prefix.containsIp(address)) {
           longestPrefixMatches.add(route);
         }
       }

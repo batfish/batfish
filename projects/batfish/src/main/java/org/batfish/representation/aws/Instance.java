@@ -227,7 +227,7 @@ public class Instance implements AwsVpcEntity, Serializable {
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
 
       for (Ip ip : netInterface.getIpAddressAssociations().keySet()) {
-        if (!ifaceSubnet.contains(ip)) {
+        if (!ifaceSubnet.containsIp(ip)) {
           warnings.pedantic(
               String.format(
                   "Instance subnet \"%s\" does not contain private ip: \"%s\"", ifaceSubnet, ip));

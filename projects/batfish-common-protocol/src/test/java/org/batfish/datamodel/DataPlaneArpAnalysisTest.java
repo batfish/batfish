@@ -5,13 +5,14 @@ import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -100,18 +101,97 @@ public class DataPlaneArpAnalysisTest {
   }
 
   @Test
+  public void testComputeArpReplies() {}
+
+  @Test
+  public void testComputeArpRepliesByInterface() {
+    Vrf vrf1 = _vb.build();
+    Vrf vrf2 = _vb.build();
+    Interface i1 =
+        _ib.setVrf(vrf1)
+            .setAddress(new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength()))
+            .setProxyArp(true)
+            .build();
+    Interface i2 =
+        _ib.setVrf(vrf2)
+            .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
+            .setProxyArp(false)
+            .build();
+    IpSpace ipsRoutedOutI1 =
+        IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
+    IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
+    //    IpSpace ipsRoutedOutI1 = Sets.union(P1, P2)
+    Map<String, Interface> interfaces = ImmutableMap.of(i1.getName(), i1, i2.getName(), i2);
+    Map<String, IpSpace> routableIpsByVrf =
+        ImmutableMap.of(
+            vrf1.getName(), UniverseIpSpace.INSTANCE, vrf2.getName(), UniverseIpSpace.INSTANCE);
+    Map<String, IpSpace> ipsRoutedOutInterfaces =
+        ImmutableMap.of(i1.getName(), ipsRoutedOutI1, i2.getName(), ipsRoutedOutI2);
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, IpSpace> result =
+        dataPlaneArpAnalysis.computeArpRepliesByInterface(
+            interfaces, routableIpsByVrf, ipsRoutedOutInterfaces);
+
+    /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
+    assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P1.getStartIp())));
+    assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp()))));
+    assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P3.getStartIp()))));
+    assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp())));
+    /* No proxy-arp: just match interface ip*/
+    assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(P2.getStartIp())));
+    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp()))));
+    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp()))));
+    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp()))));
+  }
+
+  @Test
+  public void testComputeInterfaceArpReplies() {
+    InterfaceAddress primary = new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength());
+    InterfaceAddress secondary = new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength());
+    Interface iNoProxyArp = _ib.setAddresses(primary, secondary).build();
+    Interface iProxyArp = _ib.setProxyArp(true).build();
+    IpSpace routableIpsForThisVrf = UniverseIpSpace.INSTANCE;
+    IpSpace ipsRoutedThroughInterface =
+        IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P2)).build();
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    IpSpace noProxyArpResult =
+        dataPlaneArpAnalysis.computeInterfaceArpReplies(
+            iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface);
+    IpSpace proxyArpResult =
+        dataPlaneArpAnalysis.computeInterfaceArpReplies(
+            iProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface);
+
+    /* No proxy-ARP */
+    /* Accept IPs belonging to interface */
+    assertThat(noProxyArpResult, containsIp(P1.getStartIp()));
+    assertThat(noProxyArpResult, containsIp(P2.getStartIp()));
+    /* Reject all other IPs */
+    assertThat(noProxyArpResult, not(containsIp(P1.getEndIp())));
+    assertThat(noProxyArpResult, not(containsIp(P2.getEndIp())));
+    assertThat(noProxyArpResult, not(containsIp(P3.getStartIp())));
+
+    /* Proxy-ARP */
+    /* Accept IPs belonging to interface */
+    assertThat(proxyArpResult, containsIp(P1.getStartIp()));
+    assertThat(proxyArpResult, containsIp(P2.getStartIp()));
+    /* Reject IPs routed through interface */
+    assertThat(proxyArpResult, not(containsIp(P1.getEndIp())));
+    assertThat(proxyArpResult, not(containsIp(P2.getEndIp())));
+    /* Accept all other routable IPs */
+    assertThat(proxyArpResult, containsIp(P3.getStartIp()));
+  }
+
+  @Test
   public void testComputeIpsAssignedToThisInterface() {
     InterfaceAddress primary = new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength());
     InterfaceAddress secondary = new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength());
-    Interface i = _ib.setAddresses(primary, ImmutableSet.of(secondary)).build();
+    Interface i = _ib.setAddresses(primary, secondary).build();
     DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    IpSpace result = dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i);
 
-    assertThat(
-        dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i), containsIp(P1.getStartIp()));
-    assertThat(
-        dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i), containsIp(P2.getStartIp()));
-    assertThat(
-        dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i), not(containsIp(P2.getEndIp())));
+    assertThat(result, containsIp(P1.getStartIp()));
+    assertThat(result, containsIp(P2.getStartIp()));
+    assertThat(result, not(containsIp(P2.getEndIp())));
   }
 
   @Test
@@ -128,7 +208,6 @@ public class DataPlaneArpAnalysisTest {
         isAclIpSpaceThat(
             hasLines(
                 containsInAnyOrder(
-                    AclIpSpaceLine.builder().setIpSpace(IPSPACE1).build(),
-                    AclIpSpaceLine.builder().setIpSpace(IPSPACE2).build()))));
+                    AclIpSpaceLine.permit(IPSPACE1), AclIpSpaceLine.permit(IPSPACE2)))));
   }
 }

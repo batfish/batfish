@@ -979,7 +979,7 @@ public class CommonUtil {
             if (privateIpsBehindReciprocalRemoteAddress != null
                 && privateIpsBehindReciprocalRemoteAddress
                     .stream()
-                    .anyMatch(ipSpace -> ipSpace.contains(localIp))) {
+                    .anyMatch(ipSpace -> ipSpace.containsIp(localIp))) {
               reciprocalVpns = externalIpVpnMap.get(localIp);
               ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
               ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);

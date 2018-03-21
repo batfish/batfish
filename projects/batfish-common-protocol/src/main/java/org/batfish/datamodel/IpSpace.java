@@ -7,5 +7,9 @@ public interface IpSpace {
 
   <R> R accept(GenericIpSpaceVisitor<R> visitor);
 
-  boolean contains(@Nonnull Ip ip);
+  boolean containsIp(@Nonnull Ip ip);
+
+  default IpSpace complement() {
+    return new ComplementIpSpace(this);
+  }
 }

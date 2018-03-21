@@ -1,11 +1,15 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.ComplementIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.batfish.z3.expr.AndExpr;
@@ -36,11 +40,6 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
     return (BooleanExpr) o;
   }
 
-  private BooleanExpr matchAclIpSpaceLineSpace(AclIpSpaceLine line) {
-    BooleanExpr matchSpace = line.getIpSpace().accept(this);
-    return line.getMatchComplement() ? new NotExpr(matchSpace) : matchSpace;
-  }
-
   @Override
   public BooleanExpr visitAclIpSpace(AclIpSpace aclIpSpace) {
     ImmutableList.Builder<BooleanExpr> lineSpaceMatchConditions = ImmutableList.builder();
@@ -49,7 +48,7 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
         .getLines()
         .forEach(
             line -> {
-              BooleanExpr matchCurrentInIsolation = matchAclIpSpaceLineSpace(line);
+              BooleanExpr matchCurrentInIsolation = line.getIpSpace().accept(this);
               if (line.getAction() == LineAction.ACCEPT) {
                 lineSpaceMatchConditions.add(
                     new AndExpr(
@@ -64,8 +63,23 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
   }
 
   @Override
+  public BooleanExpr visitComplementIpSpace(ComplementIpSpace complementIpSpace) {
+    return new NotExpr(complementIpSpace.getIpSpace().accept(this));
+  }
+
+  @Override
   public BooleanExpr visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
     return FalseExpr.INSTANCE;
+  }
+
+  @Override
+  public BooleanExpr visitIp(Ip ip) {
+    return HeaderSpaceMatchExpr.matchIp(ImmutableSet.of(new IpWildcard(ip)), _useSrc, _useDst);
+  }
+
+  @Override
+  public BooleanExpr visitIpWildcard(IpWildcard ipWildcard) {
+    return HeaderSpaceMatchExpr.matchIp(ImmutableSet.of(ipWildcard), _useSrc, _useDst);
   }
 
   @Override
@@ -75,6 +89,11 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
     BooleanExpr matchWhitelist =
         HeaderSpaceMatchExpr.matchIp(ipWildcardSetIpSpace.getWhitelist(), _useSrc, _useDst);
     return new AndExpr(ImmutableList.of(new NotExpr(matchBlacklist), matchWhitelist));
+  }
+
+  @Override
+  public BooleanExpr visitPrefix(Prefix prefix) {
+    return HeaderSpaceMatchExpr.matchIp(ImmutableSet.of(new IpWildcard(prefix)), _useSrc, _useDst);
   }
 
   @Override
