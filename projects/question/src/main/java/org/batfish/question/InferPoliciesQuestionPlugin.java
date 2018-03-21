@@ -206,7 +206,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          definitionEx.setSchema("String");
+          definitionEx.setSchema("Object");
           extractions.put("structDefinition", definitionEx);
 
           hypothesisSpecificDesc =

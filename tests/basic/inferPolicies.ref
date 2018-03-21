@@ -677,7 +677,7 @@
                     "filter" : "$.structDefinition",
                     "use" : "SUFFIXOFSUFFIX"
                   },
-                  "schema" : "String"
+                  "schema" : "Object"
                 }
               },
               "textDesc" : "Hypothesis SAME_DEFINITION for role ${role}: all nodes should define a ${structType} named ${name} with definition ${structDefinition}, but ${outliers} do not."
@@ -769,7 +769,7 @@
                     "filter" : "$.structDefinition",
                     "use" : "SUFFIXOFSUFFIX"
                   },
-                  "schema" : "String"
+                  "schema" : "Object"
                 }
               },
               "textDesc" : "Hypothesis SAME_DEFINITION for role ${role}: all nodes should define a ${structType} named ${name} with definition ${structDefinition}, but ${outliers} do not."
@@ -861,7 +861,7 @@
                     "filter" : "$.structDefinition",
                     "use" : "SUFFIXOFSUFFIX"
                   },
-                  "schema" : "String"
+                  "schema" : "Object"
                 }
               },
               "textDesc" : "Hypothesis SAME_DEFINITION for role ${role}: all nodes should define a ${structType} named ${name} with definition ${structDefinition}, but ${outliers} do not."
