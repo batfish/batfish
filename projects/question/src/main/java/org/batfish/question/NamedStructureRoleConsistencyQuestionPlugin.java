@@ -15,7 +15,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
-import org.batfish.datamodel.questions.IRoleConsistencyQuestion;
+import org.batfish.datamodel.questions.AbstractRoleConsistencyQuestion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
@@ -111,8 +111,8 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
    * @param structType A string representing the type of named structure to check.
    * @param hypothesis The hypothesis to check. Allowed values are "sameName" and "sameDefinition".
    */
-  public static final class NamedStructureRoleConsistencyQuestion extends Question
-      implements IRoleConsistencyQuestion {
+  public static final class NamedStructureRoleConsistencyQuestion
+      extends AbstractRoleConsistencyQuestion {
 
     private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
 
@@ -134,6 +134,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
       return false;
     }
 
+    @Override
     @JsonProperty(PROP_HYPOTHESIS)
     public OutliersHypothesis getHypothesis() {
       return _hypothesis;
@@ -144,6 +145,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
       return "namedStructureRoleConsistency";
     }
 
+    @Override
     @JsonProperty(PROP_ROLE_SPECIFIER)
     public Optional<NodeRoleSpecifier> getRoleSpecifier() {
       return Optional.ofNullable(_roleSpecifier);
