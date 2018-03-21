@@ -1048,12 +1048,12 @@
     {
       "name" : "es-domain",
       "id" : "node-es-domain",
-      "type" : "SWITCH"
+      "type" : "HOST"
     },
     {
       "name" : "test-rds",
       "id" : "node-test-rds",
-      "type" : "SWITCH"
+      "type" : "HOST"
     },
     {
       "name" : "igw-9b93ddfc",
