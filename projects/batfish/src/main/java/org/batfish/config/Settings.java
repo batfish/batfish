@@ -415,8 +415,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_COORDINATOR_REGISTER = "register";
 
-  private static final String ARG_COORDINATOR_WORK_PORT = "coordinatorworkport";
-
   private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
 
   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
@@ -658,10 +656,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getCoordinatorRegister() {
     return _config.getBoolean(ARG_COORDINATOR_REGISTER);
-  }
-
-  public int getCoordinatorWorkPort() {
-    return _config.getInt(ARG_COORDINATOR_WORK_PORT);
   }
 
   public boolean getDataPlane() {
@@ -1000,7 +994,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
-    setDefaultProperty(ARG_COORDINATOR_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
     setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
@@ -1134,8 +1127,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_COORDINATOR_POOL_PORT, "coordinator pool manager listening port", ARGNAME_PORT);
 
     addBooleanOption(ARG_COORDINATOR_REGISTER, "register service with coordinator on startup");
-
-    addOption(ARG_COORDINATOR_WORK_PORT, "coordinator work manager listening port", "port_number");
 
     addOption(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, "name of delta environment to use", "name");
 
@@ -1402,7 +1393,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
-    getIntOptionValue(ARG_COORDINATOR_WORK_PORT);
     getBooleanOptionValue(BfConsts.COMMAND_DUMP_DP);
     getStringOptionValue(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
