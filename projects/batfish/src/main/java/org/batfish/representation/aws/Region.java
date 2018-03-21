@@ -273,6 +273,7 @@ public class Region implements Serializable {
       Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode =
           elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
+      cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
@@ -310,6 +311,7 @@ public class Region implements Serializable {
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
       Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
       Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
+      cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
       awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
