@@ -446,6 +446,19 @@ public class DataPlaneArpAnalysisTest {
   }
 
   @Test
+  public void testComputeRoutableIps() {
+    String c1 = "c1";
+    String v1 = "v1";
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c1, ImmutableSortedMap.of(v1, MockRib.builder().setRoutableIps(IPSPACE1).build()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, IpSpace>> result = dataPlaneArpAnalysis.computeRoutableIps(ribs);
+
+    assertThat(result, equalTo(ImmutableMap.of(c1, ImmutableMap.of(v1, IPSPACE1))));
+  }
+
+  @Test
   public void testComputeRouteMatchConditions() {
     Set<AbstractRoute> routes =
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
@@ -460,5 +473,29 @@ public class DataPlaneArpAnalysisTest {
             hasLines(
                 containsInAnyOrder(
                     AclIpSpaceLine.permit(IPSPACE1), AclIpSpaceLine.permit(IPSPACE2)))));
+  }
+
+  @Test
+  public void testComputeRoutesWithNextHop() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String i1 = "i1";
+    ConnectedRoute r1 = new ConnectedRoute(P1, i1);
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(
+            c1,
+            ImmutableMap.of(
+                v1,
+                MockFib.builder()
+                    .setRoutesByNextHopInterface(ImmutableMap.of(i1, ImmutableSet.of(r1)))
+                    .build()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
+        dataPlaneArpAnalysis.computeRoutesWithNextHop(fibs);
+
+    assertThat(
+        result,
+        equalTo(
+            ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))))));
   }
 }
