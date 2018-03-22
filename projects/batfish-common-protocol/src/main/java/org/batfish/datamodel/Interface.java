@@ -29,6 +29,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _active;
 
+    private InterfaceAddress _address;
+
     private Double _bandwidth;
 
     private boolean _blacklisted;
@@ -51,13 +53,11 @@ public final class Interface extends ComparableStructure<String> {
 
     private Configuration _owner;
 
+    private boolean _proxyArp;
+
     private Set<InterfaceAddress> _secondaryAddresses;
 
     private List<SourceNat> _sourceNats;
-
-    private boolean _proxyArp;
-
-    private InterfaceAddress _address;
 
     private Vrf _vrf;
 
@@ -113,11 +113,31 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
+    /**
+     * Set the primary address of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.
+     */
+    public Builder setAddress(InterfaceAddress address) {
+      _address = address;
+      return this;
+    }
+
+    /**
+     * Set the primary address and secondary addresses of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.
+     */
     public Builder setAddresses(
         InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
       return setAddresses(primaryAddress, Arrays.asList(secondaryAddresses));
     }
 
+    /**
+     * Set the primary address and secondary addresses of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.
+     */
     public Builder setAddresses(
         InterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
       _address = primaryAddress;
@@ -180,23 +200,23 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setSourceNats(List<SourceNat> sourceNats) {
-      _sourceNats = sourceNats;
-      return this;
-    }
-
     public Builder setProxyArp(boolean proxyArp) {
       _proxyArp = proxyArp;
       return this;
     }
 
+    /**
+     * Set the secondary addresses of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.
+     */
     public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
       _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
       return this;
     }
 
-    public Builder setAddress(InterfaceAddress address) {
-      _address = address;
+    public Builder setSourceNats(List<SourceNat> sourceNats) {
+      _sourceNats = sourceNats;
       return this;
     }
 
