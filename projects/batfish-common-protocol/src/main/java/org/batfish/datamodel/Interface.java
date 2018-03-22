@@ -35,6 +35,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _blacklisted;
 
+    private SortedSet<String> _declaredNames;
+
     private IpAccessList _incomingFilter;
 
     private String _name;
@@ -63,6 +65,7 @@ public final class Interface extends ComparableStructure<String> {
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _declaredNames = ImmutableSortedSet.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
     }
@@ -80,6 +83,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
+      iface.setDeclaredNames(_declaredNames);
       iface.setIncomingFilter(_incomingFilter);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
@@ -152,6 +156,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setBlacklisted(boolean blacklisted) {
       _blacklisted = blacklisted;
+      return this;
+    }
+
+    public Builder setDeclaredNames(Iterable<String> declaredNames) {
+      _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
       return this;
     }
 
@@ -307,6 +316,10 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ZONE = "zone";
 
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder(null);
+  }
 
   private static InterfaceType computeAosInteraceType(String name) {
     if (name.startsWith("vlan")) {
