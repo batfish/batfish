@@ -32,7 +32,7 @@ test tests/jsonpath-addons/jsonpath-display-hints-suffixofsuffix.ref get jsonpat
 
 # load templates
 load-questions tests/jsonpath-addons/templates
-test tests/jsonpath-addons/add-exceptions-assertions.ref configure-template new1AaaAccountingCommands aaaAccountingCommands exceptions=[{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}], assertion={"type" : "countequals", "expect" : 3}
-test tests/jsonpath-addons/remove-assertions.ref configure-template new2AaaAccountingCommands new1AaaAccountingCommands assertion={}
-test tests/jsonpath-addons/remove-exceptions.ref configure-template new3AaaAccountingCommands new2AaaAccountingCommands exceptions=[]
+test -raw tests/jsonpath-addons/add-exceptions-assertions.ref configure-template new1AaaAccountingCommands aaaAccountingCommands exceptions=[{"concretePath" : ["'nodes'", "'as3border1'", "'interfaces'", "'Ethernet0/0'", "'mtu'"], "suffix": 1500}], assertion={"type" : "countequals", "expect" : 3}
+test -raw tests/jsonpath-addons/remove-assertions.ref configure-template new2AaaAccountingCommands new1AaaAccountingCommands assertion={}
+test -raw tests/jsonpath-addons/remove-exceptions.ref configure-template new3AaaAccountingCommands new2AaaAccountingCommands exceptions=[]
 
