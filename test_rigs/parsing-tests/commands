@@ -39,5 +39,6 @@ test -compareall test_rigs/parsing-tests/srx-testbed.ref init-testrig test_rigs/
 
 #unit-tests
 test -compareall test_rigs/parsing-tests/unit-tests.ref init-testrig test_rigs/unit-tests
-test -compareall test_rigs/parsing-tests/unit-tests-undefined.ref get undefinedreferences
-test -compareall test_rigs/parsing-tests/unit-tests-unused.ref get unusedstructures
+test test_rigs/parsing-tests/unit-tests-undefined.ref get undefinedreferences
+test test_rigs/parsing-tests/unit-tests-unused.ref get unusedstructures
+test test_rigs/parsing-tests/unit-tests-nodes.ref get nodes summary=false
