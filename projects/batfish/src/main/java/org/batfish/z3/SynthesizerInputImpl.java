@@ -1,7 +1,6 @@
 package org.batfish.z3;
 
-import static org.batfish.common.util.CommonUtil.toMap;
-import static org.batfish.common.util.CommonUtil.transformMap;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -243,11 +242,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, List<LineAction>>> computeAclActions() {
-    return transformMap(
+    return toImmutableMap(
         _enabledAcls,
         Entry::getKey,
         enabledAclsByHostnameEntry ->
-            transformMap(
+            toImmutableMap(
                 enabledAclsByHostnameEntry.getValue(),
                 Entry::getKey,
                 enabledAclsByAclNameEntry ->
@@ -260,11 +259,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, List<BooleanExpr>>> computeAclConditions() {
-    return transformMap(
+    return toImmutableMap(
         _enabledAcls,
         Entry::getKey,
         e ->
-            transformMap(
+            toImmutableMap(
                 e.getValue(),
                 Entry::getKey,
                 e2 ->
@@ -294,24 +293,24 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               .put(recvInterface, new IpSpaceMatchExpr(ipSpace, false, true));
         });
 
-    // freeze by copying spine to immutable map/set
-    return transformMap(
+    // freeze
+    return toImmutableMap(
         output,
         Entry::getKey, /* node */
         outputByHostnameEntry ->
-            transformMap(
+            toImmutableMap(
                 outputByHostnameEntry.getValue(),
                 Entry::getKey, /* vrf */
                 outputByVrfEntry ->
-                    transformMap(
+                    toImmutableMap(
                         outputByVrfEntry.getValue(),
                         Entry::getKey /* outInterface */,
                         outputByOutInterfaceEntry ->
-                            transformMap(
+                            toImmutableMap(
                                 outputByOutInterfaceEntry.getValue(),
                                 Entry::getKey /* recvNode */,
                                 outputByRecvNodeEntry ->
-                                    transformMap(
+                                    toImmutableMap(
                                         outputByRecvNodeEntry.getValue(),
                                         Entry::getKey /* recvInterface */,
                                         Entry::getValue)))));
@@ -319,7 +318,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
     if (_topologyInterfaces != null) {
-      return transformMap(
+      return toImmutableMap(
           _topologyInterfaces,
           Entry::getKey, /* node */
           topologyInterfacesEntry -> {
@@ -399,7 +398,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Set<String>> computeEnabledInterfaces() {
-    return transformMap(
+    return toImmutableMap(
         _enabledInterfacesByNodeVrf,
         Entry::getKey,
         enabledInterfacesByNodeVrfEntry ->
@@ -413,14 +412,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, Set<String>>> computeEnabledInterfacesByNodeVrf() {
-    return transformMap(
+    return toImmutableMap(
         _enabledVrfs,
         Entry::getKey,
         enabledVrfsEntry -> {
           String hostname = enabledVrfsEntry.getKey();
           Set<String> disabledInterfaces = _disabledInterfaces.get(hostname);
           Configuration c = _configurations.get(hostname);
-          return toMap(
+          return CommonUtil.toImmutableMap(
               enabledVrfsEntry.getValue(),
               Function.identity(),
               vrfName ->
@@ -445,7 +444,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Set<String>> computeEnabledVrfs() {
-    return toMap(
+    return CommonUtil.toImmutableMap(
         _enabledNodes,
         Function.identity(),
         hostname -> {
@@ -461,7 +460,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, String>> computeIncomingAcls() {
-    return transformMap(
+    return toImmutableMap(
         _enabledInterfaces,
         Entry::getKey,
         enabledInterfacesEntry -> {
@@ -479,12 +478,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Map<String, Set<Ip>> computeIpsByHostname() {
     Map<String, Map<String, Interface>> enabledInterfaces =
-        transformMap(
+        toImmutableMap(
             _enabledInterfaces,
             Entry::getKey,
             enabledInterfacesEntry -> {
               Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-              return toMap(
+              return CommonUtil.toImmutableMap(
                   enabledInterfacesEntry.getValue(), Function.identity(), c.getInterfaces()::get);
             });
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(true, enabledInterfaces);
@@ -500,21 +499,21 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             map.get(owner).add(ip);
           }
         });
-    // freeze by copying spine to immutable map/set
-    return transformMap(map, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
+    // freeze
+    return toImmutableMap(map, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 
   private Map<String, Map<String, Map<String, BooleanExpr>>> computeNeighborUnreachable(
       Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
-    return transformMap(
+    return toImmutableMap(
         neighborUnreachable,
         Entry::getKey /* hostname */,
         neighborUnreachableByHostnameEntry ->
-            transformMap(
+            toImmutableMap(
                 neighborUnreachableByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
                 neighborUnreachableByVrfEntry ->
-                    transformMap(
+                    toImmutableMap(
                         neighborUnreachableByVrfEntry.getValue(),
                         Entry::getKey /* interface */,
                         neighborUnreachableByOutInterfaceEntry ->
@@ -524,11 +523,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(
       Map<String, Map<String, IpSpace>> nullRoutedIps) {
-    return transformMap(
+    return toImmutableMap(
         nullRoutedIps,
         Entry::getKey /* hostname */,
         nullRoutedIpsByHostnameEntry ->
-            transformMap(
+            toImmutableMap(
                 nullRoutedIpsByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
                 nullRoutedIpsByVrfEntry ->
@@ -536,7 +535,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, String>> computeOutgoingAcls() {
-    return transformMap(
+    return toImmutableMap(
         _enabledInterfaces,
         Entry::getKey,
         enabledInterfacesEntry -> {
@@ -554,11 +553,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Map<String, Map<String, BooleanExpr>> computeRoutableIps(
       Map<String, Map<String, IpSpace>> routableIps) {
-    return transformMap(
+    return toImmutableMap(
         routableIps,
         Entry::getKey /* hostname */,
         routableIpsByHostnameEntry ->
-            transformMap(
+            toImmutableMap(
                 routableIpsByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
                 routableIpsByVrfEntry ->
@@ -566,14 +565,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {
-    return transformMap(
+    return toImmutableMap(
         _topologyInterfaces,
         Entry::getKey,
         topologyInterfacesEntryByHostname -> {
           String hostname = topologyInterfacesEntryByHostname.getKey();
           Set<String> ifaces = topologyInterfacesEntryByHostname.getValue();
           Configuration c = _configurations.get(hostname);
-          return toMap(
+          return CommonUtil.toImmutableMap(
               ifaces,
               Function.identity(),
               ifaceName ->
@@ -610,8 +609,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             topologyEdges
                 .computeIfAbsent(enabledEdge.getNode1(), n -> new HashSet<>())
                 .add(enabledEdge.getInt1()));
-    // freeze by copying spine to immutable map/set
-    return transformMap(topologyEdges, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
+    // freeze
+    return toImmutableMap(topologyEdges, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 
   @Override

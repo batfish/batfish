@@ -1203,14 +1203,14 @@ public class CommonUtil {
     return map;
   }
 
-  public static <K1, K2, V1, V2> Map<K2, V2> transformMap(
+  public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMap(
       Map<K1, V1> map,
       Function<Entry<K1, V1>, K2> keyFunction,
       Function<Entry<K1, V1>, V2> valueFunction) {
     return map.entrySet().stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
 
-  public static <E, K, V> Map<K, V> toMap(
+  public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
