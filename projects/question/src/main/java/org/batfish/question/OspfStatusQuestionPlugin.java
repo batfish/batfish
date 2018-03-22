@@ -38,11 +38,11 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
   public static class OspfStatusAnswerElement extends AnswerElement {
 
     public enum OspfStatus {
-      SWITCHPORT,
+      DISABLED_EXPORTED,
+      DISABLED_NOT_EXPORTED,
       ENABLED_ACTIVE,
       ENABLED_PASSIVE,
-      DISABLED_EXPORTED,
-      DISABLED_NOT_EXPORTED
+      SWITCHPORT
     }
 
     public static class OspfInfo implements Comparable<OspfInfo> {
