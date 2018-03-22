@@ -143,7 +143,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
             Interface iface = e2.getValue();
             if (question.getInterfacesSpecifier().matches(iface)) {
               if (iface.getSwitchport() != null && iface.getSwitchport().booleanValue()) {
-                // its a layer2 interface
+                // it's a layer2 interface
                 answerElement.add(hostname, interfaceName, OspfStatus.SWITCHPORT);
               } else if (iface.getOspfEnabled()) {
                 // ospf is running either passively or actively
