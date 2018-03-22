@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.Map;
 
-public interface ArpAnalysis {
+public interface ForwardingAnalysis {
 
   /** Mapping: hostname -> inInterface -> ipsToArpReplyTo */
   Map<String, Map<String, IpSpace>> getArpReplies();

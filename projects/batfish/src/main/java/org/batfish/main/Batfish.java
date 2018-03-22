@@ -88,13 +88,13 @@ import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.DataPlaneArpAnalysis;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -4212,8 +4212,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
-        .setArpAnalysis(
-            new DataPlaneArpAnalysis(
+        .setForwardingAnalysis(
+            new ForwardingAnalysisImpl(
                 configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
         .setSimplify(simplify)
         .setTopology(topology)

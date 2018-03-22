@@ -22,7 +22,7 @@ import java.util.SortedMap;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DataPlaneArpAnalysisTest {
+public class ForwardingAnalysisImplTest {
 
   private static final String INTERFACE1 = "interface1";
 
@@ -78,8 +78,8 @@ public class DataPlaneArpAnalysisTest {
 
   private Vrf.Builder _vb;
 
-  private DataPlaneArpAnalysis initDataPlaneArpAnalysis() {
-    return new DataPlaneArpAnalysis(
+  private ForwardingAnalysisImpl initForwardingAnalysisImpl() {
+    return new ForwardingAnalysisImpl(
         _arpReplies,
         _arpTrueEdge,
         _arpTrueEdgeDestIp,
@@ -143,9 +143,9 @@ public class DataPlaneArpAnalysisTest {
             ImmutableMap.of(i1.getName(), ipsRoutedOutI1),
             c2.getName(),
             ImmutableMap.of(i2.getName(), ipsRoutedOutI2));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
-        dataPlaneArpAnalysis.computeArpReplies(configurations, ribs);
+        forwardingAnalysisImpl.computeArpReplies(configurations, ribs);
 
     /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
     assertThat(
@@ -211,9 +211,9 @@ public class DataPlaneArpAnalysisTest {
             vrf1.getName(), UniverseIpSpace.INSTANCE, vrf2.getName(), UniverseIpSpace.INSTANCE);
     Map<String, IpSpace> ipsRoutedOutInterfaces =
         ImmutableMap.of(i1.getName(), ipsRoutedOutI1, i2.getName(), ipsRoutedOutI2);
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, IpSpace> result =
-        dataPlaneArpAnalysis.computeArpRepliesByInterface(
+        forwardingAnalysisImpl.computeArpRepliesByInterface(
             interfaces, routableIpsByVrf, ipsRoutedOutInterfaces);
 
     /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
@@ -235,8 +235,8 @@ public class DataPlaneArpAnalysisTest {
     Edge e1 = new Edge("c1", "i1", "c2", "i2");
     _arpTrueEdgeDestIp = ImmutableMap.of(e1, dstIpSpace);
     _arpTrueEdgeNextHopIp = ImmutableMap.of(e1, nextHopIpSpace);
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
-    Map<Edge, IpSpace> result = dataPlaneArpAnalysis.computeArpTrueEdge();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<Edge, IpSpace> result = forwardingAnalysisImpl.computeArpTrueEdge();
 
     assertThat(
         result,
@@ -281,8 +281,9 @@ public class DataPlaneArpAnalysisTest {
             c2.getName(),
             ImmutableMap.of(
                 i2.getName(), AclIpSpace.permitting(i2Ip).thenPermitting(P1.getEndIp()).build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
-    Map<Edge, IpSpace> result = dataPlaneArpAnalysis.computeArpTrueEdgeDestIp(configurations, ribs);
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<Edge, IpSpace> result =
+        forwardingAnalysisImpl.computeArpTrueEdgeDestIp(configurations, ribs);
 
     /* Respond to request for IP on i2. */
     assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
@@ -330,9 +331,9 @@ public class DataPlaneArpAnalysisTest {
             edge,
             ImmutableSet.of(
                 StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, IpSpace> result =
-        dataPlaneArpAnalysis.computeArpTrueEdgeNextHopIp(configurations, ribs);
+        forwardingAnalysisImpl.computeArpTrueEdgeNextHopIp(configurations, ribs);
 
     /*
      * Respond for any destination IP in network not matching more specific route not going out i1.
@@ -355,12 +356,12 @@ public class DataPlaneArpAnalysisTest {
     IpSpace routableIpsForThisVrf = UniverseIpSpace.INSTANCE;
     IpSpace ipsRoutedThroughInterface =
         IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P2)).build();
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     IpSpace noProxyArpResult =
-        dataPlaneArpAnalysis.computeInterfaceArpReplies(
+        forwardingAnalysisImpl.computeInterfaceArpReplies(
             iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface);
     IpSpace proxyArpResult =
-        dataPlaneArpAnalysis.computeInterfaceArpReplies(
+        forwardingAnalysisImpl.computeInterfaceArpReplies(
             iProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface);
 
     /* No proxy-ARP */
@@ -388,8 +389,8 @@ public class DataPlaneArpAnalysisTest {
     InterfaceAddress primary = new InterfaceAddress(P1.getStartIp(), P1.getPrefixLength());
     InterfaceAddress secondary = new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
-    IpSpace result = dataPlaneArpAnalysis.computeIpsAssignedToThisInterface(i);
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    IpSpace result = forwardingAnalysisImpl.computeIpsAssignedToThisInterface(i);
 
     assertThat(result, containsIp(P1.getStartIp()));
     assertThat(result, containsIp(P2.getStartIp()));
@@ -422,9 +423,9 @@ public class DataPlaneArpAnalysisTest {
                     ImmutableSet.of(r1),
                     Interface.NULL_INTERFACE_NAME,
                     ImmutableSet.of(nullRoute))));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
-        dataPlaneArpAnalysis.computeIpsRoutedOutInterfaces(ribs);
+        forwardingAnalysisImpl.computeIpsRoutedOutInterfaces(ribs);
 
     /* Should contain IPs matching the route */
     assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), containsIp(P1.getStartIp()))));
@@ -445,9 +446,9 @@ public class DataPlaneArpAnalysisTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getStartIp())));
     _neighborUnreachableArpNextHopIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp())));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        dataPlaneArpAnalysis.computeNeighborUnreachable();
+        forwardingAnalysisImpl.computeNeighborUnreachable();
 
     /* Should contain both IPs. */
     assertThat(
@@ -481,9 +482,9 @@ public class DataPlaneArpAnalysisTest {
     _routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
     _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        dataPlaneArpAnalysis.computeNeighborUnreachableArpDestIp(ribs);
+        forwardingAnalysisImpl.computeNeighborUnreachableArpDestIp(ribs);
 
     /* Should contain IP in the route's prefix that sees no reply */
     assertThat(
@@ -521,9 +522,9 @@ public class DataPlaneArpAnalysisTest {
             c1,
             ImmutableSortedMap.of(
                 v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
-        dataPlaneArpAnalysis.computeNeighborUnreachableArpNextHopIp(ribs);
+        forwardingAnalysisImpl.computeNeighborUnreachableArpNextHopIp(ribs);
 
     /* IPs matching some route on interface with no response should appear */
     assertThat(
@@ -581,9 +582,9 @@ public class DataPlaneArpAnalysisTest {
                                 ImmutableMap.of(
                                     Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(otherRoute)))))
                     .build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
-        dataPlaneArpAnalysis.computeNullRoutedIps(ribs, fibs);
+        forwardingAnalysisImpl.computeNullRoutedIps(ribs, fibs);
 
     /* IPs for the null route should appear */
     assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getStartIp()))));
@@ -602,8 +603,8 @@ public class DataPlaneArpAnalysisTest {
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
             c1, ImmutableSortedMap.of(v1, MockRib.builder().setRoutableIps(IPSPACE1).build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
-    Map<String, Map<String, IpSpace>> result = dataPlaneArpAnalysis.computeRoutableIps(ribs);
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<String, Map<String, IpSpace>> result = forwardingAnalysisImpl.computeRoutableIps(ribs);
 
     assertThat(result, equalTo(ImmutableMap.of(c1, ImmutableMap.of(v1, IPSPACE1))));
   }
@@ -614,11 +615,11 @@ public class DataPlaneArpAnalysisTest {
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));
     MockRib rib =
         MockRib.builder().setMatchingIps(ImmutableMap.of(P1, IPSPACE1, P2, IPSPACE2)).build();
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
 
     /* Resulting IP space should permit matching IPs */
     assertThat(
-        dataPlaneArpAnalysis.computeRouteMatchConditions(routes, rib),
+        forwardingAnalysisImpl.computeRouteMatchConditions(routes, rib),
         isAclIpSpaceThat(
             hasLines(
                 containsInAnyOrder(
@@ -653,9 +654,9 @@ public class DataPlaneArpAnalysisTest {
                                 ImmutableMap.of(
                                     Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
                     .build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        dataPlaneArpAnalysis.computeRoutesWhereDstIpCanBeArpIp(fibs);
+        forwardingAnalysisImpl.computeRoutesWhereDstIpCanBeArpIp(fibs);
 
     /* Only the interface route should show up */
     assertThat(
@@ -690,9 +691,9 @@ public class DataPlaneArpAnalysisTest {
                             ImmutableMap.of(
                                 i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(r1)))))
                     .build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, Set<AbstractRoute>> result =
-        dataPlaneArpAnalysis.computeRoutesWithDestIpEdge(fibs, topology);
+        forwardingAnalysisImpl.computeRoutesWithDestIpEdge(fibs, topology);
 
     assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
   }
@@ -711,9 +712,9 @@ public class DataPlaneArpAnalysisTest {
                 MockFib.builder()
                     .setRoutesByNextHopInterface(ImmutableMap.of(i1, ImmutableSet.of(r1)))
                     .build()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        dataPlaneArpAnalysis.computeRoutesWithNextHop(fibs);
+        forwardingAnalysisImpl.computeRoutesWithNextHop(fibs);
 
     assertThat(
         result,
@@ -744,9 +745,9 @@ public class DataPlaneArpAnalysisTest {
                                 ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute)))))
                     .build()));
     _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        dataPlaneArpAnalysis.computeRoutesWithNextHopIpArpFalse(fibs);
+        forwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalse(fibs);
 
     assertThat(
         result,
@@ -787,9 +788,9 @@ public class DataPlaneArpAnalysisTest {
                                 ImmutableMap.of(r2.getNextHopIp(), ImmutableSet.of(ifaceRoute)))))
                     .build()));
     _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp()));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, Set<AbstractRoute>> result =
-        dataPlaneArpAnalysis.computeRoutesWithNextHopIpArpTrue(fibs, topology);
+        forwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue(fibs, topology);
 
     /* Only the route with the next hop ip that gets a reply should be present. */
     assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
@@ -828,9 +829,9 @@ public class DataPlaneArpAnalysisTest {
                         ImmutableMap.of(
                             Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
             .build();
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Set<AbstractRoute> result =
-        dataPlaneArpAnalysis.computeRoutesWithNextHopIpFalseForInterface(
+        forwardingAnalysisImpl.computeRoutesWithNextHopIpFalseForInterface(
             fib, hostname, routesWithNextHopByOutInterfaceEntry);
 
     /*
@@ -849,8 +850,9 @@ public class DataPlaneArpAnalysisTest {
     Edge e1 = new Edge(c1, i1, c2, i2);
     _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P1));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
-    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
-    Map<String, Map<String, IpSpace>> result = dataPlaneArpAnalysis.computeSomeoneReplies(topology);
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<String, Map<String, IpSpace>> result =
+        forwardingAnalysisImpl.computeSomeoneReplies(topology);
 
     /* IPs allowed by neighbor should appear */
     assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), containsIp(P1.getStartIp()))));

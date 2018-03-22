@@ -16,9 +16,9 @@ import java.util.function.Function;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.ArpAnalysis;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -37,7 +37,7 @@ import org.batfish.z3.state.StateParameter.Type;
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
   public static class Builder {
-    private ArpAnalysis _arpAnalysis;
+    private ForwardingAnalysis _forwardingAnalysis;
 
     private Map<String, Configuration> _configurations;
 
@@ -66,7 +66,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     public SynthesizerInputImpl build() {
       return new SynthesizerInputImpl(
-          _arpAnalysis,
+          _forwardingAnalysis,
           _configurations,
           _disabledAcls,
           _disabledInterfaces,
@@ -77,8 +77,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _vectorizedParameters);
     }
 
-    public Builder setArpAnalysis(ArpAnalysis arpAnalysis) {
-      _arpAnalysis = arpAnalysis;
+    public Builder setForwardingAnalysis(ForwardingAnalysis forwardingAnalysis) {
+      _forwardingAnalysis = forwardingAnalysis;
       return this;
     }
 
@@ -187,7 +187,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private final Set<Type> _vectorizedParameters;
 
   public SynthesizerInputImpl(
-      ArpAnalysis arpAnalysis,
+      ForwardingAnalysis forwardingAnalysis,
       Map<String, Configuration> configurations,
       Map<String, Set<String>> disabledAcls,
       Map<String, Set<String>> disabledInterfaces,
@@ -212,11 +212,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _outgoingAcls = computeOutgoingAcls();
     _simplify = simplify;
     _vectorizedParameters = vectorizedParameters;
-    if (arpAnalysis != null) {
-      _arpTrueEdge = computeArpTrueEdge(arpAnalysis.getArpTrueEdge());
-      _neighborUnreachable = computeNeighborUnreachable(arpAnalysis.getNeighborUnreachable());
-      _nullRoutedIps = computeNullRoutedIps(arpAnalysis.getNullRoutedIps());
-      _routableIps = computeRoutableIps(arpAnalysis.getRoutableIps());
+    if (forwardingAnalysis != null) {
+      _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
+      _neighborUnreachable =
+          computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachable());
+      _nullRoutedIps = computeNullRoutedIps(forwardingAnalysis.getNullRoutedIps());
+      _routableIps = computeRoutableIps(forwardingAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
       _edges = topology.getEdges();
       _enabledEdges = computeEnabledEdges();

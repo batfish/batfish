@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 
-public class MockArpAnalysis implements ArpAnalysis {
+public class MockForwardingAnalysis implements ForwardingAnalysis {
 
   public static class Builder {
 
@@ -31,8 +31,8 @@ public class MockArpAnalysis implements ArpAnalysis {
       _routableIps = ImmutableMap.of();
     }
 
-    public MockArpAnalysis build() {
-      return new MockArpAnalysis(this);
+    public MockForwardingAnalysis build() {
+      return new MockForwardingAnalysis(this);
     }
 
     public Builder setArpReplies(Map<String, Map<String, IpSpace>> arpReplies) {
@@ -87,7 +87,7 @@ public class MockArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
-  public MockArpAnalysis(Builder builder) {
+  public MockForwardingAnalysis(Builder builder) {
     _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
     _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
     _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
