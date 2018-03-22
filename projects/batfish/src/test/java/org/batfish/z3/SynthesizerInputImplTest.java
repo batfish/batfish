@@ -38,7 +38,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.MockArpAnalysis;
+import org.batfish.datamodel.MockForwardingAnalysis;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
@@ -126,7 +126,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
     List<LineAction> expectedActions = ImmutableList.of(LineAction.ACCEPT, LineAction.REJECT);
@@ -229,7 +229,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setConfigurations(
                 ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(
                 new Topology(
                     ImmutableSortedSet.of(
@@ -270,8 +270,8 @@ public class SynthesizerInputImplTest {
         _inputBuilder.setConfigurations(ImmutableMap.of(srcNode.getName(), srcNode)).build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(
-                MockArpAnalysis.builder()
+            .setForwardingAnalysis(
+                MockForwardingAnalysis.builder()
                     .setArpTrueEdge(ImmutableMap.of(edge1, ipSpace1, edge2, ipSpace2))
                     .build())
             .setTopology(new Topology(ImmutableSortedSet.of(edge1, edge2)))
@@ -313,7 +313,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(
                 new Topology(ImmutableSortedSet.of(expectedEnabledEdge, expectedDisabledEdge)))
             .build();
@@ -437,7 +437,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of()))
             .build();
 
@@ -458,7 +458,7 @@ public class SynthesizerInputImplTest {
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
             .setConfigurations(ImmutableMap.of(c.getName(), c))
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of()))
             .build();
     assertThat(
@@ -481,8 +481,8 @@ public class SynthesizerInputImplTest {
         _inputBuilder.setConfigurations(ImmutableMap.of(node.getName(), node)).build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(
-                MockArpAnalysis.builder()
+            .setForwardingAnalysis(
+                MockForwardingAnalysis.builder()
                     .setNeighborUnreachable(
                         ImmutableMap.of(
                             node.getName(),
@@ -542,7 +542,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(
                 new Topology(
                     ImmutableSortedSet.of(
@@ -615,7 +615,7 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
 
@@ -657,7 +657,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setConfigurations(
                 ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
-            .setArpAnalysis(MockArpAnalysis.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
             .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
 

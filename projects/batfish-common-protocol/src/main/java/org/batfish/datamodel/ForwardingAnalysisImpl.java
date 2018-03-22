@@ -14,7 +14,7 @@ import java.util.SortedMap;
 import java.util.function.Function;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-public class DataPlaneArpAnalysis implements ArpAnalysis {
+public class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
@@ -50,7 +50,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _someoneReplies;
 
-  public DataPlaneArpAnalysis(
+  public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs,
@@ -74,7 +74,7 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
   }
 
   @VisibleForTesting
-  DataPlaneArpAnalysis(
+  ForwardingAnalysisImpl(
       Map<String, Map<String, IpSpace>> arpReplies,
       Map<Edge, IpSpace> arpTrueEdge,
       Map<Edge, IpSpace> arpTrueEdgeDestIp,
