@@ -138,6 +138,7 @@ public class HostInterface implements Serializable {
         Interface.builder()
             .setName(name)
             .setOwner(configuration)
+            .setActive(true)
             .setAddresses(_address, _otherAddresses)
             .setBandwidth(_bandwidth)
             .setDeclaredNames(ImmutableSortedSet.of(_name))
