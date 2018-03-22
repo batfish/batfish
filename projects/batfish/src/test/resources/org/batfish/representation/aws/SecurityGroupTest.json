@@ -1,0 +1,39 @@
+{
+  "SecurityGroups": [
+    {
+      "GroupId": "sg-123456",
+      "GroupName": "test-sg",
+      "IpPermissions": [
+        {
+          "FromPort": 12345,
+          "IpProtocol": "tcp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 12347,
+          "UserIdGroupPairs": []
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "FromPort": 22,
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "1.2.3.4/32"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 22,
+          "UserIdGroupPairs": []
+        }
+      ],
+      "VpcId": "vpc-123456"
+    }
+  ]
+}

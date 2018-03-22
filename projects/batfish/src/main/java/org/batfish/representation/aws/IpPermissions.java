@@ -97,11 +97,10 @@ public class IpPermissions implements Serializable {
     if (protocol != null) {
       line.setIpProtocols(Collections.singleton(protocol));
     }
-    if (_fromPort != -1) {
-      line.setSrcPorts(Collections.singleton(new SubRange(_fromPort, _fromPort)));
-    }
-    if (_toPort != -1) {
-      line.setDstPorts(Collections.singleton(new SubRange(_toPort, _toPort)));
+
+    // iff from and to ports are non-zero set dest ports(for both ingress and egress)
+    if (_fromPort != -1 && _toPort != -1) {
+      line.setDstPorts(Collections.singleton(new SubRange(_fromPort, _toPort)));
     }
     return line;
   }
