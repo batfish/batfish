@@ -67,10 +67,6 @@ test tests/basic/routes-dc-as-reuse.ref get routes
 test -compareall tests/basic/init-snat.ref init-testrig test_rigs/snat basic-snat
 test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dst="1.2.3.4"
 
-# parsing unit-tests through nodes question
-test -compareall tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests basic-unit-tests
-test tests/basic/nodes-unit-tests.ref get nodes summary=false
-
 # iptables
 test -compareall tests/basic/example-iptables-init.ref init-testrig test_rigs/example-iptables
 test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DROP"]
