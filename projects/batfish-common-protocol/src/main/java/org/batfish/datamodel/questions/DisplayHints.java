@@ -41,6 +41,7 @@ public class DisplayHints {
             .put("Integer", getClassString(Long.class))
             .put("Interface", getClassString(NodeInterfacePair.class))
             .put("Ip", getClassString(Ip.class))
+            .put("Object", getClassString(Object.class))
             .put("Node", getClassString(Node.class))
             .put("Prefix", getClassString(Prefix.class))
             .put("String", getClassString(String.class))
@@ -91,6 +92,7 @@ public class DisplayHints {
       return _isListType;
     }
 
+    @Override
     public String toString() {
       return _schemaStr;
     }

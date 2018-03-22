@@ -3,6 +3,7 @@ package org.batfish.common.util;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -41,6 +42,11 @@ public final class BatfishObjectMapper {
   /** Uses Jackson to clone the given object using the given type. */
   public static <T> T clone(Object o, Class<T> clazz) throws IOException {
     return MAPPER.readValue(WRITER.writeValueAsBytes(o), clazz);
+  }
+
+  /** Uses Jackson to clone the given object using the given type. */
+  public static <T> T clone(Object o, TypeReference<T> type) throws IOException {
+    return MAPPER.readValue(WRITER.writeValueAsBytes(o), type);
   }
 
   /**

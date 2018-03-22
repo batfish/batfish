@@ -7,7 +7,7 @@
         "name" : "es-domain",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "HOST",
         "domainName" : "aws",
         "interfaces" : {
           "es-domain-subnet-1641fa70" : {
@@ -3065,7 +3065,7 @@
         "name" : "test-rds",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
-        "deviceType" : "SWITCH",
+        "deviceType" : "HOST",
         "domainName" : "aws",
         "interfaces" : {
           "test-rds-subnet-1641fa70" : {
