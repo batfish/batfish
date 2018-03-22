@@ -133,9 +133,10 @@ public class HostInterface implements Serializable {
   }
 
   public Interface toInterface(Configuration configuration, Warnings warnings) {
+    String name = _canonicalName != null ? _canonicalName : _name;
     Interface.Builder iface =
         Interface.builder()
-            .setName(_canonicalName)
+            .setName(name)
             .setOwner(configuration)
             .setAddresses(_address, _otherAddresses)
             .setBandwidth(_bandwidth)
