@@ -26,7 +26,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -34,6 +33,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
@@ -634,8 +634,8 @@ public class OspfTest {
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
 
-    Pair<Ip, Ip> expectedIpEdge1 = new Pair<>(i1Address.getIp(), i2Address.getIp());
-    Pair<Ip, Ip> expectedIpEdge2 = new Pair<>(i2Address.getIp(), i1Address.getIp());
+    IpLink expectedIpEdge1 = new IpLink(i1Address.getIp(), i2Address.getIp());
+    IpLink expectedIpEdge2 = new IpLink(i2Address.getIp(), i1Address.getIp());
 
     assertThat(o1, hasOspfNeighbors(hasKey(expectedIpEdge1)));
     OspfNeighbor on1 = o1.getOspfNeighbors().get(expectedIpEdge1);
