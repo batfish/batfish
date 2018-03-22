@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
