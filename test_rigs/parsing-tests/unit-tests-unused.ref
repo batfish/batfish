@@ -1,1415 +1,1402 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
-      "problems" : {
-        "unused:as-path-set:ama-coe-as-path" : {
-          "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
-          "files" : {
-            "route_policy_as_path" : [
-              34
-            ]
-          }
-        },
-        "unused:as-path-set:ama-coe-as-path2" : {
-          "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path2'",
-          "files" : {
-            "route_policy_as_path" : [
-              37
-            ]
-          }
-        },
-        "unused:as-path-set:ama-coe-as-path3" : {
-          "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path3'",
-          "files" : {
-            "route_policy_as_path" : [
-              39
-            ]
-          }
-        },
-        "unused:bgp group:1.2.3.4abc" : {
-          "description" : "Unused structure of type: 'bgp group' with name: '1.2.3.4abc'",
-          "files" : {
-            "neighbor" : [
-              7
-            ],
-            "neighbor_dos" : [
-              7
-            ]
-          }
-        },
-        "unused:bgp group:123.123.123.abc" : {
-          "description" : "Unused structure of type: 'bgp group' with name: '123.123.123.abc'",
-          "files" : {
-            "neighbor" : [
-              11
-            ],
-            "neighbor_dos" : [
-              11
-            ]
-          }
-        },
-        "unused:bgp group:1234-5" : {
-          "description" : "Unused structure of type: 'bgp group' with name: '1234-5'",
-          "files" : {
-            "neighbor" : [
-              5
-            ],
-            "neighbor_dos" : [
-              5
-            ]
-          }
-        },
-        "unused:bgp group:8075-CORE" : {
-          "description" : "Unused structure of type: 'bgp group' with name: '8075-CORE'",
-          "files" : {
-            "neighbor_name_numbers" : [
-              6
-            ]
-          }
-        },
-        "unused:bgp group:NEIGH" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'NEIGH'",
-          "files" : {
-            "local_v6_addr" : [
-              5
-            ]
-          }
-        },
-        "unused:bgp group:PEER_BLLF" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'PEER_BLLF'",
-          "files" : {
-            "nexus_bgp" : [
-              22
-            ]
-          }
-        },
-        "unused:bgp group:UNDEFINED_PEER_GROUP" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'UNDEFINED_PEER_GROUP'",
-          "files" : {
-            "arista_bgp" : [
-              9
-            ]
-          }
-        },
-        "unused:bgp group:abc1.2.3.4" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'abc1.2.3.4'",
-          "files" : {
-            "neighbor" : [
-              8
-            ],
-            "neighbor_dos" : [
-              8
-            ]
-          }
-        },
-        "unused:bgp group:abc1.2.3.4def" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'abc1.2.3.4def'",
-          "files" : {
-            "neighbor" : [
-              9
-            ],
-            "neighbor_dos" : [
-              9
-            ]
-          }
-        },
-        "unused:bgp group:ama-coe" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'ama-coe'",
-          "files" : {
-            "bgp_default_originate_policy" : [
-              5
-            ]
-          }
-        },
-        "unused:bgp group:as3" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
-          "files" : {
-            "bgp_address_family" : [
-              11
-            ]
-          }
-        },
-        "unused:bgp group:bippety" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'bippety'",
-          "files" : {
-            "foundry_bgp" : [
-              11
-            ]
-          }
-        },
-        "unused:bgp group:blabbety" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'blabbety'",
-          "files" : {
-            "ios_xr_bgp_neighbor_group" : [
-              10
-            ]
-          }
-        },
-        "unused:bgp group:blappety" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'blappety'",
-          "files" : {
-            "ios_xr_bgp_neighbor_group" : [
-              5
-            ]
-          }
-        },
-        "unused:bgp group:boop" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'boop'",
-          "files" : {
-            "foundry_bgp" : [
-              18
-            ]
-          }
-        },
-        "unused:bgp group:dcp-rrs" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'dcp-rrs'",
-          "files" : {
-            "bgp_address_family" : [
-              16
-            ]
-          }
-        },
-        "unused:bgp group:foobar-iBGP_border_ipv6" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'foobar-iBGP_border_ipv6'",
-          "files" : {
-            "ios_xr_bgp_neighbor_group" : [
-              67
-            ]
-          }
-        },
-        "unused:bgp group:foobar-iBGP_ipv6" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'foobar-iBGP_ipv6'",
-          "files" : {
-            "ios_xr_bgp_neighbor_group" : [
-              46
-            ]
-          }
-        },
-        "unused:bgp group:p1" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
-          "files" : {
-            "cisco_bgp" : [
-              12
-            ]
-          }
-        },
-        "unused:bgp group:ucr" : {
-          "description" : "Unused structure of type: 'bgp group' with name: 'ucr'",
-          "files" : {
-            "bgp_foundry" : [
-              7
-            ]
-          }
-        },
-        "unused:bgp session:OLA" : {
-          "description" : "Unused structure of type: 'bgp session' with name: 'OLA'",
-          "files" : {
-            "ios_xr_bgp_neighbor_group" : [
-              92
-            ]
-          }
-        },
-        "unused:bgp session:blibber" : {
-          "description" : "Unused structure of type: 'bgp session' with name: 'blibber'",
-          "files" : {
-            "ios_xr_bgp_neighbor_group" : [
-              15
-            ]
-          }
-        },
-        "unused:cable service-class:1" : {
-          "description" : "Unused structure of type: 'cable service-class' with name: '1'",
-          "files" : {
-            "cisco_cable" : [
-              88
-            ]
-          }
-        },
-        "unused:crypto ipsec profile:abcdefg" : {
-          "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
-          "files" : {
-            "cisco_crypto" : [
-              138
-            ]
-          }
-        },
-        "unused:crypto ipsec transform-set:ESP-3DES-MD5" : {
-          "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
-          "files" : {
-            "cisco_crypto" : [
-              145
-            ]
-          }
-        },
-        "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
-          "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
-          "files" : {
-            "cisco_crypto" : [
-              184
-            ]
-          }
-        },
-        "unused:depi-tunnel:bar1" : {
-          "description" : "Unused structure of type: 'depi-tunnel' with name: 'bar1'",
-          "files" : {
-            "cisco_cable" : [
-              137
-            ]
-          }
-        },
-        "unused:dhcp-relay server-group:dhcpgrp" : {
-          "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'dhcpgrp'",
-          "files" : {
-            "juniper_forwarding_options" : [
-              15
-            ]
-          }
-        },
-        "unused:dhcp-relay server-group:site-dhcp" : {
-          "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'site-dhcp'",
-          "files" : {
-            "juniper_relay" : [
-              4
-            ]
-          }
-        },
-        "unused:dhcp-relay server-group:test2" : {
-          "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'test2'",
-          "files" : {
-            "juniper_forwarding_options" : [
-              17
-            ]
-          }
-        },
-        "unused:docsis-policy-rule:2" : {
-          "description" : "Unused structure of type: 'docsis-policy-rule' with name: '2'",
-          "files" : {
-            "cisco_cable" : [
-              49
-            ]
-          }
-        },
-        "unused:docsis-policy-rule:3" : {
-          "description" : "Unused structure of type: 'docsis-policy-rule' with name: '3'",
-          "files" : {
-            "cisco_cable" : [
-              50
-            ]
-          }
-        },
-        "unused:docsis-policy-rule:4" : {
-          "description" : "Unused structure of type: 'docsis-policy-rule' with name: '4'",
-          "files" : {
-            "cisco_cable" : [
-              51
-            ]
-          }
-        },
-        "unused:docsis-policy:1" : {
-          "description" : "Unused structure of type: 'docsis-policy' with name: '1'",
-          "files" : {
-            "cadant_cable" : [
-              48
-            ]
-          }
-        },
-        "unused:extended ip access-list:100" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: '100'",
-          "files" : {
-            "tcpflags" : [
-              4
-            ]
-          }
-        },
-        "unused:extended ip access-list:BLAH-BLAH" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'BLAH-BLAH'",
-          "files" : {
-            "cisco_acl" : [
-              4
-            ]
-          }
-        },
-        "unused:extended ip access-list:abcd" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'abcd'",
-          "files" : {
-            "arista_acl" : [
-              4
-            ]
-          }
-        },
-        "unused:extended ip access-list:bippety" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'bippety'",
-          "files" : {
-            "cisco_eigrp" : [
-              21
-            ]
-          }
-        },
-        "unused:extended ip access-list:blah" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'blah'",
-          "files" : {
-            "cisco_acl" : [
-              30
-            ],
-            "cisco_style_acl1" : [
-              1
-            ],
-            "nxos_acl" : [
-              9
-            ]
-          }
-        },
-        "unused:extended ip access-list:bloop_blop" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'bloop_blop'",
-          "files" : {
-            "cisco_eigrp" : [
-              90
-            ]
-          }
-        },
-        "unused:extended ip access-list:extended" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'extended'",
-          "files" : {
-            "cisco_acl" : [
-              26
-            ],
-            "nxos_acl" : [
-              5
-            ]
-          }
-        },
-        "unused:extended ip access-list:outside" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside'",
-          "files" : {
-            "asa_acl" : [
-              6
-            ]
-          }
-        },
-        "unused:extended ip access-list:outside_in" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside_in'",
-          "files" : {
-            "asa_acl" : [
-              4
-            ]
-          }
-        },
-        "unused:extended ip access-list:standard" : {
-          "description" : "Unused structure of type: 'extended ip access-list' with name: 'standard'",
-          "files" : {
-            "cisco_acl" : [
-              28
-            ],
-            "nxos_acl" : [
-              7
-            ]
-          }
-        },
-        "unused:extended ipv6 access-list:RT404888-Caltech" : {
-          "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-Caltech'",
-          "files" : {
-            "foundry_access_list" : [
-              8
-            ]
-          }
-        },
-        "unused:extended ipv6 access-list:RT404888-XO" : {
-          "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-XO'",
-          "files" : {
-            "cisco_ipv6_access_list" : [
-              4
-            ]
-          }
-        },
-        "unused:extended ipv6 access-list:abcdefg" : {
-          "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'abcdefg'",
-          "files" : {
-            "cisco_ipv6_access_list" : [
-              19
-            ]
-          }
-        },
-        "unused:extended ipv6 access-list:ipv6-acl-foo" : {
-          "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'ipv6-acl-foo'",
-          "files" : {
-            "cadant_acl" : [
-              18
-            ]
-          }
-        },
-        "unused:firewall filter:blah" : {
-          "description" : "Unused structure of type: 'firewall filter' with name: 'blah'",
-          "files" : {
-            "juniper_firewall" : [
-              4
-            ]
-          }
-        },
-        "unused:firewall filter:foo" : {
-          "description" : "Unused structure of type: 'firewall filter' with name: 'foo'",
-          "files" : {
-            "juniper-tcpflags" : [
-              4
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:A+C" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'A+C'",
-          "files" : {
-            "cadant_prefix_list" : [
-              7
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:DENY-IPV4-ANY-IN" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'DENY-IPV4-ANY-IN'",
-          "files" : {
-            "ip_prefix_list_single_line" : [
-              4
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:ScienceDMZ-networks" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'ScienceDMZ-networks'",
-          "files" : {
-            "ios_bgp_aggregate_address" : [
-              14
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:default_route" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'default_route'",
-          "files" : {
-            "ios_xr_prefix_set" : [
-              4
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:foo" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'foo'",
-          "files" : {
-            "cadant_prefix_list" : [
-              5
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:test" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'test'",
-          "files" : {
-            "prefix_list_ipv4" : [
-              4
-            ]
-          }
-        },
-        "unused:ipv4 prefix-list:ucla_networks" : {
-          "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'ucla_networks'",
-          "files" : {
-            "ios_xr_prefix_set" : [
-              7
-            ]
-          }
-        },
-        "unused:ipv6 prefix-list:ScienceDMZ-networks" : {
-          "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'ScienceDMZ-networks'",
-          "files" : {
-            "ios_bgp_aggregate_address" : [
-              16
-            ]
-          }
-        },
-        "unused:ipv6 prefix-list:bar" : {
-          "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'bar'",
-          "files" : {
-            "cadant_prefix_list" : [
-              8
-            ]
-          }
-        },
-        "unused:l2tp-class:foobar" : {
-          "description" : "Unused structure of type: 'l2tp-class' with name: 'foobar'",
-          "files" : {
-            "cisco_l2tp" : [
-              4
-            ]
-          }
-        },
-        "unused:mac acl:1199" : {
-          "description" : "Unused structure of type: 'mac acl' with name: '1199'",
-          "files" : {
-            "cisco_mac_acl" : [
-              5
-            ]
-          }
-        },
-        "unused:mac acl:700" : {
-          "description" : "Unused structure of type: 'mac acl' with name: '700'",
-          "files" : {
-            "cisco_mac_acl" : [
-              4
-            ]
-          }
-        },
-        "unused:mac acl:STPDENY" : {
-          "description" : "Unused structure of type: 'mac acl' with name: 'STPDENY'",
-          "files" : {
-            "mac_access_list" : [
-              13
-            ]
-          }
-        },
-        "unused:mac acl:copp-system-p-acl-mac-cdp-udld-vtp" : {
-          "description" : "Unused structure of type: 'mac acl' with name: 'copp-system-p-acl-mac-cdp-udld-vtp'",
-          "files" : {
-            "cisco_mac_acl" : [
-              6
-            ]
-          }
-        },
-        "unused:mac acl:filtermac" : {
-          "description" : "Unused structure of type: 'mac acl' with name: 'filtermac'",
-          "files" : {
-            "mac_access_list" : [
-              8
-            ]
-          }
-        },
-        "unused:mac acl:ipmi_test" : {
-          "description" : "Unused structure of type: 'mac acl' with name: 'ipmi_test'",
-          "files" : {
-            "mac_access_list" : [
-              9
-            ]
-          }
-        },
-        "unused:mac acl:permitCDP" : {
-          "description" : "Unused structure of type: 'mac acl' with name: 'permitCDP'",
-          "files" : {
-            "mac_access_list" : [
-              4
-            ]
-          }
-        },
-        "unused:nat pool:abc" : {
-          "description" : "Unused structure of type: 'nat pool' with name: 'abc'",
-          "files" : {
-            "cisco_ip_nat" : [
-              4
-            ]
-          }
-        },
-        "unused:nat pool:dynamic-srcnat" : {
-          "description" : "Unused structure of type: 'nat pool' with name: 'dynamic-srcnat'",
-          "files" : {
-            "cisco_ip_nat" : [
-              12
-            ]
-          }
-        },
-        "unused:nat pool:example-1-dynamic-nat-pool" : {
-          "description" : "Unused structure of type: 'nat pool' with name: 'example-1-dynamic-nat-pool'",
-          "files" : {
-            "cisco_ip_nat" : [
-              8
-            ]
-          }
-        },
-        "unused:nat pool:example-2-dynamic-nat-pool" : {
-          "description" : "Unused structure of type: 'nat pool' with name: 'example-2-dynamic-nat-pool'",
-          "files" : {
-            "cisco_ip_nat" : [
-              10
-            ]
-          }
-        },
-        "unused:policy-statement:route-filter-test-v4" : {
-          "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
-          "files" : {
-            "juniper_route_filter" : [
-              4
-            ]
-          }
-        },
-        "unused:policy-statement:route-filter-test-v6" : {
-          "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v6'",
-          "files" : {
-            "juniper_route_filter" : [
-              11
-            ]
-          }
-        },
-        "unused:route-map:AAA1-BBB-CCC" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'AAA1-BBB-CCC'",
-          "files" : {
-            "community_name_numbers" : [
-              6
-            ],
-            "community_name_numbers_dos" : [
-              6
-            ]
-          }
-        },
-        "unused:route-map:JKL_MNO_PQR" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'JKL_MNO_PQR'",
-          "files" : {
-            "underscore_variable" : [
-              4
-            ]
-          }
-        },
-        "unused:route-map:MSDP-SA-RP-FILTER" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'MSDP-SA-RP-FILTER'",
-          "files" : {
-            "cisco_route_map" : [
-              19
-            ]
-          }
-        },
-        "unused:route-map:TO_NEIGHBOR" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'TO_NEIGHBOR'",
-          "files" : {
-            "community_list_named" : [
-              8
-            ]
-          }
-        },
-        "unused:route-map:bar" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'bar'",
-          "files" : {
-            "cadant_route_map" : [
-              9
-            ]
-          }
-        },
-        "unused:route-map:beeble" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'beeble'",
-          "files" : {
-            "cisco_route_map" : [
-              30
-            ]
-          }
-        },
-        "unused:route-map:connected-to-bgp" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'connected-to-bgp'",
-          "files" : {
-            "cisco_route_map" : [
-              4
-            ]
-          }
-        },
-        "unused:route-map:foo" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'foo'",
-          "files" : {
-            "cadant_route_map" : [
-              5
-            ],
-            "named_and_numbered_lists" : [
-              4
-            ]
-          }
-        },
-        "unused:route-map:foobar" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'foobar'",
-          "files" : {
-            "nxos_route_map_continue" : [
-              6
-            ]
-          }
-        },
-        "unused:route-map:ijfw$%^&****(((([]grr" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'ijfw$%^&****(((([]grr'",
-          "files" : {
-            "cisco_route_map" : [
-              17
-            ]
-          }
-        },
-        "unused:route-map:mgmt" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'mgmt'",
-          "files" : {
-            "cisco_route_map" : [
-              26
-            ]
-          }
-        },
-        "unused:route-map:multicaststuff" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'multicaststuff'",
-          "files" : {
-            "cisco_route_map" : [
-              41
-            ]
-          }
-        },
-        "unused:route-map:next-hop-null" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'next-hop-null'",
-          "files" : {
-            "cisco_route_map" : [
-              23
-            ]
-          }
-        },
-        "unused:route-map:rmap" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'rmap'",
-          "files" : {
-            "as_path_prepend" : [
-              4
-            ]
-          }
-        },
-        "unused:route-map:to_elacc" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'to_elacc'",
-          "files" : {
-            "prefix_list_ipv4" : [
-              9
-            ]
-          }
-        },
-        "unused:route-map:to_svl-hub-router" : {
-          "description" : "Unused structure of type: 'route-map' with name: 'to_svl-hub-router'",
-          "files" : {
-            "cisco_route_map" : [
-              12
-            ]
-          }
-        },
-        "unused:standard community-list:COMM_LIST_NAME" : {
-          "description" : "Unused structure of type: 'standard community-list' with name: 'COMM_LIST_NAME'",
-          "files" : {
-            "community_list_named" : [
-              6
-            ]
-          }
-        },
-        "unused:standard ip access-list:1" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: '1'",
-          "files" : {
-            "cisco_style_acl2" : [
-              1
-            ]
-          }
-        },
-        "unused:standard ip access-list:50" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: '50'",
-          "files" : {
-            "cadant_acl" : [
-              5
-            ]
-          }
-        },
-        "unused:standard ip access-list:51" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: '51'",
-          "files" : {
-            "cadant_acl" : [
-              10
-            ]
-          }
-        },
-        "unused:standard ip access-list:99" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: '99'",
-          "files" : {
-            "cadant_acl" : [
-              14
-            ]
-          }
-        },
-        "unused:standard ip access-list:Local_LAN_Access" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: 'Local_LAN_Access'",
-          "files" : {
-            "asa_acl" : [
-              5
-            ]
-          }
-        },
-        "unused:standard ip access-list:stdAcl-bar" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-bar'",
-          "files" : {
-            "cadant_acl" : [
-              14
-            ]
-          }
-        },
-        "unused:standard ip access-list:stdAcl-foo" : {
-          "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-foo'",
-          "files" : {
-            "cadant_acl" : [
-              5
-            ]
-          }
+[
+  {
+    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
+    "problems" : {
+      "unused:as-path-set:ama-coe-as-path" : {
+        "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
+        "files" : {
+          "route_policy_as_path" : [
+            34
+          ]
         }
       },
-      "summary" : {
-        "numFailed" : 0,
-        "numPassed" : 0,
-        "numResults" : 111
+      "unused:as-path-set:ama-coe-as-path2" : {
+        "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path2'",
+        "files" : {
+          "route_policy_as_path" : [
+            37
+          ]
+        }
       },
-      "unusedStructures" : {
-        "aggAddress" : {
-          "ipv4 prefix-list" : {
-            "ScienceDMZ-networks" : [
-              14
-            ]
-          },
-          "ipv6 prefix-list" : {
-            "ScienceDMZ-networks" : [
-              16
-            ]
-          }
+      "unused:as-path-set:ama-coe-as-path3" : {
+        "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path3'",
+        "files" : {
+          "route_policy_as_path" : [
+            39
+          ]
+        }
+      },
+      "unused:bgp group:1.2.3.4abc" : {
+        "description" : "Unused structure of type: 'bgp group' with name: '1.2.3.4abc'",
+        "files" : {
+          "neighbor" : [
+            7
+          ],
+          "neighbor_dos" : [
+            7
+          ]
+        }
+      },
+      "unused:bgp group:123.123.123.abc" : {
+        "description" : "Unused structure of type: 'bgp group' with name: '123.123.123.abc'",
+        "files" : {
+          "neighbor" : [
+            11
+          ],
+          "neighbor_dos" : [
+            11
+          ]
+        }
+      },
+      "unused:bgp group:1234-5" : {
+        "description" : "Unused structure of type: 'bgp group' with name: '1234-5'",
+        "files" : {
+          "neighbor" : [
+            5
+          ],
+          "neighbor_dos" : [
+            5
+          ]
+        }
+      },
+      "unused:bgp group:8075-CORE" : {
+        "description" : "Unused structure of type: 'bgp group' with name: '8075-CORE'",
+        "files" : {
+          "neighbor_name_numbers" : [
+            6
+          ]
+        }
+      },
+      "unused:bgp group:NEIGH" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'NEIGH'",
+        "files" : {
+          "local_v6_addr" : [
+            5
+          ]
+        }
+      },
+      "unused:bgp group:PEER_BLLF" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'PEER_BLLF'",
+        "files" : {
+          "nexus_bgp" : [
+            22
+          ]
+        }
+      },
+      "unused:bgp group:UNDEFINED_PEER_GROUP" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'UNDEFINED_PEER_GROUP'",
+        "files" : {
+          "arista_bgp" : [
+            9
+          ]
+        }
+      },
+      "unused:bgp group:abc1.2.3.4" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'abc1.2.3.4'",
+        "files" : {
+          "neighbor" : [
+            8
+          ],
+          "neighbor_dos" : [
+            8
+          ]
+        }
+      },
+      "unused:bgp group:abc1.2.3.4def" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'abc1.2.3.4def'",
+        "files" : {
+          "neighbor" : [
+            9
+          ],
+          "neighbor_dos" : [
+            9
+          ]
+        }
+      },
+      "unused:bgp group:ama-coe" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'ama-coe'",
+        "files" : {
+          "bgp_default_originate_policy" : [
+            5
+          ]
+        }
+      },
+      "unused:bgp group:as3" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'as3'",
+        "files" : {
+          "bgp_address_family" : [
+            11
+          ]
+        }
+      },
+      "unused:bgp group:bippety" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'bippety'",
+        "files" : {
+          "foundry_bgp" : [
+            11
+          ]
+        }
+      },
+      "unused:bgp group:blabbety" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'blabbety'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            10
+          ]
+        }
+      },
+      "unused:bgp group:blappety" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'blappety'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            5
+          ]
+        }
+      },
+      "unused:bgp group:boop" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'boop'",
+        "files" : {
+          "foundry_bgp" : [
+            18
+          ]
+        }
+      },
+      "unused:bgp group:dcp-rrs" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'dcp-rrs'",
+        "files" : {
+          "bgp_address_family" : [
+            16
+          ]
+        }
+      },
+      "unused:bgp group:foobar-iBGP_border_ipv6" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'foobar-iBGP_border_ipv6'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            67
+          ]
+        }
+      },
+      "unused:bgp group:foobar-iBGP_ipv6" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'foobar-iBGP_ipv6'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            46
+          ]
+        }
+      },
+      "unused:bgp group:p1" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
+        "files" : {
+          "cisco_bgp" : [
+            12
+          ]
+        }
+      },
+      "unused:bgp group:ucr" : {
+        "description" : "Unused structure of type: 'bgp group' with name: 'ucr'",
+        "files" : {
+          "bgp_foundry" : [
+            7
+          ]
+        }
+      },
+      "unused:bgp session:OLA" : {
+        "description" : "Unused structure of type: 'bgp session' with name: 'OLA'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            92
+          ]
+        }
+      },
+      "unused:bgp session:blibber" : {
+        "description" : "Unused structure of type: 'bgp session' with name: 'blibber'",
+        "files" : {
+          "ios_xr_bgp_neighbor_group" : [
+            15
+          ]
+        }
+      },
+      "unused:cable service-class:1" : {
+        "description" : "Unused structure of type: 'cable service-class' with name: '1'",
+        "files" : {
+          "cisco_cable" : [
+            88
+          ]
+        }
+      },
+      "unused:crypto ipsec profile:abcdefg" : {
+        "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
+        "files" : {
+          "cisco_crypto" : [
+            138
+          ]
+        }
+      },
+      "unused:crypto ipsec transform-set:ESP-3DES-MD5" : {
+        "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
+        "files" : {
+          "cisco_crypto" : [
+            145
+          ]
+        }
+      },
+      "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
+        "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
+        "files" : {
+          "cisco_crypto" : [
+            184
+          ]
+        }
+      },
+      "unused:depi-tunnel:bar1" : {
+        "description" : "Unused structure of type: 'depi-tunnel' with name: 'bar1'",
+        "files" : {
+          "cisco_cable" : [
+            137
+          ]
+        }
+      },
+      "unused:dhcp-relay server-group:dhcpgrp" : {
+        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'dhcpgrp'",
+        "files" : {
+          "juniper_forwarding_options" : [
+            15
+          ]
+        }
+      },
+      "unused:dhcp-relay server-group:site-dhcp" : {
+        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'site-dhcp'",
+        "files" : {
+          "juniper_relay" : [
+            4
+          ]
+        }
+      },
+      "unused:dhcp-relay server-group:test2" : {
+        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'test2'",
+        "files" : {
+          "juniper_forwarding_options" : [
+            17
+          ]
+        }
+      },
+      "unused:docsis-policy-rule:2" : {
+        "description" : "Unused structure of type: 'docsis-policy-rule' with name: '2'",
+        "files" : {
+          "cisco_cable" : [
+            49
+          ]
+        }
+      },
+      "unused:docsis-policy-rule:3" : {
+        "description" : "Unused structure of type: 'docsis-policy-rule' with name: '3'",
+        "files" : {
+          "cisco_cable" : [
+            50
+          ]
+        }
+      },
+      "unused:docsis-policy-rule:4" : {
+        "description" : "Unused structure of type: 'docsis-policy-rule' with name: '4'",
+        "files" : {
+          "cisco_cable" : [
+            51
+          ]
+        }
+      },
+      "unused:docsis-policy:1" : {
+        "description" : "Unused structure of type: 'docsis-policy' with name: '1'",
+        "files" : {
+          "cadant_cable" : [
+            48
+          ]
+        }
+      },
+      "unused:extended ip access-list:100" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: '100'",
+        "files" : {
+          "tcpflags" : [
+            4
+          ]
+        }
+      },
+      "unused:extended ip access-list:BLAH-BLAH" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'BLAH-BLAH'",
+        "files" : {
+          "cisco_acl" : [
+            4
+          ]
+        }
+      },
+      "unused:extended ip access-list:abcd" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'abcd'",
+        "files" : {
+          "arista_acl" : [
+            4
+          ]
+        }
+      },
+      "unused:extended ip access-list:bippety" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'bippety'",
+        "files" : {
+          "cisco_eigrp" : [
+            21
+          ]
+        }
+      },
+      "unused:extended ip access-list:blah" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'blah'",
+        "files" : {
+          "cisco_acl" : [
+            30
+          ],
+          "cisco_style_acl1" : [
+            1
+          ],
+          "nxos_acl" : [
+            9
+          ]
+        }
+      },
+      "unused:extended ip access-list:bloop_blop" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'bloop_blop'",
+        "files" : {
+          "cisco_eigrp" : [
+            90
+          ]
+        }
+      },
+      "unused:extended ip access-list:extended" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'extended'",
+        "files" : {
+          "cisco_acl" : [
+            26
+          ],
+          "nxos_acl" : [
+            5
+          ]
+        }
+      },
+      "unused:extended ip access-list:outside" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside'",
+        "files" : {
+          "asa_acl" : [
+            6
+          ]
+        }
+      },
+      "unused:extended ip access-list:outside_in" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside_in'",
+        "files" : {
+          "asa_acl" : [
+            4
+          ]
+        }
+      },
+      "unused:extended ip access-list:standard" : {
+        "description" : "Unused structure of type: 'extended ip access-list' with name: 'standard'",
+        "files" : {
+          "cisco_acl" : [
+            28
+          ],
+          "nxos_acl" : [
+            7
+          ]
+        }
+      },
+      "unused:extended ipv6 access-list:RT404888-Caltech" : {
+        "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-Caltech'",
+        "files" : {
+          "foundry_access_list" : [
+            8
+          ]
+        }
+      },
+      "unused:extended ipv6 access-list:RT404888-XO" : {
+        "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-XO'",
+        "files" : {
+          "cisco_ipv6_access_list" : [
+            4
+          ]
+        }
+      },
+      "unused:extended ipv6 access-list:abcdefg" : {
+        "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'abcdefg'",
+        "files" : {
+          "cisco_ipv6_access_list" : [
+            19
+          ]
+        }
+      },
+      "unused:extended ipv6 access-list:ipv6-acl-foo" : {
+        "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'ipv6-acl-foo'",
+        "files" : {
+          "cadant_acl" : [
+            18
+          ]
+        }
+      },
+      "unused:firewall filter:blah" : {
+        "description" : "Unused structure of type: 'firewall filter' with name: 'blah'",
+        "files" : {
+          "juniper_firewall" : [
+            4
+          ]
+        }
+      },
+      "unused:firewall filter:foo" : {
+        "description" : "Unused structure of type: 'firewall filter' with name: 'foo'",
+        "files" : {
+          "juniper-tcpflags" : [
+            4
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:A+C" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'A+C'",
+        "files" : {
+          "cadant_prefix_list" : [
+            7
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:DENY-IPV4-ANY-IN" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'DENY-IPV4-ANY-IN'",
+        "files" : {
+          "ip_prefix_list_single_line" : [
+            4
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:ScienceDMZ-networks" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'ScienceDMZ-networks'",
+        "files" : {
+          "ios_bgp_aggregate_address" : [
+            14
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:default_route" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'default_route'",
+        "files" : {
+          "ios_xr_prefix_set" : [
+            4
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:foo" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'foo'",
+        "files" : {
+          "cadant_prefix_list" : [
+            5
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:test" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'test'",
+        "files" : {
+          "prefix_list_ipv4" : [
+            4
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:ucla_networks" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'ucla_networks'",
+        "files" : {
+          "ios_xr_prefix_set" : [
+            7
+          ]
+        }
+      },
+      "unused:ipv6 prefix-list:ScienceDMZ-networks" : {
+        "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'ScienceDMZ-networks'",
+        "files" : {
+          "ios_bgp_aggregate_address" : [
+            16
+          ]
+        }
+      },
+      "unused:ipv6 prefix-list:bar" : {
+        "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'bar'",
+        "files" : {
+          "cadant_prefix_list" : [
+            8
+          ]
+        }
+      },
+      "unused:l2tp-class:foobar" : {
+        "description" : "Unused structure of type: 'l2tp-class' with name: 'foobar'",
+        "files" : {
+          "cisco_l2tp" : [
+            4
+          ]
+        }
+      },
+      "unused:mac acl:1199" : {
+        "description" : "Unused structure of type: 'mac acl' with name: '1199'",
+        "files" : {
+          "cisco_mac_acl" : [
+            5
+          ]
+        }
+      },
+      "unused:mac acl:700" : {
+        "description" : "Unused structure of type: 'mac acl' with name: '700'",
+        "files" : {
+          "cisco_mac_acl" : [
+            4
+          ]
+        }
+      },
+      "unused:mac acl:STPDENY" : {
+        "description" : "Unused structure of type: 'mac acl' with name: 'STPDENY'",
+        "files" : {
+          "mac_access_list" : [
+            13
+          ]
+        }
+      },
+      "unused:mac acl:copp-system-p-acl-mac-cdp-udld-vtp" : {
+        "description" : "Unused structure of type: 'mac acl' with name: 'copp-system-p-acl-mac-cdp-udld-vtp'",
+        "files" : {
+          "cisco_mac_acl" : [
+            6
+          ]
+        }
+      },
+      "unused:mac acl:filtermac" : {
+        "description" : "Unused structure of type: 'mac acl' with name: 'filtermac'",
+        "files" : {
+          "mac_access_list" : [
+            8
+          ]
+        }
+      },
+      "unused:mac acl:ipmi_test" : {
+        "description" : "Unused structure of type: 'mac acl' with name: 'ipmi_test'",
+        "files" : {
+          "mac_access_list" : [
+            9
+          ]
+        }
+      },
+      "unused:mac acl:permitCDP" : {
+        "description" : "Unused structure of type: 'mac acl' with name: 'permitCDP'",
+        "files" : {
+          "mac_access_list" : [
+            4
+          ]
+        }
+      },
+      "unused:nat pool:abc" : {
+        "description" : "Unused structure of type: 'nat pool' with name: 'abc'",
+        "files" : {
+          "cisco_ip_nat" : [
+            4
+          ]
+        }
+      },
+      "unused:nat pool:dynamic-srcnat" : {
+        "description" : "Unused structure of type: 'nat pool' with name: 'dynamic-srcnat'",
+        "files" : {
+          "cisco_ip_nat" : [
+            12
+          ]
+        }
+      },
+      "unused:nat pool:example-1-dynamic-nat-pool" : {
+        "description" : "Unused structure of type: 'nat pool' with name: 'example-1-dynamic-nat-pool'",
+        "files" : {
+          "cisco_ip_nat" : [
+            8
+          ]
+        }
+      },
+      "unused:nat pool:example-2-dynamic-nat-pool" : {
+        "description" : "Unused structure of type: 'nat pool' with name: 'example-2-dynamic-nat-pool'",
+        "files" : {
+          "cisco_ip_nat" : [
+            10
+          ]
+        }
+      },
+      "unused:policy-statement:route-filter-test-v4" : {
+        "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
+        "files" : {
+          "juniper_route_filter" : [
+            4
+          ]
+        }
+      },
+      "unused:policy-statement:route-filter-test-v6" : {
+        "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v6'",
+        "files" : {
+          "juniper_route_filter" : [
+            11
+          ]
+        }
+      },
+      "unused:route-map:AAA1-BBB-CCC" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'AAA1-BBB-CCC'",
+        "files" : {
+          "community_name_numbers" : [
+            6
+          ],
+          "community_name_numbers_dos" : [
+            6
+          ]
+        }
+      },
+      "unused:route-map:JKL_MNO_PQR" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'JKL_MNO_PQR'",
+        "files" : {
+          "underscore_variable" : [
+            4
+          ]
+        }
+      },
+      "unused:route-map:MSDP-SA-RP-FILTER" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'MSDP-SA-RP-FILTER'",
+        "files" : {
+          "cisco_route_map" : [
+            19
+          ]
+        }
+      },
+      "unused:route-map:TO_NEIGHBOR" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'TO_NEIGHBOR'",
+        "files" : {
+          "community_list_named" : [
+            8
+          ]
+        }
+      },
+      "unused:route-map:bar" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'bar'",
+        "files" : {
+          "cadant_route_map" : [
+            9
+          ]
+        }
+      },
+      "unused:route-map:beeble" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'beeble'",
+        "files" : {
+          "cisco_route_map" : [
+            30
+          ]
+        }
+      },
+      "unused:route-map:connected-to-bgp" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'connected-to-bgp'",
+        "files" : {
+          "cisco_route_map" : [
+            4
+          ]
+        }
+      },
+      "unused:route-map:foo" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'foo'",
+        "files" : {
+          "cadant_route_map" : [
+            5
+          ],
+          "named_and_numbered_lists" : [
+            4
+          ]
+        }
+      },
+      "unused:route-map:foobar" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'foobar'",
+        "files" : {
+          "nxos_route_map_continue" : [
+            6
+          ]
+        }
+      },
+      "unused:route-map:ijfw$%^&****(((([]grr" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'ijfw$%^&****(((([]grr'",
+        "files" : {
+          "cisco_route_map" : [
+            17
+          ]
+        }
+      },
+      "unused:route-map:mgmt" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'mgmt'",
+        "files" : {
+          "cisco_route_map" : [
+            26
+          ]
+        }
+      },
+      "unused:route-map:multicaststuff" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'multicaststuff'",
+        "files" : {
+          "cisco_route_map" : [
+            41
+          ]
+        }
+      },
+      "unused:route-map:next-hop-null" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'next-hop-null'",
+        "files" : {
+          "cisco_route_map" : [
+            23
+          ]
+        }
+      },
+      "unused:route-map:rmap" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'rmap'",
+        "files" : {
+          "as_path_prepend" : [
+            4
+          ]
+        }
+      },
+      "unused:route-map:to_elacc" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'to_elacc'",
+        "files" : {
+          "prefix_list_ipv4" : [
+            9
+          ]
+        }
+      },
+      "unused:route-map:to_svl-hub-router" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'to_svl-hub-router'",
+        "files" : {
+          "cisco_route_map" : [
+            12
+          ]
+        }
+      },
+      "unused:standard community-list:COMM_LIST_NAME" : {
+        "description" : "Unused structure of type: 'standard community-list' with name: 'COMM_LIST_NAME'",
+        "files" : {
+          "community_list_named" : [
+            6
+          ]
+        }
+      },
+      "unused:standard ip access-list:1" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: '1'",
+        "files" : {
+          "cisco_style_acl2" : [
+            1
+          ]
+        }
+      },
+      "unused:standard ip access-list:50" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: '50'",
+        "files" : {
+          "cadant_acl" : [
+            5
+          ]
+        }
+      },
+      "unused:standard ip access-list:51" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: '51'",
+        "files" : {
+          "cadant_acl" : [
+            10
+          ]
+        }
+      },
+      "unused:standard ip access-list:99" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: '99'",
+        "files" : {
+          "cadant_acl" : [
+            14
+          ]
+        }
+      },
+      "unused:standard ip access-list:Local_LAN_Access" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: 'Local_LAN_Access'",
+        "files" : {
+          "asa_acl" : [
+            5
+          ]
+        }
+      },
+      "unused:standard ip access-list:stdAcl-bar" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-bar'",
+        "files" : {
+          "cadant_acl" : [
+            14
+          ]
+        }
+      },
+      "unused:standard ip access-list:stdAcl-foo" : {
+        "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-foo'",
+        "files" : {
+          "cadant_acl" : [
+            5
+          ]
+        }
+      }
+    },
+    "summary" : {
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 111
+    },
+    "unusedStructures" : {
+      "aggAddress" : {
+        "ipv4 prefix-list" : {
+          "ScienceDMZ-networks" : [
+            14
+          ]
         },
-        "arista_acl" : {
-          "extended ip access-list" : {
-            "abcd" : [
-              4
-            ]
-          }
+        "ipv6 prefix-list" : {
+          "ScienceDMZ-networks" : [
+            16
+          ]
+        }
+      },
+      "arista_acl" : {
+        "extended ip access-list" : {
+          "abcd" : [
+            4
+          ]
+        }
+      },
+      "arista_bgp" : {
+        "bgp group" : {
+          "UNDEFINED_PEER_GROUP" : [
+            9
+          ]
+        }
+      },
+      "as_path_prepend" : {
+        "route-map" : {
+          "rmap" : [
+            4
+          ]
+        }
+      },
+      "asa_acl" : {
+        "extended ip access-list" : {
+          "outside" : [
+            6
+          ],
+          "outside_in" : [
+            4
+          ]
         },
-        "arista_bgp" : {
-          "bgp group" : {
-            "UNDEFINED_PEER_GROUP" : [
-              9
-            ]
-          }
+        "standard ip access-list" : {
+          "Local_LAN_Access" : [
+            5
+          ]
+        }
+      },
+      "bgp_address_family" : {
+        "bgp group" : {
+          "as3" : [
+            11
+          ],
+          "dcp-rrs" : [
+            16
+          ]
+        }
+      },
+      "bgp_default_originate_policy" : {
+        "bgp group" : {
+          "ama-coe" : [
+            5
+          ]
+        }
+      },
+      "bgp_foundry" : {
+        "bgp group" : {
+          "ucr" : [
+            7
+          ]
+        }
+      },
+      "cadant_acl" : {
+        "extended ipv6 access-list" : {
+          "ipv6-acl-foo" : [
+            18
+          ]
         },
-        "as_path_prepend" : {
-          "route-map" : {
-            "rmap" : [
-              4
-            ]
-          }
+        "standard ip access-list" : {
+          "50" : [
+            5
+          ],
+          "51" : [
+            10
+          ],
+          "99" : [
+            14
+          ],
+          "stdAcl-bar" : [
+            14
+          ],
+          "stdAcl-foo" : [
+            5
+          ]
+        }
+      },
+      "cadant_cable" : {
+        "docsis-policy" : {
+          "1" : [
+            48
+          ]
+        }
+      },
+      "cadant_prefix_list" : {
+        "ipv4 prefix-list" : {
+          "A+C" : [
+            7
+          ],
+          "foo" : [
+            5
+          ]
         },
-        "asa_acl" : {
-          "extended ip access-list" : {
-            "outside" : [
-              6
-            ],
-            "outside_in" : [
-              4
-            ]
-          },
-          "standard ip access-list" : {
-            "Local_LAN_Access" : [
-              5
-            ]
-          }
+        "ipv6 prefix-list" : {
+          "bar" : [
+            8
+          ]
+        }
+      },
+      "cadant_route_map" : {
+        "route-map" : {
+          "bar" : [
+            9
+          ],
+          "foo" : [
+            5
+          ]
+        }
+      },
+      "cisco_acl" : {
+        "extended ip access-list" : {
+          "BLAH-BLAH" : [
+            4
+          ],
+          "blah" : [
+            30
+          ],
+          "extended" : [
+            26
+          ],
+          "standard" : [
+            28
+          ]
+        }
+      },
+      "cisco_bgp" : {
+        "bgp group" : {
+          "p1" : [
+            12
+          ]
+        }
+      },
+      "cisco_cable" : {
+        "cable service-class" : {
+          "1" : [
+            88
+          ]
         },
-        "bgp_address_family" : {
-          "bgp group" : {
-            "as3" : [
-              11
-            ],
-            "dcp-rrs" : [
-              16
-            ]
-          }
+        "depi-tunnel" : {
+          "bar1" : [
+            137
+          ]
         },
-        "bgp_default_originate_policy" : {
-          "bgp group" : {
-            "ama-coe" : [
-              5
-            ]
-          }
+        "docsis-policy-rule" : {
+          "2" : [
+            49
+          ],
+          "3" : [
+            50
+          ],
+          "4" : [
+            51
+          ]
+        }
+      },
+      "cisco_crypto" : {
+        "crypto ipsec profile" : {
+          "abcdefg" : [
+            138
+          ]
         },
-        "bgp_foundry" : {
-          "bgp group" : {
-            "ucr" : [
-              7
-            ]
-          }
+        "crypto ipsec transform-set" : {
+          "ESP-3DES-MD5" : [
+            145
+          ]
         },
-        "cadant_acl" : {
-          "extended ipv6 access-list" : {
-            "ipv6-acl-foo" : [
-              18
-            ]
-          },
-          "standard ip access-list" : {
-            "50" : [
-              5
-            ],
-            "51" : [
-              10
-            ],
-            "99" : [
-              14
-            ],
-            "stdAcl-bar" : [
-              14
-            ],
-            "stdAcl-foo" : [
-              5
-            ]
-          }
+        "crypto keyring" : {
+          "VRF:ABC:DEF:GHI:1234" : [
+            184
+          ]
+        }
+      },
+      "cisco_eigrp" : {
+        "extended ip access-list" : {
+          "bippety" : [
+            21
+          ],
+          "bloop_blop" : [
+            90
+          ]
+        }
+      },
+      "cisco_ip_nat" : {
+        "nat pool" : {
+          "abc" : [
+            4
+          ],
+          "dynamic-srcnat" : [
+            12
+          ],
+          "example-1-dynamic-nat-pool" : [
+            8
+          ],
+          "example-2-dynamic-nat-pool" : [
+            10
+          ]
+        }
+      },
+      "cisco_ipv6_access_list" : {
+        "extended ipv6 access-list" : {
+          "RT404888-XO" : [
+            4
+          ],
+          "abcdefg" : [
+            19
+          ]
+        }
+      },
+      "cisco_l2tp" : {
+        "l2tp-class" : {
+          "foobar" : [
+            4
+          ]
+        }
+      },
+      "cisco_mac_acl" : {
+        "mac acl" : {
+          "1199" : [
+            5
+          ],
+          "700" : [
+            4
+          ],
+          "copp-system-p-acl-mac-cdp-udld-vtp" : [
+            6
+          ]
+        }
+      },
+      "cisco_route_map" : {
+        "route-map" : {
+          "MSDP-SA-RP-FILTER" : [
+            19
+          ],
+          "beeble" : [
+            30
+          ],
+          "connected-to-bgp" : [
+            4
+          ],
+          "ijfw$%^&****(((([]grr" : [
+            17
+          ],
+          "mgmt" : [
+            26
+          ],
+          "multicaststuff" : [
+            41
+          ],
+          "next-hop-null" : [
+            23
+          ],
+          "to_svl-hub-router" : [
+            12
+          ]
+        }
+      },
+      "cisco_style_acl1" : {
+        "extended ip access-list" : {
+          "blah" : [
+            1
+          ]
+        }
+      },
+      "cisco_style_acl2" : {
+        "standard ip access-list" : {
+          "1" : [
+            1
+          ]
+        }
+      },
+      "community-name-numbers" : {
+        "route-map" : {
+          "AAA1-BBB-CCC" : [
+            6
+          ]
+        }
+      },
+      "community-name-numbers_dos" : {
+        "route-map" : {
+          "AAA1-BBB-CCC" : [
+            6
+          ]
+        }
+      },
+      "community_list_named" : {
+        "route-map" : {
+          "TO_NEIGHBOR" : [
+            8
+          ]
         },
-        "cadant_cable" : {
-          "docsis-policy" : {
-            "1" : [
-              48
-            ]
-          }
+        "standard community-list" : {
+          "COMM_LIST_NAME" : [
+            6
+          ]
+        }
+      },
+      "foundry_access_list" : {
+        "extended ipv6 access-list" : {
+          "RT404888-Caltech" : [
+            8
+          ]
+        }
+      },
+      "foundry_bgp" : {
+        "bgp group" : {
+          "bippety" : [
+            11
+          ],
+          "boop" : [
+            18
+          ]
+        }
+      },
+      "ios_xr_bgp_neighbor_group" : {
+        "bgp group" : {
+          "blabbety" : [
+            10
+          ],
+          "blappety" : [
+            5
+          ],
+          "foobar-iBGP_border_ipv6" : [
+            67
+          ],
+          "foobar-iBGP_ipv6" : [
+            46
+          ]
         },
-        "cadant_prefix_list" : {
-          "ipv4 prefix-list" : {
-            "A+C" : [
-              7
-            ],
-            "foo" : [
-              5
-            ]
-          },
-          "ipv6 prefix-list" : {
-            "bar" : [
-              8
-            ]
-          }
+        "bgp session" : {
+          "OLA" : [
+            92
+          ],
+          "blibber" : [
+            15
+          ]
+        }
+      },
+      "ip_prefix_list_single_line" : {
+        "ipv4 prefix-list" : {
+          "DENY-IPV4-ANY-IN" : [
+            4
+          ]
+        }
+      },
+      "juniper-tcpflags" : {
+        "firewall filter" : {
+          "foo" : [
+            4
+          ]
+        }
+      },
+      "juniper_firewall" : {
+        "firewall filter" : {
+          "blah" : [
+            4
+          ]
+        }
+      },
+      "juniper_forwarding_options" : {
+        "dhcp-relay server-group" : {
+          "dhcpgrp" : [
+            15
+          ],
+          "test2" : [
+            17
+          ]
+        }
+      },
+      "juniper_relay" : {
+        "dhcp-relay server-group" : {
+          "site-dhcp" : [
+            4
+          ]
+        }
+      },
+      "juniper_route_filter" : {
+        "policy-statement" : {
+          "route-filter-test-v4" : [
+            4
+          ],
+          "route-filter-test-v6" : [
+            11
+          ]
+        }
+      },
+      "local_v6_addr" : {
+        "bgp group" : {
+          "NEIGH" : [
+            5
+          ]
+        }
+      },
+      "mac_access_list" : {
+        "mac acl" : {
+          "STPDENY" : [
+            13
+          ],
+          "filtermac" : [
+            8
+          ],
+          "ipmi_test" : [
+            9
+          ],
+          "permitCDP" : [
+            4
+          ]
+        }
+      },
+      "named_and_numbered_lists" : {
+        "route-map" : {
+          "foo" : [
+            4
+          ]
+        }
+      },
+      "neighbor" : {
+        "bgp group" : {
+          "1.2.3.4abc" : [
+            7
+          ],
+          "123.123.123.abc" : [
+            11
+          ],
+          "1234-5" : [
+            5
+          ],
+          "abc1.2.3.4" : [
+            8
+          ],
+          "abc1.2.3.4def" : [
+            9
+          ]
+        }
+      },
+      "neighbor-name-numbers" : {
+        "bgp group" : {
+          "8075-CORE" : [
+            6
+          ]
+        }
+      },
+      "neighbor_dos" : {
+        "bgp group" : {
+          "1.2.3.4abc" : [
+            7
+          ],
+          "123.123.123.abc" : [
+            11
+          ],
+          "1234-5" : [
+            5
+          ],
+          "abc1.2.3.4" : [
+            8
+          ],
+          "abc1.2.3.4def" : [
+            9
+          ]
+        }
+      },
+      "nexus_bgp" : {
+        "bgp group" : {
+          "PEER_BLLF" : [
+            22
+          ]
+        }
+      },
+      "nxos_acl" : {
+        "extended ip access-list" : {
+          "blah" : [
+            9
+          ],
+          "extended" : [
+            5
+          ],
+          "standard" : [
+            7
+          ]
+        }
+      },
+      "nxos_route_map_continue" : {
+        "route-map" : {
+          "foobar" : [
+            6
+          ]
+        }
+      },
+      "preSet" : {
+        "ipv4 prefix-list" : {
+          "default_route" : [
+            4
+          ],
+          "ucla_networks" : [
+            7
+          ]
+        }
+      },
+      "prefix_list_ipv4" : {
+        "ipv4 prefix-list" : {
+          "test" : [
+            4
+          ]
         },
-        "cadant_route_map" : {
-          "route-map" : {
-            "bar" : [
-              9
-            ],
-            "foo" : [
-              5
-            ]
-          }
-        },
-        "cisco_acl" : {
-          "extended ip access-list" : {
-            "BLAH-BLAH" : [
-              4
-            ],
-            "blah" : [
-              30
-            ],
-            "extended" : [
-              26
-            ],
-            "standard" : [
-              28
-            ]
-          }
-        },
-        "cisco_bgp" : {
-          "bgp group" : {
-            "p1" : [
-              12
-            ]
-          }
-        },
-        "cisco_cable" : {
-          "cable service-class" : {
-            "1" : [
-              88
-            ]
-          },
-          "depi-tunnel" : {
-            "bar1" : [
-              137
-            ]
-          },
-          "docsis-policy-rule" : {
-            "2" : [
-              49
-            ],
-            "3" : [
-              50
-            ],
-            "4" : [
-              51
-            ]
-          }
-        },
-        "cisco_crypto" : {
-          "crypto ipsec profile" : {
-            "abcdefg" : [
-              138
-            ]
-          },
-          "crypto ipsec transform-set" : {
-            "ESP-3DES-MD5" : [
-              145
-            ]
-          },
-          "crypto keyring" : {
-            "VRF:ABC:DEF:GHI:1234" : [
-              184
-            ]
-          }
-        },
-        "cisco_eigrp" : {
-          "extended ip access-list" : {
-            "bippety" : [
-              21
-            ],
-            "bloop_blop" : [
-              90
-            ]
-          }
-        },
-        "cisco_ip_nat" : {
-          "nat pool" : {
-            "abc" : [
-              4
-            ],
-            "dynamic-srcnat" : [
-              12
-            ],
-            "example-1-dynamic-nat-pool" : [
-              8
-            ],
-            "example-2-dynamic-nat-pool" : [
-              10
-            ]
-          }
-        },
-        "cisco_ipv6_access_list" : {
-          "extended ipv6 access-list" : {
-            "RT404888-XO" : [
-              4
-            ],
-            "abcdefg" : [
-              19
-            ]
-          }
-        },
-        "cisco_l2tp" : {
-          "l2tp-class" : {
-            "foobar" : [
-              4
-            ]
-          }
-        },
-        "cisco_mac_acl" : {
-          "mac acl" : {
-            "1199" : [
-              5
-            ],
-            "700" : [
-              4
-            ],
-            "copp-system-p-acl-mac-cdp-udld-vtp" : [
-              6
-            ]
-          }
-        },
-        "cisco_route_map" : {
-          "route-map" : {
-            "MSDP-SA-RP-FILTER" : [
-              19
-            ],
-            "beeble" : [
-              30
-            ],
-            "connected-to-bgp" : [
-              4
-            ],
-            "ijfw$%^&****(((([]grr" : [
-              17
-            ],
-            "mgmt" : [
-              26
-            ],
-            "multicaststuff" : [
-              41
-            ],
-            "next-hop-null" : [
-              23
-            ],
-            "to_svl-hub-router" : [
-              12
-            ]
-          }
-        },
-        "cisco_style_acl1" : {
-          "extended ip access-list" : {
-            "blah" : [
-              1
-            ]
-          }
-        },
-        "cisco_style_acl2" : {
-          "standard ip access-list" : {
-            "1" : [
-              1
-            ]
-          }
-        },
-        "community-name-numbers" : {
-          "route-map" : {
-            "AAA1-BBB-CCC" : [
-              6
-            ]
-          }
-        },
-        "community-name-numbers_dos" : {
-          "route-map" : {
-            "AAA1-BBB-CCC" : [
-              6
-            ]
-          }
-        },
-        "community_list_named" : {
-          "route-map" : {
-            "TO_NEIGHBOR" : [
-              8
-            ]
-          },
-          "standard community-list" : {
-            "COMM_LIST_NAME" : [
-              6
-            ]
-          }
-        },
-        "foundry_access_list" : {
-          "extended ipv6 access-list" : {
-            "RT404888-Caltech" : [
-              8
-            ]
-          }
-        },
-        "foundry_bgp" : {
-          "bgp group" : {
-            "bippety" : [
-              11
-            ],
-            "boop" : [
-              18
-            ]
-          }
-        },
-        "ios_xr_bgp_neighbor_group" : {
-          "bgp group" : {
-            "blabbety" : [
-              10
-            ],
-            "blappety" : [
-              5
-            ],
-            "foobar-iBGP_border_ipv6" : [
-              67
-            ],
-            "foobar-iBGP_ipv6" : [
-              46
-            ]
-          },
-          "bgp session" : {
-            "OLA" : [
-              92
-            ],
-            "blibber" : [
-              15
-            ]
-          }
-        },
-        "ip_prefix_list_single_line" : {
-          "ipv4 prefix-list" : {
-            "DENY-IPV4-ANY-IN" : [
-              4
-            ]
-          }
-        },
-        "juniper-tcpflags" : {
-          "firewall filter" : {
-            "foo" : [
-              4
-            ]
-          }
-        },
-        "juniper_firewall" : {
-          "firewall filter" : {
-            "blah" : [
-              4
-            ]
-          }
-        },
-        "juniper_forwarding_options" : {
-          "dhcp-relay server-group" : {
-            "dhcpgrp" : [
-              15
-            ],
-            "test2" : [
-              17
-            ]
-          }
-        },
-        "juniper_relay" : {
-          "dhcp-relay server-group" : {
-            "site-dhcp" : [
-              4
-            ]
-          }
-        },
-        "juniper_route_filter" : {
-          "policy-statement" : {
-            "route-filter-test-v4" : [
-              4
-            ],
-            "route-filter-test-v6" : [
-              11
-            ]
-          }
-        },
-        "local_v6_addr" : {
-          "bgp group" : {
-            "NEIGH" : [
-              5
-            ]
-          }
-        },
-        "mac_access_list" : {
-          "mac acl" : {
-            "STPDENY" : [
-              13
-            ],
-            "filtermac" : [
-              8
-            ],
-            "ipmi_test" : [
-              9
-            ],
-            "permitCDP" : [
-              4
-            ]
-          }
-        },
-        "named_and_numbered_lists" : {
-          "route-map" : {
-            "foo" : [
-              4
-            ]
-          }
-        },
-        "neighbor" : {
-          "bgp group" : {
-            "1.2.3.4abc" : [
-              7
-            ],
-            "123.123.123.abc" : [
-              11
-            ],
-            "1234-5" : [
-              5
-            ],
-            "abc1.2.3.4" : [
-              8
-            ],
-            "abc1.2.3.4def" : [
-              9
-            ]
-          }
-        },
-        "neighbor-name-numbers" : {
-          "bgp group" : {
-            "8075-CORE" : [
-              6
-            ]
-          }
-        },
-        "neighbor_dos" : {
-          "bgp group" : {
-            "1.2.3.4abc" : [
-              7
-            ],
-            "123.123.123.abc" : [
-              11
-            ],
-            "1234-5" : [
-              5
-            ],
-            "abc1.2.3.4" : [
-              8
-            ],
-            "abc1.2.3.4def" : [
-              9
-            ]
-          }
-        },
-        "nexus_bgp" : {
-          "bgp group" : {
-            "PEER_BLLF" : [
-              22
-            ]
-          }
-        },
-        "nxos_acl" : {
-          "extended ip access-list" : {
-            "blah" : [
-              9
-            ],
-            "extended" : [
-              5
-            ],
-            "standard" : [
-              7
-            ]
-          }
-        },
-        "nxos_route_map_continue" : {
-          "route-map" : {
-            "foobar" : [
-              6
-            ]
-          }
-        },
-        "preSet" : {
-          "ipv4 prefix-list" : {
-            "default_route" : [
-              4
-            ],
-            "ucla_networks" : [
-              7
-            ]
-          }
-        },
-        "prefix_list_ipv4" : {
-          "ipv4 prefix-list" : {
-            "test" : [
-              4
-            ]
-          },
-          "route-map" : {
-            "to_elacc" : [
-              9
-            ]
-          }
-        },
-        "route_policy_as_path_set" : {
-          "as-path-set" : {
-            "ama-coe-as-path" : [
-              34
-            ],
-            "ama-coe-as-path2" : [
-              37
-            ],
-            "ama-coe-as-path3" : [
-              39
-            ]
-          }
-        },
-        "tcpflags" : {
-          "extended ip access-list" : {
-            "100" : [
-              4
-            ]
-          }
-        },
-        "underscore_variable" : {
-          "route-map" : {
-            "JKL_MNO_PQR" : [
-              4
-            ]
-          }
+        "route-map" : {
+          "to_elacc" : [
+            9
+          ]
+        }
+      },
+      "route_policy_as_path_set" : {
+        "as-path-set" : {
+          "ama-coe-as-path" : [
+            34
+          ],
+          "ama-coe-as-path2" : [
+            37
+          ],
+          "ama-coe-as-path3" : [
+            39
+          ]
+        }
+      },
+      "tcpflags" : {
+        "extended ip access-list" : {
+          "100" : [
+            4
+          ]
+        }
+      },
+      "underscore_variable" : {
+        "route-map" : {
+          "JKL_MNO_PQR" : [
+            4
+          ]
         }
       }
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
-    "differential" : false,
-    "nodeRegex" : ".*"
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 111
   }
-}
+]

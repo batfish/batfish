@@ -13,6 +13,6 @@ kill-work 00000000-0000-0000-0000-000000000001
 poll-work 00000000-0000-0000-0000-000000000002
 
 # now check what happened with each
-test tests/watchdog/w1.ref get-work-status 00000000-0000-0000-0000-000000000001
-test tests/watchdog/w2.ref get-work-status 00000000-0000-0000-0000-000000000002
+test -raw tests/watchdog/w1.ref get-work-status 00000000-0000-0000-0000-000000000001
+test -raw tests/watchdog/w2.ref get-work-status 00000000-0000-0000-0000-000000000002
 

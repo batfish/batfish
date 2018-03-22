@@ -9,7 +9,7 @@ test -compareall tests/basic/init.ref init-testrig test_rigs/example basic-examp
 test -compareall tests/basic/init-delta.ref init-delta-testrig test_rigs/example-with-delta basic-example-delta
 test -compareall tests/basic/genDp.ref generate-dataplane
 test -compareall tests/basic/genDp-delta.ref generate-delta-dataplane
-test -compareall tests/basic/topology.ref get-object testrig_pojo_topology
+test -raw tests/basic/topology.ref get-object testrig_pojo_topology
 test tests/basic/aclReachability.ref get aclReachability
 test tests/basic/assert.ref get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"},{"assertion":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"assertion":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
@@ -32,10 +32,8 @@ test tests/basic/traceroute-1-2.ref get traceroute ingressNode="as1core1", dst="
 test tests/basic/traceroute-2-1.ref get traceroute ingressNode="host2", dst="1.0.1.1"
 test tests/basic/multipath-host1.ref get reachability type="multipath", ingressNodeRegex="host1", srcIps=["2.128.0.0"], dstIps=["3.0.1.2"], ipProtocols=["TCP"], srcPorts=[0], dstPorts=[0]
 test tests/basic/multipath-host2.ref get reachability type="multipath", ingressNodeRegex="host2", srcIps=["2.128.0.0"], dstIps=["1.0.1.1"], ipProtocols=["UDP"], srcPorts=[0], dstPorts=[0]
-test tests/basic/undefinedReferences.ref get undefinedReferences
 test tests/basic/bgpAsnUse.ref get bgpasnuse minCount=2
 test tests/basic/uniqueIpAssignments.ref get uniqueIpAssignments
-test tests/basic/unusedStructures.ref get unusedStructures
 test tests/basic/bgpadvertisements.ref get bgpadvertisements nodeRegex = "as2border2"
 test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
@@ -68,10 +66,6 @@ test tests/basic/routes-dc-as-reuse.ref get routes
 # snat
 test -compareall tests/basic/init-snat.ref init-testrig test_rigs/snat basic-snat
 test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dst="1.2.3.4"
-
-# parsing unit-tests through nodes question
-test -compareall tests/basic/init-unit-tests.ref init-testrig test_rigs/unit-tests basic-unit-tests
-test tests/basic/nodes-unit-tests.ref get nodes summary=false
 
 # iptables
 test -compareall tests/basic/example-iptables-init.ref init-testrig test_rigs/example-iptables
