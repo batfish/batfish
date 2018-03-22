@@ -1,5 +1,8 @@
 package org.batfish.z3;
 
+import static org.batfish.common.util.CommonUtil.toMap;
+import static org.batfish.common.util.CommonUtil.transformMap;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -303,98 +306,74 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               .put(recvInterface, new IpSpaceMatchExpr(ipSpace, false, true));
         });
 
-    return output
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                outputByHostnameEntry ->
-                    outputByHostnameEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                outputByVrfEntry ->
-                                    outputByVrfEntry
-                                        .getValue()
-                                        .entrySet()
-                                        .stream()
-                                        .collect(
-                                            ImmutableMap.toImmutableMap(
-                                                Entry::getKey /* outInterface */,
-                                                outputByOutInterfaceEntry ->
-                                                    outputByOutInterfaceEntry
-                                                        .getValue()
-                                                        .entrySet()
-                                                        .stream()
-                                                        .collect(
-                                                            ImmutableMap.toImmutableMap(
-                                                                Entry::getKey /* recvNode */,
-                                                                outputByRecvNodeEntry ->
-                                                                    outputByRecvNodeEntry
-                                                                        .getValue()
-                                                                        .entrySet()
-                                                                        .stream()
-                                                                        .collect(
-                                                                            ImmutableMap
-                                                                                .toImmutableMap(
-                                                                                    Entry
-                                                                                        ::getKey /* recvInterface */,
-                                                                                    Entry
-                                                                                        ::getValue))))))))));
+    // freeze by copying spine to immutable map/set
+    return transformMap(
+        output,
+        Entry::getKey, /* node */
+        outputByHostnameEntry ->
+            transformMap(
+                outputByHostnameEntry.getValue(),
+                Entry::getKey, /* vrf */
+                outputByVrfEntry ->
+                    transformMap(
+                        outputByVrfEntry.getValue(),
+                        Entry::getKey /* outInterface */,
+                        outputByOutInterfaceEntry ->
+                            transformMap(
+                                outputByOutInterfaceEntry.getValue(),
+                                Entry::getKey /* recvNode */,
+                                outputByRecvNodeEntry ->
+                                    transformMap(
+                                        outputByRecvNodeEntry.getValue(),
+                                        Entry::getKey /* recvInterface */,
+                                        Entry::getValue)))));
   }
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
     if (_topologyInterfaces != null) {
-      return _topologyInterfaces
-          .entrySet()
-          .stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey,
-                  topologyInterfacesEntry -> {
-                    String hostname = topologyInterfacesEntry.getKey();
-                    Configuration c = _configurations.get(hostname);
-                    return topologyInterfacesEntry
-                        .getValue()
-                        .stream()
-                        .flatMap(
-                            ifaceName -> {
-                              Interface i = c.getInterfaces().get(ifaceName);
-                              ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
-                                  ImmutableList.builder();
-                              IpAccessList aclIn = i.getIncomingFilter();
-                              IpAccessList aclOut = i.getOutgoingFilter();
-                              if (aclIn != null) {
-                                interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
-                              }
-                              if (aclOut != null) {
-                                interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
-                              }
-                              i.getSourceNats()
-                                  .forEach(
-                                      sourceNat -> {
-                                        IpAccessList sourceNatAcl = sourceNat.getAcl();
-                                        if (sourceNatAcl != null) {
-                                          interfaceAcls.add(
-                                              new Pair<>(sourceNatAcl.getName(), sourceNatAcl));
-                                        } else {
-                                          interfaceAcls.add(
-                                              new Pair<>(
-                                                  DEFAULT_SOURCE_NAT_ACL.getName(),
-                                                  DEFAULT_SOURCE_NAT_ACL));
-                                        }
-                                      });
+      return transformMap(
+          _topologyInterfaces,
+          Entry::getKey, /* node */
+          topologyInterfacesEntry -> {
+            String hostname = topologyInterfacesEntry.getKey();
+            Configuration c = _configurations.get(hostname);
+            return topologyInterfacesEntry
+                .getValue()
+                .stream()
+                .flatMap(
+                    ifaceName -> {
+                      Interface i = c.getInterfaces().get(ifaceName);
+                      ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
+                          ImmutableList.builder();
+                      IpAccessList aclIn = i.getIncomingFilter();
+                      IpAccessList aclOut = i.getOutgoingFilter();
+                      if (aclIn != null) {
+                        interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
+                      }
+                      if (aclOut != null) {
+                        interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
+                      }
+                      i.getSourceNats()
+                          .forEach(
+                              sourceNat -> {
+                                IpAccessList sourceNatAcl = sourceNat.getAcl();
+                                if (sourceNatAcl != null) {
+                                  interfaceAcls.add(
+                                      new Pair<>(sourceNatAcl.getName(), sourceNatAcl));
+                                } else {
+                                  interfaceAcls.add(
+                                      new Pair<>(
+                                          DEFAULT_SOURCE_NAT_ACL.getName(),
+                                          DEFAULT_SOURCE_NAT_ACL));
+                                }
+                              });
 
-                              return interfaceAcls.build().stream();
-                            })
-                        .collect(ImmutableSet.toImmutableSet())
-                        .stream()
-                        .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
-                  }));
+                      return interfaceAcls.build().stream();
+                    })
+                .collect(ImmutableSet.toImmutableSet())
+                .stream()
+                .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
+          });
     } else {
       return _configurations
           .entrySet()
@@ -432,59 +411,45 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Set<String>> computeEnabledInterfaces() {
-    return _enabledInterfacesByNodeVrf
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                enabledInterfacesByNodeVrfEntry ->
-                    enabledInterfacesByNodeVrfEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .flatMap(
-                            enabledInterfacesByVrfEntry ->
-                                enabledInterfacesByVrfEntry.getValue().stream())
-                        .collect(ImmutableSet.toImmutableSet())));
+    return transformMap(
+        _enabledInterfacesByNodeVrf,
+        Entry::getKey,
+        enabledInterfacesByNodeVrfEntry ->
+            enabledInterfacesByNodeVrfEntry
+                .getValue()
+                .entrySet()
+                .stream()
+                .flatMap(
+                    enabledInterfacesByVrfEntry -> enabledInterfacesByVrfEntry.getValue().stream())
+                .collect(ImmutableSet.toImmutableSet()));
   }
 
   private Map<String, Map<String, Set<String>>> computeEnabledInterfacesByNodeVrf() {
-    return _enabledVrfs
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                enabledVrfsEntry -> {
-                  String hostname = enabledVrfsEntry.getKey();
-                  Set<String> disabledInterfaces = _disabledInterfaces.get(hostname);
-                  Configuration c = _configurations.get(hostname);
-                  return enabledVrfsEntry
-                      .getValue()
+    return transformMap(
+        _enabledVrfs,
+        Entry::getKey,
+        enabledVrfsEntry -> {
+          String hostname = enabledVrfsEntry.getKey();
+          Set<String> disabledInterfaces = _disabledInterfaces.get(hostname);
+          Configuration c = _configurations.get(hostname);
+          return toMap(
+              enabledVrfsEntry.getValue(),
+              Function.identity(),
+              vrfName ->
+                  c.getVrfs()
+                      .get(vrfName)
+                      .getInterfaces()
+                      .entrySet()
                       .stream()
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Function.identity(),
-                              vrfName ->
-                                  c.getVrfs()
-                                      .get(vrfName)
-                                      .getInterfaces()
-                                      .entrySet()
-                                      .stream()
-                                      .filter(
-                                          interfaceEntry ->
-                                              disabledInterfaces == null
-                                                  || !disabledInterfaces.contains(
-                                                      interfaceEntry.getKey()))
-                                      .filter(
-                                          interfaceEntry -> interfaceEntry.getValue().getActive())
-                                      .filter(
-                                          interfaceEntry ->
-                                              !interfaceEntry.getValue().getBlacklisted())
-                                      .map(Entry::getKey)
-                                      .collect(ImmutableSet.toImmutableSet())));
-                }));
+                      .filter(
+                          interfaceEntry ->
+                              disabledInterfaces == null
+                                  || !disabledInterfaces.contains(interfaceEntry.getKey()))
+                      .filter(interfaceEntry -> interfaceEntry.getValue().getActive())
+                      .filter(interfaceEntry -> !interfaceEntry.getValue().getBlacklisted())
+                      .map(Entry::getKey)
+                      .collect(ImmutableSet.toImmutableSet()));
+        });
   }
 
   private Set<String> computeEnabledNodes() {
@@ -492,64 +457,48 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Set<String>> computeEnabledVrfs() {
-    return _enabledNodes
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(),
-                hostname -> {
-                  Set<String> disabledVrfs = _disabledVrfs.get(hostname);
-                  return _configurations
-                      .get(hostname)
-                      .getVrfs()
-                      .keySet()
-                      .stream()
-                      .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
-                      .collect(ImmutableSet.toImmutableSet());
-                }));
+    return toMap(
+        _enabledNodes,
+        Function.identity(),
+        hostname -> {
+          Set<String> disabledVrfs = _disabledVrfs.get(hostname);
+          return _configurations
+              .get(hostname)
+              .getVrfs()
+              .keySet()
+              .stream()
+              .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
+              .collect(ImmutableSet.toImmutableSet());
+        });
   }
 
   private Map<String, Map<String, String>> computeIncomingAcls() {
-    return _enabledInterfaces
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                enabledInterfacesEntry -> {
-                  Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-                  return enabledInterfacesEntry
-                      .getValue()
-                      .stream()
-                      .filter(
-                          ifaceName ->
-                              c.getInterfaces().get(ifaceName).getIncomingFilterName() != null)
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Function.identity(),
-                              ifaceName ->
-                                  c.getInterfaces().get(ifaceName).getIncomingFilterName()));
-                }));
+    return transformMap(
+        _enabledInterfaces,
+        Entry::getKey,
+        enabledInterfacesEntry -> {
+          Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+          return enabledInterfacesEntry
+              .getValue()
+              .stream()
+              .filter(ifaceName -> c.getInterfaces().get(ifaceName).getIncomingFilterName() != null)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      ifaceName -> c.getInterfaces().get(ifaceName).getIncomingFilterName()));
+        });
   }
 
   private Map<String, Set<Ip>> computeIpsByHostname() {
     Map<String, Map<String, Interface>> enabledInterfaces =
-        _enabledInterfaces
-            .entrySet()
-            .stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey,
-                    enabledInterfacesEntry -> {
-                      Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-                      return enabledInterfacesEntry
-                          .getValue()
-                          .stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  Function.identity(),
-                                  ifaceName -> c.getInterfaces().get(ifaceName)));
-                    }));
+        transformMap(
+            _enabledInterfaces,
+            Entry::getKey,
+            enabledInterfacesEntry -> {
+              Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+              return toMap(
+                  enabledInterfacesEntry.getValue(), Function.identity(), c.getInterfaces()::get);
+            });
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(true, enabledInterfaces);
     Map<String, Set<Ip>> map = new HashMap<>();
     /*
@@ -563,153 +512,107 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             map.get(owner).add(ip);
           }
         });
-    return map.entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(Entry::getKey, e -> ImmutableSet.copyOf(e.getValue())));
+    // freeze by copying spine to immutable map/set
+    return transformMap(map, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 
   private Map<String, Map<String, Map<String, BooleanExpr>>> computeNeighborUnreachable(
       Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
-    return neighborUnreachable
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                neighborUnreachableByHostnameEntry ->
-                    neighborUnreachableByHostnameEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                neighborUnreachableByVrfEntry ->
-                                    neighborUnreachableByVrfEntry
-                                        .getValue()
-                                        .entrySet()
-                                        .stream()
-                                        .collect(
-                                            ImmutableMap.toImmutableMap(
-                                                Entry::getKey /* interface */,
-                                                neighborUnreachableByOutInterfaceEntry ->
-                                                    new IpSpaceMatchExpr(
-                                                        neighborUnreachableByOutInterfaceEntry
-                                                            .getValue(),
-                                                        false,
-                                                        true)))))));
+    return transformMap(
+        neighborUnreachable,
+        Entry::getKey /* hostname */,
+        neighborUnreachableByHostnameEntry ->
+            transformMap(
+                neighborUnreachableByHostnameEntry.getValue(),
+                Entry::getKey /* vrf */,
+                neighborUnreachableByVrfEntry ->
+                    transformMap(
+                        neighborUnreachableByVrfEntry.getValue(),
+                        Entry::getKey /* interface */,
+                        neighborUnreachableByOutInterfaceEntry ->
+                            new IpSpaceMatchExpr(
+                                neighborUnreachableByOutInterfaceEntry.getValue(), false, true))));
   }
 
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(
       Map<String, Map<String, IpSpace>> nullRoutedIps) {
-    return nullRoutedIps
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                nullRoutedIpsByHostnameEntry ->
-                    nullRoutedIpsByHostnameEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                nullRoutedIpsByVrfEntry ->
-                                    new IpSpaceMatchExpr(
-                                        nullRoutedIpsByVrfEntry.getValue(), false, true)))));
+    return transformMap(
+        nullRoutedIps,
+        Entry::getKey /* hostname */,
+        nullRoutedIpsByHostnameEntry ->
+            transformMap(
+                nullRoutedIpsByHostnameEntry.getValue(),
+                Entry::getKey /* vrf */,
+                nullRoutedIpsByVrfEntry ->
+                    new IpSpaceMatchExpr(nullRoutedIpsByVrfEntry.getValue(), false, true)));
   }
 
   private Map<String, Map<String, String>> computeOutgoingAcls() {
-    return _enabledInterfaces
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                enabledInterfacesEntry -> {
-                  Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-                  return enabledInterfacesEntry
-                      .getValue()
-                      .stream()
-                      .filter(
-                          ifaceName ->
-                              c.getInterfaces().get(ifaceName).getOutgoingFilterName() != null)
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Function.identity(),
-                              ifaceName ->
-                                  c.getInterfaces().get(ifaceName).getOutgoingFilterName()));
-                }));
+    return transformMap(
+        _enabledInterfaces,
+        Entry::getKey,
+        enabledInterfacesEntry -> {
+          Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+          return enabledInterfacesEntry
+              .getValue()
+              .stream()
+              .filter(ifaceName -> c.getInterfaces().get(ifaceName).getOutgoingFilterName() != null)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      ifaceName -> c.getInterfaces().get(ifaceName).getOutgoingFilterName()));
+        });
   }
 
   private Map<String, Map<String, BooleanExpr>> computeRoutableIps(
       Map<String, Map<String, IpSpace>> routableIps) {
-    return routableIps
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* hostname */,
-                routableIpsByHostnameEntry ->
-                    routableIpsByHostnameEntry
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                routableIpsByVrfEntry ->
-                                    new IpSpaceMatchExpr(
-                                        routableIpsByVrfEntry.getValue(), false, true)))));
+    return transformMap(
+        routableIps,
+        Entry::getKey /* hostname */,
+        routableIpsByHostnameEntry ->
+            transformMap(
+                routableIpsByHostnameEntry.getValue(),
+                Entry::getKey /* vrf */,
+                routableIpsByVrfEntry ->
+                    new IpSpaceMatchExpr(routableIpsByVrfEntry.getValue(), false, true)));
   }
 
   private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {
-    return _topologyInterfaces
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey,
-                topologyInterfacesEntryByHostname -> {
-                  String hostname = topologyInterfacesEntryByHostname.getKey();
-                  Set<String> ifaces = topologyInterfacesEntryByHostname.getValue();
-                  Configuration c = _configurations.get(hostname);
-                  return ifaces
+    return transformMap(
+        _topologyInterfaces,
+        Entry::getKey,
+        topologyInterfacesEntryByHostname -> {
+          String hostname = topologyInterfacesEntryByHostname.getKey();
+          Set<String> ifaces = topologyInterfacesEntryByHostname.getValue();
+          Configuration c = _configurations.get(hostname);
+          return toMap(
+              ifaces,
+              Function.identity(),
+              ifaceName ->
+                  c.getInterfaces()
+                      .get(ifaceName)
+                      .getSourceNats()
                       .stream()
-                      .collect(
-                          ImmutableMap.toImmutableMap(
-                              Function.identity(),
-                              ifaceName ->
-                                  c.getInterfaces()
-                                      .get(ifaceName)
-                                      .getSourceNats()
-                                      .stream()
-                                      .map(
-                                          sourceNat -> {
-                                            IpAccessList acl = sourceNat.getAcl();
-                                            String aclName =
-                                                acl == null
-                                                    ? DEFAULT_SOURCE_NAT_ACL.getName()
-                                                    : acl.getName();
-                                            AclPermit preconditionPreTransformationState =
-                                                new AclPermit(hostname, aclName);
-                                            BooleanExpr transformationConstraint =
-                                                new RangeMatchExpr(
-                                                    TransformationHeaderField.NEW_SRC_IP,
-                                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
-                                                    ImmutableSet.of(
-                                                        Range.closed(
-                                                            sourceNat.getPoolIpFirst().asLong(),
-                                                            sourceNat.getPoolIpLast().asLong())));
-                                            return Maps.immutableEntry(
-                                                preconditionPreTransformationState,
-                                                transformationConstraint);
-                                          })
-                                      .collect(ImmutableList.toImmutableList())));
-                }));
+                      .map(
+                          sourceNat -> {
+                            IpAccessList acl = sourceNat.getAcl();
+                            String aclName =
+                                acl == null ? DEFAULT_SOURCE_NAT_ACL.getName() : acl.getName();
+                            AclPermit preconditionPreTransformationState =
+                                new AclPermit(hostname, aclName);
+                            BooleanExpr transformationConstraint =
+                                new RangeMatchExpr(
+                                    TransformationHeaderField.NEW_SRC_IP,
+                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    ImmutableSet.of(
+                                        Range.closed(
+                                            sourceNat.getPoolIpFirst().asLong(),
+                                            sourceNat.getPoolIpLast().asLong())));
+                            return Maps.immutableEntry(
+                                preconditionPreTransformationState, transformationConstraint);
+                          })
+                      .collect(ImmutableList.toImmutableList()));
+        });
   }
 
   private Map<String, Set<String>> computeTopologyInterfaces() {
@@ -719,11 +622,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             topologyEdges
                 .computeIfAbsent(enabledEdge.getNode1(), n -> new HashSet<>())
                 .add(enabledEdge.getInt1()));
-    return topologyEdges
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(Entry::getKey, e -> ImmutableSet.copyOf(e.getValue())));
+    // freeze by copying spine to immutable map/set
+    return transformMap(topologyEdges, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 
   @Override

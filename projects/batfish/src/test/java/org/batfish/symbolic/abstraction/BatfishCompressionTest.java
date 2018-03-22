@@ -3,7 +3,6 @@ package org.batfish.symbolic.abstraction;
 import static junit.framework.TestCase.assertNotNull;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -31,7 +30,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -169,8 +167,10 @@ public class BatfishCompressionTest {
     SortedMap<String, Configuration> compressedConfigs =
         compressNetwork(compressibleNetwork(), new HeaderSpace());
     DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs = origDataPlane.getRibs();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs = compressedDataPlane.getRibs();
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs =
+        origDataPlane.getRibs();
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs =
+        compressedDataPlane.getRibs();
 
     /* Compression removed a node */
     assertThat(compressedConfigs.entrySet(), hasSize(2));
