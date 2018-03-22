@@ -264,8 +264,10 @@ public class BatfishCompressionTest {
     SortedMap<String, Configuration> compressedConfigs =
         compressNetwork(compressibleNetwork(), new HeaderSpace());
     DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs = origDataPlane.getRibs();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs = compressedDataPlane.getRibs();
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs =
+        origDataPlane.getRibs();
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs =
+        compressedDataPlane.getRibs();
 
     /* Compression removed a node */
     assertThat(compressedConfigs.entrySet(), hasSize(2));

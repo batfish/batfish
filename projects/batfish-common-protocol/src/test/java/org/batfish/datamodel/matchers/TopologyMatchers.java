@@ -7,7 +7,7 @@ import org.batfish.datamodel.matchers.TopologyMatchersImpl.WithNode;
 import org.hamcrest.Matcher;
 
 public class TopologyMatchers {
-  
+
   /**
    * Provides a matcher that matches if the provided {@code node} is a neighbor of the {@link
    * NodeInterfacePair} to be matched in the provided {@link Topology}.
