@@ -421,6 +421,76 @@ public class DataPlaneArpAnalysisTest {
   }
 
   @Test
+  public void testComputeNeighborUnreachable() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String i1 = "i1";
+    _neighborUnreachableArpDestIp =
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getStartIp())));
+    _neighborUnreachableArpNextHopIp =
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp())));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, Map<String, IpSpace>>> result =
+        dataPlaneArpAnalysis.computeNeighborUnreachable();
+
+    /* Should contain both IPs. */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getStartIp())))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1), hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getEndIp())))));
+    /* Should not contain unrelated IPs. */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), not(containsIp(P2.getEndIp()))))));
+  }
+
+  @Test
+  public void testComputeNeighborUnreachableArpDestIp() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String i1 = "i1";
+    AbstractRoute ifaceRoute = new ConnectedRoute(P1, i1);
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c1,
+            ImmutableSortedMap.of(
+                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
+    _routesWhereDstIpCanBeArpIp =
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
+    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, Map<String, IpSpace>>> result =
+        dataPlaneArpAnalysis.computeNeighborUnreachableArpDestIp(ribs);
+
+    /* Should contain IP in the route's prefix that sees no reply */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getStartIp())))));
+    /* Should not contain IP in the route's prefix that sees reply */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), not(containsIp(P1.getEndIp()))))));
+
+    /* Should not contain other IPs */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), not(containsIp(P2.getEndIp()))))));
+  }
+
+  @Test
   public void testComputeNeighborUnreachableArpNextHopIp() {
     String c1 = "c1";
     String v1 = "v1";
@@ -537,6 +607,78 @@ public class DataPlaneArpAnalysisTest {
             hasLines(
                 containsInAnyOrder(
                     AclIpSpaceLine.permit(IPSPACE1), AclIpSpaceLine.permit(IPSPACE2)))));
+  }
+
+  @Test
+  public void testComputeRoutesWhereDstIpCanBeArpIp() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String i1 = "i1";
+    AbstractRoute r1 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
+    _routesWithNextHop =
+        ImmutableMap.of(
+            c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, ifaceRoute))));
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(
+            c1,
+            ImmutableMap.of(
+                v1,
+                MockFib.builder()
+                    .setNextHopInterfaces(
+                        ImmutableMap.of(
+                            r1,
+                            ImmutableMap.of(
+                                i1,
+                                ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                            ifaceRoute,
+                            ImmutableMap.of(
+                                i1,
+                                ImmutableMap.of(
+                                    Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
+                    .build()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
+        dataPlaneArpAnalysis.computeRoutesWhereDstIpCanBeArpIp(fibs);
+
+    /* Only the interface route should show up */
+    assertThat(
+        result,
+        equalTo(
+            ImmutableMap.of(
+                c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))))));
+  }
+
+  @Test
+  public void testComputeRoutesWithDestIpEdge() {
+    String c1 = "c1";
+    String c2 = "c2";
+    String v1 = "v1";
+    String i1 = "i1";
+    String i2 = "i2";
+    AbstractRoute r1 = new ConnectedRoute(P1, i1);
+    _routesWhereDstIpCanBeArpIp =
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
+    Edge e1 = new Edge(c1, i1, c2, i2);
+    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp()));
+    Topology topology = new Topology(ImmutableSortedSet.of(e1));
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(
+            c1,
+            ImmutableMap.of(
+                v1,
+                MockFib.builder()
+                    .setNextHopInterfaces(
+                        ImmutableMap.of(
+                            r1,
+                            ImmutableMap.of(
+                                i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(r1)))))
+                    .build()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<Edge, Set<AbstractRoute>> result =
+        dataPlaneArpAnalysis.computeRoutesWithDestIpEdge(fibs, topology);
+
+    assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
   }
 
   @Test
