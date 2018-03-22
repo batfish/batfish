@@ -242,49 +242,36 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, List<LineAction>>> computeAclActions() {
-    return _enabledAcls
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
+    return transformMap(
+        _enabledAcls,
+        Entry::getKey,
+        enabledAclsByHostnameEntry ->
+            transformMap(
+                enabledAclsByHostnameEntry.getValue(),
                 Entry::getKey,
-                enabledAclsByHostnameEntry ->
-                    enabledAclsByHostnameEntry
+                enabledAclsByAclNameEntry ->
+                    enabledAclsByAclNameEntry
                         .getValue()
-                        .entrySet()
+                        .getLines()
                         .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey,
-                                enabledAclsByAclNameEntry ->
-                                    enabledAclsByAclNameEntry
-                                        .getValue()
-                                        .getLines()
-                                        .stream()
-                                        .map(IpAccessListLine::getAction)
-                                        .collect(ImmutableList.toImmutableList())))));
+                        .map(IpAccessListLine::getAction)
+                        .collect(ImmutableList.toImmutableList())));
   }
 
   private Map<String, Map<String, List<BooleanExpr>>> computeAclConditions() {
-    return _enabledAcls
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
+    return transformMap(
+        _enabledAcls,
+        Entry::getKey,
+        e ->
+            transformMap(
+                e.getValue(),
                 Entry::getKey,
-                e ->
-                    e.getValue()
-                        .entrySet()
+                e2 ->
+                    e2.getValue()
+                        .getLines()
                         .stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey,
-                                e2 ->
-                                    e2.getValue()
-                                        .getLines()
-                                        .stream()
-                                        .map(HeaderSpaceMatchExpr::new)
-                                        .collect(ImmutableList.toImmutableList())))));
+                        .map(HeaderSpaceMatchExpr::new)
+                        .collect(ImmutableList.toImmutableList())));
   }
 
   private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
