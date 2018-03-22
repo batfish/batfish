@@ -273,6 +273,13 @@ public class DataPlaneArpAnalysis implements ArpAnalysis {
                             GenericRib<AbstractRoute> rib = ribs.get(hostname).get(vrf);
                             routesWithNextHopByInterface.forEach(
                                 (iface, routes) -> {
+                                  /*
+                                   *  Cannot determine IPs for null interface here because it is
+                                   *  not tied to a single VRF.
+                                   */
+                                  if (iface.equals(Interface.NULL_INTERFACE_NAME)) {
+                                    return;
+                                  }
                                   ipsRoutedOutInterfacesByInterface.put(
                                       iface, computeRouteMatchConditions(routes, rib));
                                 });

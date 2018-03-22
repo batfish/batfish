@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -401,13 +403,26 @@ public class DataPlaneArpAnalysisTest {
     String v1 = "v1";
     String i1 = "i1";
     ConnectedRoute r1 = new ConnectedRoute(P1, i1);
+    StaticRoute nullRoute =
+        StaticRoute.builder()
+            .setNetwork(P2)
+            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+            .build();
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(
             c1,
             ImmutableSortedMap.of(
-                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
+                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1, P2, P2)).build()));
     _routesWithNextHop =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
+        ImmutableMap.of(
+            c1,
+            ImmutableMap.of(
+                v1,
+                ImmutableMap.of(
+                    i1,
+                    ImmutableSet.of(r1),
+                    Interface.NULL_INTERFACE_NAME,
+                    ImmutableSet.of(nullRoute))));
     DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
     Map<String, Map<String, IpSpace>> result =
         dataPlaneArpAnalysis.computeIpsRoutedOutInterfaces(ribs);
@@ -418,6 +433,8 @@ public class DataPlaneArpAnalysisTest {
     /* Should not contain IP not matching the route */
     assertThat(
         result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp())))));
+    /* Null interface should be excluded because we would not be able to tie back to single VRF. */
+    assertThat(result, hasEntry(equalTo(c1), not(hasKey(equalTo(Interface.NULL_INTERFACE_NAME)))));
   }
 
   @Test
