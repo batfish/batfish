@@ -394,6 +394,58 @@ public class DataPlaneArpAnalysisTest {
   }
 
   @Test
+  public void testComputeNullRoutedIps() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String i1 = "i1";
+    GenericRib<AbstractRoute> rib1 =
+        MockRib.builder()
+            .setMatchingIps(
+                ImmutableMap.of(
+                    P1, AclIpSpace.permitting(P1).build(), P2, AclIpSpace.permitting(P2).build()))
+            .build();
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(c1, ImmutableSortedMap.of(v1, rib1));
+    AbstractRoute nullRoute =
+        StaticRoute.builder()
+            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+            .setNetwork(P1)
+            .build();
+    AbstractRoute otherRoute = new ConnectedRoute(P2, i1);
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableSortedMap.of(
+            c1,
+            ImmutableSortedMap.of(
+                v1,
+                MockFib.builder()
+                    .setNextHopInterfaces(
+                        ImmutableMap.of(
+                            nullRoute,
+                            ImmutableMap.of(
+                                Interface.NULL_INTERFACE_NAME,
+                                ImmutableMap.of(
+                                    Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(nullRoute))),
+                            otherRoute,
+                            ImmutableMap.of(
+                                i1,
+                                ImmutableMap.of(
+                                    Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(otherRoute)))))
+                    .build()));
+    DataPlaneArpAnalysis dataPlaneArpAnalysis = initDataPlaneArpAnalysis();
+    Map<String, Map<String, IpSpace>> result =
+        dataPlaneArpAnalysis.computeNullRoutedIps(ribs, fibs);
+
+    /* IPs for the null route should appear */
+    assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getStartIp()))));
+    assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getEndIp()))));
+    /* IPs for the non-null route should not appear */
+    assertThat(
+        result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getStartIp())))));
+    assertThat(
+        result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getEndIp())))));
+  }
+
+  @Test
   public void testComputeRouteMatchConditions() {
     Set<AbstractRoute> routes =
         ImmutableSet.of(new ConnectedRoute(P1, INTERFACE1), new ConnectedRoute(P2, INTERFACE2));

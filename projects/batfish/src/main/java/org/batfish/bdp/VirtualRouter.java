@@ -25,6 +25,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -244,7 +245,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   /** Compute the FIB from the main RIB */
   public void computeFib() {
-    _fib = new Fib(_mainRib);
+    _fib = new FibImpl(_mainRib);
   }
 
   /**
