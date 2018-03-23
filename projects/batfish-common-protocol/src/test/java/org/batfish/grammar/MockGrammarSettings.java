@@ -4,7 +4,7 @@ package org.batfish.grammar;
  * Immutable implementation of {@link GrammarSettings} where settings must all be explicitly
  * provided upon instantiation.
  */
-public class TestGrammarSettings implements GrammarSettings {
+public class MockGrammarSettings implements GrammarSettings {
 
   private final boolean _disableUnrecognized;
 
@@ -31,7 +31,7 @@ public class TestGrammarSettings implements GrammarSettings {
    * @param throwOnLexerError See {@link GrammarSettings#getThrowOnLexerError()}
    * @param throwOnParserError See {@link GrammarSettings#getThrowOnParserError()}
    */
-  public TestGrammarSettings(
+  public MockGrammarSettings(
       boolean disableUnrecognized,
       int maxParserContextLines,
       int maxParserContextTokens,

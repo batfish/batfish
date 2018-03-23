@@ -21,6 +21,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.GenericStatementVisitor;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
@@ -109,6 +110,16 @@ public class BoolExprTransformer
     return _basicStateArguments;
   }
 
+  public BoolExpr transformStateExpr(StateExpr stateExpr) {
+    /* TODO: allow vectorized variables */
+    return (BoolExpr)
+        _nodContext
+            .getContext()
+            .mkApp(
+                _nodContext.getRelationDeclarations().get(getNodName(_input, stateExpr)),
+                getBasicRelationArgs(_input, stateExpr));
+  }
+
   @Override
   public BoolExpr visitAndExpr(AndExpr andExpr) {
     return _nodContext
@@ -139,16 +150,6 @@ public class BoolExprTransformer
     return ctx.mkImplies(
         ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
         toBoolExpr(basicRuleStatement.getPostconditionState(), _input, _nodContext));
-  }
-
-  public BoolExpr transformStateExpr(StateExpr stateExpr) {
-    /* TODO: allow vectorized variables */
-    return (BoolExpr)
-        _nodContext
-            .getContext()
-            .mkApp(
-                _nodContext.getRelationDeclarations().get(getNodName(_input, stateExpr)),
-                getBasicRelationArgs(_input, stateExpr));
   }
 
   @Override
@@ -188,6 +189,11 @@ public class BoolExprTransformer
         .mkImplies(
             BoolExprTransformer.toBoolExpr(ifExpr.getAntecedent(), _input, _nodContext),
             BoolExprTransformer.toBoolExpr(ifExpr.getConsequent(), _input, _nodContext));
+  }
+
+  @Override
+  public BoolExpr visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+    return matchIpSpaceExpr.getExpr().accept(this);
   }
 
   @Override

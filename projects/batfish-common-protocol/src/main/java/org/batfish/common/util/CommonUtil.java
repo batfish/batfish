@@ -87,8 +87,8 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OspfArea;
@@ -803,7 +803,7 @@ public class CommonUtil {
   }
 
   @VisibleForTesting
-  static SetMultimap<Ip, IpSpace> initPrivateIpsByPublicIp(
+  static SetMultimap<Ip, IpWildcardSetIpSpace> initPrivateIpsByPublicIp(
       Map<String, Configuration> configurations) {
     /*
      * Very hacky mapping from public IP to set of spaces of possible natted private IPs.
@@ -813,7 +813,7 @@ public class CommonUtil {
      * interface (except the local address in each such prefix) to be a possible private IP
      * match for every public IP referred to by every source-nat pool on a masquerading interface.
      */
-    ImmutableSetMultimap.Builder<Ip, IpSpace> builder = ImmutableSetMultimap.builder();
+    ImmutableSetMultimap.Builder<Ip, IpWildcardSetIpSpace> builder = ImmutableSetMultimap.builder();
     for (Configuration c : configurations.values()) {
       Collection<Interface> interfaces = c.getInterfaces().values();
       Set<InterfaceAddress> nonNattedInterfaceAddresses =
@@ -832,7 +832,8 @@ public class CommonUtil {
               .stream()
               .map(address -> new IpWildcard(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
-      IpSpace ipSpace = IpSpace.builder().including(whitelist).excluding(blacklist).build();
+      IpWildcardSetIpSpace ipSpace =
+          IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces
           .stream()
           .flatMap(i -> i.getSourceNats().stream())
@@ -943,7 +944,8 @@ public class CommonUtil {
   public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
     Map<IpsecVpn, Ip> vpnRemoteIps = new IdentityHashMap<>();
     Map<Ip, Set<IpsecVpn>> externalIpVpnMap = new HashMap<>();
-    SetMultimap<Ip, IpSpace> privateIpsByPublicIp = initPrivateIpsByPublicIp(configurations);
+    SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp =
+        initPrivateIpsByPublicIp(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
         Ip remoteIp = ipsecVpn.getIkeGateway().getAddress();
@@ -973,12 +975,12 @@ public class CommonUtil {
           Ip reciprocalRemoteAddress = vpnRemoteIps.get(remoteIpsecVpnCandidate);
           Set<IpsecVpn> reciprocalVpns = externalIpVpnMap.get(reciprocalRemoteAddress);
           if (reciprocalVpns == null) {
-            Set<IpSpace> privateIpsBehindReciprocalRemoteAddress =
+            Set<IpWildcardSetIpSpace> privateIpsBehindReciprocalRemoteAddress =
                 privateIpsByPublicIp.get(reciprocalRemoteAddress);
             if (privateIpsBehindReciprocalRemoteAddress != null
                 && privateIpsBehindReciprocalRemoteAddress
                     .stream()
-                    .anyMatch(ipSpace -> ipSpace.contains(localIp))) {
+                    .anyMatch(ipSpace -> ipSpace.containsIp(localIp))) {
               reciprocalVpns = externalIpVpnMap.get(localIp);
               ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
               ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
@@ -1200,6 +1202,18 @@ public class CommonUtil {
       map.put(i, line);
     }
     return map;
+  }
+
+  public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMap(
+      Map<K1, V1> map,
+      Function<Entry<K1, V1>, K2> keyFunction,
+      Function<Entry<K1, V1>, V2> valueFunction) {
+    return map.entrySet().stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
+  }
+
+  public static <E, K, V> Map<K, V> toImmutableMap(
+      Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
+    return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
   }
 
   public static <S extends Set<T>, T> S union(

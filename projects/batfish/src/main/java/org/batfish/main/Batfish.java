@@ -94,6 +94,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -1023,58 +1024,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
     _logger.printElapsedTime();
     return topology;
-  }
-
-  @Override
-  public Set<NodeInterfacePair> computeFlowSinks(
-      Map<String, Configuration> configurations, boolean differentialContext, Topology topology) {
-    Set<NodeInterfacePair> flowSinks = null;
-    if (differentialContext) {
-      pushBaseEnvironment();
-      flowSinks = new LinkedHashSet<>(loadDataPlane().getFlowSinks());
-      popEnvironment();
-    }
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    if (differentialContext) {
-      flowSinks.removeIf(
-          nodeInterfacePair -> blacklistNodes.contains(nodeInterfacePair.getHostname()));
-    }
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    for (NodeInterfacePair blacklistInterface : blacklistInterfaces) {
-      if (differentialContext) {
-        flowSinks.remove(blacklistInterface);
-      }
-    }
-    if (!differentialContext) {
-      flowSinks = computeFlowSinks(configurations, topology);
-    }
-    return ImmutableSet.copyOf(flowSinks);
-  }
-
-  private Set<NodeInterfacePair> computeFlowSinks(
-      Map<String, Configuration> configurations, Topology topology) {
-    // TODO: confirm VRFs are handled correctly
-    ImmutableSet.Builder<NodeInterfacePair> flowSinksBuilder = new ImmutableSet.Builder<>();
-    ImmutableSet.Builder<NodeInterfacePair> topologyInterfacesBuilder =
-        new ImmutableSet.Builder<>();
-    for (Edge edge : topology.getEdges()) {
-      topologyInterfacesBuilder.add(edge.getInterface1());
-      topologyInterfacesBuilder.add(edge.getInterface2());
-    }
-    Set<NodeInterfacePair> topologyInterfaces = topologyInterfacesBuilder.build();
-    for (Configuration node : configurations.values()) {
-      String hostname = node.getHostname();
-      for (Interface iface : node.getInterfaces().values()) {
-        String ifaceName = iface.getName();
-        NodeInterfacePair p = new NodeInterfacePair(hostname, ifaceName);
-        if (iface.getActive()
-            && !iface.isLoopback(node.getConfigurationFormat())
-            && !topologyInterfaces.contains(p)) {
-          flowSinksBuilder.add(p);
-        }
-      }
-    }
-    return flowSinksBuilder.build();
   }
 
   public <KeyT, ResultT> void computeNodFirstUnsatOutput(
@@ -2578,13 +2527,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(
-      ReachabilitySettings reachabilitySettings, boolean useCompression) {
+  public AnswerElement multipath(ReachabilitySettings reachabilitySettings) {
     return singleReachability(
-        reachabilitySettings,
-        ImmutableSet.of(),
-        useCompression,
-        MultipathInconsistencyQuerySynthesizer.builder());
+        reachabilitySettings, MultipathInconsistencyQuerySynthesizer.builder());
   }
 
   @Override
@@ -2858,7 +2803,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression) {
+  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3328,8 +3273,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement reducedReachability(
-      ReachabilitySettings reachabilitySettings, boolean useCompression) {
+  public AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings) {
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3389,7 +3333,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                   ImmutableMap.of(node, ImmutableSet.of(vrf));
                               StandardReachabilityQuerySynthesizer acceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
-                                      .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+                                      .setActions(
+                                          ImmutableSet.of(
+                                              ForwardingAction.ACCEPT,
+                                              ForwardingAction
+                                                  .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(reachabilitySettings.getHeaderSpace())
                                       .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())
@@ -3398,7 +3346,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                       .build();
                               StandardReachabilityQuerySynthesizer notAcceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
-                                      .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
+                                      .setActions(
+                                          ImmutableSet.of(
+                                              ForwardingAction.ACCEPT,
+                                              ForwardingAction
+                                                  .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(new HeaderSpace())
                                       .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())
@@ -4018,11 +3970,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private AnswerElement singleReachability(
       ReachabilitySettings reachabilitySettings,
-      Set<ForwardingAction> actions,
-      boolean useCompression,
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
+    Set<ForwardingAction> actions = reachabilitySettings.getActions();
+    boolean useCompression = reachabilitySettings.getUseCompression();
 
     // specialized compression
     /*
@@ -4197,15 +4149,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement standard(
-      ReachabilitySettings reachabilitySettings,
-      Set<ForwardingAction> actions,
-      boolean useCompression) {
-    return singleReachability(
-        reachabilitySettings,
-        actions,
-        useCompression,
-        StandardReachabilityQuerySynthesizer.builder());
+  public AnswerElement standard(ReachabilitySettings reachabilitySettings) {
+    return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
   private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
@@ -4244,13 +4189,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 logic...");
+
     Synthesizer s =
         new Synthesizer(
-            SynthesizerInputImpl.builder()
-                .setConfigurations(configurations)
-                .setDataPlane(dataPlane)
-                .setSimplify(_settings.getSimplify())
-                .build());
+            computeSynthesizerInput(configurations, dataPlane, _settings.getSimplify()));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4263,6 +4205,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     _logger.printElapsedTime();
     return s;
+  }
+
+  public static SynthesizerInputImpl computeSynthesizerInput(
+      Map<String, Configuration> configurations, DataPlane dataPlane, boolean simplify) {
+    Topology topology = new Topology(dataPlane.getTopologyEdges());
+    return SynthesizerInputImpl.builder()
+        .setConfigurations(configurations)
+        .setForwardingAnalysis(
+            new ForwardingAnalysisImpl(
+                configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+        .setSimplify(simplify)
+        .setTopology(topology)
+        .build();
   }
 
   private Answer validateEnvironment() {

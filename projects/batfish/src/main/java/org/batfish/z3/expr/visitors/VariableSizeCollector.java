@@ -21,6 +21,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -70,11 +71,6 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
     basicRuleStatement.getPreconditionStateIndependentConstraints().accept(this);
     basicRuleStatement.getPreconditionStates().forEach(s -> s.accept(this));
     basicRuleStatement.getPostconditionState().accept(this);
-  }
-
-  @Override
-  public void visitStateExpr(StateExpr stateExpr) {
-    _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
   }
 
   @Override
@@ -132,6 +128,11 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public void visitLitIntExpr(LitIntExpr litIntExpr) {}
 
   @Override
+  public void visitIpSpaceMatchExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+    matchIpSpaceExpr.getExpr().accept(this);
+  }
+
+  @Override
   public void visitNotExpr(NotExpr notExpr) {
     notExpr.getArg().accept(this);
   }
@@ -159,6 +160,11 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   @Override
   public void visitSaneExpr(SaneExpr saneExpr) {
     saneExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public void visitStateExpr(StateExpr stateExpr) {
+    _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
   }
 
   @Override

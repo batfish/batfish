@@ -32,6 +32,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -44,6 +45,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -159,8 +161,17 @@ public class NodJobTest {
   }
 
   private void setupSynthesizer() {
+    Topology topology = new Topology(_dataPlane.getTopologyEdges());
     SynthesizerInput input =
-        SynthesizerInputImpl.builder().setConfigurations(_configs).setDataPlane(_dataPlane).build();
+        SynthesizerInputImpl.builder()
+            .setConfigurations(_configs)
+            .setForwardingAnalysis(
+                new ForwardingAnalysisImpl(
+                    _configs, _dataPlane.getRibs(), _dataPlane.getFibs(), topology))
+            .setSimplify(false)
+            .setTopology(topology)
+            .build();
+
     _synthesizer = new Synthesizer(input);
   }
 

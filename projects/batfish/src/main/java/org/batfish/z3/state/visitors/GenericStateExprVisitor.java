@@ -12,6 +12,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -19,6 +20,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
@@ -60,6 +62,8 @@ public interface GenericStateExprVisitor<R> {
 
   R visitDropNullRoute(DropNullRoute dropNullRoute);
 
+  R visitNeighborUnreachable(NeighborUnreachable neighborUnreachable);
+
   R visitNodeAccept(NodeAccept nodeAccept);
 
   R visitNodeDrop(NodeDrop nodeDrop);
@@ -74,6 +78,8 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute);
 
+  R visitNodeNeighborUnreachable(NodeNeighborUnreachable nodeNeighborUnreachable);
+
   R visitNumberedQuery(NumberedQuery numberedQuery);
 
   R visitOriginate(Originate originate);
@@ -86,6 +92,8 @@ public interface GenericStateExprVisitor<R> {
 
   R visitPostInVrf(PostInVrf postInVrf);
 
+  R visitPostOutEdge(PostOutEdge preOutInterface);
+
   R visitPreInInterface(PreInInterface preInInterface);
 
   R visitPreOut(PreOut preOut);
@@ -93,8 +101,6 @@ public interface GenericStateExprVisitor<R> {
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
-
-  R visitPostOutEdge(PostOutEdge preOutInterface);
 
   R visitQuery(Query query);
 }

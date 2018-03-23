@@ -266,7 +266,7 @@ public class BdpEngine implements FlowProcessor {
               IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
               boolean denied = false;
               if (outFilter != null) {
-                FlowDisposition disposition = FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
+                FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                 denied =
                     flowTraceDeniedHelper(
                         flowTraces, originalFlow, transformedFlow, newHops, outFilter, disposition);
@@ -406,7 +406,6 @@ public class BdpEngine implements FlowProcessor {
       Map<String, Configuration> configurations,
       Topology topology,
       Set<BgpAdvertisement> externalAdverts,
-      Set<NodeInterfacePair> flowSinks,
       BdpAnswerElement ae) {
     _logger.resetTimer();
     BdpDataPlane dp = new BdpDataPlane();
@@ -438,7 +437,6 @@ public class BdpEngine implements FlowProcessor {
       computeFibs(nodes);
       dp.setNodes(nodes);
       dp.setTopology(topology);
-      dp.setFlowSinks(flowSinks);
       ae.setVersion(Version.getVersion());
     }
     _logger.printElapsedTime();
@@ -1203,9 +1201,7 @@ public class BdpEngine implements FlowProcessor {
       List<FlowTraceHop> newHops,
       IpAccessList filter,
       FlowDisposition disposition) {
-    boolean out =
-        disposition == FlowDisposition.DENIED_OUT
-            || disposition == FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
+    boolean out = disposition == FlowDisposition.DENIED_OUT;
     FilterResult outResult = filter.filter(transformedFlow);
     boolean denied = outResult.getAction() == LineAction.REJECT;
     if (denied) {
@@ -1572,7 +1568,7 @@ public class BdpEngine implements FlowProcessor {
             neighborUnreachable = true;
           } else {
             for (InterfaceAddress address : int2.getAllAddresses()) {
-              if (address.getPrefix().contains(arpIp)) {
+              if (address.getPrefix().containsIp(arpIp)) {
                 neighborUnreachable = true;
                 break;
               }

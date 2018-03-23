@@ -97,7 +97,7 @@ public class PrefixTrie implements Serializable {
 
     @Nullable
     private Prefix getLongestPrefixMatch(Ip address) {
-      if (_prefix != null && _prefix.contains(address)) {
+      if (_prefix != null && _prefix.containsIp(address)) {
         return _prefix;
       } else {
         return null;

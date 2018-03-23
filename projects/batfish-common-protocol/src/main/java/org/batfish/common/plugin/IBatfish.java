@@ -17,7 +17,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
@@ -31,7 +30,6 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
@@ -50,9 +48,6 @@ public interface IBatfish extends IPluginConsumer {
   void checkDataPlane();
 
   void checkEnvironmentExists();
-
-  Set<NodeInterfacePair> computeFlowSinks(
-      Map<String, Configuration> configurations, boolean differentialContext, Topology topology);
 
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
@@ -122,13 +117,13 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(ReachabilitySettings reachabilitySettings, boolean useCompression);
+  AnswerElement multipath(ReachabilitySettings reachabilitySettings);
 
   AtomicInteger newBatch(String description, int jobs);
 
   AssertionAst parseAssertion(String text);
 
-  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings, boolean useCompression);
+  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings);
 
   void popEnvironment();
 
@@ -143,8 +138,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(
-      ReachabilitySettings reachabilitySettings, boolean useCompression);
+  AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings);
 
   void registerAnswerer(
       String questionName,
@@ -187,10 +181,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
-  AnswerElement standard(
-      ReachabilitySettings reachabilitySettings,
-      Set<ForwardingAction> actions,
-      boolean useCompression);
+  AnswerElement standard(ReachabilitySettings reachabilitySettings);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }

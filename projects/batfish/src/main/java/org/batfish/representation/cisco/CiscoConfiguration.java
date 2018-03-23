@@ -708,7 +708,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           && tunnel.getSource() != null
           && tunnel.getSource().equals(sourceAddress)
           && tunnel.getDestination() != null
-          && destPrefix.contains(tunnel.getDestination())) {
+          && destPrefix.containsIp(tunnel.getDestination())) {
         /*
          * We found a tunnel interface with the required parameters. Now return the external
          * interface with this address.
@@ -982,7 +982,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
           for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
-            if (interfaceAddress.getPrefix().contains(neighborAddress)) {
+            if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
               Ip ifaceAddress = interfaceAddress.getIp();
               updateSource = ifaceAddress;
             }

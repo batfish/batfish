@@ -294,18 +294,13 @@ public class OspfTest {
             .build();
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     BdpDataPlane dp =
         engine.computeDataPlane(
-            false,
-            configurations,
-            topology,
-            Collections.emptySet(),
-            Collections.emptySet(),
-            new BdpAnswerElement());
+            false, configurations, topology, Collections.emptySet(), new BdpAnswerElement());
 
     return engine.getRoutes(dp);
   }

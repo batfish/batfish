@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -68,7 +67,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -528,7 +526,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationPrintingEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpPrintAllIterations(true);
@@ -553,7 +551,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationPrintingNotEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpMaxRecordedIterations(0);
@@ -580,7 +578,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationNoPrinting() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpMaxRecordedIterations(0);
@@ -606,7 +604,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationRecoveryEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(1);
     settings.setBdpPrintAllIterations(false);
@@ -623,7 +621,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationRecoveryNotEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(1);
     settings.setBdpMaxRecordedIterations(0);
@@ -640,7 +638,7 @@ public class BdpDataPlanePluginTest {
     testBgpOscillationRecovery(settings);
   }
 
-  private void testBgpOscillationRecovery(TestBdpSettings bdpSettings) throws IOException {
+  private void testBgpOscillationRecovery(MockBdpSettings bdpSettings) throws IOException {
     String testrigName = "bgp-oscillation";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -1002,7 +1000,7 @@ public class BdpDataPlanePluginTest {
     vrf.getStaticRoutes().add(srJustInterface);
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false),
             (a, b) -> new AtomicInteger());
     Topology topology = new Topology(Collections.emptySortedSet());
@@ -1012,11 +1010,10 @@ public class BdpDataPlanePluginTest {
             ImmutableMap.of(c.getName(), c),
             topology,
             Collections.emptySet(),
-            ImmutableSet.of(new NodeInterfacePair(c.getName(), i.getName())),
             new BdpAnswerElement());
 
     // generating fibs should not crash
-    dp.getFibRows();
+    dp.getFibs();
   }
 
   @Test

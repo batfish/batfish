@@ -69,25 +69,19 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(
-          question._reachabilitySettings.build(), question.getUseCompression());
+      return _batfish.multipath(question._reachabilitySettings.build());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
-      return _batfish.pathDiff(
-          question._reachabilitySettings.build(), question.getUseCompression());
+      return _batfish.pathDiff(question._reachabilitySettings.build());
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
-      return _batfish.reducedReachability(
-          question._reachabilitySettings.build(), question.getUseCompression());
+      return _batfish.reducedReachability(question._reachabilitySettings.build());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {
-      return _batfish.standard(
-          question._reachabilitySettings.build(),
-          question.getActions(),
-          question.getUseCompression());
+      return _batfish.standard(question._reachabilitySettings.build());
     }
   }
 
@@ -202,17 +196,13 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_USE_COMPRESSION = "useCompression";
 
-    private SortedSet<ForwardingAction> _actions;
-
     private ReachabilitySettings.Builder _reachabilitySettings;
 
     private ReachabilityType _reachabilityType;
 
-    private boolean _useCompression;
-
     public ReachabilityQuestion() {
       _reachabilitySettings = ReachabilitySettings.builder();
-      _actions = DEFAULT_ACTIONS;
+      setActions(DEFAULT_ACTIONS);
       setFinalNodeRegex(DEFAULT_FINAL_NODE_REGEX);
       setHeaderSpace(new HeaderSpace());
       setIngressNodeRegex(DEFAULT_INGRESS_NODE_REGEX);
@@ -222,12 +212,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       setNotIngressNodeRegex(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
       setTransitNodes(DEFAULT_TRANSIT_NODES);
-      _useCompression = DEFAULT_USE_COMPRESSION;
+      setUseCompression(DEFAULT_USE_COMPRESSION);
     }
 
     @JsonProperty(PROP_ACTIONS)
     public SortedSet<ForwardingAction> getActions() {
-      return _actions;
+      return _reachabilitySettings.getActions();
     }
 
     @Override
@@ -412,13 +402,14 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_USE_COMPRESSION)
     public boolean getUseCompression() {
-      return _useCompression;
+      return _reachabilitySettings.getUseCompression();
     }
 
     @Override
     public String prettyPrint() {
       try {
-        String retString = String.format("reachability %sactions=%s", prettyPrintBase(), _actions);
+        String retString =
+            String.format("reachability %sactions=%s", prettyPrintBase(), getActions());
         // we only print "interesting" values
         if (_reachabilityType != ReachabilityType.STANDARD) {
           retString += String.format(", %s=%s", PROP_REACHABILITY_TYPE, _reachabilityType);
@@ -533,7 +524,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     @JsonProperty(PROP_ACTIONS)
     public void setActions(SortedSet<ForwardingAction> actionSet) {
-      _actions = ImmutableSortedSet.copyOf(actionSet);
+      _reachabilitySettings.setActions(ImmutableSortedSet.copyOf(actionSet));
     }
 
     @Override
@@ -741,7 +732,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_USE_COMPRESSION)
     public void setUseCompression(boolean useCompression) {
-      _useCompression = useCompression;
+      _reachabilitySettings.setUseCompression(useCompression);
     }
   }
 

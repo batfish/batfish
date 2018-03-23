@@ -292,7 +292,7 @@ public class HeaderSpace implements Serializable {
 
   private static boolean wildcardsContain(Collection<IpWildcard> wildcards, Ip ip) {
     for (IpWildcard wildcard : wildcards) {
-      if (wildcard.contains(ip)) {
+      if (wildcard.containsIp(ip)) {
         return true;
       }
     }

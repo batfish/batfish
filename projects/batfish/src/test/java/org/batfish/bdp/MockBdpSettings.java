@@ -1,6 +1,6 @@
 package org.batfish.bdp;
 
-public class TestBdpSettings implements BdpSettings {
+public class MockBdpSettings implements BdpSettings {
 
   private boolean _bdpDetail;
 
@@ -14,7 +14,7 @@ public class TestBdpSettings implements BdpSettings {
 
   private boolean _bdpRecordAllIterations;
 
-  public TestBdpSettings() {
+  public MockBdpSettings() {
     _bdpDetail = true;
     _bdpMaxOscillationRecoveryAttempts = 0;
     _bdpMaxRecordedIterations = 2;

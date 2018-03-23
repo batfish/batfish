@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.AclPermit;
@@ -42,6 +41,28 @@ public class SynthesizerInputMatchersImpl {
     }
   }
 
+  static final class HasArpTrueEdge
+      extends FeatureMatcher<
+          SynthesizerInput,
+          Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>> {
+    HasArpTrueEdge(
+        @Nonnull
+            Matcher<
+                    ? super
+                        Map<
+                            String,
+                            Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>>
+                subMatcher) {
+      super(subMatcher, "SynthesizerInput with arpTrueEdge:", "arpTrueEdge");
+    }
+
+    @Override
+    protected Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+        featureValueOf(SynthesizerInput actual) {
+      return actual.getArpTrueEdge();
+    }
+  }
+
   static final class HasEnabledEdges extends FeatureMatcher<SynthesizerInput, Set<Edge>> {
     HasEnabledEdges(@Nonnull Matcher<? super Set<Edge>> subMatcher) {
       super(subMatcher, "SynthesizerInput with enabled edges", "enabled edges");
@@ -50,18 +71,6 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Set<Edge> featureValueOf(SynthesizerInput actual) {
       return actual.getEnabledEdges();
-    }
-  }
-
-  static final class HasEnabledFlowSinks
-      extends FeatureMatcher<SynthesizerInput, Set<NodeInterfacePair>> {
-    HasEnabledFlowSinks(@Nonnull Matcher<? super Set<NodeInterfacePair>> subMatcher) {
-      super(subMatcher, "SynthesizerInput with enabled flowSinks", "enabled flowSinks");
-    }
-
-    @Override
-    protected Set<NodeInterfacePair> featureValueOf(SynthesizerInput actual) {
-      return actual.getEnabledFlowSinks();
     }
   }
 
@@ -100,26 +109,6 @@ public class SynthesizerInputMatchersImpl {
     }
   }
 
-  static final class HasFibConditions
-      extends FeatureMatcher<
-          SynthesizerInput,
-          Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>> {
-    HasFibConditions(
-        @Nonnull
-            Matcher<
-                    ? super
-                        Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>>
-                subMatcher) {
-      super(subMatcher, "SynthesizerInput with fibConditions", "fibConditions");
-    }
-
-    @Override
-    protected Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-        featureValueOf(SynthesizerInput actual) {
-      return actual.getFibConditions();
-    }
-  }
-
   static final class HasIpsByHostname
       extends FeatureMatcher<SynthesizerInput, Map<String, Set<Ip>>> {
     HasIpsByHostname(@Nonnull Matcher<? super Map<String, Set<Ip>>> subMatcher) {
@@ -129,6 +118,20 @@ public class SynthesizerInputMatchersImpl {
     @Override
     protected Map<String, Set<Ip>> featureValueOf(SynthesizerInput actual) {
       return actual.getIpsByHostname();
+    }
+  }
+
+  static final class HasNeighborUnreachable
+      extends FeatureMatcher<SynthesizerInput, Map<String, Map<String, Map<String, BooleanExpr>>>> {
+    HasNeighborUnreachable(
+        @Nonnull Matcher<? super Map<String, Map<String, Map<String, BooleanExpr>>>> subMatcher) {
+      super(subMatcher, "SynthesizerInput with neighborUnreachable:", "neighborUnreachable");
+    }
+
+    @Override
+    protected Map<String, Map<String, Map<String, BooleanExpr>>> featureValueOf(
+        SynthesizerInput actual) {
+      return actual.getNeighborUnreachable();
     }
   }
 
@@ -157,7 +160,7 @@ public class SynthesizerInputMatchersImpl {
 
     @Override
     protected Map<String, Set<String>> featureValueOf(SynthesizerInput actual) {
-      return actual.getTopologyInterfaces();
+      return actual.getTraversableInterfaces();
     }
   }
 

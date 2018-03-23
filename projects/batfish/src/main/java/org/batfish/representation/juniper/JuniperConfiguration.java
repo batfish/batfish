@@ -503,7 +503,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
           for (InterfaceAddress address : iface.getAllAddresses()) {
-            if (address.getPrefix().contains(ip)) {
+            if (address.getPrefix().containsIp(ip)) {
               localIp = address.getIp();
               break outerloop;
             }

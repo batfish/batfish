@@ -22,6 +22,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -29,6 +30,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Query;
 
 public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynthesizer {
@@ -168,6 +170,17 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
             }
           } else {
             finalActionsBuilder.add(DropNullRoute.INSTANCE);
+          }
+          break;
+
+        case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
+          if (_finalNodes.size() > 0) {
+            for (String finalNode : _finalNodes) {
+              StateExpr drop = new NodeNeighborUnreachable(finalNode);
+              finalActionsBuilder.add(drop);
+            }
+          } else {
+            finalActionsBuilder.add(NeighborUnreachable.INSTANCE);
           }
           break;
 
