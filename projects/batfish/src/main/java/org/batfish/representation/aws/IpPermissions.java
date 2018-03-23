@@ -62,6 +62,10 @@ public class IpPermissions implements Serializable {
     _fromPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_FROM_PORT, _fromPort);
     _toPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_TO_PORT, _toPort);
 
+    // filtering invalid values
+    _fromPort = (0 <= _fromPort && _fromPort <= 65535) ? _fromPort : 0;
+    _toPort = (0 <= _toPort && _toPort <= 65535) ? _toPort : 65535;
+
     JSONArray ranges = jObj.getJSONArray(AwsVpcEntity.JSON_KEY_IP_RANGES);
 
     for (int index = 0; index < ranges.length(); index++) {
@@ -97,9 +101,6 @@ public class IpPermissions implements Serializable {
     if (protocol != null) {
       line.setIpProtocols(Collections.singleton(protocol));
     }
-    // filtering invalid values
-    _fromPort = (0 <= _fromPort && _fromPort <= 65535) ? _fromPort : 0;
-    _toPort = (0 <= _toPort && _toPort <= 65535) ? _toPort : 65535;
 
     // if the range isn't all ports, set it in ACL
     if (_fromPort != 0 || _toPort != 65535) {
