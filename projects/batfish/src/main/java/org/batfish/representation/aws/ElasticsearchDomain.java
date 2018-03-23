@@ -93,6 +93,7 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
                 sGroupId, _domainName));
         continue;
       }
+
       sGroup.addInOutAccessLines(inboundRules, outboundRules);
     }
 

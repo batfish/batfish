@@ -213,6 +213,78 @@
       ],
       "OwnerId": "118292266645",
       "VpcId": "vpc-6f6f8316"
+    },
+    {
+      "Description": "For test",
+      "GroupId": "sg-0de0ddfa8a5a12345",
+      "GroupName": "Invalid interval beginning",
+      "IpPermissions": [
+        {
+          "FromPort": -1,
+          "IpProtocol": "tcp",
+          "IpRanges": [
+            {
+              "CidrIp": "1.2.3.4/32",
+              "Description": "Closed interval"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 50,
+          "UserIdGroupPairs": []
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "118292266645",
+      "VpcId": "vpc-6f6f8316"
+    },
+    {
+      "Description": "For test",
+      "GroupId": "sg-0de0ddfa8a5a12346",
+      "GroupName": "Invalid interval end",
+      "IpPermissions": [
+        {
+          "FromPort": 30,
+          "IpProtocol": "tcp",
+          "IpRanges": [
+            {
+              "CidrIp": "1.2.3.4/32",
+              "Description": "Closed interval"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": -1,
+          "UserIdGroupPairs": []
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "118292266645",
+      "VpcId": "vpc-6f6f8316"
     }
   ]
 }
