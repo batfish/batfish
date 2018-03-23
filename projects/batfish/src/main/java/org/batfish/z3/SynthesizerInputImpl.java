@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import static org.batfish.common.util.CommonUtil.computeIpOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;
@@ -17,7 +18,6 @@ import java.util.Set;
 import java.util.function.Function;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -419,7 +419,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           String hostname = enabledVrfsEntry.getKey();
           Set<String> disabledInterfaces = _disabledInterfaces.get(hostname);
           Configuration c = _configurations.get(hostname);
-          return CommonUtil.toImmutableMap(
+          return toImmutableMap(
               enabledVrfsEntry.getValue(),
               Function.identity(),
               vrfName ->
@@ -444,7 +444,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Set<String>> computeEnabledVrfs() {
-    return CommonUtil.toImmutableMap(
+    return toImmutableMap(
         _enabledNodes,
         Function.identity(),
         hostname -> {
@@ -483,10 +483,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             Entry::getKey,
             enabledInterfacesEntry -> {
               Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-              return CommonUtil.toImmutableMap(
+              return toImmutableMap(
                   enabledInterfacesEntry.getValue(), Function.identity(), c.getInterfaces()::get);
             });
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(true, enabledInterfaces);
+    Map<Ip, Set<String>> ipOwners = computeIpOwners(true, enabledInterfaces);
     Map<String, Set<Ip>> map = new HashMap<>();
     /*
      * ipOwners may not contain all nodes (i.e. a node may not own any IPs),
@@ -572,7 +572,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           String hostname = topologyInterfacesEntryByHostname.getKey();
           Set<String> ifaces = topologyInterfacesEntryByHostname.getValue();
           Configuration c = _configurations.get(hostname);
-          return CommonUtil.toImmutableMap(
+          return toImmutableMap(
               ifaces,
               Function.identity(),
               ifaceName ->
