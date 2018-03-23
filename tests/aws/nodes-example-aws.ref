@@ -85,10 +85,7 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "negate" : false,
-                "srcIps" : [
-                  "0.0.0.0/0"
-                ]
+                "negate" : false
               }
             ]
           }
@@ -3140,9 +3137,19 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "dstPorts" : [
+                  "3306-3306"
+                ],
+                "ipProtocols" : [
+                  "TCP"
+                ],
                 "negate" : false,
                 "srcIps" : [
-                  "0.0.0.0/0"
+                  "10.193.0.0/16",
+                  "67.170.86.87",
+                  "104.236.156.171",
+                  "107.170.243.58",
+                  "162.243.144.192"
                 ]
               }
             ]
