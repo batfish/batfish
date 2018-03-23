@@ -48,19 +48,23 @@ public class IpPermissions implements Serializable {
     }
   }
 
-  private int _fromPort = -1;
+  private int _fromPort = 0;
 
   private String _ipProtocol;
 
   private List<Prefix> _ipRanges = new LinkedList<>();
 
-  private int _toPort = -1;
+  private int _toPort = 65535;
 
   public IpPermissions(JSONObject jObj, BatfishLogger logger) throws JSONException {
     _ipProtocol = jObj.getString(AwsVpcEntity.JSON_KEY_IP_PROTOCOL);
 
     _fromPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_FROM_PORT, _fromPort);
     _toPort = Utils.tryGetInt(jObj, AwsVpcEntity.JSON_KEY_TO_PORT, _toPort);
+
+    // filtering invalid values
+    _fromPort = (0 <= _fromPort && _fromPort <= 65535) ? _fromPort : 0;
+    _toPort = (0 <= _toPort && _toPort <= 65535) ? _toPort : 65535;
 
     JSONArray ranges = jObj.getJSONArray(AwsVpcEntity.JSON_KEY_IP_RANGES);
 
@@ -97,12 +101,12 @@ public class IpPermissions implements Serializable {
     if (protocol != null) {
       line.setIpProtocols(Collections.singleton(protocol));
     }
-    if (_fromPort != -1) {
-      line.setSrcPorts(Collections.singleton(new SubRange(_fromPort, _fromPort)));
+
+    // if the range isn't all ports, set it in ACL
+    if (_fromPort != 0 || _toPort != 65535) {
+      line.setDstPorts(Collections.singleton(new SubRange(_fromPort, _toPort)));
     }
-    if (_toPort != -1) {
-      line.setDstPorts(Collections.singleton(new SubRange(_toPort, _toPort)));
-    }
+
     return line;
   }
 }
