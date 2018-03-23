@@ -3,7 +3,9 @@ package org.batfish.representation.aws;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpAccessListLine;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -37,23 +39,39 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   private void addEgressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Warnings warnings) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toEgressIpAccessListLine());
+      try {
+        accessList.add(ipPerms.toEgressIpAccessListLine());
+      } catch (BatfishException e) {
+        warnings.redFlag(
+            String.format(
+                "Error encountered while processing security group \"%s\": \"%s\"",
+                _groupId, e.getMessage()));
+      }
     }
   }
 
   private void addIngressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Warnings warnings) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toIngressIpAccessListLine());
+      try {
+        accessList.add(ipPerms.toIngressIpAccessListLine());
+      } catch (BatfishException e) {
+        warnings.redFlag(
+            String.format(
+                "Error encountered while processing security group \"%s\": \"%s\"",
+                _groupId, e.getMessage()));
+      }
     }
   }
 
   public void addInOutAccessLines(
-      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
-    addIngressAccessLines(_ipPermsIngress, inboundRules);
-    addEgressAccessLines(_ipPermsEgress, outboundRules);
+      List<IpAccessListLine> inboundRules,
+      List<IpAccessListLine> outboundRules,
+      Warnings warnings) {
+    addIngressAccessLines(_ipPermsIngress, inboundRules, warnings);
+    addEgressAccessLines(_ipPermsEgress, outboundRules, warnings);
   }
 
   public String getGroupId() {

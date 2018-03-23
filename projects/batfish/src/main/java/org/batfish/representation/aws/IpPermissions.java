@@ -101,6 +101,10 @@ public class IpPermissions implements Serializable {
     // iff from and to ports are non-zero set dest ports(for both ingress and egress)
     if (_fromPort != -1 && _toPort != -1) {
       line.setDstPorts(Collections.singleton(new SubRange(_fromPort, _toPort)));
+    } else {
+      if (_fromPort != -1 || _toPort != -1) {
+        throw new BatfishException(String.format("Only one of _toPort and _fromPort were set"));
+      }
     }
     return line;
   }

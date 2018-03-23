@@ -191,7 +191,7 @@ public class Instance implements AwsVpcEntity, Serializable {
         continue;
       }
 
-      sGroup.addInOutAccessLines(inboundRules, outboundRules);
+      sGroup.addInOutAccessLines(inboundRules, outboundRules, warnings);
     }
 
     // create ACLs from inboundRules and outboundRules
