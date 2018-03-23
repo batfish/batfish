@@ -8,33 +8,43 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.LinkedList;
 import java.util.List;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 
 /** Tests for {@link SecurityGroup}. */
 public class SecurityGroupsTest {
 
+  private JSONArray _securityGroups;
+  private Warnings _warnings;
+
+  @Before
+  public void setup() throws JSONException {
+    _securityGroups =
+        new JSONObject(
+                CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTest.json"))
+            .getJSONArray(JSON_KEY_SECURITY_GROUPS);
+    _warnings = new Warnings();
+  }
+
   @Test
-  public void testIpPermToAcl() throws JSONException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTest.json");
-    JSONObject jObj = new JSONObject(text);
-    SecurityGroup sg =
-        new SecurityGroup(jObj.getJSONArray(JSON_KEY_SECURITY_GROUPS).getJSONObject(0), null);
+  public void testSinglePort() throws JSONException {
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(0), null);
 
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _warnings);
 
-    // for inbound rule srcIp/dstPort must be set and for outbound rule dstIp/dstPort
-    // must be set
     assertThat(
         inboundRules,
         equalTo(
@@ -42,17 +52,112 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(12345, 12347)))
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
                     .build())));
+  }
+
+  @Test
+  public void testBeginningHalfOpenInterval() throws JSONException {
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(1), null);
+
+    List<IpAccessListLine> inboundRules = new LinkedList<>();
+    List<IpAccessListLine> outboundRules = new LinkedList<>();
+
+    sg.addInOutAccessLines(inboundRules, outboundRules, _warnings);
+
     assertThat(
-        outboundRules,
+        inboundRules,
         equalTo(
             Lists.newArrayList(
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
-                    .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
+                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
+                    .build())));
+  }
+
+  @Test
+  public void testEndHalfOpenInterval() throws JSONException {
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(2), null);
+
+    List<IpAccessListLine> inboundRules = new LinkedList<>();
+    List<IpAccessListLine> outboundRules = new LinkedList<>();
+
+    sg.addInOutAccessLines(inboundRules, outboundRules, _warnings);
+
+    assertThat(
+        inboundRules,
+        equalTo(
+            Lists.newArrayList(
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
+                    .build())));
+  }
+
+  @Test
+  public void testFullInterval() throws JSONException {
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(3), null);
+
+    List<IpAccessListLine> inboundRules = new LinkedList<>();
+    List<IpAccessListLine> outboundRules = new LinkedList<>();
+
+    sg.addInOutAccessLines(inboundRules, outboundRules, _warnings);
+
+    assertThat(
+        inboundRules,
+        equalTo(
+            Lists.newArrayList(
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstPorts(Sets.newHashSet(new SubRange(0, 65535)))
+                    .build())));
+  }
+
+  @Test
+  public void testAllTrafficAllowed() throws JSONException {
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(4), null);
+
+    List<IpAccessListLine> inboundRules = new LinkedList<>();
+    List<IpAccessListLine> outboundRules = new LinkedList<>();
+
+    sg.addInOutAccessLines(inboundRules, outboundRules, _warnings);
+
+    assertThat(
+        inboundRules,
+        equalTo(
+            Lists.newArrayList(
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                    .setDstPorts(Sets.newHashSet())
+                    .build())));
+  }
+
+  @Test
+  public void testClosedInterval() throws JSONException {
+    SecurityGroup sg = new SecurityGroup(_securityGroups.getJSONObject(5), null);
+
+    List<IpAccessListLine> inboundRules = new LinkedList<>();
+    List<IpAccessListLine> outboundRules = new LinkedList<>();
+
+    sg.addInOutAccessLines(inboundRules, outboundRules, _warnings);
+
+    assertThat(
+        inboundRules,
+        equalTo(
+            Lists.newArrayList(
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                     .build())));
   }
 }
