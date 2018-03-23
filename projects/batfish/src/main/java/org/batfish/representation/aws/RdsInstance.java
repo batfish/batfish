@@ -129,7 +129,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
                 sGroupId, _dbInstanceIdentifier));
         continue;
       }
-      sGroup.addInOutAccessLines(inboundRules, outboundRules, warnings);
+      sGroup.addInOutAccessLines(inboundRules, outboundRules);
     }
 
     // create ACLs from inboundRules and outboundRules

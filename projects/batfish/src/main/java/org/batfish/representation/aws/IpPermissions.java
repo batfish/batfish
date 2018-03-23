@@ -48,13 +48,13 @@ public class IpPermissions implements Serializable {
     }
   }
 
-  private int _fromPort = -1;
+  private int _fromPort = 0;
 
   private String _ipProtocol;
 
   private List<Prefix> _ipRanges = new LinkedList<>();
 
-  private int _toPort = -1;
+  private int _toPort = 65535;
 
   public IpPermissions(JSONObject jObj, BatfishLogger logger) throws JSONException {
     _ipProtocol = jObj.getString(AwsVpcEntity.JSON_KEY_IP_PROTOCOL);
@@ -97,15 +97,15 @@ public class IpPermissions implements Serializable {
     if (protocol != null) {
       line.setIpProtocols(Collections.singleton(protocol));
     }
+    // filtering invalid values
+    _fromPort = (0 <= _fromPort && _fromPort <= 65535) ? _fromPort : 0;
+    _toPort = (0 <= _toPort && _toPort <= 65535) ? _toPort : 65535;
 
-    // iff from and to ports are non-zero set dest ports(for both ingress and egress)
-    if (_fromPort != -1 && _toPort != -1) {
+    // if the range isn't all ports, set it in ACL
+    if (_fromPort != 0 || _toPort != 65535) {
       line.setDstPorts(Collections.singleton(new SubRange(_fromPort, _toPort)));
-    } else {
-      if (_fromPort != -1 || _toPort != -1) {
-        throw new BatfishException(String.format("Only one of _toPort and _fromPort were set"));
-      }
     }
+
     return line;
   }
 }
