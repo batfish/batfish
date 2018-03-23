@@ -9,12 +9,11 @@ import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
-public class TestSynthesizerInput implements SynthesizerInput {
+public class MockSynthesizerInput implements SynthesizerInput {
 
   public static class Builder {
 
@@ -22,9 +21,10 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
-    private Set<Edge> _enabledEdges;
+    private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+        _arpTrueEdge;
 
-    private Set<NodeInterfacePair> _enabledFlowSinks;
+    private Set<Edge> _enabledEdges;
 
     private Map<String, Set<String>> _enabledInterfaces;
 
@@ -34,14 +34,17 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Set<String>> _enabledVrfs;
 
-    private Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-        _fibConditions;
-
     private Map<String, Map<String, String>> _incomingAcls;
 
     private Map<String, Set<Ip>> _ipsByHostname;
 
+    private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+
+    private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
+
     private Map<String, Map<String, String>> _outgoingAcls;
+
+    private Map<String, Map<String, BooleanExpr>> _routableIps;
 
     private boolean _simplify;
 
@@ -54,35 +57,39 @@ public class TestSynthesizerInput implements SynthesizerInput {
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
+      _arpTrueEdge = ImmutableMap.of();
       _enabledEdges = ImmutableSet.of();
-      _enabledFlowSinks = ImmutableSet.of();
       _enabledInterfaces = ImmutableMap.of();
       _enabledInterfacesByNodeVrf = ImmutableMap.of();
       _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
-      _fibConditions = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
+      _neighborUnreachable = ImmutableMap.of();
+      _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
+      _routableIps = ImmutableMap.of();
       _sourceNats = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
-    public TestSynthesizerInput build() {
-      return new TestSynthesizerInput(
+    public MockSynthesizerInput build() {
+      return new MockSynthesizerInput(
           _aclActions,
           _aclConditions,
+          _arpTrueEdge,
           _enabledEdges,
-          _enabledFlowSinks,
           _enabledInterfaces,
           _enabledInterfacesByNodeVrf,
           _enabledNodes,
           _enabledVrfs,
-          _fibConditions,
           _incomingAcls,
           _ipsByHostname,
+          _neighborUnreachable,
+          _nullRoutedIps,
           _outgoingAcls,
+          _routableIps,
           _simplify,
           _sourceNats,
           _topologyInterfaces,
@@ -99,13 +106,14 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setEnabledEdges(Set<Edge> enabledEdges) {
-      _enabledEdges = enabledEdges;
+    public Builder setArpTrueEdge(
+        Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> arpTrueEdge) {
+      _arpTrueEdge = arpTrueEdge;
       return this;
     }
 
-    public Builder setEnabledFlowSinks(Set<NodeInterfacePair> enabledFlowSinks) {
-      _enabledFlowSinks = enabledFlowSinks;
+    public Builder setEnabledEdges(Set<Edge> enabledEdges) {
+      _enabledEdges = enabledEdges;
       return this;
     }
 
@@ -130,12 +138,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setFibConditions(
-        Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> fibConditions) {
-      _fibConditions = fibConditions;
-      return this;
-    }
-
     public Builder setIncomingAcls(Map<String, Map<String, String>> incomingAcls) {
       _incomingAcls = incomingAcls;
       return this;
@@ -146,8 +148,24 @@ public class TestSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setNeighborUnreachable(
+        Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable) {
+      _neighborUnreachable = neighborUnreachable;
+      return this;
+    }
+
+    public Builder setNullRoutedIps(Map<String, Map<String, BooleanExpr>> nullRoutedIps) {
+      _nullRoutedIps = nullRoutedIps;
+      return this;
+    }
+
     public Builder setOutgoingAcls(Map<String, Map<String, String>> outgoingAcls) {
       _outgoingAcls = outgoingAcls;
+      return this;
+    }
+
+    public Builder setRoutableIps(Map<String, Map<String, BooleanExpr>> routableIps) {
+      _routableIps = routableIps;
       return this;
     }
 
@@ -181,9 +199,10 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
-  private final Set<Edge> _enabledEdges;
+  private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+      _arpTrueEdge;
 
-  private final Set<NodeInterfacePair> _enabledFlowSinks;
+  private final Set<Edge> _enabledEdges;
 
   private final Map<String, Set<String>> _enabledInterfaces;
 
@@ -193,14 +212,17 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<String>> _enabledVrfs;
 
-  private final Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-      _fibConditions;
-
   private final Map<String, Map<String, String>> _incomingAcls;
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+
+  private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
+
   private final Map<String, Map<String, String>> _outgoingAcls;
+
+  private final Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
 
@@ -210,35 +232,39 @@ public class TestSynthesizerInput implements SynthesizerInput {
 
   private final Set<Type> _vectorizedParameters;
 
-  private TestSynthesizerInput(
+  private MockSynthesizerInput(
       Map<String, Map<String, List<LineAction>>> aclActions,
       Map<String, Map<String, List<BooleanExpr>>> aclConditions,
+      Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> arpTrueEdge,
       Set<Edge> enabledEdges,
-      Set<NodeInterfacePair> enabledFlowSinks,
       Map<String, Set<String>> enabledInterfaces,
       Map<String, Map<String, Set<String>>> enabledInterfacesByNodeVrf,
       Set<String> enabledNodes,
       Map<String, Set<String>> enabledVrfs,
-      Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>> fibConditions,
       Map<String, Map<String, String>> incomingAcls,
       Map<String, Set<Ip>> ipsByHostname,
+      Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable,
+      Map<String, Map<String, BooleanExpr>> nullRoutedIps,
       Map<String, Map<String, String>> outgoingAcls,
+      Map<String, Map<String, BooleanExpr>> routableIps,
       boolean simplify,
       Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats,
       Map<String, Set<String>> topologyInterfaces,
       Set<Type> vectorizedParameters) {
     _aclActions = aclActions;
     _aclConditions = aclConditions;
+    _arpTrueEdge = arpTrueEdge;
     _enabledEdges = enabledEdges;
-    _enabledFlowSinks = enabledFlowSinks;
     _enabledInterfaces = enabledInterfaces;
     _enabledInterfacesByNodeVrf = enabledInterfacesByNodeVrf;
     _enabledNodes = enabledNodes;
     _enabledVrfs = enabledVrfs;
-    _fibConditions = fibConditions;
     _incomingAcls = incomingAcls;
     _ipsByHostname = ipsByHostname;
+    _neighborUnreachable = neighborUnreachable;
+    _nullRoutedIps = nullRoutedIps;
     _outgoingAcls = outgoingAcls;
+    _routableIps = routableIps;
     _simplify = simplify;
     _sourceNats = sourceNats;
     _topologyInterfaces = topologyInterfaces;
@@ -256,13 +282,14 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Set<Edge> getEnabledEdges() {
-    return _enabledEdges;
+  public Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+      getArpTrueEdge() {
+    return _arpTrueEdge;
   }
 
   @Override
-  public Set<NodeInterfacePair> getEnabledFlowSinks() {
-    return _enabledFlowSinks;
+  public Set<Edge> getEnabledEdges() {
+    return _enabledEdges;
   }
 
   @Override
@@ -286,12 +313,6 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>
-      getFibConditions() {
-    return _fibConditions;
-  }
-
-  @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
   }
@@ -302,8 +323,23 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
+    return _neighborUnreachable;
+  }
+
+  @Override
+  public Map<String, Map<String, BooleanExpr>> getNullRoutedIps() {
+    return _nullRoutedIps;
+  }
+
+  @Override
   public Map<String, Map<String, String>> getOutgoingAcls() {
     return _outgoingAcls;
+  }
+
+  @Override
+  public Map<String, Map<String, BooleanExpr>> getRoutableIps() {
+    return _routableIps;
   }
 
   @Override
@@ -317,7 +353,7 @@ public class TestSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Set<String>> getTopologyInterfaces() {
+  public Map<String, Set<String>> getTraversableInterfaces() {
     return _topologyInterfaces;
   }
 

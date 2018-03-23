@@ -21,7 +21,7 @@ public class PrefixTest {
 
     @Override
     protected boolean matchesSafely(Prefix prefix, Description mismatchDescription) {
-      if (prefix.contains(_ip)) {
+      if (prefix.containsIp(_ip)) {
         return true;
       }
       mismatchDescription

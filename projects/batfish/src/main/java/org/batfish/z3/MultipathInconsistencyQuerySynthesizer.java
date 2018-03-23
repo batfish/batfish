@@ -13,6 +13,7 @@ import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.Query;
 
 public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySynthesizer {
@@ -62,6 +63,16 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     rules.add(
         new BasicRuleStatement(
             SaneExpr.INSTANCE, ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE));
+    rules.add(
+        new BasicRuleStatement(
+            SaneExpr.INSTANCE,
+            ImmutableSet.of(Accept.INSTANCE, NeighborUnreachable.INSTANCE),
+            Query.INSTANCE));
+    rules.add(
+        new BasicRuleStatement(
+            SaneExpr.INSTANCE,
+            ImmutableSet.of(Drop.INSTANCE, NeighborUnreachable.INSTANCE),
+            Query.INSTANCE));
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))

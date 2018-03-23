@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collections;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -224,7 +223,7 @@ public class RouteReflectionTest {
             .build();
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
@@ -252,7 +251,6 @@ public class RouteReflectionTest {
                     .setSrcIp(as3PeeringIp)
                     .setSrcNode("as3Edge")
                     .build()),
-            Collections.emptySet(),
             new BdpAnswerElement());
     return engine.getRoutes(dp);
   }
@@ -358,7 +356,7 @@ public class RouteReflectionTest {
             .build();
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
@@ -377,7 +375,6 @@ public class RouteReflectionTest {
                     .setSrcIp(as1PeeringIp)
                     .setSrcNode("as1Edge")
                     .build()),
-            Collections.emptySet(),
             new BdpAnswerElement());
     return engine.getRoutes(dp);
   }

@@ -6,15 +6,21 @@ import org.batfish.z3.expr.visitors.BoolExprTransformer;
 import org.batfish.z3.expr.visitors.ExprPrinter;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
+import org.batfish.z3.expr.visitors.IsComplexVisitor;
 import org.batfish.z3.expr.visitors.Simplifier;
 
-public class TestBooleanAtom extends BooleanExpr {
+public class MockBooleanAtom extends BooleanExpr {
 
   private final Context _ctx;
 
   private final String _name;
 
-  public TestBooleanAtom(int i, Context ctx) {
+  public MockBooleanAtom(int i) {
+    _name = String.format("BoolConst%d", i);
+    _ctx = null;
+  }
+
+  public MockBooleanAtom(int i, Context ctx) {
     _name = String.format("BoolConst%d", i);
     _ctx = ctx;
   }
@@ -22,6 +28,9 @@ public class TestBooleanAtom extends BooleanExpr {
   @Override
   public void accept(ExprVisitor visitor) {
     if (visitor instanceof ExprPrinter) {
+      visitor.visitIdExpr(new IdExpr(_name));
+
+    } else if (visitor instanceof IsComplexVisitor) {
       visitor.visitIdExpr(new IdExpr(_name));
     } else {
       throw new UnsupportedOperationException(
@@ -47,7 +56,7 @@ public class TestBooleanAtom extends BooleanExpr {
 
   @Override
   public boolean exprEquals(Expr e) {
-    return Objects.equals(_name, ((TestBooleanAtom) e)._name);
+    return Objects.equals(_name, ((MockBooleanAtom) e)._name);
   }
 
   @Override

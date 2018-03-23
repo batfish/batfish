@@ -15,6 +15,7 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -139,7 +140,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    printExpr(currentIsOriginalExpr.getExpr());
+    _sb.append("currentIsOriginal");
   }
 
   @Override
@@ -167,7 +168,8 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitHeaderSpaceMatchExpr(HeaderSpaceMatchExpr headerSpaceMatchExpr) {
-    printExpr(headerSpaceMatchExpr.getExpr());
+    printCollapsedComplexExpr(
+        ImmutableList.of(new IdExpr("headerSpaceMatch"), headerSpaceMatchExpr.getExpr()));
   }
 
   @Override
@@ -179,6 +181,12 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   public void visitIfExpr(IfExpr ifExpr) {
     printExpandedComplexExpr(
         ImmutableList.of(new IdExpr("=>"), ifExpr.getAntecedent(), ifExpr.getConsequent()));
+  }
+
+  @Override
+  public void visitIpSpaceMatchExpr(IpSpaceMatchExpr ipSpaceMatchExpr) {
+    printCollapsedComplexExpr(
+        ImmutableList.of(new IdExpr("ipSpaceMatch"), ipSpaceMatchExpr.getExpr()));
   }
 
   @Override
@@ -222,7 +230,8 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr) {
-    printExpr(prefixMatchExpr.getExpr());
+    printCollapsedComplexExpr(
+        ImmutableList.of(new IdExpr("prefixMatch"), prefixMatchExpr.getExpr()));
   }
 
   @Override
@@ -232,12 +241,12 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
 
   @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
-    printExpr(rangeMatchExpr.getExpr());
+    printCollapsedComplexExpr(ImmutableList.of(new IdExpr("rangeMatch"), rangeMatchExpr.getExpr()));
   }
 
   @Override
   public void visitSaneExpr(SaneExpr saneExpr) {
-    printExpr(saneExpr.getExpr());
+    _sb.append("sane");
   }
 
   public void visitStateExpr(StateExpr stateExpr) {

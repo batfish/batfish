@@ -8,17 +8,16 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclActions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasAclConditions;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasArpTrueEdge;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledEdges;
-import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledFlowSinks;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledInterfaces;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledNodes;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasEnabledVrfs;
-import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasFibConditions;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasIpsByHostname;
+import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasNeighborUnreachable;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasSourceNats;
 import org.batfish.z3.matchers.SynthesizerInputMatchersImpl.HasTopologyInterfaces;
 import org.batfish.z3.state.AclPermit;
@@ -46,19 +45,20 @@ public class SynthesizerInputMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's enabled edges.
+   * SynthesizerInput's arpTrueEdge.
    */
-  public static HasEnabledEdges hasEnabledEdges(Matcher<? super Set<Edge>> subMatcher) {
-    return new HasEnabledEdges(subMatcher);
+  public static HasArpTrueEdge hasArpTrueEdge(
+      Matcher<? super Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>>
+          subMatcher) {
+    return new HasArpTrueEdge(subMatcher);
   }
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's enabled flowSinks.
+   * SynthesizerInput's enabled edges.
    */
-  public static HasEnabledFlowSinks hasEnabledFlowSinks(
-      Matcher<? super Set<NodeInterfacePair>> subMatcher) {
-    return new HasEnabledFlowSinks(subMatcher);
+  public static HasEnabledEdges hasEnabledEdges(Matcher<? super Set<Edge>> subMatcher) {
+    return new HasEnabledEdges(subMatcher);
   }
 
   /**
@@ -89,21 +89,20 @@ public class SynthesizerInputMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
-   * SynthesizerInput's fibConditions.
-   */
-  public static HasFibConditions hasFibConditions(
-      Matcher<? super Map<String, Map<String, Map<String, Map<NodeInterfacePair, BooleanExpr>>>>>
-          subMatcher) {
-    return new HasFibConditions(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the
    * SynthesizerInput's IPs by hostname.
    */
   public static HasIpsByHostname hasIpsByHostname(
       Matcher<? super Map<String, Set<Ip>>> subMatcher) {
     return new HasIpsByHostname(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the
+   * SynthesizerInput's neighborUnreachable.
+   */
+  public static HasNeighborUnreachable hasNeighborUnreachable(
+      Matcher<? super Map<String, Map<String, Map<String, BooleanExpr>>>> subMatcher) {
+    return new HasNeighborUnreachable(subMatcher);
   }
 
   /**

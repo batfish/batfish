@@ -1,6 +1,7 @@
 package org.batfish.grammar.host;
 
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSourceNats;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.matchers.SourceNatMatchers.hasPoolIpFirst;
 import static org.batfish.datamodel.matchers.SourceNatMatchers.hasPoolIpLast;
 import static org.hamcrest.Matchers.allOf;
@@ -59,6 +60,17 @@ public class HostInterfaceTest {
             .setHostname("hostInterfaceTest")
             .build();
     _w = new Warnings();
+  }
+
+  @Test
+  public void testToInterface() {
+    String name = "eth0";
+    HostInterface hi = new HostInterface(name);
+    hi.setCanonicalName(name);
+    Interface i = hi.toInterface(_c, new Warnings());
+
+    /* Check defaults */
+    assertThat(i, isProxyArp(equalTo(false)));
   }
 
   @Test

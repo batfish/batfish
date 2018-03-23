@@ -20,12 +20,12 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
+import org.batfish.z3.expr.MockBooleanAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.TestBooleanAtom;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public class SimplifierTest {
   private int _atomCounter;
 
   private BooleanExpr newAtom() {
-    return new TestBooleanAtom(_atomCounter++, null);
+    return new MockBooleanAtom(_atomCounter++, null);
   }
 
   /** Test that we keep simplifying until no more simplifications are possible. */

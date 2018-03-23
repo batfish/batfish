@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class IpWildcard extends Pair<Ip, Ip> {
+public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
 
   public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, Ip.MAX);
 
@@ -73,7 +74,13 @@ public class IpWildcard extends Pair<Ip, Ip> {
     super(parseAddress(str), parseMask(str));
   }
 
-  public boolean contains(Ip ip) {
+  @Override
+  public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
+    return visitor.visitIpWildcard(this);
+  }
+
+  @Override
+  public boolean containsIp(Ip ip) {
     long wildcardIpAsLong = getIp().asLong();
     long wildcardMask = getWildcard().asLong();
     long ipAsLong = ip.asLong();

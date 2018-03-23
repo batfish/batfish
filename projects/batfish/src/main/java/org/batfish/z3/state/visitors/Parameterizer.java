@@ -22,6 +22,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -29,6 +30,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
@@ -130,6 +132,11 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
+  public List<StateParameter> visitNeighborUnreachable(NeighborUnreachable neighborUnreachable) {
+    return ImmutableList.of();
+  }
+
+  @Override
   public List<StateParameter> visitNodeAccept(NodeAccept nodeAccept) {
     return ImmutableList.of(new StateParameter(nodeAccept.getHostname(), NODE));
   }
@@ -162,6 +169,12 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   @Override
   public List<StateParameter> visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute) {
     return ImmutableList.of(new StateParameter(nodeDropNullRoute.getHostname(), NODE));
+  }
+
+  @Override
+  public List<StateParameter> visitNodeNeighborUnreachable(
+      NodeNeighborUnreachable nodeNeighborUnreachable) {
+    return ImmutableList.of(new StateParameter(nodeNeighborUnreachable.getHostname(), NODE));
   }
 
   @Override

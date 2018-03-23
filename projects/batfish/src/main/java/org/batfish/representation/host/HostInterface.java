@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import org.batfish.common.Warnings;
@@ -135,19 +133,24 @@ public class HostInterface implements Serializable {
   }
 
   public Interface toInterface(Configuration configuration, Warnings warnings) {
-    Interface iface = new Interface(_canonicalName, configuration);
-    iface.setBandwidth(_bandwidth);
-    iface.setDeclaredNames(ImmutableSortedSet.of(_name));
-    iface.setAddress(_address);
-    iface.setAllAddresses(Iterables.concat(Collections.singleton(_address), _otherAddresses));
-    iface.setVrf(configuration.getDefaultVrf());
+    String name = _canonicalName != null ? _canonicalName : _name;
+    Interface.Builder iface =
+        Interface.builder()
+            .setName(name)
+            .setOwner(configuration)
+            .setActive(true)
+            .setAddresses(_address, _otherAddresses)
+            .setBandwidth(_bandwidth)
+            .setDeclaredNames(ImmutableSortedSet.of(_name))
+            .setProxyArp(false)
+            .setVrf(configuration.getDefaultVrf());
     if (_shared) {
       SourceNat sourceNat = new SourceNat();
-      iface.setSourceNats(ImmutableList.of(sourceNat));
       Ip publicIp = _address.getIp();
       sourceNat.setPoolIpFirst(publicIp);
       sourceNat.setPoolIpLast(publicIp);
+      iface.setSourceNats(ImmutableList.of(sourceNat));
     }
-    return iface;
+    return iface.build();
   }
 }

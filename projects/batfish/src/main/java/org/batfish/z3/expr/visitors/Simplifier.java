@@ -19,6 +19,7 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -129,11 +130,6 @@ public class Simplifier
   }
 
   @Override
-  public StateExpr visitStateExpr(StateExpr stateExpr) {
-    return stateExpr;
-  }
-
-  @Override
   public IntExpr visitBitVecExpr(BitVecExpr bitVecExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -213,6 +209,11 @@ public class Simplifier
   public IntExpr visitLitIntExpr(LitIntExpr litIntExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public BooleanExpr visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+    return matchIpSpaceExpr.getExpr().accept(this);
   }
 
   @Override
@@ -296,6 +297,11 @@ public class Simplifier
   @Override
   public BooleanExpr visitSaneExpr(SaneExpr saneExpr) {
     return simplifyBooleanExpr(saneExpr.getExpr());
+  }
+
+  @Override
+  public StateExpr visitStateExpr(StateExpr stateExpr) {
+    return stateExpr;
   }
 
   @Override

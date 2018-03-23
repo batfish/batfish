@@ -3,13 +3,13 @@ package org.batfish.z3;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclActions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclConditions;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasArpTrueEdge;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledEdges;
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledFlowSinks;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledInterfaces;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledNodes;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledVrfs;
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasFibConditions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIpsByHostname;
+import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasNeighborUnreachable;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasSourceNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasTopologyInterfaces;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -36,18 +35,17 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MockForwardingAnalysis;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
-import org.batfish.datamodel.TestDataPlane;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.FibRow;
-import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.z3.expr.FibRowMatchExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
-import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
@@ -96,7 +94,6 @@ public class SynthesizerInputImplTest {
                     IpAccessListLine.builder().setAction(LineAction.REJECT).build()))
             .build();
     IpAccessList srcInterfaceOutAcl = _aclb.build();
-    IpAccessList iFlowSinkOutAcl = _aclb.build();
     IpAccessList iNoEdgeInAcl = _aclb.build();
     IpAccessList iNoEdgeOutAcl = _aclb.build();
     IpAccessList nextHopInterfaceInAcl = _aclb.setOwner(nextHop).build();
@@ -109,8 +106,6 @@ public class SynthesizerInputImplTest {
             .setIncomingFilter(edgeInterfaceInAcl)
             .setOutgoingFilter(srcInterfaceOutAcl)
             .build();
-    Interface iFlowSink =
-        _ib.setIncomingFilter(edgeInterfaceInAcl).setOutgoingFilter(iFlowSinkOutAcl).build();
     /*
      * Interface without an edge: Its ACLs should be absent with data plane, but present without
      * data plane.
@@ -131,13 +126,8 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setFlowSinks(
-                        ImmutableSet.of(
-                            new NodeInterfacePair(srcNode.getName(), iFlowSink.getName())))
-                    .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
-                    .build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
     List<LineAction> expectedActions = ImmutableList.of(LineAction.ACCEPT, LineAction.REJECT);
     Map<String, List<LineAction>> expectedSrcNodeWithDataPlane =
@@ -145,8 +135,6 @@ public class SynthesizerInputImplTest {
             edgeInterfaceInAcl.getName(),
             expectedActions,
             srcInterfaceOutAcl.getName(),
-            expectedActions,
-            iFlowSinkOutAcl.getName(),
             expectedActions);
     Map<String, List<LineAction>> expectedSrcNodeWithoutDataPlane =
         ImmutableMap.<String, List<LineAction>>builder()
@@ -241,17 +229,11 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setConfigurations(
                 ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setTopologyEdges(
-                        ImmutableSortedSet.of(
-                            forwardEdge1,
-                            forwardEdge2,
-                            forwardEdge3,
-                            backEdge1,
-                            backEdge2,
-                            backEdge3))
-                    .build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(
+                new Topology(
+                    ImmutableSortedSet.of(
+                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
             .build();
     assertThat(
         inputWithDataPlane,
@@ -264,6 +246,53 @@ public class SynthesizerInputImplTest {
                         sourceNat2Acl.getName(), ImmutableList.of()),
                     nextHop.getName(),
                     ImmutableMap.of()))));
+  }
+
+  @Test
+  public void testComputeArpTrueEdge() {
+    Configuration srcNode = _cb.build();
+    Vrf srcVrf = _vb.setOwner(srcNode).build();
+    Interface srcInterface = _ib.setOwner(srcNode).setVrf(srcVrf).build();
+    String nextHop1 = "nextHop1";
+    String nextHopInterface1 = "nextHopInterface1";
+    String nextHop2 = "nextHop2";
+    String nextHopInterface2 = "nextHopInterface2";
+    IpSpace ipSpace1 = Ip.ZERO;
+    IpSpace ipSpace2 = Ip.MAX;
+    IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
+    IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
+    Edge edge1 =
+        new Edge(srcNode.getHostname(), srcInterface.getName(), nextHop1, nextHopInterface1);
+    Edge edge2 =
+        new Edge(srcNode.getHostname(), srcInterface.getName(), nextHop2, nextHopInterface2);
+
+    SynthesizerInput inputWithoutDataPlane =
+        _inputBuilder.setConfigurations(ImmutableMap.of(srcNode.getName(), srcNode)).build();
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setForwardingAnalysis(
+                MockForwardingAnalysis.builder()
+                    .setArpTrueEdge(ImmutableMap.of(edge1, ipSpace1, edge2, ipSpace2))
+                    .build())
+            .setTopology(new Topology(ImmutableSortedSet.of(edge1, edge2)))
+            .build();
+
+    assertThat(inputWithoutDataPlane, hasArpTrueEdge(nullValue()));
+    assertThat(
+        inputWithDataPlane,
+        hasArpTrueEdge(
+            equalTo(
+                ImmutableMap.of(
+                    srcNode.getHostname(),
+                    ImmutableMap.of(
+                        srcVrf.getName(),
+                        ImmutableMap.of(
+                            srcInterface.getName(),
+                            ImmutableMap.of(
+                                nextHop1,
+                                ImmutableMap.of(nextHopInterface1, m1),
+                                nextHop2,
+                                ImmutableMap.of(nextHopInterface2, m2))))))));
   }
 
   @Test
@@ -284,53 +313,15 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setTopologyEdges(
-                        ImmutableSortedSet.of(expectedEnabledEdge, expectedDisabledEdge))
-                    .build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(
+                new Topology(ImmutableSortedSet.of(expectedEnabledEdge, expectedDisabledEdge)))
             .build();
 
     assertThat(inputWithDataPlane, hasEnabledEdges(hasItem(expectedEnabledEdge)));
     assertThat(inputWithDataPlane, hasEnabledEdges(not(hasItem(expectedDisabledEdge))));
     assertThat(inputWithDataPlane, hasEnabledEdges(not(hasItem(expectedDisabledEdge))));
     assertThat(inputWithoutDataPlane, hasEnabledEdges(nullValue()));
-  }
-
-  @Test
-  public void testComputeEnabledFlowSinks() {
-    Configuration cEnabled = _cb.build();
-    Configuration cDisabled = _cb.build();
-    Vrf vEnabled = _vb.setOwner(cEnabled).build();
-    // Enabled but not flow sink. Should not appear in enabledFlowSinks.
-    _ib.setOwner(cEnabled).setVrf(vEnabled).build();
-    Interface iEnabledAndFlowSink = _ib.build();
-    Interface iDisabledViaInactiveAndFlowSink = _ib.setActive(false).build();
-    SynthesizerInput inputWithoutDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(cEnabled.getName(), cEnabled, cDisabled.getName(), cDisabled))
-            .build();
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setFlowSinks(
-                        ImmutableSet.of(
-                            new NodeInterfacePair(
-                                cEnabled.getName(), iEnabledAndFlowSink.getName()),
-                            new NodeInterfacePair(
-                                cEnabled.getName(), iDisabledViaInactiveAndFlowSink.getName())))
-                    .build())
-            .build();
-
-    assertThat(
-        inputWithDataPlane,
-        hasEnabledFlowSinks(
-            equalTo(
-                ImmutableSet.of(
-                    new NodeInterfacePair(cEnabled.getName(), iEnabledAndFlowSink.getName())))));
-    assertThat(inputWithoutDataPlane, hasEnabledFlowSinks(nullValue()));
   }
 
   @Test
@@ -424,95 +415,6 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
-  public void testComputeFibConditions() {
-    Configuration srcNode = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Interface srcInterface = _ib.setOwner(srcNode).setVrf(srcVrf).build();
-    String nextHop1 = "nextHop1";
-    String nextHopInterface1 = "nextHopInterface1";
-    String nextHop2 = "nextHop2";
-    String nextHopInterface2 = "nextHopInterface2";
-    Prefix p1 = Prefix.parse("1.2.3.0/24");
-    Prefix p2 = Prefix.parse("3.4.5.0/24");
-    FibRow iEnabledFibRow11 = new FibRow(p1, srcInterface.getName(), nextHop1, nextHopInterface1);
-    FibRow iEnabledFibRow12 = new FibRow(p2, srcInterface.getName(), nextHop1, nextHopInterface1);
-    FibRow iEnabledFibRow21 = new FibRow(p1, srcInterface.getName(), nextHop2, nextHopInterface2);
-    FibRow iEnabledFibRow22 = new FibRow(p2, srcInterface.getName(), nextHop2, nextHopInterface2);
-    FibRow defaultDropFibRow = new FibRow(Prefix.ZERO, FibRow.DROP_NO_ROUTE, "", "");
-    SortedSet<FibRow> fibs =
-        ImmutableSortedSet.of(
-            iEnabledFibRow11,
-            iEnabledFibRow12,
-            iEnabledFibRow21,
-            iEnabledFibRow22,
-            defaultDropFibRow);
-    SynthesizerInput inputWithoutDataPlane =
-        _inputBuilder.setConfigurations(ImmutableMap.of(srcNode.getName(), srcNode)).build();
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setFibRows(
-                        ImmutableMap.of(srcNode.getName(), ImmutableMap.of(srcVrf.getName(), fibs)))
-                    .build())
-            .build();
-
-    assertThat(
-        inputWithDataPlane,
-        hasFibConditions(
-            equalTo(
-                ImmutableMap.of(
-                    srcNode.getName(),
-                    ImmutableMap.of(
-                        srcVrf.getName(),
-                        ImmutableMap.of(
-                            srcInterface.getName(),
-                            ImmutableMap.of(
-                                new NodeInterfacePair(nextHop1, nextHopInterface1),
-                                new OrExpr(
-                                    ImmutableList.of(
-                                        FibRowMatchExpr.getFibRowConditions(
-                                            srcNode.getName(),
-                                            srcVrf.getName(),
-                                            ImmutableList.copyOf(fibs),
-                                            1,
-                                            iEnabledFibRow11),
-                                        FibRowMatchExpr.getFibRowConditions(
-                                            srcNode.getName(),
-                                            srcVrf.getName(),
-                                            ImmutableList.copyOf(fibs),
-                                            3,
-                                            iEnabledFibRow12))),
-                                new NodeInterfacePair(nextHop2, nextHopInterface2),
-                                new OrExpr(
-                                    ImmutableList.of(
-                                        FibRowMatchExpr.getFibRowConditions(
-                                            srcNode.getName(),
-                                            srcVrf.getName(),
-                                            ImmutableList.copyOf(fibs),
-                                            2,
-                                            iEnabledFibRow21),
-                                        FibRowMatchExpr.getFibRowConditions(
-                                            srcNode.getName(),
-                                            srcVrf.getName(),
-                                            ImmutableList.copyOf(fibs),
-                                            4,
-                                            iEnabledFibRow22)))),
-                            FibRow.DROP_NO_ROUTE,
-                            ImmutableMap.of(
-                                new NodeInterfacePair("", ""),
-                                new OrExpr(
-                                    ImmutableList.of(
-                                        FibRowMatchExpr.getFibRowConditions(
-                                            srcNode.getName(),
-                                            srcVrf.getName(),
-                                            ImmutableList.copyOf(fibs),
-                                            0,
-                                            defaultDropFibRow))))))))));
-    assertThat(inputWithoutDataPlane, hasFibConditions(nullValue()));
-  }
-
-  @Test
   public void testComputeIpsByHostname() {
     Configuration c = _cb.build();
     Vrf v = _vb.setOwner(c).build();
@@ -534,7 +436,10 @@ public class SynthesizerInputImplTest {
     SynthesizerInput inputWithoutDataPlane =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
     SynthesizerInput inputWithDataPlane =
-        _inputBuilder.setDataPlane(TestDataPlane.builder().build()).build();
+        _inputBuilder
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(new Topology(ImmutableSortedSet.of()))
+            .build();
 
     assertThat(inputWithoutDataPlane, hasIpsByHostname(nullValue()));
     assertThat(
@@ -553,11 +458,52 @@ public class SynthesizerInputImplTest {
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
             .setConfigurations(ImmutableMap.of(c.getName(), c))
-            .setDataPlane(TestDataPlane.builder().build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(new Topology(ImmutableSortedSet.of()))
             .build();
     assertThat(
         inputWithDataPlane,
         hasIpsByHostname(equalTo(ImmutableMap.of(c.getName(), ImmutableSet.of()))));
+  }
+
+  @Test
+  public void testComputeNeighborUnreachable() {
+    Configuration node = _cb.build();
+    Vrf vrf = _vb.setOwner(node).build();
+    Interface iface1 = _ib.setOwner(node).setVrf(vrf).build();
+    Interface iface2 = _ib.build();
+    IpSpace ipSpace1 = Ip.ZERO;
+    IpSpace ipSpace2 = Ip.MAX;
+    IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
+    IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
+
+    SynthesizerInput inputWithoutDataPlane =
+        _inputBuilder.setConfigurations(ImmutableMap.of(node.getName(), node)).build();
+    SynthesizerInput inputWithDataPlane =
+        _inputBuilder
+            .setForwardingAnalysis(
+                MockForwardingAnalysis.builder()
+                    .setNeighborUnreachable(
+                        ImmutableMap.of(
+                            node.getName(),
+                            ImmutableMap.of(
+                                vrf.getName(),
+                                ImmutableMap.of(
+                                    iface1.getName(), ipSpace1, iface2.getName(), ipSpace2))))
+                    .build())
+            .setTopology(new Topology(ImmutableSortedSet.of()))
+            .build();
+
+    assertThat(inputWithoutDataPlane, hasNeighborUnreachable(nullValue()));
+    assertThat(
+        inputWithDataPlane,
+        hasNeighborUnreachable(
+            equalTo(
+                ImmutableMap.of(
+                    node.getHostname(),
+                    ImmutableMap.of(
+                        vrf.getName(),
+                        ImmutableMap.of(iface1.getName(), m1, iface2.getName(), m2))))));
   }
 
   @Test
@@ -596,17 +542,11 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setTopologyEdges(
-                        ImmutableSortedSet.of(
-                            forwardEdge1,
-                            forwardEdge2,
-                            forwardEdge3,
-                            backEdge1,
-                            backEdge2,
-                            backEdge3))
-                    .build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(
+                new Topology(
+                    ImmutableSortedSet.of(
+                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
             .build();
 
     assertThat(
@@ -664,7 +604,6 @@ public class SynthesizerInputImplTest {
     Vrf srcVrf = _vb.setOwner(srcNode).build();
     Vrf nextHopVrf = _vb.setOwner(nextHop).build();
     Interface srcInterface = _ib.setOwner(srcNode).setVrf(srcVrf).build();
-    Interface iFlowSink = _ib.build();
     Interface iNoEdge = _ib.build();
     Interface nextHopInterface = _ib.setOwner(nextHop).setVrf(nextHopVrf).build();
     Edge forwardEdge = new Edge(srcInterface, nextHopInterface);
@@ -676,13 +615,8 @@ public class SynthesizerInputImplTest {
             .build();
     SynthesizerInput inputWithDataPlane =
         _inputBuilder
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setFlowSinks(
-                        ImmutableSet.of(
-                            new NodeInterfacePair(srcNode.getName(), iFlowSink.getName())))
-                    .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
-                    .build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
 
     assertThat(
@@ -723,10 +657,8 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setConfigurations(
                 ImmutableMap.of(srcNode.getName(), srcNode, nextHop.getName(), nextHop))
-            .setDataPlane(
-                TestDataPlane.builder()
-                    .setTopologyEdges(ImmutableSortedSet.of(forwardEdge, backEdge))
-                    .build())
+            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
+            .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
             .build();
 
     // Acl for the SourceNat is DefaultSourceNatAcl
