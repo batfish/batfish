@@ -7,20 +7,24 @@ import javax.annotation.Nonnull;
 
 /** Represents a link by a pair of IP addresses. */
 public final class IpLink implements Comparable<IpLink> {
+  private static final String PROP_IP1 = "ip1";
+  private static final String PROP_IP2 = "ip2";
 
   private final Ip _ip1;
   private final Ip _ip2;
 
   @JsonCreator
-  public IpLink(@JsonProperty("ip1") Ip ip1, @JsonProperty("ip2") Ip ip2) {
+  public IpLink(@JsonProperty(PROP_IP1) Ip ip1, @JsonProperty(PROP_IP2) Ip ip2) {
     this._ip1 = ip1;
     this._ip2 = ip2;
   }
 
+  @JsonProperty(PROP_IP1)
   public Ip getIp1() {
     return _ip1;
   }
 
+  @JsonProperty(PROP_IP2)
   public Ip getIp2() {
     return _ip2;
   }
