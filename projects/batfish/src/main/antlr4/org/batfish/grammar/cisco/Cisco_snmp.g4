@@ -26,6 +26,7 @@ s_snmp_server
       | ss_enable_traps
       | ss_file_transfer
       | ss_host
+      | ss_mib
       | ss_null
       | ss_removed
       | ss_source_interface
@@ -144,6 +145,11 @@ ss_host_version
       | NOAUTH
       | PRIV
    )?
+;
+
+ss_mib
+:
+   MIB COMMUNITY_MAP community_string = variable_community_name CONTEXT context_name = variable_community_name
 ;
 
 ss_null
