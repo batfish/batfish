@@ -7,6 +7,7 @@ import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatcher
 import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasSubnets;
 import static org.batfish.representation.aws.matchers.ElasticsearchDomainMatchers.hasVpcId;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -14,6 +15,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -26,8 +29,14 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
@@ -150,5 +159,37 @@ public class ElasticsearchDomainTest {
     assertThat(elasticsearchDomain, hasVpcId("vpc-b390fad5"));
     assertThat(elasticsearchDomain, hasSubnets(ImmutableList.of("subnet-7044ff16")));
     assertThat(elasticsearchDomain, hasSecurityGroups(ImmutableList.of("sg-55510831")));
+  }
+
+  @Test
+  public void testSecurityGroupsAcl() throws IOException {
+    Map<String, Configuration> configurations = loadAwsConfigurations();
+
+    assertThat(configurations, hasKey("es-domain"));
+    assertThat(configurations.get("es-domain").getInterfaces().entrySet(), hasSize(2));
+
+    IpAccessList expectedIncomingFilter =
+        new IpAccessList(
+            "~SECURITY_GROUP_INGRESS_ACL~",
+            Lists.newArrayList(
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                    .build()));
+    IpAccessList expectedOutgoingFilter =
+        new IpAccessList(
+            "~SECURITY_GROUP_EGRESS_ACL~",
+            Lists.newArrayList(
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                    .build()));
+
+    for (Interface iface : configurations.get("es-domain").getInterfaces().values()) {
+      assertThat(iface.getIncomingFilter(), equalTo(expectedIncomingFilter));
+      assertThat(iface.getOutgoingFilter(), equalTo(expectedOutgoingFilter));
+    }
   }
 }
