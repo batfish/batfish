@@ -63,7 +63,7 @@
    "VpcSecurityGroups": [
     {
      "Status": "active",
-     "VpcSecurityGroupId": "sg-55510831"
+     "VpcSecurityGroupId": "sg-0de0ddfa8a5a45810"
     }
    ]
   }
