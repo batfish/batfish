@@ -149,7 +149,7 @@ ss_host_version
 
 ss_mib
 :
-   MIB COMMUNITY_MAP community_string = variable_community_name CONTEXT context_name = variable_community_name
+   MIB COMMUNITY_MAP community_string = variable_community_name CONTEXT context_name = variable_community_name NEWLINE
 ;
 
 ss_null
