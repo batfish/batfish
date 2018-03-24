@@ -9,6 +9,7 @@ import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -160,7 +161,11 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
       Ip instancesIfaceIp = subnet.getNextIp();
       InterfaceAddress instancesIfaceAddress =
           new InterfaceAddress(instancesIfaceIp, subnet.getCidrBlock().getPrefixLength());
-      Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
+      Interface iface = Utils.newInterface(instancesIfaceName, cfgNode, instancesIfaceAddress);
+
+      // apply ACLs to interface
+      iface.setIncomingFilter(inAcl);
+      iface.setOutgoingFilter(outAcl);
 
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
       StaticRoute defaultRoute =

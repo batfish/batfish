@@ -1,45 +1,23 @@
 {
  "SecurityGroups": [
-   {
-   "Description": "RDS VPC security group",
-   "GroupId": "sg-55510831",
-   "GroupName": "default",
+  {
+   "Description": "Test Security Group",
+   "GroupId": "sg-0de0ddfa8a5a45810",
+   "GroupName": "Test Security Group",
    "IpPermissions": [
     {
-     "FromPort": 3306,
+     "FromPort": 45,
      "IpProtocol": "tcp",
      "IpRanges": [
       {
-       "CidrIp": "10.193.0.0/16",
-       "Description": "Internal traffic"
-      },
-      {
-       "CidrIp": "107.170.243.58/32",
-       "Description": "inentionet-test"
-      },
-      {
-       "CidrIp": "104.236.156.171/32",
-       "Description": "intentionet-dev"
-      },
-      {
-       "CidrIp": "162.243.144.192/32",
-       "Description": "intentionet-web"
-      },
-      {
-       "CidrIp": "67.170.86.87/32",
-       "Description": "surf"
+       "CidrIp": "1.2.3.4/32",
+       "Description": "Closed interval"
       }
      ],
      "Ipv6Ranges": [],
      "PrefixListIds": [],
-     "ToPort": 3306,
-     "UserIdGroupPairs": [
-      {
-       "Description": "jump host",
-       "GroupId": "sg-cf3f86b3",
-       "UserId": "118292266645"
-      }
-     ]
+     "ToPort": 50,
+     "UserIdGroupPairs": []
     }
    ],
    "IpPermissionsEgress": [
@@ -56,13 +34,7 @@
     }
    ],
    "OwnerId": "118292266645",
-   "Tags": [
-    {
-     "Key": "Name",
-     "Value": "Default+RDS-sg"
-    }
-   ],
-   "VpcId": "vpc-f8fad69d"
+   "VpcId": "vpc-b390fad5"
   }
  ]
 }
