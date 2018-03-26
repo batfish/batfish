@@ -86,6 +86,14 @@ public final class Prefix implements Comparable<Prefix>, Serializable, IpSpace {
     return start <= ipAsLong && ipAsLong <= end;
   }
 
+  @Override
+  public IpSpace complement() {
+    return AclIpSpace.builder()
+        .thenRejecting(this)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
+  }
+
   public boolean containsPrefix(Prefix prefix) {
     return containsIp(prefix._ip) && _prefixLength <= prefix._prefixLength;
   }

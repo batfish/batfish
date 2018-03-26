@@ -18,4 +18,9 @@ public class UniverseIpSpace implements IpSpace {
   public boolean containsIp(@Nonnull Ip ip) {
     return true;
   }
+
+  @Override
+  public IpSpace complement() {
+    return EmptyIpSpace.INSTANCE;
+  }
 }

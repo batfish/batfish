@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.AclIpSpace.Builder;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
@@ -77,6 +78,24 @@ public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
   public boolean containsIp(@Nonnull Ip ip) {
     return _blacklist.stream().noneMatch(w -> w.containsIp(ip))
         && _whitelist.stream().anyMatch(w -> w.containsIp(ip));
+  }
+
+  @Override
+  public IpSpace complement() {
+    /*
+     * the current is first reject everything in blacklist.
+     * then of what's left over accept everything in whitelist.
+     * and then reject everything else
+     *
+     * the complement then is to accept everything in the blacklist
+     * then reject everything in the whitelist
+     * then accept everything else.
+     */
+    AclIpSpace.Builder builder = AclIpSpace.builder();
+    _blacklist.forEach(builder::thenPermitting);
+    _whitelist.forEach(builder::thenRejecting);
+    builder.thenPermitting(UniverseIpSpace.INSTANCE);
+    return builder.build();
   }
 
   @Override
