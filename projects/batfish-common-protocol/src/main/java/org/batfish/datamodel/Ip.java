@@ -132,6 +132,14 @@ public class Ip implements Comparable<Ip>, Serializable, IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    return AclIpSpace.builder()
+        .thenRejecting(new IpWildcard(this))
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
+  }
+
+  @Override
   public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;

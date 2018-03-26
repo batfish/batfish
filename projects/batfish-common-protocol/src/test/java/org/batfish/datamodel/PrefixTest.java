@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.datamodel.matchers.IpSpaceMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Test;
@@ -68,5 +69,26 @@ public class PrefixTest {
     assertThat(p, containsIp(new Ip("0.0.0.0")));
     assertThat(p, containsIp(new Ip("128.128.128.128")));
     assertThat(p, containsIp(new Ip("255.255.255.255")));
+  }
+
+  @Test
+  public void testComplement() {
+    IpSpace ipSpace = Prefix.parse("1.2.3.4/31").complement();
+    assertThat(ipSpace, not(IpSpaceMatchers.containsIp(new Ip("1.2.3.4"))));
+    assertThat(ipSpace, not(IpSpaceMatchers.containsIp(new Ip("1.2.3.5"))));
+    assertThat(ipSpace, IpSpaceMatchers.containsIp(new Ip("1.2.3.6")));
+    assertThat(ipSpace, IpSpaceMatchers.containsIp(new Ip("1.2.3.3")));
+
+    // Edge cases - 32 bit prefix
+    ipSpace = Prefix.parse("1.2.3.4/32").complement();
+    assertThat(ipSpace, not(IpSpaceMatchers.containsIp(new Ip("1.2.3.4"))));
+    assertThat(ipSpace, IpSpaceMatchers.containsIp(new Ip("1.2.3.5")));
+    assertThat(ipSpace, IpSpaceMatchers.containsIp(new Ip("1.2.3.3")));
+
+    // Edge cases - 0 bit prefix
+    ipSpace = Prefix.parse("0.0.0.0/0").complement();
+    assertThat(ipSpace, not(IpSpaceMatchers.containsIp(new Ip("0.0.0.0"))));
+    assertThat(ipSpace, not(IpSpaceMatchers.containsIp(new Ip("128.128.128.128"))));
+    assertThat(ipSpace, not(IpSpaceMatchers.containsIp(new Ip("255.255.255.255"))));
   }
 }

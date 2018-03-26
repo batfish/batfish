@@ -18,6 +18,12 @@ public class MockIpSpace implements IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
   public boolean containsIp(Ip ip) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
