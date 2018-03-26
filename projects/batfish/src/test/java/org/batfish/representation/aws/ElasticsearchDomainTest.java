@@ -177,7 +177,8 @@ public class ElasticsearchDomainTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                    .build()));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build()));
     IpAccessList expectedOutgoingFilter =
         new IpAccessList(
             "~SECURITY_GROUP_EGRESS_ACL~",
@@ -185,7 +186,8 @@ public class ElasticsearchDomainTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
-                    .build()));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build()));
 
     for (Interface iface : configurations.get("es-domain").getInterfaces().values()) {
       assertThat(iface.getIncomingFilter(), equalTo(expectedIncomingFilter));

@@ -51,7 +51,8 @@ public class SecurityGroupsTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -72,7 +73,8 @@ public class SecurityGroupsTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -93,7 +95,8 @@ public class SecurityGroupsTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -113,7 +116,8 @@ public class SecurityGroupsTest {
                     .setAction(LineAction.ACCEPT)
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -133,7 +137,8 @@ public class SecurityGroupsTest {
                     .setAction(LineAction.ACCEPT)
                     .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                     .setDstPorts(Sets.newHashSet())
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -154,7 +159,8 @@ public class SecurityGroupsTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -175,7 +181,8 @@ public class SecurityGroupsTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(0, 50)))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 
   @Test
@@ -196,6 +203,7 @@ public class SecurityGroupsTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(30, 65535)))
-                    .build())));
+                    .build(),
+                IpAccessListLine.builder().setAction(LineAction.REJECT).build())));
   }
 }
