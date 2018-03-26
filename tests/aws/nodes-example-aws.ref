@@ -81,6 +81,10 @@
                   "0.0.0.0/0"
                 ],
                 "negate" : false
+              },
+              {
+                "action" : "REJECT",
+                "negate" : false
               }
             ]
           },
@@ -89,6 +93,10 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
+                "negate" : false
+              },
+              {
+                "action" : "REJECT",
                 "negate" : false
               }
             ]
@@ -3135,6 +3143,10 @@
                   "0.0.0.0/0"
                 ],
                 "negate" : false
+              },
+              {
+                "action" : "REJECT",
+                "negate" : false
               }
             ]
           },
@@ -3157,6 +3169,10 @@
                   "107.170.243.58",
                   "162.243.144.192"
                 ]
+              },
+              {
+                "action" : "REJECT",
+                "negate" : false
               }
             ]
           }
