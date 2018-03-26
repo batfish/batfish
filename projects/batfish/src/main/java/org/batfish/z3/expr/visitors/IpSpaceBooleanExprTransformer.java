@@ -3,7 +3,6 @@ package org.batfish.z3.expr.visitors;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.ComplementIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -60,11 +59,6 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
               dontMatchPrevious.add(new NotExpr(matchCurrentInIsolation));
             });
     return new OrExpr(lineSpaceMatchConditions.build());
-  }
-
-  @Override
-  public BooleanExpr visitComplementIpSpace(ComplementIpSpace complementIpSpace) {
-    return new NotExpr(complementIpSpace.getIpSpace().accept(this));
   }
 
   @Override

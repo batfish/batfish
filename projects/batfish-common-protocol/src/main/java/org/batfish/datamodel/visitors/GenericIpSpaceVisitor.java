@@ -1,7 +1,6 @@
 package org.batfish.datamodel.visitors;
 
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.ComplementIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -13,8 +12,6 @@ public interface GenericIpSpaceVisitor<R> {
   R castToGenericIpSpaceVisitorReturnType(Object o);
 
   R visitAclIpSpace(AclIpSpace aclIpSpace);
-
-  R visitComplementIpSpace(ComplementIpSpace complementIpSpace);
 
   R visitEmptyIpSpace(EmptyIpSpace emptyIpSpace);
 

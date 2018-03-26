@@ -1,8 +1,10 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.Ip.getBitAtPosition;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -32,5 +34,19 @@ public class IpTest {
     for (int i = 0; i < 32; i++) {
       assertThat(getBitAtPosition(Ip.MAX.asLong(), i), equalTo(true));
     }
+  }
+
+  @Test
+  public void testContainsIp() {
+    IpSpace ipSpace = new Ip("1.1.1.1");
+    assertThat(ipSpace, containsIp(new Ip("1.1.1.1")));
+    assertThat(ipSpace, not(containsIp(new Ip("1.2.3.4"))));
+  }
+
+  @Test
+  public void testComplement() {
+    IpSpace ipSpace = new Ip("1.1.1.1").complement();
+    assertThat(ipSpace, not(containsIp(new Ip("1.1.1.1"))));
+    assertThat(ipSpace, containsIp(new Ip("1.2.3.4")));
   }
 }

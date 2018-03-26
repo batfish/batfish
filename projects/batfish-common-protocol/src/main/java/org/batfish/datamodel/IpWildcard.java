@@ -90,6 +90,14 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    return AclIpSpace.builder()
+        .thenRejecting(this)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (o == this) {
       return true;

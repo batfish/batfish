@@ -17,4 +17,9 @@ public class EmptyIpSpace implements IpSpace {
   public boolean containsIp(Ip ip) {
     return false;
   }
+
+  @Override
+  public IpSpace complement() {
+    return UniverseIpSpace.INSTANCE;
+  }
 }
