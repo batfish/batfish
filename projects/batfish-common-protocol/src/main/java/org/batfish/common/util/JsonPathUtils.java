@@ -40,11 +40,11 @@ public class JsonPathUtils {
     ConfigurationBuilder prefixCb = new ConfigurationBuilder();
     prefixCb.options(Option.ALWAYS_RETURN_LIST);
     prefixCb.options(Option.AS_PATH_LIST);
-    com.jayway.jsonpath.Configuration prefixC = prefixCb.build();
+    Configuration prefixC = prefixCb.build();
 
     ConfigurationBuilder suffixCb = new ConfigurationBuilder();
     suffixCb.options(Option.ALWAYS_RETURN_LIST);
-    com.jayway.jsonpath.Configuration suffixC = suffixCb.build();
+    Configuration suffixC = suffixCb.build();
 
     ArrayNode prefixes = null;
     ArrayNode suffixes = null;

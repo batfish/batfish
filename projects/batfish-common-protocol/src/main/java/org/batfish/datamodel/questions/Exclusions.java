@@ -1,16 +1,14 @@
 package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.HashSet;
 import java.util.Iterator;
 import org.batfish.common.BatfishException;
 
-public class Exclusions extends ArrayNode {
+public class Exclusions extends HashSet<ObjectNode> {
 
-  public Exclusions() {
-    super(JsonNodeFactory.instance);
-  }
+  private static final long serialVersionUID = 1L;
 
   public static boolean firstCoversSecond(JsonNode first, JsonNode second) {
     if (first.isValueNode()) {

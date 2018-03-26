@@ -9,10 +9,10 @@ import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.DisplayHints.Composition;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableMetadata;
 
 public class JsonPathToTableQuery {

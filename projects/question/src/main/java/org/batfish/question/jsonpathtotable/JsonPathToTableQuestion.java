@@ -24,7 +24,7 @@ public class JsonPathToTableQuestion extends Question {
       @JsonProperty(PROP_DEBUG) Boolean debug) {
     _innerQuestion = innerQuestion;
     _pathQuery = pathQuery;
-    _debug = debug == null ? false : debug.booleanValue();
+    _debug = debug != null && debug.booleanValue();
   }
 
   @Override
