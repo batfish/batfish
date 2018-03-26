@@ -13,7 +13,7 @@ public class JsonPathUtilsTest {
   public void computePathFunction() {
 
     String content = "{ 'a' : 'X', 'b' : 'Z' }";
-    String query = "$.length()"; // $.a.length() does not work; need to debug
+    String query = "$.length()"; // $.a.length() does not work; need to understand
 
     Object result = JsonPathUtils.computePathFunction(query, content);
 

@@ -53,18 +53,19 @@ public class JsonPathUtils {
   }
 
   public static Object computePathFunction(String queryPath, String content) {
-    return computePathFunction(
+    return computePathFunctionPvt(
         queryPath,
-        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+        JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
   public static Object computePathFunction(String queryPath, JsonNode content) {
-    return computePathFunction(
+    return computePathFunctionPvt(
         queryPath,
-        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+        JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
-  private static Object computePathFunction(String queryPath, Object jsonObject) {
+  // the 'Pvt' suffix prevents ambiguous calls
+  private static Object computePathFunctionPvt(String queryPath, Object jsonObject) {
     ConfigurationBuilder cb = new ConfigurationBuilder();
     Configuration configuration = cb.build();
 
@@ -85,18 +86,18 @@ public class JsonPathUtils {
   }
 
   public static List<JsonPathResult> getJsonPathResults(String queryPath, String content) {
-    return getJsonPathResults(
+    return getJsonPathResultsPvt(
         queryPath,
-        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+        JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
   public static List<JsonPathResult> getJsonPathResults(String queryPath, JsonNode content) {
-    return getJsonPathResults(
+    return getJsonPathResultsPvt(
         queryPath,
-        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+        JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
-  private static List<JsonPathResult> getJsonPathResults(String queryPath, Object jsonObject) {
+  private static List<JsonPathResult> getJsonPathResultsPvt(String queryPath, Object jsonObject) {
     ConfigurationBuilder prefixCb = new ConfigurationBuilder();
     prefixCb.options(Option.ALWAYS_RETURN_LIST);
     prefixCb.options(Option.AS_PATH_LIST);
