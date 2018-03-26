@@ -29244,6 +29244,18 @@
             "  (stanza",
             "    (s_snmp_server",
             "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
+            "      (ss_mib",
+            "        MIB:'mib'  <== mode:DEFAULT_MODE",
+            "        COMMUNITY_MAP:'community-map'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'my_acl_for_public'  <== mode:DEFAULT_MODE)",
+            "        CONTEXT:'context'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'public1'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'  <== mode:DEFAULT_MODE",
             "      (ss_null",
             "        OVERLOAD_CONTROL:'overload-control'  <== mode:DEFAULT_MODE",
             "        DEC:'0'  <== mode:DEFAULT_MODE",
@@ -48518,7 +48530,7 @@
                 67
               ],
               "snmp server tftp-server list" : [
-                90
+                91
               ]
             },
             "customer-snmp" : {
