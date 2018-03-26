@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
-import com.jayway.jsonpath.JsonPath;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +24,6 @@ import org.batfish.datamodel.questions.DisplayHints.Composition;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
 import org.batfish.datamodel.questions.Exclusions;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.question.jsonpath.BatfishJsonPathDefaults;
 import org.batfish.question.jsonpath.JsonPathExtractionHint;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
 
@@ -48,11 +44,6 @@ public class JsonPathToTableAnswerer extends Answerer {
    */
   @Override
   public JsonPathToTableAnswerElement answer() {
-
-    Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
-    ConfigurationBuilder b = new ConfigurationBuilder();
-    final Configuration c = b.build();
-
     JsonPathToTableQuestion question = (JsonPathToTableQuestion) _question;
 
     Question innerQuestion = question.getInnerQuestion();
@@ -68,7 +59,6 @@ public class JsonPathToTableAnswerer extends Answerer {
     } catch (IOException e) {
       throw new BatfishException("Could not get JSON string from inner answer", e);
     }
-    Object jsonObject = JsonPath.parse(innerAnswerStr, c).json();
 
     JsonPathToTableQuery query = question.getPathQuery();
     JsonPathToTableAnswerElement answerElement =
@@ -78,7 +68,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       answerElement.addDebugInfo("innerAnswer", innerAnswer);
     }
 
-    computeResults(jsonObject, query, question.getExclusions(), answerElement);
+    computeResults(innerAnswerStr, query, question.getExclusions(), answerElement);
 
     AnswerSummary summary = new AnswerSummary(null, 0, 0, answerElement.getRows().size());
     if (question.getAssertion() != null) {
@@ -94,13 +84,13 @@ public class JsonPathToTableAnswerer extends Answerer {
   }
 
   public static void computeResults(
-      Object jsonObject,
+      String jsonStr,
       JsonPathToTableQuery query,
       Exclusions exclusions,
       JsonPathToTableAnswerElement answerElement) {
 
     List<JsonPathResult> jsonPathResults =
-        JsonPathUtils.getJsonPathResults(query.getPath(), jsonObject);
+        JsonPathUtils.getJsonPathResults(query.getPath(), jsonStr);
 
     for (JsonPathResult result : jsonPathResults) {
       ObjectNode answerValues = computeAnswerValues(query.getDisplayHints(), result);
@@ -262,10 +252,6 @@ public class JsonPathToTableAnswerer extends Answerer {
       JsonPathExtractionHint jpeHint,
       JsonPathResult jpResult,
       ObjectNode answerValues) {
-    Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
-    Configuration c = (new ConfigurationBuilder()).build();
-    Object jsonObject = JsonPath.parse(jpResult.getSuffix(), c).json();
-
     List<JsonNode> extractedList = new LinkedList<>();
     switch (jpeHint.getUse()) {
       case FUNCOFSUFFIX:
@@ -274,7 +260,8 @@ public class JsonPathToTableAnswerer extends Answerer {
             throw new BatfishException(
                 "schema must be INT(LIST) with funcofsuffix-based extraction hint");
           }
-          Object result = JsonPathUtils.computePathFunction(jpeHint.getFilter(), jsonObject);
+          Object result =
+              JsonPathUtils.computePathFunction(jpeHint.getFilter(), jpResult.getSuffix());
           if (result != null) {
             if (result instanceof Integer) {
               extractedList.add(new IntNode((Integer) result));
@@ -297,7 +284,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       case SUFFIXOFSUFFIX:
         {
           List<JsonPathResult> filterResults =
-              JsonPathUtils.getJsonPathResults(jpeHint.getFilter(), jsonObject);
+              JsonPathUtils.getJsonPathResults(jpeHint.getFilter(), jpResult.getSuffix());
           for (JsonPathResult result : filterResults) {
             JsonNode value =
                 (jpeHint.getUse() == UseType.PREFIXOFSUFFIX)
@@ -317,7 +304,7 @@ public class JsonPathToTableAnswerer extends Answerer {
               + "\nFilter: "
               + jpeHint.getFilter()
               + "\nJson: "
-              + jsonObject);
+              + jpResult.getSuffix());
     }
 
     if (extraction.getSchemaAsObject().isList()) {

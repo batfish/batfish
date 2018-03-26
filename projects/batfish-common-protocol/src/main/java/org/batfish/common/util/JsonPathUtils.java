@@ -5,18 +5,66 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Configuration.ConfigurationBuilder;
+import com.jayway.jsonpath.Configuration.Defaults;
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
+import com.jayway.jsonpath.spi.json.JsonProvider;
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
+import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.batfish.common.BatfishException;
 
 public class JsonPathUtils {
 
-  public static Object computePathFunction(String queryPath, Object jsonObject) {
+  public static class BatfishJsonPathDefaults implements Defaults {
+
+    public static final BatfishJsonPathDefaults INSTANCE = new BatfishJsonPathDefaults();
+
+    private BatfishJsonPathDefaults() {}
+
+    public static Configuration getDefaulConfiguration() {
+      Configuration.setDefaults(BatfishJsonPathDefaults.INSTANCE);
+      ConfigurationBuilder b = new ConfigurationBuilder();
+      final Configuration c = b.build();
+      return c;
+    }
+
+    @Override
+    public JsonProvider jsonProvider() {
+      return new JacksonJsonNodeJsonProvider();
+    }
+
+    @Override
+    public MappingProvider mappingProvider() {
+      return new JacksonMappingProvider();
+    }
+
+    @Override
+    public Set<Option> options() {
+      return EnumSet.noneOf(Option.class);
+    }
+  }
+
+  public static Object computePathFunction(String queryPath, String content) {
+    return computePathFunction(
+        queryPath,
+        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+  }
+
+  public static Object computePathFunction(String queryPath, JsonNode content) {
+    return computePathFunction(
+        queryPath,
+        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+  }
+
+  private static Object computePathFunction(String queryPath, Object jsonObject) {
     ConfigurationBuilder cb = new ConfigurationBuilder();
     Configuration configuration = cb.build();
 
@@ -36,7 +84,19 @@ public class JsonPathUtils {
     }
   }
 
-  public static List<JsonPathResult> getJsonPathResults(String queryPath, Object jsonObject) {
+  public static List<JsonPathResult> getJsonPathResults(String queryPath, String content) {
+    return getJsonPathResults(
+        queryPath,
+        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+  }
+
+  public static List<JsonPathResult> getJsonPathResults(String queryPath, JsonNode content) {
+    return getJsonPathResults(
+        queryPath,
+        (Object) JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
+  }
+
+  private static List<JsonPathResult> getJsonPathResults(String queryPath, Object jsonObject) {
     ConfigurationBuilder prefixCb = new ConfigurationBuilder();
     prefixCb.options(Option.ALWAYS_RETURN_LIST);
     prefixCb.options(Option.AS_PATH_LIST);
