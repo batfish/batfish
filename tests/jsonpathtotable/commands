@@ -1,0 +1,10 @@
+#this file assumes that we are running from top-level source directory
+
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option verboseparse
+
+# set up the testrig
+init-testrig test_rigs/example jsonpath-example
+
+test tests/jsonpathtotable/aaaAccountingCommandsTable.ref get jsonpathtotable innerQuestion: {"class": "org.batfish.question.NodesQuestionPlugin$NodesQuestion", "summary": false}, pathQuery: { "path": "$.nodes[*][?((@.configurationFormat =~ /CISCO.*/i || @.configurationFormat == \"FORCE10\"))].vendorFamily.cisco[?(!@.aaa.accounting.commands[\"${level}\"])]", "displayHints": {"extractions": {"violatorName": {"schema": "String", "method": { "use": "prefix", "index": 1}}}}},"exclusions" : [{"violatorName" : "as1core1"}], "assertion" : {"type": "countequals", "expect": 12}

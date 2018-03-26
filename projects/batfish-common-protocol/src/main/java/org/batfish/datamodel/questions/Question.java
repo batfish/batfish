@@ -259,7 +259,11 @@ public abstract class Question implements IQuestion {
     }
   }
 
+  private Assertion _assertion;
+
   private boolean _differential;
+
+  private Exclusions _exclusions;
 
   private InstanceData _instance;
 
@@ -276,9 +280,19 @@ public abstract class Question implements IQuestion {
   @JsonIgnore
   public abstract boolean getDataPlane();
 
+  @JsonProperty(BfConsts.PROP_ASSERTION)
+  public Assertion getAssertion() {
+    return _assertion;
+  }
+
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public boolean getDifferential() {
     return _differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_EXCLUSIONS)
+  public Exclusions getExclusions() {
+    return _exclusions;
   }
 
   @JsonProperty(BfConsts.PROP_INSTANCE)
@@ -432,9 +446,19 @@ public abstract class Question implements IQuestion {
     }
   }
 
+  @JsonProperty(BfConsts.PROP_ASSERTION)
+  public void setAssertion(Assertion assertion) {
+    _assertion = assertion;
+  }
+
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public void setDifferential(boolean differential) {
     _differential = differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_EXCLUSIONS)
+  public void setExclusions(Exclusions exclusions) {
+    _exclusions = exclusions;
   }
 
   @JsonProperty(BfConsts.PROP_INSTANCE)
