@@ -134,7 +134,7 @@ public class Ip implements Comparable<Ip>, Serializable, IpSpace {
   @Override
   public IpSpace complement() {
     return AclIpSpace.builder()
-        .thenRejecting(new IpWildcard(this))
+        .thenRejecting(this)
         .thenPermitting(UniverseIpSpace.INSTANCE)
         .build();
   }
