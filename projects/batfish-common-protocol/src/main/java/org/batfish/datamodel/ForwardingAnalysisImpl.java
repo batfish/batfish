@@ -641,13 +641,38 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                             Entry::getKey /* outInterface */,
                                             routesWithNextHopByOutInterfaceEntry -> {
                                               Fib fib = fibs.get(hostname).get(vrf);
-                                              return computeRoutesWithNextHopIpFalseForInterface(
+                                              return computeRoutesWithNextHopIpArpFalseForInterface(
                                                   fib,
                                                   hostname,
                                                   routesWithNextHopByOutInterfaceEntry);
                                             }));
                               }));
                 }));
+  }
+
+  @VisibleForTesting
+  Set<AbstractRoute> computeRoutesWithNextHopIpArpFalseForInterface(
+      Fib fib,
+      String hostname,
+      Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
+    String outInterface = routesWithNextHopByOutInterfaceEntry.getKey();
+    IpSpace someoneReplies =
+        _someoneReplies
+            .getOrDefault(hostname, ImmutableMap.of())
+            .getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
+    Set<AbstractRoute> candidateRoutes = routesWithNextHopByOutInterfaceEntry.getValue();
+    return candidateRoutes
+        .stream()
+        .filter(
+            candidateRoute ->
+                fib.getNextHopInterfaces()
+                    .get(candidateRoute)
+                    .get(outInterface)
+                    .keySet()
+                    .stream()
+                    .filter(ip -> !ip.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                    .anyMatch(Predicates.not(someoneReplies::containsIp)))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @VisibleForTesting
@@ -689,31 +714,6 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                               });
                         })));
     return routesByEdgeBuilder.build();
-  }
-
-  @VisibleForTesting
-  Set<AbstractRoute> computeRoutesWithNextHopIpFalseForInterface(
-      Fib fib,
-      String hostname,
-      Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
-    String outInterface = routesWithNextHopByOutInterfaceEntry.getKey();
-    IpSpace someoneReplies =
-        _someoneReplies
-            .getOrDefault(hostname, ImmutableMap.of())
-            .getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
-    Set<AbstractRoute> candidateRoutes = routesWithNextHopByOutInterfaceEntry.getValue();
-    return candidateRoutes
-        .stream()
-        .filter(
-            candidateRoute ->
-                fib.getNextHopInterfaces()
-                    .get(candidateRoute)
-                    .get(outInterface)
-                    .keySet()
-                    .stream()
-                    .filter(ip -> !ip.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
-                    .anyMatch(Predicates.not(someoneReplies::containsIp)))
-        .collect(ImmutableSet.toImmutableSet());
   }
 
   @VisibleForTesting

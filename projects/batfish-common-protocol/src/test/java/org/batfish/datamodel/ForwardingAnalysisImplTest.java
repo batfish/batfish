@@ -525,7 +525,10 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Map<String, IpSpace>>> result =
         forwardingAnalysisImpl.computeNeighborUnreachableArpDestIp(ribs);
 
-    /* Should contain IPs in the route's prefix */
+    /*
+     * Since _someoneReplies is empty, all IPs for which longest-prefix-match route has no
+     * next-hop-ip should be in the result space.
+     */
     assertThat(
         result,
         hasEntry(
@@ -793,6 +796,98 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
+  public void testComputeRoutesWithNextHopIpArpFalseForInterface() {
+    String hostname = "c1";
+    String outInterface = "i1";
+    AbstractRoute nextHopIpRoute1 =
+        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute nextHopIpRoute2 =
+        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
+    AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
+    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
+        Maps.immutableEntry(
+            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
+    _someoneReplies = ImmutableMap.of(hostname, ImmutableMap.of(outInterface, P2.getStartIp()));
+    Fib fib =
+        MockFib.builder()
+            .setNextHopInterfaces(
+                ImmutableMap.of(
+                    nextHopIpRoute1,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                    nextHopIpRoute2,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                    ifaceRoute,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
+            .build();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Set<AbstractRoute> result =
+        forwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface(
+            fib, hostname, routesWithNextHopByOutInterfaceEntry);
+
+    /*
+     * Should only contain nextHopIpRoute1 since it is the only route with a next-hop-ip for which
+     * there is no ARP reply.
+     */
+    assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute2)));
+  }
+
+  /** A */
+  @Test
+  public void testComputeRoutesWithNextHopIpArpFalseForInterfaceNoNeighbors() {
+    String hostname = "c1";
+    String outInterface = "i1";
+    AbstractRoute nextHopIpRoute1 =
+        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute nextHopIpRoute2 =
+        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
+    AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
+    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
+        Maps.immutableEntry(
+            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
+    _someoneReplies = ImmutableMap.of();
+    Fib fib =
+        MockFib.builder()
+            .setNextHopInterfaces(
+                ImmutableMap.of(
+                    nextHopIpRoute1,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                    nextHopIpRoute2,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                    ifaceRoute,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
+            .build();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Set<AbstractRoute> result =
+        forwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface(
+            fib, hostname, routesWithNextHopByOutInterfaceEntry);
+
+    /*
+     * Should contain both nextHopIpRoute1 and nextHopIpRoute2, since:
+     * 1) They are the only routes with a next hop IP.
+     * 2) Their next hop IPs do not receive ARP reply since _someoneReplies is empty.
+     */
+    assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2)));
+  }
+
+  @Test
   public void testComputeRoutesWithNextHopIpArpTrue() {
     String c1 = "c1";
     String i1 = "i1";
@@ -831,95 +926,6 @@ public class ForwardingAnalysisImplTest {
 
     /* Only the route with the next hop ip that gets a reply should be present. */
     assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
-  }
-
-  @Test
-  public void testComputeRoutesWithNextHopIpFalseForInterface() {
-    String hostname = "c1";
-    String outInterface = "i1";
-    AbstractRoute nextHopIpRoute1 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
-    AbstractRoute nextHopIpRoute2 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
-    AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
-    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
-        Maps.immutableEntry(
-            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
-    _someoneReplies = ImmutableMap.of(hostname, ImmutableMap.of(outInterface, P2.getStartIp()));
-    Fib fib =
-        MockFib.builder()
-            .setNextHopInterfaces(
-                ImmutableMap.of(
-                    nextHopIpRoute1,
-                    ImmutableMap.of(
-                        outInterface,
-                        ImmutableMap.of(
-                            nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
-                    nextHopIpRoute2,
-                    ImmutableMap.of(
-                        outInterface,
-                        ImmutableMap.of(
-                            nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
-                    ifaceRoute,
-                    ImmutableMap.of(
-                        outInterface,
-                        ImmutableMap.of(
-                            Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
-            .build();
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    Set<AbstractRoute> result =
-        forwardingAnalysisImpl.computeRoutesWithNextHopIpFalseForInterface(
-            fib, hostname, routesWithNextHopByOutInterfaceEntry);
-
-    /*
-     * Should only contain nextHopIpRoute1 since it is only route with next hop ip that does not get
-     * a reply.
-     */
-    assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute2)));
-  }
-
-  @Test
-  public void testComputeRoutesWithNextHopIpFalseForInterfaceMissingHost() {
-    String hostname = "c1";
-    String outInterface = "i1";
-    AbstractRoute nextHopIpRoute1 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
-    AbstractRoute nextHopIpRoute2 =
-        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
-    AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
-    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
-        Maps.immutableEntry(
-            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
-    _someoneReplies = ImmutableMap.of();
-    Fib fib =
-        MockFib.builder()
-            .setNextHopInterfaces(
-                ImmutableMap.of(
-                    nextHopIpRoute1,
-                    ImmutableMap.of(
-                        outInterface,
-                        ImmutableMap.of(
-                            nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
-                    nextHopIpRoute2,
-                    ImmutableMap.of(
-                        outInterface,
-                        ImmutableMap.of(
-                            nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
-                    ifaceRoute,
-                    ImmutableMap.of(
-                        outInterface,
-                        ImmutableMap.of(
-                            Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
-            .build();
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    Set<AbstractRoute> result =
-        forwardingAnalysisImpl.computeRoutesWithNextHopIpFalseForInterface(
-            fib, hostname, routesWithNextHopByOutInterfaceEntry);
-
-    /*
-     * Should only contain both next-hop-ip routes since nobody replies to anything.
-     */
-    assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2)));
   }
 
   @Test
