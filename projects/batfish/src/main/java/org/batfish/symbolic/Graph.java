@@ -717,14 +717,15 @@ public class Graph {
     Set<String> sameDomain = new HashSet<>();
     Queue<String> todo = new ArrayDeque<>();
     todo.add(router);
+    sameDomain.add(router);
     while (!todo.isEmpty()) {
       router = todo.remove();
-      sameDomain.add(router);
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
         BgpNeighbor n = _ebgpNeighbors.get(ge);
         if (peer != null && n == null && !sameDomain.contains(peer)) {
           todo.add(peer);
+          sameDomain.add(peer);
         }
       }
     }
