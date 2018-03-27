@@ -840,7 +840,6 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute2)));
   }
 
-  /** A */
   @Test
   public void testComputeRoutesWithNextHopIpArpFalseForInterfaceNoNeighbors() {
     String hostname = "c1";
