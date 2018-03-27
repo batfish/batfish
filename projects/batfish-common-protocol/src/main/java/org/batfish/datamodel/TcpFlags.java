@@ -135,9 +135,6 @@ public final class TcpFlags implements Serializable {
 
   public static final int FIN = 0x01;
 
-  public static final TcpFlags SYN_ONLY =
-      TcpFlags.builder().setSyn(true).setAck(false).setUseSyn(true).setUseAck(true).build();
-
   public static final int PSH = 0x08;
 
   public static final int RST = 0x04;
@@ -146,6 +143,9 @@ public final class TcpFlags implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final int SYN = 0x02;
+
+  public static final TcpFlags SYN_ONLY =
+      builder().setSyn(true).setAck(false).setUseSyn(true).setUseAck(true).build();
 
   public static final int URG = 0x20;
 
