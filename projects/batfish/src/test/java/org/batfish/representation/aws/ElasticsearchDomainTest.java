@@ -37,6 +37,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
@@ -168,6 +169,11 @@ public class ElasticsearchDomainTest {
     assertThat(configurations, hasKey("es-domain"));
     assertThat(configurations.get("es-domain").getInterfaces().entrySet(), hasSize(2));
 
+    IpAccessListLine rejectSynOnly =
+        IpAccessListLine.builder()
+            .setTcpFlags(ImmutableSet.of(TcpFlags.builder().setAck(false).setSyn(true).build()))
+            .setAction(LineAction.REJECT)
+            .build();
     IpAccessList expectedIncomingFilter =
         new IpAccessList(
             "~SECURITY_GROUP_INGRESS_ACL~",
@@ -177,6 +183,11 @@ public class ElasticsearchDomainTest {
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                     .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                    .build(),
+                rejectSynOnly,
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                     .build()));
     IpAccessList expectedOutgoingFilter =
         new IpAccessList(
@@ -185,6 +196,13 @@ public class ElasticsearchDomainTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                    .build(),
+                rejectSynOnly,
+                IpAccessListLine.builder()
+                    .setAction(LineAction.ACCEPT)
+                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                    .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
                     .build()));
 
     for (Interface iface : configurations.get("es-domain").getInterfaces().values()) {
