@@ -882,20 +882,44 @@ public class ForwardingAnalysisImplTest {
   public void testComputeRoutesWithNextHopIpFalseForInterfaceMissingHost() {
     String hostname = "c1";
     String outInterface = "i1";
+    AbstractRoute nextHopIpRoute1 =
+        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
+    AbstractRoute nextHopIpRoute2 =
+        StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getEndIp()).build();
+    AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
-        Maps.immutableEntry(outInterface, ImmutableSet.of());
+        Maps.immutableEntry(
+            outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
     _someoneReplies = ImmutableMap.of();
-    Fib fib = MockFib.builder().build();
+    Fib fib =
+        MockFib.builder()
+            .setNextHopInterfaces(
+                ImmutableMap.of(
+                    nextHopIpRoute1,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                    nextHopIpRoute2,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+                    ifaceRoute,
+                    ImmutableMap.of(
+                        outInterface,
+                        ImmutableMap.of(
+                            Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute)))))
+            .build();
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Set<AbstractRoute> result =
         forwardingAnalysisImpl.computeRoutesWithNextHopIpFalseForInterface(
             fib, hostname, routesWithNextHopByOutInterfaceEntry);
 
     /*
-     * Should only contain nextHopIpRoute1 since it is only route with next hop ip that does not get
-     * a reply.
+     * Should only contain both next-hop-ip routes since nobody replies to anything.
      */
-    assertThat(result, equalTo(ImmutableSet.of()));
+    assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2)));
   }
 
   @Test
