@@ -137,8 +137,8 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
         .allMatch(
             index -> {
               /*
-               * if the bit is significant for this, then it must be significant (i.e. can't be wild)
-               * for other and they must agree.
+               * if the bit is significant for this, then it must be significant (i.e. can't be
+               * wild) for other and they must agree.
                */
               boolean agree =
                   Ip.getBitAtPosition(thisIp, index) == Ip.getBitAtPosition(otherIp, index);
