@@ -1,10 +1,10 @@
 package org.batfish.representation.aws;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
@@ -68,7 +68,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                         .setDstIps(ipAccessListLine.getSrcIps())
                         .setSrcPorts(ipAccessListLine.getDstPorts())
                         .build())
-            .collect(Collectors.toList());
+            .collect(ImmutableList.toImmutableList());
 
     List<IpAccessListLine> reverseOutboundRules =
         outboundRules
@@ -81,20 +81,20 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                         .setSrcIps(ipAccessListLine.getDstIps())
                         .setSrcPorts(ipAccessListLine.getDstPorts())
                         .build())
-            .collect(Collectors.toList());
+            .collect(ImmutableList.toImmutableList());
 
     // denying SYN-only packets to prevent new TCP connections
     IpAccessListLine rejectSynOnly =
         IpAccessListLine.builder()
-            .setTcpFlags(ImmutableSet.of(TcpFlags.builder().setAck(false).setSyn(true).build()))
+            .setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY))
             .setAction(LineAction.REJECT)
             .build();
     inboundRules.add(rejectSynOnly);
     outboundRules.add(rejectSynOnly);
 
     // adding reverse inbound/outbound rules for stateful allowance of packets
-    outboundRules.addAll(reverseInboundRules);
     inboundRules.addAll(reverseOutboundRules);
+    outboundRules.addAll(reverseInboundRules);
   }
 
   public void addInOutAccessLines(

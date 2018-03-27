@@ -151,7 +151,7 @@ public class RdsInstanceTest {
 
     IpAccessListLine rejectSynOnly =
         IpAccessListLine.builder()
-            .setTcpFlags(ImmutableSet.of(TcpFlags.builder().setAck(false).setSyn(true).build()))
+            .setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY))
             .setAction(LineAction.REJECT)
             .build();
 

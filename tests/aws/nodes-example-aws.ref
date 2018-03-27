@@ -95,13 +95,13 @@
                     "rst" : false,
                     "syn" : true,
                     "urg" : false,
-                    "useAck" : false,
+                    "useAck" : true,
                     "useCwr" : false,
                     "useEce" : false,
                     "useFin" : false,
                     "usePsh" : false,
                     "useRst" : false,
-                    "useSyn" : false,
+                    "useSyn" : true,
                     "useUrg" : false
                   }
                 ]
@@ -132,13 +132,13 @@
                     "rst" : false,
                     "syn" : true,
                     "urg" : false,
-                    "useAck" : false,
+                    "useAck" : true,
                     "useCwr" : false,
                     "useEce" : false,
                     "useFin" : false,
                     "usePsh" : false,
                     "useRst" : false,
-                    "useSyn" : false,
+                    "useSyn" : true,
                     "useUrg" : false
                   }
                 ]
@@ -3208,13 +3208,13 @@
                     "rst" : false,
                     "syn" : true,
                     "urg" : false,
-                    "useAck" : false,
+                    "useAck" : true,
                     "useCwr" : false,
                     "useEce" : false,
                     "useFin" : false,
                     "usePsh" : false,
                     "useRst" : false,
-                    "useSyn" : false,
+                    "useSyn" : true,
                     "useUrg" : false
                   }
                 ]
@@ -3271,13 +3271,13 @@
                     "rst" : false,
                     "syn" : true,
                     "urg" : false,
-                    "useAck" : false,
+                    "useAck" : true,
                     "useCwr" : false,
                     "useEce" : false,
                     "useFin" : false,
                     "usePsh" : false,
                     "useRst" : false,
-                    "useSyn" : false,
+                    "useSyn" : true,
                     "useUrg" : false
                   }
                 ]
