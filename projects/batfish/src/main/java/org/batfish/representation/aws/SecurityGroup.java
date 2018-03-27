@@ -1,10 +1,14 @@
 package org.batfish.representation.aws;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TcpFlags;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -50,10 +54,54 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     }
   }
 
+  private void addReverseAcls(
+      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
+
+    List<IpAccessListLine> reverseInboundRules =
+        inboundRules
+            .stream()
+            .map(
+                ipAccessListLine ->
+                    IpAccessListLine.builder()
+                        .setIpProtocols(ipAccessListLine.getIpProtocols())
+                        .setAction(ipAccessListLine.getAction())
+                        .setDstIps(ipAccessListLine.getSrcIps())
+                        .setSrcPorts(ipAccessListLine.getDstPorts())
+                        .build())
+            .collect(ImmutableList.toImmutableList());
+
+    List<IpAccessListLine> reverseOutboundRules =
+        outboundRules
+            .stream()
+            .map(
+                ipAccessListLine ->
+                    IpAccessListLine.builder()
+                        .setIpProtocols(ipAccessListLine.getIpProtocols())
+                        .setAction(ipAccessListLine.getAction())
+                        .setSrcIps(ipAccessListLine.getDstIps())
+                        .setSrcPorts(ipAccessListLine.getDstPorts())
+                        .build())
+            .collect(ImmutableList.toImmutableList());
+
+    // denying SYN-only packets to prevent new TCP connections
+    IpAccessListLine rejectSynOnly =
+        IpAccessListLine.builder()
+            .setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY))
+            .setAction(LineAction.REJECT)
+            .build();
+    inboundRules.add(rejectSynOnly);
+    outboundRules.add(rejectSynOnly);
+
+    // adding reverse inbound/outbound rules for stateful allowance of packets
+    inboundRules.addAll(reverseOutboundRules);
+    outboundRules.addAll(reverseInboundRules);
+  }
+
   public void addInOutAccessLines(
       List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
     addIngressAccessLines(_ipPermsIngress, inboundRules);
     addEgressAccessLines(_ipPermsEgress, outboundRules);
+    addReverseAcls(inboundRules, outboundRules);
   }
 
   public String getGroupId() {
