@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.stream.IntStream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -118,6 +119,54 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
 
   public Ip getWildcard() {
     return _second;
+  }
+
+  public boolean subsetOf(IpWildcard other) {
+    return other.supersetOf(this);
+  }
+
+  public boolean supersetOf(IpWildcard other) {
+    Ip thisIp = getIp();
+    Ip otherIp = other.getIp();
+
+    // masks are inverted.
+    Ip thisMask = getWildcard().inverted();
+    Ip otherMask = other.getWildcard().inverted();
+
+    return IntStream.range(0, 32)
+        .allMatch(
+            index -> {
+              /*
+               * if the bit is significant for this, then it must be significant (i.e. can't be wild)
+               * for other and they must agree.
+               */
+              boolean agree =
+                  Ip.getBitAtPosition(thisIp, index) == Ip.getBitAtPosition(otherIp, index);
+              return !Ip.getBitAtPosition(thisMask, index)
+                  || (Ip.getBitAtPosition(otherMask, index) && agree);
+            });
+  }
+
+  public boolean intersects(IpWildcard other) {
+    Ip thisIp = getIp();
+    Ip otherIp = other.getIp();
+
+    // masks are inverted.
+    Ip thisMask = getWildcard().inverted();
+    Ip otherMask = other.getWildcard().inverted();
+
+    return IntStream.range(0, 32)
+        .allMatch(
+            index -> {
+              /*
+               * Either they agree on the bit or one doesn't care
+               */
+              boolean significant =
+                  Ip.getBitAtPosition(thisMask, index) && Ip.getBitAtPosition(otherMask, index);
+              boolean agree =
+                  Ip.getBitAtPosition(thisIp, index) == Ip.getBitAtPosition(otherIp, index);
+              return !significant || agree;
+            });
   }
 
   public boolean isPrefix() {

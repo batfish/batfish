@@ -23,4 +23,18 @@ public class IpWildcardTest {
     assertThat(ipSpace, not(containsIp(new Ip("1.1.255.1"))));
     assertThat(ipSpace, containsIp(new Ip("1.1.0.0")));
   }
+
+  @Test
+  public void testIntersects() {
+    IpWildcard wc1 = new IpWildcard(new Ip(0x00b0000aL), new Ip(0x00FF00FFL).inverted());
+    IpWildcard wc2 = new IpWildcard(new Ip(0x000cd000L), new Ip(0x0000FF00L).inverted());
+    assertThat("wildcards should overlap", wc1.intersects(wc2));
+  }
+
+  @Test
+  public void testNotIntersects() {
+    IpWildcard wc1 = new IpWildcard(new Ip(0x00000F00L), new Ip(0x0000FF00L).inverted());
+    IpWildcard wc2 = new IpWildcard(new Ip(0x0000F000L), new Ip(0x0000FF00L).inverted());
+    assertThat("wildcards should not overlap", !wc1.intersects(wc2));
+  }
 }
