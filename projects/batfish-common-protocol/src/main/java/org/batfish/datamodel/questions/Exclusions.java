@@ -10,6 +10,21 @@ public class Exclusions extends HashSet<ObjectNode> {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Checks if @{link row} is covered by one of the exlusions
+   *
+   * @param row The object whose coverage is to be checked
+   * @return The exclusion that covers @{link row}. null if no such exclusion exists
+   */
+  public ObjectNode covered(ObjectNode row) {
+    for (ObjectNode exclusion : this) {
+      if (firstCoversSecond(exclusion, row)) {
+        return exclusion;
+      }
+    }
+    return null;
+  }
+
   public static boolean firstCoversSecond(JsonNode first, JsonNode second) {
     if (first.isValueNode()) {
       return second.isValueNode() && first.equals(second);

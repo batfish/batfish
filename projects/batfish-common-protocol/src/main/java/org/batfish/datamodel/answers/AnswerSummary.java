@@ -1,6 +1,8 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.base.Strings;
+import org.batfish.datamodel.questions.Assertion;
+import org.batfish.datamodel.table.TableAnswerElement;
 
 public class AnswerSummary {
 
@@ -19,6 +21,17 @@ public class AnswerSummary {
     _numFailed = numFailed;
     _numPassed = numPassed;
     _numResults = numResults;
+  }
+
+  public AnswerSummary(TableAnswerElement answer, Assertion assertion) {
+    this(null, 0, 0, answer.getRows().size());
+    if (assertion != null) {
+      if (assertion.evaluate(answer.getRows())) {
+        _numPassed = 1;
+      } else {
+        _numFailed = 1;
+      }
+    }
   }
 
   public void combine(AnswerSummary other) {

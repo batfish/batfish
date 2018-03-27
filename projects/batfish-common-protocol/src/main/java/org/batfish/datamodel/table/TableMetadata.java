@@ -27,6 +27,10 @@ public class TableMetadata {
 
   @Nullable private String _textDesc;
 
+  public TableMetadata() {
+    this(null, null, null, null);
+  }
+
   @JsonCreator
   public TableMetadata(
       @Nullable @JsonProperty(PROP_COLUMN_SCHEMAS) Map<String, Schema> columnSchemas,

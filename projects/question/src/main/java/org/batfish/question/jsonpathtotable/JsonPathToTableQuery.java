@@ -21,21 +21,15 @@ public class JsonPathToTableQuery {
 
   private static final String PROP_PATH = "path";
 
-  private static final String PROP_SUFFIX = "suffix";
-
   private DisplayHints _displayHints;
 
   private String _path;
 
-  private boolean _suffix;
-
   @JsonCreator
   public JsonPathToTableQuery(
       @Nonnull @JsonProperty(PROP_PATH) String path,
-      @Nonnull @JsonProperty(PROP_SUFFIX) boolean suffix,
       @Nonnull @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints) {
     _path = path;
-    _suffix = suffix;
     _displayHints = displayHints;
     if (displayHints == null
         || (displayHints.getCompositions().size() == 0
@@ -67,11 +61,6 @@ public class JsonPathToTableQuery {
   @JsonProperty(PROP_PATH)
   public String getPath() {
     return _path;
-  }
-
-  @JsonProperty(PROP_SUFFIX)
-  public boolean getSuffix() {
-    return _suffix;
   }
 
   @Override

@@ -22,7 +22,6 @@ import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.DisplayHints.Composition;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
-import org.batfish.datamodel.questions.Exclusions;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.jsonpath.JsonPathExtractionHint;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
@@ -38,8 +37,7 @@ public class JsonPathToTableAnswerer extends Answerer {
    *
    * <ul>
    *   <li>First, compute the inner answer
-   *   <li>Then, run computeResult, which produces a set of result minus exclusions
-   *   <li>Finally, evaluate any assertions and compute summary
+   *   <li>Then, run computeAnswer, which produces a set of result minus exclusions
    * </ul>
    */
   @Override
@@ -60,57 +58,50 @@ public class JsonPathToTableAnswerer extends Answerer {
       throw new BatfishException("Could not get JSON string from inner answer", e);
     }
 
-    JsonPathToTableQuery query = question.getPathQuery();
-    JsonPathToTableAnswerElement answerElement =
-        new JsonPathToTableAnswerElement(query.computeTableMetadata());
+    JsonPathToTableAnswerElement answer = computeAnswerTable(innerAnswerStr, question);
 
+    // 4. add debug info
     if (question.getDebug()) {
-      answerElement.addDebugInfo("innerAnswer", innerAnswer);
+      answer.addDebugInfo("innerAnswer", innerAnswer);
     }
 
-    computeResults(innerAnswerStr, query, question.getExclusions(), answerElement);
-
-    AnswerSummary summary = new AnswerSummary(null, 0, 0, answerElement.getRows().size());
-    if (question.getAssertion() != null) {
-      if (question.getAssertion().evaluate(answerElement.getRows())) {
-        summary.setNumPassed(1);
-      } else {
-        summary.setNumFailed(1);
-      }
-    }
-
-    answerElement.setSummary(summary);
-    return answerElement;
+    return answer;
   }
 
-  public static void computeResults(
-      String jsonStr,
-      JsonPathToTableQuery query,
-      Exclusions exclusions,
-      JsonPathToTableAnswerElement answerElement) {
+  public static JsonPathToTableAnswerElement computeAnswerTable(
+      String innerAnswer, JsonPathToTableQuestion question) {
 
+    JsonPathToTableQuery query = question.getPathQuery();
+    JsonPathToTableAnswerElement answer =
+        new JsonPathToTableAnswerElement(query.computeTableMetadata());
+
+    // 1. get all the results
     List<JsonPathResult> jsonPathResults =
-        JsonPathUtils.getJsonPathResults(query.getPath(), jsonStr);
+        JsonPathUtils.getJsonPathResults(query.getPath(), innerAnswer);
 
+    // 2. Put them in the answer element based on whether they are covered by an exclusion
     for (JsonPathResult result : jsonPathResults) {
-      ObjectNode answerValues = computeAnswerValues(query.getDisplayHints(), result);
+      ObjectNode answerValues = computeRowValues(query.getDisplayHints(), result);
       boolean excluded = false;
-      if (exclusions != null) {
-        for (ObjectNode exclusion : exclusions) {
-          if (Exclusions.firstCoversSecond(exclusion, answerValues)) {
-            answerElement.addExcludedRow(answerValues, exclusion);
-            excluded = true;
-            break;
-          }
+      if (question.getExclusions() != null) {
+        ObjectNode exclusion = question.getExclusions().covered(answerValues);
+        if (exclusion != null) {
+          answer.addExcludedRow(answerValues, exclusion);
+          excluded = true;
         }
       }
       if (!excluded) {
-        answerElement.addRow(answerValues);
+        answer.addRow(answerValues);
       }
     }
+
+    // 3. hydrate the summary
+    answer.setSummary(new AnswerSummary(answer, question.getAssertion()));
+
+    return answer;
   }
 
-  public static ObjectNode computeAnswerValues(DisplayHints displayHints, JsonPathResult jpResult) {
+  private static ObjectNode computeRowValues(DisplayHints displayHints, JsonPathResult jpResult) {
     ObjectNode answerValues = BatfishObjectMapper.mapper().createObjectNode();
     computeExtractions(displayHints.getExtractions(), jpResult, answerValues);
     if (displayHints.getCompositions() != null) {
