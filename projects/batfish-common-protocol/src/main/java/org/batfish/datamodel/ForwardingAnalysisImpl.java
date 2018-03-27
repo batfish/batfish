@@ -360,7 +360,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                                       .getValue();
                                               IpSpace someoneReplies =
                                                   _someoneReplies
-                                                      .get(hostname)
+                                                      .getOrDefault(hostname, ImmutableMap.of())
                                                       .getOrDefault(
                                                           outInterface, EmptyIpSpace.INSTANCE);
                                               GenericRib<AbstractRoute> rib =
@@ -698,7 +698,9 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry) {
     String outInterface = routesWithNextHopByOutInterfaceEntry.getKey();
     IpSpace someoneReplies =
-        _someoneReplies.get(hostname).getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
+        _someoneReplies
+            .getOrDefault(hostname, ImmutableMap.of())
+            .getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
     Set<AbstractRoute> candidateRoutes = routesWithNextHopByOutInterfaceEntry.getValue();
     return candidateRoutes
         .stream()

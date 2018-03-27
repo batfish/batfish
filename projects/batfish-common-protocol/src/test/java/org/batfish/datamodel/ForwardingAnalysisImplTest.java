@@ -508,6 +508,43 @@ public class ForwardingAnalysisImplTest {
   }
 
   @Test
+  public void testComputeNeighborUnreachableArpDestIpNoNeighbors() {
+    String c1 = "c1";
+    String v1 = "v1";
+    String i1 = "i1";
+    AbstractRoute ifaceRoute = new ConnectedRoute(P1, i1);
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c1,
+            ImmutableSortedMap.of(
+                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
+    _routesWhereDstIpCanBeArpIp =
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
+    _someoneReplies = ImmutableMap.of();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Map<String, Map<String, Map<String, IpSpace>>> result =
+        forwardingAnalysisImpl.computeNeighborUnreachableArpDestIp(ribs);
+
+    /* Should contain IPs in the route's prefix */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getStartIp())))));
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1), hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getEndIp())))));
+
+    /* Should not contain other IPs */
+    assertThat(
+        result,
+        hasEntry(
+            equalTo(c1),
+            hasEntry(equalTo(v1), hasEntry(equalTo(i1), not(containsIp(P2.getEndIp()))))));
+  }
+
+  @Test
   public void testComputeNeighborUnreachableArpNextHopIp() {
     String c1 = "c1";
     String v1 = "v1";
@@ -839,6 +876,26 @@ public class ForwardingAnalysisImplTest {
      * a reply.
      */
     assertThat(result, equalTo(ImmutableSet.of(nextHopIpRoute2)));
+  }
+
+  @Test
+  public void testComputeRoutesWithNextHopIpFalseForInterfaceMissingHost() {
+    String hostname = "c1";
+    String outInterface = "i1";
+    Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
+        Maps.immutableEntry(outInterface, ImmutableSet.of());
+    _someoneReplies = ImmutableMap.of();
+    Fib fib = MockFib.builder().build();
+    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
+    Set<AbstractRoute> result =
+        forwardingAnalysisImpl.computeRoutesWithNextHopIpFalseForInterface(
+            fib, hostname, routesWithNextHopByOutInterfaceEntry);
+
+    /*
+     * Should only contain nextHopIpRoute1 since it is only route with next hop ip that does not get
+     * a reply.
+     */
+    assertThat(result, equalTo(ImmutableSet.of()));
   }
 
   @Test
