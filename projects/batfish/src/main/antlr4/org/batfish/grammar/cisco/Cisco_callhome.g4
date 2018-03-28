@@ -25,12 +25,12 @@ call_home_null
       | SOURCE_IP_ADDRESS
       | STREET_ADDRESS
       | VRF
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 call_home_profile
 :
-   PROFILE ~NEWLINE* NEWLINE
+   PROFILE null_rest_of_line
    (
       call_home_profile_null
    )*
@@ -43,7 +43,7 @@ call_home_profile_null
       ACTIVE
       | DESTINATION
       | SUBSCRIBE_TO_ALERT_GROUP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 callhome_destination_profile
@@ -109,7 +109,7 @@ callhome_diagnostic_signature_null
    (
       ACTIVE
       | PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 callhome_email_contact
@@ -145,7 +145,7 @@ callhome_null
             HTTP
          )
       )
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 callhome_phone_contact
@@ -212,7 +212,7 @@ callhome_transport_email_smtp_server
 
 s_call_home
 :
-   NO? CALL_HOME ~NEWLINE* NEWLINE
+   NO? CALL_HOME null_rest_of_line
    (
       call_home_null
       | call_home_profile

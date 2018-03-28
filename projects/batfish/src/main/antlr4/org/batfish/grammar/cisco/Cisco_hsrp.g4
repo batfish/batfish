@@ -35,6 +35,6 @@ router_hsrp_if_af_tail
       | TIMERS
       | TRACK OBJECT
       | VERSION DEC
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
