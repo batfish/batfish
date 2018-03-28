@@ -20,7 +20,7 @@ c_fiber_node
 
 c_filter
 :
-   FILTER ~NEWLINE* NEWLINE
+   FILTER null_rest_of_line
    (
       cf_null
    )*
@@ -75,7 +75,7 @@ c_null
       | SUBMGMT
       | UTIL_INTERVAL
       | WIDEBAND
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 c_qos
@@ -110,7 +110,7 @@ cf_null
    NO?
    (
       INDEX
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cfn_null
@@ -122,7 +122,7 @@ cfn_null
       | DOWNSTREAM
       | INIT
       | UPSTREAM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 clb_docsis_group
@@ -157,12 +157,12 @@ clb_null
       | MODEM
       | TCS_LOAD_BALANCE
       | UPSTREAM_START_THRESHOLD
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 clb_rule
 :
-   RULE rulenum = DEC ~NEWLINE* NEWLINE
+   RULE rulenum = DEC null_rest_of_line
 ;
 
 clbdg_docsis_policy
@@ -184,7 +184,7 @@ clbdg_null
       | TAG
       | THRESHOLD
       | UPSTREAM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cmp_null
@@ -192,7 +192,7 @@ cmp_null
    NO?
    (
       IUC
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cntlr_null
@@ -216,7 +216,7 @@ cntlr_null
       | SHUTDOWN
       | STS_1
       | WAVELENGTH
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cntlr_rf_channel
@@ -242,7 +242,7 @@ cntrlrrfc_null
       | NETWORK_DELAY
       | RF_POWER
       | RF_SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cq_enforce_rule
@@ -259,7 +259,7 @@ cq_null
    (
       PERMISSION
       | PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cqer_null
@@ -270,7 +270,7 @@ cqer_null
       | ENABLED
       | MONITORING_BASICS
       | PENALTY_PERIOD
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cqer_service_class
@@ -296,7 +296,7 @@ cs_null
    (
       ATTRIBUTE
       | FLOW
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 csc_name
@@ -318,7 +318,7 @@ csc_null
       | SCHED_TYPE
       | TOS_OVERWRITE
       | UPSTREAM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ct_name
@@ -332,7 +332,7 @@ ct_null
    (
       DOCSIS_VERSION
       | EXCLUDE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dc_null
@@ -340,7 +340,7 @@ dc_null
    NO?
    (
       MODE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dt_depi_class
@@ -358,7 +358,7 @@ dt_null
    NO?
    (
       DEST_IP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dt_protect_tunnel
