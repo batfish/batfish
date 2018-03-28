@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -709,5 +710,12 @@ public class CiscoGrammarTest {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
       }
     }
+  }
+
+  @Test
+  public void testAristaSubinterfaceMtu() throws IOException {
+    Configuration c = parseConfig("aristaInterface");
+
+    assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
   }
 }
