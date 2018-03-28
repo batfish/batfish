@@ -32,7 +32,7 @@ logging_address
 
 logging_archive
 :
-   ARCHIVE ~NEWLINE* NEWLINE
+   ARCHIVE null_rest_of_line
    (
       logging_archive_null
    )*
@@ -45,7 +45,7 @@ logging_archive_null
       ARCHIVE_LENGTH
       | DEVICE
       | FREQUENCY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 logging_buffered
@@ -178,7 +178,7 @@ logging_null
       | SYSLOG
       | TIMESTAMP
       | USERINFO
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 logging_on
@@ -205,7 +205,7 @@ logging_server
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 logging_source_interface
@@ -218,7 +218,7 @@ logging_source_interface
 
 logging_suppress
 :
-   SUPPRESS ~NEWLINE* NEWLINE
+   SUPPRESS null_rest_of_line
    (
       logging_suppress_null
    )*
@@ -231,7 +231,7 @@ logging_suppress_null
       ALARM
       | ALL_ALARMS
       | ALL_OF_ROUTER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 logging_trap

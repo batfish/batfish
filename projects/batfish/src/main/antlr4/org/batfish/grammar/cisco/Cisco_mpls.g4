@@ -21,12 +21,12 @@ mldp_address_family
 
 mldp_interface
 :
-   INTERFACE ~NEWLINE* NEWLINE
+   INTERFACE null_rest_of_line
 ;
 
 mldp_log
 :
-   NO? LOG ~NEWLINE* NEWLINE
+   NO? LOG null_rest_of_line
    (
       mlpdl_null
    )*
@@ -34,7 +34,7 @@ mldp_log
 
 mldp_neighbor
 :
-   NO? NEIGHBOR ~NEWLINE* NEWLINE
+   NO? NEIGHBOR null_rest_of_line
    (
       mldpn_null
    )*
@@ -46,7 +46,7 @@ mldp_null
    (
       NSR
       | IGP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mldp_session_protection
@@ -72,7 +72,7 @@ mldpaf_null
    NO?
    (
       DISCOVERY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mldpafl_local
@@ -97,7 +97,7 @@ mldpafll_null
    NO?
    (
       ALLOCATE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mldpaflla_null
@@ -107,7 +107,7 @@ mldpaflla_null
       | DISABLE
       | EXPLICIT_NULL
       | FOR
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mlpdl_null
@@ -118,7 +118,7 @@ mlpdl_null
       | NEIGHBOR
       | NSR
       | SESSION_PROTECTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mldpn_null
@@ -126,7 +126,7 @@ mldpn_null
    NO?
    (
       PASSWORD
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 s_mpls_ldp
@@ -165,7 +165,7 @@ s_mpls_traffic_eng
 
 mte_attribute_set
 :
-   NO? ATTRIBUTE_SET ~NEWLINE* NEWLINE
+   NO? ATTRIBUTE_SET null_rest_of_line
    (
       mteas_null
    )*
@@ -173,7 +173,7 @@ mte_attribute_set
 
 mte_auto_tunnel
 :
-   NO? AUTO_TUNNEL ~NEWLINE* NEWLINE
+   NO? AUTO_TUNNEL null_rest_of_line
    (
       mteat_null
    )*
@@ -195,12 +195,12 @@ mte_null
       AFFINITY_MAP
       | LOGGING
       | REOPTIMIZE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mte_soft_preemption
 :
-   SOFT_PREEMPTION ~NEWLINE* NEWLINE
+   SOFT_PREEMPTION null_rest_of_line
    (
       mtes_null
    )*
@@ -211,7 +211,7 @@ mteas_null
    NO?
    (
       AFFINITY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mteat_null
@@ -219,12 +219,12 @@ mteat_null
    NO?
    (
       TUNNEL_ID
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mtei_auto_tunnel
 :
-   NO? AUTO_TUNNEL ~NEWLINE* NEWLINE
+   NO? AUTO_TUNNEL null_rest_of_line
    (
       mteiat_null
    )*
@@ -235,7 +235,7 @@ mtei_null
    NO?
    (
       ATTRIBUTE_NAMES
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mteiat_null
@@ -245,7 +245,7 @@ mteiat_null
       ATTRIBUTE_SET
       | EXCLUDE
       | NHOP_ONLY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mtes_null
@@ -253,5 +253,5 @@ mtes_null
    NO?
    (
       TIMEOUT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
