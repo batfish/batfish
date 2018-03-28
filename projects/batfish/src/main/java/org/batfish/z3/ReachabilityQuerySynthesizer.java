@@ -8,9 +8,14 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
+import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.OriginateVrf;
 
 public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
@@ -22,6 +27,8 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
     protected Map<String, Set<String>> _ingressNodeVrfs;
 
     protected Set<String> _nonTransitNodes;
+
+    protected Boolean _srcNatted;
 
     protected Set<String> _transitNodes;
 
@@ -48,6 +55,11 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       return getThis();
     }
 
+    public T setSrcNatted(Boolean srcNatted) {
+      _srcNatted = srcNatted;
+      return getThis();
+    }
+
     public T setTransitNodes(Set<String> transitNodes) {
       _transitNodes = transitNodes;
       return getThis();
@@ -60,15 +72,19 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   protected final Set<String> _nonTransitNodes;
 
+  protected final Boolean _srcNatted;
+
   protected final Set<String> _transitNodes;
 
   public ReachabilityQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      Boolean srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
     _headerSpace = headerSpace;
     _ingressNodeVrfs = ingressNodeVrfs;
+    _srcNatted = srcNatted;
     _transitNodes = transitNodes;
     _nonTransitNodes = nonTransitNodes;
   }
@@ -84,6 +100,22 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
                         CurrentIsOriginalExpr.INSTANCE, new HeaderSpaceMatchExpr(_headerSpace))),
                 new OriginateVrf(ingressNode, ingressVrf)));
       }
+    }
+  }
+
+  protected final BooleanExpr getSrcNattedConstraint() {
+    if (_srcNatted != null) {
+      BooleanExpr notSrcNatted =
+          new EqExpr(
+              new VarIntExpr(BasicHeaderField.SRC_IP),
+              new VarIntExpr(BasicHeaderField.ORIG_SRC_IP));
+      if (_srcNatted) {
+        return new NotExpr(notSrcNatted);
+      } else {
+        return notSrcNatted;
+      }
+    } else {
+      return TrueExpr.INSTANCE;
     }
   }
 }
