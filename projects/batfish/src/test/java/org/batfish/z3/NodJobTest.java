@@ -78,6 +78,7 @@ public class NodJobTest {
             .setHeaderSpace(headerSpace)
             .setIngressNodeVrfs(
                 ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())))
+            .setSrcNatted(srcNatted)
             .setTransitNodes(ImmutableSet.of())
             .setNonTransitNodes(ImmutableSet.of())
             .build();
