@@ -29,6 +29,8 @@ public class ReachabilitySettings {
 
     private NodesSpecifier _notIngressNodes;
 
+    private Boolean _srcNatted;
+
     private NodesSpecifier _transitNodes;
 
     private boolean _useCompression;
@@ -69,6 +71,10 @@ public class ReachabilitySettings {
       return _notIngressNodes;
     }
 
+    public Boolean getSrcNatted() {
+      return _srcNatted;
+    }
+
     public NodesSpecifier getTransitNodes() {
       return _transitNodes;
     }
@@ -82,36 +88,49 @@ public class ReachabilitySettings {
       return this;
     }
 
-    public void setFinalNodes(NodesSpecifier finalNodes) {
+    public Builder setFinalNodes(NodesSpecifier finalNodes) {
       _finalNodes = finalNodes;
+      return this;
     }
 
-    public void setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
+      return this;
     }
 
-    public void setIngressNodes(NodesSpecifier ingressNodes) {
+    public Builder setIngressNodes(NodesSpecifier ingressNodes) {
       _ingressNodes = ingressNodes;
+      return this;
     }
 
-    public void setMaxChunkSize(int maxChunkSize) {
+    public Builder setMaxChunkSize(int maxChunkSize) {
       _maxChunkSize = maxChunkSize;
+      return this;
     }
 
-    public void setNonTransitNodes(NodesSpecifier nonTransitNodes) {
+    public Builder setNonTransitNodes(NodesSpecifier nonTransitNodes) {
       _nonTransitNodes = nonTransitNodes;
+      return this;
     }
 
-    public void setNotFinalNodeRegex(NodesSpecifier notFinalNodes) {
+    public Builder setNotFinalNodeRegex(NodesSpecifier notFinalNodes) {
       _notFinalNodes = notFinalNodes;
+      return this;
     }
 
-    public void setNotIngressNodeRegex(NodesSpecifier notIngressNodes) {
+    public Builder setNotIngressNodeRegex(NodesSpecifier notIngressNodes) {
       _notIngressNodes = notIngressNodes;
+      return this;
     }
 
-    public void setTransitNodes(NodesSpecifier transitNodes) {
+    public Builder setSrcNatted(Boolean srcNatted) {
+      _srcNatted = srcNatted;
+      return this;
+    }
+
+    public Builder setTransitNodes(NodesSpecifier transitNodes) {
       _transitNodes = transitNodes;
+      return this;
     }
 
     public Builder setUseCompression(boolean useCompression) {
@@ -140,6 +159,8 @@ public class ReachabilitySettings {
 
   private NodesSpecifier _notIngressNodes;
 
+  private final Boolean _srcNatted;
+
   private final NodesSpecifier _transitNodes;
 
   private final boolean _useCompression;
@@ -155,6 +176,7 @@ public class ReachabilitySettings {
     _nonTransitNodes = builder._nonTransitNodes;
     _useCompression = builder._useCompression;
     _actions = builder._actions;
+    _srcNatted = builder._srcNatted;
   }
 
   public Set<String> computeActiveFinalNodes(Map<String, Configuration> configurations)
@@ -219,6 +241,10 @@ public class ReachabilitySettings {
 
   public NodesSpecifier getNonTransitNodes() {
     return _nonTransitNodes;
+  }
+
+  public Boolean getSrcNatted() {
+    return _srcNatted;
   }
 
   public NodesSpecifier getTransitNodes() {
