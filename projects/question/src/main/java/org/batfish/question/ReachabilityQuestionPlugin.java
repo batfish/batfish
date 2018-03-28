@@ -182,6 +182,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_SRC_IPS = "srcIps";
 
+    private static final String PROP_SRC_NATTED = "srcNatted";
+
     private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
 
     private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
@@ -370,6 +372,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return _reachabilitySettings.getHeaderSpace().getSrcIps();
     }
 
+    @JsonProperty(PROP_SRC_NATTED)
+    public Boolean getSrcNatted() {
+      return _reachabilitySettings.getSrcNatted();
+    }
+
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
       return _reachabilitySettings.getHeaderSpace().getSrcOrDstIps();
@@ -510,6 +517,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         }
         if (!getNonTransitNodes().equals(DEFAULT_NON_TRANSIT_NODES)) {
           retString += String.format(", %s=%s", PROP_NON_TRANSIT_NODES, getNonTransitNodes());
+        }
+        if (getSrcNatted() != null) {
+          retString += String.format(", %s=%s", PROP_SRC_NATTED, getSrcNatted());
         }
         return retString;
       } catch (Exception e) {
@@ -692,6 +702,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_SRC_IPS)
     public void setSrcIps(SortedSet<IpWildcard> srcIps) {
       _reachabilitySettings.getHeaderSpace().setSrcIps(ImmutableSortedSet.copyOf(srcIps));
+    }
+
+    @JsonProperty(PROP_SRC_NATTED)
+    public void setSrcNatted(Boolean srcNatted) {
+      _reachabilitySettings.setSrcNatted(srcNatted);
     }
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
