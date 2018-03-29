@@ -33,6 +33,7 @@ public class SecurityGroupsTest {
   private IpAccessListLine _rejectSynOnly;
   private IpAccessListLine _allowAllReverseOutboundRule;
   private Flow.Builder _flowBuilder;
+  private Region _region;
 
   public static String TEST_ACL = "test_acl";
 
@@ -52,6 +53,7 @@ public class SecurityGroupsTest {
             .setAction(LineAction.ACCEPT)
             .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
             .build();
+    _region = new Region("test");
     _flowBuilder = new Builder();
     _flowBuilder.setIngressNode("foo");
     _flowBuilder.setTag("TEST");
@@ -65,7 +67,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -88,7 +90,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -111,7 +113,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -134,7 +136,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -156,7 +158,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -178,7 +180,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -201,7 +203,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -224,7 +226,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -247,7 +249,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     assertThat(
         inboundRules,
@@ -294,7 +296,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
 
@@ -314,7 +316,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
 
@@ -334,7 +336,7 @@ public class SecurityGroupsTest {
     List<IpAccessListLine> inboundRules = new LinkedList<>();
     List<IpAccessListLine> outboundRules = new LinkedList<>();
 
-    sg.addInOutAccessLines(inboundRules, outboundRules);
+    sg.addInOutAccessLines(inboundRules, outboundRules, _region);
 
     IpAccessList outFilter = new IpAccessList(TEST_ACL, outboundRules);
 
