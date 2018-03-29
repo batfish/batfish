@@ -21,14 +21,13 @@ import org.batfish.z3.expr.TrueExpr;
 import org.junit.Test;
 
 public class IpSpaceBooleanExprTransformerTest {
-
-  private IpSpaceBooleanExprTransformer _srcIpSpaceBooleanExprTransformer =
+  private static final IpSpaceBooleanExprTransformer SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER =
       new IpSpaceBooleanExprTransformer(true, false);
 
-  private IpSpaceBooleanExprTransformer _dstIpSpaceBooleanExprTransformer =
+  private static final IpSpaceBooleanExprTransformer DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER =
       new IpSpaceBooleanExprTransformer(false, true);
 
-  private IpSpaceBooleanExprTransformer _srcOrDstIpSpaceBooleanExprTransformer =
+  private static final IpSpaceBooleanExprTransformer SRC_OR_DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER =
       new IpSpaceBooleanExprTransformer(true, true);
 
   @Test
@@ -39,7 +38,7 @@ public class IpSpaceBooleanExprTransformerTest {
             .thenPermitting(EmptyIpSpace.INSTANCE)
             .build();
 
-    BooleanExpr expr = ipSpace.accept(_srcIpSpaceBooleanExprTransformer);
+    BooleanExpr expr = ipSpace.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
 
     assertThat(
         expr,
@@ -60,7 +59,7 @@ public class IpSpaceBooleanExprTransformerTest {
 
   @Test
   public void testVisitEmptyIpSpace() {
-    BooleanExpr expr = EmptyIpSpace.INSTANCE.accept(_srcIpSpaceBooleanExprTransformer);
+    BooleanExpr expr = EmptyIpSpace.INSTANCE.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(expr, equalTo(FalseExpr.INSTANCE));
   }
 
@@ -68,17 +67,17 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitIp() {
     Ip ip = new Ip("1.2.3.4");
 
-    BooleanExpr matchSrcExpr = ip.accept(_srcIpSpaceBooleanExprTransformer);
+    BooleanExpr matchSrcExpr = ip.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchSrcExpr,
         equalTo(HeaderSpaceMatchExpr.matchSrcIp(ImmutableSet.of(new IpWildcard(ip)))));
 
-    BooleanExpr matchDstExpr = ip.accept(_dstIpSpaceBooleanExprTransformer);
+    BooleanExpr matchDstExpr = ip.accept(DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchDstExpr,
         equalTo(HeaderSpaceMatchExpr.matchDstIp(ImmutableSet.of(new IpWildcard(ip)))));
 
-    BooleanExpr matchSrcOrDstExpr = ip.accept(_srcOrDstIpSpaceBooleanExprTransformer);
+    BooleanExpr matchSrcOrDstExpr = ip.accept(SRC_OR_DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchSrcOrDstExpr,
         equalTo(HeaderSpaceMatchExpr.matchSrcOrDstIp(ImmutableSet.of(new IpWildcard(ip)))));
@@ -87,7 +86,7 @@ public class IpSpaceBooleanExprTransformerTest {
   @Test
   public void testVisitIpWildcard() {
     IpWildcard wildcard = new IpWildcard(new Ip("1.2.0.4"), new Ip(0x0000FF00L));
-    BooleanExpr matchExpr = wildcard.accept(_srcIpSpaceBooleanExprTransformer);
+    BooleanExpr matchExpr = wildcard.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(matchExpr, equalTo(HeaderSpaceMatchExpr.matchSrcIp(ImmutableSet.of(wildcard))));
   }
 
@@ -101,17 +100,16 @@ public class IpSpaceBooleanExprTransformerTest {
             .excluding(excludeWildcard)
             .build();
 
-    BooleanExpr expr = ipSpace.accept(_srcIpSpaceBooleanExprTransformer);
-    BooleanExpr includeExpr = includeWildcard.accept(_srcIpSpaceBooleanExprTransformer);
-    BooleanExpr excludeExpr = excludeWildcard.accept(_srcIpSpaceBooleanExprTransformer);
+    BooleanExpr expr = ipSpace.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr includeExpr = includeWildcard.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr excludeExpr = excludeWildcard.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
 
     assertThat(expr, equalTo(new AndExpr(ImmutableList.of(new NotExpr(excludeExpr), includeExpr))));
   }
 
   @Test
   public void testVisitUniverseIpSpace() {
-    BooleanExpr expr =
-        UniverseIpSpace.INSTANCE.accept(new IpSpaceBooleanExprTransformer(true, false));
+    BooleanExpr expr = UniverseIpSpace.INSTANCE.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(expr, equalTo(TrueExpr.INSTANCE));
   }
 }

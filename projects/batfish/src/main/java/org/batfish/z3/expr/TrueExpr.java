@@ -21,7 +21,7 @@ public class TrueExpr extends BooleanExpr {
 
   @Override
   public boolean exprEquals(Expr e) {
-    return true;
+    return this == e;
   }
 
   @Override
