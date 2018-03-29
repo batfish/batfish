@@ -56,6 +56,7 @@ import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.grammar.cisco.CiscoParser.Management_egress_interface_selection_nullContext;
 import org.batfish.symbolic.collections.Table2;
 
 /**
@@ -722,8 +723,7 @@ public class Graph {
       router = todo.remove();
       for (GraphEdge ge : getEdgeMap().get(router)) {
         String peer = ge.getPeer();
-        BgpNeighbor n = _ebgpNeighbors.get(ge);
-        if (peer != null && n == null && !sameDomain.contains(peer)) {
+        if (peer != null && !sameDomain.contains(peer) && _ebgpNeighbors.get(ge) == null) {
           todo.add(peer);
           sameDomain.add(peer);
         }
