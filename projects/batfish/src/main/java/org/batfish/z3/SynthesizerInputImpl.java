@@ -81,7 +81,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _disabledInterfaces,
           _disabledNodes,
           _disabledVrfs,
-          _headerSpace,
+          _headerSpace != null ? _headerSpace : new HeaderSpace(),
           _simplify,
           _topology,
           _vectorizedParameters);
