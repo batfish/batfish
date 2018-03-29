@@ -266,7 +266,7 @@ null_block
       | WSMA
       | XDR
       | XML
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
    (
       description_line
       | null_inner
@@ -542,7 +542,7 @@ null_inner
       | WITHOUT_CSD
       | WRED
       | XML_CONFIG
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 null_single

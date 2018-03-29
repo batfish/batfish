@@ -74,7 +74,7 @@ aaa_accounting_connection_stanza
       (
          ACTION_TYPE
          | GROUP
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )+
 ;
 
@@ -128,7 +128,7 @@ aaa_accounting_exec_stanza
       (
          ACTION_TYPE
          | GROUP
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )+
 ;
 
@@ -202,7 +202,7 @@ aaa_accounting_network_stanza
       (
          ACTION_TYPE
          | GROUP
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )+
 ;
 
@@ -311,7 +311,7 @@ aaa_authentication_banner
 
 aaa_authentication_captive_portal
 :
-   CAPTIVE_PORTAL ~NEWLINE* NEWLINE
+   CAPTIVE_PORTAL null_rest_of_line
    (
       aaa_authentication_captive_portal_null
    )*
@@ -332,7 +332,7 @@ aaa_authentication_captive_portal_null
       | SERVER_GROUP
       | WELCOME_PAGE
       | WHITE_LIST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_authentication_dot1x
@@ -365,7 +365,7 @@ aaa_authentication_dot1x_null
       | TERMINATION
       | TIMER
       | WPA_FAST_HANDOVER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_authentication_enable
@@ -541,7 +541,7 @@ aaa_authentication_mac_null
       | MAX_AUTHENTICATION_FAILURES
       | REAUTHENTICATION
       | TIMER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_authentication_mgmt
@@ -558,7 +558,7 @@ aaa_authentication_mgmt_null
    (
       ENABLE
       | SERVER_GROUP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_authentication_policy
@@ -607,7 +607,7 @@ aaa_authentication_server_radius_null
    NO?
    (
       HOST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_authentication_server_tacacs
@@ -624,7 +624,7 @@ aaa_authentication_server_tacacs_null
    (
       HOST
       | SESSION_AUTHORIZATION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_authentication_ssh
@@ -781,17 +781,17 @@ aaa_authorization_ssh_publickey
 
 aaa_bandwidth_contract
 :
-   BANDWIDTH_CONTRACT name = variable ~NEWLINE* NEWLINE
+   BANDWIDTH_CONTRACT name = variable null_rest_of_line
 ;
 
 aaa_default_taskgroup
 :
-   DEFAULT_TASKGROUP ~NEWLINE* NEWLINE
+   DEFAULT_TASKGROUP null_rest_of_line
 ;
 
 aaa_derivation_rules
 :
-   DERIVATION_RULES ~NEWLINE* NEWLINE
+   DERIVATION_RULES null_rest_of_line
    (
       aaa_derivation_rules_null
    )*
@@ -802,7 +802,7 @@ aaa_derivation_rules_null
    NO?
    (
       SET
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_group
@@ -924,7 +924,7 @@ aaa_new_model
 
 aaa_password_policy
 :
-   PASSWORD_POLICY ~NEWLINE* NEWLINE
+   PASSWORD_POLICY null_rest_of_line
 ;
 
 aaa_profile
@@ -951,7 +951,7 @@ aaa_profile_null
       | RADIUS_INTERIM_ACCOUNTING
       | RFC_3576_SERVER
       | WIRED_TO_WIRELESS_ROAM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_rfc_3576_server
@@ -975,7 +975,7 @@ aaa_server_group_null
       | AUTH_SERVER
       | LOAD_BALANCE
       | SET
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aaa_session_id

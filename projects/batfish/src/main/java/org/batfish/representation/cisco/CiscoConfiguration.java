@@ -2140,6 +2140,27 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
+
+  /**
+   * Returns the MTU that should be assigned to the given interface, taking into account
+   * vendor-specific conventions such as Arista subinterfaces.
+   */
+  private int getInterfaceMtu(Interface iface) {
+    if (_vendor == ConfigurationFormat.ARISTA) {
+      Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
+      if (m.matches()) {
+        String parentInterfaceName = m.group(1);
+        Interface parentInterface = _interfaces.get(parentInterfaceName);
+        if (parentInterface != null) {
+          return parentInterface.getMtu();
+        }
+      }
+    }
+
+    return iface.getMtu();
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     String name = iface.getName();
@@ -2156,7 +2177,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else {
       newIface.getDhcpRelayAddresses().addAll(iface.getDhcpRelayAddresses());
     }
-    newIface.setMtu(iface.getMtu());
+    newIface.setMtu(getInterfaceMtu(iface));
     newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());

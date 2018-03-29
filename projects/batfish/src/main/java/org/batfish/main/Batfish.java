@@ -3343,6 +3343,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                       .setFinalNodes(ImmutableSet.of())
                                       .setTransitNodes(ImmutableSet.of())
                                       .setNonTransitNodes(ImmutableSet.of())
+                                      .setSrcNatted(reachabilitySettings.getSrcNatted())
                                       .build();
                               StandardReachabilityQuerySynthesizer notAcceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
@@ -4064,6 +4065,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           .setIngressNodeVrfs(vrfsByNode)
                           .setTransitNodes(transitNodes)
                           .setNonTransitNodes(nonTransitNodes)
+                          .setSrcNatted(reachabilitySettings.getSrcNatted())
                           .build();
 
                   return new NodJob(settings, dataPlaneSynthesizer, query, nodeVrfs, tag);

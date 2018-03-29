@@ -7,7 +7,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -25,7 +27,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     @Override
     public MultipathInconsistencyQuerySynthesizer build() {
       return new MultipathInconsistencyQuerySynthesizer(
-          _headerSpace, _ingressNodeVrfs, _transitNodes, _nonTransitNodes);
+          _headerSpace, _ingressNodeVrfs, _srcNatted, _transitNodes, _nonTransitNodes);
     }
 
     @Override
@@ -51,18 +53,23 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
   private MultipathInconsistencyQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      Boolean srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(headerSpace, ingressNodeVrfs, transitNodes, nonTransitNodes);
+    super(headerSpace, ingressNodeVrfs, srcNatted, transitNodes, nonTransitNodes);
   }
 
   @Override
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     addOriginateRules(rules);
+    ImmutableList.Builder<BooleanExpr> queryPreconditions =
+        ImmutableList.<BooleanExpr>builder().add(SaneExpr.INSTANCE).add(getSrcNattedConstraint());
     rules.add(
         new BasicRuleStatement(
-            SaneExpr.INSTANCE, ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE));
+            new AndExpr(queryPreconditions.build()),
+            ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE),
+            Query.INSTANCE));
     rules.add(
         new BasicRuleStatement(
             SaneExpr.INSTANCE,

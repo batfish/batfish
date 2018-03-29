@@ -247,6 +247,11 @@ netservice_alg
    | VOCERA
 ;
 
+null_rest_of_line
+:
+    ~NEWLINE* NEWLINE
+;
+
 ospf_route_type
 :
    (

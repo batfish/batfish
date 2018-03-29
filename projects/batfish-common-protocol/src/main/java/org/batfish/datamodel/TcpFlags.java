@@ -144,6 +144,9 @@ public final class TcpFlags implements Serializable {
 
   public static final int SYN = 0x02;
 
+  public static final TcpFlags SYN_ONLY =
+      builder().setSyn(true).setAck(false).setUseSyn(true).setUseAck(true).build();
+
   public static final int URG = 0x20;
 
   public static Builder builder() {

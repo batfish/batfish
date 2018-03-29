@@ -185,12 +185,12 @@ ss_null
       | USER
       | VIEW
       | VRF
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ss_removed
 :
-   ~NEWLINE* REMOVED ~NEWLINE* NEWLINE
+   ~NEWLINE* REMOVED null_rest_of_line
 ;
 
 ss_source_interface
