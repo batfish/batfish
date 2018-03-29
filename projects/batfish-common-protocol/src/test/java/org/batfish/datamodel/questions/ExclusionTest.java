@@ -23,7 +23,6 @@ public class ExclusionTest {
 
     boolean result = Exclusion.firstCoversSecond(node1, node2);
 
-
     assertThat(result, equalTo(true));
   }
 
