@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
 
+/**
+ * Captures one "row" of the result when a JsonPath query is evaluated. Each row has a prefix
+ * portion and a suffix portion. The prefix portion is what the sequence of components that the
+ * query matched and the suffix is the value of the last matched component.
+ */
 public class JsonPathResult {
 
   private final List<String> _concretePath;
@@ -34,6 +39,12 @@ public class JsonPathResult {
         && Objects.equals(_suffix, ((JsonPathResult) o)._suffix);
   }
 
+  /**
+   * Return a component of the prefix part of the result
+   *
+   * @param index The index of the requested component
+   * @return The component
+   */
   public String getPrefixPart(int index) {
     if (_concretePath.size() <= index) {
       throw new BatfishException(
@@ -55,6 +66,11 @@ public class JsonPathResult {
     return Arrays.asList(endsCut.split("\\]\\["));
   }
 
+  /**
+   * Returns the suffix of the result
+   *
+   * @return The suffix
+   */
   public JsonNode getSuffix() {
     return _suffix;
   }
