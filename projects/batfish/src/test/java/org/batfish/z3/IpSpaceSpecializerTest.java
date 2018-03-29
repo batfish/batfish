@@ -36,10 +36,10 @@ public class IpSpaceSpecializerTest {
 
     assertThat(trivialSpecializer.specialize(ipSpace), equalTo(ipSpace));
     assertThat(whitelistAnySpecializer.specialize(ipSpace), equalTo(ipSpace));
-    assertThat(blacklistAnySpecializer.specialize(ipSpace),
+    assertThat(
+        blacklistAnySpecializer.specialize(ipSpace),
         equalTo(
-            AclIpSpace
-                .builder()
+            AclIpSpace.builder()
                 .thenPermitting(EmptyIpSpace.INSTANCE)
                 .thenRejecting(EmptyIpSpace.INSTANCE)
                 .thenPermitting(EmptyIpSpace.INSTANCE)
@@ -49,10 +49,10 @@ public class IpSpaceSpecializerTest {
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
             ImmutableSortedSet.of(new IpWildcard("0.0.1.6/32")), ImmutableSortedSet.of());
-    assertThat(specializer.specialize(ipSpace),
+    assertThat(
+        specializer.specialize(ipSpace),
         equalTo(
-            AclIpSpace
-                .builder()
+            AclIpSpace.builder()
                 .thenPermitting(UniverseIpSpace.INSTANCE)
                 .thenRejecting(UniverseIpSpace.INSTANCE)
                 .thenPermitting(UniverseIpSpace.INSTANCE)
@@ -62,10 +62,10 @@ public class IpSpaceSpecializerTest {
     specializer =
         new IpSpaceSpecializer(
             ImmutableSortedSet.of(new IpWildcard("1.1.1.1/32")), ImmutableSortedSet.of());
-    assertThat(specializer.specialize(ipSpace),
+    assertThat(
+        specializer.specialize(ipSpace),
         equalTo(
-            AclIpSpace
-                .builder()
+            AclIpSpace.builder()
                 .thenPermitting(EmptyIpSpace.INSTANCE)
                 .thenRejecting(EmptyIpSpace.INSTANCE)
                 .thenPermitting(EmptyIpSpace.INSTANCE)
@@ -79,8 +79,7 @@ public class IpSpaceSpecializerTest {
     assertThat(
         specializer.specialize(ipSpace),
         equalTo(
-            AclIpSpace
-                .builder()
+            AclIpSpace.builder()
                 .thenPermitting(Prefix.parse("0.0.1.0/24"))
                 .thenRejecting(EmptyIpSpace.INSTANCE)
                 .thenPermitting(EmptyIpSpace.INSTANCE)
