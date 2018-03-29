@@ -27,7 +27,7 @@ public final class ListExpr extends Expr {
   }
 
   @Override
-  public final int hashCode() {
+  public int hashCode() {
     return Objects.hash(_subExpressions);
   }
 }
