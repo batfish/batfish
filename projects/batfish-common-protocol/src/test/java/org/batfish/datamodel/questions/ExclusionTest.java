@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-public class ExclusionsTest {
+public class ExclusionTest {
 
   @Test
   public void firstCoversSecondArrayCovers() {
@@ -21,7 +21,8 @@ public class ExclusionsTest {
             .add(new TextNode("value2"))
             .add(new TextNode("value"));
 
-    boolean result = Exclusions.firstCoversSecond(node1, node2);
+    boolean result = Exclusion.firstCoversSecond(node1, node2);
+
 
     assertThat(result, equalTo(true));
   }
@@ -35,7 +36,7 @@ public class ExclusionsTest {
     // we couldn't just chain the two sets because set returns JsonNode, not ObjectNode
     ((ObjectNode) node2).set("key2", new TextNode("value"));
 
-    boolean result = Exclusions.firstCoversSecond(node1, node2);
+    boolean result = Exclusion.firstCoversSecond(node1, node2);
 
     assertThat(result, equalTo(true));
   }
@@ -46,7 +47,7 @@ public class ExclusionsTest {
         BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value"));
     JsonNode node2 = BatfishObjectMapper.mapper().createArrayNode().add(new TextNode("value"));
 
-    boolean result = Exclusions.firstCoversSecond(node1, node2);
+    boolean result = Exclusion.firstCoversSecond(node1, node2);
 
     assertThat(result, equalTo(false));
   }
@@ -58,7 +59,7 @@ public class ExclusionsTest {
     JsonNode node2 =
         BatfishObjectMapper.mapper().createObjectNode().set("key2", new TextNode("value"));
 
-    boolean result = Exclusions.firstCoversSecond(node1, node2);
+    boolean result = Exclusion.firstCoversSecond(node1, node2);
 
     assertThat(result, equalTo(false));
   }
@@ -68,7 +69,7 @@ public class ExclusionsTest {
     JsonNode node1 = new TextNode("abc");
     JsonNode node2 = new TextNode("abc");
 
-    boolean result = Exclusions.firstCoversSecond(node1, node2);
+    boolean result = Exclusion.firstCoversSecond(node1, node2);
 
     assertThat(result, equalTo(true));
   }
@@ -78,7 +79,7 @@ public class ExclusionsTest {
     JsonNode node1 = new TextNode("2");
     JsonNode node2 = new IntNode(2); // different type
 
-    boolean result = Exclusions.firstCoversSecond(node1, node2);
+    boolean result = Exclusion.firstCoversSecond(node1, node2);
 
     assertThat(result, equalTo(false));
   }

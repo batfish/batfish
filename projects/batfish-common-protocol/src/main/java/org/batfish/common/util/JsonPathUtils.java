@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 
+/** Contains a few helper functions for applying JsonPath expressions to JSON strings and objects */
 public class JsonPathUtils {
 
   public static class BatfishJsonPathDefaults implements Defaults {
@@ -52,12 +53,30 @@ public class JsonPathUtils {
     }
   }
 
+  private JsonPathUtils() {}
+
+  /**
+   * Produces the results of applying a function-based (e.g., length()) JsonPath query to Json
+   * content.
+   *
+   * @param queryPath The JsonPath query
+   * @param content The Json content
+   * @return An @{link Object} that represents the answer
+   */
   public static Object computePathFunction(String queryPath, String content) {
     return computePathFunctionPvt(
         queryPath,
         JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
+  /**
+   * Produces the results of applying a function-based (e.g., length()) JsonPath query to Json
+   * content.
+   *
+   * @param queryPath The JsonPath query
+   * @param content The Json content
+   * @return An @{link Object} that represents the answer
+   */
   public static Object computePathFunction(String queryPath, JsonNode content) {
     return computePathFunctionPvt(
         queryPath,
@@ -85,18 +104,35 @@ public class JsonPathUtils {
     }
   }
 
+  /**
+   * Produces the results of applying JsonPath query to Json content. This function does not support
+   * arithmetic functions (e.g., length() in queries.
+   *
+   * @param queryPath The JsonPath query
+   * @param content The Json content
+   * @return A list of @{link JsonPathResult} entities
+   */
   public static List<JsonPathResult> getJsonPathResults(String queryPath, String content) {
     return getJsonPathResultsPvt(
         queryPath,
         JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
+  /**
+   * Produces the results of applying JsonPath query to Json content. This function does not support
+   * arithmetic functions (e.g., length() in queries.
+   *
+   * @param queryPath The JsonPath query
+   * @param content The Json content
+   * @return A list of @{link JsonPathResult} entities
+   */
   public static List<JsonPathResult> getJsonPathResults(String queryPath, JsonNode content) {
     return getJsonPathResultsPvt(
         queryPath,
         JsonPath.parse(content, BatfishJsonPathDefaults.getDefaulConfiguration()).json());
   }
 
+  // the 'Pvt' suffix prevents ambiguous calls
   private static List<JsonPathResult> getJsonPathResultsPvt(String queryPath, Object jsonObject) {
     ConfigurationBuilder prefixCb = new ConfigurationBuilder();
     prefixCb.options(Option.ALWAYS_RETURN_LIST);

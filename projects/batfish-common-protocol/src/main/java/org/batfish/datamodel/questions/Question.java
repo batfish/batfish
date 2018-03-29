@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -263,7 +264,7 @@ public abstract class Question implements IQuestion {
 
   private boolean _differential;
 
-  private Exclusions _exclusions;
+  private List<Exclusion> _exclusions;
 
   private InstanceData _instance;
 
@@ -291,7 +292,7 @@ public abstract class Question implements IQuestion {
   }
 
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)
-  public Exclusions getExclusions() {
+  public List<Exclusion> getExclusions() {
     return _exclusions;
   }
 
@@ -457,7 +458,7 @@ public abstract class Question implements IQuestion {
   }
 
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)
-  public void setExclusions(Exclusions exclusions) {
+  public void setExclusions(List<Exclusion> exclusions) {
     _exclusions = exclusions;
   }
 

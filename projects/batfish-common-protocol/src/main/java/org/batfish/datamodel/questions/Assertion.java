@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Objects;
 import java.io.IOException;
+import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.table.Rows;
 
+/**
+ * Represents an assertion that can be added to questions. It is evaluated by the
+ * corresponding @{link Answerer}.
+ */
 public class Assertion {
 
   public enum AssertionType {
@@ -61,10 +65,16 @@ public class Assertion {
       return false;
     }
     Assertion other = (Assertion) o;
-    return Objects.equal(_assertionType, other.getType())
-        && Objects.equal(_expect, other.getExpect());
+    return Objects.equals(_assertionType, other.getType())
+        && Objects.equals(_expect, other.getExpect());
   }
 
+  /**
+   * Evaluates the assertion over the given @{link Rows} data
+   *
+   * @param rows The data over which the assertion should be evaluated
+   * @return The results of the evaluation
+   */
   public boolean evaluate(Rows rows) {
     switch (getType()) {
       case countequals:
@@ -98,7 +108,7 @@ public class Assertion {
 
   @Override
   public int hashCode() {
-    return java.util.Objects.hash(_assertionType, _expect);
+    return Objects.hash(_assertionType, _expect);
   }
 
   @Override

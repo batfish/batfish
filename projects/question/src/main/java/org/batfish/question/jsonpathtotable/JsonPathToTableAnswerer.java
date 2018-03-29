@@ -22,6 +22,7 @@ import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.DisplayHints.Composition;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
+import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.jsonpath.JsonPathExtractionHint;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
@@ -82,15 +83,10 @@ public class JsonPathToTableAnswerer extends Answerer {
     // 2. Put them in the answer element based on whether they are covered by an exclusion
     for (JsonPathResult result : jsonPathResults) {
       ObjectNode answerValues = computeRowValues(query.getDisplayHints(), result);
-      boolean excluded = false;
-      if (question.getExclusions() != null) {
-        ObjectNode exclusion = question.getExclusions().covered(answerValues);
-        if (exclusion != null) {
-          answer.addExcludedRow(answerValues, exclusion);
-          excluded = true;
-        }
-      }
-      if (!excluded) {
+      Exclusion exclusion = Exclusion.covered(answerValues, question.getExclusions());
+      if (exclusion != null) {
+        answer.addExcludedRow(answerValues, exclusion.getName());
+      } else {
         answer.addRow(answerValues);
       }
     }

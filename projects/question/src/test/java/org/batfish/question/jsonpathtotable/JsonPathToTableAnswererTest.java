@@ -7,13 +7,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.DisplayHints.Composition;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
-import org.batfish.datamodel.questions.Exclusions;
+import org.batfish.datamodel.questions.Exclusion;
 import org.junit.Test;
 
 public class JsonPathToTableAnswererTest {
@@ -43,15 +44,18 @@ public class JsonPathToTableAnswererTest {
     compositions.put("node", composition);
 
     // exclude excludeVal
-    Exclusions exclusions = new Exclusions();
-    exclusions.add(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("val", new TextNode("excludeVal")));
+    Exclusion exclusion =
+        new Exclusion(
+            null,
+            (ObjectNode)
+                BatfishObjectMapper.mapper()
+                    .createObjectNode()
+                    .set("val", new TextNode("excludeVal")));
 
     DisplayHints dhints = new DisplayHints(compositions, extractions, null);
     JsonPathToTableQuery query = new JsonPathToTableQuery(pathQuery, dhints);
     JsonPathToTableQuestion question = new JsonPathToTableQuestion(null, query, null);
-    question.setExclusions(exclusions);
+    question.setExclusions(Collections.singletonList(exclusion));
 
     JsonPathToTableAnswerElement answer =
         JsonPathToTableAnswerer.computeAnswerTable(innerAnswer, question);
