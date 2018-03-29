@@ -3,10 +3,13 @@ package org.batfish.representation.aws;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TcpFlags;
 import org.codehaus.jettison.json.JSONArray;
@@ -24,6 +27,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   private final List<IpPermissions> _ipPermsEgress;
 
   private final List<IpPermissions> _ipPermsIngress;
+
+  private final Set<IpWildcard> _usersIpSpace = new HashSet<>();
 
   public SecurityGroup(JSONObject jObj, BatfishLogger logger) throws JSONException {
     _ipPermsEgress = new LinkedList<>();
@@ -123,6 +128,10 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   public List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
+  }
+
+  public Set<IpWildcard> getUsersIpSpace() {
+    return _usersIpSpace;
   }
 
   private void initIpPerms(
