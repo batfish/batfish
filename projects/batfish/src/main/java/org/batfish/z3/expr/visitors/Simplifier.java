@@ -211,10 +211,10 @@ public class Simplifier
     } else {
       BooleanExpr then = ifThenElse.getThen().accept(this);
       BooleanExpr els = ifThenElse.getElse().accept(this);
-      if(then == TrueExpr.INSTANCE && els == TrueExpr.INSTANCE) {
+      if (then == TrueExpr.INSTANCE && els == TrueExpr.INSTANCE) {
         return TrueExpr.INSTANCE;
       }
-      if(then == FalseExpr.INSTANCE && els == FalseExpr.INSTANCE) {
+      if (then == FalseExpr.INSTANCE && els == FalseExpr.INSTANCE) {
         return FalseExpr.INSTANCE;
       }
       if (condition != ifThenElse.getCondition()
