@@ -50,43 +50,20 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
+    /* Just specialize the IpSpace of each acl line. */
     List<AclIpSpaceLine> specializedLines =
         aclIpSpace
             .getLines()
             .stream()
-            // specialize the IpSpace of each acl line
             .map(
                 aclIpSpaceLine ->
                     AclIpSpaceLine.builder()
                         .setAction(aclIpSpaceLine.getAction())
                         .setIpSpace(aclIpSpaceLine.getIpSpace().accept(this))
                         .build())
-            // remove the lines with empty IpSpace
-            .filter(aclIpSpaceLine -> !aclIpSpaceLine.getIpSpace().equals(EmptyIpSpace.INSTANCE))
             .collect(ImmutableList.toImmutableList());
 
-    // remove any lines after a UniverseIpSpace
-    int lastLine =
-        ListUtils.indexOf(
-            specializedLines, line -> line.getIpSpace().equals(UniverseIpSpace.INSTANCE));
-    if (lastLine == 0) {
-      // first line is UniverseIpSpace
-      return specializedLines.get(0).getAction() == LineAction.ACCEPT
-          ? UniverseIpSpace.INSTANCE
-          : EmptyIpSpace.INSTANCE;
-    } else if (lastLine != -1) {
-      specializedLines = specializedLines.subList(0, lastLine + 1);
-    }
-
-    // all of the specialization above could have been left to Simplifier if we
-    // didn't want to do this (Simplifier doesn't handle this case):
-    if (specializedLines
-        .stream()
-        .allMatch(aclIpSpaceLine -> aclIpSpaceLine.getAction() == LineAction.REJECT)) {
-      return EmptyIpSpace.INSTANCE;
-    } else {
-      return AclIpSpace.builder().setLines(specializedLines).build();
-    }
+    return AclIpSpace.builder().setLines(specializedLines).build();
   }
 
   @Override

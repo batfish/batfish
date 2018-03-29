@@ -36,19 +36,40 @@ public class IpSpaceSpecializerTest {
 
     assertThat(trivialSpecializer.specialize(ipSpace), equalTo(ipSpace));
     assertThat(whitelistAnySpecializer.specialize(ipSpace), equalTo(ipSpace));
-    assertThat(blacklistAnySpecializer.specialize(ipSpace), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(blacklistAnySpecializer.specialize(ipSpace),
+        equalTo(
+            AclIpSpace
+                .builder()
+                .thenPermitting(EmptyIpSpace.INSTANCE)
+                .thenRejecting(EmptyIpSpace.INSTANCE)
+                .thenPermitting(EmptyIpSpace.INSTANCE)
+                .build()));
 
     // headerspace is contained in all lines
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
             ImmutableSortedSet.of(new IpWildcard("0.0.1.6/32")), ImmutableSortedSet.of());
-    assertThat(specializer.specialize(ipSpace), equalTo(UniverseIpSpace.INSTANCE));
+    assertThat(specializer.specialize(ipSpace),
+        equalTo(
+            AclIpSpace
+                .builder()
+                .thenPermitting(UniverseIpSpace.INSTANCE)
+                .thenRejecting(UniverseIpSpace.INSTANCE)
+                .thenPermitting(UniverseIpSpace.INSTANCE)
+                .build()));
 
     // headerspace is outside of all lines
     specializer =
         new IpSpaceSpecializer(
             ImmutableSortedSet.of(new IpWildcard("1.1.1.1/32")), ImmutableSortedSet.of());
-    assertThat(specializer.specialize(ipSpace), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(specializer.specialize(ipSpace),
+        equalTo(
+            AclIpSpace
+                .builder()
+                .thenPermitting(EmptyIpSpace.INSTANCE)
+                .thenRejecting(EmptyIpSpace.INSTANCE)
+                .thenPermitting(EmptyIpSpace.INSTANCE)
+                .build()));
 
     // not contained in any line, and intersects the first only
     specializer =
@@ -57,7 +78,13 @@ public class IpSpaceSpecializerTest {
             ImmutableSortedSet.of());
     assertThat(
         specializer.specialize(ipSpace),
-        equalTo(AclIpSpace.builder().thenPermitting(Prefix.parse("0.0.1.0/24")).build()));
+        equalTo(
+            AclIpSpace
+                .builder()
+                .thenPermitting(Prefix.parse("0.0.1.0/24"))
+                .thenRejecting(EmptyIpSpace.INSTANCE)
+                .thenPermitting(EmptyIpSpace.INSTANCE)
+                .build()));
   }
 
   @Test
