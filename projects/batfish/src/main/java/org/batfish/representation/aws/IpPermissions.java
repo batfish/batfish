@@ -1,11 +1,12 @@
 package org.batfish.representation.aws;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -54,6 +55,8 @@ public class IpPermissions implements Serializable {
 
   private List<Prefix> _ipRanges = new LinkedList<>();
 
+  private List<String> _securityGroups = new LinkedList<>();
+
   private int _toPort = 65535;
 
   public IpPermissions(JSONObject jObj, BatfishLogger logger) throws JSONException {
@@ -72,25 +75,42 @@ public class IpPermissions implements Serializable {
       JSONObject childObject = ranges.getJSONObject(index);
       _ipRanges.add(Prefix.parse(childObject.getString(AwsVpcEntity.JSON_KEY_CIDR_IP)));
     }
+
+    JSONArray userIdPairs = jObj.getJSONArray(AwsVpcEntity.JSON_KEY_USER_ID_PAIRS);
+
+    for (int index = 0; index < userIdPairs.length(); index++) {
+      JSONObject childObject = userIdPairs.getJSONObject(index);
+      _securityGroups.add(childObject.getString(AwsVpcEntity.JSON_KEY_GROUP_ID));
+    }
   }
 
-  public IpAccessListLine toEgressIpAccessListLine() {
+  public IpAccessListLine toEgressIpAccessListLine(Region region) {
     IpAccessListLine line = toIpAccessListLine();
-    line.setDstIps(
-        _ipRanges
+    ImmutableSortedSet.Builder<IpWildcard> ipWildcardBuilder =
+        new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+    ipWildcardBuilder.addAll(_ipRanges.stream().map(IpWildcard::new).collect(Collectors.toSet()));
+    ipWildcardBuilder.addAll(
+        _securityGroups
             .stream()
-            .map(IpWildcard::new)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+            .filter(sg -> region.getSecurityGroups().containsKey(sg))
+            .flatMap(sg -> region.getSecurityGroups().get(sg).getUsersIpSpace().stream())
+            .collect(Collectors.toSet()));
+    line.setDstIps(ipWildcardBuilder.build());
     return line;
   }
 
-  public IpAccessListLine toIngressIpAccessListLine() {
+  public IpAccessListLine toIngressIpAccessListLine(Region region) {
     IpAccessListLine line = toIpAccessListLine();
-    line.setSrcIps(
-        _ipRanges
+    ImmutableSortedSet.Builder<IpWildcard> ipWildcardBuilder =
+        new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
+    ipWildcardBuilder.addAll(_ipRanges.stream().map(IpWildcard::new).collect(Collectors.toSet()));
+    ipWildcardBuilder.addAll(
+        _securityGroups
             .stream()
-            .map(IpWildcard::new)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
+            .filter(sg -> region.getSecurityGroups().containsKey(sg))
+            .flatMap(sg -> region.getSecurityGroups().get(sg).getUsersIpSpace().stream())
+            .collect(Collectors.toSet()));
+    line.setSrcIps(ipWildcardBuilder.build());
     return line;
   }
 

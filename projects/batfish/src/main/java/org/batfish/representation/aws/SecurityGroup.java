@@ -46,16 +46,26 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   private void addEgressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toEgressIpAccessListLine());
+      IpAccessListLine ipAccessListLine = ipPerms.toEgressIpAccessListLine(region);
+      // Destination IPs should have been populated using either SG or IP ranges,  if not then this
+      // Ip perm is incomplete
+      if (!ipAccessListLine.getDstIps().isEmpty()) {
+        accessList.add(ipAccessListLine);
+      }
     }
   }
 
   private void addIngressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toIngressIpAccessListLine());
+      IpAccessListLine ipAccessListLine = ipPerms.toIngressIpAccessListLine(region);
+      // Source IPs should have been populated using either SG or IP ranges, if not then this Ip
+      // perm is incomplete
+      if (!ipAccessListLine.getSrcIps().isEmpty()) {
+        accessList.add(ipAccessListLine);
+      }
     }
   }
 
@@ -103,9 +113,9 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   public void addInOutAccessLines(
-      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
-    addIngressAccessLines(_ipPermsIngress, inboundRules);
-    addEgressAccessLines(_ipPermsEgress, outboundRules);
+      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules, Region region) {
+    addIngressAccessLines(_ipPermsIngress, inboundRules, region);
+    addEgressAccessLines(_ipPermsEgress, outboundRules, region);
     addReverseAcls(inboundRules, outboundRules);
   }
 

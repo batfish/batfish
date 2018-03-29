@@ -363,7 +363,9 @@ public class Region implements Serializable {
       List<IpAccessListLine> outboundRules = new LinkedList<>();
       entry
           .getValue()
-          .forEach(securityGroup -> securityGroup.addInOutAccessLines(inboundRules, outboundRules));
+          .forEach(
+              securityGroup ->
+                  securityGroup.addInOutAccessLines(inboundRules, outboundRules, this));
 
       // create ACLs from inboundRules and outboundRules
       IpAccessList inAcl = new IpAccessList(SG_INGRESS_ACL_NAME, inboundRules);
