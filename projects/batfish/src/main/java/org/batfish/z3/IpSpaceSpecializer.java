@@ -78,9 +78,9 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
       specializedLines = specializedLines.subList(0, lastLine + 1);
     }
 
-    if (specializedLines.size() == 0) {
-      return EmptyIpSpace.INSTANCE;
-    } else if (specializedLines
+    // all of the specialization above could have been left to Simplifier if we
+    // didn't want to do this (Simplifier doesn't handle this case):
+    if (specializedLines
         .stream()
         .allMatch(aclIpSpaceLine -> aclIpSpaceLine.getAction() == LineAction.REJECT)) {
       return EmptyIpSpace.INSTANCE;
