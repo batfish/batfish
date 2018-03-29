@@ -10,7 +10,7 @@ import org.batfish.z3.expr.visitors.IntExprVisitor;
  * Represents a projection of a bitvector to a bitvector of a lower dimension. The output consists
  * of a contiguous subvector of the original.
  */
-public class ExtractExpr extends IntExpr {
+public final class ExtractExpr extends IntExpr {
 
   public static IntExpr newExtractExpr(HeaderField var, int low, int high) {
     int varSize = var.getSize();
@@ -53,7 +53,7 @@ public class ExtractExpr extends IntExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     ExtractExpr other = (ExtractExpr) e;
     return Objects.equals(_high, other._high)
         && Objects.equals(_low, other._low)

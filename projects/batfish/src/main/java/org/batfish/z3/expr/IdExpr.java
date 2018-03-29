@@ -3,7 +3,7 @@ package org.batfish.z3.expr;
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
-public class IdExpr extends Expr {
+public final class IdExpr extends Expr {
 
   private String _id;
 
@@ -17,7 +17,7 @@ public class IdExpr extends Expr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_id, ((IdExpr) e)._id);
   }
 

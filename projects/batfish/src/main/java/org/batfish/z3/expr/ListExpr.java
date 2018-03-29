@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
-public class ListExpr extends Expr {
+public final class ListExpr extends Expr {
 
   private final List<Expr> _subExpressions;
 
@@ -18,7 +18,7 @@ public class ListExpr extends Expr {
   }
 
   @Override
-  public final boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_subExpressions, ((ListExpr) e)._subExpressions);
   }
 

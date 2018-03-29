@@ -18,7 +18,7 @@ public abstract class Expr {
     return exprEquals((Expr) o);
   }
 
-  public abstract boolean exprEquals(Expr e);
+  protected abstract boolean exprEquals(Expr e);
 
   @Override
   public abstract int hashCode();

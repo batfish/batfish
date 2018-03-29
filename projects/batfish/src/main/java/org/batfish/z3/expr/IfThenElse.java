@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class IfThenElse extends BooleanExpr {
+public final class IfThenElse extends BooleanExpr {
 
   private final BooleanExpr _condition;
 
@@ -29,21 +29,8 @@ public class IfThenElse extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
-    if (this == e) {
-      return true;
-    }
-
-    if (e == null) {
-      return false;
-    }
-
-    if (!(e instanceof IfThenElse)) {
-      return false;
-    }
-
+  protected boolean exprEquals(Expr e) {
     IfThenElse other = (IfThenElse) e;
-
     return Objects.equals(_condition, other._condition)
         && Objects.equals(_then, other._then)
         && Objects.equals(_else, other._else);

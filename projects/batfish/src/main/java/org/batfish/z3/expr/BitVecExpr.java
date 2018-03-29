@@ -3,7 +3,7 @@ package org.batfish.z3.expr;
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 
-public class BitVecExpr extends TypeExpr {
+public final class BitVecExpr extends TypeExpr {
 
   private final int _size;
 
@@ -17,7 +17,7 @@ public class BitVecExpr extends TypeExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_size, ((BitVecExpr) e)._size);
   }
 
