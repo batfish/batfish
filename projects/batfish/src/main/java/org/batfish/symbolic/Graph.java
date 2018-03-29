@@ -56,7 +56,6 @@ import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
-import org.batfish.grammar.cisco.CiscoParser.Management_egress_interface_selection_nullContext;
 import org.batfish.symbolic.collections.Table2;
 
 /**
