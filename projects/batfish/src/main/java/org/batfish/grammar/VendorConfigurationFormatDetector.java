@@ -46,6 +46,7 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
   private static final Pattern CISCO_STYLE_ACL_PATTERN =
       Pattern.compile("(?m)(^(ip )?access-list.*$)");
+  private static final Pattern IOS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:cat\\d+");
   private static final Pattern NEIGHBOR_ACTIVATE_PATTERN =
       Pattern.compile("(?m)^ *neighbor.*activate$");
   private static final Pattern NEIGHBOR_PEER_GROUP_MATCHER =
@@ -53,6 +54,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern NEXUS_COMMIT_LINE_PATTERN = Pattern.compile("(?m)^ *commit *$");
   private static final Pattern NEXUS_FEATURE_LINE_PATTERN =
       Pattern.compile("(?m)^ *(no)?  *feature  *[^ ].*$");
+  private static final Pattern NEXUS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:(n\\d+|nxos)");
 
   // checkJuniper patterns
   private static final Pattern FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN =
@@ -122,7 +124,7 @@ public final class VendorConfigurationFormatDetector {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
     }
-    if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN)) {
+    if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN) || fileTextMatches(NEXUS_BOOTFLASH_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
     }
     if (fileTextMatches(CISCO_LIKE_PATTERN)
@@ -130,7 +132,8 @@ public final class VendorConfigurationFormatDetector {
         || fileTextMatches(CISCO_STYLE_ACL_PATTERN)) {
       if (_fileText.contains("exit-address-family")
           || fileTextMatches(NEIGHBOR_ACTIVATE_PATTERN)
-          || fileTextMatches(NEIGHBOR_PEER_GROUP_MATCHER)) {
+          || fileTextMatches(NEIGHBOR_PEER_GROUP_MATCHER)
+          || fileTextMatches(IOS_BOOTFLASH_PATTERN)) {
         return ConfigurationFormat.CISCO_IOS;
       } else {
         return ConfigurationFormat.CISCO_NX;
