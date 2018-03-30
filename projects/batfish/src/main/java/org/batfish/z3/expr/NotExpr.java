@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class NotExpr extends BooleanExpr {
+public final class NotExpr extends BooleanExpr {
 
   private final BooleanExpr _arg;
 
@@ -23,7 +23,7 @@ public class NotExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_arg, ((NotExpr) e)._arg);
   }
 

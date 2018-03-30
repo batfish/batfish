@@ -18,6 +18,7 @@ import org.batfish.z3.expr.GenericStatementVisitor;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
@@ -196,6 +197,30 @@ public class Simplifier
       return new IfExpr(newAntecedent, newConsequent);
     } else {
       return ifExpr;
+    }
+  }
+
+  @Override
+  public BooleanExpr visitIfThenElse(IfThenElse ifThenElse) {
+    BooleanExpr condition = ifThenElse.getCondition().accept(this);
+
+    if (condition == TrueExpr.INSTANCE) {
+      return ifThenElse.getThen().accept(this);
+    } else if (condition == FalseExpr.INSTANCE) {
+      return ifThenElse.getElse().accept(this);
+    } else {
+      BooleanExpr then = ifThenElse.getThen().accept(this);
+      BooleanExpr els = ifThenElse.getElse().accept(this);
+      if (then == els) {
+        return then;
+      }
+      if (condition != ifThenElse.getCondition()
+          || then != ifThenElse.getThen()
+          || els != ifThenElse.getElse()) {
+        return new IfThenElse(condition, then, els);
+      } else {
+        return ifThenElse;
+      }
     }
   }
 

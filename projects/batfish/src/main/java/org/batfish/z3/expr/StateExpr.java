@@ -21,7 +21,7 @@ public abstract class StateExpr extends Expr {
   public abstract <R> R accept(GenericStateExprVisitor<R> visitor);
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected final boolean exprEquals(Expr e) {
     return Parameterizer.getParameters(this).equals(Parameterizer.getParameters((StateExpr) e));
   }
 

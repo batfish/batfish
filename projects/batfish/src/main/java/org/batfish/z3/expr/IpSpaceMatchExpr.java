@@ -6,7 +6,7 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
 
-public class IpSpaceMatchExpr extends BooleanExpr {
+public final class IpSpaceMatchExpr extends BooleanExpr {
 
   private final BooleanExpr _expr;
 
@@ -25,7 +25,7 @@ public class IpSpaceMatchExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_expr, ((IpSpaceMatchExpr) e)._expr);
   }
 

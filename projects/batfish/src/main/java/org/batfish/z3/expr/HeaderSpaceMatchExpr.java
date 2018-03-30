@@ -20,7 +20,7 @@ import org.batfish.z3.BasicHeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class HeaderSpaceMatchExpr extends BooleanExpr {
+public final class HeaderSpaceMatchExpr extends BooleanExpr {
 
   public static BooleanExpr matchDscp(Set<Integer> dscps) {
     return new OrExpr(
@@ -427,7 +427,7 @@ public class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_expr, ((HeaderSpaceMatchExpr) e)._expr);
   }
 

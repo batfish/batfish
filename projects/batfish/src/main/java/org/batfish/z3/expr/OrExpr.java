@@ -6,7 +6,7 @@ import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class OrExpr extends BooleanExpr {
+public final class OrExpr extends BooleanExpr {
 
   private List<BooleanExpr> _disjuncts;
 
@@ -28,7 +28,7 @@ public class OrExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_disjuncts, ((OrExpr) e)._disjuncts);
   }
 
