@@ -33,6 +33,8 @@ public class ReachabilitySettings {
 
     private NodesSpecifier _transitNodes;
 
+    private boolean _specialize;
+
     private boolean _useCompression;
 
     public ReachabilitySettings build() {
@@ -69,6 +71,10 @@ public class ReachabilitySettings {
 
     public NodesSpecifier getNotIngressNodes() {
       return _notIngressNodes;
+    }
+
+    public boolean getSpecialize() {
+      return _specialize;
     }
 
     public Boolean getSrcNatted() {
@@ -128,6 +134,11 @@ public class ReachabilitySettings {
       return this;
     }
 
+    public Builder setSpecialize(boolean specialize) {
+      _specialize = specialize;
+      return this;
+    }
+
     public Builder setTransitNodes(NodesSpecifier transitNodes) {
       _transitNodes = transitNodes;
       return this;
@@ -163,6 +174,8 @@ public class ReachabilitySettings {
 
   private final NodesSpecifier _transitNodes;
 
+  private final boolean _specialize;
+
   private final boolean _useCompression;
 
   private ReachabilitySettings(Builder builder) {
@@ -174,6 +187,7 @@ public class ReachabilitySettings {
     _maxChunkSize = builder._maxChunkSize;
     _transitNodes = builder._transitNodes;
     _nonTransitNodes = builder._nonTransitNodes;
+    _specialize = builder._specialize;
     _useCompression = builder._useCompression;
     _actions = builder._actions;
     _srcNatted = builder._srcNatted;
@@ -249,6 +263,10 @@ public class ReachabilitySettings {
 
   public NodesSpecifier getTransitNodes() {
     return _transitNodes;
+  }
+
+  public boolean getSpecialize() {
+    return _specialize;
   }
 
   public boolean getUseCompression() {

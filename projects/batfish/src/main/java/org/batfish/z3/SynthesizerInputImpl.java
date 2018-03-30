@@ -59,6 +59,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private boolean _simplify;
 
+    private boolean _specialize;
+
     private Topology _topology;
 
     private Set<Type> _vectorizedParameters;
@@ -70,6 +72,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _disabledVrfs = ImmutableMap.of();
       _headerSpace = null;
       _simplify = false;
+      _specialize = false;
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -83,6 +86,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _disabledVrfs,
           _headerSpace != null ? _headerSpace : new HeaderSpace(),
           _simplify,
+          _specialize,
           _topology,
           _vectorizedParameters);
     }
@@ -124,6 +128,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     public Builder setSimplify(boolean simplify) {
       _simplify = simplify;
+      return this;
+    }
+
+    public Builder setSpecialize(boolean specialize) {
+      _specialize = specialize;
       return this;
     }
 
@@ -214,6 +223,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       Map<String, Set<String>> disabledVrfs,
       HeaderSpace headerSpace,
       boolean simplify,
+      boolean specialize,
       Topology topology,
       Set<Type> vectorizedParameters) {
     if (configurations == null) {
@@ -221,7 +231,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     }
     _ipAclListSpecializer = new IpAccessListSpecializer(headerSpace);
     _ipSpaceSpecializer =
-        new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps());
+        specialize
+            ? new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps())
+            : new IpSpaceSpecializer(ImmutableSet.of(), ImmutableSet.of());
     _configurations = ImmutableMap.copyOf(configurations);
     _disabledAcls = ImmutableMap.copyOf(disabledAcls);
     _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
