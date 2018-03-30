@@ -65,6 +65,4 @@ public class Utils {
     }
     return null;
   }
-
-  private Utils() {}
 }
