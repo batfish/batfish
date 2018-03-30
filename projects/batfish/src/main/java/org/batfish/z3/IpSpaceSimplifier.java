@@ -22,12 +22,12 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  */
 public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
 
-  public static final IpSpaceSimplifier INSTANCE = new IpSpaceSimplifier();
+  private static final IpSpaceSimplifier INSTANCE = new IpSpaceSimplifier();
 
   private IpSpaceSimplifier() {}
 
-  public IpSpace simplify(IpSpace ipSpace) {
-    return ipSpace.accept(this);
+  public static IpSpace simplify(IpSpace ipSpace) {
+    return ipSpace.accept(INSTANCE);
   }
 
   @Override
@@ -105,6 +105,10 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
                 blacklistedIpWildcard ->
                     whitelist.stream().anyMatch(blacklistedIpWildcard::intersects))
             .collect(Collectors.toSet());
+
+    if (whitelist.contains(IpWildcard.ANY) && blacklist.isEmpty()) {
+      return UniverseIpSpace.INSTANCE;
+    }
 
     return IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
   }

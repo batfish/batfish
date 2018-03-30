@@ -45,9 +45,9 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   public IpSpace specialize(IpSpace ipSpace) {
     if (!_canSpecialize) {
-      return IpSpaceSimplifier.INSTANCE.simplify(ipSpace);
+      return IpSpaceSimplifier.simplify(ipSpace);
     } else {
-      return IpSpaceSimplifier.INSTANCE.simplify(ipSpace.accept(this));
+      return IpSpaceSimplifier.simplify(ipSpace.accept(this));
     }
   }
 
