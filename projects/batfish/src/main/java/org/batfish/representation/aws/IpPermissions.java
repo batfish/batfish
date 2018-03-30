@@ -88,13 +88,19 @@ public class IpPermissions implements Serializable {
     IpAccessListLine line = toIpAccessListLine();
     ImmutableSortedSet.Builder<IpWildcard> ipWildcardBuilder =
         new ImmutableSortedSet.Builder<>(Comparator.naturalOrder());
-    ipWildcardBuilder.addAll(_ipRanges.stream().map(IpWildcard::new).collect(Collectors.toSet()));
-    ipWildcardBuilder.addAll(
-        _securityGroups
-            .stream()
-            .filter(sg -> region.getSecurityGroups().containsKey(sg))
-            .flatMap(sg -> region.getSecurityGroups().get(sg).getUsersIpSpace().stream())
-            .collect(Collectors.toSet()));
+
+    _ipRanges
+        .stream()
+        .map(IpWildcard::new)
+        .forEach(ipWildcard -> ipWildcardBuilder.add(ipWildcard));
+
+    _securityGroups
+        .stream()
+        .map(sgID -> region.getSecurityGroups().get(sgID))
+        .filter(sg -> sg != null)
+        .flatMap(sg -> sg.getUsersIpSpace().stream())
+        .forEach(ipWildCard -> ipWildcardBuilder.add(ipWildCard));
+
     line.setDstIps(ipWildcardBuilder.build());
     return line;
   }

@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -401,5 +402,11 @@ public class Region implements Serializable {
                             .stream()
                             .map(Ip::asLong)
                             .collect(Collectors.toSet())));
+  }
+
+  public void updateConfigurationSecurityGroups(String configName, SecurityGroup securityGroup) {
+    Set<SecurityGroup> securityGroups =
+        getConfigurationSecurityGroups().computeIfAbsent(configName, k -> new HashSet<>());
+    securityGroups.add(securityGroup);
   }
 }

@@ -1,17 +1,13 @@
 package org.batfish.representation.aws;
 
-import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
@@ -109,34 +105,9 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
               .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
     }
-    for (String sGroupId : _securityGroups) {
-      SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
-      if (sGroup == null) {
-        warnings.pedantic(
-            String.format(
-                "Security group \"%s\" for Elasticsearch domain \"%s\" not found",
-                sGroupId, _domainName));
-        continue;
-      }
 
-      Set<SecurityGroup> securityGroups =
-          region
-              .getConfigurationSecurityGroups()
-              .computeIfAbsent(cfgNode.getName(), k -> new HashSet<>());
-      securityGroups.add(sGroup);
+    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
-      sGroup
-          .getUsersIpSpace()
-          .addAll(
-              cfgNode
-                  .getInterfaces()
-                  .values()
-                  .stream()
-                  .flatMap(iface -> iface.getAllAddresses().stream())
-                  .map(InterfaceAddress::getIp)
-                  .map(IpWildcard::new)
-                  .collect(ImmutableSet.toImmutableSet()));
-    }
     return cfgNode;
   }
 }

@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
@@ -142,6 +144,17 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   public Set<IpWildcard> getUsersIpSpace() {
     return _usersIpSpace;
+  }
+
+  public void updateConfigIps(Configuration configuration) {
+    configuration
+        .getInterfaces()
+        .values()
+        .stream()
+        .flatMap(iface -> iface.getAllAddresses().stream())
+        .map(InterfaceAddress::getIp)
+        .map(IpWildcard::new)
+        .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
   private void initIpPerms(

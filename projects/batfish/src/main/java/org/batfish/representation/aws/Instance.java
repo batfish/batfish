@@ -3,16 +3,13 @@ package org.batfish.representation.aws;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -21,7 +18,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
@@ -218,33 +214,8 @@ public class Instance implements AwsVpcEntity, Serializable {
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
       cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     }
-    for (String sGroupId : _securityGroups) {
-      SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
-      if (sGroup == null) {
-        warnings.pedantic(
-            String.format(
-                "Security group \"%s\" for instance \"%s\" not found", sGroupId, _instanceId));
-        continue;
-      }
 
-      Set<SecurityGroup> securityGroups =
-          region
-              .getConfigurationSecurityGroups()
-              .computeIfAbsent(cfgNode.getName(), k -> new HashSet<>());
-      securityGroups.add(sGroup);
-
-      sGroup
-          .getUsersIpSpace()
-          .addAll(
-              cfgNode
-                  .getInterfaces()
-                  .values()
-                  .stream()
-                  .flatMap(iface -> iface.getAllAddresses().stream())
-                  .map(InterfaceAddress::getIp)
-                  .map(IpWildcard::new)
-                  .collect(ImmutableSet.toImmutableSet()));
-    }
+    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     return cfgNode;
   }
