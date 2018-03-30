@@ -6,7 +6,7 @@ import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class PrefixMatchExpr extends BooleanExpr {
+public final class PrefixMatchExpr extends BooleanExpr {
 
   private BooleanExpr _expr;
 
@@ -37,7 +37,7 @@ public class PrefixMatchExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_expr, ((PrefixMatchExpr) e)._expr);
   }
 

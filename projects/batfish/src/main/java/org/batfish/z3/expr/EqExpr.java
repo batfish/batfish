@@ -5,7 +5,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class EqExpr extends BooleanExpr {
+public final class EqExpr extends BooleanExpr {
 
   private final IntExpr _lhs;
 
@@ -35,7 +35,7 @@ public class EqExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     EqExpr other = (EqExpr) e;
     return Objects.equals(_lhs, other._lhs) && Objects.equals(_rhs, other._rhs);
   }

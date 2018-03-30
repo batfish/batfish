@@ -4,7 +4,7 @@ import java.util.Objects;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class IfExpr extends BooleanExpr {
+public final class IfExpr extends BooleanExpr {
 
   private final BooleanExpr _antecedent;
 
@@ -26,7 +26,7 @@ public class IfExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     IfExpr other = (IfExpr) e;
     return Objects.equals(_antecedent, other._antecedent)
         && Objects.equals(_consequent, other._consequent);

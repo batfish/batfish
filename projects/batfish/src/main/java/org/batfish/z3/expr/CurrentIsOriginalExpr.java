@@ -7,7 +7,7 @@ import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class CurrentIsOriginalExpr extends BooleanExpr {
+public final class CurrentIsOriginalExpr extends BooleanExpr {
 
   public static final CurrentIsOriginalExpr INSTANCE = new CurrentIsOriginalExpr();
 
@@ -35,7 +35,7 @@ public class CurrentIsOriginalExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_expr, ((CurrentIsOriginalExpr) e)._expr);
   }
 
