@@ -64,6 +64,11 @@ public final class IpAccessListLine extends HeaderSpace {
       _action = action;
       return this;
     }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
   }
 
   private static final long serialVersionUID = 1L;
@@ -180,6 +185,17 @@ public final class IpAccessListLine extends HeaderSpace {
   public int hashCode() {
     // TODO: implement better hashcode
     return 0;
+  }
+
+  public void rebuild(IpAccessListLine.Builder builder) {
+    super.rebuild(builder);
+    builder.setAction(_action).setName(_name);
+  }
+
+  public IpAccessListLine.Builder rebuild() {
+    IpAccessListLine.Builder builder = builder();
+    rebuild(builder);
+    return builder;
   }
 
   public void setAction(LineAction action) {

@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,8 +29,12 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   private final Set<IpWildcard> _notDstIps;
 
+  private final boolean _canSpecialize;
+
   public IpSpaceSpecializer(Set<IpWildcard> dstIps, Set<IpWildcard> notDstIps) {
-    _dstIps = dstIps;
+    _canSpecialize = !(dstIps.isEmpty() || dstIps.contains(IpWildcard.ANY)) && notDstIps.isEmpty();
+
+    _dstIps = !dstIps.isEmpty() ? dstIps : ImmutableSet.of(IpWildcard.ANY);
     _notDstIps = notDstIps;
   }
 
@@ -39,10 +44,10 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   public IpSpace specialize(IpSpace ipSpace) {
-    if (_dstIps.isEmpty() && _notDstIps.isEmpty()) {
-      return ipSpace;
+    if (!_canSpecialize) {
+      return IpSpaceSimplifier.INSTANCE.simplify(ipSpace);
     } else {
-      return ipSpace.accept(this);
+      return IpSpaceSimplifier.INSTANCE.simplify(ipSpace.accept(this));
     }
   }
 

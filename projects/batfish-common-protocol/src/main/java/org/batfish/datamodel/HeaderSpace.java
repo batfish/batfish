@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
+import org.batfish.datamodel.IpAccessListLine.Builder;
 
 public class HeaderSpace implements Serializable {
 
@@ -578,6 +579,7 @@ public class HeaderSpace implements Serializable {
     return _dscps;
   }
 
+  /** The empty set of dstIps is interpreted as no constraint, or all IPs */
   @JsonPropertyDescription("A space of acceptable destination IP addresses for a packet")
   public SortedSet<IpWildcard> getDstIps() {
     return _dstIps;
@@ -900,6 +902,42 @@ public class HeaderSpace implements Serializable {
       return false;
     }
     return true;
+  }
+
+  public <S extends Builder<S, T>, T extends HeaderSpace> void rebuild(Builder<S, T> builder) {
+    builder
+        .setDscps(_dscps)
+        .setDstIps(_dstIps)
+        .setDstPorts(_dstPorts)
+        .setDstProtocols(_dstProtocols)
+        .setEcns(_ecns)
+        .setFragmentOffsets(_fragmentOffsets)
+        .setIcmpCodes(_icmpCodes)
+        .setIcmpTypes(_icmpTypes)
+        .setIpProtocols(_ipProtocols)
+        .setNegate(_negate)
+        .setNotDscps(_notDscps)
+        .setNotDstIps(_notDstIps)
+        .setNotDstPorts(_notDstPorts)
+        .setNotDstProtocols(_notDstProtocols)
+        .setNotEcns(_notEcns)
+        .setNotFragmentOffsets(_notFragmentOffsets)
+        .setNotIcmpCodes(_notIcmpCodes)
+        .setNotIcmpTypes(_notIcmpTypes)
+        .setNotIpProtocols(_notIpProtocols)
+        .setNotPacketLengths(_notPacketLengths)
+        .setNotSrcIps(_notSrcIps)
+        .setNotSrcPorts(_notSrcPorts)
+        .setNotSrcProtocols(_notSrcProtocols)
+        .setPacketLengths(_packetLengths)
+        .setSrcIps(_srcIps)
+        .setSrcOrDstIps(_srcOrDstIps)
+        .setSrcOrDstPorts(_srcOrDstPorts)
+        .setSrcOrDstProtocols(_srcOrDstProtocols)
+        .setSrcPorts(_srcPorts)
+        .setSrcProtocols(_srcProtocols)
+        .setStates(_states)
+        .setTcpFlags(_tcpFlags);
   }
 
   public void setDscps(Iterable<Integer> dscps) {
