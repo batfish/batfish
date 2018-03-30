@@ -10,7 +10,7 @@ import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class RangeMatchExpr extends BooleanExpr {
+public final class RangeMatchExpr extends BooleanExpr {
 
   public static RangeMatchExpr fromSubRanges(HeaderField var, int bits, Set<SubRange> range) {
     return new RangeMatchExpr(
@@ -126,7 +126,7 @@ public class RangeMatchExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_expr, ((RangeMatchExpr) e)._expr);
   }
 

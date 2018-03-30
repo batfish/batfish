@@ -6,7 +6,7 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
 
-public class LitIntExpr extends IntExpr {
+public final class LitIntExpr extends IntExpr {
 
   private final int _bits;
 
@@ -43,7 +43,7 @@ public class LitIntExpr extends IntExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     LitIntExpr other = (LitIntExpr) e;
     return Objects.equals(_bits, other._bits) && Objects.equals(_num, other._num);
   }

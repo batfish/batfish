@@ -7,7 +7,7 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
 
-public class VarIntExpr extends IntExpr {
+public final class VarIntExpr extends IntExpr {
 
   private final Field _field;
 
@@ -39,7 +39,7 @@ public class VarIntExpr extends IntExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_field, ((VarIntExpr) e)._field);
   }
 
