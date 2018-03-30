@@ -20,7 +20,7 @@ public final class TrueExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return this == e;
   }
 
