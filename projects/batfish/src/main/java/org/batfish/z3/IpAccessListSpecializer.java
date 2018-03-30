@@ -99,7 +99,8 @@ public class IpAccessListSpecializer {
       return Optional.empty();
     }
 
-    Set<IpWildcard> specializedDstIps, specializedNotDstIps;
+    Set<IpWildcard> specializedDstIps;
+    Set<IpWildcard> specializedNotDstIps;
     if (specializedDstIpSpace instanceof UniverseIpSpace) {
       specializedDstIps = ImmutableSet.of(IpWildcard.ANY);
       specializedNotDstIps = ImmutableSet.of();
@@ -111,7 +112,8 @@ public class IpAccessListSpecializer {
       throw new BatfishException("unexpected specializedDstIpSpace type");
     }
 
-    Set<IpWildcard> specializedSrcIps, specializedNotSrcIps;
+    Set<IpWildcard> specializedSrcIps;
+    Set<IpWildcard> specializedNotSrcIps;
     if (specializedSrcIpSpace instanceof UniverseIpSpace) {
       specializedSrcIps = ImmutableSet.of(IpWildcard.ANY);
       specializedNotSrcIps = ImmutableSet.of();

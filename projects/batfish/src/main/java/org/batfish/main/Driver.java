@@ -158,7 +158,7 @@ public class Driver {
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
   private static Cache<TestrigSettings, DataPlane> buildDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES).weakValues().build();
+    return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES)./*weakValues().*/ build();
   }
 
   private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
