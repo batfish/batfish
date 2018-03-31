@@ -3,10 +3,15 @@ package org.batfish.representation.aws;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TcpFlags;
 import org.codehaus.jettison.json.JSONArray;
@@ -25,6 +30,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   private final List<IpPermissions> _ipPermsIngress;
 
+  private final Set<IpWildcard> _usersIpSpace = new HashSet<>();
+
   public SecurityGroup(JSONObject jObj, BatfishLogger logger) throws JSONException {
     _ipPermsEgress = new LinkedList<>();
     _ipPermsIngress = new LinkedList<>();
@@ -41,16 +48,26 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   private void addEgressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toEgressIpAccessListLine());
+      IpAccessListLine ipAccessListLine = ipPerms.toEgressIpAccessListLine(region);
+      // Destination IPs should have been populated using either SG or IP ranges,  if not then this
+      // Ip perm is incomplete
+      if (!ipAccessListLine.getDstIps().isEmpty()) {
+        accessList.add(ipAccessListLine);
+      }
     }
   }
 
   private void addIngressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toIngressIpAccessListLine());
+      IpAccessListLine ipAccessListLine = ipPerms.toIngressIpAccessListLine(region);
+      // Source IPs should have been populated using either SG or IP ranges, if not then this Ip
+      // perm is incomplete
+      if (!ipAccessListLine.getSrcIps().isEmpty()) {
+        accessList.add(ipAccessListLine);
+      }
     }
   }
 
@@ -98,9 +115,9 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   public void addInOutAccessLines(
-      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
-    addIngressAccessLines(_ipPermsIngress, inboundRules);
-    addEgressAccessLines(_ipPermsEgress, outboundRules);
+      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules, Region region) {
+    addIngressAccessLines(_ipPermsIngress, inboundRules, region);
+    addEgressAccessLines(_ipPermsEgress, outboundRules, region);
     addReverseAcls(inboundRules, outboundRules);
   }
 
@@ -123,6 +140,21 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   public List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
+  }
+
+  public Set<IpWildcard> getUsersIpSpace() {
+    return _usersIpSpace;
+  }
+
+  public void updateConfigIps(Configuration configuration) {
+    configuration
+        .getInterfaces()
+        .values()
+        .stream()
+        .flatMap(iface -> iface.getAllAddresses().stream())
+        .map(InterfaceAddress::getIp)
+        .map(IpWildcard::new)
+        .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
   private void initIpPerms(
