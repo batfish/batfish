@@ -25,18 +25,18 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  */
 public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
-  private final Set<IpWildcard> _dstIps;
+  private final Set<IpWildcard> _whitelist;
 
-  private final Set<IpWildcard> _notDstIps;
+  private final Set<IpWildcard> _blacklist;
 
   private final boolean _canSpecialize;
 
-  public IpSpaceSpecializer(Set<IpWildcard> dstIps, Set<IpWildcard> notDstIps) {
+  public IpSpaceSpecializer(Set<IpWildcard> whitelist, Set<IpWildcard> blacklist) {
     _canSpecialize =
-        !((dstIps.isEmpty() || dstIps.contains(IpWildcard.ANY)) && notDstIps.isEmpty());
+        !((whitelist.isEmpty() || whitelist.contains(IpWildcard.ANY)) && blacklist.isEmpty());
 
-    _dstIps = !dstIps.isEmpty() ? dstIps : ImmutableSet.of(IpWildcard.ANY);
-    _notDstIps = notDstIps;
+    _whitelist = !whitelist.isEmpty() ? whitelist : ImmutableSet.of(IpWildcard.ANY);
+    _blacklist = blacklist;
   }
 
   @Override
@@ -77,8 +77,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIp(Ip ip) {
-    if (_notDstIps.stream().noneMatch(ipWildcard -> ipWildcard.containsIp(ip))
-        && _dstIps.stream().anyMatch(ipWildcard -> ipWildcard.containsIp(ip))) {
+    if (_blacklist.stream().noneMatch(ipWildcard -> ipWildcard.containsIp(ip))
+        && _whitelist.stream().anyMatch(ipWildcard -> ipWildcard.containsIp(ip))) {
       return ip;
     } else {
       return EmptyIpSpace.INSTANCE;
@@ -87,14 +87,14 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIpWildcard(IpWildcard ipWildcard) {
-    if (_notDstIps.stream().anyMatch(ipWildcard::subsetOf)) {
+    if (_blacklist.stream().anyMatch(ipWildcard::subsetOf)) {
       // blacklisted
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (_dstIps.stream().allMatch(ipWildcard::supersetOf)) {
+    if (_whitelist.stream().allMatch(ipWildcard::supersetOf)) {
       return UniverseIpSpace.INSTANCE;
-    } else if (_dstIps.stream().anyMatch(ipWildcard::intersects)) {
+    } else if (_whitelist.stream().anyMatch(ipWildcard::intersects)) {
       // some match
       return ipWildcard;
     } else {
@@ -105,17 +105,17 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     /*
-     * Remove any blacklisted Ips that are already blacklisted by _notDstIps
-     * or that don't match any _dstIps
+     * Remove any blacklisted Ips that are already blacklisted by _blacklist
+     * or that don't match any _whitelist
      */
     Stream<IpWildcard> blacklistStream = ipWildcardSetIpSpace.getBlacklist().stream();
-    if (!_notDstIps.isEmpty()) {
+    if (!_blacklist.isEmpty()) {
       blacklistStream =
-          blacklistStream.filter(notDstIp -> _notDstIps.stream().noneMatch(notDstIp::subsetOf));
+          blacklistStream.filter(notDstIp -> _blacklist.stream().noneMatch(notDstIp::subsetOf));
     }
-    if (!_dstIps.isEmpty()) {
+    if (!_whitelist.isEmpty()) {
       blacklistStream =
-          blacklistStream.filter(notDstIp -> _dstIps.stream().anyMatch(notDstIp::intersects));
+          blacklistStream.filter(notDstIp -> _whitelist.stream().anyMatch(notDstIp::intersects));
     }
     Set<IpWildcard> blacklist = blacklistStream.collect(Collectors.toSet());
 
