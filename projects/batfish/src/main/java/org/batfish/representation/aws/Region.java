@@ -65,8 +65,8 @@ public class Region implements Serializable {
 
   private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
 
-  public static String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
-  public static String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
+  public static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
+  public static final String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
 
   public Region(String name) {
     _name = name;

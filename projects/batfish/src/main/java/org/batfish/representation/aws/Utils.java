@@ -44,6 +44,16 @@ public class Utils {
         .build();
   }
 
+  /**
+   * Updates {@link Region}'s mapping between {@link Configuration} names and {@link SecurityGroup}
+   * for a given configuration. Also updates {@link org.batfish.datamodel.Ip} of instances in {@link
+   * SecurityGroup}
+   *
+   * @param region {@link Region} in which the configuration is in
+   * @param configuration {@link Configuration} for which security groups are to be processed
+   * @param securityGroupsIds {@link List} of security group IDs
+   * @param warnings {@link Warnings} for the configuration
+   */
   public static void processSecurityGroups(
       Region region,
       Configuration configuration,
@@ -86,4 +96,6 @@ public class Utils {
     }
     return null;
   }
+
+  private Utils() {}
 }
