@@ -162,7 +162,9 @@ public class RdsInstanceTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setSrcIps(
+                        Sets.newHashSet(
+                            new IpWildcard("1.2.3.4/32"), new IpWildcard("10.193.16.105/32")))
                     .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
                     .build(),
                 rejectSynOnly,
@@ -182,7 +184,9 @@ public class RdsInstanceTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                    .setDstIps(
+                        Sets.newHashSet(
+                            new IpWildcard("1.2.3.4/32"), new IpWildcard("10.193.16.105/32")))
                     .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
                     .build()));
 

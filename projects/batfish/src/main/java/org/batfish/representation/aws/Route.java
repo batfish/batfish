@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
@@ -159,9 +161,18 @@ public class Route implements Serializable {
             InterfaceAddress instanceIfaceAddress = instanceLink.getSecond();
             Interface instanceIface =
                 Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfaceAddress);
-            Instance instance = region.getInstances().get(instanceId);
-            instanceIface.setIncomingFilter(instance.getInAcl());
-            instanceIface.setOutgoingFilter(instance.getOutAcl());
+            instanceIface.setIncomingFilter(
+                instanceCfgNode
+                    .getIpAccessLists()
+                    .getOrDefault(
+                        Region.SG_INGRESS_ACL_NAME,
+                        new IpAccessList(Region.SG_INGRESS_ACL_NAME, new LinkedList<>())));
+            instanceIface.setOutgoingFilter(
+                instanceCfgNode
+                    .getIpAccessLists()
+                    .getOrDefault(
+                        Region.SG_EGRESS_ACL_NAME,
+                        new IpAccessList(Region.SG_EGRESS_ACL_NAME, new LinkedList<>())));
             Ip nextHopIp = instanceIfaceAddress.getIp();
             srBuilder.setNextHopIp(nextHopIp);
           }
