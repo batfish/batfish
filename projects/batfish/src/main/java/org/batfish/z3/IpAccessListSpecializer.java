@@ -57,7 +57,6 @@ public class IpAccessListSpecializer {
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {
-
     if (!_canSpecialize) {
       return ipAccessList;
     } else {
@@ -78,21 +77,25 @@ public class IpAccessListSpecializer {
   }
 
   public Optional<IpAccessListLine> specialize(IpAccessListLine ipAccessListLine) {
-    IpSpace specializedDstIpSpace =
-        _dstIpSpaceSpecializer.specialize(
-            IpWildcardSetIpSpace.builder()
-                .including(ipAccessListLine.getDstIps())
-                .including(ipAccessListLine.getSrcOrDstIps())
-                .excluding(ipAccessListLine.getNotDstIps())
-                .build());
+    IpWildcardSetIpSpace.Builder srcIpSpaceBuilder =
+        IpWildcardSetIpSpace.builder().excluding(ipAccessListLine.getNotSrcIps());
+    if (ipAccessListLine.getSrcIps().isEmpty() && ipAccessListLine.getSrcOrDstIps().isEmpty()) {
+      srcIpSpaceBuilder.including(IpWildcard.ANY);
+    } else {
+      srcIpSpaceBuilder.including(ipAccessListLine.getSrcIps());
+      srcIpSpaceBuilder.including(ipAccessListLine.getSrcOrDstIps());
+    }
+    IpSpace specializedSrcIpSpace = _srcIpSpaceSpecializer.specialize(srcIpSpaceBuilder.build());
 
-    IpSpace specializedSrcIpSpace =
-        _srcIpSpaceSpecializer.specialize(
-            IpWildcardSetIpSpace.builder()
-                .including(ipAccessListLine.getSrcIps())
-                .including(ipAccessListLine.getSrcOrDstIps())
-                .including(ipAccessListLine.getNotSrcIps())
-                .build());
+    IpWildcardSetIpSpace.Builder dstIpSpaceBuilder =
+        IpWildcardSetIpSpace.builder().excluding(ipAccessListLine.getNotDstIps());
+    if (ipAccessListLine.getDstIps().isEmpty() && ipAccessListLine.getSrcOrDstIps().isEmpty()) {
+      dstIpSpaceBuilder.including(IpWildcard.ANY);
+    } else {
+      dstIpSpaceBuilder.including(ipAccessListLine.getDstIps());
+      dstIpSpaceBuilder.including(ipAccessListLine.getSrcOrDstIps());
+    }
+    IpSpace specializedDstIpSpace = _dstIpSpaceSpecializer.specialize(dstIpSpaceBuilder.build());
 
     if (specializedDstIpSpace instanceof EmptyIpSpace
         || specializedSrcIpSpace instanceof EmptyIpSpace) {
@@ -102,7 +105,8 @@ public class IpAccessListSpecializer {
     Set<IpWildcard> specializedDstIps;
     Set<IpWildcard> specializedNotDstIps;
     if (specializedDstIpSpace instanceof UniverseIpSpace) {
-      specializedDstIps = ImmutableSet.of(IpWildcard.ANY);
+      // for a HeaderSpace, empty dstIps means Universe
+      specializedDstIps = ImmutableSet.of();
       specializedNotDstIps = ImmutableSet.of();
     } else if (specializedDstIpSpace instanceof IpWildcardSetIpSpace) {
       IpWildcardSetIpSpace dstIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedDstIpSpace;
@@ -115,7 +119,7 @@ public class IpAccessListSpecializer {
     Set<IpWildcard> specializedSrcIps;
     Set<IpWildcard> specializedNotSrcIps;
     if (specializedSrcIpSpace instanceof UniverseIpSpace) {
-      specializedSrcIps = ImmutableSet.of(IpWildcard.ANY);
+      specializedSrcIps = ImmutableSet.of();
       specializedNotSrcIps = ImmutableSet.of();
     } else if (specializedSrcIpSpace instanceof IpWildcardSetIpSpace) {
       IpWildcardSetIpSpace srcIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedSrcIpSpace;

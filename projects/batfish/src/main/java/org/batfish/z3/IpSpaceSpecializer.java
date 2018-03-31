@@ -32,7 +32,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   private final boolean _canSpecialize;
 
   public IpSpaceSpecializer(Set<IpWildcard> dstIps, Set<IpWildcard> notDstIps) {
-    _canSpecialize = !(dstIps.isEmpty() || dstIps.contains(IpWildcard.ANY)) && notDstIps.isEmpty();
+    _canSpecialize =
+        !((dstIps.isEmpty() || dstIps.contains(IpWildcard.ANY)) && notDstIps.isEmpty());
 
     _dstIps = !dstIps.isEmpty() ? dstIps : ImmutableSet.of(IpWildcard.ANY);
     _notDstIps = notDstIps;

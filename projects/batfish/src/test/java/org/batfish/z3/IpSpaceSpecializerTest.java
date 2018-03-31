@@ -164,6 +164,19 @@ public class IpSpaceSpecializerTest {
   }
 
   @Test
+  public void testSpecializeIpWildcardSetIpSpace_blacklistAll() {
+    /*
+     * Entire headerspace is blacklisted
+     */
+    IpSpaceSpecializer specializer =
+        new IpSpaceSpecializer(ImmutableSortedSet.of(), ImmutableSortedSet.of(IpWildcard.ANY));
+    assertThat(
+        specializer.specialize(
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.0/24")).build()),
+        equalTo(EmptyIpSpace.INSTANCE));
+  }
+
+  @Test
   public void testSpecializePrefix() {
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     assertThat(trivialSpecializer.visitPrefix(prefix), equalTo(prefix));

@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
-import org.batfish.datamodel.IpAccessListLine.Builder;
 
 public class HeaderSpace implements Serializable {
 
