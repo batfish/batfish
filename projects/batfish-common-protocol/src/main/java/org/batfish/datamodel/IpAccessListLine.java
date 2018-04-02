@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Objects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import java.util.SortedSet;
@@ -160,14 +161,14 @@ public final class IpAccessListLine extends HeaderSpace {
     if (this == obj) {
       return true;
     }
+    if (!(obj instanceof IpAccessListLine)) {
+      return false;
+    }
     IpAccessListLine other = (IpAccessListLine) obj;
-    if (!super.equals(obj)) {
+    if (_name == null ? _name != other._name : !_name.equals(other._name)) {
       return false;
     }
-    if (_action != other._action) {
-      return false;
-    }
-    return true;
+    return _action == other._action && super.equals(other);
   }
 
   @JsonPropertyDescription(
@@ -183,8 +184,41 @@ public final class IpAccessListLine extends HeaderSpace {
 
   @Override
   public int hashCode() {
-    // TODO: implement better hashcode
-    return 0;
+    return Objects.hashCode(
+        _action,
+        getDscps(),
+        getDstIps(),
+        getDstPorts(),
+        getDstProtocols(),
+        getEcns(),
+        getFragmentOffsets(),
+        getIcmpCodes(),
+        getIcmpTypes(),
+        getIpProtocols(),
+        _name,
+        getNegate(),
+        getNotDscps(),
+        getNotDstIps(),
+        getNotDstPorts(),
+        getNotDstProtocols(),
+        getNotEcns(),
+        getNotFragmentOffsets(),
+        getNotIcmpCodes(),
+        getNotIcmpTypes(),
+        getNotIpProtocols(),
+        getNotPacketLengths(),
+        getNotSrcIps(),
+        getNotSrcPorts(),
+        getNotSrcProtocols(),
+        getPacketLengths(),
+        getSrcIps(),
+        getSrcOrDstIps(),
+        getSrcOrDstPorts(),
+        getSrcOrDstProtocols(),
+        getSrcPorts(),
+        getSrcProtocols(),
+        getStates(),
+        getTcpFlags());
   }
 
   /** @return A Builder with fields set to this' fields. */
