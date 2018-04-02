@@ -11,6 +11,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -56,6 +57,30 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
         break;
       }
     }
+
+    /*
+     * If there is only one line, and it accepts, then simplify to the space of that line.
+     */
+    if (simplifiedLines.size() == 1 && simplifiedLines.get(0).getAction() == LineAction.ACCEPT) {
+      return simplifiedLines.get(0).getIpSpace();
+    }
+
+    /*
+     * If all lines reject (or there are no lines), simplify to EmptyIpSpace.
+     */
+    if (simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.REJECT)) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
+    /*
+     * If all lines are accepts, and the last accepts UniverseIpSpace, then this can be simplified
+     * to UniverseIpSpace.
+     */
+    if (simplifiedLines.get(simplifiedLines.size() - 1).getIpSpace() == UniverseIpSpace.INSTANCE
+        && simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.ACCEPT)) {
+      return UniverseIpSpace.INSTANCE;
+    }
+
     return AclIpSpace.builder().setLines(simplifiedLines).build();
   }
 

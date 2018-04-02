@@ -151,7 +151,7 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
     // mark which bits are significant (non-wild).
     long significantToThis = getWildcard().inverted().asLong();
 
-    return (significantToThis ^ bitsThatDiffer) != 0;
+    return (significantToThis & bitsThatDiffer) == 0;
   }
 
   /**

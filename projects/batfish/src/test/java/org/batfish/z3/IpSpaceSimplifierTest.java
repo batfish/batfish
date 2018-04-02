@@ -3,6 +3,7 @@ package org.batfish.z3;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -12,8 +13,83 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Test;
 
 public class IpSpaceSimplifierTest {
+  private static final Ip IP1234 = new Ip("1.2.3.4");
+
   @Test
-  public void testVisitAclIpSpace() {}
+  public void testVisitAclIpSpace_removeEmptyLines() {
+    // simplification should remove EmptyIpSpace lines
+    assertThat(
+        IpSpaceSimplifier.simplify(
+            AclIpSpace.builder()
+                .thenRejecting(EmptyIpSpace.INSTANCE)
+                .thenPermitting(IP1234)
+                .thenPermitting(IP1234)
+                .build()),
+        equalTo(AclIpSpace.builder().thenPermitting(IP1234).thenPermitting(IP1234).build()));
+  }
+
+  @Test
+  public void testVisitAclIpSpace_removeLinesAfterUniverse() {
+    // simplification should remove any line after a UniverseIpSpace
+    assertThat(
+        IpSpaceSimplifier.simplify(
+            AclIpSpace.builder()
+                .thenRejecting(IP1234)
+                .thenPermitting(UniverseIpSpace.INSTANCE)
+                .thenRejecting(IP1234)
+                .build()),
+        equalTo(
+            AclIpSpace.builder()
+                .thenRejecting(IP1234)
+                .thenPermitting(UniverseIpSpace.INSTANCE)
+                .build()));
+  }
+
+  @Test
+  public void testVisitAclIpSpace_toUniverse() {
+    /*
+     * If after simplification all lines are permits and the last is universe,
+     * then simplify the entire AclIpSpace to UniverseIpSpace.
+     */
+    assertThat(
+        IpSpaceSimplifier.simplify(
+            AclIpSpace.builder()
+                .thenPermitting(IP1234)
+                .thenPermitting(IpWildcard.ANY)
+                .thenRejecting(IP1234)
+                .build()),
+        equalTo(UniverseIpSpace.INSTANCE));
+  }
+
+  @Test
+  public void testVisitAclIpSpace_toEmpty() {
+    assertThat(
+        IpSpaceSimplifier.simplify(AclIpSpace.builder().thenRejecting(IP1234).build()),
+        equalTo(EmptyIpSpace.INSTANCE));
+
+    assertThat(
+        IpSpaceSimplifier.simplify(AclIpSpace.builder().build()), equalTo(EmptyIpSpace.INSTANCE));
+  }
+
+  @Test
+  public void testVisitAclIpSpace_simplifyLines() {
+    // simplification should simplify the IpSpaces of each line
+    assertThat(
+        IpSpaceSimplifier.simplify(
+            AclIpSpace.builder().thenRejecting(IP1234).thenPermitting(IpWildcard.ANY).build()),
+        equalTo(
+            AclIpSpace.builder()
+                .thenRejecting(IP1234)
+                .thenPermitting(UniverseIpSpace.INSTANCE)
+                .build()));
+  }
+
+  @Test
+  public void testAclIpSpace_simplifyOneAccept() {
+    assertThat(
+        IpSpaceSimplifier.simplify(AclIpSpace.builder().thenPermitting(IP1234).build()),
+        equalTo(IP1234));
+  }
 
   @Test
   public void testVisitEmptyIpSpace() {
@@ -22,8 +98,7 @@ public class IpSpaceSimplifierTest {
 
   @Test
   public void testVisitIp() {
-    Ip ip = new Ip("1.2.3.4");
-    assertThat(IpSpaceSimplifier.simplify(ip), equalTo(ip));
+    assertThat(IpSpaceSimplifier.simplify(IP1234), equalTo(IP1234));
   }
 
   @Test

@@ -59,4 +59,9 @@ public class IpWildcardTest {
     assertThat("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
     assertThat("wc2 should not be a superset of wc1", !wc2.supersetOf(wc1));
   }
+
+  @Test
+  public void testSuperset_ANY() {
+    assertThat("ANY should be a superset of itself", IpWildcard.ANY.supersetOf(IpWildcard.ANY));
+  }
 }

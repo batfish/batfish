@@ -313,20 +313,20 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     arpTrueEdge.forEach(
         (edge, ipSpace) -> {
           ipSpace = _ipSpaceSpecializer.specialize(ipSpace);
-          if (!(ipSpace instanceof EmptyIpSpace)) {
-            String hostname = edge.getNode1();
-            String outInterface = edge.getInt1();
-            String vrf =
-                _configurations.get(hostname).getInterfaces().get(outInterface).getVrfName();
-            String recvNode = edge.getNode2();
-            String recvInterface = edge.getInt2();
-            output
-                .computeIfAbsent(hostname, n -> new HashMap<>())
-                .computeIfAbsent(vrf, n -> new HashMap<>())
-                .computeIfAbsent(outInterface, n -> new HashMap<>())
-                .computeIfAbsent(recvNode, n -> new HashMap<>())
-                .put(recvInterface, new IpSpaceMatchExpr(ipSpace, false, true));
+          if (ipSpace instanceof EmptyIpSpace) {
+            return;
           }
+          String hostname = edge.getNode1();
+          String outInterface = edge.getInt1();
+          String vrf = _configurations.get(hostname).getInterfaces().get(outInterface).getVrfName();
+          String recvNode = edge.getNode2();
+          String recvInterface = edge.getInt2();
+          output
+              .computeIfAbsent(hostname, n -> new HashMap<>())
+              .computeIfAbsent(vrf, n -> new HashMap<>())
+              .computeIfAbsent(outInterface, n -> new HashMap<>())
+              .computeIfAbsent(recvNode, n -> new HashMap<>())
+              .put(recvInterface, new IpSpaceMatchExpr(ipSpace, false, true));
         });
 
     // freeze
