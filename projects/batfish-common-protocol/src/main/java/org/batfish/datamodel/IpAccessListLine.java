@@ -165,10 +165,7 @@ public final class IpAccessListLine extends HeaderSpace {
       return false;
     }
     IpAccessListLine other = (IpAccessListLine) obj;
-    if (_name == null ? _name != other._name : !_name.equals(other._name)) {
-      return false;
-    }
-    return _action == other._action && super.equals(other);
+    return _action == other._action && Objects.equal(_name, other._name) && super.equals(other);
   }
 
   @JsonPropertyDescription(
