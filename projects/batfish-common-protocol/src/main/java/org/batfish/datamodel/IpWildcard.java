@@ -134,25 +134,25 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
    * @return whether the set of IPs matched by this is a superset of those matched by other.
    */
   public boolean supersetOf(IpWildcard other) {
-    Ip thisIp = getIp();
-    Ip otherIp = other.getIp();
+    // mark which bits are wild
+    long wildToThis = getWildcard().asLong();
+    long wildToOther = other.getWildcard().asLong();
 
-    // masks are inverted.
-    Ip thisMask = getWildcard().inverted();
-    Ip otherMask = other.getWildcard().inverted();
+    // 1. Any bits wild in other are wild in this
+    if ((wildToThis | wildToOther) != wildToThis) {
+      // other has a wild bit that this doesn't
+      return false;
+    }
 
-    return IntStream.range(0, 32)
-        .allMatch(
-            index -> {
-              /*
-               * if the bit is significant for this, then it must be significant (i.e. can't be
-               * wild) for other and they must agree.
-               */
-              boolean agree =
-                  Ip.getBitAtPosition(thisIp, index) == Ip.getBitAtPosition(otherIp, index);
-              return !Ip.getBitAtPosition(thisMask, index)
-                  || (Ip.getBitAtPosition(otherMask, index) && agree);
-            });
+    // 2. Any IP bits that differ are wild in this
+    long thisIp = getIp().asLong();
+    long otherIp = other.getIp().asLong();
+    long bitsThatDiffer = thisIp ^ otherIp;
+
+    // mark which bits are significant (non-wild).
+    long significantToThis = getWildcard().inverted().asLong();
+
+    return (significantToThis ^ bitsThatDiffer) != 0;
   }
 
   /**
@@ -160,25 +160,19 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
    * @return whether the set of IPs matched by this intersects the set of those matched by other.
    */
   public boolean intersects(IpWildcard other) {
-    Ip thisIp = getIp();
-    Ip otherIp = other.getIp();
+    long thisIp = getIp().asLong();
+    long otherIp = other.getIp().asLong();
 
-    // masks are inverted.
-    Ip thisMask = getWildcard().inverted();
-    Ip otherMask = other.getWildcard().inverted();
+    // mark which bits are significant (non-wild)
+    long significantToThis = getWildcard().inverted().asLong();
+    long significantToOther = other.getWildcard().inverted().asLong();
 
-    return IntStream.range(0, 32)
-        .allMatch(
-            index -> {
-              /*
-               * Either they agree on the bit or one doesn't care
-               */
-              boolean significant =
-                  Ip.getBitAtPosition(thisMask, index) && Ip.getBitAtPosition(otherMask, index);
-              boolean agree =
-                  Ip.getBitAtPosition(thisIp, index) == Ip.getBitAtPosition(otherIp, index);
-              return !significant || agree;
-            });
+    long differentBits = thisIp ^ otherIp;
+
+    // this and other must agree at any position that is significant to both
+    long bitsThatMustAgree = significantToThis & significantToOther;
+
+    return (differentBits & bitsThatMustAgree) == 0;
   }
 
   public boolean isPrefix() {
