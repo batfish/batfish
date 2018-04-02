@@ -14,7 +14,7 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * Represents a space of IPv4 addresses using a whitelist and blacklist of {@link IpWildcard}s. The
  * blacklist takes priority, so if an {@link Ip} is matched by both lists, it is not in the space.
  *
- * <p>Any empty whitelist is equivalent to an EmptyIpSpace
+ * <p>Any empty whitelist is equivalent to an {@link EmptyIpSpace}.
  */
 public final class IpWildcardSetIpSpace implements IpSpace, Serializable {
 

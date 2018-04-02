@@ -187,14 +187,11 @@ public final class IpAccessListLine extends HeaderSpace {
     return 0;
   }
 
-  public void rebuild(IpAccessListLine.Builder builder) {
-    super.rebuild(builder);
-    builder.setAction(_action).setName(_name);
-  }
-
+  /** @return A Builder with fields set to this' fields. */
   public IpAccessListLine.Builder rebuild() {
     IpAccessListLine.Builder builder = builder();
-    rebuild(builder);
+    super.rebuild(builder);
+    builder.setAction(_action).setName(_name);
     return builder;
   }
 

@@ -55,14 +55,9 @@ public class ReachabilityProgramOptimizer {
   }
 
   private void computeFixpoint() {
-    int round = 0;
     boolean converged = false;
 
-    int origRules = _rules.size();
-
     while (!converged) {
-      round++;
-
       initRound();
 
       int rules = _rules.size();
@@ -71,12 +66,8 @@ public class ReachabilityProgramOptimizer {
       forwardReachability();
 
       int rulesRemoved = rules - _rules.size();
-      System.out.println(String.format("Round %d removed %d rules.", round, rulesRemoved));
       converged = rulesRemoved == 0;
     }
-
-    System.out.println(
-        String.format("Nod optimization removed %d rules.", origRules - _rules.size()));
   }
 
   public Set<RuleStatement> getOptimizedRules() {
@@ -126,10 +117,7 @@ public class ReachabilityProgramOptimizer {
         visitedRules.stream().map(RuleStatement::getPostconditionState).collect(Collectors.toSet());
 
     // keep looking for new forward-reachable states until we're done
-    long startTime = System.currentTimeMillis();
-    int iterations = 0;
     while (!newStates.isEmpty()) {
-      iterations++;
       derivableStates.addAll(newStates);
 
       HashSet<StateExpr> newNewStates = new HashSet<>();
@@ -156,9 +144,5 @@ public class ReachabilityProgramOptimizer {
       newStates = newNewStates;
     }
     _rules = visitedRules;
-    long elapsed = System.currentTimeMillis() - startTime;
-    System.out.println(
-        String.format(
-            "forwardReachability completed %d iterations in %d milliseconds", iterations, elapsed));
   }
 }

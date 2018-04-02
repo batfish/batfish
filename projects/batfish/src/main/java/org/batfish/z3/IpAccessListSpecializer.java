@@ -17,8 +17,8 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 /**
- * Specialize an IpAccessList to a given HeaderSpace. Lines that can never match the HeaderSpace can
- * be removed.
+ * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
+ * {@link HeaderSpace} can be removed.
  */
 public class IpAccessListSpecializer {
   private final boolean _canSpecialize;
@@ -137,31 +137,5 @@ public class IpAccessListSpecializer {
             .setSrcIps(specializedSrcIps)
             .setNotSrcIps(specializedNotSrcIps)
             .build());
-  }
-
-  private boolean aclLineIsRelevant(IpAccessListLine ipAccessListLine) {
-    if (_haveSrcIpConstraint
-        && !ipAccessListLine.getSrcIps().isEmpty()
-        && ipAccessListLine.getSrcIps().stream().noneMatch(this::aclSrcIpIsRelevant)) {
-      return false;
-    }
-
-    if (_haveDstIpConstraint
-        && !ipAccessListLine.getDstIps().isEmpty()
-        && ipAccessListLine.getDstIps().stream().noneMatch(this::aclDstIpIsRelevant)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private boolean aclDstIpIsRelevant(IpWildcard dstIp) {
-    return _headerSpace.getDstIps().stream().anyMatch(dstIp::intersects)
-        && _headerSpace.getNotDstIps().stream().noneMatch(dstIp::subsetOf);
-  }
-
-  private boolean aclSrcIpIsRelevant(IpWildcard srcIp) {
-    return _headerSpace.getSrcIps().stream().anyMatch(srcIp::intersects)
-        && _headerSpace.getNotSrcIps().stream().noneMatch(srcIp::subsetOf);
   }
 }

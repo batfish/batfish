@@ -121,10 +121,18 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
     return _second;
   }
 
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this is a subset of those matched by other.
+   */
   public boolean subsetOf(IpWildcard other) {
     return other.supersetOf(this);
   }
 
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this is a superset of those matched by other.
+   */
   public boolean supersetOf(IpWildcard other) {
     Ip thisIp = getIp();
     Ip otherIp = other.getIp();
@@ -147,6 +155,10 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
             });
   }
 
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this intersects the set of those matched by other.
+   */
   public boolean intersects(IpWildcard other) {
     Ip thisIp = getIp();
     Ip otherIp = other.getIp();
