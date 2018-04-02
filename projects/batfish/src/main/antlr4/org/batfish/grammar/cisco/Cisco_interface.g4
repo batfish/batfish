@@ -720,7 +720,7 @@ if_null_block
       | WRR_QUEUE
       | X25
       | XCONNECT
-   ) null_rest_of_line if_null_inner*
+   ) ~NEWLINE* NEWLINE if_null_inner*
 ;
 
 if_null_inner
@@ -744,7 +744,7 @@ if_null_inner
       | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
-   ) null_rest_of_line
+   ) ~NEWLINE* NEWLINE
 ;
 
 if_null_single
@@ -758,7 +758,7 @@ if_null_single
       | SUPPRESS_ARP
       | TRIMODE
       | TRUSTED
-   ) null_rest_of_line
+   ) ~NEWLINE* NEWLINE
 ;
 
 if_port_security
