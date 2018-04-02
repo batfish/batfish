@@ -46,4 +46,17 @@ public class IpWildcardTest {
     IpWildcard wc2 = new IpWildcard(new Ip(0x0000F000L), new Ip(0x0000FF00L).inverted());
     assertThat("wildcards should not overlap", !wc1.intersects(wc2));
   }
+
+  @Test
+  public void testSupersetOf() {
+    IpWildcard wc1 = new IpWildcard("1.2.0.0/16");
+    IpWildcard wc2 = new IpWildcard("1.2.3.0/24");
+    assertThat("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
+    assertThat("wc2 should not be a superset of wc1", !wc2.supersetOf(wc1));
+
+    wc1 = new IpWildcard(new Ip(0x12005600L), new Ip(0xFF00FF00L).inverted());
+    wc2 = new IpWildcard(new Ip(0x12345600L), new Ip(0xFFFFFF00L).inverted());
+    assertThat("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
+    assertThat("wc2 should not be a superset of wc1", !wc2.supersetOf(wc1));
+  }
 }
