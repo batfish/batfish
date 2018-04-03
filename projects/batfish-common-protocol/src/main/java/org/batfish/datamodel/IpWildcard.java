@@ -133,25 +133,17 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
    * @return whether the set of IPs matched by this is a superset of those matched by other.
    */
   public boolean supersetOf(IpWildcard other) {
-    // mark which bits are wild
     long wildToThis = getWildcard().asLong();
     long wildToOther = other.getWildcard().asLong();
+    long differentIpBits = getIp().asLong() ^ other.getIp().asLong();
 
-    // 1. Any bits wild in other are wild in this
-    if ((wildToThis | wildToOther) != wildToThis) {
-      // other has a wild bit that this doesn't
-      return false;
-    }
-
-    // 2. Any IP bits that differ are wild in this
-    long thisIp = getIp().asLong();
-    long otherIp = other.getIp().asLong();
-    long bitsThatDiffer = thisIp ^ otherIp;
-
-    // mark which bits are significant (non-wild).
-    long significantToThis = getWildcard().inverted().asLong();
-
-    return (significantToThis & bitsThatDiffer) == 0;
+    /*
+     * 1. Any bits wild in other must be wild in this (i.e. other's wild bits must be a subset
+     *    of this' wild bits).
+     * 2. Any IP bits that differ must be wild in this.
+     */
+    return (wildToThis & wildToOther) == wildToOther
+        && (wildToThis & differentIpBits) == differentIpBits;
   }
 
   /**
@@ -159,19 +151,13 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
    * @return whether the set of IPs matched by this intersects the set of those matched by other.
    */
   public boolean intersects(IpWildcard other) {
-    long thisIp = getIp().asLong();
-    long otherIp = other.getIp().asLong();
+    long differentIpBits = getIp().asLong() ^ other.getIp().asLong();
+    long canDiffer = getWildcard().asLong() | other.getWildcard().asLong();
 
-    // mark which bits are significant (non-wild)
-    long significantToThis = getWildcard().inverted().asLong();
-    long significantToOther = other.getWildcard().inverted().asLong();
-
-    long differentBits = thisIp ^ otherIp;
-
-    // this and other must agree at any position that is significant to both
-    long bitsThatMustAgree = significantToThis & significantToOther;
-
-    return (differentBits & bitsThatMustAgree) == 0;
+    /*
+     * All IP bits that different must be wild in either this or other.
+     */
+    return (differentIpBits & canDiffer) == differentIpBits;
   }
 
   public boolean isPrefix() {
