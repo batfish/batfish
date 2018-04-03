@@ -3,6 +3,7 @@ package org.batfish.z3;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -117,6 +118,27 @@ public class IpSpaceSpecializerTest {
         whitelistAnySpecializer.visitIpWildcard(IpWildcard.ANY), equalTo(UniverseIpSpace.INSTANCE));
     assertThat(
         blacklistAnySpecializer.visitIpWildcard(IpWildcard.ANY), equalTo(EmptyIpSpace.INSTANCE));
+  }
+
+  @Test public void testSpecializeIpWildcard_supersetOfWhitelisted() {
+    IpWildcard ip = new IpWildcard("1.2.0.0/16");
+    IpSpaceSpecializer specializer = new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard(
+        "1.2.3.0/24")), ImmutableSet.of());
+    assertThat(specializer.specialize(ip), equalTo(UniverseIpSpace.INSTANCE));
+  }
+
+  @Test public void testSpecializeIpWildcard_subsetOfWhitelisted() {
+    IpWildcard ip = new IpWildcard("1.2.3.0/24");
+    IpSpaceSpecializer specializer = new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard(
+        "1.2.0.0/16")), ImmutableSet.of());
+    assertThat(specializer.specialize(ip), equalTo(ip));
+  }
+
+  @Test public void testSpecializeIpWildcard_subsetOfWhitelisted_intersectBlacklist() {
+    IpWildcard ip = new IpWildcard("1.2.3.0/24");
+    IpSpaceSpecializer specializer = new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard(
+        "1.2.0.0/16")), ImmutableSet.of(new IpWildcard("1.2.3.4")));
+    assertThat(specializer.specialize(ip), equalTo(ip));
   }
 
   @Test

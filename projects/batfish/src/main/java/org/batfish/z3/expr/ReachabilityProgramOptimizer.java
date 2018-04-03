@@ -1,10 +1,10 @@
 package org.batfish.z3.expr;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.ArrayDeque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,14 +24,14 @@ public class ReachabilityProgramOptimizer {
   }
 
   private final List<StateExpr> _queryStates;
-  private Map<StateExpr, Set<RuleStatement>> _derivingRules;
-  private Map<StateExpr, Set<RuleStatement>> _dependentRules;
+  private Multimap<StateExpr, RuleStatement> _derivingRules;
+  private Multimap<StateExpr, RuleStatement> _dependentRules;
   private Set<RuleStatement> _rules;
 
   private ReachabilityProgramOptimizer(List<RuleStatement> rules, List<QueryStatement> queries) {
     _rules = new HashSet<>(rules);
-    _derivingRules = new HashMap<>();
-    _dependentRules = new HashMap<>();
+    _derivingRules = HashMultimap.create();
+    _dependentRules = HashMultimap.create();
     _queryStates = queries.stream().map(QueryStatement::getStateExpr).collect(Collectors.toList());
 
     init();
@@ -44,13 +44,8 @@ public class ReachabilityProgramOptimizer {
 
     _rules.forEach(
         rule -> {
-          _derivingRules
-              .computeIfAbsent(rule.getPostconditionState(), s -> new HashSet<>())
-              .add(rule);
-          rule.getPreconditionStates()
-              .forEach(
-                  stateExpr ->
-                      _dependentRules.computeIfAbsent(stateExpr, s -> new HashSet<>()).add(rule));
+          _derivingRules.put(rule.getPostconditionState(), rule);
+          rule.getPreconditionStates().forEach(stateExpr -> _dependentRules.put(stateExpr, rule));
         });
   }
 
@@ -73,7 +68,6 @@ public class ReachabilityProgramOptimizer {
   }
 
   public Set<RuleStatement> getOptimizedRules() {
-    // return them in the same order as the original rules.
     return _rules;
   }
 
@@ -126,13 +120,14 @@ public class ReachabilityProgramOptimizer {
     int numOldRules = _rules.size();
 
     // start at axioms and the states they derive
-    Set<RuleStatement> visitedRules =
+    Set<RuleStatement> usableRules =
         _rules
             .stream()
             .filter(rule -> rule.getPreconditionStates().isEmpty())
             .collect(Collectors.toSet());
-    Set<StateExpr> newStates =
-        visitedRules.stream().map(RuleStatement::getPostconditionState).collect(Collectors.toSet());
+    Set<StateExpr> newStates = usableRules.stream()
+        .map(RuleStatement::getPostconditionState)
+        .collect(Collectors.toSet());
 
     // keep looking for new forward-reachable states until we're done
     while (!newStates.isEmpty()) {
@@ -147,21 +142,32 @@ public class ReachabilityProgramOptimizer {
                   _dependentRules
                       .get(state)
                       .stream()
-                      .filter(
-                          rule ->
-                              !visitedRules.contains(rule)
+                      /*
+                       * Don't mark a rule usable until we know all its precondition states are
+                       * derivable. This may never happen, in which case this rule can be removed.
+                       */
+                      .filter(rule -> !usableRules.contains(rule)
                                   && derivableStates.containsAll(rule.getPreconditionStates()))
                       .forEach(
                           rule -> {
+                            usableRules.add(rule);
+
+                            /*
+                             * rule's postState is derivable, so explore its out-edges if we haven't
+                             * already. This only needs to be done once because if a rule is
+                             * unusable the first time but becomes usable later, then that rule
+                             * has another prestate that becomes derivable after this one. We
+                             * will visit that rule when we explore the out-edges of that other
+                             * prestate.
+                             */
                             StateExpr postState = rule.getPostconditionState();
                             if (!derivableStates.contains(postState)) {
                               newNewStates.add(postState);
                             }
-                            visitedRules.add(rule);
                           }));
       newStates = newNewStates;
     }
-    _rules = visitedRules;
+    _rules = usableRules;
 
     return _rules.size() < numOldRules;
   }

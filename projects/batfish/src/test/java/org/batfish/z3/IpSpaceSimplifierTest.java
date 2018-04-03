@@ -137,8 +137,7 @@ public class IpSpaceSimplifierTest {
             .including(new IpWildcard("1.2.1.0/24"), new IpWildcard("2.2.2.2"))
             .excluding(new IpWildcard("1.2.0.0/16"))
             .build();
-    IpWildcardSetIpSpace simplifiedIpSpace =
-        IpWildcardSetIpSpace.builder().including(new IpWildcard("2.2.2.2")).build();
+    IpWildcard simplifiedIpSpace = new IpWildcard("2.2.2.2");
     assertThat(IpSpaceSimplifier.simplify(ipSpace), equalTo(simplifiedIpSpace));
 
     // blacklisted wildcards that don't overlap whitelisted wildcards are removed
@@ -148,6 +147,13 @@ public class IpSpaceSimplifierTest {
             .excluding(new IpWildcard("1.0.0.0/8"))
             .build();
     assertThat(IpSpaceSimplifier.simplify(ipSpace), equalTo(simplifiedIpSpace));
+  }
+
+  @Test public void testVisitIpWildcardSetIpSpace_whitelistOne() {
+    IpWildcard ipWildcard = new IpWildcard("1.2.3.4");
+    assertThat(
+        IpSpaceSimplifier.simplify(IpWildcardSetIpSpace.builder().including(ipWildcard).build()),
+        equalTo(ipWildcard));
   }
 
   @Test

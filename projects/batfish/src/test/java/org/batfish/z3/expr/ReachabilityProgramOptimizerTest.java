@@ -126,4 +126,26 @@ public class ReachabilityProgramOptimizerTest {
     // all rules involving state 3 have been removed
     assertThat(rules, empty());
   }
+
+  @Test public void keepRulesThatBecomeUsableAfterVisitingDerivingState() {
+    StateExpr init1 = freshStateExpr();
+    StateExpr init2 = freshStateExpr();
+    StateExpr a = freshStateExpr();
+    StateExpr b = freshStateExpr();
+    StateExpr c = freshStateExpr();
+    StateExpr goal = freshQueryStateExpr();
+
+    addRuleFor(init1);
+    addRuleFor(init2);
+    addRuleFor(a, init1);
+    addRuleFor(b, init2);
+    addRuleFor(c, b);
+    addRuleFor(a, c);
+    addRuleFor(goal, a);
+
+    Set<RuleStatement> rules = optimize();
+
+    // no rules should be removed
+    assertThat(rules, hasSize(7));
+  }
 }

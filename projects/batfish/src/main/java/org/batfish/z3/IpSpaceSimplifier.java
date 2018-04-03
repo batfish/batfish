@@ -17,9 +17,9 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
- * Simplify an IpSpace. For example, there are many ways to express an empty IpSpace or the entire
- * universe of IPs. We try to detect these and convert them to EmptyIpSpace or UniverseIpSpace
- * respectively.
+ * Simplify an {@link IpSpace}. For example, there are many ways to express an empty {@link IpSpace}
+ * or the entire universe of IPs. We try to detect these and convert them to {@link EmptyIpSpace} or
+ * {@link UniverseIpSpace} respectively.
  */
 public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
 
@@ -36,15 +36,15 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
     return (IpSpace) o;
   }
 
-  /**
-   * To simplify an AclIpSpace: 1. Simplify the IpSpace of each line 2. Remove EmptyIpSpace lines 3.
-   * Remove all lines after the first UniverseIpSpace line - More generally, we could remove all
-   * lines whose spaces are covered by a previous line, but this is not implemented. It's also
-   * probably too expensive to implement a complete IpSpace subset operation, so we'll stick to the
-   * easy and most important case.
-   */
   @Override
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
+    /*
+     * To simplify an AclIpSpace: 1) Simplify the IpSpace of each line. 2) Remove EmptyIpSpace
+     * lines. 3) Remove all lines after the first UniverseIpSpace line - More generally, we could
+     * remove all lines whose spaces are covered by a previous line, but this is not implemented.
+     * It's also probably too expensive to implement a complete IpSpace subset operation, so we'll
+     * stick to the easy and most important case.
+     */
     List<AclIpSpaceLine> simplifiedLines = new ArrayList<>();
     for (AclIpSpaceLine line : aclIpSpace.getLines()) {
       IpSpace simplifiedLineIpSpace = line.getIpSpace().accept(this);
@@ -131,8 +131,13 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
                     whitelist.stream().anyMatch(blacklistedIpWildcard::intersects))
             .collect(Collectors.toSet());
 
-    if (whitelist.contains(IpWildcard.ANY) && blacklist.isEmpty()) {
-      return UniverseIpSpace.INSTANCE;
+    if (blacklist.isEmpty()) {
+      if (whitelist.contains(IpWildcard.ANY)) {
+        return UniverseIpSpace.INSTANCE;
+      }
+      if (whitelist.size() == 1) {
+        return whitelist.iterator().next();
+      }
     }
 
     return IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();

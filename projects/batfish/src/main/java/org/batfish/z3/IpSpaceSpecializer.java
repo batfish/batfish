@@ -18,10 +18,11 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
- * Specialize an IpSpace to input destination IP whitelist and blacklist. The goal is to simplify
- * the IpSpace as much as possible under the assumption that the whitelist and blacklist are true.
- * For example, if the IpSpace is disjoint from the whitelist, it is effectively empty (i.e. it
- * contains no IPs in the whitelist).
+ * Specialize an {@link IpSpace} to input destination IP whitelist and blacklist. The goal is to
+ * simplify the {@link IpSpace} as much as possible under the assumption that the whitelist and
+ * blacklist are always true (i.e. all packets match the whitelist, no packets match the blacklist).
+ * For example, if the {@link IpSpace} is disjoint from the whitelist, it is effectively empty (i.e.
+ * it contains no IPs in the whitelist).
  */
 public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
@@ -92,7 +93,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (_whitelist.stream().allMatch(ipWildcard::supersetOf)) {
+    if (_whitelist.stream().allMatch(ipWildcard::supersetOf) && _blacklist.stream()
+        .noneMatch(ipWildcard::intersects)) {
       return UniverseIpSpace.INSTANCE;
     } else if (_whitelist.stream().anyMatch(ipWildcard::intersects)) {
       // some match

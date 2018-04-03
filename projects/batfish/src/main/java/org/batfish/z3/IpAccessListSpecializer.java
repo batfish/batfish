@@ -106,6 +106,9 @@ public class IpAccessListSpecializer {
       IpWildcardSetIpSpace dstIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedDstIpSpace;
       specializedDstIps = dstIpWildcardSetIpSpace.getWhitelist();
       specializedNotDstIps = dstIpWildcardSetIpSpace.getBlacklist();
+    } else if (specializedDstIpSpace instanceof IpWildcard) {
+      specializedDstIps = ImmutableSet.of((IpWildcard) specializedDstIpSpace);
+      specializedNotDstIps = ImmutableSet.of();
     } else {
       throw new BatfishException("unexpected specializedDstIpSpace type");
     }
@@ -119,6 +122,9 @@ public class IpAccessListSpecializer {
       IpWildcardSetIpSpace srcIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedSrcIpSpace;
       specializedSrcIps = srcIpWildcardSetIpSpace.getWhitelist();
       specializedNotSrcIps = srcIpWildcardSetIpSpace.getBlacklist();
+    } else if (specializedSrcIpSpace instanceof IpWildcard) {
+      specializedSrcIps = ImmutableSet.of((IpWildcard) specializedSrcIpSpace);
+      specializedNotSrcIps = ImmutableSet.of();
     } else {
       throw new BatfishException("unexpected specializedSrcIpSpace type");
     }
