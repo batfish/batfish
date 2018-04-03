@@ -125,9 +125,8 @@ public class ReachabilityProgramOptimizer {
             .stream()
             .filter(rule -> rule.getPreconditionStates().isEmpty())
             .collect(Collectors.toSet());
-    Set<StateExpr> newStates = usableRules.stream()
-        .map(RuleStatement::getPostconditionState)
-        .collect(Collectors.toSet());
+    Set<StateExpr> newStates =
+        usableRules.stream().map(RuleStatement::getPostconditionState).collect(Collectors.toSet());
 
     // keep looking for new forward-reachable states until we're done
     while (!newStates.isEmpty()) {
@@ -145,8 +144,9 @@ public class ReachabilityProgramOptimizer {
                       /*
                        * Don't mark a rule usable until we know all its precondition states are
                        * derivable. This may never happen, in which case this rule can be removed.
-                       */
-                      .filter(rule -> !usableRules.contains(rule)
+                       */ .filter(
+                          rule ->
+                              !usableRules.contains(rule)
                                   && derivableStates.containsAll(rule.getPreconditionStates()))
                       .forEach(
                           rule -> {

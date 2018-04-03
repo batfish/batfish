@@ -120,24 +120,29 @@ public class IpSpaceSpecializerTest {
         blacklistAnySpecializer.visitIpWildcard(IpWildcard.ANY), equalTo(EmptyIpSpace.INSTANCE));
   }
 
-  @Test public void testSpecializeIpWildcard_supersetOfWhitelisted() {
+  @Test
+  public void testSpecializeIpWildcard_supersetOfWhitelisted() {
     IpWildcard ip = new IpWildcard("1.2.0.0/16");
-    IpSpaceSpecializer specializer = new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard(
-        "1.2.3.0/24")), ImmutableSet.of());
+    IpSpaceSpecializer specializer =
+        new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard("1.2.3.0/24")), ImmutableSet.of());
     assertThat(specializer.specialize(ip), equalTo(UniverseIpSpace.INSTANCE));
   }
 
-  @Test public void testSpecializeIpWildcard_subsetOfWhitelisted() {
+  @Test
+  public void testSpecializeIpWildcard_subsetOfWhitelisted() {
     IpWildcard ip = new IpWildcard("1.2.3.0/24");
-    IpSpaceSpecializer specializer = new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard(
-        "1.2.0.0/16")), ImmutableSet.of());
+    IpSpaceSpecializer specializer =
+        new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard("1.2.0.0/16")), ImmutableSet.of());
     assertThat(specializer.specialize(ip), equalTo(ip));
   }
 
-  @Test public void testSpecializeIpWildcard_subsetOfWhitelisted_intersectBlacklist() {
+  @Test
+  public void testSpecializeIpWildcard_subsetOfWhitelisted_intersectBlacklist() {
     IpWildcard ip = new IpWildcard("1.2.3.0/24");
-    IpSpaceSpecializer specializer = new IpSpaceSpecializer(ImmutableSet.of(new IpWildcard(
-        "1.2.0.0/16")), ImmutableSet.of(new IpWildcard("1.2.3.4")));
+    IpSpaceSpecializer specializer =
+        new IpSpaceSpecializer(
+            ImmutableSet.of(new IpWildcard("1.2.0.0/16")),
+            ImmutableSet.of(new IpWildcard("1.2.3.4")));
     assertThat(specializer.specialize(ip), equalTo(ip));
   }
 

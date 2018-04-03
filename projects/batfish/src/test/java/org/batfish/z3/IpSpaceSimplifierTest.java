@@ -149,7 +149,8 @@ public class IpSpaceSimplifierTest {
     assertThat(IpSpaceSimplifier.simplify(ipSpace), equalTo(simplifiedIpSpace));
   }
 
-  @Test public void testVisitIpWildcardSetIpSpace_whitelistOne() {
+  @Test
+  public void testVisitIpWildcardSetIpSpace_whitelistOne() {
     IpWildcard ipWildcard = new IpWildcard("1.2.3.4");
     assertThat(
         IpSpaceSimplifier.simplify(IpWildcardSetIpSpace.builder().including(ipWildcard).build()),

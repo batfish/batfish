@@ -127,7 +127,8 @@ public class ReachabilityProgramOptimizerTest {
     assertThat(rules, empty());
   }
 
-  @Test public void keepRulesThatBecomeUsableAfterVisitingDerivingState() {
+  @Test
+  public void keepRulesThatBecomeUsableAfterVisitingDerivingState() {
     StateExpr init1 = freshStateExpr();
     StateExpr init2 = freshStateExpr();
     StateExpr a = freshStateExpr();

@@ -93,8 +93,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (_whitelist.stream().allMatch(ipWildcard::supersetOf) && _blacklist.stream()
-        .noneMatch(ipWildcard::intersects)) {
+    if (_whitelist.stream().allMatch(ipWildcard::supersetOf)
+        && _blacklist.stream().noneMatch(ipWildcard::intersects)) {
       return UniverseIpSpace.INSTANCE;
     } else if (_whitelist.stream().anyMatch(ipWildcard::intersects)) {
       // some match
