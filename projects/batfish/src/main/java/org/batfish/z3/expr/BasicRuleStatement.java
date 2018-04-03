@@ -16,6 +16,8 @@ public class BasicRuleStatement extends RuleStatement {
 
   private final Set<StateExpr> _preconditionStates;
 
+  private int _hashCode;
+
   public BasicRuleStatement(StateExpr postconditionState) {
     this(TrueExpr.INSTANCE, ImmutableSet.of(), postconditionState);
   }
@@ -66,13 +68,22 @@ public class BasicRuleStatement extends RuleStatement {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _postconditionState, _preconditionStateIndependentConstraints, _preconditionStates);
+    if (_hashCode == 0) {
+      _hashCode =
+          Objects.hash(
+              _postconditionState, _preconditionStateIndependentConstraints, _preconditionStates);
+    }
+    return _hashCode;
   }
 
   @Override
   public boolean statementEquals(Statement e) {
     BasicRuleStatement rhs = (BasicRuleStatement) e;
+
+    if (_hashCode != 0 && rhs._hashCode != 0 && _hashCode != rhs._hashCode) {
+      return false;
+    }
+
     return Objects.equals(_postconditionState, rhs._postconditionState)
         && Objects.equals(
             _preconditionStateIndependentConstraints, rhs._preconditionStateIndependentConstraints)

@@ -149,7 +149,9 @@ public class NodJobChunkingTest {
   }
 
   private void setupSynthesizer() {
-    _synthesizer = new Synthesizer(Batfish.computeSynthesizerInput(_configs, _dataPlane, true));
+    _synthesizer =
+        new Synthesizer(
+            Batfish.computeSynthesizerInput(_configs, _dataPlane, new HeaderSpace(), true, false));
   }
 
   private NodJob getNodJob() {
@@ -169,7 +171,7 @@ public class NodJobChunkingTest {
         ImmutableSortedSet.of(
             new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),
             new Pair<>(_srcNode2.getHostname(), _srcVrf2.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag");
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
   }
 
   @Test

@@ -16,11 +16,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -51,7 +54,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private Map<String, Set<String>> _disabledVrfs;
 
+    @Nullable private HeaderSpace _headerSpace;
+
     private boolean _simplify;
+
+    private boolean _specialize;
 
     private Topology _topology;
 
@@ -62,7 +69,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _disabledInterfaces = ImmutableMap.of();
       _disabledNodes = ImmutableSet.of();
       _disabledVrfs = ImmutableMap.of();
+      _headerSpace = null;
       _simplify = false;
+      _specialize = false;
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -74,7 +83,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _disabledInterfaces,
           _disabledNodes,
           _disabledVrfs,
+          _headerSpace != null ? _headerSpace : new HeaderSpace(),
           _simplify,
+          _specialize,
           _topology,
           _vectorizedParameters);
     }
@@ -109,8 +120,18 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
+    public Builder setHeaderSpace(HeaderSpace headerSpace) {
+      _headerSpace = headerSpace;
+      return this;
+    }
+
     public Builder setSimplify(boolean simplify) {
       _simplify = simplify;
+      return this;
+    }
+
+    public Builder setSpecialize(boolean specialize) {
+      _specialize = specialize;
       return this;
     }
 
@@ -170,7 +191,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
+  private IpAccessListSpecializer _ipAclListSpecializer;
+
   private final Map<String, Set<Ip>> _ipsByHostname;
+
+  private final IpSpaceSpecializer _ipSpaceSpecializer;
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
@@ -195,12 +220,19 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       Map<String, Set<String>> disabledInterfaces,
       Set<String> disabledNodes,
       Map<String, Set<String>> disabledVrfs,
+      HeaderSpace headerSpace,
       boolean simplify,
+      boolean specialize,
       Topology topology,
       Set<Type> vectorizedParameters) {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
     }
+    _ipAclListSpecializer = new IpAccessListSpecializer(headerSpace);
+    _ipSpaceSpecializer =
+        specialize
+            ? new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps())
+            : new IpSpaceSpecializer(ImmutableSet.of(), ImmutableSet.of());
     _configurations = ImmutableMap.copyOf(configurations);
     _disabledAcls = ImmutableMap.copyOf(disabledAcls);
     _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
@@ -280,6 +312,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         new HashMap<>();
     arpTrueEdge.forEach(
         (edge, ipSpace) -> {
+          ipSpace = _ipSpaceSpecializer.specialize(ipSpace);
+          if (ipSpace instanceof EmptyIpSpace) {
+            return;
+          }
           String hostname = edge.getNode1();
           String outInterface = edge.getInt1();
           String vrf = _configurations.get(hostname).getInterfaces().get(outInterface).getVrfName();
@@ -335,9 +371,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                       IpAccessList aclIn = i.getIncomingFilter();
                       IpAccessList aclOut = i.getOutgoingFilter();
                       if (aclIn != null) {
+                        aclIn = _ipAclListSpecializer.specialize(aclIn);
                         interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
                       }
                       if (aclOut != null) {
+                        aclOut = _ipAclListSpecializer.specialize(aclOut);
                         interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
                       }
                       i.getSourceNats()
@@ -530,8 +568,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             toImmutableMap(
                 nullRoutedIpsByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
-                nullRoutedIpsByVrfEntry ->
-                    new IpSpaceMatchExpr(nullRoutedIpsByVrfEntry.getValue(), false, true)));
+                nullRoutedIpsByVrfEntry -> {
+                  IpSpace ipSpace =
+                      _ipSpaceSpecializer.specialize(nullRoutedIpsByVrfEntry.getValue());
+                  return new IpSpaceMatchExpr(ipSpace, false, true);
+                }));
   }
 
   private Map<String, Map<String, String>> computeOutgoingAcls() {
@@ -560,8 +601,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             toImmutableMap(
                 routableIpsByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
-                routableIpsByVrfEntry ->
-                    new IpSpaceMatchExpr(routableIpsByVrfEntry.getValue(), false, true)));
+                routableIpsByVrfEntry -> {
+                  IpSpace ipSpace =
+                      _ipSpaceSpecializer.specialize(routableIpsByVrfEntry.getValue());
+                  return new IpSpaceMatchExpr(ipSpace, false, true);
+                }));
   }
 
   private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {

@@ -124,6 +124,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final boolean DEFAULT_USE_COMPRESSION = false;
 
+    private static final boolean DEFAULT_SPECIALIZE = false;
+
     private static final String PROP_ACTIONS = "actions";
 
     private static final String PROP_DST_IPS = "dstIps";
@@ -198,6 +200,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_USE_COMPRESSION = "useCompression";
 
+    private static final String PROP_SPECIALIZE = "specialize";
+
     private ReachabilitySettings.Builder _reachabilitySettings;
 
     private ReachabilityType _reachabilityType;
@@ -213,6 +217,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       setNonTransitNodes(DEFAULT_NON_TRANSIT_NODES);
       setNotIngressNodeRegex(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
+      setSpecialize(DEFAULT_SPECIALIZE);
       setTransitNodes(DEFAULT_TRANSIT_NODES);
       setUseCompression(DEFAULT_USE_COMPRESSION);
     }
@@ -410,6 +415,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_USE_COMPRESSION)
     public boolean getUseCompression() {
       return _reachabilitySettings.getUseCompression();
+    }
+
+    @JsonProperty(PROP_SPECIALIZE)
+    public boolean getSpecialize() {
+      return _reachabilitySettings.getSpecialize();
     }
 
     @Override
@@ -748,6 +758,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_USE_COMPRESSION)
     public void setUseCompression(boolean useCompression) {
       _reachabilitySettings.setUseCompression(useCompression);
+    }
+
+    @JsonProperty(PROP_SPECIALIZE)
+    public void setSpecialize(boolean specialize) {
+      _reachabilitySettings.setSpecialize(specialize);
     }
   }
 
