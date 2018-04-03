@@ -22,8 +22,6 @@ import org.batfish.datamodel.UniverseIpSpace;
  */
 public class IpAccessListSpecializer {
   private final boolean _canSpecialize;
-  private final boolean _haveDstIpConstraint;
-  private final boolean _haveSrcIpConstraint;
   private final HeaderSpace _headerSpace;
   private final IpSpaceSpecializer _dstIpSpaceSpecializer;
   private final IpSpaceSpecializer _srcIpSpaceSpecializer;
@@ -31,20 +29,16 @@ public class IpAccessListSpecializer {
   public IpAccessListSpecializer(HeaderSpace headerSpace) {
     _headerSpace = headerSpace;
 
-    _haveDstIpConstraint =
-        !_headerSpace.getDstIps().isEmpty()
-            || !_headerSpace.getSrcOrDstIps().isEmpty()
-            || !_headerSpace.getNotDstIps().isEmpty();
-
-    _haveSrcIpConstraint =
-        !_headerSpace.getSrcIps().isEmpty()
-            || !_headerSpace.getSrcOrDstIps().isEmpty()
-            || !_headerSpace.getNotSrcIps().isEmpty();
-
     /*
-     * Currently, specialization is based on srcIp and dstIp only.
+     * Currently, specialization is based on srcIp and dstIp only. We can specialize only
+     * if we have a meaningful constraint on srcIp or on dstIp.
      */
-    _canSpecialize = _haveSrcIpConstraint || _haveDstIpConstraint;
+    _canSpecialize =
+        !(_headerSpace.getDstIps().isEmpty()
+            && _headerSpace.getSrcOrDstIps().isEmpty()
+            && _headerSpace.getNotDstIps().isEmpty()
+            && _headerSpace.getSrcIps().isEmpty()
+            && _headerSpace.getNotSrcIps().isEmpty());
 
     _dstIpSpaceSpecializer =
         new IpSpaceSpecializer(
