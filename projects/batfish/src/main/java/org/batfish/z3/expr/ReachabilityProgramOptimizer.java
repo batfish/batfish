@@ -34,11 +34,11 @@ public class ReachabilityProgramOptimizer {
     _dependentRules = new HashMap<>();
     _queryStates = queries.stream().map(QueryStatement::getStateExpr).collect(Collectors.toList());
 
-    initRound();
+    init();
     computeFixpoint();
   }
 
-  private void initRound() {
+  private void init() {
     _dependentRules.clear();
     _derivingRules.clear();
 
@@ -58,15 +58,17 @@ public class ReachabilityProgramOptimizer {
     boolean converged = false;
 
     while (!converged) {
-      initRound();
+      converged=true;
 
-      int rules = _rules.size();
+      if(forwardReachability()) {
+        init();
+        converged=false;
+      }
 
-      backwardReachability();
-      forwardReachability();
-
-      int rulesRemoved = rules - _rules.size();
-      converged = rulesRemoved == 0;
+      if(backwardReachability()) {
+        init();
+        converged=false;
+      }
     }
   }
 
@@ -75,8 +77,15 @@ public class ReachabilityProgramOptimizer {
     return _rules;
   }
 
-  private void backwardReachability() {
+  /**
+   * Find all states that can be used (transitively) to reach any query state, ignoring
+   * any boolean constraints (i.e. assuming they can be satisfied).
+   * @return whether any rules were removed.
+   */
+  private boolean backwardReachability() {
     Set<RuleStatement> relevantRules = new HashSet<>();
+
+    int numOldRules = _rules.size();
 
     Set<StateExpr> relevantStates = new HashSet<>(_queryStates);
     Queue<StateExpr> stateWorkQueue = new ArrayDeque<>(_queryStates);
@@ -99,13 +108,20 @@ public class ReachabilityProgramOptimizer {
                             }));
       }
     }
-
     _rules = relevantRules;
+
+    return _rules.size() < numOldRules;
   }
 
-  /* Find all states forward reachable from the graph roots (states without prestates) */
-  private void forwardReachability() {
+  /**
+   * Find all states forward reachable from the graph roots (states without prestates), ignoring
+   * any boolean constraints (i.e. assuming they can be satisfied).
+   * @return whether any rules were removed.
+   */
+  private boolean forwardReachability() {
     Set<StateExpr> derivableStates = new HashSet<>();
+
+    int numOldRules = _rules.size();
 
     // start at axioms and the states they derive
     Set<RuleStatement> visitedRules =
@@ -144,5 +160,7 @@ public class ReachabilityProgramOptimizer {
       newStates = newNewStates;
     }
     _rules = visitedRules;
+
+    return _rules.size() < numOldRules;
   }
 }
