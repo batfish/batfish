@@ -4039,7 +4039,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<List<Pair<String, String>>> originateNodeVrfChunks =
         Lists.partition(originateNodeVrfs, chunkSize);
 
-    Synthesizer dataPlaneSynthesizer = synthesizeDataPlane(configurations, dataPlane);
+    Synthesizer dataPlaneSynthesizer =
+        synthesizeDataPlane(
+            configurations, dataPlane, headerSpace, reachabilitySettings.getSpecialize());
 
     // build query jobs
     List<NodJob> jobs =
@@ -4068,7 +4070,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           .setSrcNatted(reachabilitySettings.getSrcNatted())
                           .build();
 
-                  return new NodJob(settings, dataPlaneSynthesizer, query, nodeVrfs, tag);
+                  return new NodJob(
+                      settings,
+                      dataPlaneSynthesizer,
+                      query,
+                      nodeVrfs,
+                      tag,
+                      reachabilitySettings.getSpecialize());
                 })
             .collect(Collectors.toList());
 
@@ -4181,12 +4189,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Synthesizer synthesizeDataPlane() {
-    return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
+    return synthesizeDataPlane(loadConfigurations(), loadDataPlane(), new HeaderSpace(), false);
   }
 
   @Nonnull
   public Synthesizer synthesizeDataPlane(
-      Map<String, Configuration> configurations, DataPlane dataPlane) {
+      Map<String, Configuration> configurations,
+      DataPlane dataPlane,
+      HeaderSpace headerSpace,
+      boolean specialize) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4194,7 +4205,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Synthesizer s =
         new Synthesizer(
-            computeSynthesizerInput(configurations, dataPlane, _settings.getSimplify()));
+            computeSynthesizerInput(
+                configurations, dataPlane, headerSpace, _settings.getSimplify(), specialize));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4210,14 +4222,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public static SynthesizerInputImpl computeSynthesizerInput(
-      Map<String, Configuration> configurations, DataPlane dataPlane, boolean simplify) {
+      Map<String, Configuration> configurations,
+      DataPlane dataPlane,
+      HeaderSpace headerSpace,
+      boolean simplify,
+      boolean specialize) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
+        .setHeaderSpace(headerSpace)
         .setForwardingAnalysis(
             new ForwardingAnalysisImpl(
                 configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
         .setSimplify(simplify)
+        .setSpecialize(specialize)
         .setTopology(topology)
         .build();
   }

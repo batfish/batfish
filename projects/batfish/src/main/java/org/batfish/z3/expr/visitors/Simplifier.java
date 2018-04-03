@@ -214,6 +214,12 @@ public class Simplifier
       if (then == els) {
         return then;
       }
+      if (then == TrueExpr.INSTANCE && els == FalseExpr.INSTANCE) {
+        return condition;
+      }
+      if (then == FalseExpr.INSTANCE && els == TrueExpr.INSTANCE) {
+        return new NotExpr(condition);
+      }
       if (condition != ifThenElse.getCondition()
           || then != ifThenElse.getThen()
           || els != ifThenElse.getElse()) {

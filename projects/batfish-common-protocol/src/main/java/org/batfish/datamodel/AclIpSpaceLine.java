@@ -81,6 +81,10 @@ public class AclIpSpaceLine {
     return Objects.hash(_action.ordinal(), _ipSpace);
   }
 
+  public Builder rebuild() {
+    return builder().setAction(_action).setIpSpace(_ipSpace);
+  }
+
   @Override
   public String toString() {
     ToStringHelper helper = MoreObjects.toStringHelper(getClass());

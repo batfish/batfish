@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -380,8 +381,6 @@ public class HeaderSpace implements Serializable {
     _srcOrDstProtocols = Collections.emptySortedSet();
     _srcPorts = Collections.emptySortedSet();
     _srcProtocols = Collections.emptySortedSet();
-    _icmpTypes = Collections.emptySortedSet();
-    _icmpCodes = Collections.emptySortedSet();
     _states = Collections.emptySortedSet();
     _tcpFlags = Collections.emptyList();
     _notDscps = Collections.emptySortedSet();
@@ -474,103 +473,38 @@ public class HeaderSpace implements Serializable {
       return false;
     }
     HeaderSpace other = (HeaderSpace) o;
-    if (!_dscps.equals(other._dscps)) {
-      return false;
-    }
-    if (!_dstIps.equals(other._dstIps)) {
-      return false;
-    }
-    if (!_dstPorts.equals(other._dstPorts)) {
-      return false;
-    }
-    if (!_dstProtocols.equals(other._dstProtocols)) {
-      return false;
-    }
-    if (!_ecns.equals(other._ecns)) {
-      return false;
-    }
-    if (!_fragmentOffsets.equals(other._fragmentOffsets)) {
-      return false;
-    }
-    if (!_icmpCodes.equals(other._icmpCodes)) {
-      return false;
-    }
-    if (!_icmpTypes.equals(other._icmpTypes)) {
-      return false;
-    }
-    if (!_ipProtocols.equals(other._ipProtocols)) {
-      return false;
-    }
-    if (_negate != other._negate) {
-      return false;
-    }
-    if (!_notDscps.equals(other._notDscps)) {
-      return false;
-    }
-    if (!_notDstIps.equals(other._notDstIps)) {
-      return false;
-    }
-    if (!_notDstPorts.equals(other._notDstPorts)) {
-      return false;
-    }
-    if (!_notDstProtocols.equals(other._notDstProtocols)) {
-      return false;
-    }
-    if (!_notEcns.equals(other._notEcns)) {
-      return false;
-    }
-    if (!_notFragmentOffsets.equals(other._notFragmentOffsets)) {
-      return false;
-    }
-    if (!_notIcmpCodes.equals(other._notIcmpCodes)) {
-      return false;
-    }
-    if (!_notIcmpTypes.equals(other._notIcmpTypes)) {
-      return false;
-    }
-    if (!_notIpProtocols.equals(other._notIpProtocols)) {
-      return false;
-    }
-    if (!_notPacketLengths.equals(other._notPacketLengths)) {
-      return false;
-    }
-    if (!_notSrcIps.equals(other._notSrcIps)) {
-      return false;
-    }
-    if (!_notSrcPorts.equals(other._notSrcPorts)) {
-      return false;
-    }
-    if (!_notSrcProtocols.equals(other._notSrcProtocols)) {
-      return false;
-    }
-    if (!_packetLengths.equals(other._packetLengths)) {
-      return false;
-    }
-    if (!_srcIps.equals(other._srcIps)) {
-      return false;
-    }
-    if (!_srcOrDstIps.equals(other._srcOrDstIps)) {
-      return false;
-    }
-    if (!_srcOrDstPorts.equals(other._srcOrDstPorts)) {
-      return false;
-    }
-    if (!_srcOrDstProtocols.equals(other._srcOrDstProtocols)) {
-      return false;
-    }
-    if (!_srcPorts.equals(other._srcPorts)) {
-      return false;
-    }
-    if (!_srcProtocols.equals(other._srcProtocols)) {
-      return false;
-    }
-    if (!_states.equals(other._states)) {
-      return false;
-    }
-    if (!_tcpFlags.equals(other._tcpFlags)) {
-      return false;
-    }
-    return true;
+    return _dscps.equals(other._dscps)
+        && _dstIps.equals(other._dstIps)
+        && _dstPorts.equals(other._dstPorts)
+        && _dstProtocols.equals(other._dstProtocols)
+        && _ecns.equals(other._ecns)
+        && _fragmentOffsets.equals(other._fragmentOffsets)
+        && _icmpCodes.equals(other._icmpCodes)
+        && _icmpTypes.equals(other._icmpTypes)
+        && _ipProtocols.equals(other._ipProtocols)
+        && _negate == other._negate
+        && _notDscps.equals(other._notDscps)
+        && _notDstIps.equals(other._notDstIps)
+        && _notDstPorts.equals(other._notDstPorts)
+        && _notDstProtocols.equals(other._notDstProtocols)
+        && _notEcns.equals(other._notEcns)
+        && _notFragmentOffsets.equals(other._notFragmentOffsets)
+        && _notIcmpCodes.equals(other._notIcmpCodes)
+        && _notIcmpTypes.equals(other._notIcmpTypes)
+        && _notIpProtocols.equals(other._notIpProtocols)
+        && _notPacketLengths.equals(other._notPacketLengths)
+        && _notSrcIps.equals(other._notSrcIps)
+        && _notSrcPorts.equals(other._notSrcPorts)
+        && _notSrcProtocols.equals(other._notSrcProtocols)
+        && _packetLengths.equals(other._packetLengths)
+        && _srcIps.equals(other._srcIps)
+        && _srcOrDstIps.equals(other._srcOrDstIps)
+        && _srcOrDstPorts.equals(other._srcOrDstPorts)
+        && _srcOrDstProtocols.equals(other._srcOrDstProtocols)
+        && _srcPorts.equals(other._srcPorts)
+        && _srcProtocols.equals(other._srcProtocols)
+        && _states.equals(other._states)
+        && _tcpFlags.equals(other._tcpFlags);
   }
 
   @JsonPropertyDescription("A set of acceptable DSCP values for a packet")
@@ -578,6 +512,7 @@ public class HeaderSpace implements Serializable {
     return _dscps;
   }
 
+  /** The empty set of dstIps is interpreted as no constraint, or all IPs */
   @JsonPropertyDescription("A space of acceptable destination IP addresses for a packet")
   public SortedSet<IpWildcard> getDstIps() {
     return _dstIps;
@@ -733,8 +668,39 @@ public class HeaderSpace implements Serializable {
 
   @Override
   public int hashCode() {
-    // TODO: implement better hashcode
-    return 0;
+    return Objects.hashCode(
+        _dscps,
+        _dstIps,
+        _dstPorts,
+        _dstProtocols,
+        _ecns,
+        _fragmentOffsets,
+        _icmpCodes,
+        _icmpTypes,
+        _ipProtocols,
+        _negate,
+        _notDscps,
+        _notDstIps,
+        _notDstPorts,
+        _notDstProtocols,
+        _notEcns,
+        _notFragmentOffsets,
+        _notIcmpCodes,
+        _notIcmpTypes,
+        _notIpProtocols,
+        _notPacketLengths,
+        _notSrcIps,
+        _notSrcPorts,
+        _notSrcProtocols,
+        _packetLengths,
+        _srcIps,
+        _srcOrDstIps,
+        _srcOrDstPorts,
+        _srcOrDstProtocols,
+        _srcPorts,
+        _srcProtocols,
+        _states,
+        _tcpFlags);
   }
 
   public boolean matches(Flow flow) {
@@ -900,6 +866,42 @@ public class HeaderSpace implements Serializable {
       return false;
     }
     return true;
+  }
+
+  public <S extends Builder<S, T>, T extends HeaderSpace> void rebuild(Builder<S, T> builder) {
+    builder
+        .setDscps(_dscps)
+        .setDstIps(_dstIps)
+        .setDstPorts(_dstPorts)
+        .setDstProtocols(_dstProtocols)
+        .setEcns(_ecns)
+        .setFragmentOffsets(_fragmentOffsets)
+        .setIcmpCodes(_icmpCodes)
+        .setIcmpTypes(_icmpTypes)
+        .setIpProtocols(_ipProtocols)
+        .setNegate(_negate)
+        .setNotDscps(_notDscps)
+        .setNotDstIps(_notDstIps)
+        .setNotDstPorts(_notDstPorts)
+        .setNotDstProtocols(_notDstProtocols)
+        .setNotEcns(_notEcns)
+        .setNotFragmentOffsets(_notFragmentOffsets)
+        .setNotIcmpCodes(_notIcmpCodes)
+        .setNotIcmpTypes(_notIcmpTypes)
+        .setNotIpProtocols(_notIpProtocols)
+        .setNotPacketLengths(_notPacketLengths)
+        .setNotSrcIps(_notSrcIps)
+        .setNotSrcPorts(_notSrcPorts)
+        .setNotSrcProtocols(_notSrcProtocols)
+        .setPacketLengths(_packetLengths)
+        .setSrcIps(_srcIps)
+        .setSrcOrDstIps(_srcOrDstIps)
+        .setSrcOrDstPorts(_srcOrDstPorts)
+        .setSrcOrDstProtocols(_srcOrDstProtocols)
+        .setSrcPorts(_srcPorts)
+        .setSrcProtocols(_srcProtocols)
+        .setStates(_states)
+        .setTcpFlags(_tcpFlags);
   }
 
   public void setDscps(Iterable<Integer> dscps) {

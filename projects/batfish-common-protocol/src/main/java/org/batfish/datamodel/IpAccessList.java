@@ -87,6 +87,10 @@ public class IpAccessList extends ComparableStructure<String> {
     _lines = ImmutableList.copyOf(lines);
   }
 
+  public static Builder builder() {
+    return new Builder(null);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == this) {

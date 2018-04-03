@@ -1,6 +1,7 @@
 package org.batfish.z3.expr;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.Objects;
 import java.util.Set;
 
@@ -80,5 +81,15 @@ public class TransformationRuleStatement extends RuleStatement {
             _preconditionPreTransformationStates, rhs._preconditionPreTransformationStates)
         && Objects.equals(
             _preconditionStateIndependentConstraints, rhs._preconditionStateIndependentConstraints);
+  }
+
+  @Override
+  public StateExpr getPostconditionState() {
+    return _postconditionState;
+  }
+
+  @Override
+  public Set<StateExpr> getPreconditionStates() {
+    return Sets.union(_preconditionPostTransformationStates, _preconditionPreTransformationStates);
   }
 }
