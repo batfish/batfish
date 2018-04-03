@@ -58,16 +58,16 @@ public class ReachabilityProgramOptimizer {
     boolean converged = false;
 
     while (!converged) {
-      converged=true;
+      converged = true;
 
-      if(forwardReachability()) {
+      if (forwardReachability()) {
         init();
-        converged=false;
+        converged = false;
       }
 
-      if(backwardReachability()) {
+      if (backwardReachability()) {
         init();
-        converged=false;
+        converged = false;
       }
     }
   }
@@ -78,8 +78,9 @@ public class ReachabilityProgramOptimizer {
   }
 
   /**
-   * Find all states that can be used (transitively) to reach any query state, ignoring
-   * any boolean constraints (i.e. assuming they can be satisfied).
+   * Find all states that can be used (transitively) to reach any query state, ignoring any boolean
+   * constraints (i.e. assuming they can be satisfied).
+   *
    * @return whether any rules were removed.
    */
   private boolean backwardReachability() {
@@ -114,8 +115,9 @@ public class ReachabilityProgramOptimizer {
   }
 
   /**
-   * Find all states forward reachable from the graph roots (states without prestates), ignoring
-   * any boolean constraints (i.e. assuming they can be satisfied).
+   * Find all states forward reachable from the graph roots (states without prestates), ignoring any
+   * boolean constraints (i.e. assuming they can be satisfied).
+   *
    * @return whether any rules were removed.
    */
   private boolean forwardReachability() {

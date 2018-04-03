@@ -69,8 +69,9 @@ public class BasicRuleStatement extends RuleStatement {
   @Override
   public int hashCode() {
     if (_hashCode == 0) {
-      _hashCode = Objects.hash(
-          _postconditionState, _preconditionStateIndependentConstraints, _preconditionStates);
+      _hashCode =
+          Objects.hash(
+              _postconditionState, _preconditionStateIndependentConstraints, _preconditionStates);
     }
     return _hashCode;
   }
