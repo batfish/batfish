@@ -144,7 +144,8 @@ public class ReachabilityProgramOptimizer {
                       /*
                        * Don't mark a rule usable until we know all its precondition states are
                        * derivable. This may never happen, in which case this rule can be removed.
-                       */ .filter(
+                       */
+                      .filter(
                           rule ->
                               !usableRules.contains(rule)
                                   && derivableStates.containsAll(rule.getPreconditionStates()))
