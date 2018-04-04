@@ -94,7 +94,7 @@ public class FlatJuniperGrammarTest {
     String c3Name = "as3";
     Prefix neighborPrefix = Prefix.parse("1.0.0.1/32");
 
-    List<String> configurationNames = ImmutableList.of(c1Name,c2Name,c3Name);
+    List<String> configurationNames = ImmutableList.of(c1Name, c2Name, c3Name);
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
