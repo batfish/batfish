@@ -10340,6 +10340,11 @@ STICKY
    'sticky'
 ;
 
+STICKY_ARP
+:
+   'sticky-arp'
+;
+
 STOP
 :
    'stop'

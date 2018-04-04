@@ -101,11 +101,17 @@ interface Ethernet0
  ip pim hello-interval 30000
  ip pim sparse-dense-mode
  ip pim sparse-mode
+ ip proxy-arp
+ default ip proxy-arp
+ no ip proxy-arp
  no ip redirects
  no ip route-cache
  ip router isis
  ip router ospf 1 area 0.1.2.3
  ip sap listen
+ ip sticky-arp
+ no ip sticky-arp
+ ip sticky-arp ignore
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167

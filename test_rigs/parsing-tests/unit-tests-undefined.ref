@@ -188,7 +188,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            111
+            117
           ]
         }
       },
@@ -457,7 +457,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            114
+            120
           ]
         }
       },
@@ -1171,7 +1171,7 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              111
+              117
             ]
           },
           "mynatacl" : {
@@ -1188,7 +1188,7 @@
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              114
+              120
             ]
           },
           "ag1" : {
