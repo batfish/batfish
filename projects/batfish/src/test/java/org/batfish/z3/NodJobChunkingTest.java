@@ -22,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -151,7 +153,17 @@ public class NodJobChunkingTest {
   private void setupSynthesizer() {
     _synthesizer =
         new Synthesizer(
-            Batfish.computeSynthesizerInput(_configs, _dataPlane, new HeaderSpace(), true, false));
+            Batfish.computeSynthesizerInput(
+                _configs,
+                _dataPlane,
+                new ForwardingAnalysisImpl(
+                    _configs,
+                    _dataPlane.getRibs(),
+                    _dataPlane.getFibs(),
+                    new Topology(_dataPlane.getTopologyEdges())),
+                new HeaderSpace(),
+                true,
+                false));
   }
 
   private NodJob getNodJob() {
