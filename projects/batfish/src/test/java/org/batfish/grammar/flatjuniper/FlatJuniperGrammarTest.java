@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -8,6 +10,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -81,6 +84,31 @@ public class FlatJuniperGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testAutonomousSystem() throws IOException {
+    String testrigName = "autonomous-system";
+    String c1Name = "as1";
+    String c2Name = "as2";
+    String c3Name = "as3";
+    Prefix neighborPrefix = Prefix.parse("1.0.0.1/32");
+
+    List<String> configurationNames = ImmutableList.of(c1Name, c2Name, c3Name);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+    Configuration c1 = configurations.get(c1Name);
+    Configuration c2 = configurations.get(c2Name);
+    Configuration c3 = configurations.get(c3Name);
+
+    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1)))));
+    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1)))));
+    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1)))));
   }
 
   @Test
