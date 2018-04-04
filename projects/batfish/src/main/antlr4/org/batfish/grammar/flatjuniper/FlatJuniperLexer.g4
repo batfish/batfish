@@ -325,7 +325,7 @@ ASCII_TEXT
 
 ASDOT_NOTATION
 :
-  'asdot-notation'
+   'asdot-notation'
 ;
 
 ALLOW_V4MAPPED_PACKETS
