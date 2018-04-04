@@ -46,7 +46,7 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
   private static final Pattern CISCO_STYLE_ACL_PATTERN =
       Pattern.compile("(?m)(^(ip )?access-list.*$)");
-  private static final Pattern IOS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:cat\\d+");
+  private static final Pattern IOS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:(asr|cat)\\d+");
   private static final Pattern NEIGHBOR_ACTIVATE_PATTERN =
       Pattern.compile("(?m)^ *neighbor.*activate$");
   private static final Pattern NEIGHBOR_PEER_GROUP_MATCHER =
