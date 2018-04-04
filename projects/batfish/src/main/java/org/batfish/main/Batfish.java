@@ -43,6 +43,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
@@ -94,6 +95,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
@@ -458,6 +460,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       _cachedEnvironmentRoutingTables;
 
+  private final Cache<TestrigSettings, ForwardingAnalysis> _cachedForwardingAnalyses;
+
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -486,16 +490,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
-      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
+      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
+      Cache<TestrigSettings, ForwardingAnalysis> cachedForwardingAnalyses) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
     _cachedCompressedConfigurations = cachedCompressedConfigurations;
     _cachedConfigurations = cachedConfigurations;
-    _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
-    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
     _cachedCompressedDataPlanes = cachedCompressedDataPlanes;
     _cachedDataPlanes = cachedDataPlanes;
+    _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
+    _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
+    _cachedForwardingAnalyses = cachedForwardingAnalyses;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     _testrigSettings = settings.getActiveTestrigSettings();
     _baseTestrigSettings = settings.getBaseTestrigSettings();
@@ -2369,6 +2375,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return environmentRoutingTables;
   }
 
+  private ForwardingAnalysis loadForwardingAnalysis(
+      Map<String, Configuration> configurations, DataPlane dataPlane) {
+    Topology topology = new Topology(dataPlane.getTopologyEdges());
+    try {
+      return _cachedForwardingAnalyses.get(
+          _testrigSettings,
+          () ->
+              new ForwardingAnalysisImpl(
+                  configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology));
+    } catch (ExecutionException e) {
+      throw new BatfishException("error loading ForwardingAnalysis", e);
+    }
+  }
+
   @Override
   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
     return loadParseEnvironmentBgpTablesAnswerElement(true);
@@ -4041,7 +4061,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
-            configurations, dataPlane, headerSpace, reachabilitySettings.getSpecialize());
+            configurations,
+            dataPlane,
+            loadForwardingAnalysis(configurations, dataPlane),
+            headerSpace,
+            reachabilitySettings.getSpecialize());
 
     // build query jobs
     List<NodJob> jobs =
@@ -4189,13 +4213,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Synthesizer synthesizeDataPlane() {
-    return synthesizeDataPlane(loadConfigurations(), loadDataPlane(), new HeaderSpace(), false);
+    SortedMap<String, Configuration> configurations = loadConfigurations();
+    DataPlane dataPlane = loadDataPlane();
+    ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
+    return synthesizeDataPlane(
+        configurations, dataPlane, forwardingAnalysis, new HeaderSpace(), false);
   }
 
   @Nonnull
   public Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
+      ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       boolean specialize) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
@@ -4206,7 +4235,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer s =
         new Synthesizer(
             computeSynthesizerInput(
-                configurations, dataPlane, headerSpace, _settings.getSimplify(), specialize));
+                configurations,
+                dataPlane,
+                forwardingAnalysis,
+                headerSpace,
+                _settings.getSimplify(),
+                specialize));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4224,6 +4258,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static SynthesizerInputImpl computeSynthesizerInput(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
+      ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       boolean simplify,
       boolean specialize) {
@@ -4231,9 +4266,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
         .setHeaderSpace(headerSpace)
-        .setForwardingAnalysis(
-            new ForwardingAnalysisImpl(
-                configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+        .setForwardingAnalysis(forwardingAnalysis)
         .setSimplify(simplify)
         .setSpecialize(specialize)
         .setTopology(topology)
