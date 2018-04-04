@@ -7526,7 +7526,7 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
                 "metric" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                  "value" : 20
+                  "value" : 11
                 }
               },
               {
