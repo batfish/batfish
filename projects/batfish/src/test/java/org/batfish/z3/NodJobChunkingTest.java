@@ -153,10 +153,17 @@ public class NodJobChunkingTest {
   private void setupSynthesizer() {
     _synthesizer =
         new Synthesizer(
-            Batfish.computeSynthesizerInput(_configs, _dataPlane,
-                new ForwardingAnalysisImpl(_configs, _dataPlane.getRibs(), _dataPlane.getFibs(),
+            Batfish.computeSynthesizerInput(
+                _configs,
+                _dataPlane,
+                new ForwardingAnalysisImpl(
+                    _configs,
+                    _dataPlane.getRibs(),
+                    _dataPlane.getFibs(),
                     new Topology(_dataPlane.getTopologyEdges())),
-                new HeaderSpace(), true, false));
+                new HeaderSpace(),
+                true,
+                false));
   }
 
   private NodJob getNodJob() {

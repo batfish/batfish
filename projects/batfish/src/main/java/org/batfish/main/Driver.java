@@ -136,8 +136,8 @@ public class Driver {
   private static final Cache<Snapshot, SortedMap<String, Configuration>>
       CACHED_COMPRESSED_TESTRIGS = buildTestrigCache();
 
-  private static final Cache<TestrigSettings,ForwardingAnalysis>
-      CACHED_FORWARDING_ANALYSES = buildForwardingAnalysisCache();
+  private static final Cache<TestrigSettings, ForwardingAnalysis> CACHED_FORWARDING_ANALYSES =
+      buildForwardingAnalysisCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
 

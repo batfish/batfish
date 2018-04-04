@@ -2375,16 +2375,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return environmentRoutingTables;
   }
 
-  private ForwardingAnalysis loadForwardingAnalysis(Map<String, Configuration> configurations, DataPlane dataPlane) {
+  private ForwardingAnalysis loadForwardingAnalysis(
+      Map<String, Configuration> configurations, DataPlane dataPlane) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     try {
       return _cachedForwardingAnalyses.get(
           _testrigSettings,
-          () -> new ForwardingAnalysisImpl(configurations,
-              dataPlane.getRibs(),
-              dataPlane.getFibs(),
-              topology));
-    } catch(ExecutionException e) {
+          () ->
+              new ForwardingAnalysisImpl(
+                  configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology));
+    } catch (ExecutionException e) {
       throw new BatfishException("error loading ForwardingAnalysis", e);
     }
   }
@@ -4061,7 +4061,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
-            configurations, dataPlane,
+            configurations,
+            dataPlane,
             loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
             reachabilitySettings.getSpecialize());
@@ -4214,8 +4215,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Synthesizer synthesizeDataPlane() {
     SortedMap<String, Configuration> configurations = loadConfigurations();
     DataPlane dataPlane = loadDataPlane();
-    ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations,dataPlane);
-    return synthesizeDataPlane(configurations, dataPlane, forwardingAnalysis, new HeaderSpace(), false);
+    ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
+    return synthesizeDataPlane(
+        configurations, dataPlane, forwardingAnalysis, new HeaderSpace(), false);
   }
 
   @Nonnull
@@ -4233,7 +4235,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer s =
         new Synthesizer(
             computeSynthesizerInput(
-                configurations, dataPlane, forwardingAnalysis, headerSpace, _settings.getSimplify(), specialize));
+                configurations,
+                dataPlane,
+                forwardingAnalysis,
+                headerSpace,
+                _settings.getSimplify(),
+                specialize));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
