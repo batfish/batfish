@@ -153,7 +153,11 @@ ro_autonomous_system
    AUTONOMOUS_SYSTEM as = DEC?
    (
       apply
-      | roas_loops
+      |
+      (
+         roas_asdot_notation
+         | roas_loops
+      )*
    )
 ;
 
@@ -298,6 +302,11 @@ roaa_origin
 roaa_path
 :
    PATH path = as_path_expr
+;
+
+roas_asdot_notation
+:
+   ASDOT_NOTATION
 ;
 
 roas_loops
