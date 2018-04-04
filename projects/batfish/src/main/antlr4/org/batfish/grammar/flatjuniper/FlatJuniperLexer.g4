@@ -198,6 +198,11 @@ ALLOW
    'allow'
 ;
 
+ALLOW_V4MAPPED_PACKETS
+:
+   'allow-v4mapped-packets'
+;
+
 ALWAYS_COMPARE_MED
 :
    'always-compare-med'
@@ -326,11 +331,6 @@ ASCII_TEXT
 ASDOT_NOTATION
 :
    'asdot-notation'
-;
-
-ALLOW_V4MAPPED_PACKETS
-:
-   'allow-v4mapped-packets'
 ;
 
 AUTHENTICATION
