@@ -323,6 +323,11 @@ ASCII_TEXT
    'ascii-text'
 ;
 
+ASDOT_NOTATION
+:
+  'asdot-notation'
+;
+
 ALLOW_V4MAPPED_PACKETS
 :
    'allow-v4mapped-packets'
