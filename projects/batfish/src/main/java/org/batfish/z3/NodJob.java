@@ -7,6 +7,7 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.Status;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -80,16 +81,12 @@ public final class NodJob extends AbstractNodJob {
     }
     // synchronize to avoid z3 concurrency bugs
     synchronized (this.getClass()) {
-      String nodFilename =
-          String.format(
-              "/tmp/nodProgram-%d-%d.smt2",
-              System.currentTimeMillis(), Thread.currentThread().getId());
-      try (FileWriter writer = new FileWriter(nodFilename)) {
-        try {
-          writer.write(program.toSmt2String());
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+      Path nodPath =
+          _settings.getActiveTestrigSettings().getBasePath().resolve(
+              String.format("nodProgram-%d-%d.smt2",
+                  System.currentTimeMillis(), Thread.currentThread().getId()));
+      try (FileWriter writer = new FileWriter(nodPath.toFile())) {
+        writer.write(program.toSmt2String());
       } catch (IOException e) {
         e.printStackTrace();
       }
