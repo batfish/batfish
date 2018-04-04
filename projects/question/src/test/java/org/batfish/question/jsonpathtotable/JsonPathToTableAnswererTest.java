@@ -3,7 +3,6 @@ package org.batfish.question.jsonpathtotable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
@@ -11,10 +10,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.DisplayHints.Composition;
-import org.batfish.datamodel.questions.DisplayHints.Extraction;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 import org.junit.Test;
 
 public class JsonPathToTableAnswererTest {
@@ -25,22 +23,17 @@ public class JsonPathToTableAnswererTest {
     String pathQuery = "$.*";
 
     // build an extraction to recover *Val
-    Extraction extraction = new Extraction();
-    extraction.setSchema("String");
-    Map<String, JsonNode> map = new HashMap<>();
-    map.put("use", new TextNode("suffixofsuffix"));
-    map.put("filter", new TextNode("$"));
-    extraction.setMethod(map);
-    Map<String, Extraction> extractions = new HashMap<>();
+    JsonPathToTableExtraction extraction =
+        new JsonPathToTableExtraction(new Schema("String"), Method.SUFFIXOFSUFFIX, "$", null);
+    Map<String, JsonPathToTableExtraction> extractions = new HashMap<>();
     extractions.put("val", extraction);
 
     // build a Node composition that use "val" as name
-    Composition composition = new Composition();
-    composition.setSchema("Node");
     Map<String, String> dict = new HashMap<>();
     dict.put("name", "val");
-    composition.setDictionary(dict);
-    Map<String, Composition> compositions = new HashMap<>();
+    JsonPathToTableComposition composition =
+        new JsonPathToTableComposition(new Schema("Node"), dict);
+    Map<String, JsonPathToTableComposition> compositions = new HashMap<>();
     compositions.put("node", composition);
 
     // exclude excludeVal
@@ -52,8 +45,7 @@ public class JsonPathToTableAnswererTest {
                     .createObjectNode()
                     .set("val", new TextNode("excludeVal")));
 
-    DisplayHints dhints = new DisplayHints(compositions, extractions, null);
-    JsonPathToTableQuery query = new JsonPathToTableQuery(pathQuery, dhints);
+    JsonPathToTableQuery query = new JsonPathToTableQuery(pathQuery, extractions, compositions);
     JsonPathToTableQuestion question = new JsonPathToTableQuestion(null, query, null);
     question.setExclusions(Collections.singletonList(exclusion));
 

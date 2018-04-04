@@ -2,8 +2,20 @@ package org.batfish.question.jsonpathtotable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.TableMetadata;
 
 public class JsonPathToTableQuestion extends Question {
 
@@ -25,6 +37,36 @@ public class JsonPathToTableQuestion extends Question {
     _innerQuestion = innerQuestion;
     _pathQuery = pathQuery;
     _debug = debug != null && debug.booleanValue();
+
+    // names in text description should correspond to those of entities or extraction vars
+    if (_displayHints != null && _displayHints.getTextDesc() != null) {
+      Set<String> namesInTextDesc = new HashSet<>();
+      Matcher matcher = Pattern.compile("\\$\\{([^\\}]+)\\}").matcher(_displayHints.getTextDesc());
+      while (matcher.find()) {
+        namesInTextDesc.add(matcher.group(1));
+      }
+      SetView<String> missingVars =
+          Sets.difference(
+              namesInTextDesc,
+              Sets.union(
+                  _pathQuery.getCompositions().keySet(), pathQuery.getExtractions().keySet()));
+      if (!missingVars.isEmpty()) {
+        throw new BatfishException(
+            "textDesc has names that are neither entities nor extractions: " + missingVars);
+      }
+    }
+  }
+
+  public TableMetadata computeTableMetadata() {
+    Map<String, Schema> schemas = new HashMap<>();
+    for (Entry<String, JsonPathToTableExtraction> entry : _pathQuery.getExtractions().entrySet()) {
+      schemas.put(entry.getKey(), entry.getValue().getSchemaAsObject());
+    }
+    for (Entry<String, JsonPathToTableComposition> entry :
+        _pathQuery.getCompositions().entrySet()) {
+      schemas.put(entry.getKey(), entry.getValue().getSchemaAsObject());
+    }
+    return new TableMetadata(schemas, null, null, _displayHints);
   }
 
   @Override

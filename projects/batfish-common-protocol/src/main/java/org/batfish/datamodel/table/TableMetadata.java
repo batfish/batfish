@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.DisplayHints;
 
 public class TableMetadata {
 
@@ -17,7 +18,7 @@ public class TableMetadata {
 
   private static final String PROP_PRIMARY_VALUE = "primaryValue";
 
-  private static final String PROP_TEXT_DESC = "textDesc";
+  private static final String PROP_DISPLAY_HINTS = "displayHints";
 
   @Nonnull private Map<String, Schema> _columnSchemas;
 
@@ -25,7 +26,7 @@ public class TableMetadata {
 
   @Nullable private List<String> _primaryValue;
 
-  @Nullable private String _textDesc;
+  @Nullable private DisplayHints _displayHints;
 
   public TableMetadata() {
     this(null, null, null, null);
@@ -36,11 +37,11 @@ public class TableMetadata {
       @Nullable @JsonProperty(PROP_COLUMN_SCHEMAS) Map<String, Schema> columnSchemas,
       @Nullable @JsonProperty(PROP_PRIMARY_KEY) List<String> primaryKey,
       @Nullable @JsonProperty(PROP_PRIMARY_VALUE) List<String> primaryValue,
-      @Nullable @JsonProperty(PROP_TEXT_DESC) String textDesc) {
+      @Nullable @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints) {
     _columnSchemas = columnSchemas == null ? new HashMap<>() : columnSchemas;
     _primaryKey = primaryKey;
     _primaryValue = primaryValue;
-    _textDesc = textDesc;
+    _displayHints = displayHints;
   }
 
   @JsonProperty(PROP_COLUMN_SCHEMAS)
@@ -58,8 +59,8 @@ public class TableMetadata {
     return _primaryValue;
   }
 
-  @JsonProperty(PROP_TEXT_DESC)
-  public String getTextDesc() {
-    return _textDesc;
+  @JsonProperty(PROP_DISPLAY_HINTS)
+  public DisplayHints getTextDesc() {
+    return _displayHints;
   }
 }

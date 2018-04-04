@@ -4,6 +4,9 @@
     "metadata" : {
       "columnSchemas" : {
         "violatorName" : "String"
+      },
+      "displayHints" : {
+        "textDesc" : "${violatorName} is a violator"
       }
     },
     "excludedRows" : [

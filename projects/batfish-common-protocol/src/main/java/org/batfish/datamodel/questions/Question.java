@@ -264,6 +264,8 @@ public abstract class Question implements IQuestion {
 
   private boolean _differential;
 
+  protected DisplayHints _displayHints;
+
   private List<Exclusion> _exclusions;
 
   private InstanceData _instance;
@@ -289,6 +291,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public boolean getDifferential() {
     return _differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_DISPLAY_HINTS)
+  public DisplayHints getDisplayHints() {
+    return _displayHints;
   }
 
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)
@@ -455,6 +462,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public void setDifferential(boolean differential) {
     _differential = differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_DISPLAY_HINTS)
+  public void setDisplayHints(DisplayHints displayHints) {
+    _displayHints = displayHints;
   }
 
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)

@@ -3,59 +3,77 @@ package org.batfish.question.jsonpathtotable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.annotation.Nonnull;
+import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.DisplayHints.Composition;
-import org.batfish.datamodel.questions.DisplayHints.Extraction;
-import org.batfish.datamodel.table.TableMetadata;
 
 public class JsonPathToTableQuery {
 
-  private static final String PROP_DISPLAY_HINTS = "displayHints";
+  private static final String PROP_COMPOSITIONS = "compositions";
+
+  private static final String PROP_EXTRACTIONS = "extractions";
 
   private static final String PROP_PATH = "path";
 
-  private DisplayHints _displayHints;
+  private Map<String, JsonPathToTableComposition> _compositions;
+
+  private Map<String, JsonPathToTableExtraction> _extractions;
 
   private String _path;
 
   @JsonCreator
   public JsonPathToTableQuery(
-      @Nonnull @JsonProperty(PROP_PATH) String path,
-      @Nonnull @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints) {
+      @JsonProperty(PROP_PATH) String path,
+      @JsonProperty(PROP_EXTRACTIONS) Map<String, JsonPathToTableExtraction> extractions,
+      @JsonProperty(PROP_COMPOSITIONS) Map<String, JsonPathToTableComposition> compositions) {
+
     _path = path;
-    _displayHints = displayHints;
-    if (displayHints == null
-        || (displayHints.getCompositions().size() == 0
-            && displayHints.getExtractions().size() == 0)) {
-      throw new IllegalArgumentException("No compositions or extractions specified");
+    _extractions = extractions == null ? new HashMap<>() : extractions;
+    _compositions = compositions == null ? new HashMap<>() : compositions;
+
+    // now sanity check what we have
+    if (_path == null) {
+      throw new IllegalArgumentException("Path cannot be null in JsonPathToTableQuery");
+    }
+    if (_extractions.size() == 0 && _compositions.size() == 0) {
+      throw new IllegalArgumentException("No compositions or extractions in JsonPathToTableQuery");
+    }
+
+    // all vars mentioned in compositions should have extractions
+    Set<String> varsInCompositions = new HashSet<>();
+    for (Entry<String, JsonPathToTableComposition> entry : _compositions.entrySet()) {
+      varsInCompositions.addAll(entry.getValue().getVars());
+    }
+    Set<String> extractionVars = _extractions.keySet();
+    SetView<String> missingExtractionVars = Sets.difference(varsInCompositions, extractionVars);
+    if (!missingExtractionVars.isEmpty()) {
+      throw new IllegalArgumentException(
+          "compositions refer to variables missing from extractions hints: "
+              + missingExtractionVars);
+    }
+
+    // the names of compositions and extraction vars should have no overlap
+    Set<String> commonNames = Sets.intersection(extractionVars, _compositions.keySet());
+    if (!commonNames.isEmpty()) {
+      throw new BatfishException(
+          "compositions and extraction vars should not have common names: " + commonNames);
     }
   }
 
-  public TableMetadata computeTableMetadata() {
-    Map<String, Schema> schemas = new HashMap<>();
-    if (_displayHints.getExtractions() != null) {
-      for (Entry<String, Extraction> entry : _displayHints.getExtractions().entrySet()) {
-        schemas.put(entry.getKey(), entry.getValue().getSchemaAsObject());
-      }
-    }
-    if (_displayHints.getCompositions() != null) {
-      for (Entry<String, Composition> entry : _displayHints.getCompositions().entrySet()) {
-        schemas.put(entry.getKey(), entry.getValue().getSchemaAsObject());
-      }
-    }
-    return new TableMetadata(schemas, null, null, _displayHints.getTextDesc());
+  @JsonProperty(PROP_COMPOSITIONS)
+  public Map<String, JsonPathToTableComposition> getCompositions() {
+    return _compositions;
   }
 
-  @JsonProperty(PROP_DISPLAY_HINTS)
-  public DisplayHints getDisplayHints() {
-    return _displayHints;
+  @JsonProperty(PROP_EXTRACTIONS)
+  public Map<String, JsonPathToTableExtraction> getExtractions() {
+    return _extractions;
   }
 
   @JsonProperty(PROP_PATH)

@@ -11,8 +11,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.answers.Schema;
 
@@ -163,19 +161,6 @@ public class DisplayHints {
     if (!commonNames.isEmpty()) {
       throw new BatfishException(
           "entities and extraction vars should not have common names: " + commonNames);
-    }
-
-    // names in text description should correspond to those of entities or extraction vars
-    Set<String> namesInTextDesc = new HashSet<>();
-    Matcher matcher = Pattern.compile("\\$\\{([^\\}]+)\\}").matcher(textDesc);
-    while (matcher.find()) {
-      namesInTextDesc.add(matcher.group(1));
-    }
-    SetView<String> missingEntities =
-        Sets.difference(namesInTextDesc, Sets.union(compositions.keySet(), extractions.keySet()));
-    if (!missingEntities.isEmpty()) {
-      throw new BatfishException(
-          "textDesc has names that are neither entities nor extractions: " + missingEntities);
     }
 
     _compositions = compositions;

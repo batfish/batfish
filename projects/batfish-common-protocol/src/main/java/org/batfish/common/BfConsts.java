@@ -103,6 +103,7 @@ public class BfConsts {
   public static final String PROP_COORDINATOR_PROPERTIES_PATH = "batfishCoordinatorPropertiesPath";
   public static final String PROP_DESCRIPTION = "description";
   public static final String PROP_DIFFERENTIAL = "differential";
+  public static final String PROP_DISPLAY_HINTS = "displayHints";
   public static final String PROP_EXCLUSIONS = "exclusions";
   public static final String PROP_INNER_QUESTION = "innerQuestion";
   public static final String PROP_INSTANCE = "instance";
