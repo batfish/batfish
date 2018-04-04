@@ -80,11 +80,15 @@ public final class NodJob extends AbstractNodJob {
       return;
     }
     // synchronize to avoid z3 concurrency bugs
-    synchronized (this.getClass()) {
+    synchronized (NodJob.class) {
       Path nodPath =
-          _settings.getActiveTestrigSettings().getBasePath().resolve(
-              String.format("nodProgram-%d-%d.smt2",
-                  System.currentTimeMillis(), Thread.currentThread().getId()));
+          _settings
+              .getActiveTestrigSettings()
+              .getBasePath()
+              .resolve(
+                  String.format(
+                      "nodProgram-%d-%d.smt2",
+                      System.currentTimeMillis(), Thread.currentThread().getId()));
       try (FileWriter writer = new FileWriter(nodPath.toFile())) {
         writer.write(program.toSmt2String());
       } catch (IOException e) {
