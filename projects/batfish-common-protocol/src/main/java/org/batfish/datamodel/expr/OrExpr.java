@@ -22,7 +22,7 @@ public class OrExpr extends BooleanExpr {
     // Start hash with something to differentiate from another expr with the same set of exprs
     int hash = "Or".hashCode();
     int prime = 31;
-    for(BooleanExpr b : _disjuncts) {
+    for (BooleanExpr b : _disjuncts) {
       hash *= prime;
       hash += b.hashCode();
     }
@@ -34,10 +34,11 @@ public class OrExpr extends BooleanExpr {
     StringBuilder sb = new StringBuilder();
     sb.append("(");
     String separator = " Or ";
-    _disjuncts.forEach(d -> {
-      sb.append(d.toString());
-      sb.append(separator);
-    });
+    _disjuncts.forEach(
+        d -> {
+          sb.append(d.toString());
+          sb.append(separator);
+        });
     sb.setLength(sb.length() - separator.length());
     sb.append(")");
     return sb.toString();

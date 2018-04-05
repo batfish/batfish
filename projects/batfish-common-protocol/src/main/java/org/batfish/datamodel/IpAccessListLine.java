@@ -183,7 +183,6 @@ public final class IpAccessListLine extends HeaderSpace {
     return _action;
   }
 
-
   @JsonPropertyDescription("The condition(s) for this line to match.")
   public BooleanExpr getMatchCondition() {
     return _matchCondition;

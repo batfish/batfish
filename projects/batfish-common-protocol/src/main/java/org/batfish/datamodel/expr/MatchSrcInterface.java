@@ -27,10 +27,11 @@ public class MatchSrcInterface extends BooleanExpr {
     StringBuilder sb = new StringBuilder();
     sb.append("MatchSrcInterface (");
     String separator = ",";
-    _interfaces.forEach(i -> {
-      sb.append(i);
-      sb.append(separator);
-    });
+    _interfaces.forEach(
+        i -> {
+          sb.append(i);
+          sb.append(separator);
+        });
     sb.setLength(sb.length() - separator.length());
     sb.append(")");
     return sb.toString();

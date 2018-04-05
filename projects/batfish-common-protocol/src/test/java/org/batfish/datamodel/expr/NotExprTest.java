@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
-import java.util.Set;
 import org.batfish.datamodel.Flow;
 import org.junit.Test;
 

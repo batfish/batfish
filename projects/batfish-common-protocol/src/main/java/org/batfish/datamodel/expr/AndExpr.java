@@ -22,7 +22,7 @@ public class AndExpr extends BooleanExpr {
     // Start hash with something to differentiate from another expr with the same set of exprs
     int hash = "And".hashCode();
     int prime = 31;
-    for(BooleanExpr b : _conjuncts) {
+    for (BooleanExpr b : _conjuncts) {
       hash *= prime;
       hash += b.hashCode();
     }
@@ -34,11 +34,12 @@ public class AndExpr extends BooleanExpr {
     StringBuilder sb = new StringBuilder();
     sb.append("(");
     String separator = " And ";
-    _conjuncts.forEach(c -> {
-      sb.append(c.toString());
-      sb.append(separator);
-    });
-    //sb.setLength(sb.length() - separator.length());
+    _conjuncts.forEach(
+        c -> {
+          sb.append(c.toString());
+          sb.append(separator);
+        });
+    // sb.setLength(sb.length() - separator.length());
     sb.append(")");
     return sb.toString();
   }

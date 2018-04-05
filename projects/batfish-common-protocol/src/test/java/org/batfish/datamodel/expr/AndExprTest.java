@@ -42,7 +42,7 @@ public class AndExprTest {
     MockBooleanExpr eTrue = new MockBooleanExpr(true);
     MockBooleanExpr eFalse = new MockBooleanExpr(false);
 
-    // Setup 
+    // Setup
     Set<BooleanExpr> setTrueTrue = new HashSet<>();
     setTrueTrue.add(eTrue);
     setTrueTrue.add(eTrue);
