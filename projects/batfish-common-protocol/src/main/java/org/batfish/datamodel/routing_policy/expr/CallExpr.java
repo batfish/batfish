@@ -108,6 +108,6 @@ public class CallExpr extends BooleanExpr {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _calledPolicyName + ">";
+    return toStringHelper().add(PROP_CALLED_POLICY_NAME, _calledPolicyName).toString();
   }
 }

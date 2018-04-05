@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -9,6 +10,10 @@ public class MatchPrefixSet extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static final String PROP_PREFIX = "prefix";
+
+  private static final String PROP_PREFIX_SET = "prefixSet";
 
   private PrefixExpr _prefix;
 
@@ -60,10 +65,12 @@ public class MatchPrefixSet extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_PREFIX)
   public PrefixExpr getPrefix() {
     return _prefix;
   }
 
+  @JsonProperty(PROP_PREFIX_SET)
   public PrefixSetExpr getPrefixSet() {
     return _prefixSet;
   }
@@ -77,11 +84,18 @@ public class MatchPrefixSet extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_PREFIX)
   public void setPrefix(PrefixExpr prefix) {
     _prefix = prefix;
   }
 
+  @JsonProperty(PROP_PREFIX_SET)
   public void setPrefixSet(PrefixSetExpr prefixSet) {
     _prefixSet = prefixSet;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper().add(PROP_PREFIX, _prefix).add(PROP_PREFIX_SET, _prefixSet).toString();
   }
 }
