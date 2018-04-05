@@ -184,7 +184,7 @@ public class NodJobChunkingTest {
             new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),
             new Pair<>(_srcNode2.getHostname(), _srcVrf2.getName()));
     return new NodJob(
-        new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false, false);
+        new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
   }
 
   @Test

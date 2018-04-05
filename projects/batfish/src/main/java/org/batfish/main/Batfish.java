@@ -4100,8 +4100,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       query,
                       nodeVrfs,
                       tag,
-                      reachabilitySettings.getSpecialize(),
-                      reachabilitySettings.getSaveNodProgram());
+                      reachabilitySettings.getSpecialize());
                 })
             .collect(Collectors.toList());
 

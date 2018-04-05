@@ -30,21 +30,17 @@ public final class NodJob extends AbstractNodJob {
 
   private final QuerySynthesizer _querySynthesizer;
 
-  private final boolean _saveNodProgram;
-
   public NodJob(
       Settings settings,
       Synthesizer dataPlaneSynthesizer,
       QuerySynthesizer querySynthesizer,
       SortedSet<Pair<String, String>> nodeVrfSet,
       String tag,
-      boolean optimize,
-      boolean saveNodProgram) {
+      boolean optimize) {
     super(settings, nodeVrfSet, tag);
     _dataPlaneSynthesizer = dataPlaneSynthesizer;
     _optimize = optimize;
     _querySynthesizer = querySynthesizer;
-    _saveNodProgram = saveNodProgram;
   }
 
   protected Status computeNodSat(long startTime, Context ctx) {

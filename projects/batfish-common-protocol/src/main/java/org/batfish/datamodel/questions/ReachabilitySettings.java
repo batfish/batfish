@@ -34,8 +34,6 @@ public class ReachabilitySettings {
 
     private NodesSpecifier _transitNodes;
 
-    private boolean _saveNodProgram;
-
     private boolean _specialize;
 
     private boolean _useCompression;
@@ -82,10 +80,6 @@ public class ReachabilitySettings {
 
     public Boolean getSrcNatted() {
       return _srcNatted;
-    }
-
-    public Boolean getSaveNodProgram() {
-      return _saveNodProgram;
     }
 
     public NodesSpecifier getTransitNodes() {
@@ -141,11 +135,6 @@ public class ReachabilitySettings {
       return this;
     }
 
-    public Builder setSaveNodProgram(boolean saveNodProgram) {
-      _saveNodProgram = saveNodProgram;
-      return this;
-    }
-
     public Builder setSpecialize(boolean specialize) {
       _specialize = specialize;
       return this;
@@ -184,8 +173,6 @@ public class ReachabilitySettings {
 
   private final Boolean _srcNatted;
 
-  private boolean _saveNodProgram;
-
   private final boolean _specialize;
 
   private final NodesSpecifier _transitNodes;
@@ -201,7 +188,6 @@ public class ReachabilitySettings {
     _maxChunkSize = builder._maxChunkSize;
     _transitNodes = builder._transitNodes;
     _nonTransitNodes = builder._nonTransitNodes;
-    _saveNodProgram = builder._saveNodProgram;
     _specialize = builder._specialize;
     _useCompression = builder._useCompression;
     _actions = builder._actions;
@@ -266,7 +252,6 @@ public class ReachabilitySettings {
         && _nonTransitNodes.equals(other._nonTransitNodes)
         && Objects.equal(_srcNatted, other._srcNatted)
         && _transitNodes.equals(other._transitNodes)
-        && _saveNodProgram == other._saveNodProgram
         && _specialize == other._specialize
         && _useCompression == other._useCompression;
   }
@@ -293,10 +278,6 @@ public class ReachabilitySettings {
 
   public NodesSpecifier getNonTransitNodes() {
     return _nonTransitNodes;
-  }
-
-  public boolean getSaveNodProgram() {
-    return _saveNodProgram;
   }
 
   public Boolean getSrcNatted() {
