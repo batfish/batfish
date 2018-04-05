@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.Set;
 import org.antlr.v4.runtime.IntStream;
+import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 
 /**
@@ -54,9 +55,13 @@ public class BatfishLexerRecoveryStrategy {
 
   /**
    * Wrap current unmatchable char up to next char in provided separator chars in a {@link
-   * BatfishLexer.UNMATCHABLE_TOKEN} and emit it.
+   * BatfishLexer#UNMATCHABLE_TOKEN} and emit it.
    */
   public void recover() {
+    // Always recover in the default mode -- otherwise, the parser can get stuck in an infinite
+    // loop, e.g. if separator is not valid in the current mode.
+    _lexer._mode = Lexer.DEFAULT_MODE;
+
     int tokenStartMarker = _lexer._input.mark();
     try {
       _lexer._token = null;
