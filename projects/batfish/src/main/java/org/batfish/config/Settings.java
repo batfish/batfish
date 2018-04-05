@@ -417,6 +417,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARG_DATAPLANE_ENGINE_NAME = "dataplaneengine";
 
+  private static final String ARG_DEBUG_FLAGS = "debugflags";
+
   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
 
   private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
@@ -660,6 +662,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public boolean getDataPlane() {
     return _config.getBoolean(BfConsts.COMMAND_DUMP_DP);
+  }
+
+  public List<String> getDebugFlags() {
+    return getStringListOptionValue(ARG_DEBUG_FLAGS);
   }
 
   public String getDeltaEnvironmentName() {
@@ -996,6 +1002,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(BfConsts.ARG_DIFF_ACTIVE, false);
     setDefaultProperty(DIFFERENTIAL_QUESTION, false);
+    setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
@@ -1127,6 +1134,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addOption(ARG_COORDINATOR_POOL_PORT, "coordinator pool manager listening port", ARGNAME_PORT);
 
     addBooleanOption(ARG_COORDINATOR_REGISTER, "register service with coordinator on startup");
+
+    addListOption(ARG_DEBUG_FLAGS, "a list of flags to enable debugging code", "debug flags");
 
     addOption(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, "name of delta environment to use", "name");
 

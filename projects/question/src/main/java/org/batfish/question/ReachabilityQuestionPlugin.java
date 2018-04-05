@@ -120,8 +120,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
 
-    private static final boolean DEFAULT_SAVE_NOD_PROGRAM = false;
-
     private static final boolean DEFAULT_SPECIALIZE = false;
 
     private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
@@ -184,8 +182,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_REACHABILITY_TYPE = "type";
 
-    private static final String PROP_SAVE_NOD_PROGRAM = "saveNodProgram";
-
     private static final String PROP_SPECIALIZE = "specialize";
 
     private static final String PROP_SRC_IPS = "srcIps";
@@ -221,7 +217,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       setNonTransitNodes(DEFAULT_NON_TRANSIT_NODES);
       setNotIngressNodeRegex(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
-      setSaveNodProgram(DEFAULT_SAVE_NOD_PROGRAM);
       setSpecialize(DEFAULT_SPECIALIZE);
       setTransitNodes(DEFAULT_TRANSIT_NODES);
       setUseCompression(DEFAULT_USE_COMPRESSION);
@@ -420,11 +415,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_USE_COMPRESSION)
     public boolean getUseCompression() {
       return _reachabilitySettings.getUseCompression();
-    }
-
-    @JsonProperty(PROP_SAVE_NOD_PROGRAM)
-    public boolean getSaveNodProgram() {
-      return _reachabilitySettings.getSaveNodProgram();
     }
 
     @JsonProperty(PROP_SPECIALIZE)
@@ -773,11 +763,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_SPECIALIZE)
     public void setSpecialize(boolean specialize) {
       _reachabilitySettings.setSpecialize(specialize);
-    }
-
-    @JsonProperty(PROP_SAVE_NOD_PROGRAM)
-    public void setSaveNodProgram(boolean saveNodProgram) {
-      _reachabilitySettings.setSaveNodProgram(saveNodProgram);
     }
   }
 

@@ -69,16 +69,17 @@ public final class NodJob extends AbstractNodJob {
   @Override
   protected SmtInput computeSmtInput(long startTime, Context ctx) {
     NodProgram program = getNodProgram(ctx);
-    saveNodProgram(program);
+
+    List<String> debugFlags = _settings.getDebugFlags();
+    if (debugFlags != null && debugFlags.contains("saveNodProgram")) {
+      saveNodProgram(program);
+    }
     BoolExpr expr = computeSmtConstraintsViaNod(program, _querySynthesizer.getNegate());
     Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
     return new SmtInput(expr, variablesAsConsts);
   }
 
   private void saveNodProgram(NodProgram program) {
-    if (!_saveNodProgram) {
-      return;
-    }
     // synchronize to avoid z3 concurrency bugs
     synchronized (NodJob.class) {
       Path nodPath =
