@@ -183,8 +183,7 @@ public class NodJobChunkingTest {
         ImmutableSortedSet.of(
             new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),
             new Pair<>(_srcNode2.getHostname(), _srcVrf2.getName()));
-    return new NodJob(
-        new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
   }
 
   @Test

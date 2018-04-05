@@ -84,8 +84,7 @@ public class NodJobTest {
             .build();
     SortedSet<Pair<String, String>> ingressNodes =
         ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
-    return new NodJob(
-        new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
   }
 
   @Before
