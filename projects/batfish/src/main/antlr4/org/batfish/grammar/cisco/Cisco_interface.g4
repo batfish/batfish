@@ -246,7 +246,7 @@ if_ip_policy
 
 if_ip_proxy_arp
 :
-   NO? IP PROXY_ARP NEWLINE
+   (NO | DEFAULT)? IP PROXY_ARP NEWLINE
 ;
 
 if_ip_router_isis
@@ -257,6 +257,13 @@ if_ip_router_isis
 if_ip_router_ospf_area
 :
    IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
+;
+
+if_ip_sticky_arp
+:
+   (NO? IP STICKY_ARP NEWLINE)
+   |
+   (IP STICKY_ARP IGNORE NEWLINE)
 ;
 
 if_ip_verify
@@ -1147,6 +1154,7 @@ s_interface
       | if_ip_policy
       | if_ip_router_isis
       | if_ip_router_ospf_area
+      | if_ip_sticky_arp
       | if_ip_virtual_router
       | if_ip_vrf_forwarding
       | if_isis_circuit_type

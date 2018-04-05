@@ -20984,6 +20984,20 @@
             "        PIM:'pim'  <== mode:DEFAULT_MODE",
             "        SPARSE_MODE:'sparse-mode'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_proxy_arp",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        PROXY_ARP:'proxy-arp'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_proxy_arp",
+            "        DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        PROXY_ARP:'proxy-arp'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_proxy_arp",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        PROXY_ARP:'proxy-arp'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
@@ -21011,6 +21025,20 @@
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        SAP:'sap'  <== mode:DEFAULT_MODE",
             "        LISTEN:'listen'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_sticky_arp",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        STICKY_ARP:'sticky-arp'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_sticky_arp",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        STICKY_ARP:'sticky-arp'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_sticky_arp",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        STICKY_ARP:'sticky-arp'  <== mode:DEFAULT_MODE",
+            "        IGNORE:'ignore'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -50929,7 +50957,7 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                111
+                117
               ]
             },
             "mynatacl" : {
@@ -50946,7 +50974,7 @@
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                114
+                120
               ]
             },
             "ag1" : {
