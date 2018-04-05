@@ -14,12 +14,12 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,6 +42,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.JuniperStructureType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
@@ -184,12 +185,20 @@ public class FlatJuniperGrammarTest {
 
   @Test
   public void testEthernetSwitchingFilterReference() throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames("ethernet-switching-filter");
+    String hostname = "ethernet-switching-filter";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
         batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
 
-    /* filter should not be unused */
-    assertThat(unusedStructures, equalTo(ImmutableMap.of()));
+    /* esfilter should not be unused, whuile esfilter2 should be unused */
+    assertThat(unusedStructures, hasKey(hostname));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        unusedStructures.get(hostname);
+    assertThat(byType, hasKey(JuniperStructureType.FIREWALL_FILTER.getDescription()));
+    SortedMap<String, SortedSet<Integer>> byName =
+        byType.get(JuniperStructureType.FIREWALL_FILTER.getDescription());
+    assertThat(byName, hasKey("esfilter2"));
+    assertThat(byName, not(hasKey("esfilter")));
   }
 
   @Test
