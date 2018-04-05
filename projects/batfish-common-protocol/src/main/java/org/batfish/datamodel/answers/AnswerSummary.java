@@ -1,9 +1,8 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.base.Strings;
-import org.batfish.datamodel.questions.Assertion;
-import org.batfish.datamodel.table.TableAnswerElement;
 
+/** A general way to summarize what the answer contains, using three basic integers */
 public class AnswerSummary {
 
   private String _notes = "";
@@ -23,17 +22,11 @@ public class AnswerSummary {
     _numResults = numResults;
   }
 
-  public AnswerSummary(TableAnswerElement answer, Assertion assertion) {
-    this(null, 0, 0, answer.getRows().size());
-    if (assertion != null) {
-      if (assertion.evaluate(answer.getRows())) {
-        _numPassed = 1;
-      } else {
-        _numFailed = 1;
-      }
-    }
-  }
-
+  /**
+   * Combined the current summary with another summary, by summing up individual fields.
+   *
+   * @param other The other summary to be combined with.
+   */
   public void combine(AnswerSummary other) {
     if (other != null) {
       _notes =

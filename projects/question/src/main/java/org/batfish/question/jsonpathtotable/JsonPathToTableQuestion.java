@@ -60,11 +60,11 @@ public class JsonPathToTableQuestion extends Question {
   public TableMetadata computeTableMetadata() {
     Map<String, Schema> schemas = new HashMap<>();
     for (Entry<String, JsonPathToTableExtraction> entry : _pathQuery.getExtractions().entrySet()) {
-      schemas.put(entry.getKey(), entry.getValue().getSchemaAsObject());
+      schemas.put(entry.getKey(), entry.getValue().getSchema());
     }
     for (Entry<String, JsonPathToTableComposition> entry :
         _pathQuery.getCompositions().entrySet()) {
-      schemas.put(entry.getKey(), entry.getValue().getSchemaAsObject());
+      schemas.put(entry.getKey(), entry.getValue().getSchema());
     }
     return new TableMetadata(schemas, null, null, _displayHints);
   }

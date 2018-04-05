@@ -8,6 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.answers.Schema;
 
+/**
+ * Describes how to compose a column in {@link JsonPathToTableQuery} using values extracted per
+ * {@link JsonPathToTableExtraction}.
+ */
 public class JsonPathToTableComposition {
 
   private static final String PROP_SCHEMA = "schema";
@@ -40,15 +44,15 @@ public class JsonPathToTableComposition {
   }
 
   @JsonProperty(PROP_SCHEMA)
-  public String getSchema() {
-    return _schema.toString();
-  }
-
-  @JsonIgnore
-  public Schema getSchemaAsObject() {
+  public Schema getSchema() {
     return _schema;
   }
 
+  /**
+   * Returns all variable names that are used in the composition.
+   *
+   * @return A {@link Set} of variable name strings.
+   */
   @JsonIgnore
   public Set<String> getVars() {
     Set<String> retSet = new HashSet<>();

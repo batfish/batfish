@@ -4,15 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.io.IOException;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.table.Rows;
 
 /**
- * Represents an assertion that can be added to questions. It is evaluated by the
- * corresponding @{link Answerer}.
+ * Represents an assertion that can be added to questions. It is evaluated by the corresponding
+ * {@link org.batfish.common.Answerer}.
  */
 public class Assertion {
 
@@ -67,33 +65,6 @@ public class Assertion {
     Assertion other = (Assertion) o;
     return Objects.equals(_assertionType, other.getType())
         && Objects.equals(_expect, other.getExpect());
-  }
-
-  /**
-   * Evaluates the assertion over the given @{link Rows} data
-   *
-   * @param rows The data over which the assertion should be evaluated
-   * @return The results of the evaluation
-   */
-  public boolean evaluate(Rows rows) {
-    switch (getType()) {
-      case countequals:
-        return rows.size() == _expect.asInt();
-      case countlessthan:
-        return rows.size() < _expect.asInt();
-      case countmorethan:
-        return rows.size() > _expect.asInt();
-      case equals:
-        Rows expectedEntries;
-        try {
-          expectedEntries = BatfishObjectMapper.mapper().readValue(_expect.toString(), Rows.class);
-        } catch (IOException e) {
-          throw new BatfishException("Could not recover Set<ObjectNode> from expect", e);
-        }
-        return rows.equals(expectedEntries);
-      default:
-        throw new BatfishException("Unhandled assertion type: " + getType());
-    }
   }
 
   @JsonProperty(PROP_TYPE)

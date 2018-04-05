@@ -3,13 +3,8 @@ package org.batfish.datamodel.answers;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.databind.node.IntNode;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.questions.Assertion;
-import org.batfish.datamodel.questions.Assertion.AssertionType;
-import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableMetadata;
 import org.junit.Test;
 
 /** Tests for {@link AnswerSummary} */
@@ -24,21 +19,6 @@ public class AnswerSummaryTest {
     assertThat(summary.getNumFailed(), equalTo(5));
     assertThat(summary.getNumPassed(), equalTo(7));
     assertThat(summary.getNumResults(), equalTo(9));
-  }
-
-  @Test
-  public void constructFromTable() {
-    // generate an answer with two rows
-    TableAnswerElement answer = new TableAnswerElement(new TableMetadata());
-    answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
-    answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
-
-    Assertion assertion = new Assertion(AssertionType.countequals, new IntNode(1)); // wrong count
-    AnswerSummary summary = new AnswerSummary(answer, assertion);
-
-    assertThat(summary.getNumResults(), equalTo(2));
-    assertThat(summary.getNumFailed(), equalTo(1));
-    assertThat(summary.getNumPassed(), equalTo(0));
   }
 
   @Test

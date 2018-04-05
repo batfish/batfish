@@ -18,7 +18,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.JsonPathResult;
 import org.batfish.common.util.JsonPathUtils;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
@@ -34,7 +33,7 @@ public class JsonPathToTableAnswerer extends Answerer {
    *
    * <ul>
    *   <li>First, compute the inner answer
-   *   <li>Then, run computeAnswer, which produces a set of result minus exclusions
+   *   <li>Then, run {@code computeAnswerTable}, which produces a set of result minus exclusions
    * </ul>
    */
   @Override
@@ -65,6 +64,14 @@ public class JsonPathToTableAnswerer extends Answerer {
     return answer;
   }
 
+  /**
+   * Computes the answer table from the inner answer and the question, excludes rows covered by
+   * exclusions, and computes the answer summary
+   *
+   * @param innerAnswer The string that represents the JSON value of the inner answer
+   * @param question The JsonPathToTableQuestion object
+   * @return The resulting answer table
+   */
   public static JsonPathToTableAnswerElement computeAnswerTable(
       String innerAnswer, JsonPathToTableQuestion question) {
 
@@ -89,7 +96,7 @@ public class JsonPathToTableAnswerer extends Answerer {
     }
 
     // 3. hydrate the summary
-    answer.setSummary(new AnswerSummary(answer, question.getAssertion()));
+    answer.setSummary(answer.computeSummary(question.getAssertion()));
 
     return answer;
   }
@@ -133,7 +140,7 @@ public class JsonPathToTableAnswerer extends Answerer {
     for (Entry<String, JsonPathToTableComposition> cEntry : compositions.entrySet()) {
       String varName = cEntry.getKey();
       JsonPathToTableComposition composition = cEntry.getValue();
-      if (composition.getSchemaAsObject().isList()) {
+      if (composition.getSchema().isList()) {
         doCompositionList(varName, composition, extractions, answerValues);
       } else {
         doCompositionSingleton(varName, composition, answerValues);
@@ -157,7 +164,7 @@ public class JsonPathToTableAnswerer extends Answerer {
                 "varName '%s' for '%s' of '%s' is not in extractions",
                 varName, composition.getDictionary().get(varName), compositionName));
       }
-      if (extractions.get(varName).getSchemaAsObject().isList()) {
+      if (extractions.get(varName).getSchema().isList()) {
         if (answerValues.get(varName) == null) {
           throw new BatfishException(
               String.format(
@@ -183,13 +190,13 @@ public class JsonPathToTableAnswerer extends Answerer {
         String propertyName = pEntry.getKey();
         String varName = pEntry.getValue();
         JsonNode varNode = answerValues.get(varName);
-        if (extractions.get(varName).getSchemaAsObject().isList()) {
+        if (extractions.get(varName).getSchema().isList()) {
           object.set(propertyName, ((ArrayNode) varNode).get(index));
         } else {
           object.set(propertyName, varNode);
         }
       }
-      confirmValueType(object, composition.getSchemaAsObject().getBaseType());
+      confirmValueType(object, composition.getSchema().getBaseType());
       arrayNode.add(object);
     }
     answerValues.set(compositionName, arrayNode);
@@ -210,7 +217,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       }
       object.set(propertyName, answerValues.get(varName));
     }
-    confirmValueType(object, composition.getSchemaAsObject().getBaseType());
+    confirmValueType(object, composition.getSchema().getBaseType());
     answerValues.set(compositionName, object);
   }
 
@@ -219,7 +226,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       JsonPathToTableExtraction extraction,
       JsonPathResult jpResult,
       ObjectNode answerValues) {
-    if (extraction.getSchemaAsObject().isList()) {
+    if (extraction.getSchema().isList()) {
       throw new BatfishException("Prefix-based hints are incompatible with list types");
     }
     answerValues.set(varName, new TextNode(jpResult.getPrefixPart(extraction.getIndex())));
@@ -234,7 +241,7 @@ public class JsonPathToTableAnswerer extends Answerer {
     switch (extraction.getMethod()) {
       case FUNCOFSUFFIX:
         {
-          if (!extraction.getSchemaAsObject().isIntOrIntList()) {
+          if (!extraction.getSchema().isIntOrIntList()) {
             throw new BatfishException(
                 "schema must be INT(LIST) with funcofsuffix-based extraction hint");
           }
@@ -268,7 +275,7 @@ public class JsonPathToTableAnswerer extends Answerer {
                 (extraction.getMethod() == Method.PREFIXOFSUFFIX)
                     ? new TextNode(result.getPrefixPart(extraction.getIndex()))
                     : result.getSuffix();
-            confirmValueType(value, extraction.getSchemaAsObject().getBaseType());
+            confirmValueType(value, extraction.getSchema().getBaseType());
             extractedList.add(value);
           }
         }
@@ -285,7 +292,7 @@ public class JsonPathToTableAnswerer extends Answerer {
               + jpResult.getSuffix());
     }
 
-    if (extraction.getSchemaAsObject().isList()) {
+    if (extraction.getSchema().isList()) {
       answerValues.set(varName, BatfishObjectMapper.mapper().valueToTree(extractedList));
     } else {
       if (extractedList.size() > 1) {

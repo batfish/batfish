@@ -3,12 +3,15 @@ package org.batfish.datamodel.table;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.questions.Assertion;
 
 /** A base class for tabular answers */
 public class TableAnswerElement extends AnswerElement {
@@ -25,14 +28,11 @@ public class TableAnswerElement extends AnswerElement {
 
   TableMetadata _tableMetadata;
 
-  transient Map<String, ExcludedRows> _exclusionMap;
-
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
     _tableMetadata = tableMetadata;
     _rows = new Rows();
     _excludedRows = new LinkedList<>();
-    _exclusionMap = new HashMap<>();
   }
 
   /**
@@ -50,14 +50,59 @@ public class TableAnswerElement extends AnswerElement {
    * @param row The row to add
    */
   public void addExcludedRow(ObjectNode row, String exclusionName) {
-    ExcludedRows rows = null;
-    if (!_exclusionMap.containsKey(exclusionName)) {
-      rows = new ExcludedRows(exclusionName, new Rows());
-      _exclusionMap.put(exclusionName, rows);
-      _excludedRows.add(rows);
+    for (ExcludedRows exRows : _excludedRows) {
+      if (exRows.getExclusionName().equals(exclusionName)) {
+        exRows.addRow(row);
+        return;
+      }
     }
-    rows = _exclusionMap.get(exclusionName);
+    // no matching exclusionName found; create a new one
+    ExcludedRows rows = new ExcludedRows(exclusionName, new Rows());
     rows.addRow(row);
+    _excludedRows.add(rows);
+  }
+
+  public AnswerSummary computeSummary(Assertion assertion) {
+    int numPassed = 0;
+    int numFailed = 0;
+    if (assertion != null) {
+      if (evaluateAssertion(assertion)) {
+        numPassed = 1;
+      } else {
+        numFailed = 1;
+      }
+    }
+    return new AnswerSummary(null, numFailed, numPassed, _rows.size());
+  }
+
+  /**
+   * Evaluates the assertion over the rows
+   *
+   * @return The results of the evaluation
+   */
+  public boolean evaluateAssertion(Assertion assertion) {
+    if (assertion == null) {
+      throw new IllegalArgumentException("Provided assertion object cannot be null");
+    }
+    switch (assertion.getType()) {
+      case countequals:
+        return _rows.size() == assertion.getExpect().asInt();
+      case countlessthan:
+        return _rows.size() < assertion.getExpect().asInt();
+      case countmorethan:
+        return _rows.size() > assertion.getExpect().asInt();
+      case equals:
+        Rows expectedEntries;
+        try {
+          expectedEntries =
+              BatfishObjectMapper.mapper().readValue(assertion.getExpect().toString(), Rows.class);
+        } catch (IOException e) {
+          throw new BatfishException("Could not recover Set<ObjectNode> from expect", e);
+        }
+        return _rows.equals(expectedEntries);
+      default:
+        throw new BatfishException("Unhandled assertion type: " + assertion.getType());
+    }
   }
 
   @JsonProperty(PROP_EXCLUDED_ROWS)

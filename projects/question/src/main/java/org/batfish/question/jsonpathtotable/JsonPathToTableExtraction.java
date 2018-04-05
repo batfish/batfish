@@ -1,12 +1,12 @@
 package org.batfish.question.jsonpathtotable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jayway.jsonpath.internal.path.PathCompiler;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.answers.Schema;
 
+/** Describes how to extract a column in {@link JsonPathToTableQuery}. */
 public class JsonPathToTableExtraction {
 
   public enum Method {
@@ -115,12 +115,7 @@ public class JsonPathToTableExtraction {
   }
 
   @JsonProperty(PROP_SCHEMA)
-  public String getSchema() {
-    return _schema.toString();
-  }
-
-  @JsonIgnore
-  public Schema getSchemaAsObject() {
+  public Schema getSchema() {
     return _schema;
   }
 }

@@ -10,6 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
+/**
+ * Describes rows to be excluded in a {@link org.batfish.datamodel.table.TableAnswerElement}. An
+ * {@link Exclusion} may "cover" multiple rows and cause them to be excluded.
+ */
 public class Exclusion {
 
   private static final String PROP_NAME = "name";
@@ -29,10 +33,10 @@ public class Exclusion {
   }
 
   /**
-   * Checks if @{link row} is covered by one of the exlusions
+   * Checks if {@code row} is covered by one of the exlusions
    *
    * @param row The object whose coverage is to be checked
-   * @return The exclusion that covers @{link row}. null if no such exclusion exists
+   * @return The exclusion that covers {@code row}. null if no such exclusion exists
    */
   public static Exclusion covered(ObjectNode row, List<Exclusion> exclusions) {
     if (exclusions == null) {

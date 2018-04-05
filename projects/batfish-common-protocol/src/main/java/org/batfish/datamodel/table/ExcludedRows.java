@@ -4,7 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
+/**
+ * Represents rows that have been excludes from {@link TableAnswerElement} because they were covered
+ * by an exclusion.
+ */
 public class ExcludedRows {
 
   private static final String PROP_EXCLUSION_NAME = "exclusionName";
@@ -18,9 +23,9 @@ public class ExcludedRows {
   @JsonCreator
   public ExcludedRows(
       @Nonnull @JsonProperty(PROP_EXCLUSION_NAME) String exclusionName,
-      @Nonnull @JsonProperty(PROP_ROWS) Rows rows) {
+      @Nullable @JsonProperty(PROP_ROWS) Rows rows) {
     _exclusionName = exclusionName;
-    _rows = rows;
+    _rows = rows == null ? new Rows() : rows;
   }
 
   public void addRow(ObjectNode row) {
