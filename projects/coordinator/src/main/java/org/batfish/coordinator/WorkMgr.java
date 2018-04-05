@@ -382,9 +382,11 @@ public class WorkMgr extends AbstractCoordinator {
       Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
       Question question = Question.parseQuestion(qFile);
       workType =
-          question.getDataPlane()
-              ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
-              : WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+          question.getIndependent()
+              ? WorkType.INDEPENDENT_ANSWERING
+              : question.getDataPlane()
+                  ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
+                  : WorkType.PARSING_DEPENDENT_ANSWERING;
     }
 
     if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
@@ -396,12 +398,15 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Analysis name not provided for ANALYZE work");
       }
       Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
-      workType = WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+      // compute the strongest dependency among the embedded questions
+      workType = WorkType.INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
         Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
         Question question = Question.parseQuestion(qFile);
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
+        } else if (!question.getIndependent()) {
+          workType = WorkType.PARSING_DEPENDENT_ANSWERING;
         }
       }
     }

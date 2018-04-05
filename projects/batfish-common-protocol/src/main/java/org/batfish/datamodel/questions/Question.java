@@ -281,6 +281,12 @@ public abstract class Question implements IQuestion {
     return _differential;
   }
 
+  /** Returns {@code true} iff this question does not need the testrig to be properly parsed */
+  @JsonIgnore
+  public boolean getIndependent() {
+    return false;
+  }
+
   @JsonProperty(BfConsts.PROP_INSTANCE)
   public InstanceData getInstance() {
     return _instance;

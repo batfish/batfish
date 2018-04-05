@@ -324,263 +324,270 @@ public class WorkQueueMgrTest {
     assertThat(parsingWorks, equalTo(Collections.singletonList(work1)));
   }
 
-  // BEGIN: DATAPLANE_INDEPENDENT_ANSWERING TESTS
+  // BEGIN: INDEPENDENT_ANSWERING TESTS
 
   @Test
-  public void diAnsweringForUninitializedBase() throws Exception {
-    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+  public void indAnsweringIsQueued() throws Exception {
+    workIsQueued(
+        ProcessingStatus.UNINITIALIZED,
+        WorkType.INDEPENDENT_ANSWERING,
+        WorkStatusCode.UNASSIGNED,
+        1);
+  }
+
+  // END: INDEPENDENT_ANSWERING_TESTS
+
+  // BEGIN: PARSING_DEPENDENT_ANSWERING TESTS
+
+  @Test
+  public void pdAnsweringForUninitializedBase() throws Exception {
+    workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void diAnsweringForParsingBase() throws Exception {
-    workIsRejected(ProcessingStatus.PARSING, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+  public void pdAnsweringForParsingBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING, WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void diAnsweringForParsingFailBase() throws Exception {
-    workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+  public void pdAnsweringForParsingFailBase() throws Exception {
+    workIsRejected(ProcessingStatus.PARSING_FAIL, WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void diAnsweringForParsedBase() throws Exception {
+  public void pdAnsweringForParsedBase() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringForDataplaningBase() throws Exception {
+  public void pdAnsweringForDataplaningBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringForDataplaningFailBase() throws Exception {
+  public void pdAnsweringForDataplaningFailBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringForDataplanedBase() throws Exception {
+  public void pdAnsweringForDataplanedBase() throws Exception {
     workIsQueued(
         ProcessingStatus.DATAPLANED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringWithBaseParsingQueued() throws Exception {
+  public void pdAnsweringWithBaseParsingQueued() throws Exception {
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.UNINITIALIZED);
     queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING);
     workIsQueued(
         ProcessingStatus.UNINITIALIZED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         2);
     workIsQueued(
         ProcessingStatus.PARSING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         3);
     workIsQueued(
-        ProcessingStatus.PARSING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
-        WorkStatusCode.BLOCKED,
-        4);
+        ProcessingStatus.PARSING, WorkType.PARSING_DEPENDENT_ANSWERING, WorkStatusCode.BLOCKED, 4);
     workIsQueued(
-        ProcessingStatus.PARSED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
-        WorkStatusCode.BLOCKED,
-        5);
+        ProcessingStatus.PARSED, WorkType.PARSING_DEPENDENT_ANSWERING, WorkStatusCode.BLOCKED, 5);
     workIsQueued(
         ProcessingStatus.DATAPLANING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         6);
     workIsQueued(
         ProcessingStatus.DATAPLANING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         7);
     workIsQueued(
         ProcessingStatus.DATAPLANED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         8);
   }
 
   @Test
-  public void diAnsweringWithBaseDataplaningQueued() throws Exception {
+  public void pdAnsweringWithBaseDataplaningQueued() throws Exception {
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
     queueWork(BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANING);
     workIsQueued(
         ProcessingStatus.PARSED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         2);
     workIsQueued(
         ProcessingStatus.DATAPLANING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         3);
     workIsQueued(
         ProcessingStatus.DATAPLANING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         4);
     workIsQueued(
         ProcessingStatus.DATAPLANED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         5);
   }
 
   @Test
-  public void diAnsweringForUninitializedDelta() throws Exception {
+  public void pdAnsweringForUninitializedDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.PARSED,
         ProcessingStatus.UNINITIALIZED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+        WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void diAnsweringForParsingFailDelta() throws Exception {
+  public void pdAnsweringForParsingFailDelta() throws Exception {
     workIsRejected(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+        WorkType.PARSING_DEPENDENT_ANSWERING);
   }
 
   @Test
-  public void diAnsweringForParsedDelta() throws Exception {
+  public void pdAnsweringForParsedDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringForDataplaningDelta() throws Exception {
+  public void pdAnsweringForDataplaningDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringForDataplaningFailDelta() throws Exception {
+  public void pdAnsweringForDataplaningFailDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringForDataplanedDelta() throws Exception {
+  public void pdAnsweringForDataplanedDelta() throws Exception {
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         1);
   }
 
   @Test
-  public void diAnsweringWithDeltaParsingQueued() throws Exception {
+  public void pdAnsweringWithDeltaParsingQueued() throws Exception {
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
     initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.UNINITIALIZED);
     queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.PARSING);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.UNINITIALIZED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         2);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         3);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         4);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         5);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         6);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         7);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.BLOCKED,
         8);
   }
 
   @Test
-  public void diAnsweringWithDeltaDataplaningQueued() throws Exception {
+  public void pdAnsweringWithDeltaDataplaningQueued() throws Exception {
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
     initTestrigMetadata(DELTA_TESTRIG, DELTA_ENV, ProcessingStatus.PARSED);
     queueWork(DELTA_TESTRIG, DELTA_ENV, WorkType.DATAPLANING);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.PARSED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         2);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING_FAIL,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         3);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANING,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         4);
     workIsQueued(
         ProcessingStatus.PARSED,
         ProcessingStatus.DATAPLANED,
-        WorkType.DATAPLANE_INDEPENDENT_ANSWERING,
+        WorkType.PARSING_DEPENDENT_ANSWERING,
         WorkStatusCode.UNASSIGNED,
         5);
   }
 
-  // END: DATAPLANE_INDEPENDENT_ANSWERING TESTS
+  // END: PARSING_DEPENDENT_ANSWERING TESTS
 
   // BEGIN: DATAPLANE_DEPENDENT_ANSWERING TESTS
 
@@ -878,7 +885,7 @@ public class WorkQueueMgrTest {
   @Test
   public void parsingWithConflictingWorkQueued1() throws Exception {
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.PARSED);
-    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    queueWork(BASE_TESTRIG, BASE_ENV, WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
@@ -895,14 +902,14 @@ public class WorkQueueMgrTest {
   public void parsingWithDeltaConflictingWorkQueued() throws Exception {
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    queueWork("other", "other", BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    queueWork("other", "other", BASE_TESTRIG, BASE_ENV, WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.PARSING);
   }
 
   @Test
   public void parsingWithNonConflictingWorkQueued() throws Exception {
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
-    queueWork("other", "other", WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    queueWork("other", "other", WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsQueued(ProcessingStatus.UNINITIALIZED, WorkType.PARSING, WorkStatusCode.UNASSIGNED, 2);
   }
 
@@ -965,14 +972,14 @@ public class WorkQueueMgrTest {
   public void dataplaningWithDeltaConflictingWorkQueued() throws Exception {
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
     initTestrigMetadata(BASE_TESTRIG, BASE_ENV, ProcessingStatus.DATAPLANED);
-    queueWork("other", "other", BASE_TESTRIG, BASE_ENV, WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    queueWork("other", "other", BASE_TESTRIG, BASE_ENV, WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsRejected(ProcessingStatus.UNINITIALIZED, WorkType.DATAPLANING);
   }
 
   @Test
   public void dataplaningWithNonConflictingWorkQueued() throws Exception {
     initTestrigMetadata("other", "other", ProcessingStatus.DATAPLANED);
-    queueWork("other", "other", WorkType.DATAPLANE_INDEPENDENT_ANSWERING);
+    queueWork("other", "other", WorkType.PARSING_DEPENDENT_ANSWERING);
     workIsQueued(ProcessingStatus.PARSED, WorkType.DATAPLANING, WorkStatusCode.UNASSIGNED, 2);
   }
 
@@ -1015,7 +1022,7 @@ public class WorkQueueMgrTest {
     QueuedWork work2 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig"),
-            new WorkDetails("testrig", "env", WorkType.DATAPLANE_INDEPENDENT_ANSWERING));
+            new WorkDetails("testrig", "env", WorkType.PARSING_DEPENDENT_ANSWERING));
     _workQueueMgr.queueUnassignedWork(work2);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(2L));
   }
@@ -1107,7 +1114,7 @@ public class WorkQueueMgrTest {
     QueuedWork work2 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig"),
-            new WorkDetails("testrig", "env_default", WorkType.DATAPLANE_INDEPENDENT_ANSWERING));
+            new WorkDetails("testrig", "env_default", WorkType.PARSING_DEPENDENT_ANSWERING));
     QueuedWork work3 =
         new QueuedWork(
             new WorkItem(CONTAINER, "testrig"),
