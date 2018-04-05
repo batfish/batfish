@@ -19,11 +19,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -75,15 +78,19 @@ public class FlatJuniperGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
+
   private Configuration parseConfig(String hostname) throws IOException {
     return parseTextConfigs(hostname).get(hostname);
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.parseTextConfigs(_folder, names);
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
   }
 
   @Test
@@ -173,6 +180,16 @@ public class FlatJuniperGrammarTest {
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+  }
+
+  @Test
+  public void testEthernetSwitchingFilterReference() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("ethernet-switching-filter");
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+
+    /* filter should not be unused */
+    assertThat(unusedStructures, equalTo(ImmutableMap.of()));
   }
 
   @Test

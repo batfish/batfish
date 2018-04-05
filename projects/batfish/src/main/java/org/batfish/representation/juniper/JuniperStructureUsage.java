@@ -12,6 +12,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   IKE_GATEWAY_EXTERNAL_INTERFACE("ike gateway external-interface"),
   IKE_GATEWAY_IKE_POLICY("ike gateway ike policy"),
   IKE_POLICY_IKE_PROPOSAL("ike policy ike proposal"),
+  INTERFACE_FILTER("interface firewall filter"),
   INTERFACE_INCOMING_FILTER("interface incoming firewall filter"),
   INTERFACE_OUTGOING_FILTER("interface outgoing firewall filter"),
   IPSEC_POLICY_IPSEC_PROPOSAL("ipsec policy ipsec proposal"),
