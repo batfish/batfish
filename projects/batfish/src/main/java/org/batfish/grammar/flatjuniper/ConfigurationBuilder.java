@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -1488,19 +1489,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private final Set<String> _unimplementedFeatures;
 
+  private final boolean _unrecognizedAsRedFlag;
+
   private final Warnings _w;
 
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
       String text,
       Warnings warnings,
-      Set<String> unimplementedFeatures) {
+      Set<String> unimplementedFeatures,
+      boolean unrecognizedAsRedFlag) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration(unimplementedFeatures);
     _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
     _termRouteFilters = new HashMap<>();
     _unimplementedFeatures = unimplementedFeatures;
+    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
@@ -4089,5 +4094,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private void todo(ParserRuleContext ctx, String feature) {
     _w.todo(ctx, feature, _parser, _text);
     _unimplementedFeatures.add("Juniper: " + feature);
+  }
+
+  @Override
+  public void visitErrorNode(ErrorNode errorNode) {
+    Token token = errorNode.getSymbol();
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+    int line = token.getLine();
+    String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+    if (_unrecognizedAsRedFlag) {
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+      _configuration.setUnrecognized(true);
+    } else {
+      _parser.getErrors().add(msg);
+    }
   }
 }
