@@ -112,6 +112,16 @@ public class IpAccessList extends ComparableStructure<String> {
     return new FilterResult(null, LineAction.REJECT);
   }
 
+  public boolean match(Flow flow) {
+    for (int i = 0; i < _lines.size(); i++) {
+      IpAccessListLine line = _lines.get(i);
+      if (line.matches(flow)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @JsonProperty(PROP_LINES)
   @JsonPropertyDescription("The lines against which to check an IPV4 packet")
   public List<IpAccessListLine> getLines() {
