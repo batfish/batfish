@@ -173,9 +173,9 @@ public class ReachabilitySettings {
 
   private final Boolean _srcNatted;
 
-  private final NodesSpecifier _transitNodes;
-
   private final boolean _specialize;
+
+  private final NodesSpecifier _transitNodes;
 
   private final boolean _useCompression;
 

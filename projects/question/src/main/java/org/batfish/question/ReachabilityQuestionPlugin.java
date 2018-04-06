@@ -120,11 +120,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final NodesSpecifier DEFAULT_NOT_INGRESS_NODE_REGEX = NodesSpecifier.NONE;
 
+    private static final boolean DEFAULT_SPECIALIZE = false;
+
     private static final NodesSpecifier DEFAULT_TRANSIT_NODES = NodesSpecifier.NONE;
 
     private static final boolean DEFAULT_USE_COMPRESSION = false;
-
-    private static final boolean DEFAULT_SPECIALIZE = false;
 
     private static final String PROP_ACTIONS = "actions";
 
@@ -182,6 +182,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_REACHABILITY_TYPE = "type";
 
+    private static final String PROP_SPECIALIZE = "specialize";
+
     private static final String PROP_SRC_IPS = "srcIps";
 
     private static final String PROP_SRC_NATTED = "srcNatted";
@@ -199,8 +201,6 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final String PROP_TRANSIT_NODES = "transitNodes";
 
     private static final String PROP_USE_COMPRESSION = "useCompression";
-
-    private static final String PROP_SPECIALIZE = "specialize";
 
     private ReachabilitySettings.Builder _reachabilitySettings;
 
