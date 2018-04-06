@@ -5,8 +5,9 @@ public class WorkDetails {
   public enum WorkType {
     PARSING,
     DATAPLANING,
-    DATAPLANE_INDEPENDENT_ANSWERING, // includes analyzing
-    DATAPLANE_DEPENDENT_ANSWERING, // includes analyzing
+    INDEPENDENT_ANSWERING, // answering includes analyzing
+    PARSING_DEPENDENT_ANSWERING,
+    DATAPLANE_DEPENDENT_ANSWERING,
     UNKNOWN
   }
 
