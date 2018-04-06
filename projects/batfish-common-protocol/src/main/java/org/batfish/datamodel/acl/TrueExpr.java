@@ -3,6 +3,7 @@ package org.batfish.datamodel.acl;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Map;
+import java.util.Objects;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 
@@ -22,7 +23,7 @@ public class TrueExpr extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return ((Boolean) true).hashCode();
+    return Objects.hash((Boolean) true);
   }
 
   @Override

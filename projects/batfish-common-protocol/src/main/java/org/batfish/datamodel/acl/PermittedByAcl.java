@@ -3,6 +3,7 @@ package org.batfish.datamodel.acl;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Map;
+import java.util.Objects;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
@@ -31,7 +32,7 @@ public class PermittedByAcl extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return _aclName.hashCode();
+    return Objects.hash(_aclName);
   }
 
   @Override

@@ -31,7 +31,7 @@ public class NotMatchExpr extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return _operand.hashCode();
+    return Objects.hash(_operand);
   }
 
   @Override
