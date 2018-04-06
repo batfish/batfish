@@ -9,7 +9,7 @@ import org.batfish.datamodel.Flow;
 import org.junit.Test;
 
 public class AndExprTest {
-  private Flow createFlow() {
+  private static Flow createFlow() {
     Flow.Builder b = new Flow.Builder();
     b.setIngressNode("ingressNode");
     b.setTag("empty");
@@ -18,6 +18,8 @@ public class AndExprTest {
 
   @Test
   public void testSingleExpr() {
+    // Test that if and only if the only ACL line is a match, the AndExpr returns a match
+
     MockAclLineExpr eTrue = new MockAclLineExpr(true);
     MockAclLineExpr eFalse = new MockAclLineExpr(false);
 
@@ -39,6 +41,8 @@ public class AndExprTest {
 
   @Test
   public void testMultipleExprs() {
+    // Test that if and only if all ACL lines are a match, the AndExpr returns a match
+
     MockAclLineExpr eTrue = new MockAclLineExpr(true);
     MockAclLineExpr eFalse = new MockAclLineExpr(false);
 

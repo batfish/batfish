@@ -18,6 +18,8 @@ public class OrExprTest {
 
   @Test
   public void testSingleExpr() {
+    // Test that if and only if the only ACL line is a match, the OrExpr returns a match
+
     MockAclLineExpr eTrue = new MockAclLineExpr(true);
     MockAclLineExpr eFalse = new MockAclLineExpr(false);
 
@@ -39,6 +41,8 @@ public class OrExprTest {
 
   @Test
   public void testMultipleExprs() {
+    // Test that if either of two ACL lines is a match, the OrExpr returns a match
+
     MockAclLineExpr eTrue = new MockAclLineExpr(true);
     MockAclLineExpr eFalse = new MockAclLineExpr(false);
 

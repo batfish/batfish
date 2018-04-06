@@ -8,7 +8,7 @@ import org.batfish.datamodel.Flow;
 import org.junit.Test;
 
 public class NotExprTest {
-  private Flow createFlow() {
+  private static Flow createFlow() {
     Flow.Builder b = new Flow.Builder();
     b.setIngressNode("ingressNode");
     b.setTag("empty");
@@ -17,6 +17,8 @@ public class NotExprTest {
 
   @Test
   public void testSingleExpr() {
+    // Test that the NotExpr returns the opposite of the underlying ACL line
+
     MockAclLineExpr ePass = new MockAclLineExpr(true);
     NotExpr exprTrue = new NotExpr(ePass);
 
