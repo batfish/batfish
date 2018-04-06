@@ -320,7 +320,6 @@ import org.batfish.representation.juniper.AddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.Application;
 import org.batfish.representation.juniper.BaseApplication;
 import org.batfish.representation.juniper.BaseApplication.Term;
 import org.batfish.representation.juniper.BgpGroup;
@@ -598,7 +597,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static Application toApplication(Junos_applicationContext ctx) {
+  private static JunosApplication toJunosApplication(Junos_applicationContext ctx) {
     if (ctx.JUNOS_AOL() != null) {
       return JunosApplication.JUNOS_AOL;
     } else if (ctx.JUNOS_BGP() != null) {
@@ -3720,7 +3719,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.ANY() != null) {
       return;
     } else if (ctx.junos_application() != null) {
-      Application application = toApplication(ctx.junos_application());
+      JunosApplication application = toJunosApplication(ctx.junos_application());
+      if (!application.hasDefinition()) {
+        _w.redFlag(
+            String.format(
+                "unimplemented pre-defined junos application: '%s'",
+                ctx.junos_application().getText()));
+        return;
+      }
       if (application.getIpv6()) {
         _currentFwTerm.setIpv6(true);
       } else {
