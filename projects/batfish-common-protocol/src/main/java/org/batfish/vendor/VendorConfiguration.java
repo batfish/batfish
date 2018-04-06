@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -14,6 +15,7 @@ import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.DefinedStructure;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -191,5 +193,20 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
         byType.computeIfAbsent(type, k -> new TreeMap<>());
     SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
     lines.add(line);
+  }
+
+  protected <T extends DefinedStructure<String>> void warnUnusedStructure(
+      Map<String, T> map, StructureType type) {
+    for (Entry<String, T> e : map.entrySet()) {
+      String name = e.getKey();
+      if (name.startsWith("~")
+          || e.getValue().getDefinitionLine() == DefinedStructure.IGNORED_DEFINITION_LINE) {
+        continue;
+      }
+      T t = e.getValue();
+      if (t.isUnused()) {
+        unused(type, name, t.getDefinitionLine());
+      }
+    }
   }
 }
