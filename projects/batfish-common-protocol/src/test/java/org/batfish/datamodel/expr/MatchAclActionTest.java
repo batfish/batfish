@@ -51,6 +51,7 @@ public class MatchAclActionTest {
     assertThat(exprMatch.match(createFlow("1.2.3.4"), "", ImmutableSet.of(acl)), equalTo(true));
 
     // Confirm MatchAcl.match does not find a matching ACL line for the given source address
-    assertThat(exprMatch.match(createFlow("10.10.10.10"), "", ImmutableSet.of(acl)), equalTo(false));
+    assertThat(
+        exprMatch.match(createFlow("10.10.10.10"), "", ImmutableSet.of(acl)), equalTo(false));
   }
 }
