@@ -1,7 +1,7 @@
 package org.batfish.datamodel.expr;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
 import org.batfish.datamodel.Flow;
@@ -17,10 +17,10 @@ public class NotExprTest {
 
   @Test
   public void testSingleExpr() {
-    MockBooleanExpr ePass = new MockBooleanExpr(true);
+    MockAclLineExpr ePass = new MockAclLineExpr(true);
     NotExpr exprTrue = new NotExpr(ePass);
 
-    MockBooleanExpr eFail = new MockBooleanExpr(false);
+    MockAclLineExpr eFail = new MockAclLineExpr(false);
     NotExpr exprFalse = new NotExpr(eFail);
 
     // Confirm boolean expr not true does not match

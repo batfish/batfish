@@ -1,7 +1,7 @@
 package org.batfish.datamodel.expr;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,16 +18,16 @@ public class AndExprTest {
 
   @Test
   public void testSingleExpr() {
-    MockBooleanExpr eTrue = new MockBooleanExpr(true);
-    MockBooleanExpr eFalse = new MockBooleanExpr(false);
+    MockAclLineExpr eTrue = new MockAclLineExpr(true);
+    MockAclLineExpr eFalse = new MockAclLineExpr(false);
 
     // Setup simple expression with a single true boolean expr
-    Set<BooleanExpr> setTrue = new HashSet<>();
+    Set<AclLineExpr> setTrue = new HashSet<>();
     setTrue.add(eTrue);
     AndExpr exprTrue = new AndExpr(setTrue);
 
     // Setup simple expression with a single false boolean expr
-    Set<BooleanExpr> setFalse = new HashSet<>();
+    Set<AclLineExpr> setFalse = new HashSet<>();
     setFalse.add(eFalse);
     AndExpr exprFalse = new AndExpr(setFalse);
 
@@ -39,21 +39,21 @@ public class AndExprTest {
 
   @Test
   public void testMultipleExprs() {
-    MockBooleanExpr eTrue = new MockBooleanExpr(true);
-    MockBooleanExpr eFalse = new MockBooleanExpr(false);
+    MockAclLineExpr eTrue = new MockAclLineExpr(true);
+    MockAclLineExpr eFalse = new MockAclLineExpr(false);
 
     // Setup
-    Set<BooleanExpr> setTrueTrue = new HashSet<>();
+    Set<AclLineExpr> setTrueTrue = new HashSet<>();
     setTrueTrue.add(eTrue);
     setTrueTrue.add(eTrue);
     AndExpr exprTrueTrue = new AndExpr(setTrueTrue);
 
-    Set<BooleanExpr> setTrueFalse = new HashSet<>();
+    Set<AclLineExpr> setTrueFalse = new HashSet<>();
     setTrueFalse.add(eTrue);
     setTrueFalse.add(eFalse);
     AndExpr exprTrueFalse = new AndExpr(setTrueFalse);
 
-    Set<BooleanExpr> setFalseFalse = new HashSet<>();
+    Set<AclLineExpr> setFalseFalse = new HashSet<>();
     setFalseFalse.add(eFalse);
     setFalseFalse.add(eFalse);
     AndExpr exprFalseFalse = new AndExpr(setFalseFalse);

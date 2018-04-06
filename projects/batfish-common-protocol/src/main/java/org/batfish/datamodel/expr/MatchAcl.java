@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 
-public class MatchAcl extends BooleanExpr {
+public class MatchAcl extends AclLineExpr {
   private String _aclName;
 
   public MatchAcl(String aclName) {
@@ -24,6 +24,11 @@ public class MatchAcl extends BooleanExpr {
   }
 
   @Override
+  public boolean exprEquals(Object o) {
+    return _aclName == ((MatchAcl) o).getAclName();
+  }
+
+  @Override
   public int hashCode() {
     return _aclName.hashCode();
   }
@@ -31,5 +36,9 @@ public class MatchAcl extends BooleanExpr {
   @Override
   public String toString() {
     return "PassAcl " + _aclName;
+  }
+
+  public String getAclName() {
+    return _aclName;
   }
 }

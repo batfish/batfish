@@ -5,10 +5,10 @@ import java.util.Set;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 
-public class OrExpr extends BooleanExpr {
-  private final Set<BooleanExpr> _disjuncts;
+public class OrExpr extends AclLineExpr {
+  private final Set<AclLineExpr> _disjuncts;
 
-  public OrExpr(Set<BooleanExpr> disjuncts) {
+  public OrExpr(Set<AclLineExpr> disjuncts) {
     _disjuncts = ImmutableSet.copyOf(disjuncts);
   }
 
@@ -18,11 +18,16 @@ public class OrExpr extends BooleanExpr {
   }
 
   @Override
+  public boolean exprEquals(Object o) {
+    return _disjuncts == ((OrExpr) o).getDisjuncts();
+  }
+
+  @Override
   public int hashCode() {
     // Start hash with something to differentiate from another expr with the same set of exprs
     int hash = "Or".hashCode();
     int prime = 31;
-    for (BooleanExpr b : _disjuncts) {
+    for (AclLineExpr b : _disjuncts) {
       hash *= prime;
       hash += b.hashCode();
     }
@@ -42,5 +47,9 @@ public class OrExpr extends BooleanExpr {
     sb.setLength(sb.length() - separator.length());
     sb.append(")");
     return sb.toString();
+  }
+
+  public Set<AclLineExpr> getDisjuncts() {
+    return _disjuncts;
   }
 }

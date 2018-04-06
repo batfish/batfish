@@ -5,7 +5,7 @@ import java.util.Set;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 
-public class MatchSrcInterface extends BooleanExpr {
+public class MatchSrcInterface extends AclLineExpr {
   private Set<String> _interfaces;
 
   public MatchSrcInterface(Set<String> interfaces) {
@@ -15,6 +15,11 @@ public class MatchSrcInterface extends BooleanExpr {
   @Override
   public boolean match(Flow flow, String srcInterface, Set<IpAccessList> availableAcls) {
     return _interfaces.contains(srcInterface);
+  }
+
+  @Override
+  public boolean exprEquals(Object o) {
+    return _interfaces == ((MatchSrcInterface) o).getInterfaces();
   }
 
   @Override
@@ -35,5 +40,9 @@ public class MatchSrcInterface extends BooleanExpr {
     sb.setLength(sb.length() - separator.length());
     sb.append(")");
     return sb.toString();
+  }
+
+  public Set<String> getInterfaces() {
+    return _interfaces;
   }
 }

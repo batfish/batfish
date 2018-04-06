@@ -1,7 +1,7 @@
 package org.batfish.datamodel.expr;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,16 +18,16 @@ public class OrExprTest {
 
   @Test
   public void testSingleExpr() {
-    MockBooleanExpr eTrue = new MockBooleanExpr(true);
-    MockBooleanExpr eFalse = new MockBooleanExpr(false);
+    MockAclLineExpr eTrue = new MockAclLineExpr(true);
+    MockAclLineExpr eFalse = new MockAclLineExpr(false);
 
     // Setup simple expression with a single true boolean expr
-    Set<BooleanExpr> setTrue = new HashSet<>();
+    Set<AclLineExpr> setTrue = new HashSet<>();
     setTrue.add(eTrue);
     OrExpr exprTrue = new OrExpr(setTrue);
 
     // Setup simple expression with a single false boolean expr
-    Set<BooleanExpr> setFalse = new HashSet<>();
+    Set<AclLineExpr> setFalse = new HashSet<>();
     setFalse.add(eFalse);
     OrExpr exprFalse = new OrExpr(setFalse);
 
@@ -39,21 +39,21 @@ public class OrExprTest {
 
   @Test
   public void testMultipleExprs() {
-    MockBooleanExpr eTrue = new MockBooleanExpr(true);
-    MockBooleanExpr eFalse = new MockBooleanExpr(false);
+    MockAclLineExpr eTrue = new MockAclLineExpr(true);
+    MockAclLineExpr eFalse = new MockAclLineExpr(false);
 
     // Setup
-    Set<BooleanExpr> setTrueTrue = new HashSet<>();
+    Set<AclLineExpr> setTrueTrue = new HashSet<>();
     setTrueTrue.add(eTrue);
     setTrueTrue.add(eTrue);
     OrExpr exprTrueTrue = new OrExpr(setTrueTrue);
 
-    Set<BooleanExpr> setTrueFalse = new HashSet<>();
+    Set<AclLineExpr> setTrueFalse = new HashSet<>();
     setTrueFalse.add(eTrue);
     setTrueFalse.add(eFalse);
     OrExpr exprTrueFalse = new OrExpr(setTrueFalse);
 
-    Set<BooleanExpr> setFalseFalse = new HashSet<>();
+    Set<AclLineExpr> setFalseFalse = new HashSet<>();
     setFalseFalse.add(eFalse);
     setFalseFalse.add(eFalse);
     OrExpr exprFalseFalse = new OrExpr(setFalseFalse);
