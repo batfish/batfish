@@ -1,11 +1,13 @@
-package org.batfish.datamodel.expr;
+package org.batfish.datamodel.acl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
 import org.junit.Test;
 
 public class MatchSrcInterfaceTest {
@@ -24,10 +26,13 @@ public class MatchSrcInterfaceTest {
     interfaceNames.add("test");
     MatchSrcInterface exprSrcInterface = new MatchSrcInterface(interfaceNames);
 
-    // Confirm the interface matching boolean expression matches the same interface name
-    assertThat(exprSrcInterface.match(createFlow(), "test", new HashSet<>()), equalTo(true));
+    // Confirm the same interface name is matched
+    assertThat(
+        exprSrcInterface, AclLineMatchExprMatchers.matches(createFlow(), "test", new HashMap<>()));
 
-    // Confirm the interface matching boolean expression does not match a different interface name
-    assertThat(exprSrcInterface.match(createFlow(), "fail", new HashSet<>()), equalTo(false));
+    // Confirm a different interface name is not matched
+    assertThat(
+        exprSrcInterface,
+        not(AclLineMatchExprMatchers.matches(createFlow(), "fail", new HashMap<>())));
   }
 }

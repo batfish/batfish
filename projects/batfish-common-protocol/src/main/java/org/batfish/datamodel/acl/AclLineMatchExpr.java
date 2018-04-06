@@ -1,10 +1,10 @@
-package org.batfish.datamodel.expr;
+package org.batfish.datamodel.acl;
 
-import java.util.Set;
+import java.util.Map;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 
-public abstract class AclLineExpr {
+public abstract class AclLineMatchExpr {
   /**
    * Check the given flow, source interface, and/or other ACLs for a match against this ACL line
    * expression.
@@ -14,7 +14,8 @@ public abstract class AclLineExpr {
    * @param availableAcls ACLs this ACL line expression could possibly reference
    * @return true if the inputted flow, interface, and/or ACLs match the ACL line expression.
    */
-  public abstract boolean match(Flow flow, String srcInterface, Set<IpAccessList> availableAcls);
+  public abstract boolean match(
+      Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls);
 
   public boolean equals(Object o) {
     if (this == o) {
@@ -31,4 +32,6 @@ public abstract class AclLineExpr {
   public abstract int hashCode();
 
   public abstract String toString();
+
+  public abstract <R> R accept(GenericAclLineMatchExprVisitor<R> visitor);
 }

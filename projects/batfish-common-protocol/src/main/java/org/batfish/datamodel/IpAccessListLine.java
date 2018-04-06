@@ -5,7 +5,7 @@ import com.google.common.base.Objects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import java.util.SortedSet;
-import org.batfish.datamodel.expr.AclLineExpr;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine extends HeaderSpace {
@@ -81,11 +81,11 @@ public final class IpAccessListLine extends HeaderSpace {
 
   private LineAction _action;
 
-  private AclLineExpr _matchCondition;
+  private AclLineMatchExpr _matchCondition;
 
   private String _name;
 
-  public IpAccessListLine(LineAction action, AclLineExpr matchCondition, String name) {
+  public IpAccessListLine(LineAction action, AclLineMatchExpr matchCondition, String name) {
     _action = action;
     _matchCondition = matchCondition;
     _name = name;
@@ -183,8 +183,7 @@ public final class IpAccessListLine extends HeaderSpace {
     return _action;
   }
 
-  @JsonPropertyDescription("The condition(s) for this line to match.")
-  public AclLineExpr getMatchCondition() {
+  public AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }
 
@@ -244,7 +243,7 @@ public final class IpAccessListLine extends HeaderSpace {
     _action = action;
   }
 
-  public void setMatchCondition(AclLineExpr matchCondition) {
+  public void setMatchCondition(AclLineMatchExpr matchCondition) {
     _matchCondition = matchCondition;
   }
 
