@@ -275,13 +275,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_gatewayContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seipvi_ipsec_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_default_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_from_zoneContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepf_policyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_applicationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_destination_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_source_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpm_source_identityContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpt_denyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepfpt_permitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sep_globalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctx_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_applicationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_destination_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_identityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_denyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_permitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sez_security_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_host_inbound_trafficContext;
@@ -2180,7 +2181,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterSepf_policy(Sepf_policyContext ctx) {
+  public void enterSep_global(Sep_globalContext ctx) {
+    _currentFilter =
+        _configuration
+            .getFirewallFilters()
+            .computeIfAbsent(
+                "~GLOBAL_SECURITY_POLICY~", n -> new FirewallFilter(n, Family.INET, -1));
+  }
+
+  @Override
+  public void exitSep_global(Sep_globalContext ctx) {
+    _currentFilter = null;
+  }
+
+  @Override
+  public void enterSepctx_policy(Sepctx_policyContext ctx) {
     String termName = ctx.name.getText();
     _currentFwTerm = _currentFilter.getTerms().computeIfAbsent(termName, FwTerm::new);
   }
@@ -3696,12 +3711,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSepf_policy(Sepf_policyContext ctx) {
+  public void exitSepctx_policy(Sepctx_policyContext ctx) {
     _currentFwTerm = null;
   }
 
   @Override
-  public void exitSepfpm_application(Sepfpm_applicationContext ctx) {
+  public void exitSepctxpm_application(Sepctxpm_applicationContext ctx) {
     if (ctx.ANY() != null) {
       return;
     } else if (ctx.junos_application() != null) {
@@ -3726,7 +3741,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSepfpm_destination_address(Sepfpm_destination_addressContext ctx) {
+  public void exitSepctxpm_destination_address(Sepctxpm_destination_addressContext ctx) {
     if (ctx.address_specifier().ANY() != null) {
       return;
     } else if (ctx.address_specifier().ANY_IPV4() != null) {
@@ -3746,7 +3761,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSepfpm_source_address(Sepfpm_source_addressContext ctx) {
+  public void exitSepctxpm_source_address(Sepctxpm_source_addressContext ctx) {
     if (ctx.address_specifier().ANY() != null) {
       return;
     } else if (ctx.address_specifier().ANY_IPV4() != null) {
@@ -3765,7 +3780,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSepfpm_source_identity(Sepfpm_source_identityContext ctx) {
+  public void exitSepctxpm_source_identity(Sepctxpm_source_identityContext ctx) {
     if (ctx.ANY() != null) {
       return;
     } else {
@@ -3775,13 +3790,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSepfpt_deny(Sepfpt_denyContext ctx) {
+  public void exitSepctxpt_deny(Sepctxpt_denyContext ctx) {
     _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
   }
 
   @Override
-  public void exitSepfpt_permit(Sepfpt_permitContext ctx) {
-    if (ctx.sepfptp_tunnel() != null) {
+  public void exitSepctxpt_permit(Sepctxpt_permitContext ctx) {
+    if (ctx.sepctxptp_tunnel() != null) {
       // Used for dynamic VPNs (no bind interface tied to a zone)
       // TODO: change from deny to appropriate action when implemented
       todo(ctx, F_PERMIT_TUNNEL);

@@ -1162,6 +1162,11 @@ GIGETHER_OPTIONS
    'gigether-options'
 ;
 
+GLOBAL
+:
+  'global'
+;
+
 GRACEFUL_RESTART
 :
    'graceful-restart'
