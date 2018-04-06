@@ -578,6 +578,7 @@ se_policies
    (
       sep_default_policy
       | sep_from_zone
+      | sep_global
    )
 ;
 
@@ -608,7 +609,7 @@ sea_key
 
 sea_tolerance
 :
-  TOLERANCE DEC
+   TOLERANCE DEC
 ;
 
 sec_local
@@ -1112,48 +1113,57 @@ sep_from_zone
    FROM_ZONE from = zone TO_ZONE to = zone
    (
       apply
-      | sepf_policy
+      | sepctx_policy
    )
 ;
 
-sepf_policy
+sep_global
+:
+   GLOBAL
+   (
+      apply
+      | sepctx_policy
+   )
+;
+
+sepctx_policy
 :
    POLICY name = variable
    (
       apply
-      | sepfp_description
-      | sepfp_match
-      | sepfp_then
+      | sepctxp_description
+      | sepctxp_match
+      | sepctxp_then
    )
 ;
 
-sepfp_description
+sepctxp_description
 :
    DESCRIPTION null_filler
 ;
 
-sepfp_match
+sepctxp_match
 :
    MATCH
    (
-      sepfpm_application
-      | sepfpm_destination_address
-      | sepfpm_source_address
-      | sepfpm_source_identity
+      sepctxpm_application
+      | sepctxpm_destination_address
+      | sepctxpm_source_address
+      | sepctxpm_source_identity
    )
 ;
 
-sepfp_then
+sepctxp_then
 :
    THEN
    (
-      sepfpt_deny
-      | sepfpt_log
-      | sepfpt_permit
+      sepctxpt_deny
+      | sepctxpt_log
+      | sepctxpt_permit
    )
 ;
 
-sepfpm_application
+sepctxpm_application
 :
    APPLICATION
    (
@@ -1163,17 +1173,17 @@ sepfpm_application
    )
 ;
 
-sepfpm_destination_address
+sepctxpm_destination_address
 :
    DESTINATION_ADDRESS address_specifier
 ;
 
-sepfpm_source_address
+sepctxpm_source_address
 :
    SOURCE_ADDRESS address_specifier
 ;
 
-sepfpm_source_identity
+sepctxpm_source_identity
 :
    SOURCE_IDENTITY
    (
@@ -1182,36 +1192,36 @@ sepfpm_source_identity
    )
 ;
 
-sepfpt_deny
+sepctxpt_deny
 :
    DENY
    | REJECT
 ;
 
-sepfpt_log
+sepctxpt_log
 :
    LOG null_filler
 ;
 
-sepfpt_permit
+sepctxpt_permit
 :
    PERMIT
    (
       apply
-      | sepfptp_tunnel
+      | sepctxptp_tunnel
    )
 ;
 
-sepfptp_tunnel
+sepctxptp_tunnel
 :
    TUNNEL
    (
       apply
-      | sepfptpt_ipsec_vpn
+      | sepctxptpt_ipsec_vpn
    )
 ;
 
-sepfptpt_ipsec_vpn
+sepctxptpt_ipsec_vpn
 :
    IPSEC_VPN name = variable
 ;

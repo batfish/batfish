@@ -111,6 +111,7 @@ public class FlatJuniperGrammarTest {
         byType.get(JuniperStructureType.APPLICATION.getDescription());
     assertThat(byName, hasKey("a2"));
     assertThat(byName, not(hasKey("a1")));
+    assertThat(byName, not(hasKey("a3")));
   }
 
   @Test
