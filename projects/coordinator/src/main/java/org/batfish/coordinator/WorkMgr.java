@@ -405,7 +405,9 @@ public class WorkMgr extends AbstractCoordinator {
         Question question = Question.parseQuestion(qFile);
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
-        } else if (!question.getIndependent()) {
+          break;
+        }
+        if (!question.getIndependent()) {
           workType = WorkType.PARSING_DEPENDENT_ANSWERING;
         }
       }
