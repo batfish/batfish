@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.base.Throwables;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -8,6 +9,7 @@ import com.microsoft.z3.Status;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,9 +67,7 @@ public final class NodJob extends AbstractNodJob {
   @Override
   protected SmtInput computeSmtInput(long startTime, Context ctx) {
     NodProgram program = getNodProgram(ctx);
-
-    List<String> debugFlags = _settings.getDebugFlags();
-    if (debugFlags != null && debugFlags.contains("saveNodProgram")) {
+    if (_settings.debugFlagEnabled("saveNodProgram")) {
       saveNodProgram(program);
     }
     BoolExpr expr = computeSmtConstraintsViaNod(program, _querySynthesizer.getNegate());
@@ -84,12 +84,11 @@ public final class NodJob extends AbstractNodJob {
               .getBasePath()
               .resolve(
                   String.format(
-                      "nodProgram-%d-%d.smt2",
-                      System.currentTimeMillis(), Thread.currentThread().getId()));
+                      "nodProgram-%s-%d.smt2", Instant.now(), Thread.currentThread().getId()));
       try (FileWriter writer = new FileWriter(nodPath.toFile())) {
         writer.write(program.toSmt2String());
       } catch (IOException e) {
-        e.printStackTrace();
+        _logger.warnf("Error saving Nod program to file: %s", Throwables.getStackTraceAsString(e));
       }
     }
   }

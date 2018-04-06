@@ -577,6 +577,11 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     return _config.getBoolean(CAN_EXECUTE);
   }
 
+  public boolean debugFlagEnabled(String flag) {
+    List<String> debugFlags = getStringListOptionValue(ARG_DEBUG_FLAGS);
+    return debugFlags != null && debugFlags.contains(flag);
+  }
+
   public boolean flattenOnTheFly() {
     return _config.getBoolean(ARG_FLATTEN_ON_THE_FLY);
   }
