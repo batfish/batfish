@@ -27,10 +27,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   @Override
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return andMatchExpr
-        .getConjuncts()
-        .stream()
-        .allMatch(c -> c.match(_flow, _srcInterface, _availableAcls));
+    return andMatchExpr.getConjuncts().stream().allMatch(c -> c.accept(this));
   }
 
   @Override
@@ -50,15 +47,12 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   @Override
   public Boolean visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    return !notMatchExpr.getOperand().match(_flow, _srcInterface, _availableAcls);
+    return !notMatchExpr.getOperand().accept(this);
   }
 
   @Override
   public Boolean visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-    return orMatchExpr
-        .getDisjuncts()
-        .stream()
-        .anyMatch(d -> d.match(_flow, _srcInterface, _availableAcls));
+    return orMatchExpr.getDisjuncts().stream().anyMatch(d -> d.accept(this));
   }
 
   @Override

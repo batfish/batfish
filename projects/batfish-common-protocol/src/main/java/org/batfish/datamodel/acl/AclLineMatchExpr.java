@@ -1,22 +1,6 @@
 package org.batfish.datamodel.acl;
 
-import java.util.Map;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.IpAccessList;
-
 public abstract class AclLineMatchExpr {
-  /**
-   * Check the given flow, source interface, and/or other ACLs for a match against this ACL line
-   * expression.
-   *
-   * @param flow current packet's flow
-   * @param srcInterface source interface for this flow
-   * @param availableAcls ACLs this ACL line expression could possibly reference
-   * @return true if the inputted flow, interface, and/or ACLs match the ACL line expression.
-   */
-  public abstract boolean match(
-      Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls);
-
   public boolean equals(Object o) {
     if (this == o) {
       return true;

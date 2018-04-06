@@ -40,4 +40,6 @@ class AclLineMatchExprMatchersImpl {
       return matches;
     }
   }
+
+  private AclLineMatchExprMatchersImpl() {}
 }

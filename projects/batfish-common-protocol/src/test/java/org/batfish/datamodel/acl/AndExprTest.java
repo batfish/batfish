@@ -3,9 +3,9 @@ package org.batfish.datamodel.acl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
 import org.junit.Test;
@@ -22,17 +22,15 @@ public class AndExprTest {
   public void testSingleExpr() {
     // Test that if and only if the only ACL line is a match, the AndMatchExpr indicates a match
 
-    TrueExpr eTrue = new TrueExpr();
-    FalseExpr eFalse = new FalseExpr();
+    TrueExpr eTrue = TrueExpr.trueExpr;
+    FalseExpr eFalse = FalseExpr.falseExpr;
 
     // Setup simple expression with a single true boolean expr
-    Set<AclLineMatchExpr> setTrue = new HashSet<>();
-    setTrue.add(eTrue);
+    List<AclLineMatchExpr> setTrue = ImmutableList.of(eTrue);
     AndMatchExpr exprTrue = new AndMatchExpr(setTrue);
 
     // Setup simple expression with a single false boolean expr
-    Set<AclLineMatchExpr> setFalse = new HashSet<>();
-    setFalse.add(eFalse);
+    List<AclLineMatchExpr> setFalse = ImmutableList.of(eFalse);
     AndMatchExpr exprFalse = new AndMatchExpr(setFalse);
 
     // Confirm true boolean expr matches
@@ -45,23 +43,17 @@ public class AndExprTest {
   public void testMultipleExprs() {
     // Test that if and only if all ACL lines are a match, the AndMatchExpr returns a match
 
-    TrueExpr eTrue = new TrueExpr();
-    FalseExpr eFalse = new FalseExpr();
+    TrueExpr eTrue = TrueExpr.trueExpr;
+    FalseExpr eFalse = FalseExpr.falseExpr;
 
     // Setup
-    Set<AclLineMatchExpr> setTrueTrue = new HashSet<>();
-    setTrueTrue.add(eTrue);
-    setTrueTrue.add(eTrue);
+    List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(eTrue, eTrue);
     AndMatchExpr exprTrueTrue = new AndMatchExpr(setTrueTrue);
 
-    Set<AclLineMatchExpr> setTrueFalse = new HashSet<>();
-    setTrueFalse.add(eTrue);
-    setTrueFalse.add(eFalse);
+    List<AclLineMatchExpr> setTrueFalse = ImmutableList.of(eTrue, eFalse);
     AndMatchExpr exprTrueFalse = new AndMatchExpr(setTrueFalse);
 
-    Set<AclLineMatchExpr> setFalseFalse = new HashSet<>();
-    setFalseFalse.add(eFalse);
-    setFalseFalse.add(eFalse);
+    List<AclLineMatchExpr> setFalseFalse = ImmutableList.of(eFalse, eFalse);
     AndMatchExpr exprFalseFalse = new AndMatchExpr(setFalseFalse);
 
     // Confirm boolean expr true AND true = true

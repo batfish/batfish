@@ -1,12 +1,7 @@
 package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import java.util.Map;
 import java.util.Objects;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.LineAction;
 
 public class PermittedByAcl extends AclLineMatchExpr {
   private final String _aclName;
@@ -21,13 +16,8 @@ public class PermittedByAcl extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean match(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    return availableAcls.get(_aclName).filter(flow).getAction() == LineAction.ACCEPT;
-  }
-
-  @Override
   public boolean exprEquals(Object o) {
-    return _aclName.equals(((PermittedByAcl) o).getAclName());
+    return _aclName.equals(((PermittedByAcl) o)._aclName);
   }
 
   @Override
@@ -37,9 +27,7 @@ public class PermittedByAcl extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    helper.add("aclName", _aclName);
-    return helper.toString();
+    return MoreObjects.toStringHelper(getClass()).add("aclName", _aclName).toString();
   }
 
   public String getAclName() {

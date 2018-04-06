@@ -1,24 +1,17 @@
 package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import java.util.Map;
 import java.util.Objects;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.IpAccessList;
 
 public class FalseExpr extends AclLineMatchExpr {
 
-  public FalseExpr() {}
+  private FalseExpr() {}
+
+  public static final FalseExpr falseExpr = new FalseExpr();
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
     return visitor.visitFalseExpr(this);
-  }
-
-  @Override
-  public boolean match(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    return false;
   }
 
   @Override
@@ -33,7 +26,6 @@ public class FalseExpr extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    return helper.toString();
+    return MoreObjects.toStringHelper(getClass()).toString();
   }
 }

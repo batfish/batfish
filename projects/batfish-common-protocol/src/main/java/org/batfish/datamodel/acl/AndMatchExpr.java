@@ -1,18 +1,14 @@
 package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.IpAccessList;
 
 public class AndMatchExpr extends AclLineMatchExpr {
   private final Set<AclLineMatchExpr> _conjuncts;
 
-  public AndMatchExpr(Set<AclLineMatchExpr> conjuncts) {
+  public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts) {
     _conjuncts = ImmutableSet.copyOf(conjuncts);
   }
 
@@ -22,25 +18,18 @@ public class AndMatchExpr extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean match(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    return _conjuncts.stream().allMatch(c -> c.match(flow, srcInterface, availableAcls));
-  }
-
-  @Override
   public int hashCode() {
     return Objects.hash(_conjuncts);
   }
 
   @Override
   public boolean exprEquals(Object o) {
-    return Objects.equals(_conjuncts, ((AndMatchExpr) o).getConjuncts());
+    return Objects.equals(_conjuncts, ((AndMatchExpr) o)._conjuncts);
   }
 
   @Override
   public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    helper.add("conjuncts", _conjuncts);
-    return helper.toString();
+    return MoreObjects.toStringHelper(getClass()).add("conjuncts", _conjuncts).toString();
   }
 
   public Set<AclLineMatchExpr> getConjuncts() {

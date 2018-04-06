@@ -7,6 +7,8 @@ import org.batfish.datamodel.matchers.AclLineMatchExprMatchersImpl.Matches;
 
 public class AclLineMatchExprMatchers {
 
+  private AclLineMatchExprMatchers() {}
+
   /**
    * Provides a matcher that matches when the {@link AclLineMatchExpr} matches the provided inputs.
    */

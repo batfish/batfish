@@ -254,7 +254,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
     // ProjectNodeDropAcl (unused for now)
     //    _rules.add(
     //        new RuleStatement(
-    //            new OrMatchExpr(
+    //            new OrExpr(
     //                _input
     //                    .getEnabledNodes()
     //                    .keySet()

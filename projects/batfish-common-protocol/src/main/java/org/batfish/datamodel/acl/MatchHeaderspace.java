@@ -1,12 +1,8 @@
 package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import java.util.Map;
 import java.util.Objects;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpAccessList;
 
 public class MatchHeaderspace extends AclLineMatchExpr {
   private final HeaderSpace _headerspace;
@@ -21,13 +17,8 @@ public class MatchHeaderspace extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean match(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    return _headerspace.matches(flow);
-  }
-
-  @Override
   public boolean exprEquals(Object o) {
-    return Objects.equals(_headerspace, ((MatchHeaderspace) o).getHeaderspace());
+    return Objects.equals(_headerspace, ((MatchHeaderspace) o)._headerspace);
   }
 
   @Override
@@ -37,9 +28,7 @@ public class MatchHeaderspace extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    helper.add("headerSpace", _headerspace);
-    return helper.toString();
+    return MoreObjects.toStringHelper(getClass()).add("headerSpace", _headerspace).toString();
   }
 
   public HeaderSpace getHeaderspace() {

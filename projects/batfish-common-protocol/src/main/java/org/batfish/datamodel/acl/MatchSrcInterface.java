@@ -1,18 +1,14 @@
 package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.IpAccessList;
 
 public class MatchSrcInterface extends AclLineMatchExpr {
   private final Set<String> _srcInterfaces;
 
-  public MatchSrcInterface(Set<String> interfaces) {
+  public MatchSrcInterface(Iterable<String> interfaces) {
     _srcInterfaces = ImmutableSet.copyOf(interfaces);
   }
 
@@ -22,13 +18,8 @@ public class MatchSrcInterface extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean match(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    return _srcInterfaces.contains(srcInterface);
-  }
-
-  @Override
   public boolean exprEquals(Object o) {
-    return Objects.equals(_srcInterfaces, ((MatchSrcInterface) o).getSrcInterfaces());
+    return Objects.equals(_srcInterfaces, ((MatchSrcInterface) o)._srcInterfaces);
   }
 
   @Override
@@ -38,9 +29,7 @@ public class MatchSrcInterface extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    helper.add("srcInterfaces", _srcInterfaces);
-    return helper.toString();
+    return MoreObjects.toStringHelper(getClass()).add("srcInterfaces", _srcInterfaces).toString();
   }
 
   public Set<String> getSrcInterfaces() {
