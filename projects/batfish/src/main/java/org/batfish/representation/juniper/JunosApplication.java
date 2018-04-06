@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
@@ -225,7 +226,7 @@ public enum JunosApplication implements Application {
       return;
     }
     _initialized = true;
-    _baseApplication = new BaseApplication(name());
+    _baseApplication = new BaseApplication(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
     Map<String, Term> terms = _baseApplication.getTerms();
     switch (this) {
       case JUNOS_FTP:

@@ -1992,9 +1992,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
     markStructure(
+        JuniperStructureType.APPLICATION,
+        JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
+        _applications);
+    markStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
 
     // warn about unreferenced data structures
+    warnUnusedStructure(_applications, JuniperStructureType.APPLICATION);
     warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
     warnUnreferencedDhcpRelayServerGroups();

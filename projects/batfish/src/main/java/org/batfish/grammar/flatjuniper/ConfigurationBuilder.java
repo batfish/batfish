@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1521,8 +1522,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
+        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication(n, line));
     _currentApplicationTerm = _currentApplication.getMainTerm();
   }
 
@@ -2289,19 +2291,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitAat_destination_port(Aat_destination_portContext ctx) {
     SubRange subrange = toSubRange(ctx.subrange());
-    _currentApplicationTerm.getLine().getDstPorts().add(subrange);
+    _currentApplicationTerm
+        .getLine()
+        .setDstPorts(
+            ImmutableSet.<SubRange>builder()
+                .addAll(_currentApplicationTerm.getLine().getDstPorts())
+                .add(subrange)
+                .build());
   }
 
   @Override
   public void exitAat_protocol(Aat_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-    _currentApplicationTerm.getLine().getIpProtocols().add(protocol);
+    _currentApplicationTerm
+        .getLine()
+        .setIpProtocols(
+            ImmutableSet.<IpProtocol>builder()
+                .addAll(_currentApplicationTerm.getLine().getIpProtocols())
+                .add(protocol)
+                .build());
   }
 
   @Override
   public void exitAat_source_port(Aat_source_portContext ctx) {
     SubRange subrange = toSubRange(ctx.subrange());
-    _currentApplicationTerm.getLine().getSrcPorts().add(subrange);
+    _currentApplicationTerm
+        .getLine()
+        .setSrcPorts(
+            ImmutableSet.<SubRange>builder()
+                .addAll(_currentApplicationTerm.getLine().getSrcPorts())
+                .add(subrange)
+                .build());
   }
 
   @Override
@@ -3694,6 +3714,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     } else {
       String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
+      _configuration.referenceStructure(
+          JuniperStructureType.APPLICATION,
+          name,
+          JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
+          line);
       FwFromApplication from = new FwFromApplication(name, _configuration.getApplications());
       _currentFwTerm.getFromApplications().add(from);
     }
