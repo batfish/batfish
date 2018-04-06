@@ -11,7 +11,7 @@ public abstract class AclLineMatchExpr {
     return exprEquals(o);
   }
 
-  public abstract boolean exprEquals(Object o);
+  protected abstract boolean exprEquals(Object o);
 
   public abstract int hashCode();
 
