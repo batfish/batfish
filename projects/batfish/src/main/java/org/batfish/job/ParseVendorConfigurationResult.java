@@ -82,22 +82,30 @@ public class ParseVendorConfigurationResult
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
-        throw new BatfishException("Duplicate hostname: " + hostname);
-      } else {
-        vendorConfigurations.put(hostname, _vc);
-        if (!_warnings.isEmpty()) {
-          answerElement.getWarnings().put(hostname, _warnings);
-        }
-        if (!_parseTree.isEmpty()) {
-          answerElement.getParseTrees().put(hostname, _parseTree);
-        }
-        if (_vc.getUnrecognized()) {
-          answerElement.getParseStatus().put(hostname, ParseStatus.PARTIALLY_UNRECOGNIZED);
-        } else {
-          answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
-          answerElement.getFileMap().put(hostname, _file.getFileName().toString());
-        }
+        int index = 1;
+        do {
+          hostname = _vc.getHostname() + ".dupname" + index;
+          index++;
+        } while (vendorConfigurations.containsKey(hostname));
+        _warnings.redFlag(
+            String.format(
+                "Found duplicate hostname %s. Changed to %s", _vc.getHostname(), hostname));
+        _vc.setHostname(hostname);
       }
+      vendorConfigurations.put(hostname, _vc);
+      if (!_warnings.isEmpty()) {
+        answerElement.getWarnings().put(hostname, _warnings);
+      }
+      if (!_parseTree.isEmpty()) {
+        answerElement.getParseTrees().put(hostname, _parseTree);
+      }
+      if (_vc.getUnrecognized()) {
+        answerElement.getParseStatus().put(hostname, ParseStatus.PARTIALLY_UNRECOGNIZED);
+      } else {
+        answerElement.getParseStatus().put(hostname, ParseStatus.PASSED);
+        answerElement.getFileMap().put(hostname, _file.getFileName().toString());
+      }
+
     } else {
       String filename = _file.getFileName().toString();
       answerElement.getParseStatus().put(filename, _status);
