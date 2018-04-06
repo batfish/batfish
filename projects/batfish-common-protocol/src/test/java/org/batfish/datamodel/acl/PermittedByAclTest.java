@@ -4,8 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.HashMap;
 import java.util.Map;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
@@ -44,9 +44,7 @@ public class PermittedByAclTest {
     aclb.setLines(ImmutableList.of(acllb.build()));
 
     // Return a map, mapping aclName to the ACL itself
-    Map<String, IpAccessList> map = new HashMap<>();
-    map.put(aclName, aclb.build());
-    return map;
+    return ImmutableMap.of(aclName, aclb.build());
   }
 
   @Before

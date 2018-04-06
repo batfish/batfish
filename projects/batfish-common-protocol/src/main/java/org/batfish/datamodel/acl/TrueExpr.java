@@ -7,7 +7,7 @@ public class TrueExpr extends AclLineMatchExpr {
 
   private TrueExpr() {}
 
-  public static final TrueExpr trueExpr = new TrueExpr();
+  public static final TrueExpr TRUE_EXPR = new TrueExpr();
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {

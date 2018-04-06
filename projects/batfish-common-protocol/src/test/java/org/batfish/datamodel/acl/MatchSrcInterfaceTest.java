@@ -3,7 +3,7 @@ package org.batfish.datamodel.acl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
@@ -28,11 +28,12 @@ public class MatchSrcInterfaceTest {
 
     // Confirm the same interface name is matched
     assertThat(
-        exprSrcInterface, AclLineMatchExprMatchers.matches(createFlow(), "test", new HashMap<>()));
+        exprSrcInterface,
+        AclLineMatchExprMatchers.matches(createFlow(), "test", ImmutableMap.of()));
 
     // Confirm a different interface name is not matched
     assertThat(
         exprSrcInterface,
-        not(AclLineMatchExprMatchers.matches(createFlow(), "fail", new HashMap<>())));
+        not(AclLineMatchExprMatchers.matches(createFlow(), "fail", ImmutableMap.of())));
   }
 }

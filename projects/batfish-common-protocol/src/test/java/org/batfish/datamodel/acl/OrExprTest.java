@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
@@ -22,8 +22,8 @@ public class OrExprTest {
   public void testSingleExpr() {
     // Test that if and only if the only ACL line is a match, the OrMatchExpr returns a match
 
-    TrueExpr eTrue = TrueExpr.trueExpr;
-    FalseExpr eFalse = FalseExpr.falseExpr;
+    TrueExpr eTrue = TrueExpr.TRUE_EXPR;
+    FalseExpr eFalse = FalseExpr.FALSE_EXPR;
 
     // Setup simple expression with a single true boolean expr
     List<AclLineMatchExpr> setTrue = ImmutableList.of(eTrue);
@@ -34,17 +34,18 @@ public class OrExprTest {
     OrMatchExpr exprFalse = new OrMatchExpr(setFalse);
 
     // Confirm true boolean expr matches
-    assertThat(exprTrue, AclLineMatchExprMatchers.matches(createFlow(), "", new HashMap<>()));
+    assertThat(exprTrue, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
     // Confirm false boolean expr does not match
-    assertThat(exprFalse, not(AclLineMatchExprMatchers.matches(createFlow(), "", new HashMap<>())));
+    assertThat(
+        exprFalse, not(AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of())));
   }
 
   @Test
   public void testMultipleExprs() {
     // Test that if either of two ACL lines is a match, the OrMatchExpr returns a match
 
-    TrueExpr eTrue = TrueExpr.trueExpr;
-    FalseExpr eFalse = FalseExpr.falseExpr;
+    TrueExpr eTrue = TrueExpr.TRUE_EXPR;
+    FalseExpr eFalse = FalseExpr.FALSE_EXPR;
 
     // Setup
     List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(eTrue, eTrue);
@@ -57,11 +58,12 @@ public class OrExprTest {
     OrMatchExpr exprFalseFalse = new OrMatchExpr(setFalseFalse);
 
     // Confirm boolean expr true OR true = true
-    assertThat(exprTrueTrue, AclLineMatchExprMatchers.matches(createFlow(), "", new HashMap<>()));
+    assertThat(exprTrueTrue, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
     // Confirm boolean expr true OR false = true
-    assertThat(exprTrueFalse, AclLineMatchExprMatchers.matches(createFlow(), "", new HashMap<>()));
+    assertThat(
+        exprTrueFalse, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
     // Confirm boolean expr false OR false = false
     assertThat(
-        exprFalseFalse, not(AclLineMatchExprMatchers.matches(createFlow(), "", new HashMap<>())));
+        exprFalseFalse, not(AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of())));
   }
 }
