@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -4105,20 +4104,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void warnUnusedServiceClasses() {
     if (_cf.getCable() != null) {
       warnUnusedStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
-    }
-  }
-
-  private <T extends DefinedStructure<String>> void warnUnusedStructure(
-      Map<String, T> map, CiscoStructureType type) {
-    for (Entry<String, T> e : map.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      T t = e.getValue();
-      if (t.isUnused()) {
-        unused(type, name, t.getDefinitionLine());
-      }
     }
   }
 }

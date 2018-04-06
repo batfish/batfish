@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class DefinedStructure<KeyT extends Comparable<KeyT>>
     extends ComparableStructure<KeyT> {
 
+  public static final int IGNORED_DEFINITION_LINE = -1;
+
   /** */
   private static final long serialVersionUID = 1L;
 

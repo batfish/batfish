@@ -95,6 +95,25 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testApplications() throws IOException {
+    String hostname = "applications";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+
+    /* a1 should be used, while a2 should be unused */
+    assertThat(unusedStructures, hasKey(hostname));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        unusedStructures.get(hostname);
+    assertThat(byType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+    SortedMap<String, SortedSet<Integer>> byName =
+        byType.get(JuniperStructureType.APPLICATION.getDescription());
+    assertThat(byName, hasKey("a2"));
+    assertThat(byName, not(hasKey("a1")));
+  }
+
+  @Test
   public void testAutonomousSystem() throws IOException {
     String testrigName = "autonomous-system";
     String c1Name = "as1";
