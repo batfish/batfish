@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AclIpSpace.Builder;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
