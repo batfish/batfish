@@ -65,7 +65,7 @@ pim_null
       | SG_EXPIRY_TIMER
       | SNOOPING
       | V1_RP_REACHABILITY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 pim_rp_address

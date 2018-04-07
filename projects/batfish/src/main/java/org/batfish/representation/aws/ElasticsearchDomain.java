@@ -8,8 +8,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
@@ -79,30 +77,6 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
     Configuration cfgNode = Utils.newAwsConfiguration(_domainName, "aws");
 
-    String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
-    String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
-
-    List<IpAccessListLine> inboundRules = new LinkedList<>();
-    List<IpAccessListLine> outboundRules = new LinkedList<>();
-    for (String sGroupId : _securityGroups) {
-      SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
-      if (sGroup == null) {
-        warnings.pedantic(
-            String.format(
-                "Security group \"%s\" for Elasticsearch domain \"%s\" not found",
-                sGroupId, _domainName));
-        continue;
-      }
-
-      sGroup.addInOutAccessLines(inboundRules, outboundRules);
-    }
-
-    // create ACLs from inboundRules and outboundRules
-    IpAccessList inAcl = new IpAccessList(sgIngressAclName, inboundRules);
-    IpAccessList outAcl = new IpAccessList(sgEgressAclName, outboundRules);
-    cfgNode.getIpAccessLists().put(sgIngressAclName, inAcl);
-    cfgNode.getIpAccessLists().put(sgEgressAclName, outAcl);
-
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
@@ -131,6 +105,9 @@ public class ElasticsearchDomain implements AwsVpcEntity, Serializable {
               .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
     }
+
+    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
+
     return cfgNode;
   }
 }

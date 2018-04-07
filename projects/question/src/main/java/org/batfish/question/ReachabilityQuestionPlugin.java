@@ -124,6 +124,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final boolean DEFAULT_USE_COMPRESSION = false;
 
+    private static final boolean DEFAULT_SPECIALIZE = false;
+
     private static final String PROP_ACTIONS = "actions";
 
     private static final String PROP_DST_IPS = "dstIps";
@@ -182,6 +184,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_SRC_IPS = "srcIps";
 
+    private static final String PROP_SRC_NATTED = "srcNatted";
+
     private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
 
     private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
@@ -195,6 +199,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final String PROP_TRANSIT_NODES = "transitNodes";
 
     private static final String PROP_USE_COMPRESSION = "useCompression";
+
+    private static final String PROP_SPECIALIZE = "specialize";
 
     private ReachabilitySettings.Builder _reachabilitySettings;
 
@@ -211,6 +217,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       setNonTransitNodes(DEFAULT_NON_TRANSIT_NODES);
       setNotIngressNodeRegex(DEFAULT_NOT_INGRESS_NODE_REGEX);
       _reachabilityType = ReachabilityType.STANDARD;
+      setSpecialize(DEFAULT_SPECIALIZE);
       setTransitNodes(DEFAULT_TRANSIT_NODES);
       setUseCompression(DEFAULT_USE_COMPRESSION);
     }
@@ -370,6 +377,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       return _reachabilitySettings.getHeaderSpace().getSrcIps();
     }
 
+    @JsonProperty(PROP_SRC_NATTED)
+    public Boolean getSrcNatted() {
+      return _reachabilitySettings.getSrcNatted();
+    }
+
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
       return _reachabilitySettings.getHeaderSpace().getSrcOrDstIps();
@@ -403,6 +415,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_USE_COMPRESSION)
     public boolean getUseCompression() {
       return _reachabilitySettings.getUseCompression();
+    }
+
+    @JsonProperty(PROP_SPECIALIZE)
+    public boolean getSpecialize() {
+      return _reachabilitySettings.getSpecialize();
     }
 
     @Override
@@ -510,6 +527,9 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         }
         if (!getNonTransitNodes().equals(DEFAULT_NON_TRANSIT_NODES)) {
           retString += String.format(", %s=%s", PROP_NON_TRANSIT_NODES, getNonTransitNodes());
+        }
+        if (getSrcNatted() != null) {
+          retString += String.format(", %s=%s", PROP_SRC_NATTED, getSrcNatted());
         }
         return retString;
       } catch (Exception e) {
@@ -694,6 +714,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
       _reachabilitySettings.getHeaderSpace().setSrcIps(ImmutableSortedSet.copyOf(srcIps));
     }
 
+    @JsonProperty(PROP_SRC_NATTED)
+    public void setSrcNatted(Boolean srcNatted) {
+      _reachabilitySettings.setSrcNatted(srcNatted);
+    }
+
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public void setSrcOrDstIps(SortedSet<IpWildcard> srcOrDstIps) {
       _reachabilitySettings.getHeaderSpace().setSrcOrDstIps(ImmutableSortedSet.copyOf(srcOrDstIps));
@@ -733,6 +758,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_USE_COMPRESSION)
     public void setUseCompression(boolean useCompression) {
       _reachabilitySettings.setUseCompression(useCompression);
+    }
+
+    @JsonProperty(PROP_SPECIALIZE)
+    public void setSpecialize(boolean specialize) {
+      _reachabilitySettings.setSpecialize(specialize);
     }
   }
 

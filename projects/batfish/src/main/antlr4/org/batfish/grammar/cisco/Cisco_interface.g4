@@ -71,22 +71,22 @@ if_hsrp_null
       | MAC_ADDRESS
       | NAME
       | TIMERS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 if_hsrp_preempt
 :
-   NO? PREEMPT ~NEWLINE* NEWLINE
+   NO? PREEMPT null_rest_of_line
 ;
 
 if_hsrp_priority
 :
-   NO? PRIORITY value = DEC ~NEWLINE* NEWLINE
+   NO? PRIORITY value = DEC null_rest_of_line
 ;
 
 if_hsrp_track
 :
-   NO? TRACK ~NEWLINE* NEWLINE
+   NO? TRACK null_rest_of_line
 ;
 
 if_ip_access_group
@@ -246,7 +246,7 @@ if_ip_policy
 
 if_ip_proxy_arp
 :
-   NO? IP PROXY_ARP NEWLINE
+   (NO | DEFAULT)? IP PROXY_ARP NEWLINE
 ;
 
 if_ip_router_isis
@@ -257,6 +257,13 @@ if_ip_router_isis
 if_ip_router_ospf_area
 :
    IP ROUTER OSPF procnum = DEC AREA area = IP_ADDRESS NEWLINE
+;
+
+if_ip_sticky_arp
+:
+   (NO? IP STICKY_ARP NEWLINE)
+   |
+   (IP STICKY_ARP IGNORE NEWLINE)
 ;
 
 if_ip_verify
@@ -794,7 +801,7 @@ if_st_null
       | PROTECT
       | RSTP
       | VLAN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 if_st_portfast
@@ -817,7 +824,7 @@ if_port_security_null
       | MAXIMUM
       | SECURE_MAC_ADDRESS
       | VIOLATION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 if_shutdown
@@ -938,7 +945,7 @@ ifdhcp_null
    (
       SMART_RELAY
       | SNOOPING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ifdhcp_relay
@@ -966,7 +973,7 @@ ifdhcpr_null
    (
       INFORMATION
       | SUBNET_BROADCAST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ifigmp_access_group
@@ -993,7 +1000,7 @@ ifigmp_null
       | STARTUP_QUERY_COUNT
       | STARTUP_QUERY_INTERVAL
       | VERSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ifigmp_static_group
@@ -1015,7 +1022,7 @@ ifigmpsg_null
    (
       IP_ADDRESS
       | RANGE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 iftunnel_bandwidth
@@ -1147,6 +1154,7 @@ s_interface
       | if_ip_policy
       | if_ip_router_isis
       | if_ip_router_ospf_area
+      | if_ip_sticky_arp
       | if_ip_virtual_router
       | if_ip_vrf_forwarding
       | if_isis_circuit_type

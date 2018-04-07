@@ -18,8 +18,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONArray;
@@ -71,13 +69,9 @@ public class Instance implements AwsVpcEntity, Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private transient IpAccessList _inAcl;
-
   private final String _instanceId;
 
   private final List<String> _networkInterfaces;
-
-  private transient IpAccessList _outAcl;
 
   private final List<String> _securityGroups;
 
@@ -123,20 +117,12 @@ public class Instance implements AwsVpcEntity, Serializable {
     return _instanceId;
   }
 
-  public IpAccessList getInAcl() {
-    return _inAcl;
-  }
-
   public String getInstanceId() {
     return _instanceId;
   }
 
   public List<String> getNetworkInterfaces() {
     return _networkInterfaces;
-  }
-
-  public IpAccessList getOutAcl() {
-    return _outAcl;
   }
 
   public List<String> getSecurityGroups() {
@@ -174,31 +160,8 @@ public class Instance implements AwsVpcEntity, Serializable {
 
   public Configuration toConfigurationNode(
       AwsConfiguration awsVpcConfig, Region region, Warnings warnings) {
-    String sgIngressAclName = "~SECURITY_GROUP_INGRESS_ACL~";
-    String sgEgressAclName = "~SECURITY_GROUP_EGRESS_ACL~";
     String name = _tags.getOrDefault("Name", _instanceId);
     Configuration cfgNode = Utils.newAwsConfiguration(name, "aws");
-
-    List<IpAccessListLine> inboundRules = new LinkedList<>();
-    List<IpAccessListLine> outboundRules = new LinkedList<>();
-    for (String sGroupId : _securityGroups) {
-      SecurityGroup sGroup = region.getSecurityGroups().get(sGroupId);
-
-      if (sGroup == null) {
-        warnings.pedantic(
-            String.format(
-                "Security group \"%s\" for instance \"%s\" not found", sGroupId, _instanceId));
-        continue;
-      }
-
-      sGroup.addInOutAccessLines(inboundRules, outboundRules);
-    }
-
-    // create ACLs from inboundRules and outboundRules
-    _inAcl = new IpAccessList(sgIngressAclName, inboundRules);
-    _outAcl = new IpAccessList(sgEgressAclName, outboundRules);
-    cfgNode.getIpAccessLists().put(sgIngressAclName, _inAcl);
-    cfgNode.getIpAccessLists().put(sgEgressAclName, _outAcl);
 
     for (String interfaceId : _networkInterfaces) {
 
@@ -247,14 +210,12 @@ public class Instance implements AwsVpcEntity, Serializable {
       Interface iface = Utils.newInterface(interfaceId, cfgNode, ifaceAddresses.first());
       iface.setAllAddresses(ifaceAddresses);
 
-      // apply ACLs to interface
-      iface.setIncomingFilter(_inAcl);
-      iface.setOutgoingFilter(_outAcl);
-
       cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
       cfgNode.getVendorFamily().getAws().setSubnetId(_subnetId);
       cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     }
+
+    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     return cfgNode;
   }

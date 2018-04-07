@@ -59,7 +59,7 @@ rr_null
       )
       | TIMERS
       | VERSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rr_passive_interface
@@ -74,7 +74,7 @@ rr_passive_interface_default
 
 rr_redistribute
 :
-   REDISTRIBUTE ~NEWLINE* NEWLINE
+   REDISTRIBUTE null_rest_of_line
 ;
 
 s_router_rip

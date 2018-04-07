@@ -3,7 +3,7 @@ package org.batfish.z3.expr;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class TrueExpr extends BooleanExpr {
+public final class TrueExpr extends BooleanExpr {
 
   public static final TrueExpr INSTANCE = new TrueExpr();
 
@@ -20,8 +20,8 @@ public class TrueExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
-    return true;
+  protected boolean exprEquals(Expr e) {
+    return this == e;
   }
 
   @Override

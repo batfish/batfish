@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
@@ -29,7 +30,11 @@ public class ReachabilitySettings {
 
     private NodesSpecifier _notIngressNodes;
 
+    private Boolean _srcNatted;
+
     private NodesSpecifier _transitNodes;
+
+    private boolean _specialize;
 
     private boolean _useCompression;
 
@@ -69,6 +74,14 @@ public class ReachabilitySettings {
       return _notIngressNodes;
     }
 
+    public boolean getSpecialize() {
+      return _specialize;
+    }
+
+    public Boolean getSrcNatted() {
+      return _srcNatted;
+    }
+
     public NodesSpecifier getTransitNodes() {
       return _transitNodes;
     }
@@ -82,36 +95,54 @@ public class ReachabilitySettings {
       return this;
     }
 
-    public void setFinalNodes(NodesSpecifier finalNodes) {
+    public Builder setFinalNodes(NodesSpecifier finalNodes) {
       _finalNodes = finalNodes;
+      return this;
     }
 
-    public void setHeaderSpace(HeaderSpace headerSpace) {
+    public Builder setHeaderSpace(HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
+      return this;
     }
 
-    public void setIngressNodes(NodesSpecifier ingressNodes) {
+    public Builder setIngressNodes(NodesSpecifier ingressNodes) {
       _ingressNodes = ingressNodes;
+      return this;
     }
 
-    public void setMaxChunkSize(int maxChunkSize) {
+    public Builder setMaxChunkSize(int maxChunkSize) {
       _maxChunkSize = maxChunkSize;
+      return this;
     }
 
-    public void setNonTransitNodes(NodesSpecifier nonTransitNodes) {
+    public Builder setNonTransitNodes(NodesSpecifier nonTransitNodes) {
       _nonTransitNodes = nonTransitNodes;
+      return this;
     }
 
-    public void setNotFinalNodeRegex(NodesSpecifier notFinalNodes) {
+    public Builder setNotFinalNodeRegex(NodesSpecifier notFinalNodes) {
       _notFinalNodes = notFinalNodes;
+      return this;
     }
 
-    public void setNotIngressNodeRegex(NodesSpecifier notIngressNodes) {
+    public Builder setNotIngressNodeRegex(NodesSpecifier notIngressNodes) {
       _notIngressNodes = notIngressNodes;
+      return this;
     }
 
-    public void setTransitNodes(NodesSpecifier transitNodes) {
+    public Builder setSrcNatted(Boolean srcNatted) {
+      _srcNatted = srcNatted;
+      return this;
+    }
+
+    public Builder setSpecialize(boolean specialize) {
+      _specialize = specialize;
+      return this;
+    }
+
+    public Builder setTransitNodes(NodesSpecifier transitNodes) {
       _transitNodes = transitNodes;
+      return this;
     }
 
     public Builder setUseCompression(boolean useCompression) {
@@ -140,7 +171,11 @@ public class ReachabilitySettings {
 
   private NodesSpecifier _notIngressNodes;
 
+  private final Boolean _srcNatted;
+
   private final NodesSpecifier _transitNodes;
+
+  private final boolean _specialize;
 
   private final boolean _useCompression;
 
@@ -153,8 +188,10 @@ public class ReachabilitySettings {
     _maxChunkSize = builder._maxChunkSize;
     _transitNodes = builder._transitNodes;
     _nonTransitNodes = builder._nonTransitNodes;
+    _specialize = builder._specialize;
     _useCompression = builder._useCompression;
     _actions = builder._actions;
+    _srcNatted = builder._srcNatted;
   }
 
   public Set<String> computeActiveFinalNodes(Map<String, Configuration> configurations)
@@ -197,6 +234,28 @@ public class ReachabilitySettings {
     return _transitNodes.getMatchingNodes(configurations);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof ReachabilitySettings)) {
+      return false;
+    }
+
+    ReachabilitySettings other = (ReachabilitySettings) obj;
+    return _actions.equals(other._actions)
+        && _finalNodes.equals(other._finalNodes)
+        && _headerSpace.equals(other._headerSpace)
+        && _ingressNodes.equals(other._ingressNodes)
+        && _maxChunkSize == other._maxChunkSize
+        && _nonTransitNodes.equals(other._nonTransitNodes)
+        && Objects.equal(_srcNatted, other._srcNatted)
+        && _transitNodes.equals(other._transitNodes)
+        && _specialize == other._specialize
+        && _useCompression == other._useCompression;
+  }
+
   public SortedSet<ForwardingAction> getActions() {
     return _actions;
   }
@@ -221,12 +280,35 @@ public class ReachabilitySettings {
     return _nonTransitNodes;
   }
 
+  public Boolean getSrcNatted() {
+    return _srcNatted;
+  }
+
   public NodesSpecifier getTransitNodes() {
     return _transitNodes;
   }
 
+  public boolean getSpecialize() {
+    return _specialize;
+  }
+
   public boolean getUseCompression() {
     return _useCompression;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(
+        _actions,
+        _finalNodes,
+        _headerSpace,
+        _ingressNodes,
+        _maxChunkSize,
+        _nonTransitNodes,
+        _srcNatted,
+        _transitNodes,
+        _specialize,
+        _useCompression);
   }
 
   public void validateTransitNodes(Map<String, Configuration> configurations)

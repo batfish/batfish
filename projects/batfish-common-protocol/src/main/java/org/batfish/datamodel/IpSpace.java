@@ -9,7 +9,5 @@ public interface IpSpace {
 
   boolean containsIp(@Nonnull Ip ip);
 
-  default IpSpace complement() {
-    return new ComplementIpSpace(this);
-  }
+  IpSpace complement();
 }

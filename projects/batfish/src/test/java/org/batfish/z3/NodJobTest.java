@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.z3.Context;
+import com.microsoft.z3.Status;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -60,12 +61,16 @@ public class NodJobTest {
   private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
+  private OriginateVrf _originateVrf;
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
-  private OriginateVrf _originateVrf;
 
   private NodJob getNodJob(HeaderSpace headerSpace) {
+    return getNodJob(headerSpace, null);
+  }
+
+  private NodJob getNodJob(HeaderSpace headerSpace, Boolean srcNatted) {
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
@@ -73,12 +78,13 @@ public class NodJobTest {
             .setHeaderSpace(headerSpace)
             .setIngressNodeVrfs(
                 ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())))
+            .setSrcNatted(srcNatted)
             .setTransitNodes(ImmutableSet.of())
             .setNonTransitNodes(ImmutableSet.of())
             .build();
     SortedSet<Pair<String, String>> ingressNodes =
         ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag");
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
   }
 
   @Before
@@ -220,6 +226,36 @@ public class NodJobTest {
         });
   }
 
+  /**
+   * Test that traffic originating from 3.0.0.0 that is expected to be NATed returns SAT when we
+   * constrain to only allow NATed results.
+   */
+  @Test
+  public void testNattedSat() {
+    HeaderSpace headerSpace = new HeaderSpace();
+    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
+    NodJob nodJob = getNodJob(headerSpace, true);
+    Context z3Context = new Context();
+    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
+
+    assertThat(status, equalTo(Status.SATISFIABLE));
+  }
+
+  /**
+   * Test that traffic originating from 3.0.0.0 that is expected to be NATed returns UNSAT when we
+   * constrain to only allow NOT-NATed results.
+   */
+  @Test
+  public void testNattedUnsat() {
+    HeaderSpace headerSpace = new HeaderSpace();
+    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
+    NodJob nodJob = getNodJob(headerSpace, false);
+    Context z3Context = new Context();
+    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
+
+    assertThat(status, equalTo(Status.UNSATISFIABLE));
+  }
+
   /** Test that traffic originating from 3.0.0.1 is not NATed */
   @Test
   public void testNotNatted() {
@@ -260,5 +296,35 @@ public class NodJobTest {
           FlowTraceHop hop = hops.get(0);
           assertThat(hop.getTransformedFlow(), nullValue());
         });
+  }
+
+  /**
+   * Test that traffic originating from 3.0.0.1 that is expected NOT to be NATed returns SAT when we
+   * constrain to only allow NOT-NATed results.
+   */
+  @Test
+  public void testNotNattedSat() {
+    HeaderSpace headerSpace = new HeaderSpace();
+    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
+    NodJob nodJob = getNodJob(headerSpace, false);
+    Context z3Context = new Context();
+    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
+
+    assertThat(status, equalTo(Status.SATISFIABLE));
+  }
+
+  /**
+   * Test that traffic originating from 3.0.0.1 that is expected NOT to be NATed returns UNSAT when
+   * we constrain to only allow NATed results.
+   */
+  @Test
+  public void testNotNattedUnsat() {
+    HeaderSpace headerSpace = new HeaderSpace();
+    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
+    NodJob nodJob = getNodJob(headerSpace, true);
+    Context z3Context = new Context();
+    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
+
+    assertThat(status, equalTo(Status.UNSATISFIABLE));
   }
 }

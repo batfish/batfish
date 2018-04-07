@@ -120,6 +120,21 @@ public class AclIpSpace implements IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    Builder builder = AclIpSpace.builder();
+    _lines.forEach(
+        line -> {
+          if (line.getAction() == LineAction.ACCEPT) {
+            builder.thenRejecting(line.getIpSpace());
+          } else {
+            builder.thenPermitting(line.getIpSpace());
+          }
+        });
+    builder.thenPermitting(UniverseIpSpace.INSTANCE);
+    return builder.build();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

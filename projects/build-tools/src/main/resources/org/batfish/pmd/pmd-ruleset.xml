@@ -11,6 +11,7 @@
   <rule ref="rulesets/java/basic.xml">
      <exclude name="AvoidUsingHardCodedIP"/>
      <exclude name="CheckResultSet"/>
+     <exclude name="CollapsibleIfStatements"/>
      <exclude name="OverrideBothEqualsAndHashcode"/>
   </rule>
   <rule ref="rulesets/java/imports.xml">

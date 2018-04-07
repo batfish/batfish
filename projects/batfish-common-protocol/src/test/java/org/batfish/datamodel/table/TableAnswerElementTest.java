@@ -62,24 +62,22 @@ public class TableAnswerElementTest {
             BatfishObjectMapper.mapper()
                 .readValue("[{\"key1\": \"value1\"}, {\"key2\": \"value2\"}]", JsonNode.class));
 
-    TableAnswerElement sameRows = new TableAnswerElement(new TableMetadata());
-    sameRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
-    sameRows.addRow(
+    // adding rows in different order shouldn't matter
+    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata());
+    otherRows.addRow(
         (ObjectNode)
             BatfishObjectMapper.mapper().createObjectNode().set("key2", new TextNode("value2")));
-
-    // adding in different order
-    TableAnswerElement diffRows = new TableAnswerElement(new TableMetadata());
-    diffRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key2", new TextNode("value2")));
-    diffRows.addRow(
+    otherRows.addRow(
         (ObjectNode)
             BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
 
-    assertThat(sameRows.evaluateAssertion(assertion), equalTo(true));
-    assertThat(diffRows.evaluateAssertion(assertion), equalTo(false));
+    assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
+
+    // adding another duplicate row should matter
+    otherRows.addRow(
+        (ObjectNode)
+            BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
+
+    assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
   }
 }

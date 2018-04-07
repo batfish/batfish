@@ -9,7 +9,9 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -46,7 +48,13 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     @Override
     public StandardReachabilityQuerySynthesizer build() {
       return new StandardReachabilityQuerySynthesizer(
-          _actions, _headerSpace, _finalNodes, _ingressNodeVrfs, _transitNodes, _nonTransitNodes);
+          _actions,
+          _headerSpace,
+          _finalNodes,
+          _ingressNodeVrfs,
+          _srcNatted,
+          _transitNodes,
+          _nonTransitNodes);
     }
 
     @Override
@@ -80,9 +88,10 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Set<String> finalNodes,
       @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      Boolean srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(headerSpace, ingressNodeVrfs, transitNodes, nonTransitNodes);
+    super(headerSpace, ingressNodeVrfs, srcNatted, transitNodes, nonTransitNodes);
     _actions = actions;
     _finalNodes = finalNodes;
   }
@@ -196,12 +205,17 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     List<StateExpr> finalActions = computeFinalActions();
+    ImmutableList.Builder<BooleanExpr> queryPreconditions =
+        ImmutableList.<BooleanExpr>builder().add(SaneExpr.INSTANCE).add(getSrcNattedConstraint());
+
     finalActions
         .stream()
         .map(
             finalAction ->
                 new BasicRuleStatement(
-                    SaneExpr.INSTANCE, ImmutableSet.of(finalAction), Query.INSTANCE))
+                    new AndExpr(queryPreconditions.build()),
+                    ImmutableSet.of(finalAction),
+                    Query.INSTANCE))
         .forEach(rules::add);
     addOriginateRules(rules);
     return ReachabilityProgram.builder()

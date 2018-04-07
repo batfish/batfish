@@ -23,6 +23,18 @@
    "State": "available", 
    "SubnetId": "subnet-1f315846", 
    "VpcId": "vpc-b390fad5"
+  },
+  {
+   "AssignIpv6AddressOnCreation": false,
+   "AvailabilityZone": "us-west-2b",
+   "AvailableIpAddressCount": 2013,
+   "CidrBlock": "10.193.16.0/21",
+   "DefaultForAz": false,
+   "Ipv6CidrBlockAssociationSet": [],
+   "MapPublicIpOnLaunch": true,
+   "State": "available",
+   "SubnetId": "subnet-b26c24fa",
+   "VpcId": "vpc-6f6f8316"
   }
  ]
 }

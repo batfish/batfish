@@ -90,6 +90,14 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
   }
 
   @Override
+  public IpSpace complement() {
+    return AclIpSpace.builder()
+        .thenRejecting(this)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (o == this) {
       return true;
@@ -110,6 +118,46 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
 
   public Ip getWildcard() {
     return _second;
+  }
+
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this is a subset of those matched by other.
+   */
+  public boolean subsetOf(IpWildcard other) {
+    return other.supersetOf(this);
+  }
+
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this is a superset of those matched by other.
+   */
+  public boolean supersetOf(IpWildcard other) {
+    long wildToThis = getWildcard().asLong();
+    long wildToOther = other.getWildcard().asLong();
+    long differentIpBits = getIp().asLong() ^ other.getIp().asLong();
+
+    /*
+     * 1. Any bits wild in other must be wild in this (i.e. other's wild bits must be a subset
+     *    of this' wild bits).
+     * 2. Any IP bits that differ must be wild in this.
+     */
+    return (wildToThis & wildToOther) == wildToOther
+        && (wildToThis & differentIpBits) == differentIpBits;
+  }
+
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this intersects the set of those matched by other.
+   */
+  public boolean intersects(IpWildcard other) {
+    long differentIpBits = getIp().asLong() ^ other.getIp().asLong();
+    long canDiffer = getWildcard().asLong() | other.getWildcard().asLong();
+
+    /*
+     * All IP bits that different must be wild in either this or other.
+     */
+    return (differentIpBits & canDiffer) == differentIpBits;
   }
 
   public boolean isPrefix() {

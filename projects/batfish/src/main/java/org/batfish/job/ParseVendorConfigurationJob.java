@@ -243,7 +243,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         FlatJuniperCombinedParser flatJuniperParser =
             new FlatJuniperCombinedParser(_fileText, _settings);
         combinedParser = flatJuniperParser;
-        extractor = new FlatJuniperControlPlaneExtractor(_fileText, flatJuniperParser, _warnings);
+        extractor =
+            new FlatJuniperControlPlaneExtractor(
+                _fileText, flatJuniperParser, _warnings, _settings.getUnrecognizedAsRedFlag());
         break;
 
       case IPTABLES:

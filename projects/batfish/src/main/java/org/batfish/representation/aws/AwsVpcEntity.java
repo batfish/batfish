@@ -90,6 +90,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_TO = "To";
   String JSON_KEY_TO_PORT = "ToPort";
   String JSON_KEY_TYPE = "Type";
+  String JSON_KEY_USER_ID_PAIRS = "UserIdGroupPairs";
   String JSON_KEY_VGW_TELEMETRY = "VgwTelemetry";
   String JSON_KEY_VPC_ATTACHMENTS = "VpcAttachments";
   String JSON_KEY_VPC_ID = "VpcId";

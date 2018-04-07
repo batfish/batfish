@@ -337,7 +337,7 @@ ifbr_vlan_id_list
 
 ife_filter
 :
-   FILTER direction name = variable
+   filter
 ;
 
 ife_interface_mode

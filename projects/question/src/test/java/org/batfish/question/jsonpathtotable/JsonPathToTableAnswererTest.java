@@ -57,7 +57,12 @@ public class JsonPathToTableAnswererTest {
     assertThat(answer.getExcludedRows().size(), equalTo(1));
 
     // the one row should have includeVal
-    assertThat(answer.getRows().get(0).get("val"), equalTo(new TextNode("includeVal")));
+    ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
+    row.set("val", new TextNode("includeVal"));
+    row.set(
+        "node",
+        BatfishObjectMapper.mapper().createObjectNode().set("name", new TextNode("includeVal")));
+    assertThat(answer.getRows().contains(row), equalTo(true));
 
     // the summary should have the right count
     assertThat(answer.getSummary().getNumResults(), equalTo(1));

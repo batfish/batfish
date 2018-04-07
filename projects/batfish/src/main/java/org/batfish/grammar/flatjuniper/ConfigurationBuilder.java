@@ -12,6 +12,7 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -129,6 +130,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
@@ -1382,9 +1384,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private OspfArea _currentArea;
 
-  private Prefix _currentAreaRangePrefix;
-
   @Nullable private Long _currentAreaRangeMetric;
+
+  private Prefix _currentAreaRangePrefix;
 
   private boolean _currentAreaRangeRestrict;
 
@@ -1488,22 +1490,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private final Set<String> _unimplementedFeatures;
 
+  private final boolean _unrecognizedAsRedFlag;
+
   private final Warnings _w;
 
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
       String text,
       Warnings warnings,
-      Set<String> unimplementedFeatures) {
+      Set<String> unimplementedFeatures,
+      boolean unrecognizedAsRedFlag) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration(unimplementedFeatures);
     _currentRoutingInstance = _configuration.getDefaultRoutingInstance();
     _termRouteFilters = new HashMap<>();
     _unimplementedFeatures = unimplementedFeatures;
+    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+  }
+
+  private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
+    String typeName = type.getSimpleName();
+    String txt = getFullText(ctx);
+    return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
   @Override
@@ -1554,13 +1566,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterF_family(F_familyContext ctx) {
-    if (ctx.INET() != null) {
-      _currentFirewallFamily = Family.INET;
-    } else if (ctx.INET6() != null) {
-      _currentFirewallFamily = Family.INET6;
-    } else if (ctx.MPLS() != null) {
-      _currentFirewallFamily = Family.MPLS;
-    }
+    _currentFirewallFamily = toFamily(ctx);
   }
 
   @Override
@@ -2812,6 +2818,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitIfe_filter(Ife_filterContext ctx) {
+    FilterContext filter = ctx.filter();
+    String name = filter.name.getText();
+    int line = filter.name.getStart().getLine();
+    _configuration.referenceStructure(
+        JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
+  }
+
+  @Override
   public void exitIfi_address(Ifi_addressContext ctx) {
     _currentInterfaceAddress = null;
   }
@@ -2819,9 +2834,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitIfi_filter(Ifi_filterContext ctx) {
     FilterContext filter = ctx.filter();
+    String name = filter.name.getText();
+    int line = filter.name.getStart().getLine();
     if (filter.direction() != null) {
-      String name = filter.name.getText();
-      int line = filter.name.getStart().getLine();
       DirectionContext direction = filter.direction();
       if (direction.INPUT() != null) {
         _currentInterface.setIncomingFilter(name);
@@ -2830,6 +2845,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentInterface.setOutgoingFilter(name);
         _currentInterface.setOutgoingFilterLine(line);
       }
+    } else {
+      _configuration.referenceStructure(
+          JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
     }
   }
 
@@ -3899,6 +3917,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return _configuration;
   }
 
+  private String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    String text = _text.substring(start, end + 1);
+    return text;
+  }
+
   private String getInterfaceName(Interface_idContext ctx) {
     String name = ctx.name.getText();
     if (ctx.suffix != null) {
@@ -4089,5 +4114,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private void todo(ParserRuleContext ctx, String feature) {
     _w.todo(ctx, feature, _parser, _text);
     _unimplementedFeatures.add("Juniper: " + feature);
+  }
+
+  private Family toFamily(F_familyContext ctx) {
+    if (ctx.ANY() != null) {
+      return Family.ANY;
+    } else if (ctx.BRIDGE() != null) {
+      return Family.BRIDGE;
+    } else if (ctx.CCC() != null) {
+      return Family.CCC;
+    } else if (ctx.ETHERNET_SWITCHING() != null) {
+      return Family.ETHERNET_SWITCHING;
+    } else if (ctx.INET() != null) {
+      return Family.INET;
+    } else if (ctx.INET6() != null) {
+      return Family.INET6;
+    } else if (ctx.MPLS() != null) {
+      return Family.MPLS;
+    } else {
+      throw convError(Family.class, ctx);
+    }
+  }
+
+  @Override
+  public void visitErrorNode(ErrorNode errorNode) {
+    Token token = errorNode.getSymbol();
+    String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
+    int line = token.getLine();
+    String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+    if (_unrecognizedAsRedFlag) {
+      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+      _configuration.setUnrecognized(true);
+    } else {
+      _parser.getErrors().add(msg);
+    }
   }
 }

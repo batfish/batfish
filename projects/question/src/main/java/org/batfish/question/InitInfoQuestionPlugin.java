@@ -85,6 +85,11 @@ public class InitInfoQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
+    public boolean getIndependent() {
+      return true;
+    }
+
+    @Override
     public String getName() {
       return "initinfo";
     }

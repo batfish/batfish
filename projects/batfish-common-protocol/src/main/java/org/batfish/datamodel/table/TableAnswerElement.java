@@ -97,7 +97,7 @@ public class TableAnswerElement extends AnswerElement {
           expectedEntries =
               BatfishObjectMapper.mapper().readValue(assertion.getExpect().toString(), Rows.class);
         } catch (IOException e) {
-          throw new BatfishException("Could not recover Set<ObjectNode> from expect", e);
+          throw new BatfishException("Could not recover Rows object from expect", e);
         }
         return _rows.equals(expectedEntries);
       default:

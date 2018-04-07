@@ -22,7 +22,7 @@ import java.util.Set;
 import org.batfish.common.BatfishException;
 
 /** Contains a few helper functions for applying JsonPath expressions to JSON strings and objects */
-public class JsonPathUtils {
+public final class JsonPathUtils {
 
   public static class BatfishJsonPathDefaults implements Defaults {
 

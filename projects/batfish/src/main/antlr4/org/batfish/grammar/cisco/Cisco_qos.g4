@@ -107,7 +107,7 @@ cmm_exception
 
 cmm_mpls
 :
-   MPLS ~NEWLINE* NEWLINE
+   MPLS null_rest_of_line
 ;
 
 cmm_non_client_nrt
@@ -135,7 +135,7 @@ cmm_precedence
 
 cmm_protocol
 :
-   PROTOCOL ~NEWLINE* NEWLINE
+   PROTOCOL null_rest_of_line
 ;
 
 cmm_qos_group
@@ -386,7 +386,7 @@ on_host
 
 on_nat
 :
-   NAT ~NEWLINE* NEWLINE // todo
+   NAT null_rest_of_line // todo
 
 ;
 
@@ -420,7 +420,7 @@ os_service
 
 pm_class
 :
-   num = DEC? CLASS ~NEWLINE* NEWLINE
+   num = DEC? CLASS null_rest_of_line
    (
       pmc_null
       | pmc_police
@@ -438,7 +438,7 @@ pm_null
    (
       CIR
       | DESCRIPTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 pm_parameters
@@ -469,12 +469,12 @@ pmc_null
       | SHAPE
       | TRUST
       | USER_STATISTICS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 pmc_police
 :
-   POLICE ~NEWLINE* NEWLINE
+   POLICE null_rest_of_line
    (
       pmcp_null
    )*
@@ -487,7 +487,7 @@ pmcp_null
       CONFORM_ACTION
       | EXCEED_ACTION
       | VIOLATE_ACTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 pmp_null
@@ -499,7 +499,7 @@ pmp_null
       | MESSAGE_LENGTH
       | PROTOCOL_VIOLATION
       | TCP_INSPECTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 qm_null
@@ -510,7 +510,7 @@ qm_null
       | DSCP_VALUE
       | PCP
       | PCP_VALUE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 s_class_map
@@ -556,7 +556,7 @@ s_object_group
 
 s_policy_map
 :
-   POLICY_MAP ~NEWLINE* NEWLINE
+   POLICY_MAP null_rest_of_line
    (
       pm_class
       | pm_end_policy_map
@@ -588,5 +588,5 @@ table_map_null
       DEFAULT
       | FROM
       | MAP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;

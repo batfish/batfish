@@ -188,7 +188,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            111
+            117
           ]
         }
       },
@@ -457,7 +457,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            114
+            120
           ]
         }
       },
@@ -697,7 +697,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server tftp-server list' named '8'",
         "files" : {
           "cisco_snmp" : [
-            90
+            91
           ]
         }
       },
@@ -931,7 +931,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute connected route-map' named 'DIRECT_OSPF'",
         "files" : {
           "cisco_ospf" : [
-            52
+            53
           ]
         }
       },
@@ -1171,7 +1171,7 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              111
+              117
             ]
           },
           "mynatacl" : {
@@ -1188,7 +1188,7 @@
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              114
+              120
             ]
           },
           "ag1" : {
@@ -1264,7 +1264,7 @@
         "route-map" : {
           "DIRECT_OSPF" : {
             "ospf redistribute connected route-map" : [
-              52
+              53
             ]
           }
         }
@@ -1343,7 +1343,7 @@
               67
             ],
             "snmp server tftp-server list" : [
-              90
+              91
             ]
           },
           "customer-snmp" : {

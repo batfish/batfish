@@ -1991,6 +1991,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // mark references to authentication key chain that may not appear in data model
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
+    markStructure(
+        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
+
     // warn about unreferenced data structures
     warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
@@ -2160,7 +2163,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
-      if (filter.getFamily().equals(Family.INET) && filter.isUnused()) {
+      if (filter.isUnused()) {
         unused(JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
       }
     }
