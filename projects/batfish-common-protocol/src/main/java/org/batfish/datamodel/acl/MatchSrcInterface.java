@@ -18,7 +18,7 @@ public class MatchSrcInterface extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return Objects.equals(_srcInterfaces, ((MatchSrcInterface) o)._srcInterfaces);
   }
 

@@ -20,7 +20,7 @@ public class TrueExpr extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return true;
   }
 

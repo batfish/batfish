@@ -16,7 +16,7 @@ public class PermittedByAcl extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return _aclName.equals(((PermittedByAcl) o)._aclName);
   }
 

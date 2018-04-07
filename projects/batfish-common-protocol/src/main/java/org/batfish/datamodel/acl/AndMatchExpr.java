@@ -23,7 +23,7 @@ public class AndMatchExpr extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return Objects.equals(_conjuncts, ((AndMatchExpr) o)._conjuncts);
   }
 

@@ -22,15 +22,12 @@ public class AndExprTest {
   public void testSingleExpr() {
     // Test that if and only if the only ACL line is a match, the AndMatchExpr indicates a match
 
-    TrueExpr eTrue = TrueExpr.TRUE_EXPR;
-    FalseExpr eFalse = FalseExpr.FALSE_EXPR;
-
     // Setup simple expression with a single true boolean expr
-    List<AclLineMatchExpr> setTrue = ImmutableList.of(eTrue);
+    List<AclLineMatchExpr> setTrue = ImmutableList.of(TrueExpr.TRUE_EXPR);
     AndMatchExpr exprTrue = new AndMatchExpr(setTrue);
 
     // Setup simple expression with a single false boolean expr
-    List<AclLineMatchExpr> setFalse = ImmutableList.of(eFalse);
+    List<AclLineMatchExpr> setFalse = ImmutableList.of(FalseExpr.FALSE_EXPR);
     AndMatchExpr exprFalse = new AndMatchExpr(setFalse);
 
     // Confirm true boolean expr matches
@@ -44,17 +41,15 @@ public class AndExprTest {
   public void testMultipleExprs() {
     // Test that if and only if all ACL lines are a match, the AndMatchExpr returns a match
 
-    TrueExpr eTrue = TrueExpr.TRUE_EXPR;
-    FalseExpr eFalse = FalseExpr.FALSE_EXPR;
-
-    // Setup
-    List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(eTrue, eTrue);
+    List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(TrueExpr.TRUE_EXPR, TrueExpr.TRUE_EXPR);
     AndMatchExpr exprTrueTrue = new AndMatchExpr(setTrueTrue);
 
-    List<AclLineMatchExpr> setTrueFalse = ImmutableList.of(eTrue, eFalse);
+    List<AclLineMatchExpr> setTrueFalse =
+        ImmutableList.of(TrueExpr.TRUE_EXPR, FalseExpr.FALSE_EXPR);
     AndMatchExpr exprTrueFalse = new AndMatchExpr(setTrueFalse);
 
-    List<AclLineMatchExpr> setFalseFalse = ImmutableList.of(eFalse, eFalse);
+    List<AclLineMatchExpr> setFalseFalse =
+        ImmutableList.of(FalseExpr.FALSE_EXPR, FalseExpr.FALSE_EXPR);
     AndMatchExpr exprFalseFalse = new AndMatchExpr(setFalseFalse);
 
     // Confirm boolean expr true AND true = true

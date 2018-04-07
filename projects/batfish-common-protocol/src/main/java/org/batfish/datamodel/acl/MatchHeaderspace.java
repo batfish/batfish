@@ -17,7 +17,7 @@ public class MatchHeaderspace extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return Objects.equals(_headerspace, ((MatchHeaderspace) o)._headerspace);
   }
 

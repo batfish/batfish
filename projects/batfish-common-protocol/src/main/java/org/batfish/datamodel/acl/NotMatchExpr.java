@@ -16,7 +16,7 @@ public class NotMatchExpr extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return Objects.equals(_operand, ((NotMatchExpr) o)._operand);
   }
 

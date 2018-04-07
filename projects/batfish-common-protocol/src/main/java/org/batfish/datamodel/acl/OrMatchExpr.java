@@ -18,7 +18,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
   }
 
   @Override
-  public boolean exprEquals(Object o) {
+  protected boolean exprEquals(Object o) {
     return Objects.equals(_disjuncts, ((OrMatchExpr) o)._disjuncts);
   }
 
