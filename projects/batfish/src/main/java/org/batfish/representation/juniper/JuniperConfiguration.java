@@ -1906,33 +1906,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // static routes
       for (StaticRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getStaticRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(route);
         vrf.getStaticRoutes().add(newStaticRoute);
       }
 
       // aggregate routes
       for (AggregateRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getAggregateRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
       }
 
       // generated routes
       for (GeneratedRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getGeneratedRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
