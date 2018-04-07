@@ -7573,6 +7573,11 @@ OSPF
    'ospf'
 ;
 
+OSPF3
+:
+   'ospf3'
+;
+
 OSPF_EXTERNAL_TYPE_1
 :
    'ospf-external-type-1'
