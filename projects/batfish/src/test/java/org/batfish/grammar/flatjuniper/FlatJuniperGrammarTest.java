@@ -1,9 +1,11 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -12,8 +14,10 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertise
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -24,6 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -39,6 +45,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.JuniperStructureType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
@@ -75,15 +82,39 @@ public class FlatJuniperGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
+
   private Configuration parseConfig(String hostname) throws IOException {
     return parseTextConfigs(hostname).get(hostname);
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
-    String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
-    return BatfishTestUtils.parseTextConfigs(_folder, names);
+    return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
+  @Test
+  public void testApplications() throws IOException {
+    String hostname = "applications";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+
+    /* a1 should be used, while a2 should be unused */
+    assertThat(unusedStructures, hasKey(hostname));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        unusedStructures.get(hostname);
+    assertThat(byType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+    SortedMap<String, SortedSet<Integer>> byName =
+        byType.get(JuniperStructureType.APPLICATION.getDescription());
+    assertThat(byName, hasKey("a2"));
+    assertThat(byName, not(hasKey("a1")));
+    assertThat(byName, not(hasKey("a3")));
   }
 
   @Test
@@ -173,6 +204,24 @@ public class FlatJuniperGrammarTest {
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+  }
+
+  @Test
+  public void testEthernetSwitchingFilterReference() throws IOException {
+    String hostname = "ethernet-switching-filter";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+
+    /* esfilter should not be unused, whuile esfilter2 should be unused */
+    assertThat(unusedStructures, hasKey(hostname));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        unusedStructures.get(hostname);
+    assertThat(byType, hasKey(JuniperStructureType.FIREWALL_FILTER.getDescription()));
+    SortedMap<String, SortedSet<Integer>> byName =
+        byType.get(JuniperStructureType.FIREWALL_FILTER.getDescription());
+    assertThat(byName, hasKey("esfilter2"));
+    assertThat(byName, not(hasKey("esfilter")));
   }
 
   @Test
@@ -270,5 +319,13 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testStaticRoutes() throws IOException {
+    Configuration c = parseConfig("static-routes");
+
+    assertThat(c, hasDefaultVrf(hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("1.0.0.0/8"))))));
+    assertThat(c, hasVrf("ri2", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("2.0.0.0/8"))))));
   }
 }

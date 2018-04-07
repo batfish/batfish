@@ -207,7 +207,7 @@ public class WorkQueueMgr {
     }
   }
 
-  private QueuedWork getBlockerForDataplaneIndependentWork(
+  private QueuedWork getBlockerForParsingDependentWork(
       QueuedWork work, String testrig, String environment) throws IOException {
 
     WorkItem wItem = work.getWorkItem();
@@ -225,7 +225,7 @@ public class WorkQueueMgr {
         if (parsingWork == null) {
           throw new BatfishException(
               String.format(
-                  "Cannot queue dataplane independent work for %s / %s: "
+                  "Cannot queue parsing dependent work for %s / %s: "
                       + "Status is %s but no incomplete parsing work exists",
                   testrig, environment, envMetadata.getProcessingStatus()));
         }
@@ -555,13 +555,14 @@ public class WorkQueueMgr {
     }
   }
 
-  private boolean queueAnsweringWork(QueuedWork work, boolean dataplaneDependent) throws Exception {
+  private boolean queueDependentAnsweringWork(QueuedWork work, boolean dataplaneDependent)
+      throws Exception {
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork baseBlocker =
         dataplaneDependent
             ? getBlockerForDataplaneDependentWork(work, wDetails.baseTestrig, wDetails.baseEnv)
-            : getBlockerForDataplaneIndependentWork(work, wDetails.baseTestrig, wDetails.baseEnv);
+            : getBlockerForParsingDependentWork(work, wDetails.baseTestrig, wDetails.baseEnv);
 
     if (baseBlocker != null) {
       return queueBlockedWork(work, baseBlocker);
@@ -569,8 +570,7 @@ public class WorkQueueMgr {
       QueuedWork deltaBlocker =
           dataplaneDependent
               ? getBlockerForDataplaneDependentWork(work, wDetails.deltaTestrig, wDetails.deltaEnv)
-              : getBlockerForDataplaneIndependentWork(
-                  work, wDetails.deltaTestrig, wDetails.deltaEnv);
+              : getBlockerForParsingDependentWork(work, wDetails.deltaTestrig, wDetails.deltaEnv);
       if (deltaBlocker != null) {
         return queueBlockedWork(work, deltaBlocker);
       }
@@ -667,10 +667,13 @@ public class WorkQueueMgr {
         return queueParsingWork(work);
       case DATAPLANING:
         return queueDataplaningWork(work);
+      case INDEPENDENT_ANSWERING:
+        // assume that this type of work shouldn't be blocked at all
+        return _queueIncompleteWork.enque(work);
+      case PARSING_DEPENDENT_ANSWERING:
+        return queueDependentAnsweringWork(work, false);
       case DATAPLANE_DEPENDENT_ANSWERING:
-        return queueAnsweringWork(work, true);
-      case DATAPLANE_INDEPENDENT_ANSWERING:
-        return queueAnsweringWork(work, false);
+        return queueDependentAnsweringWork(work, true);
       case UNKNOWN:
         return _queueIncompleteWork.enque(work);
       default:

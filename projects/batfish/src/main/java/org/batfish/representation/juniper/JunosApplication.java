@@ -1,10 +1,12 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.base.Suppliers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.batfish.common.BatfishException;
+import java.util.function.Supplier;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
@@ -204,29 +206,26 @@ public enum JunosApplication implements Application {
   JUNOS_XNM_SSL,
   JUNOS_YMSG;
 
-  private BaseApplication _baseApplication;
+  private final Supplier<BaseApplication> _baseApplication;
 
-  private boolean _initialized;
+  private JunosApplication() {
+    _baseApplication = Suppliers.memoize(this::init);
+  }
 
   @Override
   public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines, Warnings w) {
-    init();
-    _baseApplication.applyTo(srcLine, lines, w);
+    _baseApplication.get().applyTo(srcLine, lines, w);
   }
 
   @Override
   public boolean getIpv6() {
-    init();
-    return _baseApplication.getIpv6();
+    return _baseApplication.get().getIpv6();
   }
 
-  private synchronized void init() {
-    if (_initialized) {
-      return;
-    }
-    _initialized = true;
-    _baseApplication = new BaseApplication(name());
-    Map<String, Term> terms = _baseApplication.getTerms();
+  private BaseApplication init() {
+    BaseApplication baseApplication =
+        new BaseApplication(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
+    Map<String, Term> terms = baseApplication.getTerms();
     switch (this) {
       case JUNOS_FTP:
         {
@@ -276,7 +275,7 @@ public enum JunosApplication implements Application {
 
       case JUNOS_ICMP6_ALL:
         {
-          _baseApplication.setIpv6(true);
+          baseApplication.setIpv6(true);
           // TODO
           break;
         }
@@ -331,8 +330,12 @@ public enum JunosApplication implements Application {
 
         // $CASES-OMITTED$
       default:
-        throw new BatfishException(
-            "missing definition for pre-defined junos application: \"" + name() + "\"");
+        return null;
     }
+    return baseApplication;
+  }
+
+  public boolean hasDefinition() {
+    return _baseApplication.get() != null;
   }
 }

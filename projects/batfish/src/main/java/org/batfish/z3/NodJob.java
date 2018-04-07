@@ -1,10 +1,15 @@
 package org.batfish.z3;
 
+import com.google.common.base.Throwables;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.Status;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +26,11 @@ import org.batfish.z3.expr.RuleStatement;
 
 public final class NodJob extends AbstractNodJob {
 
+  private final Synthesizer _dataPlaneSynthesizer;
+
   private final boolean _optimize;
 
-  private Synthesizer _dataPlaneSynthesizer;
-
-  private QuerySynthesizer _querySynthesizer;
+  private final QuerySynthesizer _querySynthesizer;
 
   public NodJob(
       Settings settings,
@@ -36,8 +41,8 @@ public final class NodJob extends AbstractNodJob {
       boolean optimize) {
     super(settings, nodeVrfSet, tag);
     _dataPlaneSynthesizer = dataPlaneSynthesizer;
-    _querySynthesizer = querySynthesizer;
     _optimize = optimize;
+    _querySynthesizer = querySynthesizer;
   }
 
   protected Status computeNodSat(long startTime, Context ctx) {
@@ -62,9 +67,30 @@ public final class NodJob extends AbstractNodJob {
   @Override
   protected SmtInput computeSmtInput(long startTime, Context ctx) {
     NodProgram program = getNodProgram(ctx);
+    if (_settings.debugFlagEnabled("saveNodProgram")) {
+      saveNodProgram(program);
+    }
     BoolExpr expr = computeSmtConstraintsViaNod(program, _querySynthesizer.getNegate());
     Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
     return new SmtInput(expr, variablesAsConsts);
+  }
+
+  private void saveNodProgram(NodProgram program) {
+    // synchronize to avoid z3 concurrency bugs
+    synchronized (NodJob.class) {
+      Path nodPath =
+          _settings
+              .getActiveTestrigSettings()
+              .getBasePath()
+              .resolve(
+                  String.format(
+                      "nodProgram-%s-%d.smt2", Instant.now(), Thread.currentThread().getId()));
+      try (FileWriter writer = new FileWriter(nodPath.toFile())) {
+        writer.write(program.toSmt2String());
+      } catch (IOException e) {
+        _logger.warnf("Error saving Nod program to file: %s", Throwables.getStackTraceAsString(e));
+      }
+    }
   }
 
   @Nonnull

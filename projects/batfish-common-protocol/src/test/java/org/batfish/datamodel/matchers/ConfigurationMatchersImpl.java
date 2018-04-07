@@ -58,6 +58,20 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasVrf extends FeatureMatcher<Configuration, Vrf> {
+    private final String _name;
+
+    HasVrf(@Nonnull String name, @Nonnull Matcher<? super Vrf> subMatcher) {
+      super(subMatcher, "A Configuration with vrf " + name + ":", "vrf " + name);
+      _name = name;
+    }
+
+    @Override
+    protected Vrf featureValueOf(Configuration actual) {
+      return actual.getVrfs().get(_name);
+    }
+  }
+
   static final class HasVrfs extends FeatureMatcher<Configuration, Map<String, Vrf>> {
     HasVrfs(@Nonnull Matcher<? super Map<String, Vrf>> subMatcher) {
       super(subMatcher, "a configuration with vrfs", "vrfs");

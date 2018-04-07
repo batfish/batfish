@@ -175,17 +175,20 @@ public class BatfishTestUtils {
     return initBatfish(configurations, tempFolder);
   }
 
-  public static Map<String, Configuration> parseTextConfigs(
+  public static Batfish getBatfishForTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
     SortedMap<String, String> configurationTextMap = new TreeMap<>();
     for (String configName : configurationNames) {
       String configurationText = CommonUtil.readResource(configName);
       configurationTextMap.put(new File(configName).getName(), configurationText);
     }
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
-    return batfish.loadConfigurations();
+    return BatfishTestUtils.getBatfishFromTestrigText(
+        TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
+  }
+
+  public static Map<String, Configuration> parseTextConfigs(
+      TemporaryFolder folder, String... configurationNames) throws IOException {
+    return getBatfishForTextConfigs(folder, configurationNames).loadConfigurations();
   }
 
   private static void writeTemporaryTestrigFiles(

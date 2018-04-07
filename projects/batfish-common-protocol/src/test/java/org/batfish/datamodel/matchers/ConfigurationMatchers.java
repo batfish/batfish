@@ -11,6 +11,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterface;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.Matcher;
@@ -54,6 +55,14 @@ public class ConfigurationMatchers {
    */
   public static HasVendorFamily hasVendorFamily(Matcher<? super VendorFamily> subMatcher) {
     return new HasVendorFamily(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * VRF with specified name.
+   */
+  public static HasVrf hasVrf(String name, Matcher<? super Vrf> subMatcher) {
+    return new HasVrf(name, subMatcher);
   }
 
   /**

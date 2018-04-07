@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -114,7 +113,6 @@ import org.batfish.datamodel.vendor_family.cisco.Cable;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
@@ -1087,55 +1085,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Cable cable = _cf.getCable();
     markStructure(
         CiscoStructureType.SERVICE_CLASS, usage, cable != null ? cable.getServiceClasses() : null);
-  }
-
-  /**
-   * Mark all structures of a particular type with its recorded usages. This function should
-   * typically be called prior to warning about unused structures of that type.
-   *
-   * @param type The type of the structure to which a reference will be added
-   * @param usage The usage mode of the structure that was pre-recorded
-   * @param maps A list of maps to check for the structure to be updated. Each map could be null.
-   *     There must be at least one element. The structure may exist in more than one map.
-   */
-  private void markStructure(
-      CiscoStructureType type,
-      CiscoStructureUsage usage,
-      List<Map<String, ? extends ReferenceCountedStructure>> maps) {
-    if (maps.isEmpty()) {
-      throw new BatfishException("List of maps must contain at least one element");
-    }
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
-        _structureReferences.get(type);
-    if (byName != null) {
-      byName.forEach(
-          (name, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              List<Map<String, ? extends ReferenceCountedStructure>> matchingMaps =
-                  maps.stream()
-                      .filter(map -> map != null && map.containsKey(name))
-                      .collect(ImmutableList.toImmutableList());
-              if (matchingMaps.isEmpty()) {
-                for (int line : lines) {
-                  undefined(type, name, usage, line);
-                }
-              } else {
-                String msg = usage.getDescription();
-                for (Map<String, ? extends ReferenceCountedStructure> matchingMap : matchingMaps) {
-                  matchingMap.get(name).getReferers().put(this, msg);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  private void markStructure(
-      CiscoStructureType type,
-      CiscoStructureUsage usage,
-      Map<String, ? extends ReferenceCountedStructure> map) {
-    markStructure(type, usage, Collections.singletonList(map));
   }
 
   private void processFailoverSettings() {
@@ -2900,7 +2849,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportConnectedStatements.add(new SetOspfMetricType(metricType));
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
-        metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
+        metric = proc.getDefaultMetric(_vendor, RoutingProtocol.CONNECTED);
       }
       ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ospfExportStatements.add(ospfExportConnected);
@@ -2951,7 +2900,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportStaticStatements.add(new SetOspfMetricType(metricType));
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
-        metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
+        metric = proc.getDefaultMetric(_vendor, RoutingProtocol.STATIC);
       }
       ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ospfExportStatements.add(ospfExportStatic);
@@ -3000,7 +2949,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportBgpStatements.add(new SetOspfMetricType(metricType));
       boolean explicitMetric = metric != null;
       if (!explicitMetric) {
-        metric = OspfRedistributionPolicy.DEFAULT_REDISTRIBUTE_BGP_METRIC;
+        metric = proc.getDefaultMetric(_vendor, RoutingProtocol.BGP);
       }
       ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
       ospfExportStatements.add(ospfExportBgp);
@@ -4155,20 +4104,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void warnUnusedServiceClasses() {
     if (_cf.getCable() != null) {
       warnUnusedStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
-    }
-  }
-
-  private <T extends DefinedStructure<String>> void warnUnusedStructure(
-      Map<String, T> map, CiscoStructureType type) {
-    for (Entry<String, T> e : map.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      T t = e.getValue();
-      if (t.isUnused()) {
-        unused(type, name, t.getDefinitionLine());
-      }
     }
   }
 }

@@ -1906,33 +1906,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // static routes
       for (StaticRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getStaticRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(route);
         vrf.getStaticRoutes().add(newStaticRoute);
       }
 
       // aggregate routes
       for (AggregateRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getAggregateRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
       }
 
       // generated routes
       for (GeneratedRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getGeneratedRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
@@ -1991,7 +1979,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // mark references to authentication key chain that may not appear in data model
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
+    markStructure(
+        JuniperStructureType.APPLICATION,
+        JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
+        _applications);
+    markStructure(
+        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
+
     // warn about unreferenced data structures
+    warnUnusedStructure(_applications, JuniperStructureType.APPLICATION);
     warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
     warnUnreferencedDhcpRelayServerGroups();
@@ -2160,7 +2156,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
-      if (filter.getFamily().equals(Family.INET) && filter.isUnused()) {
+      if (filter.isUnused()) {
         unused(JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
       }
     }
