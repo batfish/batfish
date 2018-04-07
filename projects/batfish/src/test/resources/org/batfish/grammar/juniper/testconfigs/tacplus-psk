@@ -1,0 +1,6 @@
+#
+set system host-name tacplus-psk
+#
+set system tacplus-server 1.2.3.4 secret "psk"
+set system tacplus-server 2.3.4.5 secret "$9$czBSK87-wgoG"
+#
