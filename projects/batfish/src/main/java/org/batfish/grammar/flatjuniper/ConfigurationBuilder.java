@@ -3553,7 +3553,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSeikp_pre_shared_key(Seikp_pre_shared_keyContext ctx) {
     String key = unquote(ctx.key.getText());
-    String decodedKeyHash = JuniperUtils.decryptAndHashJuniper9CipherText(key);
+    String decodedKeyHash = decryptIfNeededAndHash(key, ctx.key.getLine());
     _currentIkePolicy.setPreSharedKeyHash(decodedKeyHash);
   }
 
@@ -3951,7 +3951,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSyt_secret(Syt_secretContext ctx) {
     String cipherText = unquote(ctx.secret.getText());
-    _currentTacplusServer.setSecret(JuniperUtils.decryptAndHashJuniper9CipherText(cipherText));
+    _currentTacplusServer.setSecret(decryptIfNeededAndHash(cipherText, ctx.secret.getLine()));
+  }
+
+  private String decryptIfNeededAndHash(String text, int line) {
+    if (JuniperUtils.isJuniper9CipherText(text)) {
+      return JuniperUtils.decryptAndHashJuniper9CipherText(text);
+    } else {
+      _w.redFlag(String.format("Unencrypted key stored at line: %d", line));
+      return CommonUtil.sha256Digest(text + CommonUtil.salt());
+    }
   }
 
   @Override
