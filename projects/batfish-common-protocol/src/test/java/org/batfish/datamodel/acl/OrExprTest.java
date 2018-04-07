@@ -22,14 +22,12 @@ public class OrExprTest {
   public void testSingleExpr() {
     // Test that if and only if the only ACL line is a match, the OrMatchExpr returns a match
 
-    FalseExpr eFalse = FalseExpr.FALSE_EXPR;
-
     // Setup simple expression with a single true boolean expr
     List<AclLineMatchExpr> setTrue = ImmutableList.of(TrueExpr.TRUE_EXPR);
     OrMatchExpr exprTrue = new OrMatchExpr(setTrue);
 
     // Setup simple expression with a single false boolean expr
-    List<AclLineMatchExpr> setFalse = ImmutableList.of(eFalse);
+    List<AclLineMatchExpr> setFalse = ImmutableList.of(FalseExpr.FALSE_EXPR);
     OrMatchExpr exprFalse = new OrMatchExpr(setFalse);
 
     // Confirm true boolean expr matches
