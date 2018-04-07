@@ -7,7 +7,7 @@ public class FalseExpr extends AclLineMatchExpr {
 
   private FalseExpr() {}
 
-  public static final FalseExpr FALSE_EXPR = new FalseExpr();
+  public static final FalseExpr INSTANCE = new FalseExpr();
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {

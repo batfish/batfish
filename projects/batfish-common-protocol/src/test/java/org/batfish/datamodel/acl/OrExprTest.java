@@ -23,11 +23,11 @@ public class OrExprTest {
     // Test that if and only if the only ACL line is a match, the OrMatchExpr returns a match
 
     // Setup simple expression with a single true boolean expr
-    List<AclLineMatchExpr> setTrue = ImmutableList.of(TrueExpr.TRUE_EXPR);
+    List<AclLineMatchExpr> setTrue = ImmutableList.of(TrueExpr.INSTANCE);
     OrMatchExpr exprTrue = new OrMatchExpr(setTrue);
 
     // Setup simple expression with a single false boolean expr
-    List<AclLineMatchExpr> setFalse = ImmutableList.of(FalseExpr.FALSE_EXPR);
+    List<AclLineMatchExpr> setFalse = ImmutableList.of(FalseExpr.INSTANCE);
     OrMatchExpr exprFalse = new OrMatchExpr(setFalse);
 
     // Confirm true boolean expr matches
@@ -41,15 +41,13 @@ public class OrExprTest {
   public void testMultipleExprs() {
     // Test that if either of two ACL lines is a match, the OrMatchExpr returns a match
 
-    List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(TrueExpr.TRUE_EXPR, TrueExpr.TRUE_EXPR);
+    List<AclLineMatchExpr> setTrueTrue = ImmutableList.of(TrueExpr.INSTANCE, TrueExpr.INSTANCE);
     OrMatchExpr exprTrueTrue = new OrMatchExpr(setTrueTrue);
 
-    List<AclLineMatchExpr> setTrueFalse =
-        ImmutableList.of(TrueExpr.TRUE_EXPR, FalseExpr.FALSE_EXPR);
+    List<AclLineMatchExpr> setTrueFalse = ImmutableList.of(TrueExpr.INSTANCE, FalseExpr.INSTANCE);
     OrMatchExpr exprTrueFalse = new OrMatchExpr(setTrueFalse);
 
-    List<AclLineMatchExpr> setFalseFalse =
-        ImmutableList.of(FalseExpr.FALSE_EXPR, FalseExpr.FALSE_EXPR);
+    List<AclLineMatchExpr> setFalseFalse = ImmutableList.of(FalseExpr.INSTANCE, FalseExpr.INSTANCE);
     OrMatchExpr exprFalseFalse = new OrMatchExpr(setFalseFalse);
 
     // Confirm boolean expr true OR true = true

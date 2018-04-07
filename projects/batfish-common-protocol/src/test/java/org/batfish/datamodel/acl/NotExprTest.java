@@ -20,8 +20,8 @@ public class NotExprTest {
   public void testSingleExpr() {
     // Test that the NotMatchExpr returns the opposite of the underlying ACL line
 
-    NotMatchExpr exprNotTrue = new NotMatchExpr(TrueExpr.TRUE_EXPR);
-    NotMatchExpr exprNotFalse = new NotMatchExpr(FalseExpr.FALSE_EXPR);
+    NotMatchExpr exprNotTrue = new NotMatchExpr(TrueExpr.INSTANCE);
+    NotMatchExpr exprNotFalse = new NotMatchExpr(FalseExpr.INSTANCE);
 
     // Confirm boolean expr NOT true = false
     assertThat(
