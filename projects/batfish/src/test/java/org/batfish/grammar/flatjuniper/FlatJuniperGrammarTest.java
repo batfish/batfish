@@ -258,6 +258,18 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testOspfPsk() throws IOException {
+    /* allow both encrypted and unencrypted key */
+    parseConfig("ospf-psk");
+  }
+
+  @Test
+  public void testTacplusPsk() throws IOException {
+    /* allow both encrypted and unencrypted key */
+    parseConfig("tacplus-psk");
+  }
+
+  @Test
   public void testInterfaceMtu() throws IOException {
     Configuration c = parseConfig("interfaceMtu");
 
