@@ -227,6 +227,14 @@ public class CommonUtil {
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
   }
 
+  /**
+   * Compute the owners of IP addresses
+   *
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
+   *     Interface}
+   * @return A map of {@link Ip}s to a set of hostnames that own this IP
+   */
   public static Map<Ip, Set<String>> computeIpOwners(
       boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
     // TODO: confirm VRFs are handled correctly
@@ -271,23 +279,26 @@ public class CommonUtil {
           int groupNum = p.getSecond();
           InterfaceAddress address = p.getFirst();
           Ip ip = address.getIp();
-          int lowestPriority = Integer.MAX_VALUE;
+          int highestPriority = Integer.MIN_VALUE;
           String bestCandidate = null;
-          SortedSet<String> bestCandidates = new TreeSet<>();
+          // In case of multiple candidates with same priority, keep track of Interface IP as well
+          SortedSet<Pair<Ip, String>> bestCandidates = new TreeSet<>();
           for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
-            if (currentPriority < lowestPriority) {
-              lowestPriority = currentPriority;
+            if (currentPriority > highestPriority) {
+              highestPriority = currentPriority;
               bestCandidates.clear();
               bestCandidate = candidate.getOwner().getHostname();
             }
-            if (currentPriority == lowestPriority) {
-              bestCandidates.add(candidate.getOwner().getHostname());
+            if (currentPriority == highestPriority) {
+              bestCandidates.add(
+                  new Pair<>(candidate.getAddress().getIp(), candidate.getOwner().getHostname()));
             }
           }
           if (bestCandidates.size() != 1) {
-            String deterministicBestCandidate = bestCandidates.first();
+            // last() because highest IP should win
+            String deterministicBestCandidate = bestCandidates.last().getSecond();
             bestCandidate = deterministicBestCandidate;
             //            _logger.redflag(
             //                "Arbitrarily choosing best vrrp candidate: '"
