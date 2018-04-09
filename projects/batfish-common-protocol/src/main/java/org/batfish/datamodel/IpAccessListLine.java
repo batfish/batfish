@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Objects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
@@ -185,6 +186,7 @@ public final class IpAccessListLine extends HeaderSpace {
     return _action;
   }
 
+  @JsonIgnore
   public AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }

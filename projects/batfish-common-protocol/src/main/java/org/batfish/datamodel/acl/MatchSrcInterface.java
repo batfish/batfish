@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class MatchSrcInterface extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
   private final Set<String> _srcInterfaces;
 
   public MatchSrcInterface(Iterable<String> interfaces) {

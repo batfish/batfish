@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 public class NotMatchExpr extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
   private final AclLineMatchExpr _operand;
 
   public NotMatchExpr(AclLineMatchExpr operand) {

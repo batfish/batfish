@@ -4,10 +4,10 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 public class TrueExpr extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
+  public static final TrueExpr INSTANCE = new TrueExpr();
 
   private TrueExpr() {}
-
-  public static final TrueExpr INSTANCE = new TrueExpr();
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
