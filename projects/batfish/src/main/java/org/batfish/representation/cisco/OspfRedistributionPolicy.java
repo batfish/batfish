@@ -43,12 +43,12 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     _metric = metric;
   }
 
-  public void setOspfMetricType(OspfMetricType type) {
-    _metricType = type;
-  }
-
   public void setOnlyClassfulRoutes(boolean b) {
     _onlyClassfulRoutes = b;
+  }
+
+  public void setOspfMetricType(OspfMetricType type) {
+    _metricType = type;
   }
 
   public void setTag(long tag) {

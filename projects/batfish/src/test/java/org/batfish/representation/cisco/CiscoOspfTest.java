@@ -46,6 +46,7 @@ public class CiscoOspfTest {
   @Test
   public void testBasicConvertRedistributionPolicy() {
     OspfRedistributionPolicy rp = new OspfRedistributionPolicy(BGP);
+    rp.setOnlyClassfulRoutes(true);
     rp.setOspfMetricType(OspfMetricType.E2);
     rp.setRouteMap("some-map");
     _config.getRouteMaps().put("some-map", new RouteMap("some-map", 10));
