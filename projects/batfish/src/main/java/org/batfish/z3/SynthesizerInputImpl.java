@@ -33,7 +33,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.state.AclPermit;
@@ -293,17 +292,22 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private Map<String, Map<String, List<BooleanExpr>>> computeAclConditions() {
     return toImmutableMap(
         _enabledAcls,
-        Entry::getKey,
-        e ->
-            toImmutableMap(
-                e.getValue(),
-                Entry::getKey,
-                e2 ->
-                    e2.getValue()
-                        .getLines()
-                        .stream()
-                        .map(HeaderSpaceMatchExpr::new)
-                        .collect(ImmutableList.toImmutableList())));
+        Entry::getKey, /* Node name */
+        e -> {
+          Map<String, IpAccessList> nodeAcls = e.getValue();
+          AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
+              new AclLineMatchExprToBooleanExpr(nodeAcls);
+          return toImmutableMap(
+              e.getValue(),
+              Entry::getKey, /* Acl name */
+              e2 ->
+                  e2.getValue()
+                      .getLines()
+                      .stream()
+                      .map(IpAccessListLine::getMatchCondition)
+                      .map(aclLineMatchExprToBooleanExpr::toBooleanExpr)
+                      .collect(ImmutableList.toImmutableList()));
+        });
   }
 
   private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
