@@ -23,6 +23,8 @@ public class JsonPathToTableQuestion extends Question {
 
   private static final String PROP_PATH_QUERY = "pathQuery";
 
+  private static final Pattern VARIABLE_MATCHER = Pattern.compile("\\$\\{([^\\}]+)\\}");
+
   private boolean _debug;
 
   private Question _innerQuestion;
@@ -41,7 +43,7 @@ public class JsonPathToTableQuestion extends Question {
     // names in text description should correspond to those of entities or extraction vars
     if (_displayHints != null && _displayHints.getTextDesc() != null) {
       Set<String> namesInTextDesc = new HashSet<>();
-      Matcher matcher = Pattern.compile("\\$\\{([^\\}]+)\\}").matcher(_displayHints.getTextDesc());
+      Matcher matcher = VARIABLE_MATCHER.matcher(_displayHints.getTextDesc());
       while (matcher.find()) {
         namesInTextDesc.add(matcher.group(1));
       }

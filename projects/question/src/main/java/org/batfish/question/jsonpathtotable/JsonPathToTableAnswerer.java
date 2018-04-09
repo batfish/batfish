@@ -33,7 +33,8 @@ public class JsonPathToTableAnswerer extends Answerer {
    *
    * <ul>
    *   <li>First, compute the inner answer
-   *   <li>Then, run {@code computeAnswerTable}, which produces a set of result minus exclusions
+   *   <li>Then, run {@link #computeAnswerTable(String, JsonPathToTableQuestion)}, which produces a
+   *       set of result minus exclusions
    * </ul>
    */
   @Override

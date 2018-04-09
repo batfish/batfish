@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.answers.Schema;
 
 /**
@@ -18,9 +19,9 @@ public class JsonPathToTableComposition {
 
   private static final String PROP_DICTIONARY = "dictionary";
 
-  private Map<String, String> _dictionary;
+  @Nonnull private Map<String, String> _dictionary;
 
-  private Schema _schema;
+  @Nonnull private Schema _schema;
 
   @JsonCreator
   public JsonPathToTableComposition(
@@ -28,10 +29,10 @@ public class JsonPathToTableComposition {
       @JsonProperty(PROP_DICTIONARY) Map<String, String> dictionary) {
 
     if (schema == null) {
-      throw new IllegalArgumentException("Scheme not specified in the composition");
+      throw new IllegalArgumentException("Schema not specified in the composition");
     }
     if (dictionary == null || dictionary.isEmpty()) {
-      throw new IllegalArgumentException("Dictionary not specified in the composition");
+      throw new IllegalArgumentException("Dictionary not specified or empty in the composition");
     }
 
     _schema = schema;
@@ -56,9 +57,7 @@ public class JsonPathToTableComposition {
   @JsonIgnore
   public Set<String> getVars() {
     Set<String> retSet = new HashSet<>();
-    if (_dictionary != null) {
-      retSet.addAll(_dictionary.values());
-    }
+    retSet.addAll(_dictionary.values());
     return retSet;
   }
 }
