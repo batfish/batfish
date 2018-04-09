@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 public class PermittedByAcl extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
   private final String _aclName;
 
   public PermittedByAcl(String aclName) {

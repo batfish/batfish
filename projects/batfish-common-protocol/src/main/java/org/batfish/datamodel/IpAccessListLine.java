@@ -1,11 +1,13 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.base.Objects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import java.util.SortedSet;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine extends HeaderSpace {
@@ -163,6 +165,7 @@ public final class IpAccessListLine extends HeaderSpace {
         tcpFlags);
     _action = action;
     _name = name;
+    _matchCondition = new MatchHeaderspace(this);
   }
 
   @Override
@@ -183,6 +186,7 @@ public final class IpAccessListLine extends HeaderSpace {
     return _action;
   }
 
+  @JsonIgnore
   public AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }

@@ -1,6 +1,9 @@
 package org.batfish.datamodel.acl;
 
-public abstract class AclLineMatchExpr {
+import java.io.Serializable;
+
+public abstract class AclLineMatchExpr implements Serializable {
+  private static final long serialVersionUID = 1L;
 
   @Override
   public boolean equals(Object o) {
