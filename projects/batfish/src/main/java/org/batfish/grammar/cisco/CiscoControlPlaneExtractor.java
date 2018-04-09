@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -1240,7 +1241,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration = new CiscoConfiguration(_unimplementedFeatures);
     _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    if (_format == ConfigurationFormat.CISCO_IOS) {
+    if (_format == CISCO_IOS) {
       Logging logging = new Logging();
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
@@ -5190,6 +5191,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentOspfProcess.setPassiveInterfaceDefault(true);
   }
 
+  private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
+    /*
+     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
+     * CISCO_NXOS and ARISTA redistribute all subnets.
+     *
+     * We assume that others use this sane default too. TODO: verify more vendors.
+     */
+    return format != CISCO_IOS;
+  }
+
   @Override
   public void exitRo_redistribute_bgp(Ro_redistribute_bgpContext ctx) {
     OspfProcess proc = _currentOspfProcess;
@@ -5219,7 +5230,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setSubnets(ctx.subnets != null);
+    r.setOnlyClassfulRoutes(
+        ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_configuration.getVendor()));
   }
 
   @Override
@@ -5249,7 +5261,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setSubnets(ctx.subnets != null);
+    r.setOnlyClassfulRoutes(
+        ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_configuration.getVendor()));
   }
 
   @Override
@@ -5284,7 +5297,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setSubnets(ctx.subnets != null);
+    r.setOnlyClassfulRoutes(
+        ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_configuration.getVendor()));
   }
 
   @Override
