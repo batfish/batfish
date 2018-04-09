@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
-import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
 
 public class NodProgram {
@@ -55,9 +54,7 @@ public class NodProgram {
                     .map(
                         program ->
                             BoolExprTransformer.toBoolExpr(
-                                program.getSmtConstraint(),
-                                program.getInput(),
-                                _context))
+                                program.getSmtConstraint(), program.getInput(), _context))
                     .toArray(BoolExpr[]::new));
   }
 
