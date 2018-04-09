@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Warnings;
@@ -12,6 +13,8 @@ public class Not extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static final String PROP_EXPR = "expr";
 
   private BooleanExpr _expr;
 
@@ -59,6 +62,7 @@ public class Not extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_EXPR)
   public BooleanExpr getExpr() {
     return _expr;
   }
@@ -71,7 +75,13 @@ public class Not extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_EXPR)
   public void setExpr(BooleanExpr expr) {
     _expr = expr;
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper().add(PROP_EXPR, _expr).toString();
   }
 }
