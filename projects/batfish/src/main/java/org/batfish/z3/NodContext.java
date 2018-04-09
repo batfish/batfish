@@ -18,9 +18,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.visitors.RelationCollector;
 import org.batfish.z3.expr.visitors.VariableSizeCollector;
+import org.batfish.z3.state.Debug;
+import org.batfish.z3.state.Query;
 import org.batfish.z3.state.visitors.FuncDeclTransformer;
 
 public class NodContext {
@@ -46,7 +51,15 @@ public class NodContext {
         Arrays.stream(programs)
             .flatMap(
                 program ->
-                    Streams.concat(program.getRules().stream(), program.getQueries().stream())
+                    Streams.concat(
+                        program.getRules().stream(),
+                        program.getQueries().stream(),
+                        ImmutableList.of(
+                            // dummy rule that includes the smt constraint
+                            new BasicRuleStatement(
+                                program.getSmtConstraint(),
+                                Debug.INSTANCE))
+                            .stream())
                         .map(VariableSizeCollector::collectVariableSizes)
                         .map(Map::entrySet)
                         .flatMap(Collection::stream))

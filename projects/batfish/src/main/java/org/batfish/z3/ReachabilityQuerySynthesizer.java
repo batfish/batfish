@@ -6,12 +6,10 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.TrueExpr;
@@ -95,10 +93,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
         rules.add(
             new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        CurrentIsOriginalExpr.INSTANCE, new HeaderSpaceMatchExpr(_headerSpace))),
-                new OriginateVrf(ingressNode, ingressVrf)));
+                CurrentIsOriginalExpr.INSTANCE, new OriginateVrf(ingressNode, ingressVrf)));
       }
     }
   }
