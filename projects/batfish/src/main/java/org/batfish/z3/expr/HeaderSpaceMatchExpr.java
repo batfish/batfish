@@ -87,7 +87,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
         int ipEnd = Prefix.MAX_PREFIX_LENGTH - 1;
         if (ipStart < Prefix.MAX_PREFIX_LENGTH) {
           IntExpr extractSrcIp =
-              ExtractExpr.newExtractExpr(BasicHeaderField.SRC_IP, ipStart, ipEnd);
+              ExtractExpr.newExtractExpr(BasicHeaderField.ORIG_SRC_IP, ipStart, ipEnd);
           IntExpr extractDstIp =
               ExtractExpr.newExtractExpr(BasicHeaderField.DST_IP, ipStart, ipEnd);
           LitIntExpr ipMatchLit = new LitIntExpr(ip, ipStart, ipEnd);
@@ -123,7 +123,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             if (useBit) {
               IntExpr extractSrcIp =
                   ExtractExpr.newExtractExpr(
-                      BasicHeaderField.SRC_IP, currentBitIndex, currentBitIndex);
+                      BasicHeaderField.ORIG_SRC_IP, currentBitIndex, currentBitIndex);
               LitIntExpr srcIpMatchLit = new LitIntExpr(ip, currentBitIndex, currentBitIndex);
               EqExpr matchSrcIpBit = new EqExpr(extractSrcIp, srcIpMatchLit);
               matchSrcIp.add(matchSrcIpBit);

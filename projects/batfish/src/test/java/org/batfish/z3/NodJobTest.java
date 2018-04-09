@@ -3,6 +3,7 @@ package org.batfish.z3;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -251,9 +252,10 @@ public class NodJobTest {
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
     NodJob nodJob = getNodJob(headerSpace, false);
     Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.UNSATISFIABLE));
+    SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
+        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(0));
   }
 
   /** Test that traffic originating from 3.0.0.1 is not NATed */
@@ -308,9 +310,10 @@ public class NodJobTest {
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
     NodJob nodJob = getNodJob(headerSpace, false);
     Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.SATISFIABLE));
+    SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
+        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(greaterThan(0)));
   }
 
   /**
@@ -323,8 +326,9 @@ public class NodJobTest {
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
     NodJob nodJob = getNodJob(headerSpace, true);
     Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.UNSATISFIABLE));
+    SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
+        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(0));
   }
 }
