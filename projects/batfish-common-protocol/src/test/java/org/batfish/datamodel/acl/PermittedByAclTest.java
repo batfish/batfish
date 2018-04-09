@@ -1,0 +1,75 @@
+package org.batfish.datamodel.acl;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import java.util.Map;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
+import org.junit.Before;
+import org.junit.Test;
+
+public class PermittedByAclTest {
+  private NetworkFactory _nf;
+
+  private static Flow createFlow(String ipAddrStr) {
+    Flow.Builder b = new Flow.Builder();
+    b.setIngressNode("ingressNode");
+    b.setSrcIp(new Ip(ipAddrStr));
+    b.setTag("test");
+    return b.build();
+  }
+
+  private Map<String, IpAccessList> createAclMap(
+      String aclName, String srcIpWildcard, LineAction lineAction) {
+    // Build a single entry map, mapping aclName to an ACL matching the given srcIpWildcard
+
+    // Create a single ACL line matching the given srcIpWildcard
+    IpAccessListLine.Builder acllb = IpAccessListLine.builder();
+    acllb.setSrcIps(ImmutableSet.of(new IpWildcard(srcIpWildcard)));
+    acllb.setAction(lineAction);
+
+    // Add that single ACL line to a new ACL
+    IpAccessList.Builder aclb = _nf.aclBuilder();
+    aclb.setName(aclName);
+    aclb.setLines(ImmutableList.of(acllb.build()));
+
+    // Return a map, mapping aclName to the ACL itself
+    return ImmutableMap.of(aclName, aclb.build());
+  }
+
+  @Before
+  public void setup() {
+    _nf = new NetworkFactory();
+  }
+
+  @Test
+  public void testAclMatch() {
+    // Test ACL line expressions which are permitted by other ACLs
+
+    Map<String, IpAccessList> acceptAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.ACCEPT);
+    Map<String, IpAccessList> rejectAcl = createAclMap("acl1", "1.2.3.4/32", LineAction.REJECT);
+    PermittedByAcl exprMatch = new PermittedByAcl("acl1");
+
+    // Confirm a flow matching the ACL is correctly identified as accepted
+    assertThat(exprMatch, AclLineMatchExprMatchers.matches(createFlow("1.2.3.4"), "", acceptAcl));
+
+    // Confirm a flow NOT matching the ACL is correctly identified as NOT accepted
+    assertThat(
+        exprMatch, not(AclLineMatchExprMatchers.matches(createFlow("10.10.10.10"), "", acceptAcl)));
+
+    // Confirm a flow matching the ACL is correctly identified as NOT accepted (line action is
+    // reject)
+    assertThat(
+        exprMatch, not(AclLineMatchExprMatchers.matches(createFlow("1.2.3.4"), "", rejectAcl)));
+  }
+}
