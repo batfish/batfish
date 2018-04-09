@@ -281,8 +281,8 @@ public class CommonUtil {
           Ip ip = address.getIp();
           int highestPriority = Integer.MIN_VALUE;
           String bestCandidate = null;
-          // In case of multiple candidates with same priority, keep track of Interface IP as well
-          SortedSet<Pair<Ip, String>> bestCandidates = new TreeSet<>();
+          // In case multiple candidates have the same priority, keep track of Interface IP
+          SortedMap<Ip, String> bestCandidates = new TreeMap<>();
           for (Interface candidate : candidates) {
             VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
             int currentPriority = group.getPriority();
@@ -292,21 +292,13 @@ public class CommonUtil {
               bestCandidate = candidate.getOwner().getHostname();
             }
             if (currentPriority == highestPriority) {
-              bestCandidates.add(
-                  new Pair<>(candidate.getAddress().getIp(), candidate.getOwner().getHostname()));
+              bestCandidates.put(
+                  candidate.getAddress().getIp(), candidate.getOwner().getHostname());
             }
           }
           if (bestCandidates.size() != 1) {
             // last() because highest IP should win
-            String deterministicBestCandidate = bestCandidates.last().getSecond();
-            bestCandidate = deterministicBestCandidate;
-            //            _logger.redflag(
-            //                "Arbitrarily choosing best vrrp candidate: '"
-            //                    + deterministicBestCandidate
-            //                    + " for prefix/groupNumber: '"
-            //                    + p.toString()
-            //                    + "' among multiple best candidates: "
-            //                    + bestCandidates);
+            bestCandidate = bestCandidates.get(bestCandidates.lastKey());
           }
           Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
           owners.add(bestCandidate);

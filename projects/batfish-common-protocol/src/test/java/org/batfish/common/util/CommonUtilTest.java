@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class CommonUtilTest {
 
-  public NetworkFactory _nf;
+  private NetworkFactory _nf;
   private InterfaceAddress _virtInterfaceAddr =
       new InterfaceAddress(new Ip("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
 
@@ -29,6 +29,12 @@ public class CommonUtilTest {
     _nf = new NetworkFactory();
   }
 
+  /**
+   * Setup up two nodes with two vrrp groups that own the same virtual IP.
+   *
+   * @param equalPriority whether vrrp group priority between two groups should be equal (will force
+   *     IP-based tie breaking)
+   */
   private Map<String, Configuration> setupVrrpTestCase(boolean equalPriority) {
     // Setup nodes and interface configs
     Configuration.Builder cb = _nf.configurationBuilder();
@@ -73,11 +79,13 @@ public class CommonUtilTest {
 
     Map<Ip, Set<String>> owners = computeIpOwners(configs, false);
 
-    // Ensure higher priority node wins
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
   }
 
-  /** Test that VRRP tie brekaing in case of equal priority */
+  /**
+   * Test that VRRP tie breaking works correctly by picking higher IP in case of equal vrrp group
+   * priority
+   */
   @Test
   public void testVrrpPriorityTieBreaking() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
