@@ -145,7 +145,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
             .create(
                 new Pair<>(null, null),
                 BatfishLexer.UNRECOGNIZED_LINE_TOKEN,
-                lineText + ' ' + _parserStateAtRecovery,
+                String.format("%s (Batfish parser context: %s)", lineText, _parserStateAtRecovery),
                 Lexer.DEFAULT_TOKEN_CHANNEL,
                 -1,
                 -1,
