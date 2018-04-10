@@ -57,8 +57,6 @@ public class SynthesizerInputImplTest {
 
   private IpAccessList.Builder _aclb;
 
-  private IpAccessListLine.Builder _acllb;
-
   private Configuration.Builder _cb;
 
   private Interface.Builder _ib;
@@ -78,7 +76,6 @@ public class SynthesizerInputImplTest {
     _vb = _nf.vrfBuilder();
     _ib = _nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
-    _acllb = IpAccessListLine.builder();
     _inputBuilder = SynthesizerInputImpl.builder();
     _snb = SourceNat.builder();
   }
@@ -90,10 +87,7 @@ public class SynthesizerInputImplTest {
     IpAccessList edgeInterfaceInAcl =
         _aclb
             .setOwner(srcNode)
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.builder().setAction(LineAction.ACCEPT).build(),
-                    IpAccessListLine.builder().setAction(LineAction.REJECT).build()))
+            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL, IpAccessListLine.REJECT_ALL))
             .build();
     IpAccessList srcInterfaceOutAcl = _aclb.build();
     IpAccessList iNoEdgeInAcl = _aclb.build();
@@ -175,25 +169,18 @@ public class SynthesizerInputImplTest {
   public void testComputeAclConditions() {
     Configuration c = _cb.build();
     IpAccessList aclWithoutLines = _aclb.setOwner(c).build();
-    _acllb.setAction(LineAction.ACCEPT);
     IpAccessList aclWithLines =
         _aclb
             .setLines(
                 ImmutableList.<IpAccessListLine>of(
-                    _acllb
-                        .setMatchCondition(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
-                                    .build()))
-                        .build(),
-                    _acllb
-                        .setMatchCondition(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
-                                    .build()))
-                        .build()))
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
+                            .build()),
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
+                            .build())))
             .build();
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();

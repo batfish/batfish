@@ -15,7 +15,9 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
@@ -133,18 +135,21 @@ public class IpAccessListSpecializer {
       throw new BatfishException("unexpected specializedSrcIpSpace type");
     }
 
+    HeaderSpace newHeaderSpace =
+        oldHeaderSpace
+            .rebuild()
+            .setDstIps(specializedDstIps)
+            .setNotDstIps(specializedNotDstIps)
+            .setSrcIps(specializedSrcIps)
+            .setNotSrcIps(specializedNotSrcIps)
+            .build();
+    AclLineMatchExpr matchCondition =
+        newHeaderSpace.unrestricted() ? TrueExpr.INSTANCE : new MatchHeaderSpace(newHeaderSpace);
+
     return Optional.of(
         IpAccessListLine.builder()
             .setAction(ipAccessListLine.getAction())
-            .setMatchCondition(
-                new MatchHeaderSpace(
-                    oldHeaderSpace
-                        .rebuild()
-                        .setDstIps(specializedDstIps)
-                        .setNotDstIps(specializedNotDstIps)
-                        .setSrcIps(specializedSrcIps)
-                        .setNotSrcIps(specializedNotSrcIps)
-                        .build()))
+            .setMatchCondition(matchCondition)
             .setName(ipAccessListLine.getName())
             .build());
   }

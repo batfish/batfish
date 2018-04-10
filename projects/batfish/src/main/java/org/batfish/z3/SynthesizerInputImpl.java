@@ -37,6 +37,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -151,8 +152,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       new NetworkFactory()
           .aclBuilder()
           .setName("~DEFAULT_SOURCE_NAT_ACL~")
-          .setLines(
-              ImmutableList.of(IpAccessListLine.builder().setAction(LineAction.ACCEPT).build()))
+          .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
           .build();
 
   public static Builder builder() {
@@ -305,9 +305,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                         .stream()
                         .map(
                             line ->
-                                new HeaderSpaceMatchExpr(
-                                    /* TODO: support other kinds of match conditions */
-                                    ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace()))
+                                line.getMatchCondition()
+                                        == org.batfish.datamodel.acl.TrueExpr.INSTANCE
+                                    ? TrueExpr.INSTANCE
+                                    : new HeaderSpaceMatchExpr(
+                                        /* TODO: support other kinds of match conditions */
+                                        ((MatchHeaderSpace) line.getMatchCondition())
+                                            .getHeaderspace()))
                         .collect(ImmutableList.toImmutableList())));
   }
 

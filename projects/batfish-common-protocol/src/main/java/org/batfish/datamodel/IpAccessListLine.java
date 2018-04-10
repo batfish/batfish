@@ -7,12 +7,19 @@ import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 
 @JsonSchemaDescription("A line in an IpAccessList")
 public final class IpAccessListLine implements Serializable {
 
   public static class Builder {
+
+    public static Builder rejection() {
+      return new Builder().setAction(LineAction.REJECT);
+    }
 
     private LineAction _action;
 
@@ -22,8 +29,18 @@ public final class IpAccessListLine implements Serializable {
 
     private Builder() {}
 
+    public Builder accepting() {
+      _action = LineAction.ACCEPT;
+      return this;
+    }
+
     public IpAccessListLine build() {
       return new IpAccessListLine(_action, _matchCondition, _name);
+    }
+
+    public Builder rejecting() {
+      _action = LineAction.REJECT;
+      return this;
     }
 
     public Builder setAction(LineAction action) {
@@ -42,16 +59,38 @@ public final class IpAccessListLine implements Serializable {
     }
   }
 
+  public static final IpAccessListLine ACCEPT_ALL =
+      accepting().setMatchCondition(TrueExpr.INSTANCE).build();
+
   private static final String PROP_ACTION = "action";
 
   private static final String PROP_MATCH_CONDITION = "matchCondition";
 
   private static final String PROP_NAME = "name";
 
+  public static final IpAccessListLine REJECT_ALL =
+      rejecting().setMatchCondition(TrueExpr.INSTANCE).build();
+
   private static final long serialVersionUID = 1L;
+
+  public static Builder accepting() {
+    return new Builder().setAction(LineAction.ACCEPT);
+  }
+
+  public static IpAccessListLine acceptingHeaderSpace(HeaderSpace headerSpace) {
+    return accepting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
+  }
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  public static Builder rejecting() {
+    return new Builder().setAction(LineAction.REJECT);
+  }
+
+  public static IpAccessListLine rejectingHeaderSpace(HeaderSpace headerSpace) {
+    return rejecting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
   }
 
   private final LineAction _action;
@@ -62,11 +101,11 @@ public final class IpAccessListLine implements Serializable {
 
   @JsonCreator
   public IpAccessListLine(
-      @JsonProperty(PROP_ACTION) LineAction action,
-      @JsonProperty(PROP_MATCH_CONDITION) AclLineMatchExpr matchCondition,
+      @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
+      @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
       @JsonProperty(PROP_NAME) String name) {
-    _action = action;
-    _matchCondition = matchCondition;
+    _action = Objects.requireNonNull(action);
+    _matchCondition = Objects.requireNonNull(matchCondition);
     _name = name;
   }
 
@@ -86,11 +125,11 @@ public final class IpAccessListLine implements Serializable {
 
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches an IPV4 packet.")
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  public AclLineMatchExpr getMatchCondition() {
+  public @Nonnull AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }
 

@@ -1,13 +1,11 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.DefinedStructure;
@@ -23,28 +21,28 @@ public class BaseApplication extends DefinedStructure<String> implements Applica
     /** */
     private static final long serialVersionUID = 1L;
 
-    private final HeaderSpace.Builder _headerSpaceBuilder;
-
-    private final Supplier<HeaderSpace> _headerSpace;
+    private HeaderSpace _headerSpace;
 
     public Term(String name) {
       super(name);
-      _headerSpaceBuilder = HeaderSpace.builder();
-      _headerSpace = Suppliers.memoize(_headerSpaceBuilder::build);
+      _headerSpace = HeaderSpace.builder().build();
     }
 
     public void applyTo(HeaderSpace.Builder destinationHeaderSpace) {
       destinationHeaderSpace.setIpProtocols(
-          Iterables.concat(
-              destinationHeaderSpace.getIpProtocols(), _headerSpace.get().getIpProtocols()));
+          Iterables.concat(destinationHeaderSpace.getIpProtocols(), _headerSpace.getIpProtocols()));
       destinationHeaderSpace.setDstPorts(
-          Iterables.concat(destinationHeaderSpace.getDstPorts(), _headerSpace.get().getDstPorts()));
+          Iterables.concat(destinationHeaderSpace.getDstPorts(), _headerSpace.getDstPorts()));
       destinationHeaderSpace.setSrcPorts(
-          Iterables.concat(destinationHeaderSpace.getSrcPorts(), _headerSpace.get().getSrcPorts()));
+          Iterables.concat(destinationHeaderSpace.getSrcPorts(), _headerSpace.getSrcPorts()));
     }
 
-    public HeaderSpace.Builder getHeaderSpaceBuilder() {
-      return _headerSpaceBuilder;
+    public HeaderSpace getHeaderSpace() {
+      return _headerSpace;
+    }
+
+    public void setHeaderSpace(HeaderSpace headerSpace) {
+      _headerSpace = headerSpace;
     }
   }
 

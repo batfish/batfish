@@ -66,6 +66,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -211,7 +212,8 @@ public class BdpDataPlanePluginTest {
   }
 
   private static IpAccessList makeAcl(String name, LineAction action) {
-    IpAccessListLine aclLine = IpAccessListLine.builder().setAction(action).build();
+    IpAccessListLine aclLine =
+        IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
     return new IpAccessList(name, singletonList(aclLine));
   }
 

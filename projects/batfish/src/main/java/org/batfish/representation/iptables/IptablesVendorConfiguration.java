@@ -22,6 +22,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
@@ -243,7 +244,11 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     // add a final line corresponding to default chain policy
     LineAction chainAction = chain.getIpAccessListLineAction();
     IpAccessListLine defaultLine =
-        IpAccessListLine.builder().setAction(chainAction).setName("default").build();
+        IpAccessListLine.builder()
+            .setAction(chainAction)
+            .setMatchCondition(TrueExpr.INSTANCE)
+            .setName("default")
+            .build();
     lines.add(defaultLine);
 
     IpAccessList acl = new IpAccessList(aclName, lines.build());

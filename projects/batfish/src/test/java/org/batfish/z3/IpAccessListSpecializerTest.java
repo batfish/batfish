@@ -31,12 +31,10 @@ public class IpAccessListSpecializerTest {
       new IpAccessListSpecializer(
           HeaderSpace.builder().setSrcIps(ImmutableSet.of(IpWildcard.ANY)).build());
 
-  private static final IpAccessListLine ALWAYS_TRUE_LINE = IpAccessListLine.builder().build();
-
   @Test
   public void testSpecializeIpAccessListLine_singleDst() {
     IpAccessListLine ipAccessListLine =
-        IpAccessListLine.builder()
+        IpAccessListLine.accepting()
             .setMatchCondition(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
@@ -61,7 +59,9 @@ public class IpAccessListSpecializerTest {
     IpAccessListSpecializer specializer =
         new IpAccessListSpecializer(
             HeaderSpace.builder().setDstIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
-    assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(ALWAYS_TRUE_LINE)));
+    assertThat(
+        specializer.specialize(ipAccessListLine),
+        equalTo(Optional.of(IpAccessListLine.ACCEPT_ALL)));
 
     // specialize to a headerspace that blacklists part of the dstIp
     specializer =
@@ -73,13 +73,8 @@ public class IpAccessListSpecializerTest {
   @Test
   public void testSpecializeIpAccessListLine_singleSrc() {
     IpAccessListLine ipAccessListLine =
-        IpAccessListLine.builder()
-            .setMatchCondition(
-                new MatchHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.0/24")))
-                        .build()))
-            .build();
+        IpAccessListLine.acceptingHeaderSpace(
+            HeaderSpace.builder().setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.0/24"))).build());
 
     assertThat(
         TRIVIAL_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
@@ -98,7 +93,9 @@ public class IpAccessListSpecializerTest {
     IpAccessListSpecializer specializer =
         new IpAccessListSpecializer(
             HeaderSpace.builder().setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
-    assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(ALWAYS_TRUE_LINE)));
+    assertThat(
+        specializer.specialize(ipAccessListLine),
+        equalTo(Optional.of(IpAccessListLine.ACCEPT_ALL)));
 
     // specialize to a headerspace that blacklists part of the srcIp
     specializer =

@@ -34,13 +34,11 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -172,64 +170,42 @@ public class ElasticsearchDomainTest {
     assertThat(configurations.get("es-domain").getInterfaces().entrySet(), hasSize(2));
 
     IpAccessListLine rejectSynOnly =
-        IpAccessListLine.builder()
-            .setMatchCondition(
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build()))
-            .setAction(LineAction.REJECT)
-            .build();
+        IpAccessListLine.rejectingHeaderSpace(
+            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
     IpAccessList expectedIncomingFilter =
         new IpAccessList(
             "~SECURITY_GROUP_INGRESS_ACL~",
             Lists.newArrayList(
-                IpAccessListLine.builder()
-                    .setAction(LineAction.ACCEPT)
-                    .setMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                                .setSrcIps(
-                                    Sets.newHashSet(
-                                        new IpWildcard("1.2.3.4/32"),
-                                        new IpWildcard("10.193.16.105/32")))
-                                .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                                .build()))
-                    .build(),
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(
+                            Sets.newHashSet(
+                                new IpWildcard("1.2.3.4/32"), new IpWildcard("10.193.16.105/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                        .build()),
                 rejectSynOnly,
-                IpAccessListLine.builder()
-                    .setAction(LineAction.ACCEPT)
-                    .setMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
-                                .build()))
-                    .build()));
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                        .build())));
     IpAccessList expectedOutgoingFilter =
         new IpAccessList(
             "~SECURITY_GROUP_EGRESS_ACL~",
             Lists.newArrayList(
-                IpAccessListLine.builder()
-                    .setAction(LineAction.ACCEPT)
-                    .setMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
-                                .build()))
-                    .build(),
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                        .build()),
                 rejectSynOnly,
-                IpAccessListLine.builder()
-                    .setAction(LineAction.ACCEPT)
-                    .setMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                                .setDstIps(
-                                    Sets.newHashSet(
-                                        new IpWildcard("1.2.3.4/32"),
-                                        new IpWildcard("10.193.16.105/32")))
-                                .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
-                                .build()))
-                    .build()));
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setDstIps(
+                            Sets.newHashSet(
+                                new IpWildcard("1.2.3.4/32"), new IpWildcard("10.193.16.105/32")))
+                        .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
+                        .build())));
 
     for (Interface iface : configurations.get("es-domain").getInterfaces().values()) {
       assertThat(iface.getIncomingFilter(), equalTo(expectedIncomingFilter));

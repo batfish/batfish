@@ -13,7 +13,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.codehaus.jettison.json.JSONArray;
@@ -56,11 +55,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       // Destination IPs should have been populated using either SG or IP ranges,  if not then this
       // Ip perm is incomplete
       if (!headerSpace.getDstIps().isEmpty()) {
-        accessList.add(
-            IpAccessListLine.builder()
-                .setAction(LineAction.ACCEPT)
-                .setMatchCondition(new MatchHeaderSpace(headerSpace))
-                .build());
+        accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
       }
     }
   }
@@ -72,11 +67,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       // Source IPs should have been populated using either SG or IP ranges, if not then this Ip
       // perm is incomplete
       if (!headerSpace.getSrcIps().isEmpty()) {
-        accessList.add(
-            IpAccessListLine.builder()
-                .setAction(LineAction.ACCEPT)
-                .setMatchCondition(new MatchHeaderSpace(headerSpace))
-                .build());
+        accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
       }
     }
   }
@@ -126,12 +117,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
     // denying SYN-only packets to prevent new TCP connections
     IpAccessListLine rejectSynOnly =
-        IpAccessListLine.builder()
-            .setMatchCondition(
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build()))
-            .setAction(LineAction.REJECT)
-            .build();
+        IpAccessListLine.rejectingHeaderSpace(
+            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
     inboundRules.add(rejectSynOnly);
     outboundRules.add(rejectSynOnly);
 

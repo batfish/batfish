@@ -41,14 +41,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -101,7 +99,6 @@ public class NodJobTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
-    IpAccessListLine.Builder acllb = IpAccessListLine.builder();
     SourceNat.Builder snb = SourceNat.builder();
     Vrf.Builder vb = nf.vrfBuilder();
 
@@ -117,14 +114,10 @@ public class NodJobTest {
     IpAccessList sourceNat1Acl =
         aclb.setLines(
                 ImmutableList.of(
-                    acllb
-                        .setMatchCondition(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
-                                    .build()))
-                        .setAction(LineAction.ACCEPT)
-                        .build()))
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
+                            .build())))
             .setOwner(_srcNode)
             .build();
 

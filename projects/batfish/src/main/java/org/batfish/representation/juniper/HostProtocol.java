@@ -11,11 +11,9 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public enum HostProtocol {
   ALL,
@@ -195,10 +193,6 @@ public enum HostProtocol {
               "missing definition for host-inbound-traffic protocol: \"" + name() + "\"");
         }
     }
-    return ImmutableList.of(
-        IpAccessListLine.builder()
-            .setAction(LineAction.ACCEPT)
-            .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
-            .build());
+    return ImmutableList.of(IpAccessListLine.acceptingHeaderSpace(headerSpaceBuilder.build()));
   }
 }
