@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -59,7 +61,8 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
   }
 
   public IpWildcard(Ip address, Ip wildcardMask) {
-    super(address, wildcardMask);
+    // Canonicalize the address before passing it to parent, so that #equals works.
+    super(new Ip(address.asLong() & ~wildcardMask.asLong()), wildcardMask);
     if (!wildcardMask.valid()) {
       throw new BatfishException("Invalid wildcard: " + wildcardMask);
     }
@@ -80,7 +83,7 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
   }
 
   @Override
-  public boolean containsIp(Ip ip) {
+  public boolean containsIp(@Nonnull Ip ip) {
     long wildcardIpAsLong = getIp().asLong();
     long wildcardMask = getWildcard().asLong();
     long ipAsLong = ip.asLong();
@@ -105,11 +108,8 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
       return false;
     }
     IpWildcard other = (IpWildcard) o;
-    if (other.getFirst().equals(this.getFirst()) && other.getSecond().equals(this.getSecond())) {
-      return true;
-    } else {
-      return false;
-    }
+    return Objects.equals(this.getFirst(), other.getFirst())
+        && Objects.equals(this.getSecond(), other.getSecond());
   }
 
   public Ip getIp() {
