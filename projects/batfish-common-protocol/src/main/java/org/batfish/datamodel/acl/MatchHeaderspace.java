@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.batfish.datamodel.HeaderSpace;
 
 public class MatchHeaderspace extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
   private final HeaderSpace _headerspace;
 
   public MatchHeaderspace(HeaderSpace headerspace) {

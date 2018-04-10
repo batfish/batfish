@@ -7546,6 +7546,9 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.RouteIsClassful"
                     }
                   ]
                 },

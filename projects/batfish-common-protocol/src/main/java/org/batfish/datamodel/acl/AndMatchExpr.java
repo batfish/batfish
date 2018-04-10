@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class AndMatchExpr extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
   private final Set<AclLineMatchExpr> _conjuncts;
 
   public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts) {

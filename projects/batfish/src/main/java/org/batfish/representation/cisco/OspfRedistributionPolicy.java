@@ -15,7 +15,7 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   private OspfMetricType _metricType;
 
-  private boolean _subnets;
+  private boolean _onlyClassfulRoutes;
 
   private Long _tag;
 
@@ -31,8 +31,8 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     return _metricType;
   }
 
-  public boolean getSubnets() {
-    return _subnets;
+  public boolean getOnlyClassfulRoutes() {
+    return _onlyClassfulRoutes;
   }
 
   public Long getTag() {
@@ -43,12 +43,12 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     _metric = metric;
   }
 
-  public void setOspfMetricType(OspfMetricType type) {
-    _metricType = type;
+  public void setOnlyClassfulRoutes(boolean b) {
+    _onlyClassfulRoutes = b;
   }
 
-  public void setSubnets(boolean b) {
-    _subnets = b;
+  public void setOspfMetricType(OspfMetricType type) {
+    _metricType = type;
   }
 
   public void setTag(long tag) {
