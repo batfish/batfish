@@ -276,11 +276,9 @@ public class CommonUtil {
         });
     vrrpGroups.forEach(
         (p, candidates) -> {
-          int groupNum = p.getSecond();
           InterfaceAddress address = p.getFirst();
-          Ip ip = address.getIp();
-
-          Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
+          int groupNum = p.getSecond();
+          Set<String> owners = ipOwners.computeIfAbsent(address.getIp(), k -> new HashSet<>());
           /*
            * Compare priorities first. If tied, break tie based on highest interface IP.
            */
