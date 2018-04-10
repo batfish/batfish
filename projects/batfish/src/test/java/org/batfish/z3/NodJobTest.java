@@ -48,6 +48,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -117,7 +118,11 @@ public class NodJobTest {
         aclb.setLines(
                 ImmutableList.of(
                     acllb
-                        .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
+                        .setMatchCondition(
+                            new MatchHeaderspace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
+                                    .build()))
                         .setAction(LineAction.ACCEPT)
                         .build()))
             .setOwner(_srcNode)

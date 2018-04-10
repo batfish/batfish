@@ -1,8 +1,9 @@
 package org.batfish.representation.iptables;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,12 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
@@ -171,59 +174,76 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
 
     for (IptablesRule rule : chain.getRules()) {
-      IpAccessListLine aclLine = new IpAccessListLine();
-      boolean anyInterface = false;
+      HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
+      boolean anyInterface = true;
+      List<IptablesMatch> inInterfaceMatches = new ArrayList<>();
+      List<IptablesMatch> outInterfaceMatches = new ArrayList<>();
 
       for (IptablesMatch match : rule.getMatchList()) {
-
         switch (match.getMatchType()) {
           case DESTINATION:
-            aclLine.setDstIps(
-                Iterables.concat(aclLine.getDstIps(), Collections.singleton(match.toIpWildcard())));
+            headerSpaceBuilder.setDstIps(
+                Iterables.concat(
+                    headerSpaceBuilder.getDstIps(), ImmutableSet.of(match.toIpWildcard())));
             break;
           case DESTINATION_PORT:
-            aclLine.setDstPorts(Iterables.concat(aclLine.getDstPorts(), match.toPortRanges()));
+            headerSpaceBuilder.setDstPorts(
+                Iterables.concat(headerSpaceBuilder.getDstPorts(), match.toPortRanges()));
             break;
           case IN_INTERFACE:
-            _lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
+            inInterfaceMatches.add(match);
             anyInterface = false;
             break;
           case OUT_INTERFACE:
-            _lineOutInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName()));
+            outInterfaceMatches.add(match);
             anyInterface = false;
             break;
           case PROTOCOL:
-            aclLine.setIpProtocols(
+            headerSpaceBuilder.setIpProtocols(
                 Iterables.concat(
-                    aclLine.getIpProtocols(), Collections.singleton(match.toIpProtocol())));
+                    headerSpaceBuilder.getIpProtocols(), ImmutableSet.of(match.toIpProtocol())));
             break;
           case SOURCE:
-            aclLine.setSrcIps(
-                Iterables.concat(aclLine.getSrcIps(), Collections.singleton(match.toIpWildcard())));
+            headerSpaceBuilder.setSrcIps(
+                Iterables.concat(
+                    headerSpaceBuilder.getSrcIps(), ImmutableSet.of(match.toIpWildcard())));
             break;
           case SOURCE_PORT:
-            aclLine.setSrcPorts(Iterables.concat(aclLine.getSrcPorts(), match.toPortRanges()));
+            headerSpaceBuilder.setSrcPorts(
+                Iterables.concat(headerSpaceBuilder.getSrcPorts(), match.toPortRanges()));
             break;
           default:
             throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
+      IpAccessListLine aclLine =
+          IpAccessListLine.builder()
+              .setAction(rule.getIpAccessListLineAction())
+              .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+              .setName(rule.getName())
+              .build();
+
+      inInterfaceMatches.forEach(
+          match ->
+              _lineInInterfaces.put(
+                  aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
+      outInterfaceMatches.forEach(
+          match ->
+              _lineOutInterfaces.put(
+                  aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
 
       if (anyInterface) {
         _lineInInterfaces.put(aclLine, null);
         _lineOutInterfaces.put(aclLine, null);
       }
 
-      aclLine.setName(rule.getName());
-      aclLine.setAction(rule.getIpAccessListLineAction());
       lines.add(aclLine);
     }
 
     // add a final line corresponding to default chain policy
     LineAction chainAction = chain.getIpAccessListLineAction();
-    IpAccessListLine defaultLine = new IpAccessListLine();
-    defaultLine.setAction(chainAction);
-    defaultLine.setName("default");
+    IpAccessListLine defaultLine =
+        IpAccessListLine.builder().setAction(chainAction).setName("default").build();
     lines.add(defaultLine);
 
     IpAccessList acl = new IpAccessList(aclName, lines.build());

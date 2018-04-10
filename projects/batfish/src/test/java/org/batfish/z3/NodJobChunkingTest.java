@@ -36,6 +36,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -74,7 +75,11 @@ public class NodJobChunkingTest {
             ImmutableList.of(
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
-                    .setSrcIps(ImmutableList.of(new IpWildcard(srcIp)))
+                    .setMatchCondition(
+                        new MatchHeaderspace(
+                            HeaderSpace.builder()
+                                .setSrcIps(ImmutableList.of(new IpWildcard(srcIp)))
+                                .build()))
                     .build()))
         .build();
   }

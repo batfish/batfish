@@ -1,15 +1,19 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 
 public enum HostSystemService {
   ALL,
@@ -42,121 +46,109 @@ public enum HostSystemService {
   XNM_CLEAR_TEXT,
   XNM_SSL;
 
-  private boolean _initialized;
-
-  private List<IpAccessListLine> _lines;
+  private final Supplier<List<IpAccessListLine>> _lines;
 
   public List<IpAccessListLine> getLines() {
-    init();
-    return _lines;
+    return _lines.get();
   }
 
-  private synchronized void init() {
-    if (_initialized) {
-      return;
-    }
-    _initialized = true;
-    _lines = new ArrayList<>();
+  private HostSystemService() {
+    _lines = Suppliers.memoize(this::init);
+  }
+
+  private List<IpAccessListLine> init() {
+    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     switch (this) {
       case ALL:
         {
+          ImmutableList.Builder<IpAccessListLine> lines = ImmutableList.builder();
           for (HostSystemService other : values()) {
             if (other != ALL && other != ANY_SERVICE) {
-              _lines.addAll(other.getLines());
+              lines.addAll(other.getLines());
             }
           }
-          break;
+          return lines.build();
         }
 
       case ANY_SERVICE:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
+          headerSpaceBuilder.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
           break;
         }
 
       case DHCP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.BOOTPS_OR_DHCP.number(), NamedPort.BOOTPC.number())));
           break;
         }
 
       case DNS:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.DOMAIN.number(), NamedPort.DOMAIN.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.DOMAIN.number(), NamedPort.DOMAIN.number())));
           break;
         }
 
       case FINGER:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.FINGER.number(), NamedPort.FINGER.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.FINGER.number(), NamedPort.FINGER.number())));
           break;
         }
 
       case FTP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(new SubRange(NamedPort.FTP.number(), NamedPort.FTP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.FTP.number(), NamedPort.FTP.number())));
           break;
         }
 
       case HTTP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.HTTP.number(), NamedPort.HTTP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.HTTP.number(), NamedPort.HTTP.number())));
           break;
         }
 
       case HTTPS:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.HTTPS.number(), NamedPort.HTTPS.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.HTTPS.number(), NamedPort.HTTPS.number())));
           break;
         }
 
       case IDENT_RESET:
         {
           // TODO: ??? (Juniper documentation is opaque)
-          break;
+          return ImmutableList.of();
         }
 
       case IKE:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              ImmutableSortedSet.of(
-                  new SubRange(NamedPort.ISAKMP.number(), NamedPort.ISAKMP.number()),
-                  new SubRange(
-                      NamedPort.NON500_ISAKMP.number(), NamedPort.NON500_ISAKMP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSortedSet.of(
+                      new SubRange(NamedPort.ISAKMP.number(), NamedPort.ISAKMP.number()),
+                      new SubRange(
+                          NamedPort.NON500_ISAKMP.number(), NamedPort.NON500_ISAKMP.number())));
           break;
         }
 
@@ -164,35 +156,32 @@ public enum HostSystemService {
         {
           // TODO: ??? (Juniper documentation is missing or hiding for this
           // service)
-          break;
+          return ImmutableList.of();
         }
 
       case NETCONF:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.NETCONF_SSH.number(), NamedPort.NETCONF_SSH.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.NETCONF_SSH.number(), NamedPort.NETCONF_SSH.number())));
           break;
         }
 
       case NTP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(new SubRange(NamedPort.NTP.number(), NamedPort.NTP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.NTP.number(), NamedPort.NTP.number())));
           break;
         }
 
       case PING:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.ICMP));
+          headerSpaceBuilder.setIpProtocols(ImmutableSet.of(IpProtocol.ICMP));
           // TODO: PING (ECHO REQUEST) uses ICMP (an IP Protocol) type 8. need to
           // add support for ICMP types in packet headers
           break;
@@ -200,48 +189,44 @@ public enum HostSystemService {
 
       case R2CP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.R2CP.number(), NamedPort.R2CP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.R2CP.number(), NamedPort.R2CP.number())));
           break;
         }
 
       case REVERSE_SSH:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.REVERSE_SSH.number(), NamedPort.REVERSE_SSH.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.REVERSE_SSH.number(), NamedPort.REVERSE_SSH.number())));
           break;
         }
 
       case REVERSE_TELNET:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(
-                      NamedPort.REVERSE_TELNET.number(), NamedPort.REVERSE_TELNET.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.REVERSE_TELNET.number(), NamedPort.REVERSE_TELNET.number())));
           break;
         }
 
       case RLOGIN:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(
-                      NamedPort.LOGINtcp_OR_WHOudp.number(),
-                      NamedPort.LOGINtcp_OR_WHOudp.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.LOGINtcp_OR_WHOudp.number(),
+                          NamedPort.LOGINtcp_OR_WHOudp.number())));
           break;
         }
 
@@ -254,113 +239,101 @@ public enum HostSystemService {
 
       case RSH:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(
-                      NamedPort.CMDtcp_OR_SYSLOGudp.number(),
-                      NamedPort.CMDtcp_OR_SYSLOGudp.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.CMDtcp_OR_SYSLOGudp.number(),
+                          NamedPort.CMDtcp_OR_SYSLOGudp.number())));
           break;
         }
 
       case SIP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.SIP_5060.number(), NamedPort.SIP_5061.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSortedSet.of(IpProtocol.TCP, IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.SIP_5060.number(), NamedPort.SIP_5061.number())));
           break;
         }
 
       case SNMP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.SNMP.number(), NamedPort.SNMP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.SNMP.number(), NamedPort.SNMP.number())));
           break;
         }
 
       case SNMP_TRAP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.SNMPTRAP.number(), NamedPort.SNMPTRAP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.SNMPTRAP.number(), NamedPort.SNMPTRAP.number())));
           break;
         }
 
       case SSH:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(new SubRange(NamedPort.SSH.number(), NamedPort.SSH.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.SSH.number(), NamedPort.SSH.number())));
           break;
         }
 
       case TELNET:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.TELNET.number(), NamedPort.TELNET.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.TELNET.number(), NamedPort.TELNET.number())));
           break;
         }
 
       case TFTP:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.TFTP.number(), NamedPort.TFTP.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(new SubRange(NamedPort.TFTP.number(), NamedPort.TFTP.number())));
           break;
         }
 
       case TRACEROUTE:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.UDP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.UDP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.TRACEROUTE.number(), NamedPort.TRACEROUTE.number())));
           break;
         }
 
       case XNM_CLEAR_TEXT:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(
-                      NamedPort.XNM_CLEAR_TEXT.number(), NamedPort.XNM_CLEAR_TEXT.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(
+                          NamedPort.XNM_CLEAR_TEXT.number(), NamedPort.XNM_CLEAR_TEXT.number())));
           break;
         }
 
       case XNM_SSL:
         {
-          IpAccessListLine line = new IpAccessListLine();
-          _lines.add(line);
-          line.setIpProtocols(Collections.singleton(IpProtocol.TCP));
-          line.setDstPorts(
-              Collections.singleton(
-                  new SubRange(NamedPort.XNM_SSL.number(), NamedPort.XNM_SSL.number())));
+          headerSpaceBuilder
+              .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
+              .setDstPorts(
+                  ImmutableSet.of(
+                      new SubRange(NamedPort.XNM_SSL.number(), NamedPort.XNM_SSL.number())));
           break;
         }
 
@@ -370,9 +343,10 @@ public enum HostSystemService {
               "missing definition for host-inbound-traffic system-service: \"" + name() + "\"");
         }
     }
-
-    for (IpAccessListLine line : _lines) {
-      line.setAction(LineAction.ACCEPT);
-    }
+    return ImmutableList.of(
+        IpAccessListLine.builder()
+            .setAction(LineAction.ACCEPT)
+            .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+            .build());
   }
 }

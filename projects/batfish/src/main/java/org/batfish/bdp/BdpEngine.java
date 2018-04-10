@@ -70,7 +70,11 @@ public class BdpEngine implements FlowProcessor {
    *
    * <p>Each {@link SourceNat} is expected to be valid: it must have a NAT IP or pool.
    */
-  static Flow applySourceNat(Flow flow, @Nullable List<SourceNat> sourceNats) {
+  static Flow applySourceNat(
+      Flow flow,
+      String srcInterface,
+      Map<String, IpAccessList> aclDefinitions,
+      @Nullable List<SourceNat> sourceNats) {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
     }
@@ -80,7 +84,8 @@ public class BdpEngine implements FlowProcessor {
             .filter(
                 sourceNat ->
                     sourceNat.getAcl() != null
-                        && sourceNat.getAcl().filter(flow).getAction() != LineAction.REJECT)
+                        && sourceNat.getAcl().filter(flow, srcInterface, aclDefinitions).getAction()
+                            != LineAction.REJECT)
             .findFirst();
     if (!matchingSourceNat.isPresent()) {
       // No NAT rule matched.
@@ -147,12 +152,15 @@ public class BdpEngine implements FlowProcessor {
       flowTraces.add(trace);
     } else {
       Node currentNode = dp._nodes.get(currentNodeName);
+      Map<String, IpAccessList> aclDefinitions = currentNode._c.getIpAccessLists();
       String vrfName;
+      String receivingInterface;
       if (hopsSoFar.isEmpty()) {
         vrfName = transformedFlow.getIngressVrf();
+        receivingInterface = null;
       } else {
         FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
-        String receivingInterface = lastHop.getEdge().getInt2();
+        receivingInterface = lastHop.getEdge().getInt2();
         vrfName = currentNode._c.getInterfaces().get(receivingInterface).getVrf().getName();
       }
       VirtualRouter currentVirtualRouter = currentNode._virtualRouters.get(vrfName);
@@ -220,7 +228,12 @@ public class BdpEngine implements FlowProcessor {
                     .get(nextHopInterface.getInterface());
 
             // Apply any relevant source NAT rules.
-            transformedFlow = applySourceNat(transformedFlow, outgoingInterface.getSourceNats());
+            transformedFlow =
+                applySourceNat(
+                    transformedFlow,
+                    receivingInterface,
+                    aclDefinitions,
+                    outgoingInterface.getSourceNats());
 
             SortedSet<Edge> edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
@@ -234,6 +247,8 @@ public class BdpEngine implements FlowProcessor {
                       flowTraces,
                       originalFlow,
                       transformedFlow,
+                      receivingInterface,
+                      aclDefinitions,
                       dstIp,
                       dstIpOwners,
                       nextHopInterfaceName,
@@ -269,7 +284,14 @@ public class BdpEngine implements FlowProcessor {
                 FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                 denied =
                     flowTraceDeniedHelper(
-                        flowTraces, originalFlow, transformedFlow, newHops, outFilter, disposition);
+                        flowTraces,
+                        originalFlow,
+                        transformedFlow,
+                        receivingInterface,
+                        aclDefinitions,
+                        newHops,
+                        outFilter,
+                        disposition);
               }
               if (!denied) {
                 FlowTrace trace =
@@ -1198,11 +1220,13 @@ public class BdpEngine implements FlowProcessor {
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
+      String srcInterface,
+      Map<String, IpAccessList> aclDefinitions,
       List<FlowTraceHop> newHops,
       IpAccessList filter,
       FlowDisposition disposition) {
     boolean out = disposition == FlowDisposition.DENIED_OUT;
-    FilterResult outResult = filter.filter(transformedFlow);
+    FilterResult outResult = filter.filter(transformedFlow, srcInterface, aclDefinitions);
     boolean denied = outResult.getAction() == LineAction.REJECT;
     if (denied) {
       String outFilterName = filter.getName();
@@ -1502,6 +1526,8 @@ public class BdpEngine implements FlowProcessor {
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
+      String srcInterface,
+      Map<String, IpAccessList> aclDefinitions,
       Ip dstIp,
       Set<String> dstIpOwners,
       @Nullable String nextHopInterfaceName,
@@ -1601,7 +1627,14 @@ public class BdpEngine implements FlowProcessor {
           FlowDisposition disposition = FlowDisposition.DENIED_OUT;
           boolean denied =
               flowTraceDeniedHelper(
-                  flowTraces, originalFlow, transformedFlow, newHops, outFilter, disposition);
+                  flowTraces,
+                  originalFlow,
+                  transformedFlow,
+                  srcInterface,
+                  aclDefinitions,
+                  newHops,
+                  outFilter,
+                  disposition);
           if (denied) {
             potentialNeighbors--;
             continue;
@@ -1614,7 +1647,14 @@ public class BdpEngine implements FlowProcessor {
         FlowDisposition disposition = FlowDisposition.DENIED_IN;
         boolean denied =
             flowTraceDeniedHelper(
-                flowTraces, originalFlow, transformedFlow, newHops, inFilter, disposition);
+                flowTraces,
+                originalFlow,
+                transformedFlow,
+                srcInterface,
+                aclDefinitions,
+                newHops,
+                inFilter,
+                disposition);
         if (denied) {
           potentialNeighbors--;
           continue;
@@ -1678,6 +1718,8 @@ public class BdpEngine implements FlowProcessor {
                     currentFlowTraces,
                     flow,
                     flow,
+                    ingressInterfaceName,
+                    dp._nodes.get(ingressNodeName)._c.getIpAccessLists(),
                     dstIp,
                     dstIpOwners,
                     null,

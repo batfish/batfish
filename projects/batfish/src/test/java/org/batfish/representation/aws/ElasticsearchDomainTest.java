@@ -26,6 +26,7 @@ import java.util.Set;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -171,7 +173,9 @@ public class ElasticsearchDomainTest {
 
     IpAccessListLine rejectSynOnly =
         IpAccessListLine.builder()
-            .setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY))
+            .setMatchCondition(
+                new MatchHeaderspace(
+                    HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build()))
             .setAction(LineAction.REJECT)
             .build();
     IpAccessList expectedIncomingFilter =
@@ -180,16 +184,25 @@ public class ElasticsearchDomainTest {
             Lists.newArrayList(
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setSrcIps(
-                        Sets.newHashSet(
-                            new IpWildcard("1.2.3.4/32"), new IpWildcard("10.193.16.105/32")))
-                    .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                    .setMatchCondition(
+                        new MatchHeaderspace(
+                            HeaderSpace.builder()
+                                .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                                .setSrcIps(
+                                    Sets.newHashSet(
+                                        new IpWildcard("1.2.3.4/32"),
+                                        new IpWildcard("10.193.16.105/32")))
+                                .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
+                                .build()))
                     .build(),
                 rejectSynOnly,
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
-                    .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                    .setMatchCondition(
+                        new MatchHeaderspace(
+                            HeaderSpace.builder()
+                                .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                                .build()))
                     .build()));
     IpAccessList expectedOutgoingFilter =
         new IpAccessList(
@@ -197,16 +210,25 @@ public class ElasticsearchDomainTest {
             Lists.newArrayList(
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
-                    .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                    .setMatchCondition(
+                        new MatchHeaderspace(
+                            HeaderSpace.builder()
+                                .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                                .build()))
                     .build(),
                 rejectSynOnly,
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
-                    .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                    .setDstIps(
-                        Sets.newHashSet(
-                            new IpWildcard("1.2.3.4/32"), new IpWildcard("10.193.16.105/32")))
-                    .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
+                    .setMatchCondition(
+                        new MatchHeaderspace(
+                            HeaderSpace.builder()
+                                .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                                .setDstIps(
+                                    Sets.newHashSet(
+                                        new IpWildcard("1.2.3.4/32"),
+                                        new IpWildcard("10.193.16.105/32")))
+                                .setSrcPorts(Sets.newHashSet(new SubRange(45, 50)))
+                                .build()))
                     .build()));
 
     for (Interface iface : configurations.get("es-domain").getInterfaces().values()) {

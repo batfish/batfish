@@ -6,8 +6,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.acl.Evaluator;
 
 @JsonSchemaDescription("An access-list used to filter IPV4 packets")
 public class IpAccessList extends ComparableStructure<String> {
@@ -102,10 +104,11 @@ public class IpAccessList extends ComparableStructure<String> {
     return other._lines.equals(_lines);
   }
 
-  public FilterResult filter(Flow flow) {
+  public FilterResult filter(
+      Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
     for (int i = 0; i < _lines.size(); i++) {
       IpAccessListLine line = _lines.get(i);
-      if (line.matches(flow)) {
+      if (Evaluator.matches(line.getMatchCondition(), flow, srcInterface, availableAcls)) {
         return new FilterResult(i, line.getAction());
       }
     }

@@ -1,286 +1,418 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 
 public class HeaderSpace implements Serializable {
 
-  public abstract static class Builder<S extends Builder<S, T>, T extends HeaderSpace> {
+  public static class Builder {
 
-    protected SortedSet<Integer> _dscps;
+    private SortedSet<Integer> _dscps;
 
-    protected SortedSet<IpWildcard> _dstIps;
+    private SortedSet<IpWildcard> _dstIps;
 
-    protected SortedSet<SubRange> _dstPorts;
+    private SortedSet<SubRange> _dstPorts;
 
-    protected SortedSet<Protocol> _dstProtocols;
+    private SortedSet<Protocol> _dstProtocols;
 
-    protected SortedSet<Integer> _ecns;
-
-    protected SortedSet<SubRange> _fragmentOffsets;
-
-    protected SortedSet<SubRange> _icmpCodes;
-
-    protected SortedSet<SubRange> _icmpTypes;
-
-    protected SortedSet<IpProtocol> _ipProtocols;
-
-    protected boolean _negate;
-
-    protected SortedSet<Integer> _notDscps;
-
-    protected SortedSet<IpWildcard> _notDstIps;
-
-    protected SortedSet<SubRange> _notDstPorts;
-
-    protected SortedSet<Protocol> _notDstProtocols;
-
-    protected SortedSet<Integer> _notEcns;
-
-    protected SortedSet<SubRange> _notFragmentOffsets;
-
-    protected SortedSet<SubRange> _notIcmpCodes;
-
-    protected SortedSet<SubRange> _notIcmpTypes;
-
-    protected SortedSet<IpProtocol> _notIpProtocols;
-
-    protected SortedSet<SubRange> _notPacketLengths;
-
-    protected SortedSet<IpWildcard> _notSrcIps;
-
-    protected SortedSet<SubRange> _notSrcPorts;
-
-    protected SortedSet<Protocol> _notSrcProtocols;
-
-    protected SortedSet<SubRange> _packetLengths;
-
-    protected SortedSet<IpWildcard> _srcIps;
-
-    protected SortedSet<IpWildcard> _srcOrDstIps;
-
-    protected SortedSet<SubRange> _srcOrDstPorts;
-
-    protected SortedSet<Protocol> _srcOrDstProtocols;
-
-    protected SortedSet<SubRange> _srcPorts;
-
-    protected SortedSet<Protocol> _srcProtocols;
-
-    protected SortedSet<State> _states;
-
-    protected List<TcpFlags> _tcpFlags;
-
-    protected Builder() {
-      _dscps = Collections.emptySortedSet();
-      _dstIps = Collections.emptySortedSet();
-      _dstPorts = Collections.emptySortedSet();
-      _dstProtocols = Collections.emptySortedSet();
-      _ecns = Collections.emptySortedSet();
-      _fragmentOffsets = Collections.emptySortedSet();
-      _icmpCodes = Collections.emptySortedSet();
-      _icmpTypes = Collections.emptySortedSet();
-      _ipProtocols = Collections.emptySortedSet();
-      _packetLengths = Collections.emptySortedSet();
-      _srcIps = Collections.emptySortedSet();
-      _srcOrDstIps = Collections.emptySortedSet();
-      _srcOrDstPorts = Collections.emptySortedSet();
-      _srcOrDstProtocols = Collections.emptySortedSet();
-      _srcPorts = Collections.emptySortedSet();
-      _srcProtocols = Collections.emptySortedSet();
-      _icmpTypes = Collections.emptySortedSet();
-      _icmpCodes = Collections.emptySortedSet();
-      _states = Collections.emptySortedSet();
-      _tcpFlags = Collections.emptyList();
-      _notDscps = Collections.emptySortedSet();
-      _notDstIps = Collections.emptySortedSet();
-      _notDstPorts = Collections.emptySortedSet();
-      _notDstProtocols = Collections.emptySortedSet();
-      _notEcns = Collections.emptySortedSet();
-      _notFragmentOffsets = Collections.emptySortedSet();
-      _notIcmpCodes = Collections.emptySortedSet();
-      _notIcmpTypes = Collections.emptySortedSet();
-      _notIpProtocols = Collections.emptySortedSet();
-      _notPacketLengths = Collections.emptySortedSet();
-      _notSrcIps = Collections.emptySortedSet();
-      _notSrcPorts = Collections.emptySortedSet();
-      _notSrcProtocols = Collections.emptySortedSet();
+    public SortedSet<Integer> getDscps() {
+      return _dscps;
     }
 
-    public S setDscps(Iterable<Integer> dscps) {
+    public SortedSet<IpWildcard> getDstIps() {
+      return _dstIps;
+    }
+
+    public SortedSet<SubRange> getDstPorts() {
+      return _dstPorts;
+    }
+
+    public SortedSet<Protocol> getDstProtocols() {
+      return _dstProtocols;
+    }
+
+    public SortedSet<Integer> getEcns() {
+      return _ecns;
+    }
+
+    public SortedSet<SubRange> getFragmentOffsets() {
+      return _fragmentOffsets;
+    }
+
+    public SortedSet<SubRange> getIcmpCodes() {
+      return _icmpCodes;
+    }
+
+    public SortedSet<SubRange> getIcmpTypes() {
+      return _icmpTypes;
+    }
+
+    public SortedSet<IpProtocol> getIpProtocols() {
+      return _ipProtocols;
+    }
+
+    public boolean getNegate() {
+      return _negate;
+    }
+
+    public SortedSet<Integer> getNotDscps() {
+      return _notDscps;
+    }
+
+    public SortedSet<IpWildcard> getNotDstIps() {
+      return _notDstIps;
+    }
+
+    public SortedSet<SubRange> getNotDstPorts() {
+      return _notDstPorts;
+    }
+
+    public SortedSet<Protocol> getNotDstProtocols() {
+      return _notDstProtocols;
+    }
+
+    public SortedSet<Integer> getNotEcns() {
+      return _notEcns;
+    }
+
+    public SortedSet<SubRange> getNotFragmentOffsets() {
+      return _notFragmentOffsets;
+    }
+
+    public SortedSet<SubRange> getNotIcmpCodes() {
+      return _notIcmpCodes;
+    }
+
+    public SortedSet<SubRange> getNotIcmpTypes() {
+      return _notIcmpTypes;
+    }
+
+    public SortedSet<IpProtocol> getNotIpProtocols() {
+      return _notIpProtocols;
+    }
+
+    public SortedSet<SubRange> getNotPacketLengths() {
+      return _notPacketLengths;
+    }
+
+    public SortedSet<IpWildcard> getNotSrcIps() {
+      return _notSrcIps;
+    }
+
+    public SortedSet<SubRange> getNotSrcPorts() {
+      return _notSrcPorts;
+    }
+
+    public SortedSet<Protocol> getNotSrcProtocols() {
+      return _notSrcProtocols;
+    }
+
+    public SortedSet<SubRange> getPacketLengths() {
+      return _packetLengths;
+    }
+
+    public SortedSet<IpWildcard> getSrcIps() {
+      return _srcIps;
+    }
+
+    public SortedSet<IpWildcard> getSrcOrDstIps() {
+      return _srcOrDstIps;
+    }
+
+    public SortedSet<SubRange> getSrcOrDstPorts() {
+      return _srcOrDstPorts;
+    }
+
+    public SortedSet<Protocol> getSrcOrDstProtocols() {
+      return _srcOrDstProtocols;
+    }
+
+    public SortedSet<SubRange> getSrcPorts() {
+      return _srcPorts;
+    }
+
+    public SortedSet<Protocol> getSrcProtocols() {
+      return _srcProtocols;
+    }
+
+    public SortedSet<State> getStates() {
+      return _states;
+    }
+
+    public List<TcpFlags> getTcpFlags() {
+      return _tcpFlags;
+    }
+
+    private SortedSet<Integer> _ecns;
+
+    private SortedSet<SubRange> _fragmentOffsets;
+
+    private SortedSet<SubRange> _icmpCodes;
+
+    private SortedSet<SubRange> _icmpTypes;
+
+    private SortedSet<IpProtocol> _ipProtocols;
+
+    private boolean _negate;
+
+    private SortedSet<Integer> _notDscps;
+
+    private SortedSet<IpWildcard> _notDstIps;
+
+    private SortedSet<SubRange> _notDstPorts;
+
+    private SortedSet<Protocol> _notDstProtocols;
+
+    private SortedSet<Integer> _notEcns;
+
+    private SortedSet<SubRange> _notFragmentOffsets;
+
+    private SortedSet<SubRange> _notIcmpCodes;
+
+    private SortedSet<SubRange> _notIcmpTypes;
+
+    private SortedSet<IpProtocol> _notIpProtocols;
+
+    private SortedSet<SubRange> _notPacketLengths;
+
+    private SortedSet<IpWildcard> _notSrcIps;
+
+    private SortedSet<SubRange> _notSrcPorts;
+
+    private SortedSet<Protocol> _notSrcProtocols;
+
+    private SortedSet<SubRange> _packetLengths;
+
+    private SortedSet<IpWildcard> _srcIps;
+
+    private SortedSet<IpWildcard> _srcOrDstIps;
+
+    private SortedSet<SubRange> _srcOrDstPorts;
+
+    private SortedSet<Protocol> _srcOrDstProtocols;
+
+    private SortedSet<SubRange> _srcPorts;
+
+    private SortedSet<Protocol> _srcProtocols;
+
+    private SortedSet<State> _states;
+
+    private List<TcpFlags> _tcpFlags;
+
+    private Builder() {
+      _dscps = ImmutableSortedSet.of();
+      _dstIps = ImmutableSortedSet.of();
+      _dstPorts = ImmutableSortedSet.of();
+      _dstProtocols = ImmutableSortedSet.of();
+      _ecns = ImmutableSortedSet.of();
+      _fragmentOffsets = ImmutableSortedSet.of();
+      _icmpCodes = ImmutableSortedSet.of();
+      _icmpTypes = ImmutableSortedSet.of();
+      _ipProtocols = ImmutableSortedSet.of();
+      _packetLengths = ImmutableSortedSet.of();
+      _srcIps = ImmutableSortedSet.of();
+      _srcOrDstIps = ImmutableSortedSet.of();
+      _srcOrDstPorts = ImmutableSortedSet.of();
+      _srcOrDstProtocols = ImmutableSortedSet.of();
+      _srcPorts = ImmutableSortedSet.of();
+      _srcProtocols = ImmutableSortedSet.of();
+      _icmpTypes = ImmutableSortedSet.of();
+      _icmpCodes = ImmutableSortedSet.of();
+      _states = ImmutableSortedSet.of();
+      _tcpFlags = ImmutableList.of();
+      _notDscps = ImmutableSortedSet.of();
+      _notDstIps = ImmutableSortedSet.of();
+      _notDstPorts = ImmutableSortedSet.of();
+      _notDstProtocols = ImmutableSortedSet.of();
+      _notEcns = ImmutableSortedSet.of();
+      _notFragmentOffsets = ImmutableSortedSet.of();
+      _notIcmpCodes = ImmutableSortedSet.of();
+      _notIcmpTypes = ImmutableSortedSet.of();
+      _notIpProtocols = ImmutableSortedSet.of();
+      _notPacketLengths = ImmutableSortedSet.of();
+      _notSrcIps = ImmutableSortedSet.of();
+      _notSrcPorts = ImmutableSortedSet.of();
+      _notSrcProtocols = ImmutableSortedSet.of();
+    }
+
+    public Builder setDscps(Iterable<Integer> dscps) {
       _dscps = ImmutableSortedSet.copyOf(dscps);
-      return getThis();
+      return this;
     }
 
-    public S setDstIps(Iterable<IpWildcard> dstIps) {
+    public Builder setDstIps(Iterable<IpWildcard> dstIps) {
       _dstIps = ImmutableSortedSet.copyOf(dstIps);
-      return getThis();
+      return this;
     }
 
-    public S setDstPorts(Iterable<SubRange> dstPorts) {
+    public Builder setDstPorts(Iterable<SubRange> dstPorts) {
       _dstPorts = ImmutableSortedSet.copyOf(dstPorts);
-      return getThis();
+      return this;
     }
 
-    public S setDstProtocols(Iterable<Protocol> dstProtocols) {
+    public Builder setDstProtocols(Iterable<Protocol> dstProtocols) {
       _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setEcns(Iterable<Integer> ecns) {
+    public Builder setEcns(Iterable<Integer> ecns) {
       _ecns = ImmutableSortedSet.copyOf(ecns);
-      return getThis();
+      return this;
     }
 
-    public S setFragmentOffsets(Iterable<SubRange> fragmentOffsets) {
+    public Builder setFragmentOffsets(Iterable<SubRange> fragmentOffsets) {
       _fragmentOffsets = ImmutableSortedSet.copyOf(fragmentOffsets);
-      return getThis();
+      return this;
     }
 
-    public S setIcmpCodes(Iterable<SubRange> icmpCodes) {
+    public Builder setIcmpCodes(Iterable<SubRange> icmpCodes) {
       _icmpCodes = ImmutableSortedSet.copyOf(icmpCodes);
-      return getThis();
+      return this;
     }
 
-    public S setIcmpTypes(Iterable<SubRange> icmpTypes) {
+    public Builder setIcmpTypes(Iterable<SubRange> icmpTypes) {
       _icmpTypes = ImmutableSortedSet.copyOf(icmpTypes);
-      return getThis();
+      return this;
     }
 
-    public S setIpProtocols(Iterable<IpProtocol> ipProtocols) {
+    public Builder setIpProtocols(Iterable<IpProtocol> ipProtocols) {
       _ipProtocols = ImmutableSortedSet.copyOf(ipProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setNegate(boolean negate) {
+    public Builder setNegate(boolean negate) {
       _negate = negate;
-      return getThis();
+      return this;
     }
 
-    public S setNotDscps(Iterable<Integer> notDscps) {
+    public Builder setNotDscps(Iterable<Integer> notDscps) {
       _notDscps = ImmutableSortedSet.copyOf(notDscps);
-      return getThis();
+      return this;
     }
 
-    public S setNotDstIps(Iterable<IpWildcard> notDstIps) {
+    public Builder setNotDstIps(Iterable<IpWildcard> notDstIps) {
       _notDstIps = ImmutableSortedSet.copyOf(notDstIps);
-      return getThis();
+      return this;
     }
 
-    public S setNotDstPorts(Iterable<SubRange> notDstPorts) {
+    public Builder setNotDstPorts(Iterable<SubRange> notDstPorts) {
       _notDstPorts = ImmutableSortedSet.copyOf(notDstPorts);
-      return getThis();
+      return this;
     }
 
-    public S setNotDstProtocols(Iterable<Protocol> notDstProtocols) {
+    public Builder setNotDstProtocols(Iterable<Protocol> notDstProtocols) {
       _notDstProtocols = ImmutableSortedSet.copyOf(notDstProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setNotEcns(Iterable<Integer> notEcns) {
+    public Builder setNotEcns(Iterable<Integer> notEcns) {
       _notEcns = ImmutableSortedSet.copyOf(notEcns);
-      return getThis();
+      return this;
     }
 
-    public S setNotFragmentOffsets(Iterable<SubRange> notFragmentOffsets) {
+    public Builder setNotFragmentOffsets(Iterable<SubRange> notFragmentOffsets) {
       _notFragmentOffsets = ImmutableSortedSet.copyOf(notFragmentOffsets);
-      return getThis();
+      return this;
     }
 
-    public S setNotIcmpCodes(Iterable<SubRange> notIcmpCodes) {
+    public Builder setNotIcmpCodes(Iterable<SubRange> notIcmpCodes) {
       _notIcmpCodes = ImmutableSortedSet.copyOf(notIcmpCodes);
-      return getThis();
+      return this;
     }
 
-    public S setNotIcmpTypes(Iterable<SubRange> notIcmpTypes) {
+    public Builder setNotIcmpTypes(Iterable<SubRange> notIcmpTypes) {
       _notIcmpTypes = ImmutableSortedSet.copyOf(notIcmpTypes);
-      return getThis();
+      return this;
     }
 
-    public S setNotIpProtocols(Iterable<IpProtocol> notIpProtocols) {
+    public Builder setNotIpProtocols(Iterable<IpProtocol> notIpProtocols) {
       _notIpProtocols = ImmutableSortedSet.copyOf(notIpProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setNotPacketLengths(Iterable<SubRange> notPacketLengths) {
+    public Builder setNotPacketLengths(Iterable<SubRange> notPacketLengths) {
       _notPacketLengths = ImmutableSortedSet.copyOf(notPacketLengths);
-      return getThis();
+      return this;
     }
 
-    public S setNotSrcIps(Iterable<IpWildcard> notSrcIps) {
+    public Builder setNotSrcIps(Iterable<IpWildcard> notSrcIps) {
       _notSrcIps = ImmutableSortedSet.copyOf(notSrcIps);
-      return getThis();
+      return this;
     }
 
-    public S setNotSrcPorts(Iterable<SubRange> notSrcPorts) {
+    public Builder setNotSrcPorts(Iterable<SubRange> notSrcPorts) {
       _notSrcPorts = ImmutableSortedSet.copyOf(notSrcPorts);
-      return getThis();
+      return this;
     }
 
-    public S setNotSrcProtocols(Iterable<Protocol> notSrcProtocols) {
+    public Builder setNotSrcProtocols(Iterable<Protocol> notSrcProtocols) {
       _notSrcProtocols = ImmutableSortedSet.copyOf(notSrcProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setPacketLengths(Iterable<SubRange> packetLengths) {
+    public Builder setPacketLengths(Iterable<SubRange> packetLengths) {
       _packetLengths = ImmutableSortedSet.copyOf(packetLengths);
-      return getThis();
+      return this;
     }
 
-    public S setSrcIps(Iterable<IpWildcard> srcIps) {
+    public Builder setSrcIps(Iterable<IpWildcard> srcIps) {
       _srcIps = ImmutableSortedSet.copyOf(srcIps);
-      return getThis();
+      return this;
     }
 
-    public S setSrcOrDstIps(Iterable<IpWildcard> srcOrDstIps) {
+    public Builder setSrcOrDstIps(Iterable<IpWildcard> srcOrDstIps) {
       _srcOrDstIps = ImmutableSortedSet.copyOf(srcOrDstIps);
-      return getThis();
+      return this;
     }
 
-    public S setSrcOrDstPorts(Iterable<SubRange> srcOrDstPorts) {
+    public Builder setSrcOrDstPorts(Iterable<SubRange> srcOrDstPorts) {
       _srcOrDstPorts = ImmutableSortedSet.copyOf(srcOrDstPorts);
-      return getThis();
+      return this;
     }
 
-    public S setSrcOrDstProtocols(Iterable<Protocol> srcOrDstProtocols) {
+    public Builder setSrcOrDstProtocols(Iterable<Protocol> srcOrDstProtocols) {
       _srcOrDstProtocols = ImmutableSortedSet.copyOf(srcOrDstProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setSrcPorts(Iterable<SubRange> srcPorts) {
+    public Builder setSrcPorts(Iterable<SubRange> srcPorts) {
       _srcPorts = ImmutableSortedSet.copyOf(srcPorts);
-      return getThis();
+      return this;
     }
 
-    public S setSrcProtocols(Iterable<Protocol> srcProtocols) {
+    public Builder setSrcProtocols(Iterable<Protocol> srcProtocols) {
       _srcProtocols = ImmutableSortedSet.copyOf(srcProtocols);
-      return getThis();
+      return this;
     }
 
-    public S setStates(Iterable<State> states) {
+    public Builder setStates(Iterable<State> states) {
       _states = ImmutableSortedSet.copyOf(states);
-      return getThis();
+      return this;
     }
 
-    public S setTcpFlags(Iterable<TcpFlags> tcpFlags) {
+    public Builder setTcpFlags(Iterable<TcpFlags> tcpFlags) {
       _tcpFlags = ImmutableList.copyOf(tcpFlags);
-      return getThis();
+      return this;
     }
 
-    public abstract T build();
-
-    protected abstract S getThis();
+    public HeaderSpace build() {
+      return new HeaderSpace(this);
+    }
   }
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   private static boolean rangesContain(Collection<SubRange> ranges, int num) {
     for (SubRange range : ranges) {
@@ -398,71 +530,39 @@ public class HeaderSpace implements Serializable {
     _notSrcProtocols = Collections.emptySortedSet();
   }
 
-  protected HeaderSpace(
-      SortedSet<Integer> dscps,
-      SortedSet<IpWildcard> dstIps,
-      SortedSet<SubRange> dstPorts,
-      SortedSet<Protocol> dstProtocols,
-      SortedSet<Integer> ecns,
-      SortedSet<SubRange> fragmentOffsets,
-      SortedSet<SubRange> icmpCodes,
-      SortedSet<SubRange> icmpTypes,
-      SortedSet<IpProtocol> ipProtocols,
-      boolean negate,
-      SortedSet<Integer> notDscps,
-      SortedSet<IpWildcard> notDstIps,
-      SortedSet<SubRange> notDstPorts,
-      SortedSet<Protocol> notDstProtocols,
-      SortedSet<Integer> notEcns,
-      SortedSet<SubRange> notFragmentOffsets,
-      SortedSet<SubRange> notIcmpCodes,
-      SortedSet<SubRange> notIcmpTypes,
-      SortedSet<IpProtocol> notIpProtocols,
-      SortedSet<SubRange> notPacketLengths,
-      SortedSet<IpWildcard> notSrcIps,
-      SortedSet<SubRange> notSrcPorts,
-      SortedSet<Protocol> notSrcProtocols,
-      SortedSet<SubRange> packetLengths,
-      SortedSet<IpWildcard> srcIps,
-      SortedSet<IpWildcard> srcOrDstIps,
-      SortedSet<SubRange> srcOrDstPorts,
-      SortedSet<Protocol> srcOrDstProtocols,
-      SortedSet<SubRange> srcPorts,
-      SortedSet<Protocol> srcProtocols,
-      SortedSet<State> states,
-      List<TcpFlags> tcpFlags) {
-    _dscps = ImmutableSortedSet.copyOf(dscps);
-    _dstIps = ImmutableSortedSet.copyOf(dstIps);
-    _dstPorts = ImmutableSortedSet.copyOf(dstPorts);
-    _dstProtocols = ImmutableSortedSet.copyOf(dstProtocols);
-    _ecns = ImmutableSortedSet.copyOf(ecns);
-    _fragmentOffsets = ImmutableSortedSet.copyOf(fragmentOffsets);
-    _ipProtocols = ImmutableSortedSet.copyOf(ipProtocols);
-    _negate = negate;
-    _notDscps = ImmutableSortedSet.copyOf(notDscps);
-    _notDstIps = ImmutableSortedSet.copyOf(notDstIps);
-    _notDstPorts = ImmutableSortedSet.copyOf(notDstPorts);
-    _notDstProtocols = ImmutableSortedSet.copyOf(notDstProtocols);
-    _notEcns = ImmutableSortedSet.copyOf(notEcns);
-    _notFragmentOffsets = ImmutableSortedSet.copyOf(notFragmentOffsets);
-    _notIcmpCodes = ImmutableSortedSet.copyOf(notIcmpCodes);
-    _notIcmpTypes = ImmutableSortedSet.copyOf(notIcmpTypes);
-    _notIpProtocols = ImmutableSortedSet.copyOf(notIpProtocols);
-    _notPacketLengths = ImmutableSortedSet.copyOf(notPacketLengths);
-    _notSrcIps = ImmutableSortedSet.copyOf(notSrcIps);
-    _notSrcPorts = ImmutableSortedSet.copyOf(notSrcPorts);
-    _notSrcProtocols = ImmutableSortedSet.copyOf(notSrcProtocols);
-    _packetLengths = ImmutableSortedSet.copyOf(packetLengths);
-    _srcIps = ImmutableSortedSet.copyOf(srcIps);
-    _srcOrDstIps = ImmutableSortedSet.copyOf(srcOrDstIps);
-    _srcOrDstPorts = ImmutableSortedSet.copyOf(srcOrDstPorts);
-    _srcOrDstProtocols = ImmutableSortedSet.copyOf(srcOrDstProtocols);
-    _srcPorts = ImmutableSortedSet.copyOf(srcPorts);
-    _srcProtocols = ImmutableSortedSet.copyOf(srcProtocols);
-    _icmpTypes = ImmutableSortedSet.copyOf(icmpTypes);
-    _icmpCodes = ImmutableSortedSet.copyOf(icmpCodes);
-    _states = ImmutableSortedSet.copyOf(states);
-    _tcpFlags = ImmutableList.copyOf(tcpFlags);
+  private HeaderSpace(Builder builder) {
+    _dscps = ImmutableSortedSet.copyOf(builder._dscps);
+    _dstIps = ImmutableSortedSet.copyOf(builder._dstIps);
+    _dstPorts = ImmutableSortedSet.copyOf(builder._dstPorts);
+    _dstProtocols = ImmutableSortedSet.copyOf(builder._dstProtocols);
+    _ecns = ImmutableSortedSet.copyOf(builder._ecns);
+    _fragmentOffsets = ImmutableSortedSet.copyOf(builder._fragmentOffsets);
+    _ipProtocols = ImmutableSortedSet.copyOf(builder._ipProtocols);
+    _negate = builder._negate;
+    _notDscps = ImmutableSortedSet.copyOf(builder._notDscps);
+    _notDstIps = ImmutableSortedSet.copyOf(builder._notDstIps);
+    _notDstPorts = ImmutableSortedSet.copyOf(builder._notDstPorts);
+    _notDstProtocols = ImmutableSortedSet.copyOf(builder._notDstProtocols);
+    _notEcns = ImmutableSortedSet.copyOf(builder._notEcns);
+    _notFragmentOffsets = ImmutableSortedSet.copyOf(builder._notFragmentOffsets);
+    _notIcmpCodes = ImmutableSortedSet.copyOf(builder._notIcmpCodes);
+    _notIcmpTypes = ImmutableSortedSet.copyOf(builder._notIcmpTypes);
+    _notIpProtocols = ImmutableSortedSet.copyOf(builder._notIpProtocols);
+    _notPacketLengths = ImmutableSortedSet.copyOf(builder._notPacketLengths);
+    _notSrcIps = ImmutableSortedSet.copyOf(builder._notSrcIps);
+    _notSrcPorts = ImmutableSortedSet.copyOf(builder._notSrcPorts);
+    _notSrcProtocols = ImmutableSortedSet.copyOf(builder._notSrcProtocols);
+    _packetLengths = ImmutableSortedSet.copyOf(builder._packetLengths);
+    _srcIps = ImmutableSortedSet.copyOf(builder._srcIps);
+    _srcOrDstIps = ImmutableSortedSet.copyOf(builder._srcOrDstIps);
+    _srcOrDstPorts = ImmutableSortedSet.copyOf(builder._srcOrDstPorts);
+    _srcOrDstProtocols = ImmutableSortedSet.copyOf(builder._srcOrDstProtocols);
+    _srcPorts = ImmutableSortedSet.copyOf(builder._srcPorts);
+    _srcProtocols = ImmutableSortedSet.copyOf(builder._srcProtocols);
+    _icmpTypes = ImmutableSortedSet.copyOf(builder._icmpTypes);
+    _icmpCodes = ImmutableSortedSet.copyOf(builder._icmpCodes);
+    _states = ImmutableSortedSet.copyOf(builder._states);
+    _tcpFlags = ImmutableList.copyOf(builder._tcpFlags);
   }
 
   @Override
@@ -668,7 +768,7 @@ public class HeaderSpace implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _dscps,
         _dstIps,
         _dstPorts,
@@ -868,8 +968,8 @@ public class HeaderSpace implements Serializable {
     return true;
   }
 
-  public <S extends Builder<S, T>, T extends HeaderSpace> void rebuild(Builder<S, T> builder) {
-    builder
+  public Builder rebuild() {
+    return builder()
         .setDscps(_dscps)
         .setDstIps(_dstIps)
         .setDstPorts(_dstPorts)

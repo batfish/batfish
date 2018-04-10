@@ -15,6 +15,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
@@ -71,23 +72,26 @@ public class IpAccessListSpecializer {
   }
 
   public Optional<IpAccessListLine> specialize(IpAccessListLine ipAccessListLine) {
+    /* TODO: handle other match conditions */
+    HeaderSpace oldHeaderSpace =
+        ((MatchHeaderspace) ipAccessListLine.getMatchCondition()).getHeaderspace();
     IpWildcardSetIpSpace.Builder srcIpSpaceBuilder =
-        IpWildcardSetIpSpace.builder().excluding(ipAccessListLine.getNotSrcIps());
-    if (ipAccessListLine.getSrcIps().isEmpty() && ipAccessListLine.getSrcOrDstIps().isEmpty()) {
+        IpWildcardSetIpSpace.builder().excluding(oldHeaderSpace.getNotSrcIps());
+    if (oldHeaderSpace.getSrcIps().isEmpty() && oldHeaderSpace.getSrcOrDstIps().isEmpty()) {
       srcIpSpaceBuilder.including(IpWildcard.ANY);
     } else {
-      srcIpSpaceBuilder.including(ipAccessListLine.getSrcIps());
-      srcIpSpaceBuilder.including(ipAccessListLine.getSrcOrDstIps());
+      srcIpSpaceBuilder.including(oldHeaderSpace.getSrcIps());
+      srcIpSpaceBuilder.including(oldHeaderSpace.getSrcOrDstIps());
     }
     IpSpace specializedSrcIpSpace = _srcIpSpaceSpecializer.specialize(srcIpSpaceBuilder.build());
 
     IpWildcardSetIpSpace.Builder dstIpSpaceBuilder =
-        IpWildcardSetIpSpace.builder().excluding(ipAccessListLine.getNotDstIps());
-    if (ipAccessListLine.getDstIps().isEmpty() && ipAccessListLine.getSrcOrDstIps().isEmpty()) {
+        IpWildcardSetIpSpace.builder().excluding(oldHeaderSpace.getNotDstIps());
+    if (oldHeaderSpace.getDstIps().isEmpty() && oldHeaderSpace.getSrcOrDstIps().isEmpty()) {
       dstIpSpaceBuilder.including(IpWildcard.ANY);
     } else {
-      dstIpSpaceBuilder.including(ipAccessListLine.getDstIps());
-      dstIpSpaceBuilder.including(ipAccessListLine.getSrcOrDstIps());
+      dstIpSpaceBuilder.including(oldHeaderSpace.getDstIps());
+      dstIpSpaceBuilder.including(oldHeaderSpace.getSrcOrDstIps());
     }
     IpSpace specializedDstIpSpace = _dstIpSpaceSpecializer.specialize(dstIpSpaceBuilder.build());
 
@@ -130,12 +134,18 @@ public class IpAccessListSpecializer {
     }
 
     return Optional.of(
-        ipAccessListLine
-            .rebuild()
-            .setDstIps(specializedDstIps)
-            .setNotDstIps(specializedNotDstIps)
-            .setSrcIps(specializedSrcIps)
-            .setNotSrcIps(specializedNotSrcIps)
+        IpAccessListLine.builder()
+            .setAction(ipAccessListLine.getAction())
+            .setMatchCondition(
+                new MatchHeaderspace(
+                    oldHeaderSpace
+                        .rebuild()
+                        .setDstIps(specializedDstIps)
+                        .setNotDstIps(specializedNotDstIps)
+                        .setSrcIps(specializedSrcIps)
+                        .setNotSrcIps(specializedNotSrcIps)
+                        .build()))
+            .setName(ipAccessListLine.getName())
             .build());
   }
 }

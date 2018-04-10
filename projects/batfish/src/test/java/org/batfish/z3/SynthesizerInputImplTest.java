@@ -30,6 +30,7 @@ import java.util.Map;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -44,6 +45,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderspace;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
@@ -178,8 +180,20 @@ public class SynthesizerInputImplTest {
         _aclb
             .setLines(
                 ImmutableList.<IpAccessListLine>of(
-                    _acllb.setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4")))).build(),
-                    _acllb.setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8")))).build()))
+                    _acllb
+                        .setMatchCondition(
+                            new MatchHeaderspace(
+                                HeaderSpace.builder()
+                                    .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
+                                    .build()))
+                        .build(),
+                    _acllb
+                        .setMatchCondition(
+                            new MatchHeaderspace(
+                                HeaderSpace.builder()
+                                    .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
+                                    .build()))
+                        .build()))
             .build();
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
@@ -195,8 +209,14 @@ public class SynthesizerInputImplTest {
                         ImmutableList.of(),
                         aclWithLines.getName(),
                         ImmutableList.of(
-                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(0)),
-                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(1))))))));
+                            new HeaderSpaceMatchExpr(
+                                ((MatchHeaderspace)
+                                        aclWithLines.getLines().get(0).getMatchCondition())
+                                    .getHeaderspace()),
+                            new HeaderSpaceMatchExpr(
+                                ((MatchHeaderspace)
+                                        aclWithLines.getLines().get(1).getMatchCondition())
+                                    .getHeaderspace())))))));
 
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
@@ -690,7 +710,7 @@ public class SynthesizerInputImplTest {
                     SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
                     ImmutableList.of(
                         new HeaderSpaceMatchExpr(
-                            IpAccessListLine.builder()
+                            HeaderSpace.builder()
                                 .setSrcIps(ImmutableList.of(new IpWildcard("0.0.0.0/0")))
                                 .build()))))));
 

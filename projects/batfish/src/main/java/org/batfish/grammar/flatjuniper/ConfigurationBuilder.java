@@ -2306,10 +2306,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitAat_destination_port(Aat_destination_portContext ctx) {
     SubRange subrange = toSubRange(ctx.subrange());
     _currentApplicationTerm
-        .getLine()
+        .getHeaderSpaceBuilder()
         .setDstPorts(
             ImmutableSet.<SubRange>builder()
-                .addAll(_currentApplicationTerm.getLine().getDstPorts())
+                .addAll(_currentApplicationTerm.getHeaderSpaceBuilder().getDstPorts())
                 .add(subrange)
                 .build());
   }
@@ -2318,10 +2318,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitAat_protocol(Aat_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     _currentApplicationTerm
-        .getLine()
+        .getHeaderSpaceBuilder()
         .setIpProtocols(
             ImmutableSet.<IpProtocol>builder()
-                .addAll(_currentApplicationTerm.getLine().getIpProtocols())
+                .addAll(_currentApplicationTerm.getHeaderSpaceBuilder().getIpProtocols())
                 .add(protocol)
                 .build());
   }
@@ -2330,10 +2330,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitAat_source_port(Aat_source_portContext ctx) {
     SubRange subrange = toSubRange(ctx.subrange());
     _currentApplicationTerm
-        .getLine()
+        .getHeaderSpaceBuilder()
         .setSrcPorts(
             ImmutableSet.<SubRange>builder()
-                .addAll(_currentApplicationTerm.getLine().getSrcPorts())
+                .addAll(_currentApplicationTerm.getHeaderSpaceBuilder().getSrcPorts())
                 .add(subrange)
                 .build());
   }
