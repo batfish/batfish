@@ -556,7 +556,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                         Entry::getKey /* interface */,
                         neighborUnreachableByOutInterfaceEntry ->
                             new IpSpaceMatchExpr(
-                                neighborUnreachableByOutInterfaceEntry.getValue(), false, true))));
+                                _ipSpaceSpecializer.specialize(
+                                    neighborUnreachableByOutInterfaceEntry.getValue()),
+                                false,
+                                true))));
   }
 
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(
@@ -568,11 +571,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             toImmutableMap(
                 nullRoutedIpsByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
-                nullRoutedIpsByVrfEntry -> {
-                  IpSpace ipSpace =
-                      _ipSpaceSpecializer.specialize(nullRoutedIpsByVrfEntry.getValue());
-                  return new IpSpaceMatchExpr(ipSpace, false, true);
-                }));
+                nullRoutedIpsByVrfEntry ->
+                    new IpSpaceMatchExpr(
+                        _ipSpaceSpecializer.specialize(nullRoutedIpsByVrfEntry.getValue()),
+                        false,
+                        true)));
   }
 
   private Map<String, Map<String, String>> computeOutgoingAcls() {
@@ -601,11 +604,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             toImmutableMap(
                 routableIpsByHostnameEntry.getValue(),
                 Entry::getKey /* vrf */,
-                routableIpsByVrfEntry -> {
-                  IpSpace ipSpace =
-                      _ipSpaceSpecializer.specialize(routableIpsByVrfEntry.getValue());
-                  return new IpSpaceMatchExpr(ipSpace, false, true);
-                }));
+                routableIpsByVrfEntry ->
+                    new IpSpaceMatchExpr(
+                        _ipSpaceSpecializer.specialize(routableIpsByVrfEntry.getValue()),
+                        false,
+                        true)));
   }
 
   private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {
