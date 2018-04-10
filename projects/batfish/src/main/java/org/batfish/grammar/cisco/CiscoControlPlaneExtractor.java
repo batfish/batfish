@@ -6374,7 +6374,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Ip getWildcard(Access_list_ip_rangeContext ctx) {
     // TODO: fix for address-group, object, object-group, interface
     if (ctx.wildcard != null) {
-      return toIp(ctx.wildcard);
+      Ip wildcard = toIp(ctx.wildcard);
+      if (_format == CISCO_ASA) {
+        wildcard = wildcard.inverted();
+      }
+      return wildcard;
     } else if (ctx.ANY() != null
         || ctx.ANY4() != null
         || ctx.address_group != null
