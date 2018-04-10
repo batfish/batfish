@@ -2,9 +2,9 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.base.Objects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderspace;
@@ -177,7 +177,7 @@ public final class IpAccessListLine extends HeaderSpace {
       return false;
     }
     IpAccessListLine other = (IpAccessListLine) obj;
-    return _action == other._action && Objects.equal(_name, other._name) && super.equals(other);
+    return _action == other._action && Objects.equals(_name, other._name) && super.equals(other);
   }
 
   @JsonPropertyDescription(
@@ -198,7 +198,7 @@ public final class IpAccessListLine extends HeaderSpace {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _action,
         getDscps(),
         getDstIps(),

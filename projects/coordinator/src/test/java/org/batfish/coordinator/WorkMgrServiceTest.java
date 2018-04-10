@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import javax.ws.rs.core.Response;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishLogger;
@@ -269,16 +269,15 @@ public class WorkMgrServiceTest {
               return false;
             }
             final Question other = (Question) obj;
-            return Objects.equal(
+            return Objects.equals(
                     getInstance().getInstanceName(), other.getInstance().getInstanceName())
-                && Objects.equal(
+                && Objects.equals(
                     getInstance().getDescription(), other.getInstance().getDescription());
           }
 
           @Override
           public int hashCode() {
-            return java.util.Objects.hash(
-                getInstance().getInstanceName(), getInstance().getDescription());
+            return Objects.hash(getInstance().getInstanceName(), getInstance().getDescription());
           }
         };
 
