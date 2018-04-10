@@ -243,7 +243,7 @@ cip_profile
 
 cip_transform_set
 :
-   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication NEWLINE
+   TRANSFORM_SET name = variable ipsec_encryption DEC? ipsec_authentication NEWLINE
    (
       cipt_mode
    )*
