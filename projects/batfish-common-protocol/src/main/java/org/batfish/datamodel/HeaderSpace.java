@@ -1,13 +1,13 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.SortedSet;
 
 public class HeaderSpace implements Serializable {
@@ -668,7 +668,7 @@ public class HeaderSpace implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _dscps,
         _dstIps,
         _dstPorts,
