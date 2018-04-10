@@ -226,7 +226,7 @@ public class SimplifierTest {
     BooleanExpr b = newAtom();
     assertThat(
         simplifyBooleanExpr(new IfThenElse(a, TrueExpr.INSTANCE, b)),
-        equalTo(new OrExpr(ImmutableList.of(a, b))));
+        equalTo(new OrExpr(of(a, b))));
   }
 
   /** IfThenElse(A,False,B) --> And(Not(A),B) */
@@ -236,7 +236,7 @@ public class SimplifierTest {
     BooleanExpr b = newAtom();
     assertThat(
         simplifyBooleanExpr(new IfThenElse(a, FalseExpr.INSTANCE, b)),
-        equalTo(new AndExpr(ImmutableList.of(new NotExpr(a), b))));
+        equalTo(new AndExpr(of(new NotExpr(a), b))));
   }
 
   /** IfThenElse(A,B,False) --> And(A,B) */
@@ -245,7 +245,7 @@ public class SimplifierTest {
     BooleanExpr b = newAtom();
     assertThat(
         simplifyBooleanExpr(new IfThenElse(a, b, FalseExpr.INSTANCE)),
-        equalTo(new AndExpr(ImmutableList.of(a, b))));
+        equalTo(new AndExpr(of(a, b))));
   }
 
   /** IfThenElse(A,B,True) --> Or(Not(A),B) */
@@ -254,7 +254,7 @@ public class SimplifierTest {
     BooleanExpr b = newAtom();
     assertThat(
         simplifyBooleanExpr(new IfThenElse(a, b, TrueExpr.INSTANCE)),
-        equalTo(new OrExpr(ImmutableList.of(new NotExpr(a), b))));
+        equalTo(new OrExpr(of(new NotExpr(a), b))));
   }
 
   /** Test that NOT FALSE == TRUE. */
