@@ -282,14 +282,13 @@ public class CommonUtil {
           /*
            * Compare priorities first. If tied, break tie based on highest interface IP.
            */
-          owners.add(
+          Interface vrrpMaster =
               Collections.max(
-                      candidates,
-                      Comparator.comparingInt(
-                              (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                          .thenComparing(o -> o.getAddress().getIp()))
-                  .getOwner()
-                  .getHostname());
+                  candidates,
+                  Comparator.comparingInt(
+                          (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
+                      .thenComparing(o -> o.getAddress().getIp()));
+          owners.add(vrrpMaster.getOwner().getHostname());
         });
     return ipOwners;
   }
