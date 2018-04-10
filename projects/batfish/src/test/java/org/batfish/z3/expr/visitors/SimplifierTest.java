@@ -219,46 +219,42 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(ifExpr), sameInstance(ifExpr));
   }
 
-  /**
-   * IfThenElse(A,True,B) --> Or(A,B)
-   */
+  /** IfThenElse(A,True,B) --> Or(A,B) */
   @Test
   public void testIfThenElse_thenTrue() {
     BooleanExpr a = newAtom();
     BooleanExpr b = newAtom();
-    assertThat(simplifyBooleanExpr(new IfThenElse(a, TrueExpr.INSTANCE, b)),
-        equalTo(new OrExpr(ImmutableList.of(a,b))));
+    assertThat(
+        simplifyBooleanExpr(new IfThenElse(a, TrueExpr.INSTANCE, b)),
+        equalTo(new OrExpr(ImmutableList.of(a, b))));
   }
 
-  /**
-   * IfThenElse(A,False,B) --> And(Not(A),B)
-   */
+  /** IfThenElse(A,False,B) --> And(Not(A),B) */
   @Test
   public void testIfThenElse_thenFalse() {
     BooleanExpr a = newAtom();
     BooleanExpr b = newAtom();
-    assertThat(simplifyBooleanExpr(new IfThenElse(a, FalseExpr.INSTANCE, b)),
-        equalTo(new AndExpr(ImmutableList.of(new NotExpr(a),b))));
+    assertThat(
+        simplifyBooleanExpr(new IfThenElse(a, FalseExpr.INSTANCE, b)),
+        equalTo(new AndExpr(ImmutableList.of(new NotExpr(a), b))));
   }
 
-  /**
-   * IfThenElse(A,B,False) --> And(A,B)
-   */
+  /** IfThenElse(A,B,False) --> And(A,B) */
   public void testIfThenElse_elseFalse() {
     BooleanExpr a = newAtom();
     BooleanExpr b = newAtom();
-    assertThat(simplifyBooleanExpr(new IfThenElse(a, b, FalseExpr.INSTANCE)),
-        equalTo(new AndExpr(ImmutableList.of(a,b))));
+    assertThat(
+        simplifyBooleanExpr(new IfThenElse(a, b, FalseExpr.INSTANCE)),
+        equalTo(new AndExpr(ImmutableList.of(a, b))));
   }
 
-  /**
-   * IfThenElse(A,B,True) --> Or(Not(A),B)
-   */
+  /** IfThenElse(A,B,True) --> Or(Not(A),B) */
   public void testIfThenElse_elseTrue() {
     BooleanExpr a = newAtom();
     BooleanExpr b = newAtom();
-    assertThat(simplifyBooleanExpr(new IfThenElse(a, b, TrueExpr.INSTANCE)),
-        equalTo(new OrExpr(ImmutableList.of(new NotExpr(a),b))));
+    assertThat(
+        simplifyBooleanExpr(new IfThenElse(a, b, TrueExpr.INSTANCE)),
+        equalTo(new OrExpr(ImmutableList.of(new NotExpr(a), b))));
   }
 
   /** Test that NOT FALSE == TRUE. */
