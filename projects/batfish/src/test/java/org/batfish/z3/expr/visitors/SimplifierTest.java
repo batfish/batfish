@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 
+import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
@@ -18,6 +19,7 @@ import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.MockBooleanAtom;
@@ -215,6 +217,48 @@ public class SimplifierTest {
     BooleanExpr ifExpr = new IfExpr(p1, p2);
 
     assertThat(simplifyBooleanExpr(ifExpr), sameInstance(ifExpr));
+  }
+
+  /**
+   * IfThenElse(A,True,B) --> Or(A,B)
+   */
+  @Test
+  public void testIfThenElse_thenTrue() {
+    BooleanExpr a = newAtom();
+    BooleanExpr b = newAtom();
+    assertThat(simplifyBooleanExpr(new IfThenElse(a, TrueExpr.INSTANCE, b)),
+        equalTo(new OrExpr(ImmutableList.of(a,b))));
+  }
+
+  /**
+   * IfThenElse(A,False,B) --> And(Not(A),B)
+   */
+  @Test
+  public void testIfThenElse_thenFalse() {
+    BooleanExpr a = newAtom();
+    BooleanExpr b = newAtom();
+    assertThat(simplifyBooleanExpr(new IfThenElse(a, FalseExpr.INSTANCE, b)),
+        equalTo(new AndExpr(ImmutableList.of(new NotExpr(a),b))));
+  }
+
+  /**
+   * IfThenElse(A,B,False) --> And(A,B)
+   */
+  public void testIfThenElse_elseFalse() {
+    BooleanExpr a = newAtom();
+    BooleanExpr b = newAtom();
+    assertThat(simplifyBooleanExpr(new IfThenElse(a, b, FalseExpr.INSTANCE)),
+        equalTo(new AndExpr(ImmutableList.of(a,b))));
+  }
+
+  /**
+   * IfThenElse(A,B,True) --> Or(Not(A),B)
+   */
+  public void testIfThenElse_elseTrue() {
+    BooleanExpr a = newAtom();
+    BooleanExpr b = newAtom();
+    assertThat(simplifyBooleanExpr(new IfThenElse(a, b, TrueExpr.INSTANCE)),
+        equalTo(new OrExpr(ImmutableList.of(new NotExpr(a),b))));
   }
 
   /** Test that NOT FALSE == TRUE. */

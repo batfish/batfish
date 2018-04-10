@@ -218,7 +218,6 @@ public class Simplifier
         if (els == FalseExpr.INSTANCE) {
           return condition;
         } else {
-          // turn it into an OrExpr
           return new OrExpr(ImmutableList.of(condition, els));
         }
       }
@@ -226,7 +225,7 @@ public class Simplifier
         if (els == TrueExpr.INSTANCE) {
           return new NotExpr(condition);
         } else {
-          return new AndExpr(ImmutableList.of(condition, els));
+          return new AndExpr(ImmutableList.of(new NotExpr(condition), els));
         }
       }
       if (condition != ifThenElse.getCondition()
