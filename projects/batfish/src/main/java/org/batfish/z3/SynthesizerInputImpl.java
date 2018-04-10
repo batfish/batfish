@@ -534,7 +534,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     ipOwners.forEach(
         (ip, owners) -> {
           for (String owner : owners) {
-            map.get(owner).add(ip);
+            if (!(_ipSpaceSpecializer.visitIp(ip) instanceof EmptyIpSpace)) {
+              map.get(owner).add(ip);
+            }
           }
         });
     // freeze
