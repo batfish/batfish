@@ -28,24 +28,29 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
 
   @Override
   public int adaptivePredict(TokenStream input, int decision, ParserRuleContext outerContext) {
-    Integer result = null;
-    do {
+    try {
+      return super.adaptivePredict(input, decision, outerContext);
+    } catch (NoViableAltException e) {
+      /*
+       * Adaptive prediction has failed. In this case, throw out the current line and then make
+       * one attempt to stay in the current context. This should work if the current context is a
+       * block, like interface, and the next line is still in the interface context.
+       *
+       * If this second attempt still fails then the current context is not valid for the next line.
+       * In this case, return INVALID_ALT_NUMBER and let the caller exit the current parse context
+       * and try again.
+       */
       try {
-        result = super.adaptivePredict(input, decision, outerContext);
-      } catch (NoViableAltException e) {
-        // If adaptive prediction fails, throw out current line and try again.
-        try {
-          _parser.createErrorNodeLine();
-        } catch (BatfishRecognitionException re) {
-          /*
-           * This lets us exit adaptive prediction gracefully when recovery fails because of:
-           * A. Rule using adaptive prediction that isn't satisfied by EOF
-           * B. Transient lexer corruption due to crappy build system (during development)
-           */
-          return org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER;
-        }
+        _parser.createErrorNodeLine();
+        return super.adaptivePredict(input, decision, outerContext);
+      } catch (BatfishRecognitionException | NoViableAltException ex) {
+        /*
+         * This lets us exit adaptive prediction gracefully when recovery fails because of:
+         * A. Rule using adaptive prediction that isn't satisfied by EOF
+         * B. Transient lexer corruption due to crappy build system (during development)
+         */
+        return org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER;
       }
-    } while (result == null);
-    return result;
+    }
   }
 }
