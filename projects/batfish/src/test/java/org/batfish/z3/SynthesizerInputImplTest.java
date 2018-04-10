@@ -45,7 +45,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
@@ -182,14 +182,14 @@ public class SynthesizerInputImplTest {
                 ImmutableList.<IpAccessListLine>of(
                     _acllb
                         .setMatchCondition(
-                            new MatchHeaderspace(
+                            new MatchHeaderSpace(
                                 HeaderSpace.builder()
                                     .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
                                     .build()))
                         .build(),
                     _acllb
                         .setMatchCondition(
-                            new MatchHeaderspace(
+                            new MatchHeaderSpace(
                                 HeaderSpace.builder()
                                     .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
                                     .build()))
@@ -210,11 +210,11 @@ public class SynthesizerInputImplTest {
                         aclWithLines.getName(),
                         ImmutableList.of(
                             new HeaderSpaceMatchExpr(
-                                ((MatchHeaderspace)
+                                ((MatchHeaderSpace)
                                         aclWithLines.getLines().get(0).getMatchCondition())
                                     .getHeaderspace()),
                             new HeaderSpaceMatchExpr(
-                                ((MatchHeaderspace)
+                                ((MatchHeaderSpace)
                                         aclWithLines.getLines().get(1).getMatchCondition())
                                     .getHeaderspace())))))));
 

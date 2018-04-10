@@ -32,7 +32,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -1737,7 +1737,7 @@ class EncoderSlice {
 
     for (IpAccessListLine line : lines) {
       BoolExpr local = null;
-      HeaderSpace h = ((MatchHeaderspace) line.getMatchCondition()).getHeaderspace();
+      HeaderSpace h = ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
       if (h.getDstIps() != null) {
         BoolExpr val = computeWildcardMatch(h.getDstIps(), _symbolicPacket.getDstIp());
         val = h.getDstIps().isEmpty() ? mkTrue() : val;

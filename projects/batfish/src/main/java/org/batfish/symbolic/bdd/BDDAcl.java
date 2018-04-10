@@ -20,7 +20,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.symbolic.Graph;
 
 public class BDDAcl {
@@ -75,7 +75,7 @@ public class BDDAcl {
     for (IpAccessListLine line : lines) {
       // System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
       /* TODO: handle other match types */
-      HeaderSpace h = ((MatchHeaderspace) line.getMatchCondition()).getHeaderspace();
+      HeaderSpace h = ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
       BDD local = null;
 
       if (h.getDstIps() != null) {

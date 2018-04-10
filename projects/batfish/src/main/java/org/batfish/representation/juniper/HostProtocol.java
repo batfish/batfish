@@ -15,7 +15,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public enum HostProtocol {
   ALL,
@@ -198,7 +198,7 @@ public enum HostProtocol {
     return ImmutableList.of(
         IpAccessListLine.builder()
             .setAction(LineAction.ACCEPT)
-            .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+            .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
             .build());
   }
 }

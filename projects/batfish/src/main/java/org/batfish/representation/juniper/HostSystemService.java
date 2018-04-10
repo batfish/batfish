@@ -13,7 +13,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public enum HostSystemService {
   ALL,
@@ -346,7 +346,7 @@ public enum HostSystemService {
     return ImmutableList.of(
         IpAccessListLine.builder()
             .setAction(LineAction.ACCEPT)
-            .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+            .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
             .build());
   }
 }

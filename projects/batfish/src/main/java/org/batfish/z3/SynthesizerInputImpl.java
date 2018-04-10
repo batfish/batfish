@@ -32,7 +32,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
@@ -307,7 +307,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                             line ->
                                 new HeaderSpaceMatchExpr(
                                     /* TODO: support other kinds of match conditions */
-                                    ((MatchHeaderspace) line.getMatchCondition()).getHeaderspace()))
+                                    ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace()))
                         .collect(ImmutableList.toImmutableList())));
   }
 

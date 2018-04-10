@@ -6,11 +6,13 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
+import org.batfish.common.util.CommonUtil;
 
-public class HeaderSpace implements Serializable {
+public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public static class Builder {
 
@@ -21,6 +23,102 @@ public class HeaderSpace implements Serializable {
     private SortedSet<SubRange> _dstPorts;
 
     private SortedSet<Protocol> _dstProtocols;
+
+    private SortedSet<Integer> _ecns;
+
+    private SortedSet<SubRange> _fragmentOffsets;
+
+    private SortedSet<SubRange> _icmpCodes;
+
+    private SortedSet<SubRange> _icmpTypes;
+
+    private SortedSet<IpProtocol> _ipProtocols;
+
+    private boolean _negate;
+
+    private SortedSet<Integer> _notDscps;
+
+    private SortedSet<IpWildcard> _notDstIps;
+
+    private SortedSet<SubRange> _notDstPorts;
+
+    private SortedSet<Protocol> _notDstProtocols;
+
+    private SortedSet<Integer> _notEcns;
+
+    private SortedSet<SubRange> _notFragmentOffsets;
+
+    private SortedSet<SubRange> _notIcmpCodes;
+
+    private SortedSet<SubRange> _notIcmpTypes;
+
+    private SortedSet<IpProtocol> _notIpProtocols;
+
+    private SortedSet<SubRange> _notPacketLengths;
+
+    private SortedSet<IpWildcard> _notSrcIps;
+
+    private SortedSet<SubRange> _notSrcPorts;
+
+    private SortedSet<Protocol> _notSrcProtocols;
+
+    private SortedSet<SubRange> _packetLengths;
+
+    private SortedSet<IpWildcard> _srcIps;
+
+    private SortedSet<IpWildcard> _srcOrDstIps;
+
+    private SortedSet<SubRange> _srcOrDstPorts;
+
+    private SortedSet<Protocol> _srcOrDstProtocols;
+
+    private SortedSet<SubRange> _srcPorts;
+
+    private SortedSet<Protocol> _srcProtocols;
+
+    private SortedSet<State> _states;
+
+    private List<TcpFlags> _tcpFlags;
+
+    private Builder() {
+      _dscps = ImmutableSortedSet.of();
+      _dstIps = ImmutableSortedSet.of();
+      _dstPorts = ImmutableSortedSet.of();
+      _dstProtocols = ImmutableSortedSet.of();
+      _ecns = ImmutableSortedSet.of();
+      _fragmentOffsets = ImmutableSortedSet.of();
+      _icmpCodes = ImmutableSortedSet.of();
+      _icmpTypes = ImmutableSortedSet.of();
+      _ipProtocols = ImmutableSortedSet.of();
+      _packetLengths = ImmutableSortedSet.of();
+      _srcIps = ImmutableSortedSet.of();
+      _srcOrDstIps = ImmutableSortedSet.of();
+      _srcOrDstPorts = ImmutableSortedSet.of();
+      _srcOrDstProtocols = ImmutableSortedSet.of();
+      _srcPorts = ImmutableSortedSet.of();
+      _srcProtocols = ImmutableSortedSet.of();
+      _icmpTypes = ImmutableSortedSet.of();
+      _icmpCodes = ImmutableSortedSet.of();
+      _states = ImmutableSortedSet.of();
+      _tcpFlags = ImmutableList.of();
+      _notDscps = ImmutableSortedSet.of();
+      _notDstIps = ImmutableSortedSet.of();
+      _notDstPorts = ImmutableSortedSet.of();
+      _notDstProtocols = ImmutableSortedSet.of();
+      _notEcns = ImmutableSortedSet.of();
+      _notFragmentOffsets = ImmutableSortedSet.of();
+      _notIcmpCodes = ImmutableSortedSet.of();
+      _notIcmpTypes = ImmutableSortedSet.of();
+      _notIpProtocols = ImmutableSortedSet.of();
+      _notPacketLengths = ImmutableSortedSet.of();
+      _notSrcIps = ImmutableSortedSet.of();
+      _notSrcPorts = ImmutableSortedSet.of();
+      _notSrcProtocols = ImmutableSortedSet.of();
+    }
+
+    public HeaderSpace build() {
+      return new HeaderSpace(this);
+    }
 
     public SortedSet<Integer> getDscps() {
       return _dscps;
@@ -148,98 +246,6 @@ public class HeaderSpace implements Serializable {
 
     public List<TcpFlags> getTcpFlags() {
       return _tcpFlags;
-    }
-
-    private SortedSet<Integer> _ecns;
-
-    private SortedSet<SubRange> _fragmentOffsets;
-
-    private SortedSet<SubRange> _icmpCodes;
-
-    private SortedSet<SubRange> _icmpTypes;
-
-    private SortedSet<IpProtocol> _ipProtocols;
-
-    private boolean _negate;
-
-    private SortedSet<Integer> _notDscps;
-
-    private SortedSet<IpWildcard> _notDstIps;
-
-    private SortedSet<SubRange> _notDstPorts;
-
-    private SortedSet<Protocol> _notDstProtocols;
-
-    private SortedSet<Integer> _notEcns;
-
-    private SortedSet<SubRange> _notFragmentOffsets;
-
-    private SortedSet<SubRange> _notIcmpCodes;
-
-    private SortedSet<SubRange> _notIcmpTypes;
-
-    private SortedSet<IpProtocol> _notIpProtocols;
-
-    private SortedSet<SubRange> _notPacketLengths;
-
-    private SortedSet<IpWildcard> _notSrcIps;
-
-    private SortedSet<SubRange> _notSrcPorts;
-
-    private SortedSet<Protocol> _notSrcProtocols;
-
-    private SortedSet<SubRange> _packetLengths;
-
-    private SortedSet<IpWildcard> _srcIps;
-
-    private SortedSet<IpWildcard> _srcOrDstIps;
-
-    private SortedSet<SubRange> _srcOrDstPorts;
-
-    private SortedSet<Protocol> _srcOrDstProtocols;
-
-    private SortedSet<SubRange> _srcPorts;
-
-    private SortedSet<Protocol> _srcProtocols;
-
-    private SortedSet<State> _states;
-
-    private List<TcpFlags> _tcpFlags;
-
-    private Builder() {
-      _dscps = ImmutableSortedSet.of();
-      _dstIps = ImmutableSortedSet.of();
-      _dstPorts = ImmutableSortedSet.of();
-      _dstProtocols = ImmutableSortedSet.of();
-      _ecns = ImmutableSortedSet.of();
-      _fragmentOffsets = ImmutableSortedSet.of();
-      _icmpCodes = ImmutableSortedSet.of();
-      _icmpTypes = ImmutableSortedSet.of();
-      _ipProtocols = ImmutableSortedSet.of();
-      _packetLengths = ImmutableSortedSet.of();
-      _srcIps = ImmutableSortedSet.of();
-      _srcOrDstIps = ImmutableSortedSet.of();
-      _srcOrDstPorts = ImmutableSortedSet.of();
-      _srcOrDstProtocols = ImmutableSortedSet.of();
-      _srcPorts = ImmutableSortedSet.of();
-      _srcProtocols = ImmutableSortedSet.of();
-      _icmpTypes = ImmutableSortedSet.of();
-      _icmpCodes = ImmutableSortedSet.of();
-      _states = ImmutableSortedSet.of();
-      _tcpFlags = ImmutableList.of();
-      _notDscps = ImmutableSortedSet.of();
-      _notDstIps = ImmutableSortedSet.of();
-      _notDstPorts = ImmutableSortedSet.of();
-      _notDstProtocols = ImmutableSortedSet.of();
-      _notEcns = ImmutableSortedSet.of();
-      _notFragmentOffsets = ImmutableSortedSet.of();
-      _notIcmpCodes = ImmutableSortedSet.of();
-      _notIcmpTypes = ImmutableSortedSet.of();
-      _notIpProtocols = ImmutableSortedSet.of();
-      _notPacketLengths = ImmutableSortedSet.of();
-      _notSrcIps = ImmutableSortedSet.of();
-      _notSrcPorts = ImmutableSortedSet.of();
-      _notSrcProtocols = ImmutableSortedSet.of();
     }
 
     public Builder setDscps(Iterable<Integer> dscps) {
@@ -401,11 +407,41 @@ public class HeaderSpace implements Serializable {
       _tcpFlags = ImmutableList.copyOf(tcpFlags);
       return this;
     }
-
-    public HeaderSpace build() {
-      return new HeaderSpace(this);
-    }
   }
+
+  private static final Comparator<HeaderSpace> COMPARATOR =
+      Comparator.comparing(HeaderSpace::getDscps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getDstIps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getDstPorts, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getDstProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getEcns, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getFragmentOffsets, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getIcmpCodes, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getIcmpTypes, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getIpProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNegate)
+          .thenComparing(HeaderSpace::getNotDscps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotDstIps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotDstPorts, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotDstProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotEcns, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotFragmentOffsets, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotIcmpCodes, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotIcmpTypes, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotIpProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotPacketLengths, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotSrcIps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotSrcPorts, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getNotSrcProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getPacketLengths, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getSrcIps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getSrcOrDstIps, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getSrcOrDstPorts, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getSrcOrDstProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getSrcPorts, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getSrcProtocols, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getStates, CommonUtil::compareIterable)
+          .thenComparing(HeaderSpace::getTcpFlags, CommonUtil::compareIterable);
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -563,6 +599,11 @@ public class HeaderSpace implements Serializable {
     _icmpCodes = ImmutableSortedSet.copyOf(builder._icmpCodes);
     _states = ImmutableSortedSet.copyOf(builder._states);
     _tcpFlags = ImmutableList.copyOf(builder._tcpFlags);
+  }
+
+  @Override
+  public int compareTo(HeaderSpace o) {
+    return COMPARATOR.compare(this, o);
   }
 
   @Override

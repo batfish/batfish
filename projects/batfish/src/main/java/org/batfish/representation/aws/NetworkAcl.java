@@ -16,7 +16,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -92,7 +92,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
             key,
             IpAccessListLine.builder()
                 .setAction(action)
-                .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+                .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
                 .setName(
                     String.format(
                         "%s %s %s %s %s", lineNumber, protocolStr, portStr, prefix, actionStr))

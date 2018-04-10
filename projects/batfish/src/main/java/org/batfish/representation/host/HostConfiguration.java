@@ -25,7 +25,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -193,7 +193,7 @@ public class HostConfiguration extends VendorConfiguration {
             return false;
           }
           /* This cast will have to change when ACLs are more complicated */
-          HeaderSpace h = ((MatchHeaderspace) line.getMatchCondition()).getHeaderspace();
+          HeaderSpace h = ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
           if (!h.unrestricted()) {
             return false;
           }

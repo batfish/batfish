@@ -21,7 +21,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
@@ -219,7 +219,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
       IpAccessListLine aclLine =
           IpAccessListLine.builder()
               .setAction(rule.getIpAccessListLineAction())
-              .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
               .setName(rule.getName())
               .build();
 

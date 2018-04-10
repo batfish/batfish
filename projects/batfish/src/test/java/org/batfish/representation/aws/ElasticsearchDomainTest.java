@@ -40,7 +40,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -174,7 +174,7 @@ public class ElasticsearchDomainTest {
     IpAccessListLine rejectSynOnly =
         IpAccessListLine.builder()
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build()))
             .setAction(LineAction.REJECT)
             .build();
@@ -185,7 +185,7 @@ public class ElasticsearchDomainTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(
@@ -199,7 +199,7 @@ public class ElasticsearchDomainTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                                 .build()))
@@ -211,7 +211,7 @@ public class ElasticsearchDomainTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setDstIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                                 .build()))
@@ -220,7 +220,7 @@ public class ElasticsearchDomainTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setDstIps(

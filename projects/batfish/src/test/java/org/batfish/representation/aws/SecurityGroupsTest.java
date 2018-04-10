@@ -22,7 +22,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -49,7 +49,7 @@ public class SecurityGroupsTest {
     _rejectSynOnly =
         IpAccessListLine.builder()
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build()))
             .setAction(LineAction.REJECT)
             .build();
@@ -57,7 +57,7 @@ public class SecurityGroupsTest {
         IpAccessListLine.builder()
             .setAction(LineAction.ACCEPT)
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                         .build()))
@@ -85,7 +85,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -112,7 +112,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -139,7 +139,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -166,7 +166,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -192,7 +192,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                                 .setDstPorts(Sets.newHashSet())
@@ -218,7 +218,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -245,7 +245,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -272,7 +272,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -299,7 +299,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
@@ -311,7 +311,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setSrcIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
@@ -325,7 +325,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setDstIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
@@ -337,7 +337,7 @@ public class SecurityGroupsTest {
                 IpAccessListLine.builder()
                     .setAction(LineAction.ACCEPT)
                     .setMatchCondition(
-                        new MatchHeaderspace(
+                        new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                                 .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))

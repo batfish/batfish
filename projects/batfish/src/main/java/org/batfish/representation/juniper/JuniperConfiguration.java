@@ -54,7 +54,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -1313,7 +1313,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         IpAccessListLine line =
             IpAccessListLine.builder()
                 .setAction(action)
-                .setMatchCondition(new MatchHeaderspace(matchCondition.build()))
+                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
                 .setName(term.getName())
                 .build();
         lines.add(line);

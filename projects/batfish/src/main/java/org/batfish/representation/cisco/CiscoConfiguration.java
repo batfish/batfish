@@ -79,7 +79,7 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -2375,7 +2375,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       lines.add(
           IpAccessListLine.builder()
               .setAction(fromLine.getAction())
-              .setMatchCondition(new MatchHeaderspace(headerSpaceBuilder.build()))
+              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
               .setName(fromLine.getName())
               .build());
     }

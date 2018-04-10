@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Test;
 
 public class IpAccessListSpecializerTest {
@@ -38,7 +38,7 @@ public class IpAccessListSpecializerTest {
     IpAccessListLine ipAccessListLine =
         IpAccessListLine.builder()
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     HeaderSpace.builder()
                         .setDstIps(ImmutableSet.of(new IpWildcard("1.2.3.0/24")))
                         .build()))
@@ -75,7 +75,7 @@ public class IpAccessListSpecializerTest {
     IpAccessListLine ipAccessListLine =
         IpAccessListLine.builder()
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.0/24")))
                         .build()))

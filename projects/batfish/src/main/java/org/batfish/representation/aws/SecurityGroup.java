@@ -15,7 +15,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -59,7 +59,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         accessList.add(
             IpAccessListLine.builder()
                 .setAction(LineAction.ACCEPT)
-                .setMatchCondition(new MatchHeaderspace(headerSpace))
+                .setMatchCondition(new MatchHeaderSpace(headerSpace))
                 .build());
       }
     }
@@ -75,7 +75,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         accessList.add(
             IpAccessListLine.builder()
                 .setAction(LineAction.ACCEPT)
-                .setMatchCondition(new MatchHeaderspace(headerSpace))
+                .setMatchCondition(new MatchHeaderSpace(headerSpace))
                 .build());
       }
     }
@@ -90,10 +90,10 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
             .map(
                 ipAccessListLine -> {
                   HeaderSpace srcHeaderSpace =
-                      ((MatchHeaderspace) ipAccessListLine.getMatchCondition()).getHeaderspace();
+                      ((MatchHeaderSpace) ipAccessListLine.getMatchCondition()).getHeaderspace();
                   return IpAccessListLine.builder()
                       .setMatchCondition(
-                          new MatchHeaderspace(
+                          new MatchHeaderSpace(
                               HeaderSpace.builder()
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setDstIps(srcHeaderSpace.getSrcIps())
@@ -110,10 +110,10 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
             .map(
                 ipAccessListLine -> {
                   HeaderSpace srcHeaderSpace =
-                      ((MatchHeaderspace) ipAccessListLine.getMatchCondition()).getHeaderspace();
+                      ((MatchHeaderSpace) ipAccessListLine.getMatchCondition()).getHeaderspace();
                   return IpAccessListLine.builder()
                       .setMatchCondition(
-                          new MatchHeaderspace(
+                          new MatchHeaderSpace(
                               HeaderSpace.builder()
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setSrcIps(srcHeaderSpace.getDstIps())
@@ -128,7 +128,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     IpAccessListLine rejectSynOnly =
         IpAccessListLine.builder()
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build()))
             .setAction(LineAction.REJECT)
             .build();

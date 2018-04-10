@@ -14,7 +14,7 @@ import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class BaseApplication extends DefinedStructure<String> implements Application {
 
@@ -85,7 +85,7 @@ public class BaseApplication extends DefinedStructure<String> implements Applica
       IpAccessListLine newLine =
           IpAccessListLine.builder()
               .setAction(action)
-              .setMatchCondition(new MatchHeaderspace(newHeaderSpaceBuilder.build()))
+              .setMatchCondition(new MatchHeaderSpace(newHeaderSpaceBuilder.build()))
               .build();
       lines.add(newLine);
     }

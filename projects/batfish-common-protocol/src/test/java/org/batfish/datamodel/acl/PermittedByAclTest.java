@@ -37,7 +37,7 @@ public class PermittedByAclTest {
     // Create a single ACL line matching the given srcIpWildcard
     IpAccessListLine.Builder acllb = IpAccessListLine.builder();
     acllb.setMatchCondition(
-        new MatchHeaderspace(
+        new MatchHeaderSpace(
             HeaderSpace.builder()
                 .setSrcIps(ImmutableSet.of(new IpWildcard(srcIpWildcard)))
                 .build()));

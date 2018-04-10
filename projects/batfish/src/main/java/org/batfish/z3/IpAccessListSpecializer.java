@@ -15,7 +15,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
@@ -74,7 +74,7 @@ public class IpAccessListSpecializer {
   public Optional<IpAccessListLine> specialize(IpAccessListLine ipAccessListLine) {
     /* TODO: handle other match conditions */
     HeaderSpace oldHeaderSpace =
-        ((MatchHeaderspace) ipAccessListLine.getMatchCondition()).getHeaderspace();
+        ((MatchHeaderSpace) ipAccessListLine.getMatchCondition()).getHeaderspace();
     IpWildcardSetIpSpace.Builder srcIpSpaceBuilder =
         IpWildcardSetIpSpace.builder().excluding(oldHeaderSpace.getNotSrcIps());
     if (oldHeaderSpace.getSrcIps().isEmpty() && oldHeaderSpace.getSrcOrDstIps().isEmpty()) {
@@ -137,7 +137,7 @@ public class IpAccessListSpecializer {
         IpAccessListLine.builder()
             .setAction(ipAccessListLine.getAction())
             .setMatchCondition(
-                new MatchHeaderspace(
+                new MatchHeaderSpace(
                     oldHeaderSpace
                         .rebuild()
                         .setDstIps(specializedDstIps)
