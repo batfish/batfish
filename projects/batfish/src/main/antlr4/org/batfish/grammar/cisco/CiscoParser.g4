@@ -2995,10 +2995,10 @@ s_voice
    NO? VOICE
    (
       voice_class
+      | voice_null
       | voice_service
       | voice_translation_profile
       | voice_translation_rule
-      | voice_null
    )
 ;
 
@@ -4035,12 +4035,6 @@ voice_service_voip
       | voice_service_voip_ip_address_trusted_list
       | voice_service_voip_null
       | voice_service_voip_sip
-      | RTP_PORT null_rest_of_line
-      | MODE null_rest_of_line
-      | MEDIA null_rest_of_line
-      | ALLOW_CONNECTIONS null_rest_of_line
-      | REDUNDANCY_GROUP null_rest_of_line
-      | FAX null_rest_of_line
    )*
 ;
 
@@ -4085,7 +4079,11 @@ voice_service_voip_null
       | ALLOW_CONNECTIONS
       | FAX
       | H225
+      | MEDIA
+      | MODE
       | MODEM
+      | REDUNDANCY_GROUP
+      | RTP_PORT
       | SHUTDOWN
       | SUPPLEMENTARY_SERVICE
    ) null_rest_of_line
