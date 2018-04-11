@@ -25598,7 +25598,7 @@
             "        BSD_CLIENT:'bsd-client'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          SERVER:'server'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'url'  <== mode:DEFAULT_MODE",
+            "          URL:'url'  <== mode:DEFAULT_MODE",
             "          HTTPS:'https'  <== mode:DEFAULT_MODE",
             "          COLON:':'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'//cloudsso.cisco.com/as/token.oauth2'  <== mode:DEFAULT_MODE",
@@ -51074,7 +51074,7 @@
           }
         },
         "cisco_qos" : {
-          "ipv4/6 acl" : {
+          "acl" : {
             "boop" : {
               "class-map access-group" : [
                 14
