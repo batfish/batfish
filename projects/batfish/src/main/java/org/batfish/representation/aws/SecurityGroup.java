@@ -15,6 +15,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -81,7 +82,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
             .map(
                 ipAccessListLine -> {
                   HeaderSpace srcHeaderSpace =
-                      ((MatchHeaderSpace) ipAccessListLine.getMatchCondition()).getHeaderspace();
+                      HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
                   return IpAccessListLine.builder()
                       .setMatchCondition(
                           new MatchHeaderSpace(
@@ -101,7 +102,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
             .map(
                 ipAccessListLine -> {
                   HeaderSpace srcHeaderSpace =
-                      ((MatchHeaderSpace) ipAccessListLine.getMatchCondition()).getHeaderspace();
+                      HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
                   return IpAccessListLine.builder()
                       .setMatchCondition(
                           new MatchHeaderSpace(

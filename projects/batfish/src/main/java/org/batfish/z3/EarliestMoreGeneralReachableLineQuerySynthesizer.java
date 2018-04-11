@@ -4,15 +4,14 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.NumberedQuery;
 
 /**
@@ -49,8 +48,7 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     IpAccessListLine unreachableLine = _list.getLines().get(unreachableLineIndex);
     /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
     BooleanExpr matchUnreachableLineHeaderSpace =
-        new HeaderSpaceMatchExpr(
-            ((MatchHeaderSpace) unreachableLine.getMatchCondition()).getHeaderspace());
+        AclLineMatchBooleanExprTransformer.transform(unreachableLine.getMatchCondition());
     ImmutableList.Builder<QueryStatement> queries = ImmutableList.builder();
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     for (AclLine earlierReachableLine : _earlierReachableLines) {
@@ -58,8 +56,7 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
       IpAccessListLine earlierLine = _list.getLines().get(earlierLineIndex);
       /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
       BooleanExpr matchEarlierLineHeaderSpace =
-          new HeaderSpaceMatchExpr(
-              ((MatchHeaderSpace) earlierLine.getMatchCondition()).getHeaderspace());
+          AclLineMatchBooleanExprTransformer.transform(earlierLine.getMatchCondition());
       NumberedQuery queryRel = new NumberedQuery(earlierLineIndex);
       rules.add(
           new BasicRuleStatement(

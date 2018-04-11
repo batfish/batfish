@@ -45,11 +45,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
@@ -197,14 +196,10 @@ public class SynthesizerInputImplTest {
                         ImmutableList.of(),
                         aclWithLines.getName(),
                         ImmutableList.of(
-                            new HeaderSpaceMatchExpr(
-                                ((MatchHeaderSpace)
-                                        aclWithLines.getLines().get(0).getMatchCondition())
-                                    .getHeaderspace()),
-                            new HeaderSpaceMatchExpr(
-                                ((MatchHeaderSpace)
-                                        aclWithLines.getLines().get(1).getMatchCondition())
-                                    .getHeaderspace())))))));
+                            AclLineMatchBooleanExprTransformer.transform(
+                                aclWithLines.getLines().get(0).getMatchCondition()),
+                            AclLineMatchBooleanExprTransformer.transform(
+                                aclWithLines.getLines().get(1).getMatchCondition())))))));
 
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
