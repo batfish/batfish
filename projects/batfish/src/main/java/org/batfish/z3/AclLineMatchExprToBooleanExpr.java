@@ -12,7 +12,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -48,13 +48,13 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   }
 
   @Override
-  public BooleanExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    throw new BatfishException("TODO");
+  public BooleanExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    return new HeaderSpaceMatchExpr(matchHeaderSpace.getHeaderspace());
   }
 
   @Override
-  public BooleanExpr visitMatchHeaderspace(MatchHeaderspace matchHeaderspace) {
-    return new HeaderSpaceMatchExpr(matchHeaderspace.getHeaderspace());
+  public BooleanExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    throw new BatfishException("TODO");
   }
 
   @Override

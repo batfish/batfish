@@ -1,6 +1,8 @@
 package org.batfish.z3;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.google.common.collect.ImmutableList;
@@ -12,16 +14,18 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class AclLineMatchExprToBooleanExprTest {
@@ -34,14 +38,16 @@ public class AclLineMatchExprToBooleanExprTest {
         new AndMatchExpr(ImmutableList.of()).accept(aclLineMatchExprToBooleanExpr),
         equalTo(new AndExpr(ImmutableList.of())));
 
-    assertThat(
+    BooleanExpr booleanExpr =
         new AndMatchExpr(ImmutableList.of(TrueExpr.INSTANCE, FalseExpr.INSTANCE))
-            .accept(aclLineMatchExprToBooleanExpr),
-        equalTo(
-            new AndExpr(
-                ImmutableList.of(
-                    org.batfish.z3.expr.TrueExpr.INSTANCE,
-                    org.batfish.z3.expr.FalseExpr.INSTANCE))));
+            .accept(aclLineMatchExprToBooleanExpr);
+    assertThat(booleanExpr, instanceOf(AndExpr.class));
+
+    AndExpr andExpr = (AndExpr) booleanExpr;
+    assertThat(
+        andExpr.getConjuncts(),
+        containsInAnyOrder(
+            org.batfish.z3.expr.TrueExpr.INSTANCE, org.batfish.z3.expr.FalseExpr.INSTANCE));
   }
 
   @Test
@@ -54,13 +60,9 @@ public class AclLineMatchExprToBooleanExprTest {
   @Test
   public void testMatchHeaderspace() {
     HeaderSpace headerSpace =
-        IpAccessListLine.builder()
-            .setAction(LineAction.ACCEPT)
-            .setName("test")
-            .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4")))
-            .build();
+        HeaderSpace.builder().setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4"))).build();
     assertThat(
-        new MatchHeaderspace(headerSpace).accept(aclLineMatchExprToBooleanExpr),
+        new MatchHeaderSpace(headerSpace).accept(aclLineMatchExprToBooleanExpr),
         equalTo(new HeaderSpaceMatchExpr(headerSpace)));
   }
 
@@ -77,14 +79,16 @@ public class AclLineMatchExprToBooleanExprTest {
         new OrMatchExpr(ImmutableList.of()).accept(aclLineMatchExprToBooleanExpr),
         equalTo(new OrExpr(ImmutableList.of())));
 
-    assertThat(
+    BooleanExpr booleanExpr =
         new OrMatchExpr(ImmutableList.of(TrueExpr.INSTANCE, FalseExpr.INSTANCE))
-            .accept(aclLineMatchExprToBooleanExpr),
-        equalTo(
-            new OrExpr(
-                ImmutableList.of(
-                    org.batfish.z3.expr.TrueExpr.INSTANCE,
-                    org.batfish.z3.expr.FalseExpr.INSTANCE))));
+            .accept(aclLineMatchExprToBooleanExpr);
+    assertThat(booleanExpr, instanceOf(OrExpr.class));
+
+    OrExpr orExpr = (OrExpr) booleanExpr;
+    assertThat(
+        orExpr.getDisjuncts(),
+        Matchers.containsInAnyOrder(
+            org.batfish.z3.expr.TrueExpr.INSTANCE, org.batfish.z3.expr.FalseExpr.INSTANCE));
   }
 
   @Test
@@ -103,13 +107,21 @@ public class AclLineMatchExprToBooleanExprTest {
   public void testPermittedByAcl_twoLines() {
     IpAccessListLine line1 =
         IpAccessListLine.builder()
-            .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4")))
+            .setMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4")))
+                        .build()))
             .setAction(LineAction.REJECT)
             .build();
 
     IpAccessListLine line2 =
         IpAccessListLine.builder()
-            .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.0/24")))
+            .setMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.0/24")))
+                        .build()))
             .setAction(LineAction.ACCEPT)
             .build();
 
