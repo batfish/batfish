@@ -17,10 +17,6 @@ public final class IpAccessListLine implements Serializable {
 
   public static class Builder {
 
-    public static Builder rejection() {
-      return new Builder().setAction(LineAction.REJECT);
-    }
-
     private LineAction _action;
 
     private AclLineMatchExpr _matchCondition;
