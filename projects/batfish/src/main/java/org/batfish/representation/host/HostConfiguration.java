@@ -199,8 +199,8 @@ public class HostConfiguration extends VendorConfiguration {
            * For now, a simple line is either TrueExpr, FalseExpr, or unrestricted MatchHeaderSpace.
            */
           AclLineMatchExpr matchCondition = line.getMatchCondition();
-          if (!(matchCondition == TrueExpr.INSTANCE
-              || matchCondition == FalseExpr.INSTANCE
+          if (!(matchCondition instanceof TrueExpr
+              || matchCondition instanceof FalseExpr
               || (matchCondition instanceof MatchHeaderSpace
                   && ((MatchHeaderSpace) matchCondition).getHeaderspace().unrestricted()))) {
             /* At least one line is complicated, so the whole ACL is complicated */
