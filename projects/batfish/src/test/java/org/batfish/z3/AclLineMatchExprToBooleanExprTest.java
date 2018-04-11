@@ -25,7 +25,6 @@ import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class AclLineMatchExprToBooleanExprTest {
@@ -87,7 +86,7 @@ public class AclLineMatchExprToBooleanExprTest {
     OrExpr orExpr = (OrExpr) booleanExpr;
     assertThat(
         orExpr.getDisjuncts(),
-        Matchers.containsInAnyOrder(
+        containsInAnyOrder(
             org.batfish.z3.expr.TrueExpr.INSTANCE, org.batfish.z3.expr.FalseExpr.INSTANCE));
   }
 
