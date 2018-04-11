@@ -172,14 +172,6 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   protected BoolExpr computeSmtConstraintsViaNod(NodProgram program, boolean negate) {
     Fixedpoint fix = mkFixedpoint(program, true);
     Expr answer = answerFixedPoint(fix, program);
-    /*
-    System.out.println(answer);
-    CommonUtil.writeFile(
-        Paths.get(String.format("/tmp/answer-%s.smt2", Instant.now().toString())),
-        answer.toString());
-        */
-    //    CommonUtil.writeFile(_settings.getQuestionPath().resolve("answer.smt2"),
-    // answer.toString());
     return getSolverInput(answer, program, negate);
   }
 

@@ -402,6 +402,12 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     }
   }
 
+  /**
+   * Require that either ORIG_SRC_IP or DST_IP matches one of the input {@link IpWildcard}s. If the
+   * query specifies a srcIp or dstIp constraint, we interpret that as meaning the srcIp before any
+   * natting. If that constraint is imposed after src natting has been applied, use this method to
+   * constrain ORIG_SRC_IP.
+   */
   public static BooleanExpr matchOrigSrcOrDstIp(Set<IpWildcard> ipWildcards) {
     return new OrExpr(
         ImmutableList.of(

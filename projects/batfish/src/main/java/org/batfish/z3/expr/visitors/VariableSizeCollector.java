@@ -49,17 +49,17 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public static Map<String, Integer> collectVariableSizes(Statement s) {
     VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
     s.accept(variableSizeCollector);
-    return variableSizeCollector
-        ._variableSizes
-        .build()
-        .stream()
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    return variableSizeCollector.getVariableSizes();
   }
 
   private final ImmutableSet.Builder<Entry<String, Integer>> _variableSizes;
 
-  private VariableSizeCollector() {
+  public VariableSizeCollector() {
     _variableSizes = ImmutableSet.builder();
+  }
+
+  public Map<String, Integer> getVariableSizes() {
+    return ImmutableMap.copyOf(_variableSizes.build());
   }
 
   @Override

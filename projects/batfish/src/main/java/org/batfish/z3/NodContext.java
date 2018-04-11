@@ -18,11 +18,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.visitors.RelationCollector;
 import org.batfish.z3.expr.visitors.VariableSizeCollector;
-import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.visitors.FuncDeclTransformer;
 
 public class NodContext {
@@ -44,25 +42,16 @@ public class NodContext {
   public NodContext(Context ctx, ReachabilityProgram... programs) {
     _context = ctx;
     AtomicInteger deBruijnIndex = new AtomicInteger(0);
-    Map<String, Integer> variableSizes =
-        Arrays.stream(programs)
-            .flatMap(
-                program ->
-                    Streams.concat(
-                            program.getRules().stream(),
-                            program.getQueries().stream(),
-                            ImmutableList.of(
-                                    // dummy rule that includes the smt constraint
-                                    new BasicRuleStatement(
-                                        program.getSmtConstraint(), Debug.INSTANCE))
-                                .stream())
-                        .map(VariableSizeCollector::collectVariableSizes)
-                        .map(Map::entrySet)
-                        .flatMap(Collection::stream))
-            .collect(ImmutableSet.toImmutableSet())
-            .stream()
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
+    Arrays.stream(programs)
+        .forEach(
+            program -> {
+              program.getRules().forEach(rule -> rule.accept(variableSizeCollector));
+              program.getQueries().forEach(query -> query.accept(variableSizeCollector));
+              program.getSmtConstraint().accept(variableSizeCollector);
+            });
 
+    Map<String, Integer> variableSizes = variableSizeCollector.getVariableSizes();
     _variableNames = computeVariableNames(variableSizes);
 
     Map<String, BitVecSort> variableSorts =
