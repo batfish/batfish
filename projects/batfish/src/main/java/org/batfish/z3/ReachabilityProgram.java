@@ -2,8 +2,10 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.visitors.Simplifier;
 
 public class ReachabilityProgram {
@@ -16,13 +18,16 @@ public class ReachabilityProgram {
 
     private List<RuleStatement> _rules;
 
+    private BooleanExpr _smtConstraint;
+
     private Builder() {
       _queries = ImmutableList.of();
       _rules = ImmutableList.of();
+      _smtConstraint = TrueExpr.INSTANCE;
     }
 
     public ReachabilityProgram build() {
-      return new ReachabilityProgram(_queries, _rules, _input);
+      return new ReachabilityProgram(_queries, _rules, _input, _smtConstraint);
     }
 
     public Builder setInput(SynthesizerInput input) {
@@ -39,6 +44,11 @@ public class ReachabilityProgram {
       _rules = ImmutableList.copyOf(rules);
       return this;
     }
+
+    public Builder setSmtConstraint(BooleanExpr constraint) {
+      _smtConstraint = constraint;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -51,10 +61,16 @@ public class ReachabilityProgram {
 
   private final List<RuleStatement> _rules;
 
+  private final BooleanExpr _smtConstraint;
+
   private ReachabilityProgram(
-      List<QueryStatement> queries, List<RuleStatement> rules, SynthesizerInput input) {
+      List<QueryStatement> queries,
+      List<RuleStatement> rules,
+      SynthesizerInput input,
+      BooleanExpr smtConstraint) {
     _queries = ImmutableList.copyOf(queries);
     _input = input;
+    _smtConstraint = smtConstraint;
 
     /*
      * Simplify rule statements if desired, and remove statements that simplify to trivial
@@ -81,5 +97,9 @@ public class ReachabilityProgram {
 
   public List<RuleStatement> getRules() {
     return _rules;
+  }
+
+  public BooleanExpr getSmtConstraint() {
+    return _smtConstraint;
   }
 }

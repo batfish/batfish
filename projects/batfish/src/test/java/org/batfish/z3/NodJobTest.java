@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.z3.Context;
+import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import java.io.IOException;
 import java.util.List;
@@ -64,6 +65,14 @@ public class NodJobTest {
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
+
+  private static Status checkSat(NodJob nodJob) {
+    Context z3Context = new Context();
+    SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+    Solver solver = z3Context.mkSolver();
+    solver.add(smtInput._expr);
+    return solver.check();
+  }
 
   private NodJob getNodJob(HeaderSpace headerSpace) {
     return getNodJob(headerSpace, null);
@@ -233,10 +242,7 @@ public class NodJobTest {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
     NodJob nodJob = getNodJob(headerSpace, true);
-    Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.SATISFIABLE));
+    assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
 
   /**
@@ -248,10 +254,7 @@ public class NodJobTest {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
     NodJob nodJob = getNodJob(headerSpace, false);
-    Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.UNSATISFIABLE));
+    assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }
 
   /** Test that traffic originating from 3.0.0.1 is not NATed */
@@ -305,10 +308,7 @@ public class NodJobTest {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
     NodJob nodJob = getNodJob(headerSpace, false);
-    Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.SATISFIABLE));
+    assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
 
   /**
@@ -320,9 +320,6 @@ public class NodJobTest {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
     NodJob nodJob = getNodJob(headerSpace, true);
-    Context z3Context = new Context();
-    Status status = nodJob.computeNodSat(System.currentTimeMillis(), z3Context);
-
-    assertThat(status, equalTo(Status.UNSATISFIABLE));
+    assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }
 }
