@@ -16,7 +16,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -192,9 +191,9 @@ public class HostConfiguration extends VendorConfiguration {
           if (line.getAction() == LineAction.REJECT) {
             return false;
           }
-          /* This cast will have to change when ACLs are more complicated */
-          HeaderSpace h = ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
-          if (!h.unrestricted()) {
+          /* This will have to change when ACLs are more complicated */
+          if (line.getMatchCondition() instanceof MatchHeaderSpace
+              && !((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace().unrestricted()) {
             return false;
           }
         }
