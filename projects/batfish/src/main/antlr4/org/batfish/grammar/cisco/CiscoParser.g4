@@ -3908,8 +3908,12 @@ voice_class
    CLASS
    (
       voice_class_codec
+      | voice_class_dpg
+      | voice_class_e164
       | voice_class_h323
+      | voice_class_server_group
       | voice_class_sip_profiles
+      | voice_class_uri
    )
 ;
 
@@ -3926,6 +3930,41 @@ voice_class_codec_null
    NO?
    (
       CODEC
+   ) null_rest_of_line
+;
+
+voice_class_dpg
+:
+   DPG null_rest_of_line
+   (
+      voice_class_dpg_null
+   )*
+;
+
+voice_class_dpg_null
+:
+    NO?
+    (
+       DESCRIPTION
+       | DIAL_PEER
+    ) null_rest_of_line
+;
+
+voice_class_e164
+:
+   E164_PATTERN_MAP null_rest_of_line
+   (
+      voice_class_e164_null
+   )*
+;
+
+voice_class_e164_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | E164
+      | URL
    ) null_rest_of_line
 ;
 
@@ -3946,6 +3985,22 @@ voice_class_h323_null
    ) null_rest_of_line
 ;
 
+voice_class_server_group
+:
+   SERVER_GROUP null_rest_of_line
+   (
+      voice_class_server_group_null
+   )*
+;
+
+voice_class_server_group_null
+:
+   NO?
+      (  DESCRIPTION
+         | IPV4
+      ) null_rest_of_line
+;
+
 voice_class_sip_profiles
 :
    SIP_PROFILES null_rest_of_line
@@ -3960,6 +4015,14 @@ voice_class_sip_profiles_null
    (
       REQUEST
    ) null_rest_of_line
+;
+
+voice_class_uri
+:
+    URI null_rest_of_line
+    (
+        HOST null_rest_of_line
+    )
 ;
 
 voice_null
@@ -4039,7 +4102,11 @@ voice_service_voip_null
       | ALLOW_CONNECTIONS
       | FAX
       | H225
+      | MEDIA
+      | MODE
       | MODEM
+      | REDUNDANCY_GROUP
+      | RTP_PORT
       | SHUTDOWN
       | SUPPLEMENTARY_SERVICE
    ) null_rest_of_line

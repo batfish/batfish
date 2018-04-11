@@ -189,7 +189,7 @@
         "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
         "files" : {
           "cisco_bgp" : [
-            12
+            13
           ]
         }
       },
@@ -482,6 +482,22 @@
         "files" : {
           "ios_bgp_aggregate_address" : [
             14
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:allowprefix" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'allowprefix'",
+        "files" : {
+          "cisco_acl" : [
+            33
+          ]
+        }
+      },
+      "unused:ipv4 prefix-list:allowprefix-asa" : {
+        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'allowprefix-asa'",
+        "files" : {
+          "cisco_acl" : [
+            36
           ]
         }
       },
@@ -847,7 +863,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 112
+      "numResults" : 114
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -992,12 +1008,20 @@
           "standard" : [
             28
           ]
+        },
+        "ipv4 prefix-list" : {
+          "allowprefix" : [
+            33
+          ],
+          "allowprefix-asa" : [
+            36
+          ]
         }
       },
       "cisco_bgp" : {
         "bgp group" : {
           "p1" : [
-            12
+            13
           ]
         }
       },
