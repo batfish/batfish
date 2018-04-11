@@ -1,9 +1,9 @@
 package org.batfish.datamodel.questions;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.datamodel.Configuration;
@@ -250,7 +250,7 @@ public class ReachabilitySettings {
         && _ingressNodes.equals(other._ingressNodes)
         && _maxChunkSize == other._maxChunkSize
         && _nonTransitNodes.equals(other._nonTransitNodes)
-        && Objects.equal(_srcNatted, other._srcNatted)
+        && Objects.equals(_srcNatted, other._srcNatted)
         && _transitNodes.equals(other._transitNodes)
         && _specialize == other._specialize
         && _useCompression == other._useCompression;
@@ -298,7 +298,7 @@ public class ReachabilitySettings {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(
+    return Objects.hash(
         _actions,
         _finalNodes,
         _headerSpace,

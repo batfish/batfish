@@ -1,32 +1,37 @@
-package org.batfish.question.jsonpath;
+package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
-import java.io.IOException;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 
-public class JsonPathAssertion {
+/**
+ * Represents an assertion that can be added to questions. It is evaluated by the corresponding
+ * {@link org.batfish.common.Answerer}.
+ */
+public class Assertion {
+
+  public enum AssertionType {
+    countequals,
+    countlessthan,
+    countmorethan,
+    equals
+  }
 
   private static final String PROP_TYPE = "type";
 
   private static final String PROP_EXPECT = "expect";
 
-  private JsonPathAssertionType _assertionType;
+  private AssertionType _assertionType;
 
   private JsonNode _expect;
 
   @JsonCreator
-  public JsonPathAssertion(
-      @JsonProperty(PROP_TYPE) JsonPathAssertionType assertionType,
+  public Assertion(
+      @JsonProperty(PROP_TYPE) AssertionType assertionType,
       @JsonProperty(PROP_EXPECT) JsonNode expect) {
     switch (assertionType) {
       case countequals:
@@ -54,45 +59,16 @@ public class JsonPathAssertion {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof JsonPathAssertion)) {
+    if (!(o instanceof Assertion)) {
       return false;
     }
-    JsonPathAssertion other = (JsonPathAssertion) o;
+    Assertion other = (Assertion) o;
     return Objects.equals(_assertionType, other.getType())
         && Objects.equals(_expect, other.getExpect());
   }
 
-  public boolean evaluate(Set<JsonPathResultEntry> resultEntries) {
-    switch (getType()) {
-      case countequals:
-        return resultEntries.size() == _expect.asInt();
-      case countlessthan:
-        return resultEntries.size() < _expect.asInt();
-      case countmorethan:
-        return resultEntries.size() > _expect.asInt();
-      case equals:
-        Set<JsonPathResultEntry> expectedEntries = new HashSet<>();
-        for (final JsonNode nodeEntry : _expect) {
-          try {
-            JsonPathResultEntry expectedEntry =
-                BatfishObjectMapper.mapper()
-                    .readValue(nodeEntry.toString(), JsonPathResultEntry.class);
-            expectedEntries.add(expectedEntry);
-          } catch (IOException e) {
-            throw new BatfishException(
-                "Could not convert '" + nodeEntry + "' to JsonPathResultEntry", e);
-          }
-        }
-        SetView<JsonPathResultEntry> difference1 = Sets.difference(expectedEntries, resultEntries);
-        SetView<JsonPathResultEntry> difference2 = Sets.difference(resultEntries, expectedEntries);
-        return difference1.isEmpty() && difference2.isEmpty();
-      default:
-        throw new BatfishException("Unhandled assertion type: " + getType());
-    }
-  }
-
   @JsonProperty(PROP_TYPE)
-  public JsonPathAssertionType getType() {
+  public AssertionType getType() {
     return _assertionType;
   }
 
