@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -259,7 +260,13 @@ public abstract class Question implements IQuestion {
     }
   }
 
+  private Assertion _assertion;
+
   private boolean _differential;
+
+  protected DisplayHints _displayHints;
+
+  private List<Exclusion> _exclusions;
 
   private InstanceData _instance;
 
@@ -276,9 +283,24 @@ public abstract class Question implements IQuestion {
   @JsonIgnore
   public abstract boolean getDataPlane();
 
+  @JsonProperty(BfConsts.PROP_ASSERTION)
+  public Assertion getAssertion() {
+    return _assertion;
+  }
+
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public boolean getDifferential() {
     return _differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_DISPLAY_HINTS)
+  public DisplayHints getDisplayHints() {
+    return _displayHints;
+  }
+
+  @JsonProperty(BfConsts.PROP_EXCLUSIONS)
+  public List<Exclusion> getExclusions() {
+    return _exclusions;
   }
 
   /** Returns {@code true} iff this question does not need the testrig to be properly parsed */
@@ -438,9 +460,24 @@ public abstract class Question implements IQuestion {
     }
   }
 
+  @JsonProperty(BfConsts.PROP_ASSERTION)
+  public void setAssertion(Assertion assertion) {
+    _assertion = assertion;
+  }
+
   @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
   public void setDifferential(boolean differential) {
     _differential = differential;
+  }
+
+  @JsonProperty(BfConsts.PROP_DISPLAY_HINTS)
+  public void setDisplayHints(DisplayHints displayHints) {
+    _displayHints = displayHints;
+  }
+
+  @JsonProperty(BfConsts.PROP_EXCLUSIONS)
+  public void setExclusions(List<Exclusion> exclusions) {
+    _exclusions = exclusions;
   }
 
   @JsonProperty(BfConsts.PROP_INSTANCE)
