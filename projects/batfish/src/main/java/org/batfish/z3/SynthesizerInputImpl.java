@@ -32,12 +32,10 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -305,13 +303,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                         .stream()
                         .map(
                             line ->
-                                line.getMatchCondition()
-                                        == org.batfish.datamodel.acl.TrueExpr.INSTANCE
-                                    ? TrueExpr.INSTANCE
-                                    : new HeaderSpaceMatchExpr(
-                                        /* TODO: support other kinds of match conditions */
-                                        ((MatchHeaderSpace) line.getMatchCondition())
-                                            .getHeaderspace()))
+                                AclLineMatchBooleanExprTransformer.transform(
+                                    line.getMatchCondition()))
                         .collect(ImmutableList.toImmutableList())));
   }
 
