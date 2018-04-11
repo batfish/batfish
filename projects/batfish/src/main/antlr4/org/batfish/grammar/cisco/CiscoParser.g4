@@ -3973,8 +3973,8 @@ voice_class_server_group
 voice_class_server_group_null
 :
    NO?
-      (
-         IPV4
+      (  DESCRIPTION
+         | IPV4
       ) null_rest_of_line
 ;
 

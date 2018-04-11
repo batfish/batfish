@@ -4215,6 +4215,38 @@
         "roles" : [
           "cisco-acl"
         ],
+        "routeFilterLists" : {
+          "allowprefix" : {
+            "name" : "allowprefix",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "24-24",
+                "prefix" : "192.0.2.0/24"
+              },
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "24-32",
+                "prefix" : "209.165.201.0/24"
+              }
+            ]
+          },
+          "allowprefix-asa" : {
+            "name" : "allowprefix-asa",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "24-32",
+                "prefix" : "192.0.2.0/24"
+              },
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "24-32",
+                "prefix" : "209.165.201.0/24"
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cisco_acl"
