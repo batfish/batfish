@@ -69,6 +69,7 @@ import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cisco.CiscoStructureType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -93,6 +94,70 @@ public class CiscoGrammarTest {
     Configuration noNewModelConfiguration = parseConfig("aaaNoNewmodel");
     aaaNewmodel = noNewModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
     assertFalse(aaaNewmodel);
+  }
+
+  @Test
+  public void testAGAclUnused() throws IOException {
+    String hostName = "iosAccessGroupAcl";
+    String testrigName = "access-group-acl";
+    List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+
+    // only mac_acl_unused and ip_acl_unused should exist as unused structures
+    assertThat(unusedStructures, hasKey(hostName));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        unusedStructures.get(hostName);
+
+    assertThat(byType, hasKey(CiscoStructureType.MAC_ACCESS_LIST.getDescription()));
+    assertThat(byType, hasKey(CiscoStructureType.IP_ACCESS_LIST_EXTENDED.getDescription()));
+    SortedMap<String, SortedSet<Integer>> byNameMacAcl =
+        byType.get(CiscoStructureType.MAC_ACCESS_LIST.getDescription());
+    SortedMap<String, SortedSet<Integer>> byNameIpAclExt =
+        byType.get(CiscoStructureType.IP_ACCESS_LIST_EXTENDED.getDescription());
+
+    assertThat(byNameMacAcl.keySet(), hasSize(1));
+    assertThat(byNameIpAclExt.keySet(), hasSize(1));
+    assertThat(byNameMacAcl, hasKey("mac_acl_unused"));
+    assertThat(byNameIpAclExt, hasKey("ip_acl_unused"));
+  }
+
+  @Test
+  public void testAGAclUndefined() throws IOException {
+    String hostName = "iosAccessGroupAcl";
+    String testrigName = "access-group-acl";
+    List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        undefinedReferences =
+            batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
+
+    // only mac_acl_udef and ip_acl_udef should be undefined references
+    assertThat(undefinedReferences, hasKey(hostName));
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost =
+        undefinedReferences.get(hostName);
+    assertThat(byHost, hasKey(CiscoStructureType.ACCESS_LIST.getDescription()));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        byHost.get(CiscoStructureType.ACCESS_LIST.getDescription());
+
+    assertThat(byType.keySet(), hasSize(2));
+    assertThat(byType, hasKey("ip_acl_udef"));
+    assertThat(byType, hasKey("mac_acl_udef"));
   }
 
   @Test

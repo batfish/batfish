@@ -2,6 +2,14 @@
   {
     "class" : "org.batfish.question.UndefinedReferencesQuestionPlugin$UndefinedReferencesAnswerElement",
     "problems" : {
+      "undefined:acl:usage:class-map access-group:boop" : {
+        "description" : "Undefined reference to structure of type: 'acl' with usage: 'class-map access-group' named 'boop'",
+        "files" : {
+          "cisco_qos" : [
+            14
+          ]
+        }
+      },
       "undefined:as-path-set:usage:route-policy as-path in:chill-as-path" : {
         "description" : "Undefined reference to structure of type: 'as-path-set' with usage: 'route-policy as-path in' named 'chill-as-path'",
         "files" : {
@@ -402,14 +410,6 @@
         "files" : {
           "ios_xr_route_policy" : [
             66
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:class-map access-group:boop" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'class-map access-group' named 'boop'",
-        "files" : {
-          "cisco_qos" : [
-            14
           ]
         }
       },
@@ -1284,7 +1284,7 @@
         }
       },
       "cisco_qos" : {
-        "ipv4/6 acl" : {
+        "acl" : {
           "boop" : {
             "class-map access-group" : [
               14

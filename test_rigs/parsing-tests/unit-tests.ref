@@ -51335,7 +51335,7 @@
           }
         },
         "cisco_qos" : {
-          "ipv4/6 acl" : {
+          "acl" : {
             "boop" : {
               "class-map access-group" : [
                 14
