@@ -28,6 +28,10 @@ import org.batfish.z3.expr.OrExpr;
 public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVisitor<BooleanExpr> {
   private final Map<String, IpAccessList> _nodeAcls;
 
+  public AclLineMatchExprToBooleanExpr() {
+    _nodeAcls = ImmutableMap.of();
+  }
+
   public AclLineMatchExprToBooleanExpr(Map<String, IpAccessList> nodeAcls) {
     _nodeAcls = ImmutableMap.copyOf(nodeAcls);
   }
