@@ -447,7 +447,7 @@ ip_prefix_list_stanza
    (
       IP
       | IPV4
-   ) PREFIX_LIST name = variable
+   )? PREFIX_LIST name = variable
    (
       (
          NEWLINE

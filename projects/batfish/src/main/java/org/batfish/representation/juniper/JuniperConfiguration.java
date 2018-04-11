@@ -30,6 +30,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -1362,11 +1364,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             "missing action in firewall filter: '" + name + "', term: '" + term.getName() + "'");
         action = LineAction.REJECT;
       }
-      IpAccessListLine line = new IpAccessListLine();
-      line.setName(term.getName());
-      line.setAction(action);
+      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
       for (FwFrom from : term.getFroms()) {
-        from.applyTo(line, this, _w, _c);
+        from.applyTo(matchCondition, this, _w, _c);
       }
       boolean addLine =
           term.getFromApplications().isEmpty()
@@ -1379,9 +1379,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
         from.applyTo(lines, _w);
       }
       for (FwFromApplication fromApplication : term.getFromApplications()) {
-        fromApplication.applyTo(line, lines, _w);
+        fromApplication.applyTo(matchCondition, action, lines, _w);
       }
       if (addLine) {
+        IpAccessListLine line =
+            IpAccessListLine.builder()
+                .setAction(action)
+                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
+                .setName(term.getName())
+                .build();
         lines.add(line);
       }
     }

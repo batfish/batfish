@@ -7,11 +7,11 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.NumberedQuery;
 
 /**
@@ -46,13 +46,17 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     int unreachableLineIndex = _unreachableLine.getLine();
     IpAccessListLine unreachableLine = _list.getLines().get(unreachableLineIndex);
-    BooleanExpr matchUnreachableLineHeaderSpace = new HeaderSpaceMatchExpr(unreachableLine);
+    /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
+    BooleanExpr matchUnreachableLineHeaderSpace =
+        AclLineMatchBooleanExprTransformer.transform(unreachableLine.getMatchCondition());
     ImmutableList.Builder<QueryStatement> queries = ImmutableList.builder();
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     for (AclLine earlierReachableLine : _earlierReachableLines) {
       int earlierLineIndex = earlierReachableLine.getLine();
       IpAccessListLine earlierLine = _list.getLines().get(earlierLineIndex);
-      BooleanExpr matchEarlierLineHeaderSpace = new HeaderSpaceMatchExpr(earlierLine);
+      /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
+      BooleanExpr matchEarlierLineHeaderSpace =
+          AclLineMatchBooleanExprTransformer.transform(earlierLine.getMatchCondition());
       NumberedQuery queryRel = new NumberedQuery(earlierLineIndex);
       rules.add(
           new BasicRuleStatement(

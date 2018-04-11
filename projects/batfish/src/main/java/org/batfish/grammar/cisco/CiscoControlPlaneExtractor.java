@@ -6374,7 +6374,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Ip getWildcard(Access_list_ip_rangeContext ctx) {
     // TODO: fix for address-group, object, object-group, interface
     if (ctx.wildcard != null) {
-      return toIp(ctx.wildcard);
+      Ip wildcard = toIp(ctx.wildcard);
+      if (_format == CISCO_ASA) {
+        wildcard = wildcard.inverted();
+      }
+      return wildcard;
     } else if (ctx.ANY() != null
         || ctx.ANY4() != null
         || ctx.address_group != null
@@ -6694,7 +6698,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private EncryptionAlgorithm toEncryptionAlgorithm(Ipsec_encryptionContext ctx) {
     if (ctx.ESP_AES() != null) {
-      return EncryptionAlgorithm.AES_128_CBC;
+      int strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
+      switch (strength) {
+        case 128:
+          return EncryptionAlgorithm.AES_128_CBC;
+        case 192:
+          return EncryptionAlgorithm.AES_192_CBC;
+        case 256:
+          return EncryptionAlgorithm.AES_256_CBC;
+        default:
+          throw convError(EncryptionAlgorithm.class, ctx);
+      }
+    } else if (ctx.ESP_DES() != null) {
+      return EncryptionAlgorithm.DES_CBC;
     } else if (ctx.ESP_3DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {

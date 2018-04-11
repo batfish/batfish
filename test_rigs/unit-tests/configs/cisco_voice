@@ -79,6 +79,24 @@ voice class codec 1
  codec preference 1 g729r8
  codec preference 2 g711alaw
 !
+voice class dpg 181
+ description Boston Destination
+ dial-peer 123 preference 1
+!
+voice class e164-pattern-map 1111
+ description It has 1 entry
+ e164 5557123
+!
+voice class server-group 171
+ description It has 1 entry
+ ipv4 10.1.1.1 preference 3
+!
+voice class uri ab200 sip
+ host ipv4:10.0.0.0
+!
+voice class uri ab201 sip
+ host server1
+! 
 voice class h323 10
  call preserve
  h225 timeout tcp establish 2
@@ -104,7 +122,11 @@ voice service voip
  ip address trusted list
   ipv4 1.2.3.4 255.255.255.255
   ipv4 2.3.4.5 255.255.255.255
+ media bulk-stats
+ mode border-element license capacity 200
  modem passthrough nse codec g711ulaw
+ redundancy-group 1
+ rtp-port range 16384 32768
  shutdown
  sip
   bind control source-interface Loopback0

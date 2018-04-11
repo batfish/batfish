@@ -7,22 +7,23 @@ import org.batfish.datamodel.LineAction;
 
 public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
-  private final String _srcInterface;
-  private final Flow _flow;
-  private final Map<String, IpAccessList> _availableAcls;
-
-  Evaluator(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    _srcInterface = srcInterface;
-    _flow = flow;
-    _availableAcls = availableAcls;
-  }
-
   public static boolean matches(
       AclLineMatchExpr item,
       Flow flow,
       String srcInterface,
       Map<String, IpAccessList> availableAcls) {
     return item.accept(new Evaluator(flow, srcInterface, availableAcls));
+  }
+
+  private final Map<String, IpAccessList> _availableAcls;
+  private final Flow _flow;
+
+  private final String _srcInterface;
+
+  public Evaluator(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
+    _srcInterface = srcInterface;
+    _flow = flow;
+    _availableAcls = availableAcls;
   }
 
   @Override
@@ -36,8 +37,8 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   }
 
   @Override
-  public Boolean visitMatchHeaderspace(MatchHeaderspace matchHeaderspace) {
-    return matchHeaderspace.getHeaderspace().matches(_flow);
+  public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    return matchHeaderSpace.getHeaderspace().matches(_flow);
   }
 
   @Override
@@ -57,7 +58,10 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    return _availableAcls.get(permittedByAcl.getAclName()).filter(_flow).getAction()
+    return _availableAcls
+            .get(permittedByAcl.getAclName())
+            .filter(_flow, _srcInterface, _availableAcls)
+            .getAction()
         == LineAction.ACCEPT;
   }
 
