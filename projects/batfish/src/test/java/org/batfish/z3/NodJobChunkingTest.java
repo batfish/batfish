@@ -30,7 +30,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -72,10 +71,10 @@ public class NodJobChunkingTest {
         .setOwner(owner)
         .setLines(
             ImmutableList.of(
-                IpAccessListLine.builder()
-                    .setAction(LineAction.ACCEPT)
-                    .setSrcIps(ImmutableList.of(new IpWildcard(srcIp)))
-                    .build()))
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(ImmutableList.of(new IpWildcard(srcIp)))
+                        .build())))
         .build();
   }
 

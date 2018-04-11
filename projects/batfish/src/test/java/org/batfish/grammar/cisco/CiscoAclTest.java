@@ -2,6 +2,11 @@ package org.batfish.grammar.cisco;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -32,18 +37,27 @@ public class CiscoAclTest {
     return BatfishTestUtils.parseTextConfigs(_folder, names).get(hostname);
   }
 
-  private void testAcls(String hostname, ConfigurationFormat format) throws IOException {
-    Configuration c = parseConfig(hostname);
-    IpAccessList acl = c.getIpAccessLists().get("acl");
-    IpAccessListLine line = Iterables.getOnlyElement(acl.getLines());
-    assertThat(c.getConfigurationFormat(), equalTo(format));
-    assertThat(line.getSrcIps(), contains(new IpWildcard(Prefix.parse("1.2.3.0/24"))));
-    assertThat(line.getDstIps(), contains(new IpWildcard(Prefix.parse("4.3.0.0/16"))));
-  }
-
   @Test
   public void testAclMasks() throws IOException {
     testAcls("aclAsa", CISCO_ASA);
     testAcls("aclIos", CISCO_IOS);
+  }
+
+  private void testAcls(String hostname, ConfigurationFormat format) throws IOException {
+    Configuration c = parseConfig(hostname);
+    IpAccessList acl = c.getIpAccessLists().get("acl");
+    IpAccessListLine line = Iterables.getOnlyElement(acl.getLines());
+
+    assertThat(c.getConfigurationFormat(), equalTo(format));
+    assertThat(
+        line,
+        hasMatchCondition(
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasSrcIps(contains(new IpWildcard(Prefix.parse("1.2.3.0/24"))))))));
+    assertThat(
+        line,
+        hasMatchCondition(
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasDstIps(contains(new IpWildcard(Prefix.parse("4.3.0.0/16"))))))));
   }
 }

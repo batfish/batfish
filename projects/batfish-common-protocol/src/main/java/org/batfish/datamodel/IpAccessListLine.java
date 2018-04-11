@@ -1,71 +1,51 @@
 package org.batfish.datamodel;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.util.List;
+import java.io.Serializable;
 import java.util.Objects;
-import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderspace;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 
 @JsonSchemaDescription("A line in an IpAccessList")
-public final class IpAccessListLine extends HeaderSpace {
+public final class IpAccessListLine implements Serializable {
 
-  public static class Builder extends HeaderSpace.Builder<Builder, IpAccessListLine> {
+  public static class Builder {
 
     private LineAction _action;
+
+    private AclLineMatchExpr _matchCondition;
 
     private String _name;
 
     private Builder() {}
 
-    @Override
-    public IpAccessListLine build() {
-      return new IpAccessListLine(
-          _action,
-          _dscps,
-          _dstIps,
-          _dstPorts,
-          _dstProtocols,
-          _ecns,
-          _fragmentOffsets,
-          _icmpCodes,
-          _icmpTypes,
-          _ipProtocols,
-          _name,
-          _negate,
-          _notDscps,
-          _notDstIps,
-          _notDstPorts,
-          _notDstProtocols,
-          _notEcns,
-          _notFragmentOffsets,
-          _notIcmpCodes,
-          _notIcmpTypes,
-          _notIpProtocols,
-          _notPacketLengths,
-          _notSrcIps,
-          _notSrcPorts,
-          _notSrcProtocols,
-          _packetLengths,
-          _srcIps,
-          _srcOrDstIps,
-          _srcOrDstPorts,
-          _srcOrDstProtocols,
-          _srcPorts,
-          _srcProtocols,
-          _states,
-          _tcpFlags);
+    public Builder accepting() {
+      _action = LineAction.ACCEPT;
+      return this;
     }
 
-    @Override
-    protected Builder getThis() {
+    public IpAccessListLine build() {
+      return new IpAccessListLine(_action, _matchCondition, _name);
+    }
+
+    public Builder rejecting() {
+      _action = LineAction.REJECT;
       return this;
     }
 
     public Builder setAction(LineAction action) {
       _action = action;
+      return this;
+    }
+
+    public Builder setMatchCondition(AclLineMatchExpr matchCondition) {
+      _matchCondition = matchCondition;
       return this;
     }
 
@@ -75,97 +55,54 @@ public final class IpAccessListLine extends HeaderSpace {
     }
   }
 
+  public static final IpAccessListLine ACCEPT_ALL =
+      accepting().setMatchCondition(TrueExpr.INSTANCE).build();
+
+  private static final String PROP_ACTION = "action";
+
+  private static final String PROP_MATCH_CONDITION = "matchCondition";
+
+  private static final String PROP_NAME = "name";
+
+  public static final IpAccessListLine REJECT_ALL =
+      rejecting().setMatchCondition(TrueExpr.INSTANCE).build();
+
   private static final long serialVersionUID = 1L;
+
+  public static Builder accepting() {
+    return new Builder().setAction(LineAction.ACCEPT);
+  }
+
+  public static IpAccessListLine acceptingHeaderSpace(HeaderSpace headerSpace) {
+    return accepting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
+  }
 
   public static Builder builder() {
     return new Builder();
   }
 
-  private LineAction _action;
-
-  private AclLineMatchExpr _matchCondition;
-
-  private String _name;
-
-  public IpAccessListLine(LineAction action, AclLineMatchExpr matchCondition, String name) {
-    _action = action;
-    _matchCondition = matchCondition;
-    _name = name;
+  public static Builder rejecting() {
+    return new Builder().setAction(LineAction.REJECT);
   }
 
-  public IpAccessListLine() {}
+  public static IpAccessListLine rejectingHeaderSpace(HeaderSpace headerSpace) {
+    return rejecting().setMatchCondition(new MatchHeaderSpace(headerSpace)).build();
+  }
 
+  private final LineAction _action;
+
+  private final AclLineMatchExpr _matchCondition;
+
+  private final String _name;
+
+  @JsonCreator
   public IpAccessListLine(
-      LineAction action,
-      SortedSet<Integer> dscps,
-      SortedSet<IpWildcard> dstIps,
-      SortedSet<SubRange> dstPorts,
-      SortedSet<Protocol> dstProtocols,
-      SortedSet<Integer> ecns,
-      SortedSet<SubRange> fragmentOffsets,
-      SortedSet<SubRange> icmpCodes,
-      SortedSet<SubRange> icmpTypes,
-      SortedSet<IpProtocol> ipProtocols,
-      String name,
-      boolean negate,
-      SortedSet<Integer> notDscps,
-      SortedSet<IpWildcard> notDstIps,
-      SortedSet<SubRange> notDstPorts,
-      SortedSet<Protocol> notDstProtocols,
-      SortedSet<Integer> notEcns,
-      SortedSet<SubRange> notFragmentOffsets,
-      SortedSet<SubRange> notIcmpCodes,
-      SortedSet<SubRange> notIcmpTypes,
-      SortedSet<IpProtocol> notIpProtocols,
-      SortedSet<SubRange> notPacketLengths,
-      SortedSet<IpWildcard> notSrcIps,
-      SortedSet<SubRange> notSrcPorts,
-      SortedSet<Protocol> notSrcProtocols,
-      SortedSet<SubRange> packetLengths,
-      SortedSet<IpWildcard> srcIps,
-      SortedSet<IpWildcard> srcOrDstIps,
-      SortedSet<SubRange> srcOrDstPorts,
-      SortedSet<Protocol> srcOrDstProtocols,
-      SortedSet<SubRange> srcPorts,
-      SortedSet<Protocol> srcProtocols,
-      SortedSet<State> states,
-      List<TcpFlags> tcpFlags) {
-    super(
-        dscps,
-        dstIps,
-        dstPorts,
-        dstProtocols,
-        ecns,
-        fragmentOffsets,
-        icmpCodes,
-        icmpTypes,
-        ipProtocols,
-        negate,
-        notDscps,
-        notDstIps,
-        notDstPorts,
-        notDstProtocols,
-        notEcns,
-        notFragmentOffsets,
-        notIcmpCodes,
-        notIcmpTypes,
-        notIpProtocols,
-        notPacketLengths,
-        notSrcIps,
-        notSrcPorts,
-        notSrcProtocols,
-        packetLengths,
-        srcIps,
-        srcOrDstIps,
-        srcOrDstPorts,
-        srcOrDstProtocols,
-        srcPorts,
-        srcProtocols,
-        states,
-        tcpFlags);
-    _action = action;
+      @JsonProperty(PROP_ACTION) @Nonnull LineAction action,
+      @JsonProperty(PROP_MATCH_CONDITION) @Nonnull AclLineMatchExpr matchCondition,
+      @JsonProperty(PROP_NAME) String name) {
+    _action = Objects.requireNonNull(action);
+    _matchCondition = Objects.requireNonNull(matchCondition);
     _name = name;
-    _matchCondition = new MatchHeaderspace(this);
   }
 
   @Override
@@ -177,17 +114,18 @@ public final class IpAccessListLine extends HeaderSpace {
       return false;
     }
     IpAccessListLine other = (IpAccessListLine) obj;
-    return _action == other._action && Objects.equals(_name, other._name) && super.equals(other);
+    return _action == other._action
+        && Objects.equals(_matchCondition, other._matchCondition)
+        && Objects.equals(_name, other._name);
   }
 
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches an IPV4 packet.")
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  @JsonIgnore
-  public AclLineMatchExpr getMatchCondition() {
+  public @Nonnull AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }
 
@@ -198,65 +136,15 @@ public final class IpAccessListLine extends HeaderSpace {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _action,
-        getDscps(),
-        getDstIps(),
-        getDstPorts(),
-        getDstProtocols(),
-        getEcns(),
-        getFragmentOffsets(),
-        getIcmpCodes(),
-        getIcmpTypes(),
-        getIpProtocols(),
-        _name,
-        getNegate(),
-        getNotDscps(),
-        getNotDstIps(),
-        getNotDstPorts(),
-        getNotDstProtocols(),
-        getNotEcns(),
-        getNotFragmentOffsets(),
-        getNotIcmpCodes(),
-        getNotIcmpTypes(),
-        getNotIpProtocols(),
-        getNotPacketLengths(),
-        getNotSrcIps(),
-        getNotSrcPorts(),
-        getNotSrcProtocols(),
-        getPacketLengths(),
-        getSrcIps(),
-        getSrcOrDstIps(),
-        getSrcOrDstPorts(),
-        getSrcOrDstProtocols(),
-        getSrcPorts(),
-        getSrcProtocols(),
-        getStates(),
-        getTcpFlags());
-  }
-
-  /** @return A Builder with fields set to this' fields. */
-  public IpAccessListLine.Builder rebuild() {
-    IpAccessListLine.Builder builder = builder();
-    super.rebuild(builder);
-    builder.setAction(_action).setName(_name);
-    return builder;
-  }
-
-  public void setAction(LineAction action) {
-    _action = action;
-  }
-
-  public void setMatchCondition(AclLineMatchExpr matchCondition) {
-    _matchCondition = matchCondition;
-  }
-
-  public void setName(String name) {
-    _name = name;
+    return Objects.hash(_action, _matchCondition, _name);
   }
 
   @Override
   public String toString() {
-    return "[Action:" + _action + ", Base: " + super.toString() + "]";
+    return MoreObjects.toStringHelper(getClass())
+        .add(PROP_ACTION, _action)
+        .add(PROP_MATCH_CONDITION, _matchCondition)
+        .add(PROP_NAME, _name)
+        .toString();
   }
 }

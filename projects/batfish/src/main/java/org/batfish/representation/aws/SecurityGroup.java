@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -50,11 +52,11 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   private void addEgressAccessLines(
       List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      IpAccessListLine ipAccessListLine = ipPerms.toEgressIpAccessListLine(region);
+      HeaderSpace headerSpace = ipPerms.toEgressIpAccessListLine(region);
       // Destination IPs should have been populated using either SG or IP ranges,  if not then this
       // Ip perm is incomplete
-      if (!ipAccessListLine.getDstIps().isEmpty()) {
-        accessList.add(ipAccessListLine);
+      if (!headerSpace.getDstIps().isEmpty()) {
+        accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
       }
     }
   }
@@ -62,11 +64,11 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   private void addIngressAccessLines(
       List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      IpAccessListLine ipAccessListLine = ipPerms.toIngressIpAccessListLine(region);
+      HeaderSpace headerSpace = ipPerms.toIngressIpAccessListLine(region);
       // Source IPs should have been populated using either SG or IP ranges, if not then this Ip
       // perm is incomplete
-      if (!ipAccessListLine.getSrcIps().isEmpty()) {
-        accessList.add(ipAccessListLine);
+      if (!headerSpace.getSrcIps().isEmpty()) {
+        accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
       }
     }
   }
@@ -78,34 +80,46 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         inboundRules
             .stream()
             .map(
-                ipAccessListLine ->
-                    IpAccessListLine.builder()
-                        .setIpProtocols(ipAccessListLine.getIpProtocols())
-                        .setAction(ipAccessListLine.getAction())
-                        .setDstIps(ipAccessListLine.getSrcIps())
-                        .setSrcPorts(ipAccessListLine.getDstPorts())
-                        .build())
+                ipAccessListLine -> {
+                  HeaderSpace srcHeaderSpace =
+                      HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+                  return IpAccessListLine.builder()
+                      .setMatchCondition(
+                          new MatchHeaderSpace(
+                              HeaderSpace.builder()
+                                  .setIpProtocols(srcHeaderSpace.getIpProtocols())
+                                  .setDstIps(srcHeaderSpace.getSrcIps())
+                                  .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .build()))
+                      .setAction(ipAccessListLine.getAction())
+                      .build();
+                })
             .collect(ImmutableList.toImmutableList());
 
     List<IpAccessListLine> reverseOutboundRules =
         outboundRules
             .stream()
             .map(
-                ipAccessListLine ->
-                    IpAccessListLine.builder()
-                        .setIpProtocols(ipAccessListLine.getIpProtocols())
-                        .setAction(ipAccessListLine.getAction())
-                        .setSrcIps(ipAccessListLine.getDstIps())
-                        .setSrcPorts(ipAccessListLine.getDstPorts())
-                        .build())
+                ipAccessListLine -> {
+                  HeaderSpace srcHeaderSpace =
+                      HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+                  return IpAccessListLine.builder()
+                      .setMatchCondition(
+                          new MatchHeaderSpace(
+                              HeaderSpace.builder()
+                                  .setIpProtocols(srcHeaderSpace.getIpProtocols())
+                                  .setSrcIps(srcHeaderSpace.getDstIps())
+                                  .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .build()))
+                      .setAction(ipAccessListLine.getAction())
+                      .build();
+                })
             .collect(ImmutableList.toImmutableList());
 
     // denying SYN-only packets to prevent new TCP connections
     IpAccessListLine rejectSynOnly =
-        IpAccessListLine.builder()
-            .setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY))
-            .setAction(LineAction.REJECT)
-            .build();
+        IpAccessListLine.rejectingHeaderSpace(
+            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
     inboundRules.add(rejectSynOnly);
     outboundRules.add(rejectSynOnly);
 

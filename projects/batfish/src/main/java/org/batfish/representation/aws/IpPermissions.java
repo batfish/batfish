@@ -1,8 +1,8 @@
 package org.batfish.representation.aws;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,10 +11,9 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.codehaus.jettison.json.JSONArray;
@@ -100,31 +99,27 @@ public class IpPermissions implements Serializable {
     return ipWildcardBuilder.build();
   }
 
-  public IpAccessListLine toEgressIpAccessListLine(Region region) {
-    IpAccessListLine line = toIpAccessListLine();
-    line.setDstIps(collectIpWildCards(region));
-    return line;
+  public HeaderSpace toEgressIpAccessListLine(Region region) {
+    return toHeaderSpaceBuilder().setDstIps(collectIpWildCards(region)).build();
   }
 
-  public IpAccessListLine toIngressIpAccessListLine(Region region) {
-    IpAccessListLine line = toIpAccessListLine();
-    line.setSrcIps(collectIpWildCards(region));
-    return line;
+  public HeaderSpace toIngressIpAccessListLine(Region region) {
+    return toHeaderSpaceBuilder().setSrcIps(collectIpWildCards(region)).build();
   }
 
-  private IpAccessListLine toIpAccessListLine() {
-    IpAccessListLine line = new IpAccessListLine();
-    line.setAction(LineAction.ACCEPT);
+  private HeaderSpace.Builder toHeaderSpaceBuilder() {
+    HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
+    //    line.setAction(LineAction.ACCEPT);
     IpProtocol protocol = toIpProtocol(_ipProtocol);
     if (protocol != null) {
-      line.setIpProtocols(Collections.singleton(protocol));
+      headerSpaceBuilder.setIpProtocols(ImmutableSet.of(protocol));
     }
 
     // if the range isn't all ports, set it in ACL
     if (_fromPort != 0 || _toPort != 65535) {
-      line.setDstPorts(Collections.singleton(new SubRange(_fromPort, _toPort)));
+      headerSpaceBuilder.setDstPorts(ImmutableSet.of(new SubRange(_fromPort, _toPort)));
     }
 
-    return line;
+    return headerSpaceBuilder;
   }
 }

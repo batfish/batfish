@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
 
@@ -20,7 +20,11 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
   }
 
   @Override
-  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
+  public void applyTo(
+      HeaderSpace.Builder headerSpaceBuilder,
+      JuniperConfiguration jc,
+      Warnings w,
+      Configuration c) {
     PrefixList pl = jc.getPrefixLists().get(_name);
     if (pl != null) {
       pl.getReferers().put(this, "firewall from destination-prefix-list");
@@ -29,7 +33,8 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
       }
       RouteFilterList destinationPrefixList = c.getRouteFilterLists().get(_name);
       List<IpWildcard> wildcards = destinationPrefixList.getMatchingIps();
-      line.setNotDstIps(Iterables.concat(line.getNotDstIps(), wildcards));
+      headerSpaceBuilder.setNotDstIps(
+          Iterables.concat(headerSpaceBuilder.getNotDstIps(), wildcards));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }

@@ -10,6 +10,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.symbolic.Graph;
 
 public class BDDAcl {
@@ -70,124 +72,125 @@ public class BDDAcl {
     List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
     Collections.reverse(lines);
 
-    for (IpAccessListLine l : lines) {
+    for (IpAccessListLine line : lines) {
       // System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
-
+      /* TODO: handle other match types, something much cleaner */
+      HeaderSpace h = HeaderSpaceConverter.convert(line.getMatchCondition());
       BDD local = null;
 
-      if (l.getDstIps() != null) {
-        BDD val = computeWildcardMatch(l.getDstIps(), _pkt.getDstIp(), networks);
-        val = l.getDstIps().isEmpty() ? _factory.one() : val;
+      if (h.getDstIps() != null) {
+        BDD val = computeWildcardMatch(h.getDstIps(), _pkt.getDstIp(), networks);
+        val = h.getDstIps().isEmpty() ? _factory.one() : val;
         local = val;
       }
 
-      if (l.getSrcIps() != null) {
-        BDD val = computeWildcardMatch(l.getSrcIps(), _pkt.getSrcIp(), null);
-        val = l.getDstIps().isEmpty() ? _factory.one() : val;
+      if (h.getSrcIps() != null) {
+        BDD val = computeWildcardMatch(h.getSrcIps(), _pkt.getSrcIp(), null);
+        val = h.getDstIps().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getDscps() != null && !l.getDscps().isEmpty()) {
+      if (h.getDscps() != null && !h.getDscps().isEmpty()) {
         throw new BatfishException("detected dscps");
       }
 
-      if (l.getDstPorts() != null) {
-        BDD val = computeValidRange(l.getDstPorts(), _pkt.getDstPort());
-        val = l.getDstPorts().isEmpty() ? _factory.one() : val;
+      if (h.getDstPorts() != null) {
+        BDD val = computeValidRange(h.getDstPorts(), _pkt.getDstPort());
+        val = h.getDstPorts().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getSrcPorts() != null) {
-        BDD val = computeValidRange(l.getSrcPorts(), _pkt.getSrcPort());
-        val = l.getSrcPorts().isEmpty() ? _factory.one() : val;
+      if (h.getSrcPorts() != null) {
+        BDD val = computeValidRange(h.getSrcPorts(), _pkt.getSrcPort());
+        val = h.getSrcPorts().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getEcns() != null && !l.getEcns().isEmpty()) {
+      if (h.getEcns() != null && !h.getEcns().isEmpty()) {
         throw new BatfishException("detected ecns");
       }
 
-      if (l.getTcpFlags() != null) {
-        BDD val = computeTcpFlags(l.getTcpFlags());
-        val = l.getTcpFlags().isEmpty() ? _factory.one() : val;
+      if (h.getTcpFlags() != null) {
+        BDD val = computeTcpFlags(h.getTcpFlags());
+        val = h.getTcpFlags().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getFragmentOffsets() != null && !l.getFragmentOffsets().isEmpty()) {
+      if (h.getFragmentOffsets() != null && !h.getFragmentOffsets().isEmpty()) {
         throw new BatfishException("detected fragment offsets");
       }
 
-      if (l.getIcmpCodes() != null) {
-        BDD val = computeValidRange(l.getIcmpCodes(), _pkt.getIcmpCode());
-        val = l.getIcmpCodes().isEmpty() ? _factory.one() : val;
+      if (h.getIcmpCodes() != null) {
+        BDD val = computeValidRange(h.getIcmpCodes(), _pkt.getIcmpCode());
+        val = h.getIcmpCodes().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getIcmpTypes() != null) {
-        BDD val = computeValidRange(l.getIcmpTypes(), _pkt.getIcmpType());
-        val = l.getIcmpTypes().isEmpty() ? _factory.one() : val;
+      if (h.getIcmpTypes() != null) {
+        BDD val = computeValidRange(h.getIcmpTypes(), _pkt.getIcmpType());
+        val = h.getIcmpTypes().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getStates() != null && !l.getStates().isEmpty()) {
+      if (h.getStates() != null && !h.getStates().isEmpty()) {
         throw new BatfishException("detected states");
       }
 
-      if (l.getIpProtocols() != null) {
-        BDD val = computeIpProtocols(l.getIpProtocols());
-        val = l.getIpProtocols().isEmpty() ? _factory.one() : val;
+      if (h.getIpProtocols() != null) {
+        BDD val = computeIpProtocols(h.getIpProtocols());
+        val = h.getIpProtocols().isEmpty() ? _factory.one() : val;
         local = (local == null ? val : local.and(val));
       }
 
-      if (l.getNotDscps() != null && !l.getNotDscps().isEmpty()) {
+      if (h.getNotDscps() != null && !h.getNotDscps().isEmpty()) {
         throw new BatfishException("detected NOT dscps");
       }
 
-      if (l.getNotDstIps() != null && !l.getNotDstIps().isEmpty()) {
+      if (h.getNotDstIps() != null && !h.getNotDstIps().isEmpty()) {
         throw new BatfishException("detected NOT dst ip");
       }
 
-      if (l.getNotSrcIps() != null && !l.getNotSrcIps().isEmpty()) {
+      if (h.getNotSrcIps() != null && !h.getNotSrcIps().isEmpty()) {
         throw new BatfishException("detected NOT src ip");
       }
 
-      if (l.getNotDstPorts() != null && !l.getNotDstPorts().isEmpty()) {
+      if (h.getNotDstPorts() != null && !h.getNotDstPorts().isEmpty()) {
         throw new BatfishException("detected NOT dst port");
       }
 
-      if (l.getNotSrcPorts() != null && !l.getNotSrcPorts().isEmpty()) {
+      if (h.getNotSrcPorts() != null && !h.getNotSrcPorts().isEmpty()) {
         throw new BatfishException("detected NOT src port");
       }
 
-      if (l.getNotEcns() != null && !l.getNotEcns().isEmpty()) {
+      if (h.getNotEcns() != null && !h.getNotEcns().isEmpty()) {
         throw new BatfishException("detected NOT ecns");
       }
 
-      if (l.getNotIcmpCodes() != null && !l.getNotIcmpCodes().isEmpty()) {
+      if (h.getNotIcmpCodes() != null && !h.getNotIcmpCodes().isEmpty()) {
         throw new BatfishException("detected NOT icmp codes");
       }
 
-      if (l.getNotIcmpTypes() != null && !l.getNotIcmpTypes().isEmpty()) {
+      if (h.getNotIcmpTypes() != null && !h.getNotIcmpTypes().isEmpty()) {
         throw new BatfishException("detected NOT icmp types");
       }
 
-      if (l.getNotFragmentOffsets() != null && !l.getNotFragmentOffsets().isEmpty()) {
+      if (h.getNotFragmentOffsets() != null && !h.getNotFragmentOffsets().isEmpty()) {
         throw new BatfishException("detected NOT fragment offset");
       }
 
-      if (l.getNotIpProtocols() != null && !l.getNotIpProtocols().isEmpty()) {
+      if (h.getNotIpProtocols() != null && !h.getNotIpProtocols().isEmpty()) {
         throw new BatfishException("detected NOT ip protocols");
       }
 
       if (local != null) {
         BDD ret;
-        if (l.getAction() == LineAction.ACCEPT) {
+        if (line.getAction() == LineAction.ACCEPT) {
           ret = _factory.one();
         } else {
           ret = _factory.zero();
         }
 
-        if (l.getNegate()) {
+        if (h.getNegate()) {
           local = local.not();
         }
 
