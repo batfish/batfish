@@ -2645,7 +2645,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       line = ctx.num.getLine();
     }
     _configuration.referenceStructure(
-        CiscoStructureType.IP_ACCESS_LIST, name, CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, line);
+        CiscoStructureType.ACCESS_LIST, name, CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, line);
     _configuration.getClassMapAccessGroups().add(name);
   }
 

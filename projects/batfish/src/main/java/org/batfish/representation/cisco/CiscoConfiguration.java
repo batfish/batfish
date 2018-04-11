@@ -1048,6 +1048,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
         cable != null ? cable.getDocsisPolicyRules() : null);
   }
 
+  private void markIpOrMacAcls(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.ACCESS_LIST,
+        usage,
+        Arrays.asList(
+            _extendedAccessLists,
+            _standardAccessLists,
+            _extendedIpv6AccessLists,
+            _macAccessLists,
+            _standardIpv6AccessLists));
+  }
+
   private void markIpsecProfiles(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.IPSEC_PROFILE, usage, _ipsecProfiles);
   }
@@ -3754,7 +3766,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // mark references to IPv4/6 ACLs that may not appear in data model
-    markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
+    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
