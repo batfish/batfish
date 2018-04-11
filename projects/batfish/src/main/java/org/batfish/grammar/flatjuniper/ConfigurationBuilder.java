@@ -2144,6 +2144,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                   _currentFromZone.getInboundFilter());
         }
       }
+
       if (ctx.to.JUNOS_HOST() == null) {
         _currentToZone = _configuration.getZones().get(toName);
         if (_currentToZone == null) {
@@ -2154,6 +2155,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _configuration.getZones().put(toName, _currentToZone);
         }
       }
+
       if (ctx.from.JUNOS_HOST() != null) {
         _currentFilter = _currentToZone.getFromHostFilter();
         if (_currentFilter == null) {
@@ -2175,6 +2177,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _configuration.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
         }
+        // Add this filter to the to-zone (for easy combination with egress ACL)
+        _currentToZone.getFromZonePolicies().put(fromName, _currentFilter);
       }
     }
   }
@@ -2242,6 +2246,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
+    _configuration.getInterfaceZones().put(_currentZoneInterface, _currentZone);
   }
 
   @Override

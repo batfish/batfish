@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +19,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AuthenticationKey;
@@ -53,6 +56,11 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -108,7 +116,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
-  private Configuration _c;
+  Configuration _c;
 
   private final Map<String, CommunityList> _communityLists;
 
@@ -688,6 +696,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
+  public Map<Interface, Zone> getInterfaceZones() {
+    return _interfaceZones;
+  }
+
   public Map<String, IpsecPolicy> getIpsecPolicies() {
     return _ipsecPolicies;
   }
@@ -1190,24 +1202,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
-    String outAclName = iface.getOutgoingFilter();
-    if (outAclName != null) {
-      int outAclLine = iface.getOutgoingFilterLine();
-      IpAccessList outAcl = _c.getIpAccessLists().get(outAclName);
-      if (outAcl == null) {
-        undefined(
-            JuniperStructureType.FIREWALL_FILTER,
-            outAclName,
-            JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
-            outAclLine);
-      } else {
-        _filters
-            .get(outAclName)
-            .getReferers()
-            .put(iface, "Outgoing ACL for interface: " + iface.getName());
-        newIface.setOutgoingFilter(outAcl);
-      }
-    }
+
+    IpAccessList securityPolicyAcl =
+        buildSecurityPolicyAcl("~SECURITY_POLICIES_TO_INTERFACE~" + iface.getName(), zone);
+    newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();
     // Set<Prefix> allPrefixes = iface.getAllAddresses();
@@ -1267,6 +1265,80 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     // TODO: enable/disable individual levels
     return newIface;
+  }
+
+  /** Generate IpAccessList from security policies involving the specified to-zone */
+  IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
+    // Setup ACL based on zone policies (for merging with explicit egress ACL)
+    IpAccessList zoneAcl = null;
+    // Create this interface's zone ACL based on the policies for its zone
+    List<AclLineMatchExpr> zonePolicies = new TreeList<>();
+    if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
+      for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
+        zonePolicies.add(new PermittedByAcl(e.getKey()));
+      }
+      zoneAcl =
+          new IpAccessList(
+              name,
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ACCEPT")));
+      _c.getIpAccessLists().put(name, zoneAcl);
+    } else if (!_zones.isEmpty()) {
+      // If there are zones but no applicable policies, explicitly deny any traffic
+      zoneAcl =
+          new IpAccessList(
+              name,
+              ImmutableList.of(
+                  new IpAccessListLine(LineAction.REJECT, TrueExpr.INSTANCE, "REJECT")));
+    }
+    return zoneAcl;
+  }
+
+  /**
+   * Generate outgoing (egress) filter for the interface (from existing outgoing filter and zone
+   * policy)
+   */
+  IpAccessList buildOutgoingFilter(Interface iface, IpAccessList securityPolicyAcl) {
+
+    String outAclName = iface.getOutgoingFilter();
+    IpAccessList outAcl = null;
+    if (outAclName != null) {
+      int outAclLine = iface.getOutgoingFilterLine();
+      outAcl = _c.getIpAccessLists().get(outAclName);
+      if (outAcl == null) {
+        undefined(
+            JuniperStructureType.FIREWALL_FILTER,
+            outAclName,
+            JuniperStructureUsage.INTERFACE_OUTGOING_FILTER,
+            outAclLine);
+      } else {
+        _filters
+            .get(outAclName)
+            .getReferers()
+            .put(iface, "Outgoing ACL for interface: " + iface.getName());
+      }
+    }
+
+    // Set outgoing filter based on the correct combination of zone policy and base outgoing filter
+    if (securityPolicyAcl == null && outAcl != null) {
+      return outAcl;
+    } else if (securityPolicyAcl != null && outAcl == null) {
+      return securityPolicyAcl;
+    } else if (securityPolicyAcl != null && outAcl != null) {
+      // When both zone policy and egress filter exist, use the logical AND of the two filters
+      return new IpAccessList(
+          "~COMBINED_OUTGOING_FILTER~",
+          ImmutableList.of(
+              new IpAccessListLine(
+                  LineAction.ACCEPT,
+                  new AndMatchExpr(
+                      ImmutableSet.of(
+                          new PermittedByAcl(securityPolicyAcl.getName()),
+                          new PermittedByAcl(outAcl.getName()))),
+                  "ACCEPT")));
+    }
+    return null;
   }
 
   private IpAccessList toIpAccessList(FirewallFilter filter) throws VendorConversionException {
