@@ -24,6 +24,7 @@ import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExtendedCommunity;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
@@ -2305,37 +2306,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitAat_destination_port(Aat_destination_portContext ctx) {
     SubRange subrange = toSubRange(ctx.subrange());
-    _currentApplicationTerm
-        .getLine()
-        .setDstPorts(
-            ImmutableSet.<SubRange>builder()
-                .addAll(_currentApplicationTerm.getLine().getDstPorts())
-                .add(subrange)
-                .build());
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace
+            .rebuild()
+            .setDstPorts(
+                ImmutableSet.<SubRange>builder()
+                    .addAll(oldHeaderSpace.getDstPorts())
+                    .add(subrange)
+                    .build())
+            .build());
   }
 
   @Override
   public void exitAat_protocol(Aat_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-    _currentApplicationTerm
-        .getLine()
-        .setIpProtocols(
-            ImmutableSet.<IpProtocol>builder()
-                .addAll(_currentApplicationTerm.getLine().getIpProtocols())
-                .add(protocol)
-                .build());
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace
+            .rebuild()
+            .setIpProtocols(
+                ImmutableSet.<IpProtocol>builder()
+                    .addAll(oldHeaderSpace.getIpProtocols())
+                    .add(protocol)
+                    .build())
+            .build());
   }
 
   @Override
   public void exitAat_source_port(Aat_source_portContext ctx) {
     SubRange subrange = toSubRange(ctx.subrange());
-    _currentApplicationTerm
-        .getLine()
-        .setSrcPorts(
-            ImmutableSet.<SubRange>builder()
-                .addAll(_currentApplicationTerm.getLine().getSrcPorts())
-                .add(subrange)
-                .build());
+    HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
+    _currentApplicationTerm.setHeaderSpace(
+        oldHeaderSpace
+            .rebuild()
+            .setSrcPorts(
+                ImmutableSet.<SubRange>builder()
+                    .addAll(oldHeaderSpace.getSrcPorts())
+                    .add(subrange)
+                    .build())
+            .build());
   }
 
   @Override

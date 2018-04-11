@@ -30,6 +30,7 @@ import java.util.Map;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -44,9 +45,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
+import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,8 +56,6 @@ import org.junit.Test;
 public class SynthesizerInputImplTest {
 
   private IpAccessList.Builder _aclb;
-
-  private IpAccessListLine.Builder _acllb;
 
   private Configuration.Builder _cb;
 
@@ -76,7 +76,6 @@ public class SynthesizerInputImplTest {
     _vb = _nf.vrfBuilder();
     _ib = _nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
-    _acllb = IpAccessListLine.builder();
     _inputBuilder = SynthesizerInputImpl.builder();
     _snb = SourceNat.builder();
   }
@@ -88,10 +87,7 @@ public class SynthesizerInputImplTest {
     IpAccessList edgeInterfaceInAcl =
         _aclb
             .setOwner(srcNode)
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.builder().setAction(LineAction.ACCEPT).build(),
-                    IpAccessListLine.builder().setAction(LineAction.REJECT).build()))
+            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL, IpAccessListLine.REJECT_ALL))
             .build();
     IpAccessList srcInterfaceOutAcl = _aclb.build();
     IpAccessList iNoEdgeInAcl = _aclb.build();
@@ -173,13 +169,18 @@ public class SynthesizerInputImplTest {
   public void testComputeAclConditions() {
     Configuration c = _cb.build();
     IpAccessList aclWithoutLines = _aclb.setOwner(c).build();
-    _acllb.setAction(LineAction.ACCEPT);
     IpAccessList aclWithLines =
         _aclb
             .setLines(
                 ImmutableList.<IpAccessListLine>of(
-                    _acllb.setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4")))).build(),
-                    _acllb.setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8")))).build()))
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
+                            .build()),
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
+                            .build())))
             .build();
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
@@ -195,8 +196,10 @@ public class SynthesizerInputImplTest {
                         ImmutableList.of(),
                         aclWithLines.getName(),
                         ImmutableList.of(
-                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(0)),
-                            new HeaderSpaceMatchExpr(aclWithLines.getLines().get(1))))))));
+                            AclLineMatchBooleanExprTransformer.transform(
+                                aclWithLines.getLines().get(0).getMatchCondition()),
+                            AclLineMatchBooleanExprTransformer.transform(
+                                aclWithLines.getLines().get(1).getMatchCondition())))))));
 
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
@@ -680,7 +683,6 @@ public class SynthesizerInputImplTest {
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip1.asLong(), ip2.asLong()))))))))));
-
     assertThat(
         inputWithDataPlane,
         hasAclConditions(
@@ -688,8 +690,7 @@ public class SynthesizerInputImplTest {
                 srcNode.getHostname(),
                 ImmutableMap.of(
                     SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
-                    ImmutableList.of(
-                        new HeaderSpaceMatchExpr(IpAccessListLine.builder().build()))))));
+                    ImmutableList.of(TrueExpr.INSTANCE)))));
 
     assertThat(
         inputWithDataPlane,

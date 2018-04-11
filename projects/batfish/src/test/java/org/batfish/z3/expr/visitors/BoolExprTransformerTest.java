@@ -13,7 +13,6 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -150,7 +149,7 @@ public class BoolExprTransformerTest {
   public void testVisitHeaderSpaceMatchExpr() {
     long ipCounter = 1L;
     int intCounter = 1;
-    HeaderSpace.Builder<?, ?> hb = IpAccessListLine.builder();
+    HeaderSpace.Builder hb = HeaderSpace.builder();
 
     BooleanExpr expr =
         new HeaderSpaceMatchExpr(

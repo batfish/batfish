@@ -6,9 +6,9 @@ public interface GenericAclLineMatchExprVisitor<R> {
 
   R visitFalseExpr(FalseExpr falseExpr);
 
-  R visitMatchSrcInterface(MatchSrcInterface matchSrcInterface);
+  R visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace);
 
-  R visitMatchHeaderspace(MatchHeaderspace matchHeaderspace);
+  R visitMatchSrcInterface(MatchSrcInterface matchSrcInterface);
 
   R visitNotMatchExpr(NotMatchExpr notMatchExpr);
 

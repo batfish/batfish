@@ -1,10 +1,12 @@
 package org.batfish.common.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
@@ -35,6 +37,7 @@ import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -98,7 +101,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -195,6 +197,11 @@ public class CommonUtil {
     return result;
   }
 
+  public static <C extends Comparable<? super C>> int compareIterable(
+      Iterable<C> lhs, Iterable<C> rhs) {
+    return Comparators.lexicographical(Ordering.<C>natural()).compare(lhs, rhs);
+  }
+
   public static <T extends Comparable<T>> int compareCollection(
       Collection<T> lhs, Collection<T> rhs) {
     Iterator<T> l = lhs.iterator();
@@ -227,6 +234,14 @@ public class CommonUtil {
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
   }
 
+  /**
+   * Compute the owners of IP addresses
+   *
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
+   *     Interface}
+   * @return A map of {@link Ip}s to a set of hostnames that own this IP
+   */
   public static Map<Ip, Set<String>> computeIpOwners(
       boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
     // TODO: confirm VRFs are handled correctly
@@ -268,37 +283,19 @@ public class CommonUtil {
         });
     vrrpGroups.forEach(
         (p, candidates) -> {
-          int groupNum = p.getSecond();
           InterfaceAddress address = p.getFirst();
-          Ip ip = address.getIp();
-          int lowestPriority = Integer.MAX_VALUE;
-          String bestCandidate = null;
-          SortedSet<String> bestCandidates = new TreeSet<>();
-          for (Interface candidate : candidates) {
-            VrrpGroup group = candidate.getVrrpGroups().get(groupNum);
-            int currentPriority = group.getPriority();
-            if (currentPriority < lowestPriority) {
-              lowestPriority = currentPriority;
-              bestCandidates.clear();
-              bestCandidate = candidate.getOwner().getHostname();
-            }
-            if (currentPriority == lowestPriority) {
-              bestCandidates.add(candidate.getOwner().getHostname());
-            }
-          }
-          if (bestCandidates.size() != 1) {
-            String deterministicBestCandidate = bestCandidates.first();
-            bestCandidate = deterministicBestCandidate;
-            //            _logger.redflag(
-            //                "Arbitrarily choosing best vrrp candidate: '"
-            //                    + deterministicBestCandidate
-            //                    + " for prefix/groupNumber: '"
-            //                    + p.toString()
-            //                    + "' among multiple best candidates: "
-            //                    + bestCandidates);
-          }
-          Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-          owners.add(bestCandidate);
+          int groupNum = p.getSecond();
+          Set<String> owners = ipOwners.computeIfAbsent(address.getIp(), k -> new HashSet<>());
+          /*
+           * Compare priorities first. If tied, break tie based on highest interface IP.
+           */
+          Interface vrrpMaster =
+              Collections.max(
+                  candidates,
+                  Comparator.comparingInt(
+                          (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
+                      .thenComparing(o -> o.getAddress().getIp()));
+          owners.add(vrrpMaster.getOwner().getHostname());
         });
     return ipOwners;
   }

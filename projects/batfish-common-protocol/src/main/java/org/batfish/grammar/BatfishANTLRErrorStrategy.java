@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.antlr.v4.runtime.DefaultErrorStrategy;
@@ -68,6 +69,8 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
   private boolean _recoveredAtEof;
 
   private int _separatorToken;
+
+  private String _parserStateAtRecovery;
 
   /**
    * Construct a {@link BatfishANTLRErrorStrategy} that throws out invalid lines from as delimited
@@ -142,7 +145,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
             .create(
                 new Pair<>(null, null),
                 BatfishLexer.UNRECOGNIZED_LINE_TOKEN,
-                lineText,
+                String.format("%s (Batfish parser context: %s)", lineText, _parserStateAtRecovery),
                 Lexer.DEFAULT_TOKEN_CHANNEL,
                 -1,
                 -1,
@@ -193,18 +196,23 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     if (parent == null) {
       // First base case
       parser.consume();
-      return createErrorNode(parser, ctx, separatorToken);
+      Token errorNode = createErrorNode(parser, ctx, separatorToken);
+      endErrorCondition(parser);
+      return errorNode;
     } else {
       // Second base case
       List<ParseTree> parentChildren = parent.children;
       parentChildren.remove(parentChildren.size() - 1);
       parser.consume();
-      return createErrorNode(parser, parent, separatorToken);
+      Token errorNode = createErrorNode(parser, parent, separatorToken);
+      endErrorCondition(parser);
+      return errorNode;
     }
   }
 
   @Override
   public void recover(Parser recognizer, RecognitionException e) {
+    beginErrorCondition(recognizer);
     recover(recognizer);
   }
 
@@ -232,14 +240,16 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     ParserRuleContext ctx = recognizer.getContext();
     recognizer.consume();
     createErrorNode(recognizer, ctx, separatorToken);
-    endErrorCondition(recognizer);
     if (recognizer.getInputStream().LA(1) == Lexer.EOF) {
       recover(recognizer);
+    } else {
+      endErrorCondition(recognizer);
     }
   }
 
   @Override
   public Token recoverInline(Parser recognizer) throws RecognitionException {
+    beginErrorCondition(recognizer);
     return recover(recognizer);
   }
 
@@ -291,11 +301,27 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
            * If not at the top level, error out to pop up a level. This may repeat until the next
            * token is acceptable at the given level.
            */
+          beginErrorCondition(recognizer);
           throw new InputMismatchException(recognizer);
         }
 
       default:
         return;
     }
+  }
+
+  @Override
+  protected void beginErrorCondition(Parser parser) {
+    if (inErrorRecoveryMode(parser)) {
+      return;
+    }
+    _parserStateAtRecovery = parser.getRuleContext().toString(Arrays.asList(parser.getRuleNames()));
+    super.beginErrorCondition(parser);
+  }
+
+  @Override
+  protected void endErrorCondition(Parser recognizer) {
+    _parserStateAtRecovery = null;
+    super.endErrorCondition(recognizer);
   }
 }

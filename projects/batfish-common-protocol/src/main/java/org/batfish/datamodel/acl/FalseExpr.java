@@ -4,10 +4,10 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 public class FalseExpr extends AclLineMatchExpr {
+  private static final long serialVersionUID = 1L;
+  public static final FalseExpr INSTANCE = new FalseExpr();
 
   private FalseExpr() {}
-
-  public static final FalseExpr INSTANCE = new FalseExpr();
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
@@ -27,5 +27,10 @@ public class FalseExpr extends AclLineMatchExpr {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).toString();
+  }
+
+  @Override
+  protected int compareSameClass(AclLineMatchExpr o) {
+    return 0;
   }
 }

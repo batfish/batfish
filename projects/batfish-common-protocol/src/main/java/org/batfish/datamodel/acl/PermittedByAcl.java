@@ -1,12 +1,18 @@
 package org.batfish.datamodel.acl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 public class PermittedByAcl extends AclLineMatchExpr {
+  private static final String PROP_ACL_NAME = "aclName";
+  private static final long serialVersionUID = 1L;
+
   private final String _aclName;
 
-  public PermittedByAcl(String aclName) {
+  @JsonCreator
+  public PermittedByAcl(@JsonProperty(PROP_ACL_NAME) String aclName) {
     _aclName = aclName;
   }
 
@@ -16,8 +22,18 @@ public class PermittedByAcl extends AclLineMatchExpr {
   }
 
   @Override
+  protected int compareSameClass(AclLineMatchExpr o) {
+    return _aclName.compareTo(((PermittedByAcl) o)._aclName);
+  }
+
+  @Override
   protected boolean exprEquals(Object o) {
     return _aclName.equals(((PermittedByAcl) o)._aclName);
+  }
+
+  @JsonProperty(PROP_ACL_NAME)
+  public String getAclName() {
+    return _aclName;
   }
 
   @Override
@@ -27,10 +43,6 @@ public class PermittedByAcl extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add("aclName", _aclName).toString();
-  }
-
-  public String getAclName() {
-    return _aclName;
+    return MoreObjects.toStringHelper(getClass()).add(PROP_ACL_NAME, _aclName).toString();
   }
 }

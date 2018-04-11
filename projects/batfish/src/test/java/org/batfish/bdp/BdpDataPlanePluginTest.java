@@ -66,6 +66,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -210,16 +211,9 @@ public class BdpDataPlanePluginTest {
     return builder.build();
   }
 
-  @SuppressWarnings("unused")
-  private static IpAccessListLine makeAclLine(LineAction action) {
-    IpAccessListLine aclLine = new IpAccessListLine();
-    aclLine.setAction(action);
-    return aclLine;
-  }
-
   private static IpAccessList makeAcl(String name, LineAction action) {
-    IpAccessListLine aclLine = new IpAccessListLine();
-    aclLine.setAction(action);
+    IpAccessListLine aclLine =
+        IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
     return new IpAccessList(name, singletonList(aclLine));
   }
 
@@ -231,7 +225,7 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, singletonList(nat));
+    Flow transformed = BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -243,7 +237,7 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("reject", LineAction.REJECT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, singletonList(nat));
+    Flow transformed = BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
     assertThat(transformed, is(flow));
   }
 
@@ -259,7 +253,8 @@ public class BdpDataPlanePluginTest {
     secondNat.setAcl(makeAcl("secondAccept", LineAction.ACCEPT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
+    Flow transformed =
+        BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -275,7 +270,8 @@ public class BdpDataPlanePluginTest {
     secondNat.setAcl(makeAcl("acceptAnyway", LineAction.ACCEPT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
+    Flow transformed =
+        BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
 
@@ -288,7 +284,7 @@ public class BdpDataPlanePluginTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    BdpEngine.applySourceNat(flow, singletonList(nat));
+    BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
   }
 
   private void testBgpAsPathMultipathHelper(

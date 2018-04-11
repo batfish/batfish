@@ -28,6 +28,14 @@
         </module>
 
     <module name="TreeWalker">
+        <!--
+          IllegalImport cannot blacklist classes, and we use other stuff in Guava.
+          So we need to fall back to Regexp.
+        -->
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="com\.google\.common\.base\.(Files|Objects)"/>
+        </module>
+
         <module name="UnusedImports"/>
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">

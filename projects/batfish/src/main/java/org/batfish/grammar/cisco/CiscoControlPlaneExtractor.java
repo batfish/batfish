@@ -1,6 +1,10 @@
 package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -1240,7 +1244,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration = new CiscoConfiguration(_unimplementedFeatures);
     _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    if (_format == ConfigurationFormat.CISCO_IOS) {
+    if (_format == CISCO_IOS) {
       Logging logging = new Logging();
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
@@ -1744,7 +1748,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int definitionLine = ctx.peergroup.getLine();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
-        if (create || _configuration.getVendor() == ConfigurationFormat.ARISTA) {
+        if (create || _configuration.getVendor() == ARISTA) {
           proc.addNamedPeerGroup(name, definitionLine);
           _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
         } else {
@@ -2120,7 +2124,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       referenceBandwidth = referenceBandwidthDec * 1_000_000_000;
     } else {
       /* Different OSes interpret the units on DEC differently. */
-      if (_format == ConfigurationFormat.CISCO_NX) {
+      if (_format == CISCO_NX) {
         referenceBandwidth = referenceBandwidthDec * 1_000_000_000;
       } else {
         referenceBandwidth = referenceBandwidthDec * 1_000_000;
@@ -3284,8 +3288,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.prefix != null) {
       address = new InterfaceAddress(ctx.prefix.getText());
     } else {
-      Ip ip = new Ip(ctx.ip.getText());
-      Ip mask = new Ip(ctx.subnet.getText());
+      Ip ip = toIp(ctx.ip);
+      Ip mask = toIp(ctx.subnet);
       address = new InterfaceAddress(ip, mask);
     }
     for (Interface currentInterface : _currentInterfaces) {
@@ -3308,8 +3312,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.prefix != null) {
       address = new InterfaceAddress(ctx.prefix.getText());
     } else {
-      ip = new Ip(ctx.ip.getText());
-      mask = new Ip(ctx.subnet.getText());
+      ip = toIp(ctx.ip);
+      mask = toIp(ctx.subnet);
       address = new InterfaceAddress(ip, mask.numSubnetBits());
     }
     for (Interface currentInterface : _currentInterfaces) {
@@ -3471,7 +3475,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
-    long area = new Ip(ctx.area.getText()).asLong();
+    long area = toIp(ctx.area).asLong();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);
     }
@@ -3923,9 +3927,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
-    Ip first = new Ip(ctx.first.getText());
+    Ip first = toIp(ctx.first);
     _currentNatPool.setFirst(first);
-    Ip last = new Ip(ctx.last.getText());
+    Ip last = toIp(ctx.last);
     _currentNatPool.setLast(last);
   }
 
@@ -5094,7 +5098,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
     } else {
-      prefix = new Prefix(new Ip(ctx.area_ip.getText()), new Ip(ctx.area_subnet.getText()));
+      prefix = new Prefix(toIp(ctx.area_ip), toIp(ctx.area_subnet));
     }
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
@@ -5158,7 +5162,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
     }
-    if (_configuration.getVendor() == ConfigurationFormat.CISCO_ASA) {
+    if (_format == CISCO_ASA) {
       wildcard = wildcard.inverted();
     }
     long area;
@@ -5190,6 +5194,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentOspfProcess.setPassiveInterfaceDefault(true);
   }
 
+  private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
+    /*
+     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
+     * CISCO_NXOS and ARISTA redistribute all subnets.
+     *
+     * We assume that others use this sane default too. TODO: verify more vendors.
+     */
+    return format != CISCO_IOS;
+  }
+
   @Override
   public void exitRo_redistribute_bgp(Ro_redistribute_bgpContext ctx) {
     OspfProcess proc = _currentOspfProcess;
@@ -5219,7 +5233,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setSubnets(ctx.subnets != null);
+    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -5249,7 +5263,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setSubnets(ctx.subnets != null);
+    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -5284,7 +5298,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setSubnets(ctx.subnets != null);
+    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
   }
 
   @Override
@@ -5461,7 +5475,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
       String nextHopInterface = null;
       if (ctx.nhip != null) {
-        nextHopIp = new Ip(ctx.nhip.getText());
+        nextHopIp = toIp(ctx.nhip);
       }
       if (ctx.nhint != null) {
         nextHopInterface = getCanonicalInterfaceName(ctx.nhint.getText());
@@ -6360,7 +6374,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Ip getWildcard(Access_list_ip_rangeContext ctx) {
     // TODO: fix for address-group, object, object-group, interface
     if (ctx.wildcard != null) {
-      return toIp(ctx.wildcard);
+      Ip wildcard = toIp(ctx.wildcard);
+      if (_format == CISCO_ASA) {
+        wildcard = wildcard.inverted();
+      }
+      return wildcard;
     } else if (ctx.ANY() != null
         || ctx.ANY4() != null
         || ctx.address_group != null
@@ -6680,7 +6698,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private EncryptionAlgorithm toEncryptionAlgorithm(Ipsec_encryptionContext ctx) {
     if (ctx.ESP_AES() != null) {
-      return EncryptionAlgorithm.AES_128_CBC;
+      int strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
+      switch (strength) {
+        case 128:
+          return EncryptionAlgorithm.AES_128_CBC;
+        case 192:
+          return EncryptionAlgorithm.AES_192_CBC;
+        case 256:
+          return EncryptionAlgorithm.AES_256_CBC;
+        default:
+          throw convError(EncryptionAlgorithm.class, ctx);
+      }
+    } else if (ctx.ESP_DES() != null) {
+      return EncryptionAlgorithm.DES_CBC;
     } else if (ctx.ESP_3DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {

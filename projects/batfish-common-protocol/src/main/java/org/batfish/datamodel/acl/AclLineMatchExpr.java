@@ -1,6 +1,28 @@
 package org.batfish.datamodel.acl;
 
-public abstract class AclLineMatchExpr {
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.io.Serializable;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
+public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLineMatchExpr> {
+  private static final long serialVersionUID = 1L;
+
+  public abstract <R> R accept(GenericAclLineMatchExprVisitor<R> visitor);
+
+  @Override
+  public final int compareTo(AclLineMatchExpr o) {
+    if (this == o) {
+      return 0;
+    }
+    int ret;
+    ret = getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    if (ret != 0) {
+      return ret;
+    }
+    return compareSameClass(o);
+  }
+
+  protected abstract int compareSameClass(AclLineMatchExpr o);
 
   @Override
   public boolean equals(Object o) {
@@ -20,6 +42,4 @@ public abstract class AclLineMatchExpr {
 
   @Override
   public abstract String toString();
-
-  public abstract <R> R accept(GenericAclLineMatchExprVisitor<R> visitor);
 }

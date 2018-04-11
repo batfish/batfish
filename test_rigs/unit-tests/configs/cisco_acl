@@ -30,6 +30,12 @@ ip access-list standard
 ip access-list blah
  10 permit ip any any
 !
+ip prefix-list allowprefix seq 10 permit 192.0.2.0/24 eq 24
+ip prefix-list allowprefix 20 permit 209.165.201.0/24 le 32
+!
+prefix-list allowprefix-asa seq 10 permit 192.0.2.0/24 le 32
+prefix-list allowprefix-asa 20 permit 209.165.201.0/24 le 32
+!
 access-list dynamic-extended
 !
 ! Cisco command reference: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/4_1/nx-os/security/configuration/guide/sec_nx-os-cfg/sec_arpinspect.html#wp1158411

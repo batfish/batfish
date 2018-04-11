@@ -7,8 +7,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Prefix;
 import org.batfish.z3.BasicHeaderField;
 import org.batfish.z3.expr.AndExpr;
@@ -309,7 +309,7 @@ public class SimplifierTest {
   /** Test that wrapper expressions are changed by simplification */
   @Test
   public void testSimplifyWrappers() {
-    BooleanExpr headerSpaceMatchExpr = new HeaderSpaceMatchExpr(IpAccessListLine.builder().build());
+    BooleanExpr headerSpaceMatchExpr = new HeaderSpaceMatchExpr(HeaderSpace.builder().build());
     BooleanExpr prefixMatchExpr = new PrefixMatchExpr(BasicHeaderField.DST_IP, Prefix.ZERO);
     BooleanExpr rangeMatchExpr =
         RangeMatchExpr.greaterThanOrEqualTo(BasicHeaderField.DST_IP, 123456L, 10);

@@ -4,10 +4,10 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 public class TrueExpr extends AclLineMatchExpr {
+  public static final TrueExpr INSTANCE = new TrueExpr();
+  private static final long serialVersionUID = 1L;
 
   private TrueExpr() {}
-
-  public static final TrueExpr INSTANCE = new TrueExpr();
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
@@ -15,13 +15,18 @@ public class TrueExpr extends AclLineMatchExpr {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash((Boolean) true);
+  protected int compareSameClass(AclLineMatchExpr o) {
+    return 0;
   }
 
   @Override
   protected boolean exprEquals(Object o) {
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash((Boolean) true);
   }
 
   @Override
