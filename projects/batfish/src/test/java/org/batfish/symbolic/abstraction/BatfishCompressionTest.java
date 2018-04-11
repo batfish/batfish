@@ -34,7 +34,6 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -294,8 +293,10 @@ public class BatfishCompressionTest {
    */
   @Test
   public void testCompressionFibs_diamondNetwork() throws IOException {
-    IpAccessListLine line = new IpAccessListLine();
-    line.setDstIps(ImmutableList.of(new IpWildcard(Prefix.parse("4.4.4.4/32"))));
+    HeaderSpace line =
+        HeaderSpace.builder()
+            .setDstIps(ImmutableList.of(new IpWildcard(Prefix.parse("4.4.4.4/32"))))
+            .build();
     SortedMap<String, Configuration> origConfigs = diamondNetwork();
     DataPlane origDataPlane = getDataPlane(origConfigs);
     Map<String, Map<String, Fib>> origFibs = origDataPlane.getFibs();

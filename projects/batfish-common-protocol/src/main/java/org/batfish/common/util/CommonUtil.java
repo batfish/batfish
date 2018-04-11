@@ -1,10 +1,12 @@
 package org.batfish.common.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
@@ -193,6 +195,11 @@ public class CommonUtil {
     long low = Long.parseLong(parts[1]);
     long result = low + (high << 16);
     return result;
+  }
+
+  public static <C extends Comparable<? super C>> int compareIterable(
+      Iterable<C> lhs, Iterable<C> rhs) {
+    return Comparators.lexicographical(Ordering.<C>natural()).compare(lhs, rhs);
   }
 
   public static <T extends Comparable<T>> int compareCollection(

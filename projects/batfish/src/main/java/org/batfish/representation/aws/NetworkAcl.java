@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -47,22 +49,21 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
     Map<Integer, IpAccessListLine> lineMap = new TreeMap<>();
     for (NetworkAclEntry entry : _entries) {
       if ((isEgress && entry.getIsEgress()) || (!isEgress && !entry.getIsEgress())) {
-        IpAccessListLine line = new IpAccessListLine();
         int key = entry.getRuleNumber();
         LineAction action = entry.getIsAllow() ? LineAction.ACCEPT : LineAction.REJECT;
-        line.setAction(action);
         Prefix prefix = entry.getCidrBlock();
+        HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
         if (!prefix.equals(Prefix.ZERO)) {
           if (isEgress) {
-            line.setDstIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
+            headerSpaceBuilder.setDstIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
           } else {
-            line.setSrcIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
+            headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(new IpWildcard(prefix)));
           }
         }
         IpProtocol protocol = IpPermissions.toIpProtocol(entry.getProtocol());
         String protocolStr = protocol != null ? protocol.toString() : "ALL";
         if (protocol != null) {
-          line.setIpProtocols(ImmutableSortedSet.of(protocol));
+          headerSpaceBuilder.setIpProtocols(ImmutableSortedSet.of(protocol));
         }
         int fromPort = entry.getFromPort();
         int toPort = entry.getToPort();
@@ -74,7 +75,7 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
           if (toPort == -1) {
             toPort = 65535;
           }
-          line.setDstPorts(ImmutableSortedSet.of(portRange));
+          headerSpaceBuilder.setDstPorts(ImmutableSortedSet.of(portRange));
         }
         String portStr;
         if (protocol == IpProtocol.ICMP) {
@@ -87,9 +88,15 @@ public class NetworkAcl implements AwsVpcEntity, Serializable {
         }
         String actionStr = action == LineAction.ACCEPT ? "ALLOW" : "DENY";
         String lineNumber = key == 32767 ? "*" : Integer.toString(key);
-        line.setName(
-            String.format("%s %s %s %s %s", lineNumber, protocolStr, portStr, prefix, actionStr));
-        lineMap.put(key, line);
+        lineMap.put(
+            key,
+            IpAccessListLine.builder()
+                .setAction(action)
+                .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+                .setName(
+                    String.format(
+                        "%s %s %s %s %s", lineNumber, protocolStr, portStr, prefix, actionStr))
+                .build());
       }
     }
     List<IpAccessListLine> lines = ImmutableList.copyOf(lineMap.values());

@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultiset;
+import java.io.Serializable;
 
 /** Represents data rows insider {@link TableAnswerElement} */
-public class Rows {
+public class Rows implements Serializable {
 
   private static final long serialVersionUID = 1L;
 

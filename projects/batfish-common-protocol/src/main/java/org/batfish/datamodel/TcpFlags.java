@@ -2,8 +2,9 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
+import java.util.Comparator;
 
-public final class TcpFlags implements Serializable {
+public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
 
   public static class Builder {
     private boolean _ack;
@@ -129,6 +130,24 @@ public final class TcpFlags implements Serializable {
 
   public static final int ACK = 0x10;
 
+  private static final Comparator<TcpFlags> COMPARATOR =
+      Comparator.comparing(TcpFlags::getAck)
+          .thenComparing(TcpFlags::getCwr)
+          .thenComparing(TcpFlags::getEce)
+          .thenComparing(TcpFlags::getFin)
+          .thenComparing(TcpFlags::getPsh)
+          .thenComparing(TcpFlags::getRst)
+          .thenComparing(TcpFlags::getSyn)
+          .thenComparing(TcpFlags::getUrg)
+          .thenComparing(TcpFlags::getUseAck)
+          .thenComparing(TcpFlags::getUseCwr)
+          .thenComparing(TcpFlags::getUseEce)
+          .thenComparing(TcpFlags::getUseFin)
+          .thenComparing(TcpFlags::getUsePsh)
+          .thenComparing(TcpFlags::getUseRst)
+          .thenComparing(TcpFlags::getUseSyn)
+          .thenComparing(TcpFlags::getUseUrg);
+
   public static final int CWR = 0x80;
 
   public static final int ECE = 0x40;
@@ -220,6 +239,11 @@ public final class TcpFlags implements Serializable {
     _useRst = useRst;
     _useSyn = useSyn;
     _useUrg = useUrg;
+  }
+
+  @Override
+  public int compareTo(TcpFlags o) {
+    return COMPARATOR.compare(this, o);
   }
 
   @Override

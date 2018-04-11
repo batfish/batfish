@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.TcpFlags;
 
 public final class FwFromTcpFlags extends FwFrom {
@@ -19,7 +19,11 @@ public final class FwFromTcpFlags extends FwFrom {
   }
 
   @Override
-  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    line.setTcpFlags(Iterables.concat(line.getTcpFlags(), _tcpFlags));
+  public void applyTo(
+      HeaderSpace.Builder headerSpaceBuilder,
+      JuniperConfiguration jc,
+      Warnings w,
+      Configuration c) {
+    headerSpaceBuilder.setTcpFlags(Iterables.concat(headerSpaceBuilder.getTcpFlags(), _tcpFlags));
   }
 }
