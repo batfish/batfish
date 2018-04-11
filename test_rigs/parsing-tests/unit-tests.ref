@@ -13667,6 +13667,62 @@
             "          ANY:'any'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
+            "    (ip_prefix_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'allowprefix'  <== mode:DEFAULT_MODE)",
+            "      (ip_prefix_list_tail",
+            "        SEQ:'seq'  <== mode:DEFAULT_MODE",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        IP_PREFIX:'192.0.2.0/24'  <== mode:DEFAULT_MODE",
+            "        EQ:'eq'  <== mode:DEFAULT_MODE",
+            "        DEC:'24'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (ip_prefix_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'allowprefix'  <== mode:DEFAULT_MODE)",
+            "      (ip_prefix_list_tail",
+            "        DEC:'20'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        IP_PREFIX:'209.165.201.0/24'  <== mode:DEFAULT_MODE",
+            "        LE:'le'  <== mode:DEFAULT_MODE",
+            "        DEC:'32'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (ip_prefix_list_stanza",
+            "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'allowprefix-asa'  <== mode:DEFAULT_MODE)",
+            "      (ip_prefix_list_tail",
+            "        SEQ:'seq'  <== mode:DEFAULT_MODE",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        IP_PREFIX:'192.0.2.0/24'  <== mode:DEFAULT_MODE",
+            "        LE:'le'  <== mode:DEFAULT_MODE",
+            "        DEC:'32'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (ip_prefix_list_stanza",
+            "      PREFIX_LIST:'prefix-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'allowprefix-asa'  <== mode:DEFAULT_MODE)",
+            "      (ip_prefix_list_tail",
+            "        DEC:'20'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        IP_PREFIX:'209.165.201.0/24'  <== mode:DEFAULT_MODE",
+            "        LE:'le'  <== mode:DEFAULT_MODE",
+            "        DEC:'32'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
             "    (s_null",
             "      (null_single",
             "        ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
@@ -13942,6 +13998,14 @@
             "            (variable",
             "              VARIABLE:'bloop'  <== mode:M_RouteMap)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_tail",
+            "          (redistribute_eigrp_bgp_tail",
+            "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "            EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "            DEC:'1'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_ospf_bgp_tail",
@@ -17327,6 +17391,21 @@
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_ipsec",
+            "        IPSEC:'ipsec'  <== mode:DEFAULT_MODE",
+            "        (cip_transform_set",
+            "          TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'IPSEC_AES_256'  <== mode:DEFAULT_MODE)",
+            "          (ipsec_encryption",
+            "            ESP_AES:'esp-aes'  <== mode:DEFAULT_MODE",
+            "            DEC:'256'  <== mode:DEFAULT_MODE)",
+            "          (ipsec_authentication",
+            "            ESP_SHA_HMAC:'esp-sha-hmac'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
             "      (crypto_isakmp",
             "        ISAKMP:'isakmp'  <== mode:DEFAULT_MODE",
             "        (cis_null",
@@ -19800,9 +19879,49 @@
             "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
             "      (enable_password",
             "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
-            "        SHA512_PASSWORD:'$sha512$5000$98pqLCa2lpNvN6gnQl3zyQ==$QvdeF/4E4qAATT2/e64ujg=='  <== mode:DEFAULT_MODE",
-            "        PASSWORD_SEED:'woldj4'  <== mode:M_Seed",
+            "        (ep_sha512",
+            "          SHA512_PASSWORD:'$sha512$5000$98pqLCa2lpNvN6gnQl3zyQ==$QvdeF/4E4qAATT2/e64ujg=='  <== mode:DEFAULT_MODE",
+            "          PASSWORD_SEED:'woldj4'  <== mode:M_Seed)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_enable",
+            "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
+            "      (enable_password",
+            "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
+            "        LEVEL:'level'  <== mode:DEFAULT_MODE",
+            "        DEC:'2'  <== mode:DEFAULT_MODE",
+            "        (ep_plaintext",
+            "          (variable",
+            "            VARIABLE:'pswd2'  <== mode:DEFAULT_MODE))",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_enable",
+            "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
+            "      (enable_password",
+            "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
+            "        LEVEL:'level'  <== mode:DEFAULT_MODE",
+            "        DEC:'3'  <== mode:DEFAULT_MODE",
+            "        (ep_cisco_encryption",
+            "          DEC:'5'  <== mode:DEFAULT_MODE",
+            "          (variable_secret",
+            "            DOLLAR:'$'  <== mode:DEFAULT_MODE",
+            "            DEC:'1'  <== mode:DEFAULT_MODE",
+            "            RP_VARIABLE:'$i5Rkls3LoyxzS8t9'  <== mode:DEFAULT_MODE))",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_no_enable",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
+            "      PASSWORD:'password'  <== mode:DEFAULT_MODE",
+            "      LEVEL:'level'  <== mode:DEFAULT_MODE",
+            "      DEC:'4'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_no_enable",
+            "      NO:'no'  <== mode:DEFAULT_MODE",
+            "      ENABLE:'enable'  <== mode:DEFAULT_MODE",
+            "      PASSWORD:'password'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -21021,6 +21140,13 @@
             "        AREA:'area'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'0.1.2.3'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_rtp",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        RTP:'rtp'  <== mode:DEFAULT_MODE",
+            "        HEADER_COMPRESSION:'header-compression'  <== mode:DEFAULT_MODE",
+            "        IPHC_FORMAT:'iphc-format'  <== mode:DEFAULT_MODE",
+            "        PERIODIC_REFRESH:'periodic-refresh'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        SAP:'sap'  <== mode:DEFAULT_MODE",
@@ -22177,21 +22303,18 @@
             "          VARIABLE:'small'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
-            "    (s_ip_wccp",
+            "    (s_ip_nbar",
             "      IP:'ip'  <== mode:DEFAULT_MODE",
-            "      WCCP:'wccp'  <== mode:DEFAULT_MODE",
-            "      (wccp_id",
-            "        DEC:'1'  <== mode:DEFAULT_MODE",
-            "        REDIRECT_LIST:'redirect-list'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'wccp-redir'  <== mode:DEFAULT_MODE)",
-            "        GROUP_LIST:'group-list'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'wccp-cachelist'  <== mode:DEFAULT_MODE)",
-            "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
-            "        DEC:'7'  <== mode:DEFAULT_MODE",
-            "        (variable",
-            "          VARIABLE:'0123456789ABCD'  <== mode:DEFAULT_MODE)",
+            "      NBAR:'nbar'  <== mode:DEFAULT_MODE",
+            "      CUSTOM:'custom'  <== mode:DEFAULT_MODE",
+            "      (null_rest_of_line",
+            "        VARIABLE:'app_sales1'  <== mode:DEFAULT_MODE",
+            "        DEC:'5'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'ascii'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'SALES'  <== mode:DEFAULT_MODE",
+            "        SOURCE:'source'  <== mode:DEFAULT_MODE",
+            "        TCP:'tcp'  <== mode:DEFAULT_MODE",
+            "        DEC:'4567'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_ip_ssh",
@@ -22227,6 +22350,23 @@
             "      (ip_ssh_version",
             "        VERSION:'version'  <== mode:DEFAULT_MODE",
             "        DEC:'2'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_ip_wccp",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      WCCP:'wccp'  <== mode:DEFAULT_MODE",
+            "      (wccp_id",
+            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        REDIRECT_LIST:'redirect-list'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'wccp-redir'  <== mode:DEFAULT_MODE)",
+            "        GROUP_LIST:'group-list'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'wccp-cachelist'  <== mode:DEFAULT_MODE)",
+            "        PASSWORD:'password'  <== mode:DEFAULT_MODE",
+            "        DEC:'7'  <== mode:DEFAULT_MODE",
+            "        (variable",
+            "          VARIABLE:'0123456789ABCD'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -25598,7 +25738,7 @@
             "        BSD_CLIENT:'bsd-client'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          SERVER:'server'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'url'  <== mode:DEFAULT_MODE",
+            "          URL:'url'  <== mode:DEFAULT_MODE",
             "          HTTPS:'https'  <== mode:DEFAULT_MODE",
             "          COLON:':'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'//cloudsso.cisco.com/as/token.oauth2'  <== mode:DEFAULT_MODE",
@@ -33842,6 +33982,102 @@
             "      VOICE:'voice'  <== mode:DEFAULT_MODE",
             "      (voice_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
+            "        (voice_class_dpg",
+            "          DPG:'dpg'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'181'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (voice_class_dpg_null",
+            "            DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              RAW_TEXT:' Boston Destination'  <== mode:M_Description",
+            "              NEWLINE:'\\n'  <== mode:M_Description))",
+            "          (voice_class_dpg_null",
+            "            DIAL_PEER:'dial-peer'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              DEC:'123'  <== mode:DEFAULT_MODE",
+            "              PREFERENCE:'preference'  <== mode:DEFAULT_MODE",
+            "              DEC:'1'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "  (stanza",
+            "    (s_voice",
+            "      VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "      (voice_class",
+            "        CLASS:'class'  <== mode:DEFAULT_MODE",
+            "        (voice_class_e164",
+            "          E164_PATTERN_MAP:'e164-pattern-map'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'1111'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (voice_class_e164_null",
+            "            DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              RAW_TEXT:' It has 1 entry'  <== mode:M_Description",
+            "              NEWLINE:'\\n'  <== mode:M_Description))",
+            "          (voice_class_e164_null",
+            "            E164:'e164'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              DEC:'5557123'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "  (stanza",
+            "    (s_voice",
+            "      VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "      (voice_class",
+            "        CLASS:'class'  <== mode:DEFAULT_MODE",
+            "        (voice_class_server_group",
+            "          SERVER_GROUP:'server-group'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'171'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (voice_class_server_group_null",
+            "            DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              RAW_TEXT:' It has 1 entry'  <== mode:M_Description",
+            "              NEWLINE:'\\n'  <== mode:M_Description))",
+            "          (voice_class_server_group_null",
+            "            IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              IP_ADDRESS:'10.1.1.1'  <== mode:DEFAULT_MODE",
+            "              PREFERENCE:'preference'  <== mode:DEFAULT_MODE",
+            "              DEC:'3'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "  (stanza",
+            "    (s_voice",
+            "      VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "      (voice_class",
+            "        CLASS:'class'  <== mode:DEFAULT_MODE",
+            "        (voice_class_uri",
+            "          URI:'uri'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'ab200'  <== mode:DEFAULT_MODE",
+            "            SIP:'sip'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          HOST:'host'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "            COLON:':'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'10.0.0.0'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_voice",
+            "      VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "      (voice_class",
+            "        CLASS:'class'  <== mode:DEFAULT_MODE",
+            "        (voice_class_uri",
+            "          URI:'uri'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'ab201'  <== mode:DEFAULT_MODE",
+            "            SIP:'sip'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          HOST:'host'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'server1'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_voice",
+            "      VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "      (voice_class",
+            "        CLASS:'class'  <== mode:DEFAULT_MODE",
             "        (voice_class_h323",
             "          H323:'h323'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -34024,12 +34260,37 @@
             "                IP_ADDRESS:'255.255.255.255'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "          (voice_service_voip_null",
+            "            MEDIA:'media'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'bulk-stats'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (voice_service_voip_null",
+            "            MODE:'mode'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'border-element'  <== mode:DEFAULT_MODE",
+            "              LICENSE:'license'  <== mode:DEFAULT_MODE",
+            "              VARIABLE:'capacity'  <== mode:DEFAULT_MODE",
+            "              DEC:'200'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (voice_service_voip_null",
             "            MODEM:'modem'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
             "              VARIABLE:'passthrough'  <== mode:DEFAULT_MODE",
             "              VARIABLE:'nse'  <== mode:DEFAULT_MODE",
             "              CODEC:'codec'  <== mode:DEFAULT_MODE",
             "              VARIABLE:'g711ulaw'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (voice_service_voip_null",
+            "            REDUNDANCY_GROUP:'redundancy-group'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              DEC:'1'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (voice_service_voip_null",
+            "            RTP_PORT:'rtp-port'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              RANGE:'range'  <== mode:DEFAULT_MODE",
+            "              DEC:'16384'  <== mode:DEFAULT_MODE",
+            "              DEC:'32768'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (voice_service_voip_null",
             "            SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
@@ -50884,19 +51145,19 @@
           "bgp group" : {
             "p3" : {
               "inherited BGP group" : [
-                14
+                15
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                10
+                11
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                11
+                12
               ]
             },
             "bloop" : {
@@ -50945,14 +51206,14 @@
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                162
+                163
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                198
+                199
               ]
             }
           }
@@ -50961,7 +51222,7 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                117
+                118
               ]
             },
             "mynatacl" : {
@@ -50978,7 +51239,7 @@
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                120
+                121
               ]
             },
             "ag1" : {
@@ -51004,12 +51265,12 @@
           "ipv4/6 acl" : {
             "wccp-cachelist" : {
               "ip wccp group-list" : [
-                6
+                11
               ]
             },
             "wccp-redir" : {
               "ip wccp redirect-list" : [
-                6
+                11
               ]
             }
           }
@@ -51074,7 +51335,7 @@
           }
         },
         "cisco_qos" : {
-          "ipv4/6 acl" : {
+          "acl" : {
             "boop" : {
               "class-map access-group" : [
                 14
@@ -51719,12 +51980,20 @@
             "standard" : [
               28
             ]
+          },
+          "ipv4 prefix-list" : {
+            "allowprefix" : [
+              33
+            ],
+            "allowprefix-asa" : [
+              36
+            ]
           }
         },
         "cisco_bgp" : {
           "bgp group" : {
             "p1" : [
-              12
+              13
             ]
           }
         },
@@ -51760,11 +52029,14 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : [
               145
+            ],
+            "IPSEC_AES_256" : [
+              148
             ]
           },
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : [
-              184
+              185
             ]
           }
         },

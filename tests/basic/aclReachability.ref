@@ -8,25 +8,35 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "1.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "1.0.1.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 1.0.1.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "1.0.2.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "1.0.2.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 1.0.2.0 host 255.255.255.0"
             }
           ]
         },
@@ -35,25 +45,35 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.0.0.0"
-              ],
-              "name" : "permit ip host 2.0.0.0 host 255.0.0.0",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.0.0.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.0.0.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 2.0.0.0 host 255.0.0.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.0.0"
-              ],
-              "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-              "negate" : false,
-              "srcIps" : [
-                "2.128.0.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.0.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.128.0.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 2.128.0.0 host 255.255.0.0"
             }
           ]
         },
@@ -62,25 +82,35 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "3.0.1.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 3.0.1.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.2.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "3.0.2.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 3.0.2.0 host 255.255.255.0"
             }
           ]
         }
@@ -91,14 +121,19 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "3.0.1.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 3.0.1.0 host 255.255.255.0"
             }
           ]
         }
@@ -109,25 +144,35 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "1.0.0.0/8"
-              ],
-              "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0/8"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "1.0.0.0/8"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.0.0.0/8"
+                  ]
+                }
+              },
+              "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "deny   ip any any"
             }
           ]
         },
@@ -136,36 +181,51 @@
           "lines" : [
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0/8"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.0.0.0/8"
+                  ]
+                }
+              },
+              "name" : "deny   ip 2.0.0.0 0.255.255.255 any"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "2.128.1.101"
-              ],
-              "name" : "deny   ip any host 2.128.1.101",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "2.128.1.101"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "deny   ip any host 2.128.1.101"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "permit ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "permit ip any any"
             }
           ]
         }
@@ -176,25 +236,35 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "3.0.0.0/8"
-              ],
-              "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0/8"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "3.0.0.0/8"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.0.0.0/8"
+                  ]
+                }
+              },
+              "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "deny   ip any any"
             }
           ]
         },
@@ -203,25 +273,35 @@
           "lines" : [
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0/8"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.0.0.0/8"
+                  ]
+                }
+              },
+              "name" : "deny   ip 2.0.0.0 0.255.255.255 any"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "permit ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "permit ip any any"
             }
           ]
         }
@@ -232,31 +312,41 @@
           "lines" : [
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "dstPorts" : [
-                "23-23"
-              ],
-              "ipProtocols" : [
-                "TCP"
-              ],
-              "name" : "deny   tcp any any eq telnet",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "dstPorts" : [
+                    "23-23"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "deny   tcp any any eq telnet"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "permit ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "permit ip any any"
             }
           ]
         }
@@ -267,25 +357,35 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 2.128.0.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "2.128.0.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.128.0.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 2.128.0.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 2.128.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "2.128.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.128.1.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 2.128.1.0 host 255.255.255.0"
             }
           ]
         },
@@ -294,47 +394,67 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "1.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "1.0.1.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 1.0.1.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "1.0.2.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "1.0.2.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 1.0.2.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "3.0.1.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 3.0.1.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.2.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.255.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "3.0.2.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 3.0.2.0 host 255.255.255.0"
             }
           ]
         },
@@ -343,39 +463,54 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "permit ip 2.128.0.0 0.0.255.255 any",
-              "negate" : false,
-              "srcIps" : [
-                "2.128.0.0/16"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.128.0.0/16"
+                  ]
+                }
+              },
+              "name" : "permit ip 2.128.0.0 0.0.255.255 any"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "deny   ip any any"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "ipProtocols" : [
-                "ICMP"
-              ],
-              "name" : "permit icmp any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "ipProtocols" : [
+                    "ICMP"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "permit icmp any any"
             }
           ]
         },
@@ -384,36 +519,51 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "2.128.0.0/16"
-              ],
-              "name" : "permit ip any 2.128.0.0 0.0.255.255",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "2.128.0.0/16"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "permit ip any 2.128.0.0 0.0.255.255"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "2.128.0.0/16"
-              ],
-              "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
-              "negate" : false,
-              "srcIps" : [
-                "1.128.0.0/16"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "2.128.0.0/16"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "1.128.0.0/16"
+                  ]
+                }
+              },
+              "name" : "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "0.0.0.0/0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "0.0.0.0/0"
+                  ]
+                }
+              },
+              "name" : "deny   ip any any"
             }
           ]
         }
@@ -424,14 +574,19 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.0.0"
-              ],
-              "name" : "permit ip host 2.128.0.0 host 255.255.0.0",
-              "negate" : false,
-              "srcIps" : [
-                "2.128.0.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "255.255.0.0"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "2.128.0.0"
+                  ]
+                }
+              },
+              "name" : "permit ip host 2.128.0.0 host 255.255.0.0"
             }
           ]
         }
@@ -442,8 +597,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -452,30 +609,42 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstPorts" : [
-                "53-53"
-              ],
-              "ipProtocols" : [
-                "UDP"
-              ],
-              "name" : "-p udp --dport 53 -j ACCEPT",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstPorts" : [
+                    "53-53"
+                  ],
+                  "ipProtocols" : [
+                    "UDP"
+                  ],
+                  "negate" : false
+                }
+              },
+              "name" : "-p udp --dport 53 -j ACCEPT"
             },
             {
               "action" : "ACCEPT",
-              "dstPorts" : [
-                "22-22"
-              ],
-              "ipProtocols" : [
-                "TCP"
-              ],
-              "name" : "-p tcp --dport 22 -j ACCEPT",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstPorts" : [
+                    "22-22"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "negate" : false
+                }
+              },
+              "name" : "-p tcp --dport 22 -j ACCEPT"
             },
             {
               "action" : "REJECT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -484,8 +653,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -494,8 +665,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -504,8 +677,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -514,8 +689,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -524,8 +701,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -534,8 +713,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -544,8 +725,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -554,8 +737,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -564,8 +749,10 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         }
@@ -576,19 +763,26 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstPorts" : [
-                "22-22"
-              ],
-              "ipProtocols" : [
-                "TCP"
-              ],
-              "name" : "-p tcp --dport 22 -j ACCEPT",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstPorts" : [
+                    "22-22"
+                  ],
+                  "ipProtocols" : [
+                    "TCP"
+                  ],
+                  "negate" : false
+                }
+              },
+              "name" : "-p tcp --dport 22 -j ACCEPT"
             },
             {
               "action" : "REJECT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         },
@@ -597,16 +791,23 @@
           "lines" : [
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "2.128.0.101"
-              ],
-              "name" : "-d 2.128.0.101 -j DROP",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "2.128.0.101"
+                  ],
+                  "negate" : false
+                }
+              },
+              "name" : "-d 2.128.0.101 -j DROP"
             },
             {
               "action" : "ACCEPT",
-              "name" : "default",
-              "negate" : false
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.TrueExpr"
+              },
+              "name" : "default"
             }
           ]
         }

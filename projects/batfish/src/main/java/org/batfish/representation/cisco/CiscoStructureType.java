@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureType;
 
 public enum CiscoStructureType implements StructureType {
+  ACCESS_LIST("acl"),
   AS_PATH_ACCESS_LIST("as-path acl"),
   AS_PATH_SET("as-path-set"),
   BGP_PEER_GROUP("bgp group"),

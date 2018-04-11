@@ -149,8 +149,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       new NetworkFactory()
           .aclBuilder()
           .setName("~DEFAULT_SOURCE_NAT_ACL~")
-          .setLines(
-              ImmutableList.of(IpAccessListLine.builder().setAction(LineAction.ACCEPT).build()))
+          .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
           .build();
 
   public static Builder builder() {

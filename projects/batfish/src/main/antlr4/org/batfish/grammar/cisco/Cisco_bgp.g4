@@ -200,6 +200,7 @@ bgp_tail
    | prefix_list_bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
+   | redistribute_eigrp_bgp_tail
    | redistribute_ospf_bgp_tail
    | redistribute_ospfv3_bgp_tail
    | redistribute_rip_bgp_tail
@@ -757,6 +758,11 @@ redistribute_connected_bgp_tail
          METRIC metric = DEC
       )
    )* NEWLINE
+;
+
+redistribute_eigrp_bgp_tail
+:
+   REDISTRIBUTE EIGRP id = DEC null_rest_of_line
 ;
 
 redistribute_ospf_bgp_tail

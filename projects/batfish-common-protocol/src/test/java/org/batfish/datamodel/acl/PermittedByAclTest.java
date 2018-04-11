@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -34,14 +35,20 @@ public class PermittedByAclTest {
     // Build a single entry map, mapping aclName to an ACL matching the given srcIpWildcard
 
     // Create a single ACL line matching the given srcIpWildcard
-    IpAccessListLine.Builder acllb = IpAccessListLine.builder();
-    acllb.setSrcIps(ImmutableSet.of(new IpWildcard(srcIpWildcard)));
-    acllb.setAction(lineAction);
+    IpAccessListLine acll =
+        IpAccessListLine.builder()
+            .setMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(ImmutableSet.of(new IpWildcard(srcIpWildcard)))
+                        .build()))
+            .setAction(lineAction)
+            .build();
 
     // Add that single ACL line to a new ACL
     IpAccessList.Builder aclb = _nf.aclBuilder();
     aclb.setName(aclName);
-    aclb.setLines(ImmutableList.of(acllb.build()));
+    aclb.setLines(ImmutableList.of(acll));
 
     // Return a map, mapping aclName to the ACL itself
     return ImmutableMap.of(aclName, aclb.build());

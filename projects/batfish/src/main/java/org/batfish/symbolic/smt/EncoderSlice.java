@@ -38,6 +38,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -1734,122 +1735,122 @@ class EncoderSlice {
     List<IpAccessListLine> lines = new ArrayList<>(acl.getLines());
     Collections.reverse(lines);
 
-    for (IpAccessListLine l : lines) {
+    for (IpAccessListLine line : lines) {
       BoolExpr local = null;
-
-      if (l.getDstIps() != null) {
-        BoolExpr val = computeWildcardMatch(l.getDstIps(), _symbolicPacket.getDstIp());
-        val = l.getDstIps().isEmpty() ? mkTrue() : val;
+      HeaderSpace h = HeaderSpaceConverter.convert(line.getMatchCondition());
+      if (h.getDstIps() != null) {
+        BoolExpr val = computeWildcardMatch(h.getDstIps(), _symbolicPacket.getDstIp());
+        val = h.getDstIps().isEmpty() ? mkTrue() : val;
         local = val;
       }
 
-      if (l.getSrcIps() != null) {
-        BoolExpr val = computeWildcardMatch(l.getSrcIps(), _symbolicPacket.getSrcIp());
-        val = l.getDstIps().isEmpty() ? mkTrue() : val;
+      if (h.getSrcIps() != null) {
+        BoolExpr val = computeWildcardMatch(h.getSrcIps(), _symbolicPacket.getSrcIp());
+        val = h.getDstIps().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getDscps() != null && !l.getDscps().isEmpty()) {
+      if (h.getDscps() != null && !h.getDscps().isEmpty()) {
         throw new BatfishException("detected dscps");
       }
 
-      if (l.getDstPorts() != null) {
-        BoolExpr val = computeValidRange(l.getDstPorts(), _symbolicPacket.getDstPort());
-        val = l.getDstPorts().isEmpty() ? mkTrue() : val;
+      if (h.getDstPorts() != null) {
+        BoolExpr val = computeValidRange(h.getDstPorts(), _symbolicPacket.getDstPort());
+        val = h.getDstPorts().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getSrcPorts() != null) {
-        BoolExpr val = computeValidRange(l.getSrcPorts(), _symbolicPacket.getSrcPort());
-        val = l.getSrcPorts().isEmpty() ? mkTrue() : val;
+      if (h.getSrcPorts() != null) {
+        BoolExpr val = computeValidRange(h.getSrcPorts(), _symbolicPacket.getSrcPort());
+        val = h.getSrcPorts().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getEcns() != null && !l.getEcns().isEmpty()) {
+      if (h.getEcns() != null && !h.getEcns().isEmpty()) {
         throw new BatfishException("detected ecns");
       }
 
-      if (l.getTcpFlags() != null) {
-        BoolExpr val = computeTcpFlags(l.getTcpFlags());
-        val = l.getTcpFlags().isEmpty() ? mkTrue() : val;
+      if (h.getTcpFlags() != null) {
+        BoolExpr val = computeTcpFlags(h.getTcpFlags());
+        val = h.getTcpFlags().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getFragmentOffsets() != null && !l.getFragmentOffsets().isEmpty()) {
+      if (h.getFragmentOffsets() != null && !h.getFragmentOffsets().isEmpty()) {
         throw new BatfishException("detected fragment offsets");
       }
 
-      if (l.getIcmpCodes() != null) {
-        BoolExpr val = computeValidRange(l.getIcmpCodes(), _symbolicPacket.getIcmpCode());
-        val = l.getIcmpCodes().isEmpty() ? mkTrue() : val;
+      if (h.getIcmpCodes() != null) {
+        BoolExpr val = computeValidRange(h.getIcmpCodes(), _symbolicPacket.getIcmpCode());
+        val = h.getIcmpCodes().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getIcmpTypes() != null) {
-        BoolExpr val = computeValidRange(l.getIcmpTypes(), _symbolicPacket.getIcmpType());
-        val = l.getIcmpTypes().isEmpty() ? mkTrue() : val;
+      if (h.getIcmpTypes() != null) {
+        BoolExpr val = computeValidRange(h.getIcmpTypes(), _symbolicPacket.getIcmpType());
+        val = h.getIcmpTypes().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getStates() != null && !l.getStates().isEmpty()) {
+      if (h.getStates() != null && !h.getStates().isEmpty()) {
         throw new BatfishException("detected states");
       }
 
-      if (l.getIpProtocols() != null) {
-        BoolExpr val = computeIpProtocols(l.getIpProtocols());
-        val = l.getIpProtocols().isEmpty() ? mkTrue() : val;
+      if (h.getIpProtocols() != null) {
+        BoolExpr val = computeIpProtocols(h.getIpProtocols());
+        val = h.getIpProtocols().isEmpty() ? mkTrue() : val;
         local = (local == null ? val : mkAnd(local, val));
       }
 
-      if (l.getNotDscps() != null && !l.getNotDscps().isEmpty()) {
+      if (h.getNotDscps() != null && !h.getNotDscps().isEmpty()) {
         throw new BatfishException("detected NOT dscps");
       }
 
-      if (l.getNotDstIps() != null && !l.getNotDstIps().isEmpty()) {
+      if (h.getNotDstIps() != null && !h.getNotDstIps().isEmpty()) {
         throw new BatfishException("detected NOT dst ip");
       }
 
-      if (l.getNotSrcIps() != null && !l.getNotSrcIps().isEmpty()) {
+      if (h.getNotSrcIps() != null && !h.getNotSrcIps().isEmpty()) {
         throw new BatfishException("detected NOT src ip");
       }
 
-      if (l.getNotDstPorts() != null && !l.getNotDstPorts().isEmpty()) {
+      if (h.getNotDstPorts() != null && !h.getNotDstPorts().isEmpty()) {
         throw new BatfishException("detected NOT dst port");
       }
 
-      if (l.getNotSrcPorts() != null && !l.getNotSrcPorts().isEmpty()) {
+      if (h.getNotSrcPorts() != null && !h.getNotSrcPorts().isEmpty()) {
         throw new BatfishException("detected NOT src port");
       }
 
-      if (l.getNotEcns() != null && !l.getNotEcns().isEmpty()) {
+      if (h.getNotEcns() != null && !h.getNotEcns().isEmpty()) {
         throw new BatfishException("detected NOT ecns");
       }
 
-      if (l.getNotIcmpCodes() != null && !l.getNotIcmpCodes().isEmpty()) {
+      if (h.getNotIcmpCodes() != null && !h.getNotIcmpCodes().isEmpty()) {
         throw new BatfishException("detected NOT icmp codes");
       }
 
-      if (l.getNotIcmpTypes() != null && !l.getNotIcmpTypes().isEmpty()) {
+      if (h.getNotIcmpTypes() != null && !h.getNotIcmpTypes().isEmpty()) {
         throw new BatfishException("detected NOT icmp types");
       }
 
-      if (l.getNotFragmentOffsets() != null && !l.getNotFragmentOffsets().isEmpty()) {
+      if (h.getNotFragmentOffsets() != null && !h.getNotFragmentOffsets().isEmpty()) {
         throw new BatfishException("detected NOT fragment offset");
       }
 
-      if (l.getNotIpProtocols() != null && !l.getNotIpProtocols().isEmpty()) {
+      if (h.getNotIpProtocols() != null && !h.getNotIpProtocols().isEmpty()) {
         throw new BatfishException("detected NOT ip protocols");
       }
 
       if (local != null) {
         BoolExpr ret;
-        if (l.getAction() == LineAction.ACCEPT) {
+        if (line.getAction() == LineAction.ACCEPT) {
           ret = mkTrue();
         } else {
           ret = mkFalse();
         }
 
-        if (l.getNegate()) {
+        if (h.getNegate()) {
           local = mkNot(local);
         }
 

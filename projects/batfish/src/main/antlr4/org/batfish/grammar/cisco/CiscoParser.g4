@@ -544,17 +544,11 @@ enable_null
 
 enable_password
 :
-   PASSWORD
+   PASSWORD (LEVEL level = DEC)?
    (
-      (
-         (
-            sha512pass = SHA512_PASSWORD
-         ) seed = PASSWORD_SEED?
-      )
-      |
-      (
-         DEC pass = variable
-      )
+      ep_cisco_encryption
+      | ep_plaintext
+      | ep_sha512
    ) NEWLINE
 ;
 
@@ -567,6 +561,21 @@ enable_secret
       )
       | double_quoted_string
    ) NEWLINE
+;
+
+ep_cisco_encryption
+:
+   type = DEC (pass = variable_secret)
+;
+
+ep_plaintext
+:
+   pass = variable
+;
+
+ep_sha512
+:
+   (sha512pass = SHA512_PASSWORD) (seed = PASSWORD_SEED)?
 ;
 
 event_null
@@ -626,6 +635,7 @@ flow_null
       | EXPORT_PROTOCOL
       | EXPORTER
       | MATCH
+      | OPTION
       | RECORD
       | SOURCE
       | STATISTICS
@@ -1151,6 +1161,7 @@ ip_sla_null
       | REQUEST_DATA_SIZE
       | SAMPLES_OF_HISTORY_KEPT
       | TAG
+      | THRESHOLD
       | TIMEOUT
       | TOS
       | UDP_JITTER
@@ -2490,6 +2501,11 @@ s_ip_nat
    )
 ;
 
+s_ip_nbar
+:
+   IP NBAR CUSTOM null_rest_of_line
+;
+
 s_ip_probe
 :
    IP PROBE null_rest_of_line
@@ -2672,6 +2688,11 @@ s_no_access_list_extended
 s_no_access_list_standard
 :
    NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
+;
+
+s_no_enable
+:
+   NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
 ;
 
 s_nv
@@ -3407,6 +3428,7 @@ stanza
    | s_ip_domain_name
    | s_ip_name_server
    | s_ip_nat
+   | s_ip_nbar
    | s_ip_pim
    | s_ip_probe
    | s_ip_route_mos
@@ -3450,6 +3472,7 @@ stanza
    | s_netservice
    | s_no_access_list_extended
    | s_no_access_list_standard
+   | s_no_enable
    | s_ntp
    | s_null
    | s_nv
@@ -3885,8 +3908,12 @@ voice_class
    CLASS
    (
       voice_class_codec
+      | voice_class_dpg
+      | voice_class_e164
       | voice_class_h323
+      | voice_class_server_group
       | voice_class_sip_profiles
+      | voice_class_uri
    )
 ;
 
@@ -3903,6 +3930,41 @@ voice_class_codec_null
    NO?
    (
       CODEC
+   ) null_rest_of_line
+;
+
+voice_class_dpg
+:
+   DPG null_rest_of_line
+   (
+      voice_class_dpg_null
+   )*
+;
+
+voice_class_dpg_null
+:
+    NO?
+    (
+       DESCRIPTION
+       | DIAL_PEER
+    ) null_rest_of_line
+;
+
+voice_class_e164
+:
+   E164_PATTERN_MAP null_rest_of_line
+   (
+      voice_class_e164_null
+   )*
+;
+
+voice_class_e164_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | E164
+      | URL
    ) null_rest_of_line
 ;
 
@@ -3923,6 +3985,22 @@ voice_class_h323_null
    ) null_rest_of_line
 ;
 
+voice_class_server_group
+:
+   SERVER_GROUP null_rest_of_line
+   (
+      voice_class_server_group_null
+   )*
+;
+
+voice_class_server_group_null
+:
+   NO?
+      (  DESCRIPTION
+         | IPV4
+      ) null_rest_of_line
+;
+
 voice_class_sip_profiles
 :
    SIP_PROFILES null_rest_of_line
@@ -3937,6 +4015,14 @@ voice_class_sip_profiles_null
    (
       REQUEST
    ) null_rest_of_line
+;
+
+voice_class_uri
+:
+    URI null_rest_of_line
+    (
+        HOST null_rest_of_line
+    )
 ;
 
 voice_null
@@ -4016,7 +4102,11 @@ voice_service_voip_null
       | ALLOW_CONNECTIONS
       | FAX
       | H225
+      | MEDIA
+      | MODE
       | MODEM
+      | REDUNDANCY_GROUP
+      | RTP_PORT
       | SHUTDOWN
       | SUPPLEMENTARY_SERVICE
    ) null_rest_of_line

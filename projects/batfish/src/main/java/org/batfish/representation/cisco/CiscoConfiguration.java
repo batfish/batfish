@@ -40,6 +40,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.InterfaceAddress;
@@ -78,6 +79,7 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -1046,6 +1048,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.DOCSIS_POLICY_RULE,
         usage,
         cable != null ? cable.getDocsisPolicyRules() : null);
+  }
+
+  private void markIpOrMacAcls(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.ACCESS_LIST,
+        usage,
+        Arrays.asList(
+            _extendedAccessLists,
+            _standardAccessLists,
+            _extendedIpv6AccessLists,
+            _macAccessLists,
+            _standardIpv6AccessLists));
   }
 
   private void markIpsecProfiles(CiscoStructureUsage usage) {
@@ -2338,41 +2352,44 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String name = eaList.getName();
     List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-      IpAccessListLine newLine = new IpAccessListLine();
-      newLine.setName(fromLine.getName());
-      newLine.setAction(fromLine.getAction());
+      HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
       IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
       if (srcIpWildcard != null) {
-        newLine.setSrcIps(ImmutableSortedSet.of(srcIpWildcard));
+        headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(srcIpWildcard));
       }
       IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
       if (dstIpWildcard != null) {
-        newLine.setDstIps(ImmutableSortedSet.of(dstIpWildcard));
+        headerSpaceBuilder.setDstIps(ImmutableSortedSet.of(dstIpWildcard));
       }
       // TODO: src/dst address group
       IpProtocol protocol = fromLine.getProtocol();
       if (protocol != IpProtocol.IP) {
-        newLine.setIpProtocols(ImmutableSortedSet.of(protocol));
+        headerSpaceBuilder.setIpProtocols(ImmutableSortedSet.of(protocol));
       }
-      newLine.setDstPorts(fromLine.getDstPorts());
-      newLine.setSrcPorts(fromLine.getSrcPorts());
+      headerSpaceBuilder.setDstPorts(fromLine.getDstPorts());
+      headerSpaceBuilder.setSrcPorts(fromLine.getSrcPorts());
       Integer icmpType = fromLine.getIcmpType();
       if (icmpType != null) {
-        newLine.setIcmpTypes(ImmutableSortedSet.of(new SubRange(icmpType)));
+        headerSpaceBuilder.setIcmpTypes(ImmutableSortedSet.of(new SubRange(icmpType)));
       }
       Integer icmpCode = fromLine.getIcmpCode();
       if (icmpCode != null) {
-        newLine.setIcmpCodes(ImmutableSortedSet.of(new SubRange(icmpCode)));
+        headerSpaceBuilder.setIcmpCodes(ImmutableSortedSet.of(new SubRange(icmpCode)));
       }
       Set<State> states = fromLine.getStates();
-      newLine.setStates(states);
+      headerSpaceBuilder.setStates(states);
       List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
-      newLine.setTcpFlags(tcpFlags);
+      headerSpaceBuilder.setTcpFlags(tcpFlags);
       Set<Integer> dscps = fromLine.getDscps();
-      newLine.setDscps(dscps);
+      headerSpaceBuilder.setDscps(dscps);
       Set<Integer> ecns = fromLine.getEcns();
-      newLine.setEcns(ecns);
-      lines.add(newLine);
+      headerSpaceBuilder.setEcns(ecns);
+      lines.add(
+          IpAccessListLine.builder()
+              .setAction(fromLine.getAction())
+              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+              .setName(fromLine.getName())
+              .build());
     }
     return new IpAccessList(name, lines);
   }
@@ -3754,7 +3771,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // mark references to IPv4/6 ACLs that may not appear in data model
-    markAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
+    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
