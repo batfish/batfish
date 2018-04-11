@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.z3.BasicHeaderField;
+import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
@@ -35,7 +37,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchDstIp(Set<IpWildcard> dstIpWildcards) {
-    return matchIp(dstIpWildcards, false, true);
+    return matchIp(dstIpWildcards, BasicHeaderField.DST_IP);
   }
 
   public static BooleanExpr matchDstPort(Set<SubRange> dstPortRanges) {
@@ -77,96 +79,60 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, boolean useSrc, boolean useDst) {
-    ImmutableList.Builder<BooleanExpr> matchSomeIpRange = ImmutableList.builder();
-    for (IpWildcard ipWildcard : ipWildcards) {
-      if (ipWildcard.isPrefix()) {
-        Prefix prefix = ipWildcard.toPrefix();
-        long ip = prefix.getStartIp().asLong();
-        int ipWildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
-        int ipStart = ipWildcardBits;
-        int ipEnd = Prefix.MAX_PREFIX_LENGTH - 1;
-        if (ipStart < Prefix.MAX_PREFIX_LENGTH) {
-          IntExpr extractSrcIp =
-              ExtractExpr.newExtractExpr(BasicHeaderField.ORIG_SRC_IP, ipStart, ipEnd);
-          IntExpr extractDstIp =
-              ExtractExpr.newExtractExpr(BasicHeaderField.DST_IP, ipStart, ipEnd);
-          LitIntExpr ipMatchLit = new LitIntExpr(ip, ipStart, ipEnd);
-          EqExpr matchSrcIp = new EqExpr(extractSrcIp, ipMatchLit);
-          EqExpr matchDstIp = new EqExpr(extractDstIp, ipMatchLit);
-          BooleanExpr matchSpecifiedIp;
-          if (useSrc) {
-            if (useDst) {
-              matchSpecifiedIp = new OrExpr(ImmutableList.of(matchSrcIp, matchDstIp));
-            } else {
-              matchSpecifiedIp = matchSrcIp;
-            }
-          } else if (useDst) {
-            matchSpecifiedIp = matchDstIp;
-          } else {
-            throw new BatfishException("useSrc and useDst cannot both be false");
-          }
-          matchSomeIpRange.add(matchSpecifiedIp);
-        } else {
-          return TrueExpr.INSTANCE;
-        }
-      } else {
-        long ip = ipWildcard.getIp().asLong();
-        long wildcard = ipWildcard.getWildcard().asLong();
-        ImmutableList.Builder<BooleanExpr> matchSrcIp = ImmutableList.builder();
-        if (useSrc) {
-          for (int currentBitIndex = 0;
-              currentBitIndex < Prefix.MAX_PREFIX_LENGTH;
-              currentBitIndex++) {
-            long mask = 1L << currentBitIndex;
-            long currentWildcardBit = mask & wildcard;
-            boolean useBit = currentWildcardBit == 0;
-            if (useBit) {
-              IntExpr extractSrcIp =
-                  ExtractExpr.newExtractExpr(
-                      BasicHeaderField.ORIG_SRC_IP, currentBitIndex, currentBitIndex);
-              LitIntExpr srcIpMatchLit = new LitIntExpr(ip, currentBitIndex, currentBitIndex);
-              EqExpr matchSrcIpBit = new EqExpr(extractSrcIp, srcIpMatchLit);
-              matchSrcIp.add(matchSrcIpBit);
-            }
-          }
-        }
-        ImmutableList.Builder<BooleanExpr> matchDstIp = ImmutableList.builder();
-        if (useDst) {
-          for (int currentBitIndex = 0;
-              currentBitIndex < Prefix.MAX_PREFIX_LENGTH;
-              currentBitIndex++) {
-            long mask = 1L << currentBitIndex;
-            long currentWildcardBit = mask & wildcard;
-            boolean useBit = currentWildcardBit == 0;
-            if (useBit) {
-              IntExpr extractDstIp =
-                  ExtractExpr.newExtractExpr(
-                      BasicHeaderField.DST_IP, currentBitIndex, currentBitIndex);
-              LitIntExpr dstIpMatchLit = new LitIntExpr(ip, currentBitIndex, currentBitIndex);
-              EqExpr matchDstIpBit = new EqExpr(extractDstIp, dstIpMatchLit);
-              matchDstIp.add(matchDstIpBit);
-            }
-          }
-        }
-        BooleanExpr matchSpecifiedIp;
-        if (useSrc) {
-          if (useDst) {
-            matchSpecifiedIp =
-                new OrExpr(
-                    ImmutableList.of(
-                        new AndExpr(matchSrcIp.build()), new AndExpr(matchDstIp.build())));
-          } else {
-            matchSpecifiedIp = new AndExpr(matchSrcIp.build());
-          }
-        } else if (useDst) {
-          matchSpecifiedIp = new AndExpr(matchDstIp.build());
-        } else {
-          throw new BatfishException("useSrc and useDst cannot both be false");
-        }
-        matchSomeIpRange.add(matchSpecifiedIp);
+    if (useSrc && useDst) {
+      return matchSrcOrDstIp(ipWildcards);
+    } else if (useSrc) {
+      return matchSrcIp(ipWildcards);
+    } else if (useDst) {
+      return matchDstIp(ipWildcards);
+    } else {
+      throw new BatfishException("either useSrc or usrDst must be true");
+    }
+  }
+
+  public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, HeaderField ipHeaderField) {
+    return new OrExpr(
+        ipWildcards
+            .stream()
+            .map(
+                ipWildcard ->
+                    ipWildcard.isPrefix()
+                        ? matchIpPrefix(ipWildcard.toPrefix(), ipHeaderField)
+                        : matchIpWildcard(ipWildcard, ipHeaderField))
+            .collect(Collectors.toList()));
+  }
+
+  public static BooleanExpr matchIpPrefix(Prefix prefix, HeaderField ipHeaderField) {
+    long ip = prefix.getStartIp().asLong();
+    int ipWildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
+    int ipStart = ipWildcardBits;
+    int ipEnd = Prefix.MAX_PREFIX_LENGTH - 1;
+    if (ipStart < Prefix.MAX_PREFIX_LENGTH) {
+      IntExpr extractIp = ExtractExpr.newExtractExpr(ipHeaderField, ipStart, ipEnd);
+      LitIntExpr ipMatchLit = new LitIntExpr(ip, ipStart, ipEnd);
+      return new EqExpr(extractIp, ipMatchLit);
+    } else {
+      return TrueExpr.INSTANCE;
+    }
+  }
+
+  public static BooleanExpr matchIpWildcard(IpWildcard ipWildcard, HeaderField ipHeaderField) {
+    long ip = ipWildcard.getIp().asLong();
+    long wildcard = ipWildcard.getWildcard().asLong();
+    ImmutableList.Builder<BooleanExpr> matchIp = ImmutableList.builder();
+    for (int currentBitIndex = 0; currentBitIndex < Prefix.MAX_PREFIX_LENGTH; currentBitIndex++) {
+      long mask = 1L << currentBitIndex;
+      long currentWildcardBit = mask & wildcard;
+      boolean useBit = currentWildcardBit == 0;
+      if (useBit) {
+        IntExpr extractIp =
+            ExtractExpr.newExtractExpr(ipHeaderField, currentBitIndex, currentBitIndex);
+        LitIntExpr srcIpMatchLit = new LitIntExpr(ip, currentBitIndex, currentBitIndex);
+        EqExpr matchIpBit = new EqExpr(extractIp, srcIpMatchLit);
+        matchIp.add(matchIpBit);
       }
     }
-    return new OrExpr(matchSomeIpRange.build());
+    return new AndExpr(matchIp.build());
   }
 
   public static BooleanExpr matchIpProtocol(Set<IpProtocol> ipProtocols) {
@@ -180,6 +146,10 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
                         new VarIntExpr(BasicHeaderField.IP_PROTOCOL),
                         new LitIntExpr(num, BasicHeaderField.IP_PROTOCOL.getSize())))
             .collect(ImmutableList.toImmutableList()));
+  }
+
+  public static BooleanExpr matchOrigSrcIp(Set<IpWildcard> ipWildcards) {
+    return matchIp(ipWildcards, BasicHeaderField.ORIG_SRC_IP);
   }
 
   public static BooleanExpr matchPacketLength(Set<SubRange> packetLengths) {
@@ -233,11 +203,14 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchSrcIp(Set<IpWildcard> srcIpWildcards) {
-    return matchIp(srcIpWildcards, true, false);
+    return matchIp(srcIpWildcards, BasicHeaderField.SRC_IP);
   }
 
   public static BooleanExpr matchSrcOrDstIp(Set<IpWildcard> srcOrDstIppWildcards) {
-    return matchIp(srcOrDstIppWildcards, true, true);
+    return new OrExpr(
+        ImmutableList.of(
+            matchIp(srcOrDstIppWildcards, BasicHeaderField.SRC_IP),
+            matchIp(srcOrDstIppWildcards, BasicHeaderField.DST_IP)));
   }
 
   public static BooleanExpr matchSrcOrDstPort(Set<SubRange> srcOrDstPorts) {
@@ -334,6 +307,10 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   private final BooleanExpr _expr;
 
   public HeaderSpaceMatchExpr(HeaderSpace headerSpace) {
+    this(headerSpace, false);
+  }
+
+  public HeaderSpaceMatchExpr(HeaderSpace headerSpace, boolean orig) {
     ImmutableList.Builder<BooleanExpr> matchBuilder = ImmutableList.builder();
 
     // ipProtocol
@@ -356,9 +333,18 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
         HeaderSpaceMatchExpr::matchSrcOrDstProtocol);
 
     // ip
-    requireMatch(matchBuilder, headerSpace.getSrcIps(), HeaderSpaceMatchExpr::matchSrcIp);
-    requireNoMatch(matchBuilder, headerSpace.getNotSrcIps(), HeaderSpaceMatchExpr::matchSrcIp);
-    requireMatch(matchBuilder, headerSpace.getSrcOrDstIps(), HeaderSpaceMatchExpr::matchSrcOrDstIp);
+    requireMatch(
+        matchBuilder,
+        headerSpace.getSrcIps(),
+        orig ? HeaderSpaceMatchExpr::matchOrigSrcIp : HeaderSpaceMatchExpr::matchSrcIp);
+    requireNoMatch(
+        matchBuilder,
+        headerSpace.getNotSrcIps(),
+        orig ? HeaderSpaceMatchExpr::matchOrigSrcIp : HeaderSpaceMatchExpr::matchSrcIp);
+    requireMatch(
+        matchBuilder,
+        headerSpace.getSrcOrDstIps(),
+        orig ? HeaderSpaceMatchExpr::matchOrigSrcOrDstIp : HeaderSpaceMatchExpr::matchSrcOrDstIp);
     requireMatch(matchBuilder, headerSpace.getDstIps(), HeaderSpaceMatchExpr::matchDstIp);
     requireNoMatch(matchBuilder, headerSpace.getNotDstIps(), HeaderSpaceMatchExpr::matchDstIp);
 
@@ -414,6 +400,13 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     } else {
       _expr = match;
     }
+  }
+
+  public static BooleanExpr matchOrigSrcOrDstIp(Set<IpWildcard> ipWildcards) {
+    return new OrExpr(
+        ImmutableList.of(
+            matchIp(ipWildcards, BasicHeaderField.ORIG_SRC_IP),
+            matchIp(ipWildcards, BasicHeaderField.DST_IP)));
   }
 
   @Override

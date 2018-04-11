@@ -689,10 +689,7 @@ public class SynthesizerInputImplTest {
                 ImmutableMap.of(
                     SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
                     ImmutableList.of(
-                        new HeaderSpaceMatchExpr(
-                            IpAccessListLine.builder()
-                                .setSrcIps(ImmutableList.of(new IpWildcard("0.0.0.0/0")))
-                                .build()))))));
+                        new HeaderSpaceMatchExpr(IpAccessListLine.builder().build()))))));
 
     assertThat(
         inputWithDataPlane,
