@@ -49,6 +49,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
@@ -687,7 +688,6 @@ public class SynthesizerInputImplTest {
                                     TransformationHeaderField.NEW_SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip1.asLong(), ip2.asLong()))))))))));
-
     assertThat(
         inputWithDataPlane,
         hasAclConditions(
@@ -695,11 +695,7 @@ public class SynthesizerInputImplTest {
                 srcNode.getHostname(),
                 ImmutableMap.of(
                     SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
-                    ImmutableList.of(
-                        new HeaderSpaceMatchExpr(
-                            HeaderSpace.builder()
-                                .setSrcIps(ImmutableList.of(new IpWildcard("0.0.0.0/0")))
-                                .build()))))));
+                    ImmutableList.of(TrueExpr.INSTANCE)))));
 
     assertThat(
         inputWithDataPlane,
