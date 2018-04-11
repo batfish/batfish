@@ -2995,10 +2995,10 @@ s_voice
    NO? VOICE
    (
       voice_class
-      | voice_null
       | voice_service
       | voice_translation_profile
       | voice_translation_rule
+      | voice_null
    )
 ;
 
@@ -3885,8 +3885,12 @@ voice_class
    CLASS
    (
       voice_class_codec
+      | voice_class_dpg
+      | voice_class_e164
       | voice_class_h323
+      | voice_class_server_group
       | voice_class_sip_profiles
+      | voice_class_uri
    )
 ;
 
@@ -3903,6 +3907,41 @@ voice_class_codec_null
    NO?
    (
       CODEC
+   ) null_rest_of_line
+;
+
+voice_class_dpg
+:
+   DPG null_rest_of_line
+   (
+      voice_class_dpg_null
+   )*
+;
+
+voice_class_dpg_null
+:
+    NO?
+    (
+       DESCRIPTION
+       | DIAL_PEER
+    ) null_rest_of_line
+;
+
+voice_class_e164
+:
+   E164_PATTERN_MAP null_rest_of_line
+   (
+      voice_class_e164_null
+   )*
+;
+
+voice_class_e164_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | E164
+      | URL
    ) null_rest_of_line
 ;
 
@@ -3923,6 +3962,22 @@ voice_class_h323_null
    ) null_rest_of_line
 ;
 
+voice_class_server_group
+:
+   SERVER_GROUP null_rest_of_line
+   (
+      voice_class_server_group_null
+   )*
+;
+
+voice_class_server_group_null
+:
+   NO?
+      (
+         IPV4
+      ) null_rest_of_line
+;
+
 voice_class_sip_profiles
 :
    SIP_PROFILES null_rest_of_line
@@ -3937,6 +3992,14 @@ voice_class_sip_profiles_null
    (
       REQUEST
    ) null_rest_of_line
+;
+
+voice_class_uri
+:
+    URI null_rest_of_line
+    (
+        HOST null_rest_of_line
+    )
 ;
 
 voice_null
@@ -3972,6 +4035,12 @@ voice_service_voip
       | voice_service_voip_ip_address_trusted_list
       | voice_service_voip_null
       | voice_service_voip_sip
+      | RTP_PORT null_rest_of_line
+      | MODE null_rest_of_line
+      | MEDIA null_rest_of_line
+      | ALLOW_CONNECTIONS null_rest_of_line
+      | REDUNDANCY_GROUP null_rest_of_line
+      | FAX null_rest_of_line
    )*
 ;
 

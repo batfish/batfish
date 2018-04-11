@@ -3232,6 +3232,11 @@ DOWNSTREAM_START_THRESHOLD
    'downstream-start-threshold'
 ;
 
+DPG
+:
+    'dpg'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -3370,6 +3375,16 @@ DYNAMIC_MCAST_OPTIMIZATION
 DYNAMIC_MCAST_OPTIMIZATION_THRESH
 :
    'dynamic-mcast-optimization-thresh'
+;
+
+E164
+:
+    'e164'
+;
+
+E164_PATTERN_MAP
+:
+    'e164-pattern-map'
 ;
 
 EAP_PASSTHROUGH
@@ -8783,6 +8798,11 @@ REDUNDANCY
    'redundancy'
 ;
 
+REDUNDANCY_GROUP
+:
+   'redundancy-group'
+;
+
 REFERENCE_BANDWIDTH
 :
    'reference-bandwidth'
@@ -9291,6 +9311,11 @@ RTCP_INACTIVITY
 RTP
 :
    'rtp'
+;
+
+RTP_PORT
+:
+   'rtp-port'
 ;
 
 RTR
@@ -11413,6 +11438,16 @@ UPSTREAM_START_THRESHOLD
 URG
 :
    'urg'
+;
+
+URI
+:
+    'uri'
+;
+
+URL
+:
+    'url'
 ;
 
 URL_LIST
