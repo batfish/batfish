@@ -3,20 +3,20 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
-import java.util.Set;
+import java.util.SortedSet;
 import org.batfish.common.util.CommonUtil;
 
 public class OrMatchExpr extends AclLineMatchExpr {
   private static final String PROP_DISJUNCTS = "disjuncts";
   private static final long serialVersionUID = 1L;
 
-  private final Set<AclLineMatchExpr> _disjuncts;
+  private final SortedSet<AclLineMatchExpr> _disjuncts;
 
   @JsonCreator
   public OrMatchExpr(@JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts) {
-    _disjuncts = ImmutableSet.copyOf(disjuncts);
+    _disjuncts = ImmutableSortedSet.copyOf(disjuncts);
   }
 
   @Override
@@ -35,7 +35,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
   }
 
   @JsonProperty(PROP_DISJUNCTS)
-  public Set<AclLineMatchExpr> getDisjuncts() {
+  public SortedSet<AclLineMatchExpr> getDisjuncts() {
     return _disjuncts;
   }
 

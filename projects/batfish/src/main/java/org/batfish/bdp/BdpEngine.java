@@ -72,7 +72,7 @@ public class BdpEngine implements FlowProcessor {
    */
   static Flow applySourceNat(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> aclDefinitions,
       @Nullable List<SourceNat> sourceNats) {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
@@ -154,14 +154,14 @@ public class BdpEngine implements FlowProcessor {
       Node currentNode = dp._nodes.get(currentNodeName);
       Map<String, IpAccessList> aclDefinitions = currentNode._c.getIpAccessLists();
       String vrfName;
-      String receivingInterface;
+      String srcInterface;
       if (hopsSoFar.isEmpty()) {
         vrfName = transformedFlow.getIngressVrf();
-        receivingInterface = null;
+        srcInterface = null;
       } else {
         FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
-        receivingInterface = lastHop.getEdge().getInt2();
-        vrfName = currentNode._c.getInterfaces().get(receivingInterface).getVrf().getName();
+        srcInterface = lastHop.getEdge().getInt2();
+        vrfName = currentNode._c.getInterfaces().get(srcInterface).getVrf().getName();
       }
       VirtualRouter currentVirtualRouter = currentNode._virtualRouters.get(vrfName);
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
@@ -231,7 +231,7 @@ public class BdpEngine implements FlowProcessor {
             transformedFlow =
                 applySourceNat(
                     transformedFlow,
-                    receivingInterface,
+                    srcInterface,
                     aclDefinitions,
                     outgoingInterface.getSourceNats());
 
@@ -247,7 +247,7 @@ public class BdpEngine implements FlowProcessor {
                       flowTraces,
                       originalFlow,
                       transformedFlow,
-                      receivingInterface,
+                      srcInterface,
                       aclDefinitions,
                       dstIp,
                       dstIpOwners,
@@ -287,7 +287,7 @@ public class BdpEngine implements FlowProcessor {
                         flowTraces,
                         originalFlow,
                         transformedFlow,
-                        receivingInterface,
+                        srcInterface,
                         aclDefinitions,
                         newHops,
                         outFilter,

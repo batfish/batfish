@@ -24,7 +24,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -191,11 +194,19 @@ public class HostConfiguration extends VendorConfiguration {
           if (line.getAction() == LineAction.REJECT) {
             return false;
           }
-          /* This will have to change when ACLs are more complicated */
-          if (line.getMatchCondition() instanceof MatchHeaderSpace
-              && !((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace().unrestricted()) {
-            return false;
+          /*
+           * This will have to change when ACLs are more complicated.
+           * For now, a simple line is either TrueExpr, FalseExpr, or unrestricted MatchHeaderSpace.
+           */
+          AclLineMatchExpr matchCondition = line.getMatchCondition();
+          if (matchCondition == TrueExpr.INSTANCE
+              || matchCondition == FalseExpr.INSTANCE
+              || (matchCondition instanceof MatchHeaderSpace
+                  && ((MatchHeaderSpace) matchCondition).getHeaderspace().unrestricted())) {
+            continue;
           }
+          /* At least one line is complicated, so the whole ACL is complicated */
+          return false;
         }
       }
     }

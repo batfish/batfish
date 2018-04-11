@@ -20,7 +20,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   private final String _srcInterface;
 
-  Evaluator(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
+  public Evaluator(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
     _srcInterface = srcInterface;
     _flow = flow;
     _availableAcls = availableAcls;

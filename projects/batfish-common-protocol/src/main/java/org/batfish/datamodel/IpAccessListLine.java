@@ -118,7 +118,7 @@ public final class IpAccessListLine implements Serializable {
       return false;
     }
     IpAccessListLine other = (IpAccessListLine) obj;
-    return Objects.equals(_action, other._action)
+    return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
         && Objects.equals(_name, other._name);
   }

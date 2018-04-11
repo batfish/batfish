@@ -106,9 +106,10 @@ public class IpAccessList extends ComparableStructure<String> {
 
   public FilterResult filter(
       Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
+    Evaluator evaluator = new Evaluator(flow, srcInterface, availableAcls);
     for (int i = 0; i < _lines.size(); i++) {
       IpAccessListLine line = _lines.get(i);
-      if (Evaluator.matches(line.getMatchCondition(), flow, srcInterface, availableAcls)) {
+      if (line.getMatchCondition().accept(evaluator)) {
         return new FilterResult(i, line.getAction());
       }
     }
