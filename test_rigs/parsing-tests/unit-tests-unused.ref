@@ -241,11 +241,19 @@
           ]
         }
       },
+      "unused:crypto ipsec transform-set:IPSEC_AES_256" : {
+        "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
+        "files" : {
+          "cisco_crypto" : [
+            148
+          ]
+        }
+      },
       "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            184
+            185
           ]
         }
       },
@@ -1049,11 +1057,14 @@
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
             145
+          ],
+          "IPSEC_AES_256" : [
+            148
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            184
+            185
           ]
         }
       },
