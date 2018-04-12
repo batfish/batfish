@@ -1159,31 +1159,32 @@ public class CommonUtil {
 
   public static Topology synthesizeTopology(Map<String, Configuration> configurations) {
     SortedSet<Edge> edges = new TreeSet<>();
-    Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
+    Map<Prefix, Set<Interface>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
         (nodeName, node) -> {
-          for (Entry<String, Interface> e : node.getInterfaces().entrySet()) {
-            String ifaceName = e.getKey();
-            Interface iface = e.getValue();
+          for (Interface iface : node.getInterfaces().values()) {
             if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()) {
               for (InterfaceAddress address : iface.getAllAddresses()) {
                 if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
                   Prefix prefix = address.getPrefix();
-                  NodeInterfacePair pair = new NodeInterfacePair(nodeName, ifaceName);
-                  Set<NodeInterfacePair> interfaceBucket =
+                  Set<Interface> interfaceBucket =
                       prefixInterfaces.computeIfAbsent(prefix, k -> new HashSet<>());
-                  interfaceBucket.add(pair);
+                  interfaceBucket.add(iface);
                 }
               }
             }
           }
         });
-    for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
-      for (NodeInterfacePair p1 : bucket) {
-        for (NodeInterfacePair p2 : bucket) {
-          if (!p1.equals(p2)) {
-            Edge edge = new Edge(p1, p2);
-            edges.add(edge);
+    for (Set<Interface> bucket : prefixInterfaces.values()) {
+      for (Interface iface1 : bucket) {
+        for (Interface iface2 : bucket) {
+          if (iface1 != iface2
+              // don't connect interfaces that have the same address
+              && Sets.intersection(iface1.getAllAddresses(), iface2.getAllAddresses()).isEmpty()) {
+            edges.add(
+                new Edge(
+                    new NodeInterfacePair(iface1.getOwner().getHostname(), iface1.getName()),
+                    new NodeInterfacePair(iface2.getOwner().getHostname(), iface2.getName())));
           }
         }
       }
