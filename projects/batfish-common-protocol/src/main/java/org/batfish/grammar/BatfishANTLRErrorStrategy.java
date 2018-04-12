@@ -66,8 +66,6 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
 
   private final String[] _lines;
 
-  private boolean _recoveredAtEof;
-
   private int _separatorToken;
 
   private String _parserStateAtRecovery;
@@ -131,13 +129,6 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
    * @return The token contained in the error node
    */
   private Token createErrorNode(Parser recognizer, ParserRuleContext ctx, Token separator) {
-    if (_recoveredAtEof) {
-      _recoveredAtEof = false;
-      throw new BatfishRecognitionException(recognizer, recognizer.getInputStream(), ctx);
-    }
-    if (separator.getType() == Lexer.EOF) {
-      _recoveredAtEof = true;
-    }
     String lineText = _lines[separator.getLine() - 1] + separator.getText();
     Token lineToken =
         recognizer
