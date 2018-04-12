@@ -85,7 +85,6 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
      * enabled.
      */
     if (!settings.getDisableUnrecognized()) {
-      _parser.setInterpreter(new BatfishParserATNSimulator(_parser.getInterpreter()));
       _parser.setErrorHandler(batfishANTLRErrorStrategyFactor.build(_input));
       _lexer.setRecoveryStrategy(new BatfishLexerRecoveryStrategy(_lexer, separatorChars));
     }
