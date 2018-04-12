@@ -348,6 +348,10 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     .getValue()
                                     .entrySet()
                                     .stream()
+                                    /* null_interface is handled in computeNullRoutedIps */
+                                    .filter(
+                                        entry ->
+                                            !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
                                     .collect(
                                         ImmutableMap.toImmutableMap(
                                             Entry::getKey /* outInterface */,
@@ -399,6 +403,10 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                     .getValue()
                                     .entrySet()
                                     .stream()
+                                    /* null_interface is handled in computeNullRoutedIps */
+                                    .filter(
+                                        entry ->
+                                            !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
                                     .collect(
                                         ImmutableMap.toImmutableMap(
                                             Entry::getKey /* outInterface */,
