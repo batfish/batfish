@@ -59,10 +59,11 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -1302,7 +1303,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * policy)
    */
   IpAccessList buildOutgoingFilter(Interface iface, IpAccessList securityPolicyAcl) {
-
     String outAclName = iface.getOutgoingFilter();
     IpAccessList outAcl = null;
     if (outAclName != null) {
@@ -1322,12 +1322,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // Set outgoing filter based on the correct combination of zone policy and base outgoing filter
+    // Set outgoing filter based on the combination of zone policy and base outgoing filter
     if (securityPolicyAcl == null && outAcl != null) {
       return outAcl;
     } else if (securityPolicyAcl != null && outAcl == null) {
       return securityPolicyAcl;
-    } else if (securityPolicyAcl != null && outAcl != null) {
+    } else if (securityPolicyAcl != null) {
       // When both zone policy and egress filter exist, use the logical AND of the two filters
       return new IpAccessList(
           "~COMBINED_OUTGOING_FILTER~",
@@ -1343,8 +1343,122 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return null;
   }
 
-  private IpAccessList toIpAccessList(FirewallFilter filter) throws VendorConversionException {
+  /** Convert a firewallFilter into a headerSpace matching ACL. */
+  private IpAccessList toHeaderSpaceIpAccessList(
+      FirewallFilter filter, String headerSpaceFilterName) throws VendorConversionException {
+    List<IpAccessListLine> lines = new ArrayList<>();
+    for (FwTerm term : filter.getTerms().values()) {
+      // action
+      LineAction action;
+      if (term.getThens().contains(FwThenAccept.INSTANCE)) {
+        action = LineAction.ACCEPT;
+      } else if (term.getThens().contains(FwThenDiscard.INSTANCE)) {
+        action = LineAction.REJECT;
+      } else if (term.getThens().contains(FwThenNextTerm.INSTANCE)) {
+        // TODO: throw error if any transformation is being done
+        continue;
+      } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
+        // we assume for now that any 'nop' operations imply acceptance
+        action = LineAction.ACCEPT;
+      } else {
+        _w.redFlag(
+            "missing action in firewall filter: '"
+                + headerSpaceFilterName
+                + "', term: '"
+                + term.getName()
+                + "'");
+        action = LineAction.REJECT;
+      }
+      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
+      for (FwFrom from : term.getFroms()) {
+        from.applyTo(matchCondition, this, _w, _c);
+      }
+      boolean addLine =
+          term.getFromApplications().isEmpty()
+              && term.getFromHostProtocols().isEmpty()
+              && term.getFromHostServices().isEmpty();
+      for (FwFromHostProtocol from : term.getFromHostProtocols()) {
+        from.applyTo(lines, _w);
+      }
+      for (FwFromHostService from : term.getFromHostServices()) {
+        from.applyTo(lines, _w);
+      }
+      for (FwFromApplication fromApplication : term.getFromApplications()) {
+        fromApplication.applyTo(matchCondition, action, lines, _w);
+      }
+      if (addLine) {
+        IpAccessListLine line =
+            IpAccessListLine.builder()
+                .setAction(action)
+                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
+                .setName(term.getName())
+                .build();
+        lines.add(line);
+      }
+    }
+    return new IpAccessList(headerSpaceFilterName, lines);
+  }
+
+  /**
+   * Convert a firewallFilter into a map of equivalent ACLs. Only need multiple ACLs in the case
+   * where srcInterface is a filtered attribute.
+   */
+  Map<String, IpAccessList> toIpAccessLists(FirewallFilter filter)
+      throws VendorConversionException {
+    Map<String, IpAccessList> map = new TreeMap<>();
     String name = filter.getName();
+    String headerSpaceFilterName = name;
+
+    // If srcInterfaces (from zones) are filtered, then need to make an ACL for that and make an
+    // ACL that is the logical AND of srcInterface filter and headerSpace filter
+    if (!filter.getFromZones().isEmpty()) {
+      Set<String> srcInterfaces = new TreeSet<>();
+      for (String zoneName : filter.getFromZones()) {
+        srcInterfaces.addAll(
+            _zones
+                .get(zoneName)
+                .getInterfaces()
+                .stream()
+                .map(Interface::getName)
+                .collect(ImmutableList.toImmutableList()));
+      }
+      String srcInterfaceFilterName = name + "_srcInterfaceFilter";
+      headerSpaceFilterName = name + "_headerSpaceFilter";
+      // ACL for src interface matching
+      map.put(
+          srcInterfaceFilterName,
+          new IpAccessList(
+              srcInterfaceFilterName,
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new MatchSrcInterface(srcInterfaces),
+                      srcInterfaceFilterName))));
+      // This is the new 'top-level' ACL used as an interface's outgoing filter, which is the
+      // logical AND of the srcInterface and headerSpace ACLs
+      map.put(
+          name,
+          new IpAccessList(
+              name,
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new AndMatchExpr(
+                          ImmutableList.of(
+                              new PermittedByAcl(srcInterfaceFilterName),
+                              new PermittedByAcl(headerSpaceFilterName))),
+                      name))));
+    }
+    map.put(headerSpaceFilterName, toHeaderSpaceIpAccessList(filter, headerSpaceFilterName));
+    return map;
+  }
+
+  private Map<String, IpAccessList> toIpAccessLists_old(FirewallFilter filter)
+      throws VendorConversionException {
+    Map<String, IpAccessList> map = new TreeMap<>();
+    String name = filter.getName();
+    String headerSpaceFilterName = name;
+
     List<IpAccessListLine> lines = new ArrayList<>();
     for (FwTerm term : filter.getTerms().values()) {
       // action
@@ -1391,8 +1505,49 @@ public final class JuniperConfiguration extends VendorConfiguration {
         lines.add(line);
       }
     }
-    IpAccessList list = new IpAccessList(name, lines);
-    return list;
+
+    // If srcInterfaces (from zones) are filtered, then need to make an ACL for that and make an
+    // ACL that is the logical AND of srcInterface filter and headerSpace filter
+    if (!filter.getFromZones().isEmpty()) {
+      Set<String> srcInterfaces = new TreeSet<>();
+      for (String zoneName : filter.getFromZones()) {
+        srcInterfaces.addAll(
+            _zones
+                .get(zoneName)
+                .getInterfaces()
+                .stream()
+                .map(Interface::getName)
+                .collect(ImmutableList.toImmutableList()));
+      }
+      String srcInterfaceFilterName = name + "_srcInterfaceFilter";
+      headerSpaceFilterName = name + "_headerSpaceFilter";
+      map.put(
+          srcInterfaceFilterName,
+          new IpAccessList(
+              srcInterfaceFilterName,
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new MatchSrcInterface(srcInterfaces),
+                      srcInterfaceFilterName))));
+      map.put(
+          name,
+          new IpAccessList(
+              name,
+              ImmutableList.of(
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new AndMatchExpr(
+                          ImmutableList.of(
+                              new PermittedByAcl(srcInterfaceFilterName),
+                              new PermittedByAcl(headerSpaceFilterName))),
+                      name))));
+    }
+
+    IpAccessList list = new IpAccessList(headerSpaceFilterName, lines);
+    map.put(headerSpaceFilterName, list);
+
+    return map;
   }
 
   private org.batfish.datamodel.IpsecPolicy toIpsecPolicy(IpsecPolicy oldIpsecPolicy) {
@@ -1776,8 +1931,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (filter.getFamily() != Family.INET) {
         continue;
       }
-      IpAccessList list = toIpAccessList(filter);
-      _c.getIpAccessLists().put(name, list);
+      // IpAccessList list = toIpAccessList(filter);
+      // _c.getIpAccessLists().put(name, list);
+
+      Map<String, IpAccessList> lists = toIpAccessLists(filter);
+      _c.getIpAccessLists().putAll(lists);
     }
 
     // convert firewall filters implementing routing policy to RoutingPolicy
@@ -2151,6 +2309,31 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpAccessList toZoneFilterList = _c.getIpAccessLists().get(toZoneFilterName);
       newZone.getToZonePolicies().put(toZoneName, toZoneFilterList);
     }
+
+    /*
+    //getFromZonePolicies
+    // TODO ASDF
+    // Convert each security policy to an ACL
+    for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
+      String fromZoneName = e.getKey();
+      FirewallFilter fromZoneFilter = e.getValue();
+      //fromZoneFilter
+      //    .getReferers()
+      //    .put(
+      //        zone,
+      //        "cross-zone firewall filter from zone: '"
+      //            + zone.getName()
+      //            + "' to zone: '"
+      //            + toZoneName
+      //            + "'");
+      //
+      String fromZoneFilterName = fromZoneFilter.getName();
+      _c.getIpAccessLists().put(fromZoneFilterName, toIpAccessList(fromZoneFilter));
+
+      // TODO decide if we want to save this in a new fromZonePolicies field in newZone
+      // newZone.getToZonePolicies().put(toZoneName, toZoneFilterList);
+    }
+    */
 
     for (Interface iface : zone.getInterfaces()) {
       String ifaceName = iface.getName();

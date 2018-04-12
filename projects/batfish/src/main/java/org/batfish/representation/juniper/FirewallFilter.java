@@ -2,6 +2,8 @@ package org.batfish.representation.juniper;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.batfish.common.util.ReferenceCountedStructure;
 
 public final class FirewallFilter extends ReferenceCountedStructure {
@@ -13,6 +15,8 @@ public final class FirewallFilter extends ReferenceCountedStructure {
 
   private final Family _family;
 
+  private final Set<String> _fromZones;
+
   private final String _name;
 
   private boolean _routingPolicy;
@@ -22,6 +26,7 @@ public final class FirewallFilter extends ReferenceCountedStructure {
   public FirewallFilter(String name, Family family, int definitionLine) {
     _definitionLine = definitionLine;
     _family = family;
+    _fromZones = new TreeSet<>();
     _name = name;
     _terms = new LinkedHashMap<>();
   }
@@ -32,6 +37,10 @@ public final class FirewallFilter extends ReferenceCountedStructure {
 
   public Family getFamily() {
     return _family;
+  }
+
+  public Set<String> getFromZones() {
+    return _fromZones;
   }
 
   public String getName() {

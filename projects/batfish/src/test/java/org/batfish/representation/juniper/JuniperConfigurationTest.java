@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.batfish.datamodel.Configuration;
@@ -20,11 +21,12 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.Test;
 
 public class JuniperConfigurationTest {
 
-  private JuniperConfiguration createConfig() {
+  private static JuniperConfiguration createConfig() {
     JuniperConfiguration config = new JuniperConfiguration(Collections.emptySet());
     config._c = new Configuration("host", ConfigurationFormat.JUNIPER);
     return config;
@@ -81,5 +83,14 @@ public class JuniperConfigurationTest {
         containsInAnyOrder(new PermittedByAcl("policy1"), new PermittedByAcl("policy2")));
     // Should accept matches
     assertThat(aclLineWithPolicy.getAction(), equalTo(LineAction.ACCEPT));
+  }
+
+  @Test
+  public void testToIpAccessLists() {
+    JuniperConfiguration config = createConfig();
+    FirewallFilter filter = new FirewallFilter("filter", Family.INET, -1);
+    Map<String, IpAccessList> map = config.toIpAccessLists(filter);
+
+    assertThat(map.entrySet(), iterableWithSize(1));
   }
 }
