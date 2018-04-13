@@ -1,6 +1,5 @@
 package org.batfish.z3.expr.visitors;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -8,7 +7,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Stream;
 import org.batfish.z3.Field;
 import org.batfish.z3.ReachabilityProgram;
 import org.batfish.z3.expr.AndExpr;
@@ -41,24 +39,26 @@ import org.batfish.z3.expr.VoidStatementVisitor;
 
 public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor {
 
-  private static final Supplier<Set<Entry<String, Integer>>> BASIC_STATE_VARIABLE_SIZES =
-      () ->
-          Field.COMMON_FIELDS
-              .stream()
-              .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
-              .collect(ImmutableSet.toImmutableSet());
+  private static final Set<Entry<String, Integer>> BASIC_STATE_VARIABLE_SIZES =
+      Field.COMMON_FIELDS
+          .stream()
+          .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
+          .collect(ImmutableSet.toImmutableSet());
 
   public static Map<String, Integer> collectVariableSizes(ReachabilityProgram[] programs) {
     VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
-    Arrays.stream(programs)
-        .flatMap(
-            program -> Stream.concat(program.getRules().stream(), program.getQueries().stream()))
-        .forEach(statement -> statement.accept(variableSizeCollector));
+    Arrays.stream(programs).forEach(variableSizeCollector::collectVariableSizes);
     return variableSizeCollector
         ._variableSizes
         .build()
         .stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
+
+  private void collectVariableSizes(ReachabilityProgram program) {
+    program.getQueries().forEach(stmt -> stmt.accept(this));
+    program.getRules().forEach(stmt -> stmt.accept(this));
+    program.getSmtConstraint().accept(this);
   }
 
   public static Map<String, Integer> collectVariableSizes(Statement s) {
@@ -182,9 +182,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitStateExpr(StateExpr stateExpr) {
-    // experimenting with this. maybe we can automatically exclude variables that aren't needed
-    // for the query.
-    // _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
+    _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES);
   }
 
   @Override

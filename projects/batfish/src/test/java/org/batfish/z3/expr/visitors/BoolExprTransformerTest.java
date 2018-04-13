@@ -88,6 +88,7 @@ public class BoolExprTransformerTest {
                     of(
                         new BasicRuleStatement(_stateExpr),
                         new TransformationRuleStatement(_transformationStateExpr)))
+                .setSmtConstraint(SaneExpr.INSTANCE)
                 .build());
   }
 
@@ -232,17 +233,18 @@ public class BoolExprTransformerTest {
                         TcpFlags.builder().setUseCwr(true).build()))
                 .build());
 
-    NodContext nodContext = new NodContext(
-        _ctx,
-        ReachabilityProgram.builder()
-            .setInput(_input)
-            .setRules(
-                of(
-                    new BasicRuleStatement(_stateExpr),
-                    new TransformationRuleStatement(_transformationStateExpr)))
-            .setSmt
-            .build());
-    assertThat(toBoolExpr(expr, _input, _nodContext), instanceOf(BoolExpr.class));
+    NodContext nodContext =
+        new NodContext(
+            _ctx,
+            ReachabilityProgram.builder()
+                .setInput(_input)
+                .setRules(
+                    of(
+                        new BasicRuleStatement(_stateExpr),
+                        new TransformationRuleStatement(_transformationStateExpr)))
+                .setSmtConstraint(expr)
+                .build());
+    assertThat(toBoolExpr(expr, _input, nodContext), instanceOf(BoolExpr.class));
   }
 
   @Test
@@ -280,7 +282,6 @@ public class BoolExprTransformerTest {
   @Test
   public void testVisitPrefixMatchExpr() {
     BooleanExpr expr = new PrefixMatchExpr(new VarIntExpr(Field.SRC_IP), Prefix.parse("1.2.3.4/5"));
-
     assertThat(toBoolExpr(expr, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 
@@ -297,6 +298,7 @@ public class BoolExprTransformerTest {
 
   @Test
   public void testVisitSaneExpr() {
+
     assertThat(toBoolExpr(SaneExpr.INSTANCE, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 

@@ -117,8 +117,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
       long currentWildcardBit = mask & wildcard;
       boolean useBit = currentWildcardBit == 0;
       if (useBit) {
-        IntExpr extractIp =
-            ExtractExpr.newExtractExpr(ipField, currentBitIndex, currentBitIndex);
+        IntExpr extractIp = ExtractExpr.newExtractExpr(ipField, currentBitIndex, currentBitIndex);
         LitIntExpr srcIpMatchLit = new LitIntExpr(ip, currentBitIndex, currentBitIndex);
         EqExpr matchIpBit = new EqExpr(extractIp, srcIpMatchLit);
         matchIp.add(matchIpBit);
@@ -393,8 +392,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   public static BooleanExpr matchOrigSrcOrDstIp(Set<IpWildcard> ipWildcards) {
     return new OrExpr(
         ImmutableList.of(
-            matchIp(ipWildcards, Field.ORIG_SRC_IP),
-            matchIp(ipWildcards, Field.DST_IP)));
+            matchIp(ipWildcards, Field.ORIG_SRC_IP), matchIp(ipWildcards, Field.DST_IP)));
   }
 
   @Override

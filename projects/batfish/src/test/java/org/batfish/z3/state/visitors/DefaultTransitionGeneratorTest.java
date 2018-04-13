@@ -32,6 +32,7 @@ import org.batfish.z3.expr.MockBooleanAtom;
 import org.batfish.z3.expr.MockIntAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -1378,63 +1379,63 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(4),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(4)),
                 new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1),
                 new PreInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(5),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(5)),
                 new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
                 new PreInInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(6),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(6)),
                 new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE3),
                 new PreInInterface(NODE2, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(4),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(4)),
                 ImmutableSet.of(new PostOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1)),
                 new PreInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(5),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(5)),
                 new PostOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE2),
                 new PreInInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(6),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(6)),
                 new PostOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE3),
                 new PreInInterface(NODE2, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(4),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(4)),
                 new PostOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE1),
                 new PreInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(5),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(5)),
                 new PostOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE2),
                 new PreInInterface(NODE2, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(6),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(6)),
                 new PostOutEdge(NODE1, INTERFACE3, NODE2, INTERFACE3),
                 new PreInInterface(NODE2, INTERFACE3))));
 
@@ -1442,63 +1443,63 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(1),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(1)),
                 new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1),
                 new PreInInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(2),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(2)),
                 new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE2),
                 new PreInInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(3),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(3)),
                 new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE3),
                 new PreInInterface(NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(1),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(1)),
                 new PostOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE1),
                 new PreInInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(2),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(2)),
                 new PostOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE2),
                 new PreInInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(3),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(3)),
                 new PostOutEdge(NODE2, INTERFACE2, NODE1, INTERFACE3),
                 new PreInInterface(NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(1),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(1)),
                 new PostOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE1),
                 new PreInInterface(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(2),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(2)),
                 new PostOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE2),
                 new PreInInterface(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(3),
+                new EqExpr(new TransformedVarIntExpr(SRC_INTERFACE_FIELD), i(3)),
                 new PostOutEdge(NODE2, INTERFACE3, NODE1, INTERFACE3),
                 new PreInInterface(NODE1, INTERFACE3))));
   }

@@ -107,8 +107,8 @@ public class BoolExprTransformer
                     .map(
                         field ->
                             transformedFields.contains(field)
-                                ? _nodContext.getVariables().get(field.getName())
-                                : _nodContext.getTransformedVariables().get(field.getName()))
+                                ? _nodContext.getTransformedVariables().get(field.getName())
+                                : _nodContext.getVariables().get(field.getName()))
                     .toArray(Expr[]::new));
   }
 

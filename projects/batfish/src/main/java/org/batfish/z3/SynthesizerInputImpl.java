@@ -310,7 +310,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, IntExpr>> computeSourceInterfaceFieldValues() {
-    return CommonUtil.toImmutableMap(
+    return toImmutableMap(
         _nodeInterfaces,
         Entry::getKey,
         entry -> {

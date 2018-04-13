@@ -134,12 +134,12 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
 
       Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
       List<BitVecExpr> vars =
-              program
-                  .getNodContext()
-                  .getVariableNames()
-                  .stream()
-                  .map(variablesAsConsts::get)
-                  .collect(Collectors.toList());
+          program
+              .getNodContext()
+              .getVariableNames()
+              .stream()
+              .map(variablesAsConsts::get)
+              .collect(Collectors.toList());
       List<BitVecExpr> reversedVars = Lists.reverse(vars);
 
       Expr substitutedSmtConstraint =
