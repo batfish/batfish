@@ -11,7 +11,7 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -205,23 +205,21 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     List<StateExpr> finalActions = computeFinalActions();
-    ImmutableList.Builder<BooleanExpr> queryPreconditions =
-        ImmutableList.<BooleanExpr>builder().add(SaneExpr.INSTANCE).add(getSrcNattedConstraint());
-
     finalActions
         .stream()
-        .map(
-            finalAction ->
-                new BasicRuleStatement(
-                    new AndExpr(queryPreconditions.build()),
-                    ImmutableSet.of(finalAction),
-                    Query.INSTANCE))
+        .map(finalAction -> new BasicRuleStatement(ImmutableSet.of(finalAction), Query.INSTANCE))
         .forEach(rules::add);
     addOriginateRules(rules);
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
         .setRules(rules.build())
+        .setSmtConstraint(
+            new AndExpr(
+                ImmutableList.of(
+                    new HeaderSpaceMatchExpr(_headerSpace, true),
+                    getSrcNattedConstraint(),
+                    SaneExpr.INSTANCE)))
         .build();
   }
 }

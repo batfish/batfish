@@ -19,6 +19,8 @@ public class NodProgram {
 
   private final List<BoolExpr> _rules;
 
+  private final BoolExpr _smtConstraint;
+
   private final Map<String, Integer> _variableSizes;
 
   public NodProgram(Context ctx, ReachabilityProgram... programs) {
@@ -48,6 +50,16 @@ public class NodProgram {
                                 BoolExprTransformer.toBoolExpr(
                                     booleanExpr, program.getInput(), _context)))
             .collect(ImmutableList.toImmutableList());
+    _smtConstraint =
+        _context
+            .getContext()
+            .mkAnd(
+                Arrays.stream(programs)
+                    .map(
+                        program ->
+                            BoolExprTransformer.toBoolExpr(
+                                program.getSmtConstraint(), program.getInput(), _context))
+                    .toArray(BoolExpr[]::new));
   }
 
   public NodContext getNodContext() {
@@ -60,6 +72,10 @@ public class NodProgram {
 
   public List<BoolExpr> getRules() {
     return _rules;
+  }
+
+  public BoolExpr getSmtConstraint() {
+    return _smtConstraint;
   }
 
   public String toSmt2String() {

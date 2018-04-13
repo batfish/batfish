@@ -209,11 +209,19 @@ public class Simplifier
       if (then == els) {
         return then;
       }
-      if (then == TrueExpr.INSTANCE && els == FalseExpr.INSTANCE) {
-        return condition;
+      if (then == TrueExpr.INSTANCE) {
+        if (els == FalseExpr.INSTANCE) {
+          return condition;
+        } else {
+          return new OrExpr(ImmutableList.of(condition, els));
+        }
       }
-      if (then == FalseExpr.INSTANCE && els == TrueExpr.INSTANCE) {
-        return new NotExpr(condition);
+      if (then == FalseExpr.INSTANCE) {
+        if (els == TrueExpr.INSTANCE) {
+          return new NotExpr(condition);
+        } else {
+          return new AndExpr(ImmutableList.of(new NotExpr(condition), els));
+        }
       }
       if (condition != ifThenElse.getCondition()
           || then != ifThenElse.getThen()

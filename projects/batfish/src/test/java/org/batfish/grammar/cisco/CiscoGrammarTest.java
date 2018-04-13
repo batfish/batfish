@@ -25,6 +25,8 @@ import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandw
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -70,6 +72,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoStructureType;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -711,6 +714,26 @@ public class CiscoGrammarTest {
     assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
     assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
     assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
+  }
+
+  @Test
+  public void testParsingRecovery1141() throws IOException {
+    // Test for https://github.com/batfish/batfish/issues/1141
+    String testrigName = "parsing-recovery";
+    String hostname = "ios-recovery-1141";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+    Configuration iosRecovery = configurations.get(hostname);
+    assertThat(iosRecovery, allOf(Matchers.notNullValue(), hasInterface("Loopback0", anything())));
   }
 
   @Test

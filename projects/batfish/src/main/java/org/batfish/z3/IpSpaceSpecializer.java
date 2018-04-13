@@ -88,15 +88,19 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIpWildcard(IpWildcard ipWildcard) {
+    return visitIpWildcard(ipWildcard, _whitelist);
+  }
+
+  public IpSpace visitIpWildcard(IpWildcard ipWildcard, Set<IpWildcard> whitelist) {
     if (_blacklist.stream().anyMatch(ipWildcard::subsetOf)) {
       // blacklisted
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (_whitelist.stream().allMatch(ipWildcard::supersetOf)
+    if (whitelist.stream().allMatch(ipWildcard::supersetOf)
         && _blacklist.stream().noneMatch(ipWildcard::intersects)) {
       return UniverseIpSpace.INSTANCE;
-    } else if (_whitelist.stream().anyMatch(ipWildcard::intersects)) {
+    } else if (whitelist.stream().anyMatch(ipWildcard::intersects)) {
       // some match
       return ipWildcard;
     } else {
@@ -121,15 +125,26 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
     }
     Set<IpWildcard> blacklist = blacklistStream.collect(Collectors.toSet());
 
+    // Temporarily narrow the headerspace whitelist to what is not covered by the IpSpace blacklist.
+    Set<IpWildcard> newWhitelist =
+        _whitelist
+            .stream()
+            .filter(ipWildcard -> blacklist.stream().noneMatch(ipWildcard::subsetOf))
+            .collect(Collectors.toSet());
+
+    if (newWhitelist.isEmpty()) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
     /*
-     * Remove any whitelisted Ips that are either blacklisted or don't overlap with the headerspace
+     * Remove any whitelisted Ips that are either blacklisted or don't overlap with the specialized
      * whitelist.
      */
     Set<IpSpace> ipSpaceWhitelist =
         ipWildcardSetIpSpace
             .getWhitelist()
             .stream()
-            .map(this::visitIpWildcard)
+            .map(ipWildcard -> visitIpWildcard(ipWildcard, newWhitelist))
             .filter(ipSpace -> !(ipSpace instanceof EmptyIpSpace))
             .collect(Collectors.toSet());
 

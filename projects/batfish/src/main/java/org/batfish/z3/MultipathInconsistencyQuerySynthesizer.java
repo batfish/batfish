@@ -9,7 +9,7 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -63,27 +63,24 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     addOriginateRules(rules);
-    ImmutableList.Builder<BooleanExpr> queryPreconditions =
-        ImmutableList.<BooleanExpr>builder().add(SaneExpr.INSTANCE).add(getSrcNattedConstraint());
+    rules.add(
+        new BasicRuleStatement(ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE), Query.INSTANCE));
     rules.add(
         new BasicRuleStatement(
-            new AndExpr(queryPreconditions.build()),
-            ImmutableSet.of(Accept.INSTANCE, Drop.INSTANCE),
-            Query.INSTANCE));
+            ImmutableSet.of(Accept.INSTANCE, NeighborUnreachable.INSTANCE), Query.INSTANCE));
     rules.add(
         new BasicRuleStatement(
-            SaneExpr.INSTANCE,
-            ImmutableSet.of(Accept.INSTANCE, NeighborUnreachable.INSTANCE),
-            Query.INSTANCE));
-    rules.add(
-        new BasicRuleStatement(
-            SaneExpr.INSTANCE,
-            ImmutableSet.of(Drop.INSTANCE, NeighborUnreachable.INSTANCE),
-            Query.INSTANCE));
+            ImmutableSet.of(Drop.INSTANCE, NeighborUnreachable.INSTANCE), Query.INSTANCE));
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
         .setRules(rules.build())
+        .setSmtConstraint(
+            new AndExpr(
+                ImmutableList.of(
+                    new HeaderSpaceMatchExpr(_headerSpace, true),
+                    getSrcNattedConstraint(),
+                    SaneExpr.INSTANCE)))
         .build();
   }
 }
