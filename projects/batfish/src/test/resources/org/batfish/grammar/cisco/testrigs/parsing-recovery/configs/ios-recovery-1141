@@ -1,0 +1,8 @@
+!
+hostname ios-recovery-1141
+!
+! Lexer error (1.2 is not a valid IP) in inner rule does not eat the whole file
+tacacs-server host 1.2
+!
+! Should succeed
+interface Loopback0
