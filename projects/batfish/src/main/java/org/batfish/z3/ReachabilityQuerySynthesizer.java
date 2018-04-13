@@ -9,7 +9,6 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -97,7 +96,8 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
             new BasicRuleStatement(
                 new AndExpr(
                     ImmutableList.of(
-                        CurrentIsOriginalExpr.INSTANCE, new HeaderSpaceMatchExpr(_headerSpace))),
+                        new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)),
+                        new HeaderSpaceMatchExpr(_headerSpace))),
                 new OriginateVrf(ingressNode, ingressVrf)));
       }
     }
@@ -106,9 +106,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
   protected final BooleanExpr getSrcNattedConstraint() {
     if (_srcNatted != null) {
       BooleanExpr notSrcNatted =
-          new EqExpr(
-              new VarIntExpr(BasicHeaderField.SRC_IP),
-              new VarIntExpr(BasicHeaderField.ORIG_SRC_IP));
+          new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
       if (_srcNatted) {
         return new NotExpr(notSrcNatted);
       } else {

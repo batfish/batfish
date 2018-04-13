@@ -10,17 +10,18 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.z3.Field;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
-import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -66,7 +67,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   private final SynthesizerInput _input;
 
-  private ImmutableList.Builder<RuleStatement> _rules;
+  private final ImmutableList.Builder<RuleStatement> _rules;
 
   public DefaultTransitionGenerator(SynthesizerInput input) {
     _input = input;
@@ -511,7 +512,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .map(
                       vrfName ->
                           new BasicRuleStatement(
-                              new OriginateVrf(hostname, vrfName), new Originate(hostname)));
+                              noSrcInterfaceConstraint(),
+                              ImmutableSet.of(new OriginateVrf(hostname, vrfName)),
+                              new Originate(hostname)));
             })
         .forEach(_rules::add);
   }
@@ -664,9 +667,27 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .map(
             edge ->
                 new BasicRuleStatement(
+                    new EqExpr(
+                        new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                        _input
+                            .getSourceInterfaceFieldValues()
+                            .get(edge.getNode2())
+                            .get(edge.getInt2())),
                     ImmutableSet.of(new PostOutEdge(edge)),
                     new PreInInterface(edge.getNode2(), edge.getInt2())))
         .forEach(_rules::add);
+  }
+
+  private BooleanExpr noSrcInterfaceConstraint() {
+    Field srcInterface = _input.getSourceInterfaceField();
+    return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
+  }
+
+  private BooleanExpr srcInterfaceConstraint(String node, String iface) {
+    int id = _input.getNodeInterfaceId(node, iface);
+    Field srcInterface = _input.getSourceInterfaceField();
+    return new EqExpr(
+        new TransformedVarIntExpr(srcInterface), new LitIntExpr(id, srcInterface.getSize()));
   }
 
   @Override
@@ -752,10 +773,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
       BooleanExpr transformationExpr = sourceNats.get(natNumber).getValue();
 
       _rules.add(
-          new TransformationRuleStatement(
+          new BasicRuleStatement(
               transformationExpr,
               preStates.build(),
-              ImmutableSet.of(),
               new PreOutEdgePostNat(node1, iface1, node2, iface2)));
     }
   }
@@ -778,13 +798,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .forEach(preStates::add);
 
     _rules.add(
-        new TransformationRuleStatement(
-            new EqExpr(
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
-            preStates.build(),
-            ImmutableSet.of(),
-            new PreOutEdgePostNat(node1, iface1, node2, iface2)));
+        new BasicRuleStatement(
+            preStates.build(), new PreOutEdgePostNat(node1, iface1, node2, iface2)));
   }
 
   private void visitPreOutEdgePostNat_generateTopologyEdgeRules() {

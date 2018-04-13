@@ -199,15 +199,11 @@ public class NodJobTest {
     assertThat(
         fieldConstraints,
         hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
     assertThat(
         fieldConstraints,
-        hasEntry(BasicHeaderField.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
-    assertThat(
-        fieldConstraints,
-        hasEntry(
-            equalTo(BasicHeaderField.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
-    assertThat(
-        fieldConstraints, hasEntry(BasicHeaderField.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
+        hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
@@ -274,13 +270,10 @@ public class NodJobTest {
         fieldConstraints,
         hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
-    assertThat(fieldConstraints, hasKey(BasicHeaderField.SRC_IP.getName()));
+    assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
-    assertThat(
-        fieldConstraints,
-        hasEntry(BasicHeaderField.ORIG_SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
-    assertThat(
-        fieldConstraints, hasEntry(BasicHeaderField.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
+    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
     _bdpDataPlanePlugin.processFlows(flows, _dataPlane);

@@ -15,6 +15,12 @@ public class MockIntAtom extends IntExpr {
 
   private final int _numBits;
 
+  public MockIntAtom(int i) {
+    _name = String.format("BVConst%d", i);
+    _numBits = i;
+    _ctx = null;
+  }
+
   public MockIntAtom(int i, int numBits, Context ctx) {
     _name = String.format("BVConst%d", i);
     _numBits = numBits;

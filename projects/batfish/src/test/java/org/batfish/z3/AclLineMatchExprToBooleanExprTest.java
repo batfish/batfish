@@ -29,7 +29,7 @@ import org.junit.Test;
 
 public class AclLineMatchExprToBooleanExprTest {
   private static final AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-      new AclLineMatchExprToBooleanExpr(ImmutableMap.of());
+      new AclLineMatchExprToBooleanExpr(ImmutableMap.of(), null, ImmutableMap.of());
 
   @Test
   public void testAndMatchExpr() {
@@ -95,7 +95,7 @@ public class AclLineMatchExprToBooleanExprTest {
     IpAccessList acl = IpAccessList.builder().setName("acl").build();
 
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-        new AclLineMatchExprToBooleanExpr(ImmutableMap.of("acl", acl));
+        new AclLineMatchExprToBooleanExpr(ImmutableMap.of("acl", acl), null, ImmutableMap.of());
 
     assertThat(
         new PermittedByAcl("acl").accept(aclLineMatchExprToBooleanExpr),
@@ -128,7 +128,7 @@ public class AclLineMatchExprToBooleanExprTest {
         IpAccessList.builder().setName("acl").setLines(ImmutableList.of(line1, line2)).build();
 
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-        new AclLineMatchExprToBooleanExpr(ImmutableMap.of("acl", acl));
+        new AclLineMatchExprToBooleanExpr(ImmutableMap.of("acl", acl), null, ImmutableMap.of());
 
     assertThat(
         new PermittedByAcl("acl").accept(aclLineMatchExprToBooleanExpr),

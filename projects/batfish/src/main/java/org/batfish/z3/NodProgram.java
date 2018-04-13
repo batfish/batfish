@@ -1,14 +1,15 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Streams;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.z3.expr.visitors.BoolExprTransformer;
+import org.batfish.z3.expr.visitors.VariableSizeCollector;
 
 public class NodProgram {
 
@@ -18,8 +19,11 @@ public class NodProgram {
 
   private final List<BoolExpr> _rules;
 
+  private final Map<String, Integer> _variableSizes;
+
   public NodProgram(Context ctx, ReachabilityProgram... programs) {
     _context = new NodContext(ctx, programs);
+    _variableSizes = VariableSizeCollector.collectVariableSizes(programs);
     _queries =
         Arrays.stream(programs)
             .flatMap(
@@ -60,15 +64,8 @@ public class NodProgram {
 
   public String toSmt2String() {
     StringBuilder sb = new StringBuilder();
-    Streams.concat(
-            Arrays.stream(BasicHeaderField.values()),
-            Arrays.stream(TransformationHeaderField.values()))
-        .forEach(
-            hf -> {
-              String var = hf.name();
-              int size = hf.getSize();
-              sb.append(String.format("(declare-var %s (_ BitVec %d))\n", var, size));
-            });
+    _variableSizes.forEach(
+        (var, size) -> sb.append(String.format("(declare-var %s (_ BitVec %d))\n", var, size)));
     _context
         .getRelationDeclarations()
         .values()

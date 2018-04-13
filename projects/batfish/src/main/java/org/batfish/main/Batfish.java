@@ -717,6 +717,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<String, Map<String, List<AclLine>>> e : arrangedAclLines.entrySet()) {
       String hostname = e.getKey();
       Configuration c = configurations.get(hostname);
+      List<String> nodeInterfaces =
+          ImmutableList.sortedCopyOf(
+              c.getInterfaces()
+                  .values()
+                  .stream()
+                  .map(Interface::getName)
+                  .collect(Collectors.toList()));
       Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
@@ -736,7 +743,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             EarliestMoreGeneralReachableLineQuerySynthesizer query =
-                new EarliestMoreGeneralReachableLineQuerySynthesizer(line, toCheck, ipAccessList);
+                new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                    line, toCheck, ipAccessList, c.getIpAccessLists(), nodeInterfaces);
             NodFirstUnsatJob<AclLine, Integer> job =
                 new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
             step2Jobs.add(job);

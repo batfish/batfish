@@ -93,8 +93,7 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
     queryConditionsBuilder.add(SaneExpr.INSTANCE);
     for (Ip blacklistIp : _blacklistIps) {
       BooleanExpr blacklistIpCondition =
-          new NotExpr(
-              new EqExpr(new VarIntExpr(BasicHeaderField.DST_IP), new LitIntExpr(blacklistIp)));
+          new NotExpr(new EqExpr(new VarIntExpr(Field.DST_IP), new LitIntExpr(blacklistIp)));
       queryConditionsBuilder.add(blacklistIpCondition);
     }
     return ReachabilityProgram.builder()

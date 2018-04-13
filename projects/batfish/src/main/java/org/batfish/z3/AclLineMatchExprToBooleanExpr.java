@@ -1,10 +1,10 @@
 package org.batfish.z3;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
@@ -20,20 +20,33 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfThenElse;
+import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.VarIntExpr;
 
 public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVisitor<BooleanExpr> {
   private final Map<String, IpAccessList> _nodeAcls;
 
-  public AclLineMatchExprToBooleanExpr() {
-    _nodeAcls = ImmutableMap.of();
+  private final Field _sourceInterfaceField;
+
+  private final ImmutableMap<String, IntExpr> _sourceInterfaceFieldValues;
+
+  public AclLineMatchExprToBooleanExpr(
+      Map<String, IpAccessList> nodeAcls,
+      Field sourceInterfaceField,
+      Map<String, IntExpr> sourceInterfaceFieldValues) {
+    _nodeAcls = ImmutableMap.copyOf(nodeAcls);
+    _sourceInterfaceField = sourceInterfaceField;
+    _sourceInterfaceFieldValues = ImmutableMap.copyOf(sourceInterfaceFieldValues);
   }
 
-  public AclLineMatchExprToBooleanExpr(Map<String, IpAccessList> nodeAcls) {
-    _nodeAcls = ImmutableMap.copyOf(nodeAcls);
+  @VisibleForTesting
+  BooleanExpr matchSrcInterfaceExpr(String s) {
+    return new EqExpr(new VarIntExpr(_sourceInterfaceField), _sourceInterfaceFieldValues.get(s));
   }
 
   public BooleanExpr toBooleanExpr(AclLineMatchExpr aclLineMatchExpr) {
@@ -58,7 +71,12 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
 
   @Override
   public BooleanExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    throw new BatfishException("TODO");
+    return new OrExpr(
+        matchSrcInterface
+            .getSrcInterfaces()
+            .stream()
+            .map(this::matchSrcInterfaceExpr)
+            .collect(Collectors.toList()));
   }
 
   @Override

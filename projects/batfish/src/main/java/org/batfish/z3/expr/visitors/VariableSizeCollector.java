@@ -8,13 +8,13 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.batfish.z3.BasicHeaderField;
+import java.util.stream.Stream;
 import org.batfish.z3.Field;
+import org.batfish.z3.ReachabilityProgram;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -34,6 +34,7 @@ import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
@@ -42,9 +43,23 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   private static final Supplier<Set<Entry<String, Integer>>> BASIC_STATE_VARIABLE_SIZES =
       () ->
-          Arrays.stream(BasicHeaderField.values())
+          Field.COMMON_FIELDS
+              .stream()
               .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
               .collect(ImmutableSet.toImmutableSet());
+
+  public static Map<String, Integer> collectVariableSizes(ReachabilityProgram[] programs) {
+    VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
+    Arrays.stream(programs)
+        .flatMap(
+            program -> Stream.concat(program.getRules().stream(), program.getQueries().stream()))
+        .forEach(statement -> statement.accept(variableSizeCollector));
+    return variableSizeCollector
+        ._variableSizes
+        .build()
+        .stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  }
 
   public static Map<String, Integer> collectVariableSizes(Statement s) {
     VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
@@ -84,11 +99,6 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public void visitComment(Comment comment) {}
 
   @Override
-  public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    currentIsOriginalExpr.getExpr().accept(this);
-  }
-
-  @Override
   public void visitEqExpr(EqExpr eqExpr) {
     eqExpr.getLhs().accept(this);
     eqExpr.getRhs().accept(this);
@@ -96,7 +106,7 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitExtractExpr(ExtractExpr extractExpr) {
-    visitVarIntExpr(extractExpr.getVar());
+    extractExpr.getVar().accept(this);
   }
 
   @Override
@@ -172,7 +182,9 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitStateExpr(StateExpr stateExpr) {
-    _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
+    // experimenting with this. maybe we can automatically exclude variables that aren't needed
+    // for the query.
+    // _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
   }
 
   @Override
@@ -194,6 +206,12 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
     Field field = varIntExpr.getField();
+    _variableSizes.add(Maps.immutableEntry(field.getName(), field.getSize()));
+  }
+
+  @Override
+  public void visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
+    Field field = transformedVarIntExpr.getField();
     _variableSizes.add(Maps.immutableEntry(field.getName(), field.getSize()));
   }
 }

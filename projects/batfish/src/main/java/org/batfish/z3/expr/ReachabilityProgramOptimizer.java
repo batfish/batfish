@@ -158,7 +158,7 @@ public class ReachabilityProgramOptimizer {
                              * already. This only needs to be done once because if a rule is
                              * unusable the first time but becomes usable later, then that rule
                              * has another prestate that becomes derivable after this one. We
-                             * will visit that rule when we explore the out-edges of that other
+                             * will collectTransformedVars that rule when we explore the out-edges of that other
                              * prestate.
                              */
                             StateExpr postState = rule.getPostconditionState();
