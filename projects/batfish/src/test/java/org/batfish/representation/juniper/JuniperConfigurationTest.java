@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasState;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
@@ -13,7 +14,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Collections;
-import java.util.Set;
 import java.util.TreeMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -32,10 +31,9 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Assert;
@@ -54,39 +52,34 @@ public class JuniperConfigurationTest {
     JuniperConfiguration config = createConfig();
     IpAccessList aclNullZone = config.buildSecurityPolicyAcl("name", null);
 
-    // Add zone without any zone policies
+    // Add zone without any zone policies and build a new ACL
     Zone zone = new Zone("zone", new TreeMap<>());
     config.getZones().put("zone", zone);
     IpAccessList aclWithoutPolicy = config.buildSecurityPolicyAcl("name", zone);
-    //IpAccessListLine aclLineWithoutPolicy = aclWithoutPolicy.getLines().get(0);
 
-    // Add zone with policies
+    // Add policies to the zone and build a new ACL
     zone.getFromZonePolicies().put("policy1", new FirewallFilter("filter", Family.INET, 0));
     zone.getFromZonePolicies().put("policy2", new FirewallFilter("filter", Family.INET, 0));
     IpAccessList aclWithPolicy = config.buildSecurityPolicyAcl("name", zone);
-    //IpAccessListLine aclLineWithPolicy = aclWithPolicy.getLines().get(0);
 
-    // Null zone should produce no security policy acl
-    assertThat(aclNullZone, is(nullValue()));
+    // Null zone should produce ACL with default behavior to allow-established
+    IpAccessListLine aclNullZoneLine = Iterables.getOnlyElement(aclNullZone.getLines());
+    Assert.assertThat(
+        aclNullZoneLine,
+        hasMatchCondition(
+            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+    Assert.assertThat(aclNullZoneLine, hasAction(equalTo(LineAction.ACCEPT)));
 
-    // Zone with no policy should produce a simple deny acl
+    // Zone with no policy should also produce the default allow-established ACL
     IpAccessListLine aclLineWithoutPolicy = Iterables.getOnlyElement(aclWithoutPolicy.getLines());
-    // Should match all traffic
-    assertThat(
+    Assert.assertThat(
         aclLineWithoutPolicy,
         hasMatchCondition(
-            equalTo(TrueExpr.INSTANCE)
-        )
-    );
-    // Should reject matches
-    assertThat(
-        aclLineWithoutPolicy,
-        hasAction(
-            equalTo(LineAction.REJECT)
-        )
-    );
+            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+    Assert.assertThat(aclLineWithoutPolicy, hasAction(equalTo(LineAction.ACCEPT)));
 
-    // Zone with policies should produce match expr that is a logical OR of those policies
+    // Zone with policies should produce match expr that is a logical OR of those policies OR
+    // the default allow-established
     IpAccessListLine aclLineWithPolicy = Iterables.getOnlyElement(aclWithPolicy.getLines());
     // Should be OrMatchExpr (match any policy)
     assertThat(
@@ -94,25 +87,19 @@ public class JuniperConfigurationTest {
         hasMatchCondition(
             isOrMatchExprThat(
                 hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl("policy1"), new PermittedByAcl("policy2"))
-                )
-            )
-        )
-    );
+                    containsInAnyOrder(
+                        new PermittedByAcl("policy1"),
+                        new PermittedByAcl("policy2"),
+                        new MatchHeaderSpace(HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()))))));
     // Should accept matches
-    assertThat(
-        aclLineWithPolicy,
-        hasAction(
-            equalTo(LineAction.ACCEPT)
-        )
-    );
+    assertThat(aclLineWithPolicy, hasAction(equalTo(LineAction.ACCEPT)));
   }
 
   @Test
-  public void testBuildOutgoingFilter() {}
-
-  @Test
-  public void testToHeaderSpaceIpAccessList() {}
+  public void testBuildOutgoingFilter() {
+    JuniperConfiguration config = createConfig();
+    // IpAccessList outgoingFilter = config.buildOutgoingFilter()
+  }
 
   @Test
   public void testToIpAccessList() {

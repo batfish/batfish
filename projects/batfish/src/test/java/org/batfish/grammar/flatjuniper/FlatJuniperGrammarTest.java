@@ -1,20 +1,30 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasState;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
+import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
+import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
@@ -23,6 +33,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,10 +49,19 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.State;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -222,6 +244,96 @@ public class FlatJuniperGrammarTest {
         byType.get(JuniperStructureType.FIREWALL_FILTER.getDescription());
     assertThat(byName, hasKey("esfilter2"));
     assertThat(byName, not(hasKey("esfilter")));
+  }
+
+  @Test
+  public void testFirewallNoPolicies() throws IOException {
+    Configuration c = parseConfig("firewall-no-policies");
+    String interfaceName0 = "ge-0/0/0.0";
+    String interfaceName1 = "ge-0/0/1.0";
+
+    // Should have two zones
+    assertThat(c.getZones().keySet(), containsInAnyOrder("trust", "untrust"));
+
+    // Should have two interfaces
+    assertThat(c.getInterfaces().keySet(), containsInAnyOrder(interfaceName0, interfaceName1));
+    IpAccessList aclTrust = c.getInterfaces().get(interfaceName0).getOutgoingFilter();
+    IpAccessList aclUntrust = c.getInterfaces().get(interfaceName1).getOutgoingFilter();
+    // Should have two ACLs (lining up with the outgoing filter for the two interfaces)
+    assertThat(
+        c.getIpAccessLists().keySet(),
+        containsInAnyOrder(aclTrust.getName(), aclUntrust.getName()));
+    IpAccessListLine aclTrustLine = Iterables.getOnlyElement(aclTrust.getLines());
+    IpAccessListLine aclUntrustLine = Iterables.getOnlyElement(aclUntrust.getLines());
+    // Since no policies are defined in either direction
+    // Should default to allowing only established connections
+    assertThat(
+        aclTrustLine,
+        hasMatchCondition(
+            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+    assertThat(aclTrustLine, hasAction(equalTo(LineAction.ACCEPT)));
+    assertThat(
+        aclUntrustLine,
+        hasMatchCondition(
+            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+    assertThat(aclTrustLine, hasAction(equalTo(LineAction.ACCEPT)));
+  }
+
+  @Test
+  public void testFirewallPolicies() throws IOException {
+    Configuration c = parseConfig("firewall-policies");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String securityPolicyName = "~FROM_ZONE~trust~TO_ZONE~untrust";
+
+    // Should have two zones
+    assertThat(c.getZones().keySet(), containsInAnyOrder("trust", "untrust"));
+
+    // Should have two interfaces
+    assertThat(
+        c.getInterfaces().keySet(), containsInAnyOrder(interfaceNameTrust, interfaceNameUntrust));
+    IpAccessList aclTrust = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrust = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    // Should have three ACLs:
+    // two outgoing filter for the two interfaces, and one security policy
+    assertThat(
+        c.getIpAccessLists().keySet(),
+        containsInAnyOrder(securityPolicyName, aclTrust.getName(), aclUntrust.getName()));
+    IpAccessListLine aclTrustLine = Iterables.getOnlyElement(aclTrust.getLines());
+    IpAccessListLine aclUntrustLine = Iterables.getOnlyElement(aclUntrust.getLines());
+    IpAccessListLine aclSecurityPolicyLine =
+        Iterables.getOnlyElement(c.getIpAccessLists().get(securityPolicyName).getLines());
+    // Confirm the security policy acl contains logical AND of srcInterface and headerSpace match
+    assertThat(
+        aclSecurityPolicyLine,
+        hasMatchCondition(
+            isAndMatchExprThat(
+                hasConjuncts(
+                    containsInAnyOrder(
+                        new MatchSrcInterface(ImmutableList.of(interfaceNameTrust)),
+                        new MatchHeaderSpace(HeaderSpace.builder().build()))))));
+
+    // Confirm the trust interface's outgoing ACL is set to accept established connections
+    assertThat(
+        aclTrustLine,
+        hasMatchCondition(
+            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+    assertThat(aclTrustLine, hasAction(equalTo(LineAction.ACCEPT)));
+
+    // Confirm the untrust interface's outgoing ACL is set to allow all traffic
+    // or accept established connections
+    assertThat(
+        aclUntrustLine,
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(
+                        new MatchHeaderSpace(HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()),
+                        new PermittedByAcl(securityPolicyName)
+                        )
+                    )
+                )));
+    assertThat(aclUntrustLine, hasAction(equalTo(LineAction.ACCEPT)));
   }
 
   @Test

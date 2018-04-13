@@ -20,7 +20,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -56,6 +55,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Vrf;
@@ -65,7 +65,6 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -1208,8 +1207,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    IpAccessList securityPolicyAcl =
-        buildSecurityPolicyAcl("~SECURITY_POLICIES_TO_INTERFACE~" + iface.getName(), zone);
+    // Assume the config will need security policies only if it has zones
+    IpAccessList securityPolicyAcl = null;
+    if (!_zones.isEmpty()) {
+      String securityPolicyAclName = "~SECURITY_POLICIES_INTERFACE~" + iface.getName();
+      securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
+      if (securityPolicyAcl != null) {
+        _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
+      }
+    }
     newIface.setOutgoingFilter(buildOutgoingFilter(iface, securityPolicyAcl));
 
     // Prefix primaryPrefix = iface.getPrimaryAddress();
@@ -1272,32 +1278,39 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  /** Generate IpAccessList from security policies involving the specified to-zone */
+  /** Generate IpAccessList from the specified to-zone's security policies. */
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
     // Setup ACL based on zone policies (for merging with explicit egress ACL)
     IpAccessList zoneAcl = null;
     // Create this interface's zone ACL based on the policies for its zone
     List<AclLineMatchExpr> zonePolicies = new TreeList<>();
+
+    AclLineMatchExpr allowEstablishedConnections =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build());
+
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
         zonePolicies.add(new PermittedByAcl(e.getKey()));
       }
+      zonePolicies.add(allowEstablishedConnections);
+      // Allow traffic meeting any of the zone policies or established connections
       zoneAcl =
           new IpAccessList(
               name,
               ImmutableList.of(
                   new IpAccessListLine(
                       LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ACCEPT")));
-      _c.getIpAccessLists().put(name, zoneAcl);
-    } else if (!_zones.isEmpty()) {
-      // If there are zones but no applicable policies, explicitly deny any traffic (default
+    } else {
+      // If there are zones but no applicable policies, allow only established connections (default
       // firewall behavior)
       zoneAcl =
           new IpAccessList(
               name,
               ImmutableList.of(
-                  new IpAccessListLine(LineAction.REJECT, TrueExpr.INSTANCE, "REJECT")));
+                  new IpAccessListLine(LineAction.ACCEPT, allowEstablishedConnections, "ACCEPT")));
     }
+    _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
   }
 
@@ -1333,7 +1346,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else if (securityPolicyAcl != null) {
       // When both zone policy and egress filter exist, use the logical AND of the two filters
       return new IpAccessList(
-          "~COMBINED_OUTGOING_FILTER~",
+          "~COMBINED_OUTGOING_FILTER~" + iface.getName(),
           ImmutableList.of(
               new IpAccessListLine(
                   LineAction.ACCEPT,
@@ -1346,12 +1359,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return null;
   }
 
-  /** Convert a firewallFilter terms (headerSpace matching) and optional conjunctMatchExpr into a single
-   * ACL. */
+  /**
+   * Convert a firewallFilter terms (headerSpace matching) and optional conjunctMatchExpr into a
+   * single ACL.
+   */
   private IpAccessList fwTermsToIpAccessList(
-      String aclName,
-      Collection<FwTerm> terms,
-      @Nullable AclLineMatchExpr conjunctMatchExpr)
+      String aclName, Collection<FwTerm> terms, AclLineMatchExpr conjunctMatchExpr)
       throws VendorConversionException {
     List<IpAccessListLine> lines = new ArrayList<>();
     for (FwTerm term : terms) {
@@ -1369,11 +1382,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         action = LineAction.ACCEPT;
       } else {
         _w.redFlag(
-            "missing action in firewall filter: '"
-                + aclName
-                + "', term: '"
-                + term.getName()
-                + "'");
+            "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");
         action = LineAction.REJECT;
       }
       HeaderSpace.Builder matchCondition = HeaderSpace.builder();
@@ -2191,31 +2200,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpAccessList toZoneFilterList = _c.getIpAccessLists().get(toZoneFilterName);
       newZone.getToZonePolicies().put(toZoneName, toZoneFilterList);
     }
-
-    /*
-    //getFromZonePolicies
-    // TODO ASDF
-    // Convert each security policy to an ACL
-    for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
-      String fromZoneName = e.getKey();
-      FirewallFilter fromZoneFilter = e.getValue();
-      //fromZoneFilter
-      //    .getReferers()
-      //    .put(
-      //        zone,
-      //        "cross-zone firewall filter from zone: '"
-      //            + zone.getName()
-      //            + "' to zone: '"
-      //            + toZoneName
-      //            + "'");
-      //
-      String fromZoneFilterName = fromZoneFilter.getName();
-      _c.getIpAccessLists().put(fromZoneFilterName, toIpAccessList(fromZoneFilter));
-
-      // TODO decide if we want to save this in a new fromZonePolicies field in newZone
-      // newZone.getToZonePolicies().put(toZoneName, toZoneFilterList);
-    }
-    */
 
     for (Interface iface : zone.getInterfaces()) {
       String ifaceName = iface.getName();
