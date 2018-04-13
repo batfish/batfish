@@ -33,8 +33,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
@@ -61,7 +59,6 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -270,12 +267,14 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclTrustLine,
         hasMatchCondition(
-            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
     assertThat(aclTrustLine, hasAction(equalTo(LineAction.ACCEPT)));
     assertThat(
         aclUntrustLine,
         hasMatchCondition(
-            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
     assertThat(aclTrustLine, hasAction(equalTo(LineAction.ACCEPT)));
   }
 
@@ -317,7 +316,8 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclTrustLine,
         hasMatchCondition(
-            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
     assertThat(aclTrustLine, hasAction(equalTo(LineAction.ACCEPT)));
 
     // Confirm the untrust interface's outgoing ACL is set to allow all traffic
@@ -328,11 +328,11 @@ public class FlatJuniperGrammarTest {
             isOrMatchExprThat(
                 hasDisjuncts(
                     containsInAnyOrder(
-                        new MatchHeaderSpace(HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()),
-                        new PermittedByAcl(securityPolicyName)
-                        )
-                    )
-                )));
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setStates(ImmutableList.of(State.ESTABLISHED))
+                                .build()),
+                        new PermittedByAcl(securityPolicyName))))));
     assertThat(aclUntrustLine, hasAction(equalTo(LineAction.ACCEPT)));
   }
 

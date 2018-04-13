@@ -9,11 +9,8 @@ import org.hamcrest.Matcher;
 
 public class IpAccessListLineMatchers {
 
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the line action.
-   */
-  public static HasAction hasAction(
-      @Nonnull Matcher<? super LineAction> subMatcher) {
+  /** Provides a matcher that matches if the provided {@code subMatcher} matches the line action. */
+  public static HasAction hasAction(@Nonnull Matcher<? super LineAction> subMatcher) {
     return new HasAction(subMatcher);
   }
 

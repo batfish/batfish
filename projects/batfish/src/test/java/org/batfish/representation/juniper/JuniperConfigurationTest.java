@@ -14,9 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,7 +33,6 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,7 +64,8 @@ public class JuniperConfigurationTest {
     Assert.assertThat(
         aclNullZoneLine,
         hasMatchCondition(
-            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
     Assert.assertThat(aclNullZoneLine, hasAction(equalTo(LineAction.ACCEPT)));
 
     // Zone with no policy should also produce the default allow-established ACL
@@ -75,7 +73,8 @@ public class JuniperConfigurationTest {
     Assert.assertThat(
         aclLineWithoutPolicy,
         hasMatchCondition(
-            isMatchHeaderSpaceThat(hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
+            isMatchHeaderSpaceThat(
+                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
     Assert.assertThat(aclLineWithoutPolicy, hasAction(equalTo(LineAction.ACCEPT)));
 
     // Zone with policies should produce match expr that is a logical OR of those policies OR
@@ -90,7 +89,10 @@ public class JuniperConfigurationTest {
                     containsInAnyOrder(
                         new PermittedByAcl("policy1"),
                         new PermittedByAcl("policy2"),
-                        new MatchHeaderSpace(HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()))))));
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setStates(ImmutableList.of(State.ESTABLISHED))
+                                .build()))))));
     // Should accept matches
     assertThat(aclLineWithPolicy, hasAction(equalTo(LineAction.ACCEPT)));
   }
