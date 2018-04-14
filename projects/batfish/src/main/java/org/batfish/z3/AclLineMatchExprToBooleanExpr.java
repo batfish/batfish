@@ -1,8 +1,11 @@
 package org.batfish.z3;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.IpAccessList;
@@ -56,7 +59,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return new AndExpr(
-        andMatchExpr.getConjuncts().stream().map(this::toBooleanExpr).collect(Collectors.toList()));
+        andMatchExpr.getConjuncts().stream().map(this::toBooleanExpr).collect(ImmutableList.toImmutableList()));
   }
 
   @Override
@@ -76,7 +79,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
             .getSrcInterfaces()
             .stream()
             .map(this::matchSrcInterfaceExpr)
-            .collect(Collectors.toList()));
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
@@ -87,25 +90,21 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     return new OrExpr(
-        orMatchExpr.getDisjuncts().stream().map(this::toBooleanExpr).collect(Collectors.toList()));
+        orMatchExpr.getDisjuncts().stream().map(this::toBooleanExpr).collect(ImmutableList.toImmutableList()));
   }
 
   @Override
   public BooleanExpr visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     IpAccessList acl = _nodeAcls.get(permittedByAcl.getAclName());
-    List<BooleanExpr> lineExprs =
-        acl.getLines()
-            .stream()
-            .map(IpAccessListLine::getMatchCondition)
-            .map(this::toBooleanExpr)
-            .collect(Collectors.toList());
 
     // Right fold. Base case (when no line matches) is not permitted.
     BooleanExpr expr = org.batfish.z3.expr.FalseExpr.INSTANCE;
-    for (int i = lineExprs.size() - 1; i >= 0; i--) {
-      BooleanExpr matched = lineExprs.get(i);
+    ListIterator<IpAccessListLine> iter = acl.getLines().listIterator(acl.getLines().size());
+    while(iter.hasPrevious()) {
+      IpAccessListLine line = iter.previous();
+      BooleanExpr matched = toBooleanExpr(line.getMatchCondition());
       BooleanExpr permitted =
-          acl.getLines().get(i).getAction() == LineAction.ACCEPT
+          line.getAction() == LineAction.ACCEPT
               ? org.batfish.z3.expr.TrueExpr.INSTANCE
               : org.batfish.z3.expr.FalseExpr.INSTANCE;
       expr = new IfThenElse(matched, permitted, expr);
