@@ -139,7 +139,7 @@ public class FlatJuniperGrammarTest {
     /*
      * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
      * should inline the matched application, with the action applied to each generated line
-     * from the application.
+     * from the application. One line should be generated per application term.
      */
     assertThat(
         c,
