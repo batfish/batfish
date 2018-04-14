@@ -3,11 +3,8 @@ package org.batfish.z3;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
@@ -59,7 +56,11 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return new AndExpr(
-        andMatchExpr.getConjuncts().stream().map(this::toBooleanExpr).collect(ImmutableList.toImmutableList()));
+        andMatchExpr
+            .getConjuncts()
+            .stream()
+            .map(this::toBooleanExpr)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
@@ -90,7 +91,11 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     return new OrExpr(
-        orMatchExpr.getDisjuncts().stream().map(this::toBooleanExpr).collect(ImmutableList.toImmutableList()));
+        orMatchExpr
+            .getDisjuncts()
+            .stream()
+            .map(this::toBooleanExpr)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
@@ -100,7 +105,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
     // Right fold. Base case (when no line matches) is not permitted.
     BooleanExpr expr = org.batfish.z3.expr.FalseExpr.INSTANCE;
     ListIterator<IpAccessListLine> iter = acl.getLines().listIterator(acl.getLines().size());
-    while(iter.hasPrevious()) {
+    while (iter.hasPrevious()) {
       IpAccessListLine line = iter.previous();
       BooleanExpr matched = toBooleanExpr(line.getMatchCondition());
       BooleanExpr permitted =
