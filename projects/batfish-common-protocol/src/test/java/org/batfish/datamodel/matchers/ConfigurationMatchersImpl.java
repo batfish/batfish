@@ -4,6 +4,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.FeatureMatcher;
@@ -44,6 +45,32 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, Interface> featureValueOf(Configuration actual) {
       return actual.getInterfaces();
+    }
+  }
+
+  static final class HasIpAccessList extends FeatureMatcher<Configuration, IpAccessList> {
+    private final String _name;
+
+    HasIpAccessList(@Nonnull String name, @Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(subMatcher, "A Configuration with ipAccessList " + name + ":", "ipAccessList " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Configuration actual) {
+      return actual.getIpAccessLists().get(_name);
+    }
+  }
+
+  static final class HasIpAccessLists
+      extends FeatureMatcher<Configuration, Map<String, IpAccessList>> {
+    HasIpAccessLists(@Nonnull Matcher<? super Map<String, IpAccessList>> subMatcher) {
+      super(subMatcher, "a configuration with ipAccessLists", "ipAccessLists");
+    }
+
+    @Override
+    protected Map<String, IpAccessList> featureValueOf(Configuration actual) {
+      return actual.getIpAccessLists();
     }
   }
 
