@@ -5,11 +5,13 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
@@ -48,6 +50,9 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.IpAccessListLineMatchers;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -129,32 +134,32 @@ public class FlatJuniperGrammarTest {
   public void testApplicationWithTerms() throws IOException {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
-    assertThat(c, hasIpAccessLists(hasValue(anything())));
+    String aclName = "~FROM_ZONE~z1~TO_ZONE~z2";
 
-    List<IpAccessListLine> lines = c.getIpAccessLists().values().iterator().next().getLines();
-    assertThat(lines, hasSize(2));
-
-    IpAccessListLine line1 = lines.get(0);
+    /*
+     * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
+     * should inline the matched application, with the action applied to each generated line
+     * from the application.
+     */
     assertThat(
-        line1,
-        equalTo(
-            IpAccessListLine.acceptingHeaderSpace(
-                HeaderSpace.builder()
-                    .setDstPorts(ImmutableList.of(new SubRange(90, 90)))
-                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                    .setSrcPorts(ImmutableList.of(new SubRange(90, 90)))
-                    .build())));
-
-    IpAccessListLine line2 = lines.get(1);
-    assertThat(
-        line2,
-        equalTo(
-            IpAccessListLine.acceptingHeaderSpace(
-                HeaderSpace.builder()
-                    .setDstPorts(ImmutableList.of(new SubRange(91, 91)))
-                    .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-                    .setSrcPorts(ImmutableList.of(new SubRange(91, 91)))
-                    .build())));
+        c,
+        hasIpAccessList(
+            aclName,
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstPorts(ImmutableList.of(new SubRange(1, 1)))
+                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                .setSrcPorts(ImmutableList.of(new SubRange(2, 2)))
+                                .build()),
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstPorts(ImmutableList.of(new SubRange(3, 3)))
+                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
+                                .build()))))));
   }
 
   @Test

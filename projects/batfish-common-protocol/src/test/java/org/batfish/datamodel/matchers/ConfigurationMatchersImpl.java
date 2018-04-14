@@ -48,6 +48,20 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasIpAccessList extends FeatureMatcher<Configuration, IpAccessList> {
+    private final String _name;
+
+    HasIpAccessList(@Nonnull String name, @Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(subMatcher, "A Configuration with ipAccessList " + name + ":", "ipAccessList " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Configuration actual) {
+      return actual.getIpAccessLists().get(_name);
+    }
+  }
+
   static final class HasIpAccessLists
       extends FeatureMatcher<Configuration, Map<String, IpAccessList>> {
     HasIpAccessLists(@Nonnull Matcher<? super Map<String, IpAccessList>> subMatcher) {
