@@ -3251,6 +3251,18 @@
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_access_list_tail",
             "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          IP:'ip'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          IP_ADDRESS:'10.12.11.2'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          IP_ADDRESS:'10.12.11.1'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_access_list_tail",
+            "        (access_list_action",
             "          DENY:'deny'  <== mode:DEFAULT_MODE)",
             "        (protocol",
             "          IP:'ip'  <== mode:DEFAULT_MODE)",
@@ -4296,6 +4308,18 @@
             "        (access_list_ip_range",
             "          IP_ADDRESS:'3.0.0.0'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'0.255.255.255'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (extended_access_list_tail",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          IP:'ip'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          IP_ADDRESS:'10.23.21.2'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          IP_ADDRESS:'10.23.21.3'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (extended_access_list_tail",
             "        (access_list_action",
@@ -11016,7 +11040,7 @@
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              139
+              140
             ]
           }
         },
@@ -11033,7 +11057,7 @@
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : [
-              135
+              136
             ]
           }
         },

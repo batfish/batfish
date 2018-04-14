@@ -52506,8 +52506,7 @@
         },
         "neighbor_nxos" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '10.1.1.0/25'",
-            "2" : "MISCELLANEOUS: No remote-as set for peer: 10.1.1.0/25"
+            "1" : "MISCELLANEOUS: No remote-as set for peer: 10.1.1.0/25"
           }
         },
         "non_nexus_neighbor_af" : {
