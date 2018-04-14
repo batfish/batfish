@@ -43,6 +43,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, List<String>> _nodeInterfaces;
 
+    private Set<String> _nodesWithSrcInterfaceConstraints;
+
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
     private Map<String, Map<String, String>> _outgoingAcls;
@@ -74,6 +76,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _ipsByHostname = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
+      _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
@@ -98,6 +101,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
           _ipsByHostname,
           _neighborUnreachable,
           _nodeInterfaces,
+          _nodesWithSrcInterfaceConstraints,
           _nullRoutedIps,
           _outgoingAcls,
           _routableIps,
@@ -169,6 +173,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setNodeInterfaces(Map<String, List<String>> nodeInterfaces) {
       _nodeInterfaces = nodeInterfaces;
+      return this;
+    }
+
+    public Builder setNodesWithSrcInterfaceConstraints(
+        Set<String> nodesWithSrcInterfaceConstraints) {
+      _nodesWithSrcInterfaceConstraints = nodesWithSrcInterfaceConstraints;
       return this;
     }
 
@@ -249,6 +259,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, List<String>> _nodeInterfaces;
 
+  private final Set<String> _nodesWithSrcInterfaceConstraints;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -280,6 +292,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       Map<String, Set<Ip>> ipsByHostname,
       Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable,
       Map<String, List<String>> nodeInterfaces,
+      Set<String> nodesWithSrcInterfaceConstraints,
       Map<String, Map<String, BooleanExpr>> nullRoutedIps,
       Map<String, Map<String, String>> outgoingAcls,
       Map<String, Map<String, BooleanExpr>> routableIps,
@@ -301,6 +314,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _ipsByHostname = ipsByHostname;
     _neighborUnreachable = neighborUnreachable;
     _nodeInterfaces = nodeInterfaces;
+    _nodesWithSrcInterfaceConstraints = nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = nullRoutedIps;
     _outgoingAcls = outgoingAcls;
     _routableIps = routableIps;
@@ -411,6 +425,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues() {
     return _sourceInterfaceFieldValues;
+  }
+
+  @Override
+  public Set<String> getNodesWithSrcInterfaceConstraints() {
+    return _nodesWithSrcInterfaceConstraints;
   }
 
   @Override

@@ -19,7 +19,7 @@ public class MockIntAtom extends IntExpr {
 
   public MockIntAtom(int i) {
     _name = String.format("BVConst%d", i);
-    _numBits = 0;
+    _numBits = 1;
     _ctx = null;
   }
 

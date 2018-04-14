@@ -652,8 +652,17 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       : ImmutableSet.of(
                           new AclPermit(node1, outAcl),
                           new PreOutEdgePostNat(node1, iface1, node2, iface2));
+              boolean nodeHasSrcInterfaceConstraint =
+                  _input.getNodesWithSrcInterfaceConstraints().contains(node1);
               return new BasicRuleStatement(
-                  TrueExpr.INSTANCE, aclStates, new PostOutEdge(node1, iface1, node2, iface2));
+                  /* If we set the source interface field, reset it now */
+                  nodeHasSrcInterfaceConstraint
+                      ? new EqExpr(
+                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                          new LitIntExpr(0, _input.getSourceInterfaceField().getSize()))
+                      : TrueExpr.INSTANCE,
+                  aclStates,
+                  new PostOutEdge(node1, iface1, node2, iface2));
             })
         .forEach(_rules::add);
   }
@@ -665,16 +674,22 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .getEnabledEdges()
         .stream()
         .map(
-            edge ->
-                new BasicRuleStatement(
-                    new EqExpr(
-                        new TransformedVarIntExpr(_input.getSourceInterfaceField()),
-                        _input
-                            .getSourceInterfaceFieldValues()
-                            .get(edge.getNode2())
-                            .get(edge.getInt2())),
-                    ImmutableSet.of(new PostOutEdge(edge)),
-                    new PreInInterface(edge.getNode2(), edge.getInt2())))
+            edge -> {
+              boolean nodeHasSrcInterfaceConstraint =
+                  _input.getNodesWithSrcInterfaceConstraints().contains(edge.getNode2());
+
+              return new BasicRuleStatement(
+                  nodeHasSrcInterfaceConstraint
+                      ? new EqExpr(
+                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                          _input
+                              .getSourceInterfaceFieldValues()
+                              .get(edge.getNode2())
+                              .get(edge.getInt2()))
+                      : TrueExpr.INSTANCE,
+                  new PostOutEdge(edge),
+                  new PreInInterface(edge.getNode2(), edge.getInt2()));
+            })
         .forEach(_rules::add);
   }
 
@@ -683,7 +698,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
     return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
   }
 
-  private BooleanExpr srcInterfaceConstraint(String node, String iface) {
+  private BooleanExpr transformSrcInterface(String node, String iface) {
     int id = _input.getNodeInterfaceId(node, iface);
     Field srcInterface = _input.getSourceInterfaceField();
     return new EqExpr(

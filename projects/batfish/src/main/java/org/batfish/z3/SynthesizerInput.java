@@ -93,8 +93,15 @@ public interface SynthesizerInput {
   /** @return A map from node to list of interface names in sorted order */
   Map<String, List<String>> getNodeInterfaces();
 
+  /**
+   * Get the field, if any, used to track the src interface for MatchSrcInterface AclMatchExprs. The
+   * field is present only if the network has no MatchSrcInterface AclMatchExprs.
+   */
   Field getSourceInterfaceField();
 
   /** Mapping: hostname -> interface -> constraint on transformed source interface field */
   Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
+
+  /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
+  Set<String> getNodesWithSrcInterfaceConstraints();
 }

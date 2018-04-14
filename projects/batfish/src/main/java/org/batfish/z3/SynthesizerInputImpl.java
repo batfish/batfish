@@ -207,6 +207,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, List<String>> _nodeInterfaces;
 
+  private final Set<String> _nodesWithSrcInterfaceConstraints;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -283,9 +285,29 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _enabledAcls = computeEnabledAcls();
     _aclActions = computeAclActions();
     _nodeInterfaces = computeNodeInterfaces();
+    _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
     _sourceInterfaceField = computeSourceInterfaceField();
     _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues();
     _aclConditions = computeAclConditions();
+  }
+
+  private Set<String> computeNodesWithSrcInterfaceConstraints() {
+    return _configurations
+        .entrySet()
+        .stream()
+        .filter(
+            entry -> {
+              ContainsMatchSrcInterfaceExprVisitor containsMatchSrcInterfaceExprVisitor =
+                  new ContainsMatchSrcInterfaceExprVisitor(entry.getValue().getIpAccessLists());
+              return entry
+                  .getValue()
+                  .getIpAccessLists()
+                  .values()
+                  .stream()
+                  .anyMatch(containsMatchSrcInterfaceExprVisitor::containsMatchSrcInterfaceExpr);
+            })
+        .map(Entry::getKey)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   private Field computeSourceInterfaceField() {
@@ -293,7 +315,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
      * interfaces on a single node, plus 1 (for the "no source interface" case that can arise
      * if we originate at a Vrf for example).
      */
-    int numValues = _nodeInterfaces.values().stream().mapToInt(List::size).max().orElse(0) + 1;
+    int numValues =
+        _nodesWithSrcInterfaceConstraints
+                .stream()
+                .mapToInt(node -> _nodeInterfaces.get(node).size())
+                .max()
+                .orElse(0)
+            + 1;
     int fieldBits = Math.max(LongMath.log2(numValues, RoundingMode.CEILING), 1);
     return new Field(SRC_INTERFACE_FIELD_NAME, fieldBits);
   }
@@ -310,6 +338,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, IntExpr>> computeSourceInterfaceFieldValues() {
+    Field sourceInterfaceField = _sourceInterfaceField;
     return toImmutableMap(
         _nodeInterfaces,
         Entry::getKey,
@@ -318,7 +347,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           CommonUtil.forEachWithIndex(
               entry.getValue(),
               (index, iface) ->
-                  values.put(iface, new LitIntExpr(index + 1, _sourceInterfaceField.getSize())));
+                  values.put(iface, new LitIntExpr(index + 1, sourceInterfaceField.getSize())));
           return values.build();
         });
   }
@@ -831,5 +860,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues() {
     return _sourceInterfaceFieldValues;
+  }
+
+  @Override
+  public Set<String> getNodesWithSrcInterfaceConstraints() {
+    return _nodesWithSrcInterfaceConstraints;
   }
 }
