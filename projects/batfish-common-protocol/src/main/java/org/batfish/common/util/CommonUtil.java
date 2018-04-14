@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1159,7 +1160,7 @@ public class CommonUtil {
 
   public static Topology synthesizeTopology(Map<String, Configuration> configurations) {
     SortedSet<Edge> edges = new TreeSet<>();
-    Map<Prefix, Set<Interface>> prefixInterfaces = new HashMap<>();
+    Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
         (nodeName, node) -> {
           for (Interface iface : node.getInterfaces().values()) {
@@ -1167,19 +1168,19 @@ public class CommonUtil {
               for (InterfaceAddress address : iface.getAllAddresses()) {
                 if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
                   Prefix prefix = address.getPrefix();
-                  Set<Interface> interfaceBucket =
-                      prefixInterfaces.computeIfAbsent(prefix, k -> new HashSet<>());
+                  List<Interface> interfaceBucket =
+                      prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
                   interfaceBucket.add(iface);
                 }
               }
             }
           }
         });
-    for (Set<Interface> bucket : prefixInterfaces.values()) {
+    for (List<Interface> bucket : prefixInterfaces.values()) {
       for (Interface iface1 : bucket) {
         for (Interface iface2 : bucket) {
           if (iface1 != iface2
-              // don't connect interfaces that have the same address
+              // don't connect interfaces that have even a single address in common
               && Sets.intersection(iface1.getAllAddresses(), iface2.getAllAddresses()).isEmpty()) {
             edges.add(
                 new Edge(
