@@ -1,9 +1,12 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Represents the result of performing a traceroute for a {@link Flow} */
 public class FlowTrace implements Comparable<FlowTrace> {
@@ -66,6 +69,31 @@ public class FlowTrace implements Comparable<FlowTrace> {
   @JsonProperty(PROP_HOPS)
   public List<FlowTraceHop> getHops() {
     return _hops;
+  }
+
+  @Nullable
+  private FlowTraceHop getLastHop() {
+    int numHops = getHops().size();
+    if (numHops == 0) {
+      return null;
+    }
+    return getHops().get(numHops - 1);
+  }
+
+  /**
+   * Get the hostname/interface of the last hop or {@code null} if the flow was no accepted.
+   *
+   * @return the hostname of the accepting node or {@code null} if the flow disposition is not
+   *     "accepted"
+   */
+  @Nullable
+  @JsonIgnore
+  public NodeInterfacePair getAcceptingNode() {
+    if (getDisposition() != FlowDisposition.ACCEPTED) {
+      return null;
+    }
+    FlowTraceHop lastHop = getLastHop();
+    return lastHop == null ? null : lastHop.getEdge().getInterface2();
   }
 
   @JsonProperty(PROP_NOTES)

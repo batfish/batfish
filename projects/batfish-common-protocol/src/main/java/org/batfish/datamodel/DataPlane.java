@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.graph.Network;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.SortedMap;
@@ -12,4 +13,6 @@ public interface DataPlane extends Serializable {
   SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs();
 
   SortedSet<Edge> getTopologyEdges();
+
+  Network<BgpNeighbor, BgpSession> getBgpTopology();
 }

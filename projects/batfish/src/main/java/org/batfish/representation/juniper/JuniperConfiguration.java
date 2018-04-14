@@ -297,7 +297,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Ip, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Ip ip = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
+      // TODO:
+      BgpNeighbor neighbor = new BgpNeighbor(ip, _c, false);
       neighbor.setVrf(vrfName);
 
       // route reflection
