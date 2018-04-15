@@ -239,6 +239,7 @@ public class SimplifierTest {
   }
 
   /** IfThenElse(A,B,False) --> And(A,B) */
+  @Test
   public void testIfThenElse_elseFalse() {
     BooleanExpr a = newAtom();
     BooleanExpr b = newAtom();
@@ -248,6 +249,7 @@ public class SimplifierTest {
   }
 
   /** IfThenElse(A,B,True) --> Or(Not(A),B) */
+  @Test
   public void testIfThenElse_elseTrue() {
     BooleanExpr a = newAtom();
     BooleanExpr b = newAtom();
