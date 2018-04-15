@@ -892,6 +892,11 @@ ENCRYPTION_ALGORITHM
    'encryption-algorithm'
 ;
 
+ENFORCE_FIRST_AS
+:
+   'enforce-first-as'
+;
+
 ENHANCED_HASH_KEY
 :
    'enhanced-hash-key'
