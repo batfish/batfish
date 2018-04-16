@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -347,19 +346,24 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
-    return _configurations.entrySet()
+    return _configurations
+        .entrySet()
         .stream()
         .filter(e -> !_disabledNodes.contains(e.getKey()))
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> {
-          String hostname = e.getKey();
-          Set<String> disabledAcls = _disabledAcls.getOrDefault(hostname, ImmutableSet.of());
-          return e.getValue()
-              .getIpAccessLists()
-              .entrySet()
-              .stream()
-              .filter(e2 -> !disabledAcls.contains(e2.getKey()))
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-        }));
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e -> {
+                  String hostname = e.getKey();
+                  Set<String> disabledAcls =
+                      _disabledAcls.getOrDefault(hostname, ImmutableSet.of());
+                  return e.getValue()
+                      .getIpAccessLists()
+                      .entrySet()
+                      .stream()
+                      .filter(e2 -> !disabledAcls.contains(e2.getKey()))
+                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                }));
   }
 
   private Set<Edge> computeEnabledEdges() {

@@ -748,7 +748,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
       // does match the current source NAT.
       AclPermit aclPermit = sourceNats.get(natNumber).getKey();
-      if(aclPermit != null) {
+      if (aclPermit != null) {
         preStates.add(sourceNats.get(natNumber).getKey());
       }
 
@@ -761,7 +761,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
               ImmutableSet.of(),
               new PreOutEdgePostNat(node1, iface1, node2, iface2)));
 
-      if(aclPermit == null) {
+      if (aclPermit == null) {
         // null means accept everything, so no need to consider subsequent NATs.
         break;
       }
