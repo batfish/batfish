@@ -86,10 +86,12 @@ public class ParseVendorConfigurationResult
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
-        // modify the hostname of what is already in there
+        /**
+         * Modify the hostname of what is already in the vendorConfigurations map. Ideally, we'd add
+         * a warning but the getWarnings object around here is null
+         */
         VendorConfiguration oldVc = vendorConfigurations.get(hostname);
         String modifiedOldName = getModifiedName(hostname, oldVc.getFilename());
-        // ideally, we'd add a warning for this node as well, but the warnings object is null
         oldVc.setHostname(modifiedOldName);
         vendorConfigurations.remove(hostname);
         vendorConfigurations.put(modifiedOldName, oldVc);
