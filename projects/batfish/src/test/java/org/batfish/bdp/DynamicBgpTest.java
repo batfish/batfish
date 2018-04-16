@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Network;
@@ -103,5 +104,50 @@ public class DynamicBgpTest {
     GenericRib<AbstractRoute> r1Rib = dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME);
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("3.3.3.3/32"))));
     assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("4.4.4.4/32"))));
+  }
+
+  /** Test BGP session establishment if dynamic seessions have been misconfigured */
+  @Test
+  public void testDynamicBgpMisconfigured() throws IOException {
+    String testrigName = "bgp-dynamic-session-misconfigured";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3", "r4");
+
+    /*
+     *
+     * Setup is as follows:
+     *
+     *              +--+r3
+     *  r1+------+r2|
+     *              +--+r4
+     *
+     * Where r2 has a dynamic session listening to r3 & r4;
+     * BUT
+     * r4 has been misconfigured and is outside of the prefix range.
+     * We expect r1 to get routes advertised by r3 only
+     */
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
+    dataPlanePlugin.initialize(batfish);
+    batfish.computeDataPlane(false); // compute and cache the dataPlane
+
+    DataPlane dp = batfish.loadDataPlane();
+    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+
+    /*
+     * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 valid
+     * are unidirectional connections, since dynamic neighbor cannot initiate connections.
+     */
+    assertThat(bgpTopology.edges(), hasSize(3));
+
+    // Ensure routing info has been exchanged, and routes from r3/r4 exist on r1
+    GenericRib<AbstractRoute> r1Rib = dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(r1Rib.getRoutes(), hasItem(hasPrefix(Prefix.parse("9.9.9.33/32"))));
+    assertThat(r1Rib.getRoutes(), not(hasItem(hasPrefix(Prefix.parse("9.9.9.44/32")))));
   }
 }

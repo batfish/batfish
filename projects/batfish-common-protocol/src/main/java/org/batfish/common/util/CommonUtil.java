@@ -57,7 +57,6 @@ import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -675,26 +674,29 @@ public class CommonUtil {
         traces
             .get(forwardFlow)
             .stream()
-            .filter(trace -> trace.getDisposition() == FlowDisposition.ACCEPTED)
+            .filter(
+                trace ->
+                    trace.getDisposition() == FlowDisposition.ACCEPTED
+                        && trace.getAcceptingNode() != null
+                        && trace
+                            .getAcceptingNode()
+                            .getHostname()
+                            .equals(dst.getOwner().getHostname()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(FlowTrace::compareTo));
 
     if (acceptedFlows.isEmpty()) {
       return false;
     }
     NodeInterfacePair acceptPoint = acceptedFlows.first().getAcceptingNode();
-    if (acceptPoint == null) {
-      return false;
-    }
-    String acceptedHostname = acceptPoint.getHostname();
-    if (!acceptedHostname.equals(dst.getOwner().getHostname())) {
-      // Hostname mismatch, consider invalid
-      return false;
-    }
     if (isEbgp && !src.getEbgpMultihop() && acceptedFlows.first().getHops().size() > 1) {
       // eBGP expects direct connection (single hop) unless explicitly configured multi-hop
       return false;
     }
 
+    if (acceptPoint == null) {
+      return false;
+    }
+    String acceptedHostname = acceptPoint.getHostname();
     // The reply traceroute
     fb.setIngressNode(acceptedHostname);
     fb.setSrcIp(forwardFlow.getDstIp());
@@ -707,11 +709,16 @@ public class CommonUtil {
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
      */
-    return traces
+    return !traces
         .get(backwardFlow)
         .stream()
-        .map(FlowTrace::getDisposition)
-        .anyMatch(Predicate.isEqual(FlowDisposition.ACCEPTED));
+        .filter(
+            trace ->
+                trace.getDisposition() == FlowDisposition.ACCEPTED
+                    && trace.getAcceptingNode() != null
+                    && trace.getAcceptingNode().getHostname().equals(src.getOwner().getHostname()))
+        .collect(ImmutableSet.toImmutableSet())
+        .isEmpty();
   }
 
   /**
