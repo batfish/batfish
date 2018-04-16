@@ -7,7 +7,6 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.z3.Field;
 import org.batfish.z3.NodContext;
 import org.batfish.z3.SynthesizerInput;
@@ -86,7 +85,7 @@ public class BoolExprTransformer
             .map(
                 varName ->
                     new Field(varName, _nodContext.getVariables().get(varName).getSortSize()))
-            .collect(Collectors.toList());
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
