@@ -30,7 +30,6 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -335,29 +334,6 @@ public class Simplifier
   @Override
   public StateExpr visitStateExpr(StateExpr stateExpr) {
     return stateExpr;
-  }
-
-  @Override
-  public Statement visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    /** TODO: something smarter */
-    BooleanExpr originalPreconditionStateIndependentConstraints =
-        transformationRuleStatement.getPreconditionStateIndependentConstraints();
-    BooleanExpr simplifiedPreconditionStateIndependentConstraints =
-        simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
-    if (originalPreconditionStateIndependentConstraints
-        != simplifiedPreconditionStateIndependentConstraints) {
-      return simplifyStatement(
-          new TransformationRuleStatement(
-              simplifiedPreconditionStateIndependentConstraints,
-              transformationRuleStatement.getPreconditionPreTransformationStates(),
-              transformationRuleStatement.getPreconditionPostTransformationStates(),
-              transformationRuleStatement.getPostconditionTransformationState()));
-    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
-      return VACUOUS_RULE;
-    } else {
-      return transformationRuleStatement;
-    }
   }
 
   @Override

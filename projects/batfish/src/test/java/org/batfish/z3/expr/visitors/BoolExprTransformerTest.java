@@ -41,7 +41,6 @@ import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -84,10 +83,7 @@ public class BoolExprTransformerTest {
             _ctx,
             ReachabilityProgram.builder()
                 .setInput(_input)
-                .setRules(
-                    of(
-                        new BasicRuleStatement(_stateExpr),
-                        new TransformationRuleStatement(_transformationStateExpr)))
+                .setRules(of(new BasicRuleStatement(_stateExpr)))
                 .setSmtConstraint(SaneExpr.INSTANCE)
                 .build());
   }
@@ -238,10 +234,7 @@ public class BoolExprTransformerTest {
             _ctx,
             ReachabilityProgram.builder()
                 .setInput(_input)
-                .setRules(
-                    of(
-                        new BasicRuleStatement(_stateExpr),
-                        new TransformationRuleStatement(_transformationStateExpr)))
+                .setRules(of(new BasicRuleStatement(_stateExpr)))
                 .setSmtConstraint(expr)
                 .build());
     assertThat(toBoolExpr(expr, _input, nodContext), instanceOf(BoolExpr.class));

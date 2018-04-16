@@ -8,7 +8,6 @@ import com.microsoft.z3.Expr;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.batfish.common.BatfishException;
 import org.batfish.z3.Field;
 import org.batfish.z3.NodContext;
 import org.batfish.z3.SynthesizerInput;
@@ -31,7 +30,6 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.visitors.Parameterizer;
@@ -226,12 +224,6 @@ public class BoolExprTransformer
   }
 
   @Override
-  public BoolExpr visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    throw new BatfishException("TransformationRuleStatement is deprecated");
-  }
-
-  @Override
   public BoolExpr visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     return rangeMatchExpr.getExpr().accept(this);
   }
@@ -240,45 +232,6 @@ public class BoolExprTransformer
   public BoolExpr visitSaneExpr(SaneExpr saneExpr) {
     return saneExpr.getExpr().accept(this);
   }
-
-  /*
-  @Override
-  public BoolExpr visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    Context ctx = _nodContext.getContext();
-    ImmutableList.Builder<BoolExpr> preconditions =
-        ImmutableList.<BoolExpr>builder()
-            .add(
-                toBoolExpr(
-                    transformationRuleStatement.getPreconditionStateIndependentConstraints(),
-                    _input,
-                    _nodContext));
-    transformationRuleStatement
-        .getPreconditionPreTransformationStates()
-        .stream()
-        .map(
-            preconditionPreTransformationState ->
-                toBoolExpr(preconditionPreTransformationState, _input, _nodContext))
-        .forEach(preconditions::add);
-    transformationRuleStatement
-        .getPreconditionPostTransformationStates()
-        .stream()
-        .map(
-            preconditionPostTransformationState ->
-                (BoolExpr)
-                    toBoolExpr(preconditionPostTransformationState, _input, _nodContext)
-                        .substitute(_from, _to))
-        .forEach(preconditions::add);
-    return ctx.mkImplies(
-        ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
-        (BoolExpr)
-            toBoolExpr(
-                    transformationRuleStatement.getPostconditionTransformationState(),
-                    _input,
-                    _nodContext)
-                .substitute(_from, _to));
-  }
-  */
 
   @Override
   public BoolExpr visitTrueExpr(TrueExpr trueExpr) {

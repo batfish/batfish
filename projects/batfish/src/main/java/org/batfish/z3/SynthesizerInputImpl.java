@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;

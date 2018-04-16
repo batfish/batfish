@@ -26,7 +26,6 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -262,22 +261,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
         ImmutableList.<Expr>builder()
             .add(new IdExpr(BoolExprTransformer.getNodName(ImmutableSet.of(), stateExpr)))
             .build());
-  }
-
-  @Override
-  public void visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("transformation-rule"),
-            transformationRuleStatement.getPreconditionStateIndependentConstraints(),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformationRuleStatement.getPreconditionPreTransformationStates())),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformationRuleStatement.getPreconditionPostTransformationStates())),
-            transformationRuleStatement.getPostconditionTransformationState()));
   }
 
   @Override
