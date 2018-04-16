@@ -660,7 +660,7 @@ public final class Interface extends ComparableStructure<String> {
     if (this._autoState != other._autoState) {
       return false;
     }
-    if (this._bandwidth.compareTo(other._bandwidth) != 0) {
+    if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
     // we check ACLs for name match only -- full ACL diff can be done
