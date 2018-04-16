@@ -2,8 +2,10 @@ package org.batfish.datamodel.matchers;
 
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
@@ -11,6 +13,17 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class InterfaceMatchersImpl {
+
+  static final class HasAdditionalArpIps extends FeatureMatcher<Interface, SortedSet<Ip>> {
+    HasAdditionalArpIps(@Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
+      super(subMatcher, "An interface with additionalArpIps:", "additionalArpIps");
+    }
+
+    @Override
+    protected SortedSet<Ip> featureValueOf(Interface actual) {
+      return actual.getAdditionalArpIps();
+    }
+  }
 
   static final class HasDeclaredNames extends FeatureMatcher<Interface, Set<String>> {
     HasDeclaredNames(@Nonnull Matcher<? super Set<String>> subMatcher) {

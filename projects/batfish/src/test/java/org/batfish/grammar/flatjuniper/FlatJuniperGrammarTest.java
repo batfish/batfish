@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -415,6 +416,14 @@ public class FlatJuniperGrammarTest {
   public void testTacplusPsk() throws IOException {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
+  }
+
+  @Test
+  public void testInterfaceArp() throws IOException {
+    Configuration c = parseConfig("interface-arp");
+
+    /* The additional ARP IP set for irb.0 should appear in the data model */
+    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(new Ip("1.0.0.2")))));
   }
 
   @Test

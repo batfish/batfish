@@ -1136,6 +1136,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
     Zone zone = _interfaceZones.get(iface);
     if (zone != null) {
       String zoneName = zone.getName();
