@@ -1367,11 +1367,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Set outgoing filter based on the combination of zone policy and base outgoing filter
     Set<AclLineMatchExpr> aclConjunctList = null;
-    if (securityPolicyAcl == null && outAcl != null) {
-      aclConjunctList = ImmutableSet.of(new PermittedByAcl(outAcl.getName()));
-    } else if (securityPolicyAcl != null && outAcl == null) {
+    if (securityPolicyAcl == null) {
+      return outAcl;
+    } else if (outAcl == null) {
       aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName()));
-    } else if (securityPolicyAcl != null) {
+    } else {
       aclConjunctList =
           ImmutableSet.of(
               new PermittedByAcl(outAcl.getName()),

@@ -391,8 +391,6 @@ public class FlatJuniperGrammarTest {
 
     IpAccessListLine aclTrustOutLine = Iterables.getOnlyElement(aclTrustOut.getLines());
     IpAccessListLine aclUntrustOutLine = Iterables.getOnlyElement(aclUntrustOut.getLines());
-    IpAccessListLine aclExistingConnectionLine =
-        Iterables.getOnlyElement(c.getIpAccessLists().get(ACL_NAME_EXISTING_CONNECTION).getLines());
 
     // Each interface's outgoing ACL line should reference its security policy
     assertThat(
