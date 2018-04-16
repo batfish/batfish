@@ -137,6 +137,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, BaseApplication> _applications;
 
+  private final Map<String, ApplicationSet> _applicationSets;
+
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
   Configuration _c;
@@ -210,6 +212,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
+    _applicationSets = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.ACCEPT;
@@ -1429,7 +1432,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         from.applyTo(lines, _w);
       }
       for (FwFromApplication fromApplication : term.getFromApplications()) {
-        fromApplication.applyTo(matchCondition, action, lines, _w);
+        fromApplication.applyTo(this, matchCondition, action, lines, _w);
       }
       if (addLine) {
         AclLineMatchExpr aclLineMatchExpr = new MatchHeaderSpace(matchCondition.build());
@@ -2140,14 +2143,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
     markStructure(
-        JuniperStructureType.APPLICATION,
+        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
+        ImmutableList.of(_applications, _applicationSets));
+    markStructure(
+        JuniperStructureType.APPLICATION,
+        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
         _applications);
+    markStructure(
+        JuniperStructureType.APPLICATION_SET,
+        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,
+        _applicationSets);
     markStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
 
     // warn about unreferenced data structures
     warnUnusedStructure(_applications, JuniperStructureType.APPLICATION);
+    warnUnusedStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
     warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
     warnUnreferencedDhcpRelayServerGroups();
@@ -2393,5 +2405,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         unused(JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
       }
     }
+  }
+
+  public Map<String, ApplicationSet> getApplicationSets() {
+    return _applicationSets;
   }
 }
