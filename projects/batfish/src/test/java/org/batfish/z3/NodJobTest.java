@@ -54,6 +54,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -97,7 +98,7 @@ public class NodJobTest {
     return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
   }
 
-  //  @Before
+  @Before
   public void setup() throws IOException {
     setupConfigs();
     setupDataPlane();
