@@ -636,6 +636,57 @@ public class ForwardingAnalysisImplTest {
         result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getEndIp())))));
   }
 
+  /** The neighbor unreachable predicate map should not include an entry for null interface. */
+  @Test
+  public void testComputeNeighborUnreachble_nullInterface() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v = nf.vrfBuilder().setOwner(c).build();
+    StaticRoute nullRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.0.0.0/8"))
+            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+            .build();
+    IpSpace ipSpace = IpWildcardSetIpSpace.builder().including(new IpWildcard("1.0.0.0/8")).build();
+    v.setStaticRoutes(ImmutableSortedSet.of(nullRoute));
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c.getName(), c);
+    MockRib mockRib =
+        MockRib.builder()
+            .setRoutes(ImmutableSet.of(nullRoute))
+            .setRoutableIps(ipSpace)
+            .setMatchingIps(ImmutableMap.of(Prefix.parse("1.0.0.0/8"), ipSpace))
+            .build();
+    MockFib mockFib =
+        MockFib.builder()
+            .setNextHopInterfaces(
+                ImmutableMap.of(
+                    nullRoute,
+                    ImmutableMap.of(
+                        Interface.NULL_INTERFACE_NAME,
+                        ImmutableMap.of(Ip.AUTO, ImmutableSet.of(nullRoute)))))
+            .setRoutesByNextHopInterface(
+                ImmutableMap.of(Interface.NULL_INTERFACE_NAME, ImmutableSet.of(nullRoute)))
+            .build();
+
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(c.getName(), ImmutableSortedMap.of(v.getName(), mockRib));
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(c.getName(), ImmutableMap.of(v.getName(), mockFib));
+
+    ForwardingAnalysisImpl forwardingAnalysisImpl =
+        new ForwardingAnalysisImpl(configs, ribs, fibs, new Topology(ImmutableSortedSet.of()));
+
+    Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable =
+        forwardingAnalysisImpl.getNeighborUnreachable();
+
+    assertThat(
+        neighborUnreachable,
+        hasEntry(
+            equalTo(c.getName()),
+            hasEntry(equalTo(v.getName()), not(hasKey(Interface.NULL_INTERFACE_NAME)))));
+  }
+
   @Test
   public void testComputeRoutableIps() {
     String c1 = "c1";
