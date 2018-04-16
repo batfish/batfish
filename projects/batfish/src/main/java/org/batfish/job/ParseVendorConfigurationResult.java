@@ -1,5 +1,7 @@
 package org.batfish.job;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.nio.file.Path;
 import java.util.Map;
 import org.batfish.common.BatfishException;
@@ -24,6 +26,8 @@ public class ParseVendorConfigurationResult
   private VendorConfiguration _vc;
 
   private Warnings _warnings;
+
+  private static Multimap<String, String> _duplicateHostnames = HashMultimap.create();
 
   public ParseVendorConfigurationResult(
       long elapsedTime, BatfishLoggerHistory history, Path file, Throwable failureCause) {
@@ -82,15 +86,22 @@ public class ParseVendorConfigurationResult
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
-        int index = 1;
-        do {
-          hostname = _vc.getHostname() + ".dupname" + index;
-          index++;
-        } while (vendorConfigurations.containsKey(hostname));
+        // modify the hostname of what is already in there
+        VendorConfiguration oldVc = vendorConfigurations.get(hostname);
+        String modifiedOldName = getModifiedName(hostname, oldVc.getFilename());
+        // ideally, we'd add a warning for this node as well, but the warnings object is null
+        oldVc.setHostname(modifiedOldName);
+        vendorConfigurations.remove(hostname);
+        vendorConfigurations.put(modifiedOldName, oldVc);
+        _duplicateHostnames.put(hostname, modifiedOldName);
+      }
+      if (_duplicateHostnames.containsKey(hostname)) {
+        String modifiedNewName = getModifiedName(hostname, _vc.getFilename());
         _warnings.redFlag(
-            String.format(
-                "Found duplicate hostname %s. Changed to %s", _vc.getHostname(), hostname));
-        _vc.setHostname(hostname);
+            String.format("Duplicate hostname %s. Changed to %s", hostname, modifiedNewName));
+        _vc.setHostname(modifiedNewName);
+        _duplicateHostnames.put(hostname, modifiedNewName);
+        hostname = modifiedNewName;
       }
       vendorConfigurations.put(hostname, _vc);
       if (!_warnings.isEmpty()) {
@@ -124,6 +135,16 @@ public class ParseVendorConfigurationResult
   @Override
   public BatfishLoggerHistory getHistory() {
     return _history;
+  }
+
+  private static String getModifiedName(String baseName, String filename) {
+    String modifiedName = baseName + "__file__" + filename;
+    int index = 0;
+    while (_duplicateHostnames.containsEntry(baseName, modifiedName)) {
+      modifiedName = baseName + "__file__" + filename + "." + index;
+      index++;
+    }
+    return modifiedName;
   }
 
   public VendorConfiguration getVendorConfiguration() {
