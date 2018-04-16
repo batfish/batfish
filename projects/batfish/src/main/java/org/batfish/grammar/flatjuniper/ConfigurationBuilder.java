@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -2199,7 +2201,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _configuration
             .getFirewallFilters()
             .computeIfAbsent(
-                "~GLOBAL_SECURITY_POLICY~", n -> new FirewallFilter(n, Family.INET, -1));
+                ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET, -1));
   }
 
   @Override

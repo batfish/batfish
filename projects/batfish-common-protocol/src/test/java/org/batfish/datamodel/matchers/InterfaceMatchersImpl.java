@@ -78,6 +78,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasZoneName extends FeatureMatcher<Interface, String> {
+    HasZoneName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "an interface with zoneName", "zoneName");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getZoneName();
+    }
+  }
+
   static final class IsActive extends FeatureMatcher<Interface, Boolean> {
     IsActive(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "active", "active");

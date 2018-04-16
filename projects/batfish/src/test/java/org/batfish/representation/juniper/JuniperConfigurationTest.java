@@ -45,65 +45,6 @@ public class JuniperConfigurationTest {
   }
 
   @Test
-  public void testBuildSecurityPolicyAcl() {
-    JuniperConfiguration config = createConfig();
-    IpAccessList aclNullZone = config.buildSecurityPolicyAcl("name", null);
-
-    // Add zone without any zone policies and build a new ACL
-    Zone zone = new Zone("zone", new TreeMap<>());
-    config.getZones().put("zone", zone);
-    IpAccessList aclWithoutPolicy = config.buildSecurityPolicyAcl("name", zone);
-
-    // Add policies to the zone and build a new ACL
-    zone.getFromZonePolicies().put("policy1", new FirewallFilter("filter", Family.INET, 0));
-    zone.getFromZonePolicies().put("policy2", new FirewallFilter("filter", Family.INET, 0));
-    IpAccessList aclWithPolicy = config.buildSecurityPolicyAcl("name", zone);
-
-    // Null zone should produce ACL with default behavior to allow-established
-    IpAccessListLine aclNullZoneLine = Iterables.getOnlyElement(aclNullZone.getLines());
-    Assert.assertThat(
-        aclNullZoneLine,
-        hasMatchCondition(
-            isMatchHeaderSpaceThat(
-                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
-    Assert.assertThat(aclNullZoneLine, hasAction(equalTo(LineAction.ACCEPT)));
-
-    // Zone with no policy should also produce the default allow-established ACL
-    IpAccessListLine aclLineWithoutPolicy = Iterables.getOnlyElement(aclWithoutPolicy.getLines());
-    Assert.assertThat(
-        aclLineWithoutPolicy,
-        hasMatchCondition(
-            isMatchHeaderSpaceThat(
-                hasHeaderSpace(hasState(containsInAnyOrder(State.ESTABLISHED))))));
-    Assert.assertThat(aclLineWithoutPolicy, hasAction(equalTo(LineAction.ACCEPT)));
-
-    // Zone with policies should produce match expr that is a logical OR of those policies OR
-    // the default allow-established
-    IpAccessListLine aclLineWithPolicy = Iterables.getOnlyElement(aclWithPolicy.getLines());
-    // Should be OrMatchExpr (match any policy)
-    assertThat(
-        aclLineWithPolicy,
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl("policy1"),
-                        new PermittedByAcl("policy2"),
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setStates(ImmutableList.of(State.ESTABLISHED))
-                                .build()))))));
-    // Should accept matches
-    assertThat(aclLineWithPolicy, hasAction(equalTo(LineAction.ACCEPT)));
-  }
-
-  @Test
-  public void testBuildOutgoingFilter() {
-    JuniperConfiguration config = createConfig();
-    // IpAccessList outgoingFilter = config.buildOutgoingFilter()
-  }
-
-  @Test
   public void testToIpAccessList() {
     JuniperConfiguration config = createConfig();
     FirewallFilter filter = new FirewallFilter("filter", Family.INET, -1);

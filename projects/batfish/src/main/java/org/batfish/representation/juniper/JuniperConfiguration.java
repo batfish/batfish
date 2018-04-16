@@ -65,6 +65,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -90,6 +91,24 @@ import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
+
+  public static final String ACL_NAME_COMBINED_OUTGOING = "~COMBINED_OUTGOING_FILTER~";
+
+  public static final String ACL_NAME_EXISTING_CONNECTION = "~EXISTING_CONNECTION~";
+
+  public static final String ACL_NAME_GLOBAL_POLICY = "~GLOBAL_SECURITY_POLICY~";
+
+  public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
+
+  private static final IpAccessList ACL_EXISTING_CONNECTION =
+      new IpAccessList(
+          ACL_NAME_EXISTING_CONNECTION,
+          ImmutableList.of(
+              new IpAccessListLine(
+                  LineAction.ACCEPT,
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build()),
+                  ACL_NAME_EXISTING_CONNECTION)));
 
   private static final int DEFAULT_AGGREGATE_ROUTE_COST = 0;
 
@@ -1210,7 +1229,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Assume the config will need security policies only if it has zones
     IpAccessList securityPolicyAcl = null;
     if (!_zones.isEmpty()) {
-      String securityPolicyAclName = "~SECURITY_POLICIES_INTERFACE~" + iface.getName();
+      String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
       if (securityPolicyAcl != null) {
         _c.getIpAccessLists().put(securityPolicyAclName, securityPolicyAcl);
@@ -1285,30 +1304,36 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Create this interface's zone ACL based on the policies for its zone
     List<AclLineMatchExpr> zonePolicies = new TreeList<>();
 
-    AclLineMatchExpr allowEstablishedConnections =
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setStates(ImmutableList.of(State.ESTABLISHED)).build());
+    // Default ACL that allows existing connections should be added to any security policy
+    AclLineMatchExpr allowEstablishedConnections = new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION);
 
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
         zonePolicies.add(new PermittedByAcl(e.getKey()));
       }
       zonePolicies.add(allowEstablishedConnections);
-      // Allow traffic meeting any of the zone policies or established connections
-      zoneAcl =
-          new IpAccessList(
-              name,
-              ImmutableList.of(
-                  new IpAccessListLine(
-                      LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ACCEPT")));
     } else {
       // If there are zones but no applicable policies, allow only established connections (default
       // firewall behavior)
-      zoneAcl =
-          new IpAccessList(
-              name,
-              ImmutableList.of(
-                  new IpAccessListLine(LineAction.ACCEPT, allowEstablishedConnections, "ACCEPT")));
+      zonePolicies = ImmutableList.of(allowEstablishedConnections);
+    }
+
+    // These policies need to be checked in order, so they will be lines in the security policy ACL
+    IpAccessListLine zonePoliciesLine = new IpAccessListLine(LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ZONE_POLICIES");
+    IpAccessListLine defaultActionLine = new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY");
+    if (_filters.get(ACL_NAME_GLOBAL_POLICY) != null) {
+      zoneAcl = new IpAccessList(
+          name,
+          ImmutableList.of(
+              zonePoliciesLine,
+              new IpAccessListLine(LineAction.ACCEPT, new PermittedByAcl(ACL_NAME_GLOBAL_POLICY), "GLOBAL_POLICY"),
+              defaultActionLine));
+    } else {
+      zoneAcl = new IpAccessList(
+          name,
+          ImmutableList.of(
+              zonePoliciesLine,
+              defaultActionLine));
     }
     _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
@@ -1339,24 +1364,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // Set outgoing filter based on the combination of zone policy and base outgoing filter
+    Set<AclLineMatchExpr> aclConjunctList = null;
     if (securityPolicyAcl == null && outAcl != null) {
-      return outAcl;
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(outAcl.getName()));
     } else if (securityPolicyAcl != null && outAcl == null) {
-      return securityPolicyAcl;
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName()));
     } else if (securityPolicyAcl != null) {
-      // When both zone policy and egress filter exist, use the logical AND of the two filters
-      return new IpAccessList(
-          "~COMBINED_OUTGOING_FILTER~" + iface.getName(),
-          ImmutableList.of(
-              new IpAccessListLine(
-                  LineAction.ACCEPT,
-                  new AndMatchExpr(
-                      ImmutableSet.of(
-                          new PermittedByAcl(securityPolicyAcl.getName()),
-                          new PermittedByAcl(outAcl.getName()))),
-                  "ACCEPT")));
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(outAcl.getName()),
+          new PermittedByAcl(securityPolicyAcl.getName()));
     }
-    return null;
+    String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
+    IpAccessList combinedAcl =
+        new IpAccessList(
+            combinedAclName,
+            ImmutableList.of(
+                new IpAccessListLine(
+                    LineAction.ACCEPT,
+                    new AndMatchExpr(aclConjunctList),
+                    "ACCEPT")));
+    _c.getIpAccessLists().put(combinedAclName, combinedAcl);
+    return combinedAcl;
   }
 
   /**
@@ -1966,6 +1993,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Zone zone : _zones.values()) {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
+    }
+    // If there are zones, then assume we will need to support existing connection ACL
+    if (!_zones.isEmpty()) {
+      _c.getIpAccessLists().put(ACL_NAME_EXISTING_CONNECTION, ACL_EXISTING_CONNECTION);
     }
 
     // default zone behavior

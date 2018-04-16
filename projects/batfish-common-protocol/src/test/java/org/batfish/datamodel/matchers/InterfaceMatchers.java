@@ -16,6 +16,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
@@ -92,6 +93,14 @@ public final class InterfaceMatchers {
    */
   public static HasVrf hasVrf(Matcher<? super Vrf> subMatcher) {
     return new HasVrf(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * Zone name.
+   */
+  public static HasZoneName hasZoneName(Matcher<? super String> subMatcher) {
+    return new HasZoneName(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface is active. */
