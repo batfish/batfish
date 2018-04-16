@@ -879,7 +879,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       String nextHopInt = sr.getNextHopInterface();
       if (!nextHopInt.equals(Route.UNSET_NEXT_HOP_INTERFACE)
           && !Interface.NULL_INTERFACE_NAME.equals(nextHopInt)
-          && !_vrf.getInterfaces().get(nextHopInt).getActive()) {
+          && (_c.getInterfaces().get(nextHopInt) == null
+              || !_c.getInterfaces().get(nextHopInt).getActive())) {
         continue;
       }
       // interface route

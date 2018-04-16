@@ -783,7 +783,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
           .forEach(preStates::add);
 
       // does match the current source NAT.
-      preStates.add(sourceNats.get(natNumber).getKey());
+      AclPermit aclPermit = sourceNats.get(natNumber).getKey();
+      if (aclPermit != null) {
+        preStates.add(sourceNats.get(natNumber).getKey());
+      }
 
       BooleanExpr transformationExpr = sourceNats.get(natNumber).getValue();
 
@@ -792,6 +795,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
               transformationExpr,
               preStates.build(),
               new PreOutEdgePostNat(node1, iface1, node2, iface2)));
+
+      if (aclPermit == null) {
+        // null means accept everything, so no need to consider subsequent NATs.
+        break;
+      }
     }
   }
 

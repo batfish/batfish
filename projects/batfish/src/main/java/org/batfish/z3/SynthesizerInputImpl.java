@@ -33,7 +33,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
@@ -152,13 +151,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
   }
-
-  static final IpAccessList DEFAULT_SOURCE_NAT_ACL =
-      new NetworkFactory()
-          .aclBuilder()
-          .setName("~DEFAULT_SOURCE_NAT_ACL~")
-          .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
-          .build();
 
   public static Builder builder() {
     return new Builder();
@@ -439,71 +431,24 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
-    if (_topologyInterfaces != null) {
-      return toImmutableMap(
-          _enabledInterfaces,
-          Entry::getKey, /* node */
-          topologyInterfacesEntry -> {
-            String hostname = topologyInterfacesEntry.getKey();
-            Configuration c = _configurations.get(hostname);
-            return topologyInterfacesEntry
-                .getValue()
-                .stream()
-                .flatMap(
-                    ifaceName -> {
-                      Interface i = c.getInterfaces().get(ifaceName);
-                      ImmutableList.Builder<Pair<String, IpAccessList>> interfaceAcls =
-                          ImmutableList.builder();
-                      IpAccessList aclIn = i.getIncomingFilter();
-                      IpAccessList aclOut = i.getOutgoingFilter();
-                      if (aclIn != null) {
-                        aclIn = _ipAclListSpecializer.specialize(aclIn);
-                        interfaceAcls.add(new Pair<>(aclIn.getName(), aclIn));
-                      }
-                      if (aclOut != null) {
-                        aclOut = _ipAclListSpecializer.specialize(aclOut);
-                        interfaceAcls.add(new Pair<>(aclOut.getName(), aclOut));
-                      }
-                      i.getSourceNats()
-                          .forEach(
-                              sourceNat -> {
-                                IpAccessList sourceNatAcl = sourceNat.getAcl();
-                                if (sourceNatAcl != null) {
-                                  interfaceAcls.add(
-                                      new Pair<>(sourceNatAcl.getName(), sourceNatAcl));
-                                } else {
-                                  interfaceAcls.add(
-                                      new Pair<>(
-                                          DEFAULT_SOURCE_NAT_ACL.getName(),
-                                          DEFAULT_SOURCE_NAT_ACL));
-                                }
-                              });
-
-                      return interfaceAcls.build().stream();
-                    })
-                .collect(ImmutableSet.toImmutableSet())
-                .stream()
-                .collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
-          });
-    } else {
-      return _configurations
-          .entrySet()
-          .stream()
-          .filter(e -> !_disabledNodes.contains(e.getKey()))
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey,
-                  e -> {
-                    String hostname = e.getKey();
-                    Set<String> disabledAcls = _disabledAcls.get(hostname);
-                    return e.getValue()
-                        .getIpAccessLists()
-                        .entrySet()
-                        .stream()
-                        .filter(e2 -> disabledAcls == null || !disabledAcls.contains(e2.getKey()))
-                        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
-                  }));
-    }
+    return _configurations
+        .entrySet()
+        .stream()
+        .filter(e -> !_disabledNodes.contains(e.getKey()))
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e -> {
+                  String hostname = e.getKey();
+                  Set<String> disabledAcls =
+                      _disabledAcls.getOrDefault(hostname, ImmutableSet.of());
+                  return e.getValue()
+                      .getIpAccessLists()
+                      .entrySet()
+                      .stream()
+                      .filter(e2 -> !disabledAcls.contains(e2.getKey()))
+                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                }));
   }
 
   private Set<Edge> computeEnabledEdges() {
@@ -718,10 +663,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                       .map(
                           sourceNat -> {
                             IpAccessList acl = sourceNat.getAcl();
-                            String aclName =
-                                acl == null ? DEFAULT_SOURCE_NAT_ACL.getName() : acl.getName();
                             AclPermit preconditionPreTransformationState =
-                                new AclPermit(hostname, aclName);
+                                acl == null ? null : new AclPermit(hostname, acl.getName());
                             BooleanExpr transformationConstraint =
                                 new RangeMatchExpr(
                                     new TransformedVarIntExpr(Field.SRC_IP),

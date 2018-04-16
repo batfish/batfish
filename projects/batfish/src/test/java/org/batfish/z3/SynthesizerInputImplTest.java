@@ -102,10 +102,7 @@ public class SynthesizerInputImplTest {
             .setIncomingFilter(edgeInterfaceInAcl)
             .setOutgoingFilter(srcInterfaceOutAcl)
             .build();
-    /*
-     * Interface without an edge: Its ACLs should be absent with data plane, but present without
-     * data plane.
-     */
+
     _ib.setIncomingFilter(iNoEdgeInAcl).setOutgoingFilter(iNoEdgeOutAcl).build();
     Interface nextHopInterface =
         _ib.setIncomingFilter(nextHopInterfaceInAcl)
@@ -151,7 +148,7 @@ public class SynthesizerInputImplTest {
             equalTo(
                 ImmutableMap.of(
                     srcNode.getName(),
-                    expectedSrcNodeWithDataPlane,
+                    expectedSrcNodeWithoutDataPlane,
                     nextHop.getName(),
                     expectedNextHop))));
     assertThat(
@@ -182,6 +179,11 @@ public class SynthesizerInputImplTest {
                             .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
                             .build())))
             .build();
+    Vrf vrf = _vb.setOwner(c).build();
+    _ib.setOwner(c).setActive(true).setVrf(vrf).setOutgoingFilter(aclWithoutLines).build();
+    _ib.setOutgoingFilter(aclWithLines).build();
+    _ib.setOutgoingFilter(null);
+
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
@@ -677,30 +679,11 @@ public class SynthesizerInputImplTest {
                     equalTo(
                         ImmutableList.of(
                             immutableEntry(
-                                new AclPermit(
-                                    srcNode.getHostname(),
-                                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName()),
+                                null,
                                 new RangeMatchExpr(
                                     new TransformedVarIntExpr(Field.SRC_IP),
                                     Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip1.asLong(), ip2.asLong()))))))))));
-    assertThat(
-        inputWithDataPlane,
-        hasAclConditions(
-            hasEntry(
-                srcNode.getHostname(),
-                ImmutableMap.of(
-                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
-                    ImmutableList.of(TrueExpr.INSTANCE)))));
-
-    assertThat(
-        inputWithDataPlane,
-        hasAclActions(
-            hasEntry(
-                srcNode.getHostname(),
-                ImmutableMap.of(
-                    SynthesizerInputImpl.DEFAULT_SOURCE_NAT_ACL.getName(),
-                    ImmutableList.of(LineAction.ACCEPT)))));
   }
 }

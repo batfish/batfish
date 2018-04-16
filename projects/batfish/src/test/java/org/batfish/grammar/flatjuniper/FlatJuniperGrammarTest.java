@@ -5,10 +5,12 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
@@ -36,10 +38,14 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -115,6 +121,38 @@ public class FlatJuniperGrammarTest {
     assertThat(byName, hasKey("a2"));
     assertThat(byName, not(hasKey("a1")));
     assertThat(byName, not(hasKey("a3")));
+  }
+
+  @Test
+  public void testApplicationWithTerms() throws IOException {
+    String hostname = "application-with-terms";
+    Configuration c = parseConfig(hostname);
+    String aclName = "~FROM_ZONE~z1~TO_ZONE~z2";
+
+    /*
+     * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
+     * should inline the matched application, with the action applied to each generated line
+     * from the application. One line should be generated per application term.
+     */
+    assertThat(
+        c,
+        hasIpAccessList(
+            aclName,
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstPorts(ImmutableList.of(new SubRange(1, 1)))
+                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                .setSrcPorts(ImmutableList.of(new SubRange(2, 2)))
+                                .build()),
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstPorts(ImmutableList.of(new SubRange(3, 3)))
+                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
+                                .build()))))));
   }
 
   @Test

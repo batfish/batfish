@@ -208,21 +208,20 @@ public class Simplifier
       BooleanExpr els = ifThenElse.getElse().accept(this);
       if (then == els) {
         return then;
+      } else if (then == TrueExpr.INSTANCE && els == FalseExpr.INSTANCE) {
+        return condition;
+      } else if (then == FalseExpr.INSTANCE && els == TrueExpr.INSTANCE) {
+        return new NotExpr(condition);
+      } else if (then == TrueExpr.INSTANCE) {
+        return new OrExpr(ImmutableList.of(condition, els));
+      } else if (then == FalseExpr.INSTANCE) {
+        return new AndExpr(ImmutableList.of(new NotExpr(condition), els));
+      } else if (els == TrueExpr.INSTANCE) {
+        return new OrExpr(ImmutableList.of(new NotExpr(condition), then));
+      } else if (els == FalseExpr.INSTANCE) {
+        return new AndExpr(ImmutableList.of(condition, then));
       }
-      if (then == TrueExpr.INSTANCE) {
-        if (els == FalseExpr.INSTANCE) {
-          return condition;
-        } else {
-          return new OrExpr(ImmutableList.of(condition, els));
-        }
-      }
-      if (then == FalseExpr.INSTANCE) {
-        if (els == TrueExpr.INSTANCE) {
-          return new NotExpr(condition);
-        } else {
-          return new AndExpr(ImmutableList.of(new NotExpr(condition), els));
-        }
-      }
+      // No nice simplifications, return a new ITE if any of the three components is simpler.
       if (condition != ifThenElse.getCondition()
           || then != ifThenElse.getThen()
           || els != ifThenElse.getElse()) {
