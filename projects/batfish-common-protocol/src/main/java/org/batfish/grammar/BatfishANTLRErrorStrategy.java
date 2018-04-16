@@ -203,6 +203,13 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
       // Second base case
       List<ParseTree> parentChildren = parent.children;
       parentChildren.remove(parentChildren.size() - 1);
+      // Copy error nodes to parent so we don't lose unrecognized lines.
+      if (ctx.children != null) {
+        ctx.children
+            .stream()
+            .filter(c -> c instanceof ErrorNode)
+            .forEach(c -> parent.addErrorNode((ErrorNode) c));
+      }
       parser.consume();
       Token errorNode = createErrorNode(parser, parent, separatorToken);
       endErrorCondition(parser);

@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -109,6 +110,14 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
+
+  public static <M extends Map<?, ?>> M nullIfEmpty(M map) {
+    return map == null ? null : map.isEmpty() ? null : map;
+  }
+
+  public static <C extends Collection<?>> C nullIfEmpty(C collection) {
+    return collection == null ? null : collection.isEmpty() ? null : collection;
+  }
 
   private static class TrustAllHostNameVerifier implements HostnameVerifier {
     @Override
@@ -1159,31 +1168,32 @@ public class CommonUtil {
 
   public static Topology synthesizeTopology(Map<String, Configuration> configurations) {
     SortedSet<Edge> edges = new TreeSet<>();
-    Map<Prefix, Set<NodeInterfacePair>> prefixInterfaces = new HashMap<>();
+    Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
         (nodeName, node) -> {
-          for (Entry<String, Interface> e : node.getInterfaces().entrySet()) {
-            String ifaceName = e.getKey();
-            Interface iface = e.getValue();
+          for (Interface iface : node.getInterfaces().values()) {
             if (!iface.isLoopback(node.getConfigurationFormat()) && iface.getActive()) {
               for (InterfaceAddress address : iface.getAllAddresses()) {
                 if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
                   Prefix prefix = address.getPrefix();
-                  NodeInterfacePair pair = new NodeInterfacePair(nodeName, ifaceName);
-                  Set<NodeInterfacePair> interfaceBucket =
-                      prefixInterfaces.computeIfAbsent(prefix, k -> new HashSet<>());
-                  interfaceBucket.add(pair);
+                  List<Interface> interfaceBucket =
+                      prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
+                  interfaceBucket.add(iface);
                 }
               }
             }
           }
         });
-    for (Set<NodeInterfacePair> bucket : prefixInterfaces.values()) {
-      for (NodeInterfacePair p1 : bucket) {
-        for (NodeInterfacePair p2 : bucket) {
-          if (!p1.equals(p2)) {
-            Edge edge = new Edge(p1, p2);
-            edges.add(edge);
+    for (List<Interface> bucket : prefixInterfaces.values()) {
+      for (Interface iface1 : bucket) {
+        for (Interface iface2 : bucket) {
+          if (iface1 != iface2
+              // don't connect interfaces that have even a single address in common
+              && Sets.intersection(iface1.getAllAddresses(), iface2.getAllAddresses()).isEmpty()) {
+            edges.add(
+                new Edge(
+                    new NodeInterfacePair(iface1.getOwner().getHostname(), iface1.getName()),
+                    new NodeInterfacePair(iface2.getOwner().getHostname(), iface2.getName())));
           }
         }
       }

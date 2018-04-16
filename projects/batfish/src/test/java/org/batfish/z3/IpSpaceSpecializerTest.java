@@ -190,6 +190,25 @@ public class IpSpaceSpecializerTest {
         equalTo(IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/24")).build()));
   }
 
+  /**
+   * If specialize ipWildcard is a subset of IpSpace blacklist is a subset of IpSpace whitelist,
+   * return EmptyIpSpace
+   */
+  @Test
+  public void testSpecializeIpWildcardSetIpSpace_specializerWhitelistInBlackAndWhiteLists() {
+    IpSpaceSpecializer specializer =
+        new IpSpaceSpecializer(
+            ImmutableSortedSet.of(new IpWildcard("1.1.1.0/24")), ImmutableSortedSet.of());
+
+    assertThat(
+        specializer.specialize(
+            IpWildcardSetIpSpace.builder()
+                .including(new IpWildcard("1.0.0.0/8"))
+                .excluding(new IpWildcard("1.1.0.0/16"))
+                .build()),
+        equalTo(EmptyIpSpace.INSTANCE));
+  }
+
   @Test
   public void testSpecializeIpWildcardSetIpSpace_blacklistAll() {
     /*

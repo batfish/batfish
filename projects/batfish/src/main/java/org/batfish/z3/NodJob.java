@@ -41,8 +41,8 @@ public final class NodJob extends AbstractNodJob {
       boolean optimize) {
     super(settings, nodeVrfSet, tag);
     _dataPlaneSynthesizer = dataPlaneSynthesizer;
-    _optimize = optimize;
     _querySynthesizer = querySynthesizer;
+    _optimize = optimize;
   }
 
   protected Status computeNodSat(long startTime, Context ctx) {
@@ -128,6 +128,7 @@ public final class NodJob extends AbstractNodJob {
                     .filter(optimizedRules::contains)
                     .collect(Collectors.toList()))
             .setQueries(baseProgram.getQueries())
+            .setSmtConstraint(baseProgram.getSmtConstraint())
             .build();
 
     ReachabilityProgram optimizedQueryProgram =
@@ -140,6 +141,7 @@ public final class NodJob extends AbstractNodJob {
                     .filter(optimizedRules::contains)
                     .collect(Collectors.toList()))
             .setQueries(queryProgram.getQueries())
+            .setSmtConstraint(queryProgram.getSmtConstraint())
             .build();
 
     return new NodProgram(ctx, optimizedBaseProgram, optimizedQueryProgram);
