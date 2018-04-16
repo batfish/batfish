@@ -4766,6 +4766,11 @@ VIRTUAL_CHASSIS
    'virtual-chassis'
 ;
 
+VIRTUAL_ROUTER
+:
+   'virtual-router'
+;
+
 VIRTUAL_SWITCH
 :
    'virtual-switch'

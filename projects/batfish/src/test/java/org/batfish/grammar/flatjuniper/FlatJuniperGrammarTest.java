@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -479,6 +480,19 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testRoutingInstanceType() throws IOException {
+    Configuration c = parseConfig("routing-instance-type");
+
+    /* All types for now should result in a VRF */
+    /* TODO: perhaps some types e.g. forwarding should not result in a VRF */
+    assertThat(c, hasVrfs(hasKey("ri-forwarding")));
+    assertThat(c, hasVrfs(hasKey("ri-l2vpn")));
+    assertThat(c, hasVrfs(hasKey("ri-virtual-router")));
+    assertThat(c, hasVrfs(hasKey("ri-virtual-switch")));
+    assertThat(c, hasVrfs(hasKey("ri-vrf")));
   }
 
   @Test
