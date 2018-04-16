@@ -26,6 +26,12 @@ import org.batfish.job.BatfishJobResult;
 
 public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends BatfishJob<R> {
 
+  /**
+   * A map of handler functions used to construct Flows from a Z3 model. Each key is the name of a
+   * Field, and the values are BiConsumers (two arguments, void return type) with arguments of type
+   * Flow.Builder and Long (the value corresponding to the field taken by the model). Each converts
+   * the Long to the appropriate type and sets the field's value in the flow.
+   */
   private static Map<String, BiConsumer<Builder, Long>> flowBuilders =
       ImmutableMap.<String, BiConsumer<Builder, Long>>builder()
           .put(Field.DST_IP.getName(), (flowBuilder, value) -> flowBuilder.setDstIp(new Ip(value)))

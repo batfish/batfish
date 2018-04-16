@@ -441,7 +441,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
     if (_topologyInterfaces != null) {
       return toImmutableMap(
-          _topologyInterfaces,
+          _enabledInterfaces,
           Entry::getKey, /* node */
           topologyInterfacesEntry -> {
             String hostname = topologyInterfacesEntry.getKey();

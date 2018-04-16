@@ -45,8 +45,9 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   }
 
   @VisibleForTesting
-  BooleanExpr matchSrcInterfaceExpr(String s) {
-    return new EqExpr(new VarIntExpr(_sourceInterfaceField), _sourceInterfaceFieldValues.get(s));
+  BooleanExpr matchSrcInterfaceExpr(String srcInterfaceName) {
+    return new EqExpr(
+        new VarIntExpr(_sourceInterfaceField), _sourceInterfaceFieldValues.get(srcInterfaceName));
   }
 
   public BooleanExpr toBooleanExpr(AclLineMatchExpr aclLineMatchExpr) {

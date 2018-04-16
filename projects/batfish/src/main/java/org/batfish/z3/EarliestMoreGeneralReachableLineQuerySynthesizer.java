@@ -79,7 +79,6 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
         new AclLineMatchExprToBooleanExpr(
             _nodeAcls, _sourceInterfaceField, _sourceInterfaceFieldValues);
-    /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
     BooleanExpr matchUnreachableLineHeaderSpace =
         aclLineMatchExprToBooleanExpr.toBooleanExpr(unreachableLine.getMatchCondition());
     ImmutableList.Builder<QueryStatement> queries = ImmutableList.builder();
@@ -87,7 +86,6 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     for (AclLine earlierReachableLine : _earlierReachableLines) {
       int earlierLineIndex = earlierReachableLine.getLine();
       IpAccessListLine earlierLine = _list.getLines().get(earlierLineIndex);
-      /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
       BooleanExpr matchEarlierLineHeaderSpace =
           aclLineMatchExprToBooleanExpr.toBooleanExpr(earlierLine.getMatchCondition());
       NumberedQuery queryRel = new NumberedQuery(earlierLineIndex);
