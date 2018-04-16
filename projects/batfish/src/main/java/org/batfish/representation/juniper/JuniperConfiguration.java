@@ -1319,21 +1319,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // These policies need to be checked in order, so they will be lines in the security policy ACL
-    IpAccessListLine zonePoliciesLine = new IpAccessListLine(LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ZONE_POLICIES");
-    IpAccessListLine defaultActionLine = new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY");
+    IpAccessListLine zonePoliciesLine =
+        new IpAccessListLine(LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ZONE_POLICIES");
+    IpAccessListLine defaultActionLine =
+        new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY");
     if (_filters.get(ACL_NAME_GLOBAL_POLICY) != null) {
-      zoneAcl = new IpAccessList(
-          name,
-          ImmutableList.of(
-              zonePoliciesLine,
-              new IpAccessListLine(LineAction.ACCEPT, new PermittedByAcl(ACL_NAME_GLOBAL_POLICY), "GLOBAL_POLICY"),
-              defaultActionLine));
+      zoneAcl =
+          new IpAccessList(
+              name,
+              ImmutableList.of(
+                  zonePoliciesLine,
+                  new IpAccessListLine(
+                      LineAction.ACCEPT,
+                      new PermittedByAcl(ACL_NAME_GLOBAL_POLICY),
+                      "GLOBAL_POLICY"),
+                  defaultActionLine));
     } else {
-      zoneAcl = new IpAccessList(
-          name,
-          ImmutableList.of(
-              zonePoliciesLine,
-              defaultActionLine));
+      zoneAcl = new IpAccessList(name, ImmutableList.of(zonePoliciesLine, defaultActionLine));
     }
     _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
@@ -1370,8 +1372,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else if (securityPolicyAcl != null && outAcl == null) {
       aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName()));
     } else if (securityPolicyAcl != null) {
-      aclConjunctList = ImmutableSet.of(new PermittedByAcl(outAcl.getName()),
-          new PermittedByAcl(securityPolicyAcl.getName()));
+      aclConjunctList =
+          ImmutableSet.of(
+              new PermittedByAcl(outAcl.getName()),
+              new PermittedByAcl(securityPolicyAcl.getName()));
     }
     String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
     IpAccessList combinedAcl =
@@ -1379,9 +1383,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             combinedAclName,
             ImmutableList.of(
                 new IpAccessListLine(
-                    LineAction.ACCEPT,
-                    new AndMatchExpr(aclConjunctList),
-                    "ACCEPT")));
+                    LineAction.ACCEPT, new AndMatchExpr(aclConjunctList), "ACCEPT")));
     _c.getIpAccessLists().put(combinedAclName, combinedAcl);
     return combinedAcl;
   }

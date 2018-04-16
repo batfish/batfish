@@ -15,9 +15,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
@@ -55,20 +55,16 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
-import org.batfish.datamodel.OspfAreaSummary;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -347,12 +343,10 @@ public class FlatJuniperGrammarTest {
     // Second line should be global policy
     assertThat(
         aclTrustSPLines.get(1),
-        hasMatchCondition(
-            equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
+        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
     assertThat(
         aclUntrustSPLines.get(1),
-        hasMatchCondition(
-            equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
+        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
 
     // Third line should be default policy (reject all traffic)
     assertThat(aclTrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));

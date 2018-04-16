@@ -96,8 +96,8 @@ public final class InterfaceMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
-   * Zone name.
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's Zone
+   * name.
    */
   public static HasZoneName hasZoneName(Matcher<? super String> subMatcher) {
     return new HasZoneName(subMatcher);

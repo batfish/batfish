@@ -3,17 +3,12 @@ package org.batfish.representation.juniper;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasState;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
-import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
-import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
 
 import com.google.common.collect.ImmutableList;
@@ -27,13 +22,9 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class JuniperConfigurationTest {

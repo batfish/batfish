@@ -2200,8 +2200,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFilter =
         _configuration
             .getFirewallFilters()
-            .computeIfAbsent(
-                ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET, -1));
+            .computeIfAbsent(ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET, -1));
   }
 
   @Override
