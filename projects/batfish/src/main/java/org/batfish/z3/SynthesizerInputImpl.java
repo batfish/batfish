@@ -188,7 +188,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
-  private IpAccessListSpecializer _ipAclListSpecializer;
+  private IpAccessListSpecializer _ipAccessListSpecializer;
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
@@ -233,7 +233,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
     }
-    _ipAclListSpecializer = new IpAccessListSpecializer(headerSpace);
+    _ipAccessListSpecializer = new IpAccessListSpecializer(headerSpace);
     _ipSpaceSpecializer =
         specialize
             ? new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps())
@@ -446,7 +446,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                       .entrySet()
                       .stream()
                       .filter(e2 -> !disabledAcls.contains(e2.getKey()))
-                      .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+                      .collect(
+                          ImmutableMap.toImmutableMap(
+                              Entry::getKey,
+                              entry -> _ipAccessListSpecializer.specialize(entry.getValue())));
                 }));
   }
 
