@@ -117,20 +117,15 @@ public class FlatJuniperGrammarTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    Flow.Builder fb = new Flow.Builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(new Ip(sourceAddress));
-    fb.setDstIp(new Ip(destinationAddress));
-    fb.setTag("test");
-    return fb.build();
+    return createFlow(sourceAddress, destinationAddress, State.NEW);
   }
 
-  private static Flow createReturnFlow(String sourceAddress, String destinationAddress) {
+  private static Flow createFlow(String sourceAddress, String destinationAddress, State state) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
     fb.setSrcIp(new Ip(sourceAddress));
     fb.setDstIp(new Ip(destinationAddress));
-    fb.setState(State.ESTABLISHED);
+    fb.setState(state);
     fb.setTag("test");
     return fb.build();
   }
@@ -615,8 +610,8 @@ public class FlatJuniperGrammarTest {
 
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
-    Flow trustToUntrustReturnFlow = createReturnFlow(trustedIpAddr, untrustedIpAddr);
-    Flow untrustToTrustReturnFlow = createReturnFlow(untrustedIpAddr, trustedIpAddr);
+    Flow trustToUntrustReturnFlow = createFlow(trustedIpAddr, untrustedIpAddr, State.ESTABLISHED);
+    Flow untrustToTrustReturnFlow = createFlow(untrustedIpAddr, trustedIpAddr, State.ESTABLISHED);
 
     IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
