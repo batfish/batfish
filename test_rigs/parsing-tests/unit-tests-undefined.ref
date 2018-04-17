@@ -243,6 +243,22 @@
           ]
         }
       },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:snmp-acl" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named 'snmp-acl'",
+        "files" : {
+          "cisco_snmp" : [
+            11
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:snmp-arpa-acl" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named 'snmp-arpa-acl'",
+        "files" : {
+          "cisco_snmp" : [
+            12
+          ]
+        }
+      },
       "undefined:ipv4 acl:usage:ssh ipv4 access-list:ACL99" : {
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ssh ipv4 access-list' named 'ACL99'",
         "files" : {
@@ -955,7 +971,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 118
+      "numResults" : 120
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1326,6 +1342,18 @@
         }
       },
       "cisco_snmp" : {
+        "ipv4 acl" : {
+          "snmp-acl" : {
+            "snmp server community ipv4 acl" : [
+              11
+            ]
+          },
+          "snmp-arpa-acl" : {
+            "snmp server community ipv4 acl" : [
+              12
+            ]
+          }
+        },
         "ipv4/6 acl" : {
           "1" : {
             "snmp server community acl" : [
