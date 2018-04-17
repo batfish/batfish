@@ -38,7 +38,7 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     public AnswerElement answer() {
       String tag = _batfish.getFlowTag();
       Set<Flow> flows = getFlows(tag);
-      _batfish.processFlows(flows);
+      _batfish.processFlows(flows, ((TracerouteQuestion) _question).getIgnoreAcls());
       AnswerElement answerElement = _batfish.getHistory();
       return answerElement;
     }
@@ -47,11 +47,12 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     public AnswerElement answerDiff() {
       String tag = _batfish.getDifferentialFlowTag();
       Set<Flow> flows = getFlows(tag);
+      TracerouteQuestion tracerouteQuestion = (TracerouteQuestion) _question;
       _batfish.pushBaseEnvironment();
-      _batfish.processFlows(flows);
+      _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
       _batfish.popEnvironment();
       _batfish.pushDeltaEnvironment();
-      _batfish.processFlows(flows);
+      _batfish.processFlows(flows, tracerouteQuestion.getIgnoreAcls());
       _batfish.popEnvironment();
       FlowHistory history = _batfish.getHistory();
       FlowHistory filteredHistory = new FlowHistory();
@@ -213,6 +214,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ICMP_TYPE = "icmpType";
 
+    private static final String PROP_IGNORE_ACLS = "ignoreAcls";
+
     private static final String PROP_INGRESS_INTERFACE = "ingressInterface";
 
     private static final String PROP_INGRESS_NODE = "ingressNode";
@@ -261,6 +264,8 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
     private Integer _icmpType;
 
+    private boolean _ignoreAcls;
+
     private String _ingressInterface;
 
     private String _ingressNode;
@@ -295,7 +300,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
 
     private Boolean _tcpFlagsUrg;
 
-    public TracerouteQuestion() {}
+    public TracerouteQuestion() {
+      _ignoreAcls = false;
+    }
 
     public Flow.Builder createFlowBuilder() {
       Flow.Builder flowBuilder = new Flow.Builder();
@@ -437,6 +444,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
       return _icmpType;
     }
 
+    @JsonProperty(PROP_IGNORE_ACLS)
+    public boolean getIgnoreAcls() {
+      return _ignoreAcls;
+    }
+
     @JsonProperty(PROP_INGRESS_INTERFACE)
     public String getIngressInterface() {
       return _ingressInterface;
@@ -560,6 +572,9 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
         if (_icmpType != null) {
           retString += String.format(", %s=%s", PROP_ICMP_TYPE, _icmpType);
         }
+        if (_ignoreAcls) {
+          retString += String.format(", %s=%s", PROP_IGNORE_ACLS, _ignoreAcls);
+        }
         if (_ipProtocol != null) {
           retString += String.format(", %s=%s", PROP_IP_PROTOCOL, _ipProtocol);
         }
@@ -647,6 +662,11 @@ public class TracerouteQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_ICMP_TYPE)
     public void setIcmpType(Integer icmpType) {
       _icmpType = icmpType;
+    }
+
+    @JsonProperty(PROP_IGNORE_ACLS)
+    public void setIgnoreAcls(boolean ignoreAcls) {
+      _ignoreAcls = ignoreAcls;
     }
 
     @JsonProperty(PROP_INGRESS_INTERFACE)
