@@ -3,11 +3,11 @@ package org.batfish.z3;
 import static org.batfish.datamodel.FlowDisposition.*;
 import static org.batfish.datamodel.matchers.EdgeMatchers.*;
 import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
+import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHop;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -57,7 +57,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.matchers.FlowTraceMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -467,23 +466,18 @@ public class NodJobTest {
     assertThat(
         flowTraces,
         containsInAnyOrder(
-            /* One trace should enter dstNode through iface1 and then pass the outgoing filter.
-             * Specifically, the first hop should have an edge with int2=iface1.
-             * We don't care about the second hop, so contains may not be the right matcher to
-             * use here.
-             */
-            allOf(
-                FlowTraceMatchers.hasDisposition(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
-                FlowTraceMatchers.hasHops(
-                    contains(hasEdge(hasInt2(iface1)), any(FlowTraceHop.class)))),
-            /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
-             * filter. The first hop should have an edge with int2=iface2.
-             * We don't care about the second hop, so contains may not be the right matcher to
-             * use here.
-             */
-            allOf(
-                FlowTraceMatchers.hasDisposition(DENIED_OUT),
-                FlowTraceMatchers.hasHops(
-                    contains(hasEdge(hasInt2(iface2)), any(FlowTraceHop.class))))));
+            ImmutableList.of(
+                /* One trace should enter dstNode through iface1 and then pass the outgoing filter,
+                 * resulting in the NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK disposition.
+                 * Specifically, the first hop should have an edge with int2=iface1.
+                 */
+                allOf(
+                    hasDisposition(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
+                    hasHop(0, hasEdge(hasInt2(iface1)))),
+                /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
+                 * filter, resulting in the DENIED_OUT disposition. The first hop should have an
+                 * edge with int2=iface2.
+                 */
+                allOf(hasDisposition(DENIED_OUT), hasHop(0, hasEdge(hasInt2(iface2)))))));
   }
 }

@@ -83,7 +83,10 @@ public class BoolExprTransformerTest {
             _ctx,
             ReachabilityProgram.builder()
                 .setInput(_input)
-                .setRules(of(new BasicRuleStatement(_stateExpr)))
+                .setRules(
+                    of(
+                        new BasicRuleStatement(_stateExpr),
+                        new BasicRuleStatement(_transformationStateExpr)))
                 .setSmtConstraint(SaneExpr.INSTANCE)
                 .build());
   }
