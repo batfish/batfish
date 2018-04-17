@@ -1,7 +1,8 @@
 package org.batfish.z3;
 
-import static org.batfish.datamodel.FlowDisposition.*;
-import static org.batfish.datamodel.matchers.EdgeMatchers.*;
+import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.datamodel.matchers.EdgeMatchers.hasInt2;
 import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHop;

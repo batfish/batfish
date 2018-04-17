@@ -30,12 +30,16 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> castToGenericBooleanExprVisitorReturnType(Object o) {
-    return null;
+    @SuppressWarnings("unchecked")
+    Set<Field> set = (Set<Field>) o;
+    return set;
   }
 
   @Override
   public Set<Field> castToGenericIntExprVisitorReturnType(Object o) {
-    return null;
+    @SuppressWarnings("unchecked")
+    Set<Field> set = (Set<Field>) o;
+    return set;
   }
 
   public static Set<Field> collectTransformedVars(BooleanExpr expr) {
