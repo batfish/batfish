@@ -1,7 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.batfish.z3.Field;
@@ -55,7 +54,9 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> visitEqExpr(EqExpr eqExpr) {
-    return Sets.union(eqExpr.getLhs().accept(this), eqExpr.getRhs().accept(this));
+    return Stream.of(eqExpr.getLhs().accept(this), eqExpr.getRhs().accept(this))
+        .flatMap(Set::stream)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
