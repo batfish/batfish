@@ -11,5 +11,6 @@ import org.batfish.datamodel.FlowTrace;
  * performing a traceroute.
  */
 public interface FlowProcessor {
-  SortedMap<Flow, Set<FlowTrace>> processFlows(DataPlane dp, Set<Flow> flows);
+  SortedMap<Flow, Set<FlowTrace>> processFlows(
+      DataPlane dataPlane, Set<Flow> flows, boolean ignoreAcls);
 }
