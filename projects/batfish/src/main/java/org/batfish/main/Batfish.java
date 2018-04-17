@@ -2919,10 +2919,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3068,8 +3068,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows) {
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+  public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), ignoreAcls);
   }
 
   /**
@@ -3399,10 +3399,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4115,7 +4115,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
 
     AnswerElement answerElement = getHistory();
     return answerElement;

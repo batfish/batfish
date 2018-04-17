@@ -235,7 +235,7 @@ class CounterExample {
     Edge edge = new Edge(node1, int1, node2, int2);
     SortedSet<String> routes = new TreeSet<>();
     routes.add(route);
-    return new FlowTraceHop(edge, routes, null);
+    return new FlowTraceHop(edge, routes, null, null, null);
   }
 
   /*

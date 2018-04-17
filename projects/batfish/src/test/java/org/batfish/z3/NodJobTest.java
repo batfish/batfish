@@ -215,7 +215,7 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
-    _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
+    _bdpDataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
     flowTraces.forEach(
@@ -279,7 +279,7 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
-    _bdpDataPlanePlugin.processFlows(flows, _dataPlane);
+    _bdpDataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
     flowTraces.forEach(
