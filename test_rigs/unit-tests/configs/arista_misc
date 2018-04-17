@@ -38,4 +38,8 @@ management telnet
 Pagination disabled.
 switchport default mode routed
 !
+management cvx
+ no shutdown
+ shutdown
+!
 
