@@ -3816,6 +3816,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // TODO: fill in
 
     // mark references to route-maps that may not appear in data model
+    markRouteMaps(CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP);
     markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP);
     markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER);
     markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP);

@@ -846,6 +846,11 @@ ARP
 
 ;
 
+AS_NUMBER
+:
+   'as-number'
+;
+
 AS_OVERRIDE
 :
    'as-override'
