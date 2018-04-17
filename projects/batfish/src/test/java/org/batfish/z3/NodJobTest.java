@@ -1,5 +1,8 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.FlowDisposition.*;
+import static org.batfish.datamodel.matchers.EdgeMatchers.*;
+import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -476,24 +479,22 @@ public class NodJobTest {
              * use here.
              */
             allOf(
-                FlowTraceMatchers.hasDisposition(
-                    equalTo(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
+                FlowTraceMatchers.hasDisposition(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
                 FlowTraceMatchers.hasHops(
                     contains(
-                        FlowTraceHopMatchers.hasEdge(EdgeMatchers.hasInt2(equalTo(iface1))),
-                        any(FlowTraceHop.class))),
+                        hasEdge(hasInt2(iface1)),
+                        any(FlowTraceHop.class)))),
             /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
              * filter. The first hop should have an edge with int2=iface2.
              * We don't care about the second hop, so contains may not be the right matcher to
              * use here.
              */
             allOf(
-                FlowTraceMatchers.hasDisposition(
-                    equalTo(FlowDisposition.DENIED_OUT)),
+                FlowTraceMatchers.hasDisposition(DENIED_OUT),
                 FlowTraceMatchers.hasHops(
                     contains(
-                        FlowTraceHopMatchers.hasEdge(EdgeMatchers.hasInt2(equalTo(iface2))),
+                        hasEdge(hasInt2(iface2)),
                         any(FlowTraceHop.class)))
-                ))));
+                )));
   }
 }

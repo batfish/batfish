@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import org.batfish.datamodel.Edge;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -19,6 +21,14 @@ public class EdgeMatchers {
    */
   public static HasInt2 hasInt2(Matcher<String> subMatcher) {
     return new HasInt2(subMatcher);
+  }
+
+  /**
+   * @param int2 the expected receiving interface of the {@Edge}.
+   * @return A {@Matcher} for the {@Edge}.
+   */
+  public static HasInt2 hasInt2(String int2) {
+    return new HasInt2(equalTo(int2));
   }
 
   /**

@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+
 import java.util.List;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
@@ -11,6 +13,10 @@ public class FlowTraceMatchers {
   public static FlowTraceDispositionMatcher hasDisposition(
       Matcher<FlowDisposition> flowDispositionMatcher) {
     return new FlowTraceDispositionMatcher(flowDispositionMatcher);
+  }
+
+  public static FlowTraceDispositionMatcher hasDisposition(FlowDisposition flowDisposition) {
+    return new FlowTraceDispositionMatcher(equalTo(flowDisposition));
   }
 
   public static FlowTraceHopsMatcher hasHops(Matcher<Iterable<? extends FlowTraceHop>> hopsMatcher) {
