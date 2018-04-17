@@ -1,5 +1,7 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.matchers.EdgeMatchersImpl.HasInt1;
 import org.batfish.datamodel.matchers.EdgeMatchersImpl.HasInt2;
@@ -29,7 +31,7 @@ public final class EdgeMatchers {
    * @param int2 the expected receiving interface of the {@Edge}.
    * @return A {@Matcher} for the {@Edge}.
    */
-  public static HasInt2 hasInt2(String int2) {
+  public static HasInt2 hasInt2(@Nonnull String int2) {
     return new HasInt2(equalTo(int2));
   }
 
