@@ -107,6 +107,9 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   public DynamicIpBgpPeerGroup addDynamicIpPeerGroup(Prefix prefix) {
     DynamicIpBgpPeerGroup pg = new DynamicIpBgpPeerGroup(prefix);
+    if (_defaultIpv4Activate) {
+      pg.setActive(true);
+    }
     _dynamicIpPeerGroups.put(prefix, pg);
     _allPeerGroups.add(pg);
     return pg;
@@ -114,6 +117,9 @@ public class BgpProcess extends ComparableStructure<Integer> {
 
   public DynamicIpv6BgpPeerGroup addDynamicIpv6PeerGroup(Prefix6 prefix6) {
     DynamicIpv6BgpPeerGroup pg = new DynamicIpv6BgpPeerGroup(prefix6);
+    if (_defaultIpv6Activate) {
+      pg.setActive(true);
+    }
     _dynamicIpv6PeerGroups.put(prefix6, pg);
     _allPeerGroups.add(pg);
     return pg;
