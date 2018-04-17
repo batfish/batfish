@@ -194,7 +194,7 @@ public class NodJobAclTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
-    bdpDataPlanePlugin.processFlows(flows, dataPlane);
+    bdpDataPlanePlugin.processFlows(flows, dataPlane, false);
     List<FlowTrace> flowTraces = bdpDataPlanePlugin.getHistoryFlowTraces(dataPlane);
     assertThat(flowTraces, hasSize(2));
     assertThat(
