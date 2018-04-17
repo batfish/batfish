@@ -363,6 +363,7 @@ import org.batfish.grammar.cisco.CiscoParser.Logging_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_trapContext;
+import org.batfish.grammar.cisco.CiscoParser.Management_ssh_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_as_path_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_community_list_rm_stanzaContext;
@@ -4283,6 +4284,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     trap.setSeverity(severity);
     trap.setSeverityNum(severityNum);
+  }
+
+  @Override
+  public void exitManagement_ssh_ip_access_group(Management_ssh_ip_access_groupContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.getManagementAccessGroups().add(name);
+    _configuration.referenceStructure(
+        CiscoStructureType.IPV4_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
+        line);
   }
 
   @Override

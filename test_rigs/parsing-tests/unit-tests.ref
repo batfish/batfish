@@ -2261,6 +2261,13 @@
             "            VARIABLE:'mode'  <== mode:M_Authentication",
             "            PASSWORD:'password'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (management_ssh_ip_access_group",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'abc'  <== mode:DEFAULT_MODE)",
+            "          IN:'in'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (management_ssh_null",
             "          IDLE_TIMEOUT:'idle-timeout'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -51155,7 +51162,7 @@
           "ipv4 acl" : {
             "abc" : {
               "management telnet ip access-group" : [
-                32
+                33
               ]
             }
           }

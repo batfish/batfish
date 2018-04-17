@@ -24,6 +24,7 @@ management console
 !
 management ssh
  authentication mode password
+ ip access-group abc in
  idle-timeout 60
  shutdown
 !
