@@ -30,6 +30,10 @@ public final class JuniperUtils {
     return INSTANCE.decrypt(key);
   }
 
+  public static boolean isJuniper9CipherText(String text) {
+    return INSTANCE._validationRegex.matcher(text).matches();
+  }
+
   private final char[] _allCharacters;
 
   private final Map<Character, Integer> _allCharactersIndexMap;
@@ -55,8 +59,7 @@ public final class JuniperUtils {
   }
 
   private String decrypt(String key) {
-    boolean valid = _validationRegex.matcher(key).matches();
-    if (!valid) {
+    if (!isJuniper9CipherText(key)) {
       throw new BatfishException("Invalid Juniper $9$ ciphertext: \"" + key + "\"");
     }
     String[] chars = new String[] {key.substring("$9$".length())};

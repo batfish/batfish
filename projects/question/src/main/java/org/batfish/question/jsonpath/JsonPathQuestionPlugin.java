@@ -45,7 +45,7 @@ import org.batfish.question.jsonpath.JsonPathResult.JsonPathResultEntry;
 @AutoService(Plugin.class)
 public class JsonPathQuestionPlugin extends QuestionPlugin {
 
-  public static class JsonPathAnswerElement implements AnswerElement {
+  public static class JsonPathAnswerElement extends AnswerElement {
 
     private static final String PROP_DEBUG = "debug";
 
@@ -55,12 +55,10 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
 
     private SortedMap<Integer, JsonPathResult> _results;
 
-    private AnswerSummary _summary;
-
     public JsonPathAnswerElement() {
       // don't initialize _debug, so we won't serialize when its null (common case)
       _results = new TreeMap<>();
-      _summary = new AnswerSummary();
+      setSummary(new AnswerSummary());
     }
 
     public void addDebugInfo(String key, Object value) {
@@ -81,11 +79,6 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_RESULTS)
     public SortedMap<Integer, JsonPathResult> getResults() {
       return _results;
-    }
-
-    @Override
-    public AnswerSummary getSummary() {
-      return _summary;
     }
 
     @Override
@@ -172,10 +165,9 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       AnswerElement innerAnswer =
           (innerQuestion.getDifferential()) ? innerAnswerer.answerDiff() : innerAnswerer.answer();
 
-      BatfishObjectMapper mapper = new BatfishObjectMapper(false /* save bytes: don't prettify */);
       String innerAnswerStr = null;
       try {
-        innerAnswerStr = mapper.writeValueAsString(innerAnswer);
+        innerAnswerStr = BatfishObjectMapper.writeString(innerAnswer);
       } catch (IOException e) {
         throw new BatfishException("Could not get JSON string from inner answer", e);
       }
@@ -316,7 +308,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class JsonPathDiffAnswerElement implements AnswerElement {
+  public static class JsonPathDiffAnswerElement extends AnswerElement {
 
     static String prettyPrint(SortedMap<Integer, JsonPathDiffResult> results) {
       StringBuilder sb = new StringBuilder();
@@ -424,13 +416,12 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     @Override
     public Question configureTemplate(@Nullable String exceptions, @Nullable String assertion) {
       try {
-        BatfishObjectMapper mapper = new BatfishObjectMapper();
-        JsonPathQuestion question =
-            mapper.readValue(mapper.writeValueAsString(this), JsonPathQuestion.class); // deep copy
+        JsonPathQuestion question = BatfishObjectMapper.clone(this, JsonPathQuestion.class);
 
         if (exceptions != null) {
           Set<JsonPathException> jpExceptions =
-              mapper.readValue(exceptions, new TypeReference<Set<JsonPathException>>() {});
+              BatfishObjectMapper.mapper()
+                  .readValue(exceptions, new TypeReference<Set<JsonPathException>>() {});
           for (JsonPathQuery query : question.getPaths()) {
             query.setExceptions(jpExceptions);
           }
@@ -440,7 +431,7 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
               // indicates a desire to remove the assertion
               (assertion.equals("") || assertion.equals("{}"))
                   ? null
-                  : mapper.readValue(assertion, JsonPathAssertion.class);
+                  : BatfishObjectMapper.mapper().readValue(assertion, JsonPathAssertion.class);
 
           for (JsonPathQuery query : question.getPaths()) {
             query.setAssertion(jpAssertion);

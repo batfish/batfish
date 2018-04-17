@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class NetworkFactory {
@@ -19,11 +20,22 @@ public class NetworkFactory {
 
     public abstract T build();
 
+    private void checkNetworkFactory(String toGenerate) {
+      if (_networkFactory == null) {
+        throw new BatfishException(
+            String.format(
+                "Cannot generate %s for %s not created via %s",
+                toGenerate, getClass().getCanonicalName(), NetworkFactory.class.getSimpleName()));
+      }
+    }
+
     long generateLong() {
+      checkNetworkFactory("long");
       return _networkFactory.generateLong(_outputClass);
     }
 
     protected String generateName() {
+      checkNetworkFactory("name");
       return _networkFactory.generateName(_outputClass);
     }
   }

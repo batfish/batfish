@@ -13,7 +13,6 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -22,10 +21,10 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.z3.BasicHeaderField;
+import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.NodContext;
 import org.batfish.z3.ReachabilityProgram;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
@@ -35,14 +34,14 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfExpr;
 import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.MockBooleanAtom;
+import org.batfish.z3.expr.MockIntAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
-import org.batfish.z3.expr.TestBooleanAtom;
-import org.batfish.z3.expr.TestIntAtom;
 import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.Accept;
@@ -67,11 +66,11 @@ public class BoolExprTransformerTest {
   private StateExpr _transformationStateExpr;
 
   private BooleanExpr newBooleanAtom() {
-    return new TestBooleanAtom(_atomCounter++, _ctx);
+    return new MockBooleanAtom(_atomCounter++, _ctx);
   }
 
   private IntExpr newIntAtom() {
-    return new TestIntAtom(_atomCounter++, 32, _ctx);
+    return new MockIntAtom(_atomCounter++, 32, _ctx);
   }
 
   @Before
@@ -79,7 +78,7 @@ public class BoolExprTransformerTest {
     _stateExpr = Accept.INSTANCE;
     _transformationStateExpr = new PreOutEdgePostNat("host1", "interface1", "host2", "interface2");
     _ctx = new Context();
-    _input = TestSynthesizerInput.builder().build();
+    _input = MockSynthesizerInput.builder().build();
     _nodContext =
         new NodContext(
             _ctx,
@@ -150,7 +149,7 @@ public class BoolExprTransformerTest {
   public void testVisitHeaderSpaceMatchExpr() {
     long ipCounter = 1L;
     int intCounter = 1;
-    HeaderSpace.Builder<?, ?> hb = IpAccessListLine.builder();
+    HeaderSpace.Builder hb = HeaderSpace.builder();
 
     BooleanExpr expr =
         new HeaderSpaceMatchExpr(

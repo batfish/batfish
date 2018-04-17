@@ -9,7 +9,7 @@ import org.batfish.z3.BasicHeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
-public class SaneExpr extends BooleanExpr {
+public final class SaneExpr extends BooleanExpr {
 
   public static final SaneExpr INSTANCE = new SaneExpr();
 
@@ -76,7 +76,7 @@ public class SaneExpr extends BooleanExpr {
   }
 
   @Override
-  public boolean exprEquals(Expr e) {
+  protected boolean exprEquals(Expr e) {
     return Objects.equals(_expr, ((SaneExpr) e)._expr);
   }
 

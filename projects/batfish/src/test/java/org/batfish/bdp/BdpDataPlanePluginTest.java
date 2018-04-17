@@ -2,8 +2,6 @@ package org.batfish.bdp;
 
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
+import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,8 +46,10 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -67,8 +67,8 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -131,19 +131,25 @@ public class BdpDataPlanePluginTest {
 
   private SortedMap<String, Configuration> generateNetworkWithDuplicates() {
     Ip coreId = new Ip("1.1.1.1");
-    Ip neighborId = new Ip("1.1.1.2");
-    final int interfcePrefixBits = 24;
+    Ip neighborId1 = new Ip("1.1.1.9");
+    Ip neighborId2 = new Ip("1.1.1.2");
+    final int interfcePrefixBits = 30;
     _vb.setName(DEFAULT_VRF_NAME);
 
+    /*
+     * Setup as follows:
+     * 1.1.1.9               1.1.1.1            1.1.1.2
+     * n1+---------x---------+core+---------------+n2
+     * n1 & n2 have same Ips. Core only has route to n2, because of interface masks
+     */
+
+    _epb.setStatements(ImmutableList.of(new SetDefaultPolicy("DEF")));
     Configuration core =
         _cb.setHostname(CORE_NAME).setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    _epb.setStatements(ImmutableList.of(new SetDefaultPolicy("DEF")));
+
     Vrf corevrf = _vb.setOwner(core).build();
     _ib.setOwner(core).setVrf(corevrf).setActive(true);
     _ib.setAddress(new InterfaceAddress(coreId, interfcePrefixBits)).build();
-    _ib.setAddress(new InterfaceAddress(new Ip("9.9.9.9"), interfcePrefixBits))
-        .setName("OUT")
-        .build();
     BgpProcess coreProc = _pb.setRouterId(coreId).setVrf(corevrf).build();
     _nb.setOwner(core)
         .setVrf(corevrf)
@@ -151,21 +157,22 @@ public class BdpDataPlanePluginTest {
         .setRemoteAs(1)
         .setLocalAs(1)
         .setLocalIp(coreId)
-        .setPeerAddress(neighborId)
+        .setPeerAddress(neighborId1)
         .setExportPolicy(_epb.setOwner(core).build().getName())
         .build();
-    _nb.setRemoteAs(1).setLocalAs(1).setLocalIp(coreId).setPeerAddress(neighborId).build();
+    _nb.setRemoteAs(1).setLocalAs(1).setLocalIp(coreId).setPeerAddress(neighborId2).build();
 
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf n1Vrf = _vb.setOwner(n1).build();
     _ib.setOwner(n1).setVrf(n1Vrf);
-    BgpProcess n1Proc = _pb.setRouterId(neighborId).setVrf(n1Vrf).build();
+    _ib.setAddress(new InterfaceAddress(neighborId1, interfcePrefixBits)).build();
+    BgpProcess n1Proc = _pb.setRouterId(neighborId1).setVrf(n1Vrf).build();
     _nb.setOwner(n1)
         .setVrf(n1Vrf)
         .setBgpProcess(n1Proc)
         .setRemoteAs(1)
         .setLocalAs(1)
-        .setLocalIp(neighborId)
+        .setLocalIp(neighborId1)
         .setPeerAddress(coreId)
         .setExportPolicy(_epb.setOwner(n1).build().getName())
         .build();
@@ -173,14 +180,14 @@ public class BdpDataPlanePluginTest {
     Configuration n2 = _cb.setHostname("n2").build();
     Vrf n2Vrf = _vb.setOwner(n2).build();
     _ib.setOwner(n2).setVrf(n2Vrf);
-    _ib.setAddress(new InterfaceAddress(neighborId, interfcePrefixBits)).setVrf(n2Vrf).build();
-    BgpProcess n2Proc = _pb.setRouterId(neighborId).setVrf(n2Vrf).build();
+    _ib.setAddress(new InterfaceAddress(neighborId2, interfcePrefixBits)).build();
+    BgpProcess n2Proc = _pb.setRouterId(neighborId2).setVrf(n2Vrf).build();
     _nb.setOwner(n2)
         .setVrf(n2Vrf)
         .setBgpProcess(n2Proc)
         .setRemoteAs(1)
         .setLocalAs(1)
-        .setLocalIp(neighborId)
+        .setLocalIp(neighborId2)
         .setPeerAddress(coreId)
         .setExportPolicy(_epb.setOwner(n2).build().getName())
         .build();
@@ -212,16 +219,9 @@ public class BdpDataPlanePluginTest {
     return builder.build();
   }
 
-  @SuppressWarnings("unused")
-  private static IpAccessListLine makeAclLine(LineAction action) {
-    IpAccessListLine aclLine = new IpAccessListLine();
-    aclLine.setAction(action);
-    return aclLine;
-  }
-
   private static IpAccessList makeAcl(String name, LineAction action) {
-    IpAccessListLine aclLine = new IpAccessListLine();
-    aclLine.setAction(action);
+    IpAccessListLine aclLine =
+        IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
     return new IpAccessList(name, singletonList(aclLine));
   }
 
@@ -233,7 +233,7 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, singletonList(nat));
+    Flow transformed = BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -245,7 +245,7 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("reject", LineAction.REJECT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, singletonList(nat));
+    Flow transformed = BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
     assertThat(transformed, is(flow));
   }
 
@@ -261,7 +261,8 @@ public class BdpDataPlanePluginTest {
     secondNat.setAcl(makeAcl("secondAccept", LineAction.ACCEPT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
+    Flow transformed =
+        BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -277,7 +278,8 @@ public class BdpDataPlanePluginTest {
     secondNat.setAcl(makeAcl("acceptAnyway", LineAction.ACCEPT));
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, Lists.newArrayList(nat, secondNat));
+    Flow transformed =
+        BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
 
@@ -290,7 +292,7 @@ public class BdpDataPlanePluginTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    BdpEngine.applySourceNat(flow, singletonList(nat));
+    BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
   }
 
   private void testBgpAsPathMultipathHelper(
@@ -528,7 +530,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationPrintingEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpPrintAllIterations(true);
@@ -553,7 +555,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationPrintingNotEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpMaxRecordedIterations(0);
@@ -580,7 +582,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationNoPrinting() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(0);
     settings.setBdpMaxRecordedIterations(0);
@@ -606,7 +608,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationRecoveryEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(1);
     settings.setBdpPrintAllIterations(false);
@@ -623,7 +625,7 @@ public class BdpDataPlanePluginTest {
 
   @Test
   public void testBgpOscillationRecoveryNotEnoughInfo() throws IOException {
-    TestBdpSettings settings = new TestBdpSettings();
+    MockBdpSettings settings = new MockBdpSettings();
     settings.setBdpDetail(true);
     settings.setBdpMaxOscillationRecoveryAttempts(1);
     settings.setBdpMaxRecordedIterations(0);
@@ -640,7 +642,7 @@ public class BdpDataPlanePluginTest {
     testBgpOscillationRecovery(settings);
   }
 
-  private void testBgpOscillationRecovery(TestBdpSettings bdpSettings) throws IOException {
+  private void testBgpOscillationRecovery(MockBdpSettings bdpSettings) throws IOException {
     String testrigName = "bgp-oscillation";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
@@ -1002,7 +1004,7 @@ public class BdpDataPlanePluginTest {
     vrf.getStaticRoutes().add(srJustInterface);
     BdpEngine engine =
         new BdpEngine(
-            new TestBdpSettings(),
+            new MockBdpSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false),
             (a, b) -> new AtomicInteger());
     Topology topology = new Topology(Collections.emptySortedSet());
@@ -1012,11 +1014,10 @@ public class BdpDataPlanePluginTest {
             ImmutableMap.of(c.getName(), c),
             topology,
             Collections.emptySet(),
-            ImmutableSet.of(new NodeInterfacePair(c.getName(), i.getName())),
             new BdpAnswerElement());
 
     // generating fibs should not crash
-    dp.getFibRows();
+    dp.getFibs();
   }
 
   @Test
@@ -1027,18 +1028,20 @@ public class BdpDataPlanePluginTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     DataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
-    dataPlanePlugin.computeDataPlane(false);
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
 
     // N2 has proper neighbor relationship
     Collection<BgpNeighbor> n2Neighbors =
         configs.get("n2").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
     assertThat(n2Neighbors, hasSize(1));
-    assertThat(n2Neighbors.iterator().next().getRemoteBgpNeighbor(), is(notNullValue()));
+    assertThat(bgpTopology.degree(n2Neighbors.iterator().next()), is(2));
 
     // N1 does not have a full session established, because it's not reachable
     Collection<BgpNeighbor> n1Neighbors =
         configs.get("n1").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
     assertThat(n1Neighbors, hasSize(1));
-    assertThat(n1Neighbors.iterator().next().getRemoteBgpNeighbor(), is(nullValue()));
+    assertThat(bgpTopology.degree(n1Neighbors.iterator().next()), is(0));
   }
 }

@@ -127,6 +127,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         .setInput(program.getInput())
         .setQueries(program.getQueries())
         .setRules(rules)
+        .setSmtConstraint(program.getSmtConstraint())
         .build();
   }
 

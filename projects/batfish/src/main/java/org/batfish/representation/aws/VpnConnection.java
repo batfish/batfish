@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -192,7 +193,15 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  public void applyToVpnGateway(AwsConfiguration awsConfiguration, Region region) {
+  public void applyToVpnGateway(
+      AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
+    if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
+      warnings.redFlag(
+          String.format(
+              "VPN Gateway \"%s\" referred by VPN connection \"%s\" not found",
+              _vpnGatewayId, _vpnConnectionId));
+      return;
+    }
     Configuration vpnGatewayCfgNode = awsConfiguration.getConfigurationNodes().get(_vpnGatewayId);
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       int idNum = i + 1;
@@ -273,7 +282,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
         BgpNeighbor cgBgpNeighbor =
-            new BgpNeighbor(ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode);
+            new BgpNeighbor(ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode, false);
         cgBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
         proc.getNeighbors().put(cgBgpNeighbor.getPrefix(), cgBgpNeighbor);
         cgBgpNeighbor.setRemoteAs(ipsecTunnel.getCgwBgpAsn());
@@ -298,7 +307,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
         Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getAddress().getIp();
         Ip vgwToVpcIfaceAddress = vpnGatewayCfgNode.getInterfaces().get(vpcId).getAddress().getIp();
-        BgpNeighbor vgwToVpcBgpNeighbor = new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode);
+        BgpNeighbor vgwToVpcBgpNeighbor =
+            new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode, false);
         proc.getNeighbors().put(vgwToVpcBgpNeighbor.getPrefix(), vgwToVpcBgpNeighbor);
         vgwToVpcBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
         vgwToVpcBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());
@@ -308,7 +318,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vgwToVpcBgpNeighbor.setSendCommunity(true);
 
         // iBGP connection from VPC
-        BgpNeighbor vpcToVgwBgpNeighbor = new BgpNeighbor(vgwToVpcIfaceAddress, vpcNode);
+        BgpNeighbor vpcToVgwBgpNeighbor = new BgpNeighbor(vgwToVpcIfaceAddress, vpcNode, false);
         BgpProcess vpcProc = new BgpProcess();
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
         vpcProc.setMultipathEquivalentAsPathMatchMode(

@@ -337,7 +337,7 @@ ifbr_vlan_id_list
 
 ife_filter
 :
-   FILTER direction name = variable
+   filter
 ;
 
 ife_interface_mode
@@ -423,7 +423,10 @@ ifi_rpf_check
 
 ifia_arp
 :
-   ARP IP_ADDRESS
+   ARP ip = IP_ADDRESS
+   (
+      L2_INTERFACE interface_id
+   )?
    (
       MAC
       | MULTICAST_MAC

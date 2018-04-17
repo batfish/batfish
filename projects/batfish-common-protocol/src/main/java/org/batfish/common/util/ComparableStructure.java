@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
-public abstract class ComparableStructure<KeyT extends Comparable<KeyT>>
+public abstract class ComparableStructure<KeyT extends Comparable<? super KeyT>>
     extends ReferenceCountedStructure
-    implements Comparable<ComparableStructure<KeyT>>, Serializable {
+    implements Comparable<ComparableStructure<? extends KeyT>>, Serializable {
 
   protected static final String PROP_NAME = "name";
   private static final long serialVersionUID = 1L;
@@ -20,7 +20,7 @@ public abstract class ComparableStructure<KeyT extends Comparable<KeyT>>
   }
 
   @Override
-  public int compareTo(ComparableStructure<KeyT> rhs) {
+  public int compareTo(ComparableStructure<? extends KeyT> rhs) {
     return _key.compareTo(rhs._key);
   }
 

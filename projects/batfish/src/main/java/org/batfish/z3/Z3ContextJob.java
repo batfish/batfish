@@ -180,20 +180,25 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     if (answer.getArgs().length > 0) {
 
       Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
-      List<BitVecExpr> reversedVars =
-          Lists.reverse(
-              program
-                  .getNodContext()
-                  .getVariableNames()
-                  .stream()
-                  .filter(
-                      name ->
-                          !TransformationHeaderField.transformationHeaderFieldNames.contains(name))
-                  .map(variablesAsConsts::get)
-                  .collect(Collectors.toList()));
+      List<BitVecExpr> vars =
+          program
+              .getNodContext()
+              .getVariableNames()
+              .stream()
+              .filter(
+                  name -> !TransformationHeaderField.transformationHeaderFieldNames.contains(name))
+              .map(variablesAsConsts::get)
+              .collect(Collectors.toList());
+      List<BitVecExpr> reversedVars = Lists.reverse(vars);
 
+      Expr substitutedSmtConstraint =
+          program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
       Expr substitutedAnswer = answer.substituteVars(reversedVars.toArray(new Expr[] {}));
-      solverInput = (BoolExpr) substitutedAnswer;
+      solverInput =
+          program
+              .getNodContext()
+              .getContext()
+              .mkAnd((BoolExpr) substitutedAnswer, (BoolExpr) substitutedSmtConstraint);
     } else {
       solverInput = (BoolExpr) answer;
     }

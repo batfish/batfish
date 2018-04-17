@@ -35,13 +35,14 @@ import org.batfish.question.OspfStatusQuestionPlugin.OspfStatusAnswerElement.Osp
 @AutoService(Plugin.class)
 public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
-  public static class OspfStatusAnswerElement implements AnswerElement {
+  public static class OspfStatusAnswerElement extends AnswerElement {
 
     public enum OspfStatus {
+      DISABLED_EXPORTED,
+      DISABLED_NOT_EXPORTED,
       ENABLED_ACTIVE,
       ENABLED_PASSIVE,
-      DISABLED_EXPORTED,
-      DISABLED_NOT_EXPORTED
+      SWITCHPORT
     }
 
     public static class OspfInfo implements Comparable<OspfInfo> {
@@ -141,7 +142,10 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
             String interfaceName = e2.getKey();
             Interface iface = e2.getValue();
             if (question.getInterfacesSpecifier().matches(iface)) {
-              if (iface.getOspfEnabled()) {
+              if (iface.getSwitchport() != null && iface.getSwitchport().booleanValue()) {
+                // it's a layer2 interface
+                answerElement.add(hostname, interfaceName, OspfStatus.SWITCHPORT);
+              } else if (iface.getOspfEnabled()) {
                 // ospf is running either passively or actively
                 if (iface.getOspfPassive()) {
                   if (question.matchesStatus(OspfStatus.ENABLED_PASSIVE)) {

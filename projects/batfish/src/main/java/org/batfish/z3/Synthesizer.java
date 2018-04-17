@@ -16,6 +16,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -23,6 +24,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
@@ -83,6 +85,7 @@ public class Synthesizer {
                     DropAclOut.State.INSTANCE,
                     DropNoRoute.State.INSTANCE,
                     DropNullRoute.State.INSTANCE,
+                    NeighborUnreachable.State.INSTANCE,
                     NodeAccept.State.INSTANCE,
                     NodeDrop.State.INSTANCE,
                     NodeDropAcl.State.INSTANCE,
@@ -90,6 +93,7 @@ public class Synthesizer {
                     NodeDropAclOut.State.INSTANCE,
                     NodeDropNoRoute.State.INSTANCE,
                     NodeDropNullRoute.State.INSTANCE,
+                    NodeNeighborUnreachable.State.INSTANCE,
                     Originate.State.INSTANCE,
                     OriginateVrf.State.INSTANCE,
                     PostIn.State.INSTANCE,

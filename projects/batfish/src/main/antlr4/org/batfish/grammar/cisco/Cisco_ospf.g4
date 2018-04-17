@@ -150,6 +150,11 @@ ro_default_information
    )* NEWLINE
 ;
 
+ro_default_metric
+:
+   NO? DEFAULT_METRIC metric = DEC NEWLINE
+;
+
 ro_distance
 :
    DISTANCE value = DEC NEWLINE
@@ -275,7 +280,7 @@ ro_null
       | NSR
       | SNMP
       | TIMERS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ro_rfc1583_compatibility
@@ -350,12 +355,12 @@ ro_redistribute_connected
 
 ro_redistribute_rip
 :
-   REDISTRIBUTE RIP ~NEWLINE* NEWLINE
+   REDISTRIBUTE RIP null_rest_of_line
 ;
 
 ro_redistribute_ospf_null
 :
-   REDISTRIBUTE OSPF ~NEWLINE* NEWLINE
+   REDISTRIBUTE OSPF null_rest_of_line
 ;
 
 ro_redistribute_static
@@ -405,7 +410,7 @@ ro_vrf
 
 ro6_area
 :
-   AREA ~NEWLINE* NEWLINE
+   AREA null_rest_of_line
 ;
 
 ro6_auto_cost
@@ -415,7 +420,7 @@ ro6_auto_cost
 
 ro6_default_information
 :
-   DEFAULT_INFORMATION ~NEWLINE* NEWLINE
+   DEFAULT_INFORMATION null_rest_of_line
 ;
 
 ro6_distance
@@ -453,22 +458,22 @@ ro6_null
    NO?
    (
       TIMERS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ro6_passive_interface
 :
-   NO? PASSIVE_INTERFACE ~NEWLINE* NEWLINE
+   NO? PASSIVE_INTERFACE null_rest_of_line
 ;
 
 ro6_router_id
 :
-   ROUTER_ID ~NEWLINE* NEWLINE
+   ROUTER_ID null_rest_of_line
 ;
 
 ro6_redistribute
 :
-   REDISTRIBUTE ~NEWLINE* NEWLINE
+   REDISTRIBUTE null_rest_of_line
 ;
 
 roa_cost
@@ -584,7 +589,7 @@ rov3_null
       | REDISTRIBUTE
       | ROUTER_ID
       | TIMERS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 s_ipv6_router_ospf
@@ -622,6 +627,7 @@ s_router_ospf
       | ro_auto_cost
       | ro_common
       | ro_default_information
+      | ro_default_metric
       | ro_distance
       | ro_max_metric
       | ro_maximum_paths

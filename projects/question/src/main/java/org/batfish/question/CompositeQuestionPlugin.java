@@ -13,7 +13,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class CompositeQuestionPlugin extends QuestionPlugin {
 
-  public static class CompositeAnswerElement implements AnswerElement {
+  public static class CompositeAnswerElement extends AnswerElement {
 
     private static final String PROP_ANSWERS = "answers";
 

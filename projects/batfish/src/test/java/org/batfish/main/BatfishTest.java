@@ -143,7 +143,7 @@ public class BatfishTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r1")));
+    assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
   }
 
   @Test

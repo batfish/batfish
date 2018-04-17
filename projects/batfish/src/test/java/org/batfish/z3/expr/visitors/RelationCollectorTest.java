@@ -7,8 +7,8 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.TestSynthesizerInput;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.StateExpr;
@@ -81,7 +81,7 @@ public class RelationCollectorTest {
 
   @Before
   public void setup() {
-    _input = TestSynthesizerInput.builder().build();
+    _input = MockSynthesizerInput.builder().build();
   }
 
   @Test

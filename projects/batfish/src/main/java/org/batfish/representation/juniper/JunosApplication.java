@@ -1,12 +1,16 @@
 package org.batfish.representation.juniper;
 
-import java.util.Collections;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
-import org.batfish.common.BatfishException;
+import java.util.function.Supplier;
 import org.batfish.common.Warnings;
+import org.batfish.common.util.DefinedStructure;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
 import org.batfish.representation.juniper.BaseApplication.Term;
@@ -204,38 +208,41 @@ public enum JunosApplication implements Application {
   JUNOS_XNM_SSL,
   JUNOS_YMSG;
 
-  private BaseApplication _baseApplication;
+  private final Supplier<BaseApplication> _baseApplication;
 
-  private boolean _initialized;
+  private JunosApplication() {
+    _baseApplication = Suppliers.memoize(this::init);
+  }
 
   @Override
-  public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines, Warnings w) {
-    init();
-    _baseApplication.applyTo(srcLine, lines, w);
+  public void applyTo(
+      JuniperConfiguration jc,
+      HeaderSpace.Builder srcHeaderSpaceBuilder,
+      LineAction action,
+      List<IpAccessListLine> lines,
+      Warnings w) {
+    _baseApplication.get().applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
   }
 
   @Override
   public boolean getIpv6() {
-    init();
-    return _baseApplication.getIpv6();
+    return _baseApplication.get().getIpv6();
   }
 
-  private synchronized void init() {
-    if (_initialized) {
-      return;
-    }
-    _initialized = true;
-    _baseApplication = new BaseApplication(name());
-    Map<String, Term> terms = _baseApplication.getTerms();
+  private BaseApplication init() {
+    BaseApplication baseApplication =
+        new BaseApplication(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
+    Map<String, Term> terms = baseApplication.getTerms();
     switch (this) {
       case JUNOS_FTP:
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
           int portNum = NamedPort.FTP.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
@@ -244,10 +251,11 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
           int portNum = NamedPort.HTTP.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
@@ -256,10 +264,11 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
           int portNum = NamedPort.HTTPS.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
@@ -268,15 +277,16 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.ICMP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.ICMP));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
 
       case JUNOS_ICMP6_ALL:
         {
-          _baseApplication.setIpv6(true);
+          baseApplication.setIpv6(true);
           // TODO
           break;
         }
@@ -285,10 +295,11 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
           int portNum = NamedPort.NNTP.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
@@ -297,10 +308,11 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.UDP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.UDP));
           int portNum = NamedPort.NTP.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
@@ -309,10 +321,11 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
           int portNum = NamedPort.PPTP.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
@@ -321,18 +334,23 @@ public enum JunosApplication implements Application {
         {
           String t1Name = "t1";
           Term t1 = new Term(t1Name);
-          IpAccessListLine l1 = t1.getLine();
-          l1.setIpProtocols(Collections.singleton(IpProtocol.TCP));
+          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
           int portNum = NamedPort.SSH.number();
-          l1.setDstPorts(Collections.singleton(new SubRange(portNum, portNum)));
+          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
+          t1.setHeaderSpace(l1.build());
           terms.put(t1Name, t1);
           break;
         }
 
         // $CASES-OMITTED$
       default:
-        throw new BatfishException(
-            "missing definition for pre-defined junos application: \"" + name() + "\"");
+        return null;
     }
+    return baseApplication;
+  }
+
+  public boolean hasDefinition() {
+    return _baseApplication.get() != null;
   }
 }

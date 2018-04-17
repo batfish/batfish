@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.TestGrammarSettings;
+import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ public class RecoveryGrammarTest {
   public void testParsingRecovery() {
     String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_text");
     int totalLines = recoveryText.split("\n", -1).length;
-    GrammarSettings settings = new TestGrammarSettings(false, 0, 0, 0, false, true, true);
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, true, true);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
@@ -44,5 +44,19 @@ public class RecoveryGrammarTest {
                 + extractor.getNumInnerStatements()
                 + extractor.getNumSimpleStatements()
                 + extractor.getNumErrorNodes()));
+  }
+
+  @Test
+  public void testParsingRecoveryWithModes() {
+    String recoveryText = CommonUtil.readResource("org/batfish/grammar/recovery/recovery_badmode");
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 0, false, true, true);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
+    RecoveryContext ctx = cp.parse();
+    RecoveryExtractor extractor = new RecoveryExtractor();
+    ParseTreeWalker walker = new ParseTreeWalker();
+    walker.walk(extractor, ctx);
+
+    assertThat(extractor.getFirstErrorLine(), equalTo(4));
+    assertThat(extractor.getNumErrorNodes(), equalTo(1));
   }
 }

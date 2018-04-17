@@ -1,5 +1,7 @@
 package org.batfish.grammar;
 
+import static org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER;
+
 import org.antlr.v4.runtime.NoViableAltException;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.TokenStream;
@@ -28,24 +30,26 @@ public class BatfishParserATNSimulator extends ParserATNSimulator {
 
   @Override
   public int adaptivePredict(TokenStream input, int decision, ParserRuleContext outerContext) {
-    Integer result = null;
-    do {
+    while (true) {
       try {
-        result = super.adaptivePredict(input, decision, outerContext);
+        return super.adaptivePredict(input, decision, outerContext);
       } catch (NoViableAltException e) {
-        // If adaptive prediction fails, throw out current line and try again.
+        int line = _parser.getCurrentToken().getLine();
         try {
+          // Since adaptive prediction has failed, throw out current line.
           _parser.createErrorNodeLine();
         } catch (BatfishRecognitionException re) {
-          /*
-           * This lets us exit adaptive prediction gracefully when recovery fails because of:
-           * A. Rule using adaptive prediction that isn't satisfied by EOF
-           * B. Transient lexer corruption due to crappy build system (during development)
-           */
-          return org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER;
+          // Handle adaptive prediction failure that isn't satisfied by EOF.
+          break;
         }
+        if (line == outerContext.getStart().getLine()) {
+          // To throw out this line we should also throw out the outer context.
+          break;
+        }
+        // Try again to save the outer context.
       }
-    } while (result == null);
-    return result;
+    }
+
+    return INVALID_ALT_NUMBER;
   }
 }

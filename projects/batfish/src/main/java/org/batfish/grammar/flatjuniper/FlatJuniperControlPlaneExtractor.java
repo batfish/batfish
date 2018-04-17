@@ -19,12 +19,18 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
 
   private final Set<String> _unimplementedFeatures;
 
+  private final boolean _unrecognizedAsRedFlag;
+
   private final Warnings _w;
 
   public FlatJuniperControlPlaneExtractor(
-      String fileText, FlatJuniperCombinedParser combinedParser, Warnings warnings) {
+      String fileText,
+      FlatJuniperCombinedParser combinedParser,
+      Warnings warnings,
+      boolean unrecognizedAsRedFlag) {
     _text = fileText;
     _unimplementedFeatures = new TreeSet<>();
+    _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _parser = combinedParser;
     _w = warnings;
   }
@@ -67,7 +73,9 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
     walker.walk(dlp, tree);
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, _w);
     walker.walk(ap, tree);
-    ConfigurationBuilder cb = new ConfigurationBuilder(_parser, _text, _w, _unimplementedFeatures);
+    ConfigurationBuilder cb =
+        new ConfigurationBuilder(
+            _parser, _text, _w, _unimplementedFeatures, _unrecognizedAsRedFlag);
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }

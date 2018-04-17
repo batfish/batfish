@@ -90,6 +90,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.File;
@@ -103,6 +104,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.ArrayUtils;
+import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -117,7 +119,6 @@ import org.batfish.datamodel.questions.Question.InstanceData.Variable;
 import org.batfish.datamodel.questions.Question.InstanceData.Variable.Type;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -134,7 +135,7 @@ public class ClientTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
-  private BatfishObjectMapper _mapper;
+  private ObjectMapper _mapper = BatfishObjectMapper.mapper();
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
@@ -165,14 +166,9 @@ public class ClientTest {
             GET.commandName(), usage.getFirst(), usage.getSecond());
     String additionalMessage =
         String.format(
-            "Test: 'get' matches %s: Fail\nCopied output to %s.testout\n",
-            tempFilePath.toString(), tempFilePath.toString());
+            "Test [%s]: 'get' matches %s: Fail\nCopied output to %s.testout\n",
+            TestComparisonMode.COMPAREANSWER, tempFilePath.toString(), tempFilePath.toString());
     testProcessCommandWithValidInput(TEST, parameters, expected + additionalMessage);
-  }
-
-  @Before
-  public void initMapper() {
-    _mapper = new BatfishObjectMapper();
   }
 
   @Test
@@ -884,11 +880,10 @@ public class ClientTest {
     client._logger = new BatfishLogger("output", false);
     client.processCommand(
         new String[] {LOAD_QUESTIONS.commandName(), questionJsonPath.getParent().toString()}, null);
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
 
     // Reading the answer written by load-questions
     Answer answerLoadQuestions =
-        mapper.readValue(
+        _mapper.readValue(
             client.getLogger().getHistory().toString(BatfishLogger.LEVEL_OUTPUT), Answer.class);
     LoadQuestionAnswerElement ae =
         (LoadQuestionAnswerElement) answerLoadQuestions.getAnswerElements().get(0);

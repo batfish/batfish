@@ -1,40 +1,48 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.common.util.DefinedStructure;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
-public class BaseApplication extends ComparableStructure<String> implements Application {
+public class BaseApplication extends DefinedStructure<String> implements Application {
 
   public static class Term extends ComparableStructure<String> {
 
     /** */
     private static final long serialVersionUID = 1L;
 
-    private final IpAccessListLine _line;
+    private HeaderSpace _headerSpace;
 
     public Term(String name) {
       super(name);
-      _line = new IpAccessListLine();
+      _headerSpace = HeaderSpace.builder().build();
     }
 
-    public void applyTo(IpAccessListLine destinationLine) {
-      destinationLine.setIpProtocols(
-          Iterables.concat(destinationLine.getIpProtocols(), _line.getIpProtocols()));
-      destinationLine.setDstPorts(
-          Iterables.concat(destinationLine.getDstPorts(), _line.getDstPorts()));
-      destinationLine.setSrcPorts(
-          Iterables.concat(destinationLine.getSrcPorts(), _line.getSrcPorts()));
+    public void applyTo(HeaderSpace.Builder destinationHeaderSpace) {
+      destinationHeaderSpace.setIpProtocols(
+          Iterables.concat(destinationHeaderSpace.getIpProtocols(), _headerSpace.getIpProtocols()));
+      destinationHeaderSpace.setDstPorts(
+          Iterables.concat(destinationHeaderSpace.getDstPorts(), _headerSpace.getDstPorts()));
+      destinationHeaderSpace.setSrcPorts(
+          Iterables.concat(destinationHeaderSpace.getSrcPorts(), _headerSpace.getSrcPorts()));
     }
 
-    public IpAccessListLine getLine() {
-      return _line;
+    public HeaderSpace getHeaderSpace() {
+      return _headerSpace;
+    }
+
+    public void setHeaderSpace(HeaderSpace headerSpace) {
+      _headerSpace = headerSpace;
     }
   }
 
@@ -47,26 +55,37 @@ public class BaseApplication extends ComparableStructure<String> implements Appl
 
   private final Map<String, Term> _terms;
 
-  public BaseApplication(String name) {
-    super(name);
+  public BaseApplication(String name, int definitionLine) {
+    super(name, definitionLine);
     _mainTerm = new Term(getMainTermName());
     _terms = new LinkedHashMap<>();
   }
 
   @Override
-  public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines, Warnings w) {
+  public void applyTo(
+      JuniperConfiguration jc,
+      HeaderSpace.Builder srcHeaderSpaceBuilder,
+      LineAction action,
+      List<IpAccessListLine> lines,
+      Warnings w) {
     Collection<Term> terms;
     if (_terms.isEmpty()) {
-      terms = Collections.singletonList(_mainTerm);
+      terms = ImmutableList.of(_mainTerm);
     } else {
       terms = _terms.values();
     }
     for (Term term : terms) {
-      IpAccessListLine newLine = new IpAccessListLine();
-      newLine.setDstIps(srcLine.getDstIps());
-      newLine.setSrcIps(srcLine.getSrcIps());
-      newLine.setAction(srcLine.getAction());
-      term.applyTo(newLine);
+      HeaderSpace oldHeaderSpace = srcHeaderSpaceBuilder.build();
+      HeaderSpace.Builder newHeaderSpaceBuilder =
+          HeaderSpace.builder()
+              .setDstIps(oldHeaderSpace.getDstIps())
+              .setSrcIps(oldHeaderSpace.getSrcIps());
+      term.applyTo(newHeaderSpaceBuilder);
+      IpAccessListLine newLine =
+          IpAccessListLine.builder()
+              .setAction(action)
+              .setMatchCondition(new MatchHeaderSpace(newHeaderSpaceBuilder.build()))
+              .build();
       lines.add(newLine);
     }
   }

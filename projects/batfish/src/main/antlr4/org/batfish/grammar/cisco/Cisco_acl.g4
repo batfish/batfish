@@ -123,7 +123,7 @@ as_path_set_stanza
 
 bandwidth_irs_stanza
 :
-   BANDWIDTH ~NEWLINE* NEWLINE
+   BANDWIDTH null_rest_of_line
 ;
 
 cadant_stdacl_name
@@ -257,7 +257,7 @@ extended_access_list_null_tail
       | MENU
       | REMARK
       | STATISTICS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 extended_access_list_stanza
@@ -447,7 +447,7 @@ ip_prefix_list_stanza
    (
       IP
       | IPV4
-   ) PREFIX_LIST name = variable
+   )? PREFIX_LIST name = variable
    (
       (
          NEWLINE
@@ -656,7 +656,7 @@ ipv6_prefix_list_tail
 
 ipx_sap_access_list_null_tail
 :
-   action = access_list_action ~NEWLINE* NEWLINE
+   action = access_list_action null_rest_of_line
 ;
 
 ipx_sap_access_list_stanza
@@ -782,7 +782,7 @@ null_irs_stanza
    NO?
    (
       SIGNALLING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 null_rs_stanza
@@ -793,7 +793,7 @@ null_rs_stanza
       | KEY_SOURCE
       | LOGGING
       | WINDOW_SIZE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 prefix_set_stanza
@@ -823,7 +823,7 @@ prefix_set_elem_list
 
 protocol_type_code_access_list_null_tail
 :
-   action = access_list_action ~NEWLINE* NEWLINE
+   action = access_list_action null_rest_of_line
 ;
 
 protocol_type_code_access_list_stanza
@@ -1025,7 +1025,7 @@ standard_access_list_null_tail
    (
       REMARK
       | STATISTICS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 standard_access_list_stanza

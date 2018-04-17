@@ -1,9 +1,10 @@
 package org.batfish.bdp;
 
-import static org.batfish.common.util.CommonUtil.initRemoteBgpNeighbors;
+import static org.batfish.common.util.CommonUtil.initBgpTopology;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.Network;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
@@ -33,7 +34,9 @@ import org.batfish.common.plugin.FlowProcessor;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -70,7 +73,11 @@ public class BdpEngine implements FlowProcessor {
    *
    * <p>Each {@link SourceNat} is expected to be valid: it must have a NAT IP or pool.
    */
-  static Flow applySourceNat(Flow flow, @Nullable List<SourceNat> sourceNats) {
+  static Flow applySourceNat(
+      Flow flow,
+      @Nullable String srcInterface,
+      Map<String, IpAccessList> aclDefinitions,
+      @Nullable List<SourceNat> sourceNats) {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
     }
@@ -80,7 +87,8 @@ public class BdpEngine implements FlowProcessor {
             .filter(
                 sourceNat ->
                     sourceNat.getAcl() != null
-                        && sourceNat.getAcl().filter(flow).getAction() != LineAction.REJECT)
+                        && sourceNat.getAcl().filter(flow, srcInterface, aclDefinitions).getAction()
+                            != LineAction.REJECT)
             .findFirst();
     if (!matchingSourceNat.isPresent()) {
       // No NAT rule matched.
@@ -147,13 +155,16 @@ public class BdpEngine implements FlowProcessor {
       flowTraces.add(trace);
     } else {
       Node currentNode = dp._nodes.get(currentNodeName);
+      Map<String, IpAccessList> aclDefinitions = currentNode._c.getIpAccessLists();
       String vrfName;
+      String srcInterface;
       if (hopsSoFar.isEmpty()) {
         vrfName = transformedFlow.getIngressVrf();
+        srcInterface = null;
       } else {
         FlowTraceHop lastHop = hopsSoFar.get(hopsSoFar.size() - 1);
-        String receivingInterface = lastHop.getEdge().getInt2();
-        vrfName = currentNode._c.getInterfaces().get(receivingInterface).getVrf().getName();
+        srcInterface = lastHop.getEdge().getInt2();
+        vrfName = currentNode._c.getInterfaces().get(srcInterface).getVrf().getName();
       }
       VirtualRouter currentVirtualRouter = currentNode._virtualRouters.get(vrfName);
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
@@ -220,7 +231,12 @@ public class BdpEngine implements FlowProcessor {
                     .get(nextHopInterface.getInterface());
 
             // Apply any relevant source NAT rules.
-            transformedFlow = applySourceNat(transformedFlow, outgoingInterface.getSourceNats());
+            transformedFlow =
+                applySourceNat(
+                    transformedFlow,
+                    srcInterface,
+                    aclDefinitions,
+                    outgoingInterface.getSourceNats());
 
             SortedSet<Edge> edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
@@ -234,6 +250,8 @@ public class BdpEngine implements FlowProcessor {
                       flowTraces,
                       originalFlow,
                       transformedFlow,
+                      srcInterface,
+                      aclDefinitions,
                       dstIp,
                       dstIpOwners,
                       nextHopInterfaceName,
@@ -266,10 +284,17 @@ public class BdpEngine implements FlowProcessor {
               IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
               boolean denied = false;
               if (outFilter != null) {
-                FlowDisposition disposition = FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
+                FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                 denied =
                     flowTraceDeniedHelper(
-                        flowTraces, originalFlow, transformedFlow, newHops, outFilter, disposition);
+                        flowTraces,
+                        originalFlow,
+                        transformedFlow,
+                        srcInterface,
+                        aclDefinitions,
+                        newHops,
+                        outFilter,
+                        disposition);
               }
               if (!denied) {
                 FlowTrace trace =
@@ -406,7 +431,6 @@ public class BdpEngine implements FlowProcessor {
       Map<String, Configuration> configurations,
       Topology topology,
       Set<BgpAdvertisement> externalAdverts,
-      Set<NodeInterfacePair> flowSinks,
       BdpAnswerElement ae) {
     _logger.resetTimer();
     BdpDataPlane dp = new BdpDataPlane();
@@ -421,7 +445,6 @@ public class BdpEngine implements FlowProcessor {
         Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
         dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       }
-      initRemoteBgpNeighbors(configurations, dp.getIpOwners());
       SortedMap<String, Node> nodes = new TreeMap<>();
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
       SortedMap<Integer, SortedSet<Prefix>> iterationOscillatingPrefixes = new TreeMap<>();
@@ -438,7 +461,6 @@ public class BdpEngine implements FlowProcessor {
       computeFibs(nodes);
       dp.setNodes(nodes);
       dp.setTopology(topology);
-      dp.setFlowSinks(flowSinks);
       ae.setVersion(Version.getVersion());
     }
     _logger.printElapsedTime();
@@ -448,9 +470,9 @@ public class BdpEngine implements FlowProcessor {
   private void computeDependentRoutesIteration(
       Map<String, Node> nodes,
       Topology topology,
-      BdpDataPlane dp,
       int dependentRoutesIterations,
-      SortedSet<Prefix> oscillatingPrefixes) {
+      SortedSet<Prefix> oscillatingPrefixes,
+      Network<BgpNeighbor, BgpSession> bgpTopology) {
 
     // (Re)initialization of dependent route calculation
     AtomicInteger reinitializeDependentCompleted =
@@ -652,7 +674,7 @@ public class BdpEngine implements FlowProcessor {
                 n -> {
                   for (VirtualRouter vr : n._virtualRouters.values()) {
                     vr.propagateBgpRoutes(
-                        dp.getIpOwners(), dependentRoutesIterations, oscillatingPrefixes, nodes);
+                        dependentRoutesIterations, oscillatingPrefixes, nodes, bgpTopology);
                   }
                   propagateBgpCompleted.incrementAndGet();
                 });
@@ -726,6 +748,12 @@ public class BdpEngine implements FlowProcessor {
         GlobalTracer.get().buildSpan("Computing fixed point").startActive()) {
       assert computeFixedPointSpan != null; // avoid unused warning
       SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
+      Map<String, Configuration> configuations =
+          nodes
+              .entrySet()
+              .stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
 
       // BEGIN DONE ONCE (except main rib)
 
@@ -783,16 +811,9 @@ public class BdpEngine implements FlowProcessor {
       dp.setNodes(nodes);
       computeFibs(nodes);
       dp.setTopology(topology);
-      initRemoteBgpNeighbors(
-          nodes
-              .entrySet()
-              .stream()
-              .collect(
-                  ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration())),
-          dp.getIpOwners(),
-          true,
-          this,
-          dp);
+      Network<BgpNeighbor, BgpSession> bgpTopology =
+          initBgpTopology(configuations, dp.getIpOwners(), false, true, this, dp);
+      dp.setBgpTopology(bgpTopology);
       // END DONE ONCE
 
       /*
@@ -843,7 +864,7 @@ public class BdpEngine implements FlowProcessor {
         }
         currentChangedMonitor.set(false);
         computeDependentRoutesIteration(
-            nodes, topology, dp, numDependentRoutesIterations, oscillatingPrefixes);
+            nodes, topology, numDependentRoutesIterations, oscillatingPrefixes, bgpTopology);
 
         /* Collect sizes of certain RIBs this iteration */
         computeIterationStatistics(nodes, ae, numDependentRoutesIterations);
@@ -889,18 +910,15 @@ public class BdpEngine implements FlowProcessor {
         }
         compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
 
-        computeFibs(nodes);
-        initRemoteBgpNeighbors(
-            nodes
-                .entrySet()
-                .stream()
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey, e -> e.getValue().getConfiguration())),
-            dp.getIpOwners(),
-            true,
-            this,
-            dp);
+        /*
+         * Only do re-init BGP neighbors with reachability checks after once: after
+         * the initial iteration of dependent routes has been completed
+         */
+        if (numDependentRoutesIterations < 2) {
+          computeFibs(nodes);
+          bgpTopology = initBgpTopology(configuations, dp.getIpOwners(), false, true, this, dp);
+        }
+        dp.setBgpTopology(bgpTopology);
       } while (checkDependentRoutesChanged(
           dependentRoutesChanged,
           evenDependentRoutesChanged,
@@ -1200,13 +1218,13 @@ public class BdpEngine implements FlowProcessor {
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
+      String srcInterface,
+      Map<String, IpAccessList> aclDefinitions,
       List<FlowTraceHop> newHops,
       IpAccessList filter,
       FlowDisposition disposition) {
-    boolean out =
-        disposition == FlowDisposition.DENIED_OUT
-            || disposition == FlowDisposition.NEIGHBOR_UNREACHABLE_OR_DENIED_OUT;
-    FilterResult outResult = filter.filter(transformedFlow);
+    boolean out = disposition == FlowDisposition.DENIED_OUT;
+    FilterResult outResult = filter.filter(transformedFlow, srcInterface, aclDefinitions);
     boolean denied = outResult.getAction() == LineAction.REJECT;
     if (denied) {
       String outFilterName = filter.getName();
@@ -1506,6 +1524,8 @@ public class BdpEngine implements FlowProcessor {
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
+      String srcInterface,
+      Map<String, IpAccessList> aclDefinitions,
       Ip dstIp,
       Set<String> dstIpOwners,
       @Nullable String nextHopInterfaceName,
@@ -1572,7 +1592,7 @@ public class BdpEngine implements FlowProcessor {
             neighborUnreachable = true;
           } else {
             for (InterfaceAddress address : int2.getAllAddresses()) {
-              if (address.getPrefix().contains(arpIp)) {
+              if (address.getPrefix().containsIp(arpIp)) {
                 neighborUnreachable = true;
                 break;
               }
@@ -1605,7 +1625,14 @@ public class BdpEngine implements FlowProcessor {
           FlowDisposition disposition = FlowDisposition.DENIED_OUT;
           boolean denied =
               flowTraceDeniedHelper(
-                  flowTraces, originalFlow, transformedFlow, newHops, outFilter, disposition);
+                  flowTraces,
+                  originalFlow,
+                  transformedFlow,
+                  srcInterface,
+                  aclDefinitions,
+                  newHops,
+                  outFilter,
+                  disposition);
           if (denied) {
             potentialNeighbors--;
             continue;
@@ -1618,7 +1645,14 @@ public class BdpEngine implements FlowProcessor {
         FlowDisposition disposition = FlowDisposition.DENIED_IN;
         boolean denied =
             flowTraceDeniedHelper(
-                flowTraces, originalFlow, transformedFlow, newHops, inFilter, disposition);
+                flowTraces,
+                originalFlow,
+                transformedFlow,
+                srcInterface,
+                aclDefinitions,
+                newHops,
+                inFilter,
+                disposition);
         if (denied) {
           potentialNeighbors--;
           continue;
@@ -1682,6 +1716,8 @@ public class BdpEngine implements FlowProcessor {
                     currentFlowTraces,
                     flow,
                     flow,
+                    ingressInterfaceName,
+                    dp._nodes.get(ingressNodeName)._c.getIpAccessLists(),
                     dstIp,
                     dstIpOwners,
                     null,

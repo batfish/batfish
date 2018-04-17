@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ public class Conjunction extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static final String PROP_CONJUNCTS = "conjuncts";
 
   private List<BooleanExpr> _conjuncts;
 
@@ -70,6 +73,7 @@ public class Conjunction extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_CONJUNCTS)
   public List<BooleanExpr> getConjuncts() {
     return _conjuncts;
   }
@@ -82,6 +86,7 @@ public class Conjunction extends BooleanExpr {
     return result;
   }
 
+  @JsonProperty(PROP_CONJUNCTS)
   public void setConjuncts(List<BooleanExpr> conjuncts) {
     _conjuncts = conjuncts;
   }
@@ -126,6 +131,6 @@ public class Conjunction extends BooleanExpr {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "<" + _conjuncts + ">";
+    return toStringHelper().add(PROP_CONJUNCTS, _conjuncts).toString();
   }
 }

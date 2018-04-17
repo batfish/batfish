@@ -32,7 +32,7 @@ options {
 
 address_aiimgp_stanza
 :
-   ADDRESS ~NEWLINE* NEWLINE
+   ADDRESS null_rest_of_line
 ;
 
 address_family_multicast_stanza
@@ -66,7 +66,7 @@ ags_null
    (
       DESCRIPTION
       | ID
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aiimgp_stanza
@@ -81,12 +81,12 @@ al_null
       HIDEKEYS
       | LOGGING
       | NOTIFY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 allow_iimgp_stanza
 :
-   ALLOW ~NEWLINE* NEWLINE aiimgp_stanza*
+   ALLOW null_rest_of_line aiimgp_stanza*
 ;
 
 ap_null
@@ -106,12 +106,12 @@ ap_null
       | SPECTRUM
       | WIRED_AP_PROFILE
       | WIRED_PORT_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ap_regulatory_domain_profile
 :
-   REGULATORY_DOMAIN_PROFILE ~NEWLINE* NEWLINE
+   REGULATORY_DOMAIN_PROFILE null_rest_of_line
    (
       aprdp_null
    )*
@@ -119,7 +119,7 @@ ap_regulatory_domain_profile
 
 ap_system_profile
 :
-   SYSTEM_PROFILE ~NEWLINE* NEWLINE
+   SYSTEM_PROFILE null_rest_of_line
    (
       apsp_null
    )*
@@ -134,7 +134,7 @@ apg_null
       | DOT11G_RADIO_PROFILE
       | IDS_PROFILE
       | VIRTUAL_AP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 apn_null
@@ -142,7 +142,7 @@ apn_null
    NO?
    (
       VIRTUAL_AP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 aprdp_null
@@ -155,7 +155,7 @@ aprdp_null
       | VALID_11A_CHANNEL
       | VALID_11G_40MHZ_CHANNEL_PAIR
       | VALID_11G_CHANNEL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 apsp_null
@@ -166,12 +166,12 @@ apsp_null
       | DNS_DOMAIN
       | LMS_IP
       | LMS_PREEMPTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 archive_log
 :
-   LOG ~NEWLINE* NEWLINE
+   LOG null_rest_of_line
    (
       al_null
    )*
@@ -184,12 +184,12 @@ archive_null
       MAXIMUM
       | PATH
       | WRITE_MEMORY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 asa_comment_stanza
 :
-   COLON ~NEWLINE* NEWLINE
+   COLON null_rest_of_line
 ;
 
 av_null
@@ -201,7 +201,7 @@ av_null
       | MODE
       | SHUTDOWN
       | TIMESOURCE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 banner_stanza
@@ -219,7 +219,7 @@ cisco_configuration
 
 configure_maintenance
 :
-   MAINTENANCE ~NEWLINE* NEWLINE
+   MAINTENANCE null_rest_of_line
    (
       configure_maintenance_null
       | configure_maintenance_router
@@ -231,7 +231,7 @@ configure_maintenance_null
    NO?
    (
       IP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 configure_maintenance_router
@@ -239,7 +239,7 @@ configure_maintenance_router
    NO?
    (
       ROUTER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
    (
       configure_maintenance_router_null
    )*
@@ -250,7 +250,7 @@ configure_maintenance_router_null
    NO?
    (
       ISOLATE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 configure_null
@@ -259,7 +259,7 @@ configure_null
    (
       | SESSION
       | TERMINAL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cops_listener
@@ -310,7 +310,7 @@ cp_null
    (
       EXIT
       | SCALE_FACTOR
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cp_service_policy
@@ -329,7 +329,7 @@ cps_null
       AUTO_CERT_ALLOW_ALL
       | AUTO_CERT_ALLOWED_ADDRS
       | AUTO_CERT_PROV
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cqg_null
@@ -339,7 +339,7 @@ cqg_null
       PRECEDENCE
       | QUEUE
       | RANDOM_DETECT_LABEL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cmf_null
@@ -361,7 +361,7 @@ cmf_null
       | TIME_ZONE
       | TRANSFER_SYSTEM
       | TRANSLATION_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ctlf_null
@@ -370,7 +370,7 @@ ctlf_null
    (
       RECORD_ENTRY
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cvx_null
@@ -378,7 +378,7 @@ cvx_null
    NO?
    (
       SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 d11_null
@@ -391,7 +391,7 @@ d11_null
       | MAX_ASSOCIATIONS
       | MBSSID
       | VLAN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 daemon_null
@@ -400,7 +400,7 @@ daemon_null
    (
       EXEC
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dapr_null
@@ -409,7 +409,7 @@ dapr_null
    (
       ACTION
       | USER_MESSAGE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dapr_webvpn
@@ -427,12 +427,12 @@ daprw_null
       ALWAYS_ON_VPN
       | SVC
       | URL_LIST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 del_stanza
 :
-   DEL ~NEWLINE* NEWLINE
+   DEL null_rest_of_line
 ;
 
 dhcp_null
@@ -440,12 +440,12 @@ dhcp_null
    NO?
    (
       INTERFACE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dhcp_profile
 :
-   NO? PROFILE ~NEWLINE* NEWLINE
+   NO? PROFILE null_rest_of_line
    (
       dhcp_profile_null
    )*
@@ -462,12 +462,12 @@ dhcp_profile_null
       | LEASE
       | POOL
       | SUBNET_MASK
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dialer_group
 :
-   GROUP ~NEWLINE* NEWLINE
+   GROUP null_rest_of_line
    (
       dialer_group_null
    )*
@@ -479,7 +479,7 @@ dialer_group_null
    (
       DIAL_STRING
       | INIT_STRING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 dialer_null
@@ -487,7 +487,7 @@ dialer_null
    NO?
    (
       WATCH_LIST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 domain_lookup
@@ -518,7 +518,7 @@ dspf_null
       | CODEC
       | MAXIMUM
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 eh_null
@@ -529,7 +529,7 @@ eh_null
       | ASYNCHRONOUS
       | DELAY
       | TRIGGER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 enable_null
@@ -539,22 +539,16 @@ enable_null
       | READ_ONLY_PASSWORD
       | SUPER_USER_PASSWORD
       | TELNET
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 enable_password
 :
-   PASSWORD
+   PASSWORD (LEVEL level = DEC)?
    (
-      (
-         (
-            sha512pass = SHA512_PASSWORD
-         ) seed = PASSWORD_SEED?
-      )
-      |
-      (
-         DEC pass = variable
-      )
+      ep_cisco_encryption
+      | ep_plaintext
+      | ep_sha512
    ) NEWLINE
 ;
 
@@ -569,6 +563,21 @@ enable_secret
    ) NEWLINE
 ;
 
+ep_cisco_encryption
+:
+   type = DEC (pass = variable_secret)
+;
+
+ep_plaintext
+:
+   pass = variable
+;
+
+ep_sha512
+:
+   (sha512pass = SHA512_PASSWORD) (seed = PASSWORD_SEED)?
+;
+
 event_null
 :
    NO?
@@ -576,7 +585,7 @@ event_null
       ACTION
       | EVENT
       | SET
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 failover_lan
@@ -626,16 +635,17 @@ flow_null
       | EXPORT_PROTOCOL
       | EXPORTER
       | MATCH
+      | OPTION
       | RECORD
       | SOURCE
       | STATISTICS
       | TRANSPORT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 flow_version
 :
-   NO? VERSION ~NEWLINE* NEWLINE
+   NO? VERSION null_rest_of_line
    (
       flowv_null
    )*
@@ -647,7 +657,7 @@ flowv_null
    (
       OPTIONS
       | TEMPLATE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 gae_null
@@ -655,7 +665,7 @@ gae_null
    NO?
    (
       SMTP_SERVER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 gk_null
@@ -666,7 +676,7 @@ gk_null
       | LRQ
       | SHUTDOWN
       | ZONE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 gpsec_null
@@ -675,7 +685,7 @@ gpsec_null
    (
       AGE
       | DELETE_DYNAMIC_LEARN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 hardware_null
@@ -687,7 +697,7 @@ hardware_null
       | RBACL
       | SPAN
       | VACL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_ap_classification_rule
@@ -707,7 +717,7 @@ ids_ap_classification_rule_null
       | SSID
       | SNR_MAX
       | SNR_MIN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_ap_rule_matching
@@ -723,7 +733,7 @@ ids_ap_rule_matching_null
    NO?
    (
       RULE_NAME
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_dos_profile
@@ -754,7 +764,7 @@ ids_dos_profile_null
       | DETECT_RATE_ANOMALIES
       | DETECT_RTS_RATE_ANOMALY
       | DETECT_TKIP_REPLAY_ATTACK
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_general_profile
@@ -771,7 +781,7 @@ ids_general_profile_null
    (
       WIRED_CONTAINMENT
       | WIRELESS_CONTAINMENT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_impersonation_profile
@@ -789,7 +799,7 @@ ids_impersonation_profile_null
       DETECT_AP_IMPERSONATION
       | DETECT_BEACON_WRONG_CHANNEL
       | DETECT_HOTSPOTTER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_null
@@ -800,7 +810,7 @@ ids_null
       | RATE_THRESHOLDS_PROFILE
       | SIGNATURE_PROFILE
       | WMS_LOCAL_SYSTEM_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_profile
@@ -820,7 +830,7 @@ ids_profile_null
       | SIGNATURE_MATCHING_PROFILE
       | IMPERSONATION_PROFILE
       | UNAUTHORIZED_DEVICE_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_signature_matching_profile
@@ -836,7 +846,7 @@ ids_signature_matching_profile_null
    NO?
    (
       SIGNATURE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_unauthorized_device_profile
@@ -865,7 +875,7 @@ ids_unauthorized_device_profile_null
       | REQUIRE_WPA
       | SUSPECT_ROGUE_CONF_LEVEL
       | VALID_AND_PROTECTED_SSID
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ids_wms_general_profile
@@ -881,7 +891,7 @@ ids_wms_general_profile_null
    NO?
    (
       COLLECT_STATS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ifmap_null
@@ -889,7 +899,7 @@ ifmap_null
    NO?
    (
       ENABLE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 iimgp_stanza
@@ -913,7 +923,7 @@ inband_mgp_stanza
 
 interface_imgp_stanza
 :
-   INTERFACE ~NEWLINE* NEWLINE iimgp_stanza*
+   INTERFACE null_rest_of_line iimgp_stanza*
 ;
 
 interface_multicast_stanza
@@ -930,7 +940,7 @@ interface_multicast_tail
       | DR_PRIORITY
       | ENABLE
       | ROUTER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_as_path_regex_mode_stanza
@@ -950,7 +960,7 @@ ip_dhcp_null
       | SMART_RELAY
       | SNOOPING
       | USE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_dhcp_pool
@@ -978,7 +988,7 @@ ip_dhcp_pool_null
       | NETWORK
       | NEXT_SERVER
       | OPTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_dhcp_relay
@@ -1001,7 +1011,7 @@ ip_dhcp_relay_null
       | SOURCE_INTERFACE
       | SUB_OPTION
       | USE_LINK_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_dhcp_relay_server
@@ -1033,7 +1043,7 @@ ip_domain_null
 :
    (
       LIST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_nat_null
@@ -1043,7 +1053,7 @@ ip_nat_null
       | LOG
       | OUTSIDE
       | TRANSLATION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_nat_pool
@@ -1083,7 +1093,7 @@ ip_probe_null
       | FREQUENCY
       | MODE
       | RETRIES
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_route_stanza
@@ -1151,10 +1161,11 @@ ip_sla_null
       | REQUEST_DATA_SIZE
       | SAMPLES_OF_HISTORY_KEPT
       | TAG
+      | THRESHOLD
       | TIMEOUT
       | TOS
       | UDP_JITTER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_ssh_null
@@ -1173,7 +1184,7 @@ ip_ssh_null
       )
       | SOURCE_INTERFACE
       | TIME_OUT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ip_ssh_private_key
@@ -1194,7 +1205,7 @@ ip_ssh_pubkey_chain
          KEY_HASH
          | QUIT
          | USERNAME
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )+
 ;
 
@@ -1205,7 +1216,7 @@ ip_ssh_version
 
 ipc_association
 :
-   ASSOCIATION ~NEWLINE* NEWLINE
+   ASSOCIATION null_rest_of_line
    (
       ipca_null
    )*
@@ -1224,7 +1235,7 @@ ipca_null
       | REMOTE_PORT
       | RETRANSMIT_TIMEOUT
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ipdg_address
@@ -1236,12 +1247,12 @@ ipdg_null
 :
    (
       IMPORT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ispla_operation
 :
-   NO? OPERATION ~NEWLINE* NEWLINE
+   NO? OPERATION null_rest_of_line
    (
       ipslao_type
    )*
@@ -1249,7 +1260,7 @@ ispla_operation
 
 ipsla_reaction
 :
-   NO? REACTION ~NEWLINE* NEWLINE
+   NO? REACTION null_rest_of_line
    (
       ipslar_react
    )*
@@ -1257,7 +1268,7 @@ ipsla_reaction
 
 ipsla_responder
 :
-   NO? RESPONDER ~NEWLINE* NEWLINE
+   NO? RESPONDER null_rest_of_line
    (
       ipslarp_null
    )*
@@ -1265,7 +1276,7 @@ ipsla_responder
 
 ipsla_schedule
 :
-   NO? SCHEDULE ~NEWLINE* NEWLINE
+   NO? SCHEDULE null_rest_of_line
    (
       ipslas_null
    )*
@@ -1273,7 +1284,7 @@ ipsla_schedule
 
 ipslao_type
 :
-   NO? TYPE ~NEWLINE* NEWLINE
+   NO? TYPE null_rest_of_line
    (
       ipslaot_null
       | ipslaot_statistics
@@ -1290,12 +1301,12 @@ ipslaot_null
       | TIMEOUT
       | TOS
       | VERIFY_DATA
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ipslaot_statistics
 :
-   NO? STATISTICS ~NEWLINE* NEWLINE
+   NO? STATISTICS null_rest_of_line
    (
       ipslaots_null
    )*
@@ -1306,12 +1317,12 @@ ipslaots_null
    NO?
    (
       BUCKETS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ipslar_react
 :
-   NO? REACT ~NEWLINE* NEWLINE
+   NO? REACT null_rest_of_line
    (
       ispalrr_null
    )*
@@ -1322,7 +1333,7 @@ ipslarp_null
    NO?
    (
       TYPE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ispalrr_null
@@ -1331,7 +1342,7 @@ ispalrr_null
    (
       ACTION
       | THRESHOLD
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ipslas_null
@@ -1340,7 +1351,7 @@ ipslas_null
    (
       LIFE
       | START_TIME
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 l2_null
@@ -1351,7 +1362,7 @@ l2_null
       | MTU
       | NEIGHBOR
       | VPN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 l2tpc_null
@@ -1367,7 +1378,7 @@ l2tpc_null
       | RECEIVE_WINDOW
       | RETRANSMIT
       | TIMEOUT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 l2vpn_bridge_group
@@ -1400,7 +1411,7 @@ l2vpn_xconnect
 
 l2vpn_xconnect_p2p
 :
-   NO? P2P ~NEWLINE* NEWLINE
+   NO? P2P null_rest_of_line
    (
       lxp_neighbor
       | lxp_null
@@ -1419,7 +1430,7 @@ lbg_bridge_domain
 
 lbgbd_mac
 :
-   NO? MAC ~NEWLINE* NEWLINE
+   NO? MAC null_rest_of_line
    (
       lbgbdm_limit
    )*
@@ -1433,12 +1444,12 @@ lbgbd_null
       | MTU
       | NEIGHBOR
       | ROUTED
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 lbgbd_vfi
 :
-   NO? VFI ~NEWLINE* NEWLINE
+   NO? VFI null_rest_of_line
    (
       lbgbdv_null
    )*
@@ -1446,7 +1457,7 @@ lbgbd_vfi
 
 lbgbdm_limit
 :
-   NO? LIMIT ~NEWLINE* NEWLINE
+   NO? LIMIT null_rest_of_line
    (
       lbgbdml_null
    )*
@@ -1458,7 +1469,7 @@ lbgbdml_null
    (
       ACTION
       | MAXIMUM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 lbgbdv_null
@@ -1466,7 +1477,7 @@ lbgbdv_null
    NO?
    (
       NEIGHBOR
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 license_null
@@ -1474,7 +1485,7 @@ license_null
    NO?
    (
       CENTRALIZED_LICENSING_ENABLE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 lpts_null
@@ -1482,12 +1493,12 @@ lpts_null
    NO?
    (
       FLOW
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 lxp_neighbor
 :
-   NO? NEIGHBOR ~NEWLINE* NEWLINE
+   NO? NEIGHBOR null_rest_of_line
    (
       lxpn_l2tp
       | lxpn_null
@@ -1500,7 +1511,7 @@ lxp_null
    (
       INTERFACE
       | MONITOR_SESSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 lxpn_null
@@ -1508,12 +1519,12 @@ lxpn_null
    NO?
    (
       SOURCE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 lxpn_l2tp
 :
-   NO? L2TP ~NEWLINE* NEWLINE
+   NO? L2TP null_rest_of_line
    (
       lxpnl_null
    )*
@@ -1525,7 +1536,7 @@ lxpnl_null
    (
       LOCAL
       | REMOTE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 map_class_null
@@ -1533,7 +1544,7 @@ map_class_null
    NO?
    (
       DIALER
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 management_api
@@ -1554,7 +1565,7 @@ management_api_null
       | IDLE_TIMEOUT
       | PROTOCOL
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 management_api_vrf
@@ -1570,7 +1581,7 @@ management_api_vrf_null
    NO?
    (
       SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 management_console
@@ -1586,7 +1597,7 @@ management_console_null
    NO?
    (
       IDLE_TIMEOUT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 management_egress_interface_selection
@@ -1605,15 +1616,25 @@ management_egress_interface_selection_null
    NO?
    (
       APPLICATION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 management_ssh
 :
    SSH NEWLINE
    (
-      management_ssh_null
+      management_ssh_ip_access_group
+      | management_ssh_null
    )*
+;
+
+management_ssh_ip_access_group
+:
+   IP ACCESS_GROUP name = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
 management_ssh_null
@@ -1623,7 +1644,7 @@ management_ssh_null
       AUTHENTICATION
       | IDLE_TIMEOUT
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 management_telnet
@@ -1650,7 +1671,7 @@ management_telnet_null
    (
       IDLE_TIMEOUT
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mgp_stanza
@@ -1660,7 +1681,7 @@ mgp_stanza
 
 monitor_destination
 :
-   NO? DESTINATION ~NEWLINE* NEWLINE
+   NO? DESTINATION null_rest_of_line
    (
       monitor_destination_null
    )*
@@ -1674,7 +1695,7 @@ monitor_destination_null
       | IP
       | MTU
       | ORIGIN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 monitor_null
@@ -1685,7 +1706,7 @@ monitor_null
       | DESCRIPTION
       | SHUTDOWN
       | SOURCE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 monitor_session_null
@@ -1693,7 +1714,7 @@ monitor_session_null
    NO?
    (
       DESTINATION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mp_null
@@ -1705,7 +1726,7 @@ mp_null
       | MESH_GROUP
       | REMOTE_AS
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 mt_null
@@ -1713,7 +1734,7 @@ mt_null
    NO?
    (
       ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 multicast_routing_stanza
@@ -1726,7 +1747,7 @@ multicast_routing_stanza
 
 no_aaa_group_server_stanza
 :
-   NO AAA GROUP SERVER ~NEWLINE* NEWLINE
+   NO AAA GROUP SERVER null_rest_of_line
 ;
 
 no_failover
@@ -1736,7 +1757,7 @@ no_failover
 
 no_ip_access_list_stanza
 :
-   NO IP ACCESS_LIST ~NEWLINE* NEWLINE
+   NO IP ACCESS_LIST null_rest_of_line
 ;
 
 null_af_multicast_tail
@@ -1749,7 +1770,7 @@ vrfd_af_null
    NO?
    (
       MAXIMUM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 null_imgp_stanza
@@ -1757,7 +1778,7 @@ null_imgp_stanza
    NO?
    (
       VRF
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 nv_satellite
@@ -1765,7 +1786,7 @@ nv_satellite
    NO?
    (
       SATELLITE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
    (
       nvs_null
    )*
@@ -1779,7 +1800,7 @@ nvs_null
       | IP
       | SERIAL_NUMBER
       | TYPE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 of_null
@@ -1791,7 +1812,7 @@ of_null
       | DEFAULT_ACTION
       | DESCRIPTION
       | ENABLE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 peer_sa_filter
@@ -1827,12 +1848,12 @@ phone_proxy_null
       | PROXY_SERVER
       | TFTP_SERVER
       | TLS_PROXY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 qm_length
 :
-   LENGTH ~NEWLINE* NEWLINE
+   LENGTH null_rest_of_line
 ;
 
 qm_streaming
@@ -1849,12 +1870,12 @@ qms_null
    (
       MAX_CONNECTIONS
       | SHUTDOWN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 redundancy_linecard_group
 :
-   LINECARD_GROUP ~NEWLINE* NEWLINE
+   LINECARD_GROUP null_rest_of_line
    (
       rlcg_null
    )*
@@ -1862,7 +1883,7 @@ redundancy_linecard_group
 
 redundancy_main_cpu
 :
-   MAIN_CPU ~NEWLINE* NEWLINE
+   MAIN_CPU null_rest_of_line
    (
       redundancy_main_cpu_null
    )*
@@ -1873,7 +1894,7 @@ redundancy_main_cpu_null
    NO?
    (
       AUTO_SYNC
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 redundancy_null
@@ -1885,7 +1906,7 @@ redundancy_null
       | NOTIFICATION_TIMER
       | PROTOCOL
       | SCHEME
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rf_arm_profile
@@ -1909,7 +1930,7 @@ rf_arm_profile_null
       | MIN_TX_POWER
       | ROGUE_AP_AWARE
       | SCANNING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rf_null
@@ -1920,7 +1941,7 @@ rf_null
       | ARM_RF_DOMAIN_PROFILE
       | EVENT_THRESHOLDS_PROFILE
       | OPTIMIZATION_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rf_dot11a_radio_profile
@@ -1939,7 +1960,7 @@ rf_dot11a_radio_profile_null
       | MODE
       | SPECTRUM_LOAD_BALANCING
       | SPECTRUM_MONITORING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rf_dot11g_radio_profile
@@ -1958,7 +1979,7 @@ rf_dot11g_radio_profile_null
       | MODE
       | SPECTRUM_LOAD_BALANCING
       | SPECTRUM_MONITORING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rlcg_null
@@ -1969,7 +1990,7 @@ rlcg_null
       | MODE
       | REVERTIVE
       | RF_SWITCH
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 rmc_null
@@ -1977,7 +1998,7 @@ rmc_null
    NO?
    (
       MAXIMUM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 role_null
@@ -1986,7 +2007,7 @@ role_null
    (
       DESCRIPTION
       | RULE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 router_multicast_stanza
@@ -2006,7 +2027,7 @@ router_multicast_tail
       address_family_multicast_stanza
       |
       (
-         INTERFACE ALL ~NEWLINE* NEWLINE
+         INTERFACE ALL null_rest_of_line
       )
       | interface_multicast_stanza
       | null_inner
@@ -2017,7 +2038,7 @@ router_multicast_tail
 
 s_airgroupservice
 :
-   AIRGROUPSERVICE ~NEWLINE* NEWLINE
+   AIRGROUPSERVICE null_rest_of_line
    (
       ags_null
    )*
@@ -2051,12 +2072,12 @@ s_ap_name
 
 s_application
 :
-   APPLICATION NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
+   APPLICATION NEWLINE SERVICE name = variable null_rest_of_line
    (
-      PARAM ~NEWLINE* NEWLINE
+      PARAM null_rest_of_line
    )*
    (
-      GLOBAL NEWLINE SERVICE name = variable ~NEWLINE* NEWLINE
+      GLOBAL NEWLINE SERVICE name = variable null_rest_of_line
    )?
 ;
 
@@ -2070,7 +2091,7 @@ s_application_var
 
 s_archive
 :
-   ARCHIVE ~NEWLINE* NEWLINE
+   ARCHIVE null_rest_of_line
    (
       archive_log
       | archive_null
@@ -2079,7 +2100,7 @@ s_archive
 
 s_authentication
 :
-   AUTHENTICATION ~NEWLINE* NEWLINE
+   AUTHENTICATION null_rest_of_line
 ;
 
 s_cluster
@@ -2088,7 +2109,7 @@ s_cluster
    (
       ENABLE
       | RUN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 s_call_manager_fallback
@@ -2143,7 +2164,7 @@ s_cops
 
 s_cos_queue_group
 :
-   COS_QUEUE_GROUP ~NEWLINE* NEWLINE
+   COS_QUEUE_GROUP null_rest_of_line
    (
       cqg_null
    )*
@@ -2151,7 +2172,7 @@ s_cos_queue_group
 
 s_ctl_file
 :
-   NO? CTL_FILE ~NEWLINE* NEWLINE
+   NO? CTL_FILE null_rest_of_line
    (
       ctlf_null
    )*
@@ -2167,7 +2188,7 @@ s_cvx
 
 s_daemon
 :
-   DAEMON ~NEWLINE* NEWLINE
+   DAEMON null_rest_of_line
    (
       daemon_null
    )*
@@ -2175,7 +2196,7 @@ s_daemon
 
 s_dhcp
 :
-   NO? DHCP ~NEWLINE* NEWLINE
+   NO? DHCP null_rest_of_line
    (
       dhcp_null
       | dhcp_profile
@@ -2193,7 +2214,7 @@ s_dialer
 
 s_dial_peer
 :
-   DIAL_PEER ~NEWLINE* NEWLINE
+   DIAL_PEER null_rest_of_line
    (
       NO?
       (
@@ -2225,7 +2246,7 @@ s_dial_peer
          | TRANSLATION_PROFILE
          | VAD
          | VOICE_CLASS
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )*
 ;
 
@@ -2249,7 +2270,7 @@ s_domain_name
 
 s_dot11
 :
-   DOT11 ~NEWLINE* NEWLINE
+   DOT11 null_rest_of_line
    (
       d11_null
    )*
@@ -2257,7 +2278,7 @@ s_dot11
 
 s_dspfarm
 :
-   NO? DSPFARM ~NEWLINE* NEWLINE
+   NO? DSPFARM null_rest_of_line
    (
       dspf_null
    )*
@@ -2265,7 +2286,7 @@ s_dspfarm
 
 s_dynamic_access_policy_record
 :
-   NO? DYNAMIC_ACCESS_POLICY_RECORD ~NEWLINE* NEWLINE
+   NO? DYNAMIC_ACCESS_POLICY_RECORD null_rest_of_line
    (
       dapr_null
       | dapr_webvpn
@@ -2284,7 +2305,7 @@ s_enable
 
 s_event
 :
-   NO? EVENT ~NEWLINE* NEWLINE
+   NO? EVENT null_rest_of_line
    (
       event_null
    )*
@@ -2292,7 +2313,7 @@ s_event
 
 s_event_handler
 :
-   NO? EVENT_HANDLER ~NEWLINE* NEWLINE
+   NO? EVENT_HANDLER null_rest_of_line
    (
       eh_null
    )*
@@ -2330,7 +2351,7 @@ s_flow
       | MONITOR_MAP
       | PLATFORM
       | RECORD
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
    (
       flow_null
       | flow_version
@@ -2339,7 +2360,7 @@ s_flow
 
 s_flow_sampler_map
 :
-   NO? FLOW_SAMPLER_MAP ~NEWLINE* NEWLINE fsm_mode?
+   NO? FLOW_SAMPLER_MAP null_rest_of_line fsm_mode?
 ;
 
 fsm_mode
@@ -2373,7 +2394,7 @@ s_guest_access_email
 
 s_hardware
 :
-   NO? HARDWARE ~NEWLINE* NEWLINE
+   NO? HARDWARE null_rest_of_line
    (
       hardware_null
    )*
@@ -2415,7 +2436,7 @@ s_ids
 
 s_ifmap
 :
-   IFMAP ~NEWLINE* NEWLINE
+   IFMAP null_rest_of_line
    (
       ifmap_null
    )*
@@ -2423,7 +2444,7 @@ s_ifmap
 
 s_interface_line
 :
-   NO? INTERFACE BREAKOUT ~NEWLINE* NEWLINE
+   NO? INTERFACE BREAKOUT null_rest_of_line
 ;
 
 s_ip_default_gateway
@@ -2490,9 +2511,14 @@ s_ip_nat
    )
 ;
 
+s_ip_nbar
+:
+   IP NBAR CUSTOM null_rest_of_line
+;
+
 s_ip_probe
 :
-   IP PROBE ~NEWLINE* NEWLINE
+   IP PROBE null_rest_of_line
    (
       ip_probe_null
    )*
@@ -2505,7 +2531,7 @@ s_ip_route_mos
 
 s_ip_sla
 :
-   NO? IP SLA ~NEWLINE* NEWLINE
+   NO? IP SLA null_rest_of_line
    (
       ip_sla_null
    )*
@@ -2550,7 +2576,7 @@ s_ip_wccp
 
 s_ipc
 :
-   IPC ~NEWLINE* NEWLINE
+   IPC null_rest_of_line
    (
       ipc_association
    )*
@@ -2558,7 +2584,7 @@ s_ipc
 
 s_ipsla
 :
-   NO? IPSLA ~NEWLINE* NEWLINE
+   NO? IPSLA null_rest_of_line
    (
       ispla_operation
       | ipsla_reaction
@@ -2569,7 +2595,7 @@ s_ipsla
 
 s_l2
 :
-   NO? L2 ~NEWLINE* NEWLINE
+   NO? L2 null_rest_of_line
    (
       l2_null
    )*
@@ -2585,7 +2611,7 @@ s_l2tp_class
 
 s_l2vpn
 :
-   NO? L2VPN ~NEWLINE* NEWLINE
+   NO? L2VPN null_rest_of_line
    (
       l2vpn_bridge_group
       | l2vpn_logging
@@ -2595,7 +2621,7 @@ s_l2vpn
 
 s_license
 :
-   NO? LICENSE ~NEWLINE* NEWLINE
+   NO? LICENSE null_rest_of_line
    (
       license_null
    )*
@@ -2603,7 +2629,7 @@ s_license
 
 s_lpts
 :
-   NO? LPTS ~NEWLINE* NEWLINE
+   NO? LPTS null_rest_of_line
    (
       lpts_null
    )*
@@ -2623,7 +2649,7 @@ s_management
 
 s_map_class
 :
-   NO? MAP_CLASS ~NEWLINE* NEWLINE
+   NO? MAP_CLASS null_rest_of_line
    (
       map_class_null
    )*
@@ -2631,7 +2657,7 @@ s_map_class
 
 s_media_termination
 :
-   NO? MEDIA_TERMINATION ~NEWLINE* NEWLINE
+   NO? MEDIA_TERMINATION null_rest_of_line
    (
       mt_null
    )*
@@ -2639,7 +2665,7 @@ s_media_termination
 
 s_monitor
 :
-   NO? MONITOR ~NEWLINE* NEWLINE
+   NO? MONITOR null_rest_of_line
    (
       monitor_destination
       | monitor_null
@@ -2648,7 +2674,7 @@ s_monitor
 
 s_monitor_session
 :
-   NO? MONITOR_SESSION ~NEWLINE* NEWLINE
+   NO? MONITOR_SESSION null_rest_of_line
    (
       monitor_session_null
    )*
@@ -2661,7 +2687,7 @@ s_mtu
 
 s_name
 :
-   NAME variable variable ~NEWLINE* NEWLINE
+   NAME variable variable null_rest_of_line
 ;
 
 s_no_access_list_extended
@@ -2674,6 +2700,11 @@ s_no_access_list_standard
    NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
 ;
 
+s_no_enable
+:
+   NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
+;
+
 s_nv
 :
    NO? NV NEWLINE
@@ -2684,7 +2715,7 @@ s_nv
 
 s_openflow
 :
-   NO? OPENFLOW ~NEWLINE* NEWLINE
+   NO? OPENFLOW null_rest_of_line
    (
       of_null
    )*
@@ -2697,7 +2728,7 @@ s_passwd
 
 s_phone_proxy
 :
-   NO? PHONE_PROXY ~NEWLINE* NEWLINE
+   NO? PHONE_PROXY null_rest_of_line
    (
       phone_proxy_null
    )*
@@ -2715,7 +2746,7 @@ s_privilege
       | IPENACL
       | ROUTER
       | SHOW
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 s_process_max_time
@@ -2741,13 +2772,13 @@ s_radius_server
          | KEY
          | RETRANSMIT
          | TIMEOUT
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )+
 ;
 
 s_redundancy
 :
-   NO? REDUNDANCY ~NEWLINE* NEWLINE
+   NO? REDUNDANCY null_rest_of_line
    (
       redundancy_linecard_group
       | redundancy_main_cpu
@@ -2768,7 +2799,7 @@ s_rf
 
 s_role
 :
-   NO? ROLE ~NEWLINE* NEWLINE
+   NO? ROLE null_rest_of_line
    (
       role_null
    )*
@@ -2784,7 +2815,7 @@ s_router_vrrp
 
 s_sccp
 :
-   NO? SCCP ~NEWLINE* NEWLINE
+   NO? SCCP null_rest_of_line
    (
       sccp_null
    )*
@@ -2837,7 +2868,7 @@ s_ssh
 
 s_statistics
 :
-   NO? STATISTICS ~NEWLINE* NEWLINE
+   NO? STATISTICS null_rest_of_line
    (
       statistics_null
    )*
@@ -2845,7 +2876,7 @@ s_statistics
 
 s_stcapp
 :
-   STCAPP ~NEWLINE* NEWLINE
+   STCAPP null_rest_of_line
    (
       (
          CALL
@@ -2854,7 +2885,7 @@ s_stcapp
          | PICKUP
          | PORT
          | PREFIX
-      ) ~NEWLINE* NEWLINE
+      ) null_rest_of_line
    )*
 ;
 
@@ -2902,7 +2933,7 @@ s_tacacs_server
 
 s_tap
 :
-   NO? TAP ~NEWLINE* NEWLINE
+   NO? TAP null_rest_of_line
    (
       tap_null
    )*
@@ -2918,7 +2949,7 @@ s_time_range
 
 s_track
 :
-   TRACK ~NEWLINE* NEWLINE
+   TRACK null_rest_of_line
    (
       track_null
    )*
@@ -2926,7 +2957,7 @@ s_track
 
 s_tunnel_group
 :
-   NO? TUNNEL_GROUP ~NEWLINE* NEWLINE
+   NO? TUNNEL_GROUP null_rest_of_line
    (
       tg_null
    )*
@@ -2979,7 +3010,7 @@ s_vlan
       (
          variable_vlan? DEC
       )
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
    (
       vlan_null
    )*
@@ -3004,7 +3035,7 @@ s_voice
 
 s_voice_card
 :
-   NO? VOICE_CARD ~NEWLINE* NEWLINE
+   NO? VOICE_CARD null_rest_of_line
    (
       vc_null
    )*
@@ -3012,7 +3043,7 @@ s_voice_card
 
 s_voice_port
 :
-   NO? VOICE_PORT ~NEWLINE* NEWLINE
+   NO? VOICE_PORT null_rest_of_line
    (
       vp_null
    )*
@@ -3020,7 +3051,7 @@ s_voice_port
 
 s_vpc
 :
-   NO? VPC ~NEWLINE* NEWLINE
+   NO? VPC null_rest_of_line
    (
       vpc_null
    )*
@@ -3028,7 +3059,7 @@ s_vpc
 
 s_vpdn_group
 :
-   NO? VPDN_GROUP ~NEWLINE* NEWLINE
+   NO? VPDN_GROUP null_rest_of_line
    (
       vpdng_accept_dialin
       | vpdng_null
@@ -3037,7 +3068,7 @@ s_vpdn_group
 
 s_vpn
 :
-   NO? VPN ~NEWLINE* NEWLINE
+   NO? VPN null_rest_of_line
    (
       vpn_null
    )*
@@ -3065,6 +3096,7 @@ s_vrf_definition
    VRF DEFINITION? name = variable NEWLINE
    (
       vrfd_address_family
+      | vrfd_description
       | vrfd_null
    )*
    (
@@ -3082,7 +3114,7 @@ s_web_server
 
 s_webvpn
 :
-   NO? WEBVPN ~NEWLINE* NEWLINE
+   NO? WEBVPN null_rest_of_line
    (
       webvpn_null
    )*
@@ -3100,7 +3132,7 @@ s_wlan
 
 s_wsma
 :
-   WSMA ~NEWLINE* NEWLINE
+   WSMA null_rest_of_line
    (
       wsma_null
    )*
@@ -3108,7 +3140,7 @@ s_wsma
 
 s_xconnect_logging
 :
-   NO? XCONNECT LOGGING ~NEWLINE* NEWLINE
+   NO? XCONNECT LOGGING null_rest_of_line
 ;
 
 sccp_null
@@ -3119,7 +3151,7 @@ sccp_null
       | BIND
       | DESCRIPTION
       | SWITCHBACK
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 sd_null
@@ -3128,7 +3160,7 @@ sd_null
       DCE_MODE
       | INTERFACE
       | LINK_FAIL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 sd_switchport
@@ -3151,7 +3183,7 @@ sd_switchport_null
    (
       FABRICPATH
       | MONITOR
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 sd_switchport_shutdown
@@ -3168,7 +3200,7 @@ sip_ua_null
       | SET
       | SIP_SERVER
       | TIMERS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 sntp_server
@@ -3181,7 +3213,7 @@ sntp_server
 
 spanning_tree_mst
 :
-   MST ~NEWLINE* NEWLINE spanning_tree_mst_null*
+   MST null_rest_of_line spanning_tree_mst_null*
 ;
 
 spanning_tree_mst_null
@@ -3191,7 +3223,7 @@ spanning_tree_mst_null
       INSTANCE
       | NAME
       | REVISION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 spanning_tree_portfast
@@ -3233,7 +3265,7 @@ spanning_tree_null
       | PORT
       | UPLINKFAST
       | VLAN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 spti_null
@@ -3241,17 +3273,17 @@ spti_null
    NO?
    (
       MST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 srlg_interface_numeric_stanza
 :
-   DEC ~NEWLINE* NEWLINE
+   DEC null_rest_of_line
 ;
 
 srlg_interface_stanza
 :
-   INTERFACE ~NEWLINE* NEWLINE srlg_interface_numeric_stanza*
+   INTERFACE null_rest_of_line srlg_interface_numeric_stanza*
 ;
 
 srlg_stanza
@@ -3266,7 +3298,7 @@ ssh_access_group
 
 ssh_client
 :
-   CLIENT ~NEWLINE* NEWLINE
+   CLIENT null_rest_of_line
 ;
 
 ssh_null
@@ -3279,7 +3311,7 @@ ssh_null
       | MGMT_AUTH
       | STRICTHOSTKEYCHECK
       | VERSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ssh_server
@@ -3407,6 +3439,7 @@ stanza
    | s_ip_domain_name
    | s_ip_name_server
    | s_ip_nat
+   | s_ip_nbar
    | s_ip_pim
    | s_ip_probe
    | s_ip_route_mos
@@ -3450,6 +3483,7 @@ stanza
    | s_netservice
    | s_no_access_list_extended
    | s_no_access_list_standard
+   | s_no_enable
    | s_ntp
    | s_null
    | s_nv
@@ -3522,12 +3556,12 @@ statistics_null
    (
       EXTENDED_COUNTERS
       | TM_VOQ_COLLECTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 switching_mode_stanza
 :
-   SWITCHING_MODE ~NEWLINE* NEWLINE
+   SWITCHING_MODE null_rest_of_line
 ;
 
 system_default
@@ -3555,7 +3589,7 @@ system_null
       | ROUTING
       | URPF
       | VLAN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 system_qos
@@ -3572,7 +3606,7 @@ system_qos_null
    (
       FEX
       | SERVICE_POLICY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 t_null
@@ -3580,7 +3614,7 @@ t_null
    (
       GROUP
       | HOST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 t_server
@@ -3612,7 +3646,7 @@ t_server_null
    NO?
    (
       SINGLE_CONNECTION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 t_key
@@ -3633,7 +3667,7 @@ tap_null
    NO?
    (
       MODE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 tg_null
@@ -3648,7 +3682,7 @@ tg_null
       | GROUP_URL
       | IPV6_ADDRESS_POOL
       | ISAKMP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 tr_null
@@ -3657,7 +3691,7 @@ tr_null
    (
       WEEKDAY
       | WEEKEND
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 track_null
@@ -3667,7 +3701,7 @@ track_null
       DELAY
       | OBJECT
       | TYPE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ts_common
@@ -3681,7 +3715,7 @@ ts_host
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-   ) ~NEWLINE* NEWLINE t_key?
+   ) null_rest_of_line t_key?
 ;
 
 ts_null
@@ -3693,7 +3727,7 @@ ts_null
       | RETRANSMIT
       | TEST
       | TIMEOUT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vi_address_family
@@ -3765,7 +3799,7 @@ ua_null
    (
       GROUP_LOCK
       | VPN_GROUP_POLICY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 up_arista_md5
@@ -3798,7 +3832,7 @@ ur_null
       CAPTIVE_PORTAL
       | MAX_SESSIONS
       | VLAN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vc_null
@@ -3810,7 +3844,7 @@ vc_null
       | DSPFARM
       | VOICE_SERVICE
       | WATCHDOG
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 viaf_vrrp
@@ -3835,7 +3869,7 @@ viafv_null
    (
       TIMERS
       | TRACK
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 viafv_preempt
@@ -3877,7 +3911,7 @@ vlan_null
       | TB_VLAN1
       | TB_VLAN2
       | UNTAGGED
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_class
@@ -3885,14 +3919,18 @@ voice_class
    CLASS
    (
       voice_class_codec
+      | voice_class_dpg
+      | voice_class_e164
       | voice_class_h323
+      | voice_class_server_group
       | voice_class_sip_profiles
+      | voice_class_uri
    )
 ;
 
 voice_class_codec
 :
-   CODEC ~NEWLINE* NEWLINE
+   CODEC null_rest_of_line
    (
       voice_class_codec_null
    )*
@@ -3903,12 +3941,47 @@ voice_class_codec_null
    NO?
    (
       CODEC
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
+;
+
+voice_class_dpg
+:
+   DPG null_rest_of_line
+   (
+      voice_class_dpg_null
+   )*
+;
+
+voice_class_dpg_null
+:
+    NO?
+    (
+       DESCRIPTION
+       | DIAL_PEER
+    ) null_rest_of_line
+;
+
+voice_class_e164
+:
+   E164_PATTERN_MAP null_rest_of_line
+   (
+      voice_class_e164_null
+   )*
+;
+
+voice_class_e164_null
+:
+   NO?
+   (
+      DESCRIPTION
+      | E164
+      | URL
+   ) null_rest_of_line
 ;
 
 voice_class_h323
 :
-   H323 ~NEWLINE* NEWLINE
+   H323 null_rest_of_line
    (
       voice_class_h323_null
    )*
@@ -3920,12 +3993,28 @@ voice_class_h323_null
    (
       CALL
       | H225
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
+;
+
+voice_class_server_group
+:
+   SERVER_GROUP null_rest_of_line
+   (
+      voice_class_server_group_null
+   )*
+;
+
+voice_class_server_group_null
+:
+   NO?
+      (  DESCRIPTION
+         | IPV4
+      ) null_rest_of_line
 ;
 
 voice_class_sip_profiles
 :
-   SIP_PROFILES ~NEWLINE* NEWLINE
+   SIP_PROFILES null_rest_of_line
    (
       voice_class_sip_profiles_null
    )*
@@ -3936,7 +4025,15 @@ voice_class_sip_profiles_null
    NO?
    (
       REQUEST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
+;
+
+voice_class_uri
+:
+    URI null_rest_of_line
+    (
+        HOST null_rest_of_line
+    )
 ;
 
 voice_null
@@ -3953,7 +4050,7 @@ voice_null
       | RTP
       | SIP
       | SIP_MIDCALL_REQ_TIMEOUT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_service
@@ -3989,7 +4086,7 @@ voice_service_voip_h323_null
    (
       CALL
       | H225
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_service_voip_ip_address_trusted_list
@@ -4005,7 +4102,7 @@ voice_service_voip_ip_address_trusted_list_null
    NO?
    (
       IPV4
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_service_voip_null
@@ -4016,10 +4113,14 @@ voice_service_voip_null
       | ALLOW_CONNECTIONS
       | FAX
       | H225
+      | MEDIA
+      | MODE
       | MODEM
+      | REDUNDANCY_GROUP
+      | RTP_PORT
       | SHUTDOWN
       | SUPPLEMENTARY_SERVICE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_service_voip_sip
@@ -4043,12 +4144,12 @@ voice_service_voip_sip_null
       | MIDCALL_SIGNALING
       | SIP_PROFILES
       | TRANSPORT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_translation_profile
 :
-   TRANSLATION_PROFILE ~NEWLINE* NEWLINE
+   TRANSLATION_PROFILE null_rest_of_line
    (
       voice_translation_profile_null
    )*
@@ -4059,12 +4160,12 @@ voice_translation_profile_null
    NO?
    (
       TRANSLATE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 voice_translation_rule
 :
-   TRANSLATION_RULE ~NEWLINE* NEWLINE
+   TRANSLATION_RULE null_rest_of_line
    (
       voice_translation_rule_null
    )*
@@ -4075,7 +4176,7 @@ voice_translation_rule_null
    NO?
    (
       RULE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vp_null
@@ -4091,26 +4192,27 @@ vp_null
       | SIGNAL
       | TIMEOUTS
       | TIMING
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vpc_null
 :
    NO?
    (
-      DELAY
+      AUTO_RECOVERY
+      | DELAY
       | IP
       | PEER_GATEWAY
       | PEER_KEEPALIVE
       | PEER_SWITCH
       | ROLE
       | SYSTEM_PRIORITY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vpdng_accept_dialin
 :
-   NO? ACCEPT_DIALIN ~NEWLINE* NEWLINE
+   NO? ACCEPT_DIALIN null_rest_of_line
    (
       vpdnga_null
    )*
@@ -4121,7 +4223,7 @@ vpdng_null
    NO?
    (
       L2TP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vpdnga_null
@@ -4130,7 +4232,7 @@ vpdnga_null
    (
       PROTOCOL
       | VIRTUAL_TEMPLATE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vpn_dialer_null
@@ -4138,7 +4240,7 @@ vpn_dialer_null
    NO?
    (
       IKE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vpn_null
@@ -4149,7 +4251,7 @@ vpn_null
       | PARTICIPATE
       | PRIORITY
       | REDIRECT_FQDN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vrfc_ip_route
@@ -4168,7 +4270,7 @@ vrfc_null
          )
       )
       | MDT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vrfd_address_family
@@ -4193,6 +4295,11 @@ vrfd_address_family
    )?
 ;
 
+vrfd_description
+:
+   description_line
+;
+
 vrfd_null
 :
    NO?
@@ -4204,7 +4311,7 @@ vrfd_null
       (
          NO SHUTDOWN
       )
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 vrrp_interface
@@ -4253,7 +4360,7 @@ wccp_null
       | SOURCE_INTERFACE
       | VERSION
       | WEB_CACHE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 web_server_null
@@ -4266,7 +4373,7 @@ web_server_null
       | SWITCH_CERT
       | WEB_HTTPS_PORT_443
       | WEB_MAX_CLIENTS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 webvpn_null
@@ -4282,7 +4389,7 @@ webvpn_null
       | ERROR_RECOVERY
       | KEEPOUT
       | TUNNEL_GROUP_LIST
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 wlan_null
@@ -4299,7 +4406,7 @@ wlan_null
       | RRM_IE_PROFILE
       | TSM_REQ_PROFILE
       | VOIP_CAC_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 wlan_ssid_profile
@@ -4322,7 +4429,7 @@ wlan_ssid_profile_null
       | OPMODE
       | SSID_ENABLE
       | WMM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 wlan_virtual_ap
@@ -4349,7 +4456,7 @@ wlan_virtual_ap_null
       | SSID_PROFILE
       | VAP_ENABLE
       | VLAN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 wsma_null
@@ -4358,5 +4465,5 @@ wsma_null
    (
       PROFILE
       | TRANSPORT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;

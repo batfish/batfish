@@ -10,7 +10,7 @@ import org.hamcrest.Matcher;
 final class AbstractRouteMatchersImpl {
   static final class HasMetric extends FeatureMatcher<AbstractRoute, Long> {
     HasMetric(@Nonnull Matcher<? super Long> subMatcher) {
-      super(subMatcher, "metric", "metric");
+      super(subMatcher, "An AbstractRoute with metric:", "metric");
     }
 
     @Override
@@ -21,7 +21,7 @@ final class AbstractRouteMatchersImpl {
 
   static final class HasPrefix extends FeatureMatcher<AbstractRoute, Prefix> {
     HasPrefix(@Nonnull Matcher<? super Prefix> subMatcher) {
-      super(subMatcher, "network", "network");
+      super(subMatcher, "An AbstractRoute with network:", "network");
     }
 
     @Override
@@ -32,7 +32,7 @@ final class AbstractRouteMatchersImpl {
 
   static final class HasProtocol extends FeatureMatcher<AbstractRoute, RoutingProtocol> {
     HasProtocol(@Nonnull Matcher<? super RoutingProtocol> subMatcher) {
-      super(subMatcher, "protocol", "protocol");
+      super(subMatcher, "An AbstractRoute with protocol:", "protocol");
     }
 
     @Override

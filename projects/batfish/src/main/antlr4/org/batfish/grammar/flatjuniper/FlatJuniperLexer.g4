@@ -198,6 +198,11 @@ ALLOW
    'allow'
 ;
 
+ALLOW_V4MAPPED_PACKETS
+:
+   'allow-v4mapped-packets'
+;
+
 ALWAYS_COMPARE_MED
 :
    'always-compare-med'
@@ -241,6 +246,11 @@ APPLICATION
 APPLICATION_PROTOCOL
 :
    'application-protocol'
+;
+
+APPLICATION_SET
+:
+   'application-set'
 ;
 
 APPLICATION_TRACKING
@@ -323,9 +333,9 @@ ASCII_TEXT
    'ascii-text'
 ;
 
-ALLOW_V4MAPPED_PACKETS
+ASDOT_NOTATION
 :
-   'allow-v4mapped-packets'
+   'asdot-notation'
 ;
 
 AUTHENTICATION
@@ -882,6 +892,11 @@ ENCRYPTION_ALGORITHM
    'encryption-algorithm'
 ;
 
+ENFORCE_FIRST_AS
+:
+   'enforce-first-as'
+;
+
 ENHANCED_HASH_KEY
 :
    'enhanced-hash-key'
@@ -1155,6 +1170,11 @@ GENERATE
 GIGETHER_OPTIONS
 :
    'gigether-options'
+;
+
+GLOBAL
+:
+  'global'
 ;
 
 GRACEFUL_RESTART
@@ -2680,6 +2700,11 @@ L2CIRCUIT
 L2VPN
 :
    'l2vpn'
+;
+
+L2_INTERFACE
+:
+  'l2-interface'
 ;
 
 L3_INTERFACE
@@ -4749,6 +4774,11 @@ VIRTUAL_ADDRESS
 VIRTUAL_CHASSIS
 :
    'virtual-chassis'
+;
+
+VIRTUAL_ROUTER
+:
+   'virtual-router'
 ;
 
 VIRTUAL_SWITCH

@@ -12,6 +12,7 @@ import org.batfish.z3.state.DropAclIn;
 import org.batfish.z3.state.DropAclOut;
 import org.batfish.z3.state.DropNoRoute;
 import org.batfish.z3.state.DropNullRoute;
+import org.batfish.z3.state.NeighborUnreachable;
 import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDrop;
 import org.batfish.z3.state.NodeDropAcl;
@@ -19,6 +20,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeNeighborUnreachable.State;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
@@ -58,6 +60,8 @@ public interface StateVisitor {
 
   void visitDropNullRoute(DropNullRoute.State dropNullRoute);
 
+  void visitNeighborUnreachable(NeighborUnreachable.State state);
+
   void visitNodeAccept(NodeAccept.State nodeAccept);
 
   void visitNodeDrop(NodeDrop.State nodeDrop);
@@ -72,6 +76,8 @@ public interface StateVisitor {
 
   void visitNodeDropNullRoute(NodeDropNullRoute.State nodeDropNullRoute);
 
+  void visitNodeNeighborUnreachable(State state);
+
   void visitNumberedQuery(NumberedQuery.State numberedQuery);
 
   void visitOriginate(Originate.State originate);
@@ -84,13 +90,13 @@ public interface StateVisitor {
 
   void visitPostInVrf(PostInVrf.State postInVrf);
 
+  void visitPostOutEdge(PostOutEdge.State state);
+
   void visitPreInInterface(PreInInterface.State preInInterface);
 
   void visitPreOut(PreOut.State preOut);
 
   void visitPreOutEdge(PreOutEdge.State preOutEdge);
-
-  void visitPostOutEdge(PostOutEdge.State state);
 
   void visitPreOutEdgePostNat(PreOutEdgePostNat.State state);
 

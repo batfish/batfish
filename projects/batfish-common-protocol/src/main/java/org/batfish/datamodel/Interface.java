@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +16,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -27,9 +30,13 @@ public final class Interface extends ComparableStructure<String> {
 
     private boolean _active;
 
-    private Double _bandwidth;
+    private InterfaceAddress _address;
+
+    @Nullable private Double _bandwidth;
 
     private boolean _blacklisted;
+
+    private SortedSet<String> _declaredNames;
 
     private IpAccessList _incomingFilter;
 
@@ -49,14 +56,21 @@ public final class Interface extends ComparableStructure<String> {
 
     private Configuration _owner;
 
+    private boolean _proxyArp;
+
+    private Set<InterfaceAddress> _secondaryAddresses;
+
     private List<SourceNat> _sourceNats;
 
-    private InterfaceAddress _address;
+    private SortedSet<Ip> _additionalArpIps;
 
     private Vrf _vrf;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _additionalArpIps = ImmutableSortedSet.of();
+      _declaredNames = ImmutableSortedSet.of();
+      _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
     }
 
@@ -64,9 +78,17 @@ public final class Interface extends ComparableStructure<String> {
     public Interface build() {
       String name = _name != null ? _name : generateName();
       Interface iface = new Interface(name, _owner);
+      ImmutableSet.Builder<InterfaceAddress> allAddresses = ImmutableSet.builder();
       iface.setActive(_active);
+      if (_address != null) {
+        iface.setAddress(_address);
+        allAddresses.add(_address);
+      }
+      iface.setAdditionalArpIps(_additionalArpIps);
+      iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
+      iface.setDeclaredNames(_declaredNames);
       iface.setIncomingFilter(_incomingFilter);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
@@ -82,11 +104,8 @@ public final class Interface extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getInterfaces().put(name, iface);
       }
+      iface.setProxyArp(_proxyArp);
       iface.setSourceNats(_sourceNats);
-      iface.setAddress(_address);
-      if (_address != null) {
-        iface.setAllAddresses(Collections.singleton(_address));
-      }
       iface.setVrf(_vrf);
       if (_vrf != null) {
         _vrf.getInterfaces().put(name, iface);
@@ -103,13 +122,70 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setBandwidth(Double bandwidth) {
+    public Builder setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+      _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
+      return this;
+    }
+
+    /**
+     * Set the primary address of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses. <br>
+     * The node will accept traffic whose destination IP belongs is among any of the addresses of
+     * any of the interfaces. The primary address is the one used by default as the source IP for
+     * traffic sent out the interface. A secondary address is another address potentially associated
+     * with a different subnet living on the interface. The interface will reply to ARP for the
+     * primary or any secondary IP.
+     */
+    public Builder setAddress(InterfaceAddress address) {
+      _address = address;
+      return this;
+    }
+
+    /**
+     * Set the primary address and secondary addresses of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.<br>
+     * The node will accept traffic whose destination IP belongs is among any of the addresses of
+     * any of the interfaces. The primary address is the one used by default as the source IP for
+     * traffic sent out the interface. A secondary address is another address potentially associated
+     * with a different subnet living on the interface. The interface will reply to ARP for the
+     * primary or any secondary IP.
+     */
+    public Builder setAddresses(
+        InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
+      return setAddresses(primaryAddress, Arrays.asList(secondaryAddresses));
+    }
+
+    /**
+     * Set the primary address and secondary addresses of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.<br>
+     * The node will accept traffic whose destination IP belongs is among any of the addresses of
+     * any of the interfaces. The primary address is the one used by default as the source IP for
+     * traffic sent out the interface. A secondary address is another address potentially associated
+     * with a different subnet living on the interface. The interface will reply to ARP for the
+     * primary or any secondary IP.
+     */
+    public Builder setAddresses(
+        InterfaceAddress primaryAddress, Iterable<InterfaceAddress> secondaryAddresses) {
+      _address = primaryAddress;
+      _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
+      return this;
+    }
+
+    public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }
 
     public Builder setBlacklisted(boolean blacklisted) {
       _blacklisted = blacklisted;
+      return this;
+    }
+
+    public Builder setDeclaredNames(Iterable<String> declaredNames) {
+      _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
       return this;
     }
 
@@ -158,13 +234,28 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setSourceNats(List<SourceNat> sourceNats) {
-      _sourceNats = sourceNats;
+    public Builder setProxyArp(boolean proxyArp) {
+      _proxyArp = proxyArp;
       return this;
     }
 
-    public Builder setAddress(InterfaceAddress address) {
-      _address = address;
+    /**
+     * Set the secondary addresses of the interface. <br>
+     * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
+     * set containing the primary address and secondary addresses.<br>
+     * The node will accept traffic whose destination IP belongs is among any of the addresses of
+     * any of the interfaces. The primary address is the one used by default as the source IP for
+     * traffic sent out the interface. A secondary address is another address potentially associated
+     * with a different subnet living on the interface. The interface will reply to ARP for the
+     * primary or any secondary IP.
+     */
+    public Builder setSecondaryAddresses(Iterable<InterfaceAddress> secondaryAddresses) {
+      _secondaryAddresses = ImmutableSet.copyOf(secondaryAddresses);
+      return this;
+    }
+
+    public Builder setSourceNats(List<SourceNat> sourceNats) {
+      _sourceNats = sourceNats;
       return this;
     }
 
@@ -183,6 +274,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
   private static final String PROP_ACTIVE = "active";
+
+  private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
 
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
 
@@ -255,6 +348,10 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ZONE = "zone";
 
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder(null);
+  }
 
   private static InterfaceType computeAosInteraceType(String name) {
     if (name.startsWith("vlan")) {
@@ -419,13 +516,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
+  private SortedSet<Ip> _additionalArpIps;
+
   private List<SubRange> _allowedVlans;
 
   private SortedSet<InterfaceAddress> _allAddresses;
 
   private boolean _autoState;
 
-  private Double _bandwidth;
+  @Nullable private Double _bandwidth;
 
   private transient boolean _blacklisted;
 
@@ -575,7 +674,7 @@ public final class Interface extends ComparableStructure<String> {
     if (this._autoState != other._autoState) {
       return false;
     }
-    if (this._bandwidth.compareTo(other._bandwidth) != 0) {
+    if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
     // we check ACLs for name match only -- full ACL diff can be done
@@ -636,6 +735,11 @@ public final class Interface extends ComparableStructure<String> {
     return _active;
   }
 
+  @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
+  public SortedSet<Ip> getAdditionalArpIps() {
+    return _additionalArpIps;
+  }
+
   @JsonProperty(PROP_ALLOWED_VLANS)
   @JsonPropertyDescription("Ranges of allowed VLANs when switchport mode is TRUNK")
   public List<SubRange> getAllowedVlans() {
@@ -659,6 +763,7 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_BANDWIDTH)
   @JsonPropertyDescription(
       "The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
+  @Nullable
   public Double getBandwidth() {
     return _bandwidth;
   }
@@ -980,6 +1085,11 @@ public final class Interface extends ComparableStructure<String> {
     _active = active;
   }
 
+  @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
+  public void setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+    _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
+  }
+
   @JsonProperty(PROP_ALLOWED_VLANS)
   public void setAllowedVlans(List<SubRange> allowedVlans) {
     _allowedVlans = allowedVlans;
@@ -996,7 +1106,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_BANDWIDTH)
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
   }
 

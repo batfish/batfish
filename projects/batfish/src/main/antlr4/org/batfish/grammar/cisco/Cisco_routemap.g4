@@ -227,6 +227,11 @@ isis_level_expr
    | RP_VARIABLE
 ;
 
+match_as_number_rm_stanza
+:
+   MATCH AS_NUMBER num = DEC NEWLINE
+;
+
 match_as_path_access_list_rm_stanza
 :
    MATCH AS_PATH
@@ -279,7 +284,7 @@ match_ipv6_access_list_rm_stanza
 
 match_ip_multicast_rm_stanza
 :
-   MATCH IP MULTICAST ~NEWLINE* NEWLINE
+   MATCH IP MULTICAST null_rest_of_line
 ;
 
 match_ip_next_hop_rm_stanza_null
@@ -313,7 +318,7 @@ match_ipv6_prefix_list_rm_stanza
 
 match_length_rm_stanza
 :
-   MATCH LENGTH ~NEWLINE* NEWLINE
+   MATCH LENGTH null_rest_of_line
 ;
 
 match_policy_list_rm_stanza
@@ -336,7 +341,8 @@ match_source_protocol_rm_stanza
 
 match_rm_stanza
 :
-   match_as_path_access_list_rm_stanza
+   match_as_number_rm_stanza
+   | match_as_path_access_list_rm_stanza
    | match_as_rm_stanza
    | match_community_list_rm_stanza
    | match_extcommunity_rm_stanza
@@ -374,7 +380,7 @@ null_rm_stanza
    (
       DESCRIPTION
       | SUB_ROUTE_MAP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 origin_expr
@@ -599,7 +605,7 @@ set_extcommunity_rm_stanza
 
 set_interface_rm_stanza
 :
-   SET INTERFACE ~NEWLINE* NEWLINE
+   SET INTERFACE null_rest_of_line
 ;
 
 set_ip_default_nexthop_stanza
@@ -609,7 +615,7 @@ set_ip_default_nexthop_stanza
 
 set_ip_df_rm_stanza
 :
-   SET IP DF ~NEWLINE* NEWLINE
+   SET IP DF null_rest_of_line
 ;
 
 set_ip_precedence_stanza
@@ -630,7 +636,7 @@ set_ip_precedence_stanza
 
 set_ipv6_rm_stanza
 :
-   SET IPV6 ~NEWLINE* NEWLINE
+   SET IPV6 null_rest_of_line
 ;
 
 set_isis_metric_rp_stanza

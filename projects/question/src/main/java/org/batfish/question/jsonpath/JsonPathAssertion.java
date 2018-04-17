@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -58,8 +58,8 @@ public class JsonPathAssertion {
       return false;
     }
     JsonPathAssertion other = (JsonPathAssertion) o;
-    return Objects.equal(_assertionType, other.getType())
-        && Objects.equal(_expect, other.getExpect());
+    return Objects.equals(_assertionType, other.getType())
+        && Objects.equals(_expect, other.getExpect());
   }
 
   public boolean evaluate(Set<JsonPathResultEntry> resultEntries) {
@@ -74,9 +74,9 @@ public class JsonPathAssertion {
         Set<JsonPathResultEntry> expectedEntries = new HashSet<>();
         for (final JsonNode nodeEntry : _expect) {
           try {
-            BatfishObjectMapper mapper = new BatfishObjectMapper();
             JsonPathResultEntry expectedEntry =
-                mapper.readValue(nodeEntry.toString(), JsonPathResultEntry.class);
+                BatfishObjectMapper.mapper()
+                    .readValue(nodeEntry.toString(), JsonPathResultEntry.class);
             expectedEntries.add(expectedEntry);
           } catch (IOException e) {
             throw new BatfishException(
@@ -103,13 +103,13 @@ public class JsonPathAssertion {
 
   @Override
   public int hashCode() {
-    return java.util.Objects.hash(_assertionType, _expect);
+    return Objects.hash(_assertionType, _expect);
   }
 
   @Override
   public String toString() {
     try {
-      return new BatfishObjectMapper().writeValueAsString(this);
+      return BatfishObjectMapper.writePrettyString(this);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Cannot serialize to Json", e);
     }

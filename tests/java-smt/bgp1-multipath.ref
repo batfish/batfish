@@ -1,34 +1,8 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
-      "result" : {
-        "verified" : true
-      }
+[
+  {
+    "class" : "org.batfish.symbolic.answers.SmtOneAnswerElement",
+    "result" : {
+      "verified" : true
     }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.SmtMultipathConsistencyQuestionPlugin$MultipathConsistencyQuestion",
-    "baseEnvType" : "any",
-    "deltaEnvType" : "any",
-    "differential" : false,
-    "dstIps" : [
-      "42.42.42.0/24"
-    ],
-    "envDiff" : false,
-    "failNode1Regex" : ".*",
-    "failNode2Regex" : ".*",
-    "failures" : 0,
-    "finalIfaceRegex" : "Loopback.*",
-    "finalNodeRegex" : "R1",
-    "fullModel" : true,
-    "ingressNodeRegex" : ".*",
-    "minimize" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
   }
-}
+]

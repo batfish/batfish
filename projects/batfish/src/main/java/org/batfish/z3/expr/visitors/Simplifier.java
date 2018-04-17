@@ -18,7 +18,9 @@ import org.batfish.z3.expr.GenericStatementVisitor;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -129,11 +131,6 @@ public class Simplifier
   }
 
   @Override
-  public StateExpr visitStateExpr(StateExpr stateExpr) {
-    return stateExpr;
-  }
-
-  @Override
   public IntExpr visitBitVecExpr(BitVecExpr bitVecExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -204,6 +201,43 @@ public class Simplifier
   }
 
   @Override
+  public BooleanExpr visitIfThenElse(IfThenElse ifThenElse) {
+    BooleanExpr condition = ifThenElse.getCondition().accept(this);
+
+    if (condition == TrueExpr.INSTANCE) {
+      return ifThenElse.getThen().accept(this);
+    } else if (condition == FalseExpr.INSTANCE) {
+      return ifThenElse.getElse().accept(this);
+    } else {
+      BooleanExpr then = ifThenElse.getThen().accept(this);
+      BooleanExpr els = ifThenElse.getElse().accept(this);
+      if (then == els) {
+        return then;
+      } else if (then == TrueExpr.INSTANCE && els == FalseExpr.INSTANCE) {
+        return condition;
+      } else if (then == FalseExpr.INSTANCE && els == TrueExpr.INSTANCE) {
+        return new NotExpr(condition);
+      } else if (then == TrueExpr.INSTANCE) {
+        return new OrExpr(ImmutableList.of(condition, els));
+      } else if (then == FalseExpr.INSTANCE) {
+        return new AndExpr(ImmutableList.of(new NotExpr(condition), els));
+      } else if (els == TrueExpr.INSTANCE) {
+        return new OrExpr(ImmutableList.of(new NotExpr(condition), then));
+      } else if (els == FalseExpr.INSTANCE) {
+        return new AndExpr(ImmutableList.of(condition, then));
+      }
+      // No nice simplifications, return a new ITE if any of the three components is simpler.
+      if (condition != ifThenElse.getCondition()
+          || then != ifThenElse.getThen()
+          || els != ifThenElse.getElse()) {
+        return new IfThenElse(condition, then, els);
+      } else {
+        return ifThenElse;
+      }
+    }
+  }
+
+  @Override
   public Expr visitListExpr(ListExpr listExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -213,6 +247,11 @@ public class Simplifier
   public IntExpr visitLitIntExpr(LitIntExpr litIntExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public BooleanExpr visitMatchIpSpaceExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+    return matchIpSpaceExpr.getExpr().accept(this);
   }
 
   @Override
@@ -296,6 +335,11 @@ public class Simplifier
   @Override
   public BooleanExpr visitSaneExpr(SaneExpr saneExpr) {
     return simplifyBooleanExpr(saneExpr.getExpr());
+  }
+
+  @Override
+  public StateExpr visitStateExpr(StateExpr stateExpr) {
+    return stateExpr;
   }
 
   @Override

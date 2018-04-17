@@ -1,105 +1,89 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
-      "roleEbgpNeighbors" : [
-        {
-          "role1" : "border",
-          "role2" : "border"
-        },
-        {
-          "role1" : "leaf",
-          "role2" : "spine"
-        },
-        {
-          "role1" : "spine",
-          "role2" : "leaf"
-        }
-      ],
-      "roleIbgpNeighbors" : [
-        {
-          "role1" : "border",
-          "role2" : "core"
-        },
-        {
-          "role1" : "core",
-          "role2" : "border"
-        },
-        {
-          "role1" : "core",
-          "role2" : "spine"
-        },
-        {
-          "role1" : "spine",
-          "role2" : "core"
-        }
-      ],
-      "roleLanNeighbors" : [
-        {
-          "role1" : "border",
-          "role2" : "border"
-        },
-        {
-          "role1" : "border",
-          "role2" : "core"
-        },
-        {
-          "role1" : "core",
-          "role2" : "border"
-        },
-        {
-          "role1" : "core",
-          "role2" : "core"
-        },
-        {
-          "role1" : "core",
-          "role2" : "spine"
-        },
-        {
-          "role1" : "leaf",
-          "role2" : "spine"
-        },
-        {
-          "role1" : "spine",
-          "role2" : "core"
-        },
-        {
-          "role1" : "spine",
-          "role2" : "leaf"
-        }
-      ],
-      "roleOspfNeighbors" : [
-        {
-          "role1" : "border",
-          "role2" : "core"
-        },
-        {
-          "role1" : "core",
-          "role2" : "border"
-        },
-        {
-          "role1" : "core",
-          "role2" : "spine"
-        },
-        {
-          "role1" : "spine",
-          "role2" : "core"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsQuestion",
-    "differential" : false,
-    "neighborTypes" : [
-      "ebgp",
-      "ibgp",
-      "lan",
-      "ospf"
+[
+  {
+    "class" : "org.batfish.question.NeighborsQuestionPlugin$NeighborsAnswerElement",
+    "roleEbgpNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "border"
+      },
+      {
+        "role1" : "leaf",
+        "role2" : "spine"
+      },
+      {
+        "role1" : "spine",
+        "role2" : "leaf"
+      }
     ],
-    "node1Regex" : ".*",
-    "node2Regex" : ".*",
-    "style" : "role"
-  },
-  "status" : "SUCCESS"
-}
+    "roleIbgpNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "border"
+      },
+      {
+        "role1" : "core",
+        "role2" : "spine"
+      },
+      {
+        "role1" : "spine",
+        "role2" : "core"
+      }
+    ],
+    "roleLanNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "border"
+      },
+      {
+        "role1" : "border",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "border"
+      },
+      {
+        "role1" : "core",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "spine"
+      },
+      {
+        "role1" : "leaf",
+        "role2" : "spine"
+      },
+      {
+        "role1" : "spine",
+        "role2" : "core"
+      },
+      {
+        "role1" : "spine",
+        "role2" : "leaf"
+      }
+    ],
+    "roleOspfNeighbors" : [
+      {
+        "role1" : "border",
+        "role2" : "core"
+      },
+      {
+        "role1" : "core",
+        "role2" : "border"
+      },
+      {
+        "role1" : "core",
+        "role2" : "spine"
+      },
+      {
+        "role1" : "spine",
+        "role2" : "core"
+      }
+    ]
+  }
+]

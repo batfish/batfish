@@ -21,6 +21,8 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IfThenElse;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -47,17 +49,17 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public static Map<String, Integer> collectVariableSizes(Statement s) {
     VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
     s.accept(variableSizeCollector);
-    return variableSizeCollector
-        ._variableSizes
-        .build()
-        .stream()
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    return variableSizeCollector.getVariableSizes();
   }
 
   private final ImmutableSet.Builder<Entry<String, Integer>> _variableSizes;
 
-  private VariableSizeCollector() {
+  public VariableSizeCollector() {
     _variableSizes = ImmutableSet.builder();
+  }
+
+  public Map<String, Integer> getVariableSizes() {
+    return ImmutableMap.copyOf(_variableSizes.build());
   }
 
   @Override
@@ -70,11 +72,6 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
     basicRuleStatement.getPreconditionStateIndependentConstraints().accept(this);
     basicRuleStatement.getPreconditionStates().forEach(s -> s.accept(this));
     basicRuleStatement.getPostconditionState().accept(this);
-  }
-
-  @Override
-  public void visitStateExpr(StateExpr stateExpr) {
-    _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
   }
 
   @Override
@@ -123,6 +120,13 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   }
 
   @Override
+  public void visitIfThenElse(IfThenElse ifThenElse) {
+    ifThenElse.getCondition().accept(this);
+    ifThenElse.getThen().accept(this);
+    ifThenElse.getElse().accept(this);
+  }
+
+  @Override
   public void visitListExpr(ListExpr listExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
@@ -130,6 +134,11 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
 
   @Override
   public void visitLitIntExpr(LitIntExpr litIntExpr) {}
+
+  @Override
+  public void visitIpSpaceMatchExpr(IpSpaceMatchExpr matchIpSpaceExpr) {
+    matchIpSpaceExpr.getExpr().accept(this);
+  }
 
   @Override
   public void visitNotExpr(NotExpr notExpr) {
@@ -159,6 +168,11 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   @Override
   public void visitSaneExpr(SaneExpr saneExpr) {
     saneExpr.getExpr().accept(this);
+  }
+
+  @Override
+  public void visitStateExpr(StateExpr stateExpr) {
+    _variableSizes.addAll(BASIC_STATE_VARIABLE_SIZES.get());
   }
 
   @Override

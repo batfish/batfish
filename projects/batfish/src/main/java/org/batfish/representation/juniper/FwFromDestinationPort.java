@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 
 public final class FwFromDestinationPort extends FwFrom {
@@ -23,8 +23,13 @@ public final class FwFromDestinationPort extends FwFrom {
   }
 
   @Override
-  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    line.setDstPorts(Iterables.concat(line.getDstPorts(), Collections.singleton(_portRange)));
+  public void applyTo(
+      HeaderSpace.Builder headerSpaceBuilder,
+      JuniperConfiguration jc,
+      Warnings w,
+      Configuration c) {
+    headerSpaceBuilder.setDstPorts(
+        Iterables.concat(headerSpaceBuilder.getDstPorts(), ImmutableSet.of(_portRange)));
   }
 
   public SubRange getPortRange() {

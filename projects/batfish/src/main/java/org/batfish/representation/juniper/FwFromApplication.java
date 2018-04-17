@@ -2,9 +2,10 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
 
 public final class FwFromApplication implements Serializable {
 
@@ -15,31 +16,35 @@ public final class FwFromApplication implements Serializable {
 
   private final String _applicationName;
 
-  private final Map<String, BaseApplication> _applications;
-
   public FwFromApplication(Application application) {
     _applicationName = null;
     _application = application;
-    _applications = null;
   }
 
-  public FwFromApplication(String applicationName, Map<String, BaseApplication> applications) {
+  public FwFromApplication(String applicationName) {
     _applicationName = applicationName;
     _application = null;
-    _applications = applications;
   }
 
-  public void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines, Warnings w) {
-    Application application;
+  public void applyTo(
+      JuniperConfiguration jc,
+      HeaderSpace.Builder srcHeaderSpaceBuilder,
+      LineAction action,
+      List<IpAccessListLine> lines,
+      Warnings w) {
+    ApplicationSetMember application;
     if (_applicationName != null) {
-      application = _applications.get(_applicationName);
+      application = jc.getApplications().get(_applicationName);
+      if (application == null) {
+        application = jc.getApplicationSets().get(_applicationName);
+      }
     } else {
       application = _application;
     }
     if (application == null) {
       w.redFlag("Reference to undefined application: \"" + _applicationName + "\"");
     } else {
-      application.applyTo(srcLine, lines, w);
+      application.applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
     }
   }
 }

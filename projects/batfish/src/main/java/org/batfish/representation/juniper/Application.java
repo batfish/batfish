@@ -1,12 +1,5 @@
 package org.batfish.representation.juniper;
 
-import java.util.List;
-import org.batfish.common.Warnings;
-import org.batfish.datamodel.IpAccessListLine;
-
-public interface Application {
-
-  void applyTo(IpAccessListLine srcLine, List<IpAccessListLine> lines, Warnings w);
-
+public interface Application extends ApplicationSetMember {
   boolean getIpv6();
 }

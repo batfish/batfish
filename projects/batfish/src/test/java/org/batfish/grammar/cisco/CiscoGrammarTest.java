@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -24,6 +25,8 @@ import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandw
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -37,6 +40,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +56,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -68,6 +74,8 @@ import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cisco.CiscoStructureType;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -92,6 +100,70 @@ public class CiscoGrammarTest {
     Configuration noNewModelConfiguration = parseConfig("aaaNoNewmodel");
     aaaNewmodel = noNewModelConfiguration.getVendorFamily().getCisco().getAaa().getNewModel();
     assertFalse(aaaNewmodel);
+  }
+
+  @Test
+  public void testAGAclUnused() throws IOException {
+    String hostName = "iosAccessGroupAcl";
+    String testrigName = "access-group-acl";
+    List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+
+    // only mac_acl_unused and ip_acl_unused should exist as unused structures
+    assertThat(unusedStructures, hasKey(hostName));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        unusedStructures.get(hostName);
+
+    assertThat(byType, hasKey(CiscoStructureType.MAC_ACCESS_LIST.getDescription()));
+    assertThat(byType, hasKey(CiscoStructureType.IP_ACCESS_LIST_EXTENDED.getDescription()));
+    SortedMap<String, SortedSet<Integer>> byNameMacAcl =
+        byType.get(CiscoStructureType.MAC_ACCESS_LIST.getDescription());
+    SortedMap<String, SortedSet<Integer>> byNameIpAclExt =
+        byType.get(CiscoStructureType.IP_ACCESS_LIST_EXTENDED.getDescription());
+
+    assertThat(byNameMacAcl.keySet(), hasSize(1));
+    assertThat(byNameIpAclExt.keySet(), hasSize(1));
+    assertThat(byNameMacAcl, hasKey("mac_acl_unused"));
+    assertThat(byNameIpAclExt, hasKey("ip_acl_unused"));
+  }
+
+  @Test
+  public void testAGAclUndefined() throws IOException {
+    String hostName = "iosAccessGroupAcl";
+    String testrigName = "access-group-acl";
+    List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        undefinedReferences =
+            batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
+
+    // only mac_acl_udef and ip_acl_udef should be undefined references
+    assertThat(undefinedReferences, hasKey(hostName));
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost =
+        undefinedReferences.get(hostName);
+    assertThat(byHost, hasKey(CiscoStructureType.ACCESS_LIST.getDescription()));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
+        byHost.get(CiscoStructureType.ACCESS_LIST.getDescription());
+
+    assertThat(byType.keySet(), hasSize(2));
+    assertThat(byType, hasKey("ip_acl_udef"));
+    assertThat(byType, hasKey("mac_acl_udef"));
   }
 
   @Test
@@ -206,22 +278,23 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+    Network<BgpNeighbor, BgpSession> bgpTopology =
+        CommonUtil.initBgpTopology(configurations, ipOwners, false);
     Configuration r1 = configurations.get("r1");
     Configuration r2 = configurations.get("r2");
     assertThat(
-        r1.getDefaultVrf()
-            .getBgpProcess()
-            .getNeighbors()
-            .get(Prefix.parse("1.2.0.2/32"))
-            .getRemoteBgpNeighbor(),
+        bgpTopology
+            .outEdges(
+                r1.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.2/32")))
+            .stream()
+            .map(BgpSession::getDst),
         is(notNullValue()));
     assertThat(
-        r2.getDefaultVrf()
-            .getBgpProcess()
-            .getNeighbors()
-            .get(Prefix.parse("1.2.0.1/32"))
-            .getRemoteBgpNeighbor(),
+        bgpTopology
+            .outEdges(
+                r2.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.1/32")))
+            .stream()
+            .map(BgpSession::getDst),
         is(notNullValue()));
   }
 
@@ -239,7 +312,7 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+    CommonUtil.initBgpTopology(configurations, ipOwners, false);
     MultipathEquivalentAsPathMatchMode aristaDisabled =
         configurations
             .get("arista_disabled")
@@ -284,7 +357,7 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+    CommonUtil.initBgpTopology(configurations, ipOwners, false);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
@@ -648,6 +721,26 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testParsingRecovery1141() throws IOException {
+    // Test for https://github.com/batfish/batfish/issues/1141
+    String testrigName = "parsing-recovery";
+    String hostname = "ios-recovery-1141";
+    List<String> configurationNames = ImmutableList.of(hostname);
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    Map<String, Configuration> configurations = batfish.loadConfigurations();
+
+    Configuration iosRecovery = configurations.get(hostname);
+    assertThat(iosRecovery, allOf(Matchers.notNullValue(), hasInterface("Loopback0", anything())));
+  }
+
+  @Test
   public void testParsingRecoveryNoInfiniteLoopDuringAdaptivePredictionAtEof() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-blankish-file";
@@ -709,5 +802,12 @@ public class CiscoGrammarTest {
         assertThat(vrf.getOspfProcess().getRfc1583Compatible(), is(expectedResults[i]));
       }
     }
+  }
+
+  @Test
+  public void testAristaSubinterfaceMtu() throws IOException {
+    Configuration c = parseConfig("aristaInterface");
+
+    assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
   }
 }

@@ -200,6 +200,7 @@ bgp_tail
    | prefix_list_bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
+   | redistribute_eigrp_bgp_tail
    | redistribute_ospf_bgp_tail
    | redistribute_ospfv3_bgp_tail
    | redistribute_rip_bgp_tail
@@ -273,7 +274,7 @@ disable_peer_as_check_bgp_tail
 
 distribute_list_bgp_tail
 :
-   DISTRIBUTE_LIST ~NEWLINE* NEWLINE
+   DISTRIBUTE_LIST null_rest_of_line
 ;
 
 ebgp_multihop_bgp_tail
@@ -371,6 +372,9 @@ locals
    )
    (
       REMOTE_AS asnum = DEC
+   )?
+   (
+      REMOTE_AS ROUTE_MAP mapname = variable
    )? NEWLINE
    (
       bgp_tail
@@ -513,7 +517,7 @@ no_neighbor_shutdown_rb_stanza
 
 no_network_bgp_tail
 :
-   NO NETWORK ~NEWLINE* NEWLINE
+   NO NETWORK null_rest_of_line
 ;
 
 no_redistribute_connected_rb_stanza
@@ -522,7 +526,7 @@ no_redistribute_connected_rb_stanza
    (
       CONNECTED
       | DIRECT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 no_shutdown_rb_stanza
@@ -639,6 +643,7 @@ null_bgp_tail
       | TABLE_MAP
       | TIMERS
       | TRANSPORT
+      | UPDATE
       |
       (
          USE
@@ -647,7 +652,7 @@ null_bgp_tail
          )
       )
       | VERSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 null_no_neighbor_rb_stanza
@@ -757,6 +762,11 @@ redistribute_connected_bgp_tail
          METRIC metric = DEC
       )
    )* NEWLINE
+;
+
+redistribute_eigrp_bgp_tail
+:
+   REDISTRIBUTE EIGRP id = DEC null_rest_of_line
 ;
 
 redistribute_ospf_bgp_tail

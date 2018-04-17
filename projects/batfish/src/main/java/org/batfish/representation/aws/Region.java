@@ -2,15 +2,24 @@ package org.batfish.representation.aws;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.Vrf;
+import org.batfish.main.Batfish;
 import org.batfish.representation.aws.Instance.Status;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -21,6 +30,8 @@ public class Region implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private Map<String, Address> _addresses = new HashMap<>();
+
+  private Map<String, Set<SecurityGroup>> _configurationSecurityGroups = new HashMap<>();
 
   private Map<String, CustomerGateway> _customerGateways = new HashMap<>();
 
@@ -53,6 +64,9 @@ public class Region implements Serializable {
   private Map<String, VpnConnection> _vpnConnections = new HashMap<>();
 
   private Map<String, VpnGateway> _vpnGateways = new HashMap<>();
+
+  public static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
+  public static final String SG_EGRESS_ACL_NAME = "~SECURITY_GROUP_EGRESS_ACL~";
 
   public Region(String name) {
     _name = name;
@@ -176,6 +190,10 @@ public class Region implements Serializable {
     return _addresses;
   }
 
+  public Map<String, Set<SecurityGroup>> getConfigurationSecurityGroups() {
+    return _configurationSecurityGroups;
+  }
+
   public Map<String, CustomerGateway> getCustomerGateways() {
     return _customerGateways;
   }
@@ -260,54 +278,74 @@ public class Region implements Serializable {
 
     // updates the Ips which have been allocated already in subnets of all interfaces
     updateAllocatedIps();
-
     for (Vpc vpc : getVpcs().values()) {
-      Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
-      Configuration cfgNode = elasticsearchDomain.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode =
+          elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
+      cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
-      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode = igw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (NatGateway ngw : getNatGateways().values()) {
-      awsConfiguration
-          .getWarnings()
-          .redFlag("NAT functionality not yet implemented for " + ngw.getId());
-      Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      warnings.redFlag("NAT functionality not yet implemented for " + ngw.getId());
+      Configuration cfgNode = ngw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (VpnGateway vgw : getVpnGateways().values()) {
-      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode = vgw.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (Instance instance : getInstances().values()) {
-      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode = instance.toConfigurationNode(awsConfiguration, this, warnings);
       cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (RdsInstance rdsInstance : getRdsInstances().values()) {
-      Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode = rdsInstance.toConfigurationNode(awsConfiguration, this, warnings);
+      cfgNode.setDeviceType(DeviceType.HOST);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (Subnet subnet : getSubnets().values()) {
-      Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
       configurationNodes.put(cfgNode.getName(), cfgNode);
+      awsConfiguration.getWarningsByHost().put(cfgNode.getName(), warnings);
     }
 
     for (VpnConnection vpnConnection : getVpnConnections().values()) {
-      vpnConnection.applyToVpnGateway(awsConfiguration, this);
+      Warnings warnings = Batfish.buildWarnings(awsConfiguration.getSettings());
+      vpnConnection.applyToVpnGateway(awsConfiguration, this, warnings);
+      awsConfiguration.getWarningsByHost().put(vpnConnection.getId(), warnings);
     }
+
+    applySecurityGroupsAcls(configurationNodes);
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : configurationNodes.values()) {
@@ -316,6 +354,36 @@ public class Region implements Serializable {
           iface.setBandwidth(1E12d);
         }
       }
+    }
+  }
+
+  private void applySecurityGroupsAcls(Map<String, Configuration> cfgNodes) {
+    for (Entry<String, Set<SecurityGroup>> entry : _configurationSecurityGroups.entrySet()) {
+      Configuration cfgNode = cfgNodes.get(entry.getKey());
+      List<IpAccessListLine> inboundRules = new LinkedList<>();
+      List<IpAccessListLine> outboundRules = new LinkedList<>();
+      entry
+          .getValue()
+          .forEach(
+              securityGroup ->
+                  securityGroup.addInOutAccessLines(inboundRules, outboundRules, this));
+
+      // create ACLs from inboundRules and outboundRules
+      IpAccessList inAcl = new IpAccessList(SG_INGRESS_ACL_NAME, inboundRules);
+      IpAccessList outAcl = new IpAccessList(SG_EGRESS_ACL_NAME, outboundRules);
+
+      cfgNode.getIpAccessLists().put(SG_INGRESS_ACL_NAME, inAcl);
+      cfgNode.getIpAccessLists().put(SG_EGRESS_ACL_NAME, outAcl);
+
+      // applying the filters to all interfaces in the node
+      cfgNode
+          .getInterfaces()
+          .values()
+          .forEach(
+              iface -> {
+                iface.setIncomingFilter(inAcl);
+                iface.setOutgoingFilter(outAcl);
+              });
     }
   }
 
@@ -334,5 +402,11 @@ public class Region implements Serializable {
                             .stream()
                             .map(Ip::asLong)
                             .collect(Collectors.toSet())));
+  }
+
+  public void updateConfigurationSecurityGroups(String configName, SecurityGroup securityGroup) {
+    Set<SecurityGroup> securityGroups =
+        getConfigurationSecurityGroups().computeIfAbsent(configName, k -> new HashSet<>());
+    securityGroups.add(securityGroup);
   }
 }

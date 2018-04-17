@@ -1,59 +1,38 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement",
-      "flow" : {
-        "dscp" : 0,
-        "dstIp" : "42.42.42.0",
-        "dstPort" : 0,
-        "ecn" : 0,
-        "fragmentOffset" : 0,
-        "icmpCode" : 0,
-        "icmpVar" : 0,
-        "ingressNode" : "(none)",
-        "ingressVrf" : "default",
-        "ipProtocol" : "HOPOPT",
-        "packetLength" : 0,
-        "srcIp" : "0.0.0.0",
-        "srcPort" : 0,
-        "state" : "NEW",
-        "tag" : "SMT",
-        "tcpFlagsAck" : 1,
-        "tcpFlagsCwr" : 1,
-        "tcpFlagsEce" : 1,
-        "tcpFlagsFin" : 1,
-        "tcpFlagsPsh" : 1,
-        "tcpFlagsRst" : 1,
-        "tcpFlagsSyn" : 1,
-        "tcpFlagsUrg" : 1
-      },
-      "forwardingCase1" : [
-        "R2,Serial0 --> R1,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.42.2,nhint:dynamic>",
-        "R3,Serial0 --> R2,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.2,nhint:dynamic>"
-      ],
-      "forwardingCase2" : [
-        "R2,Serial1 --> R3,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.1,nhint:dynamic>",
-        "R3,Serial1 --> R1,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.44.2,nhint:dynamic>"
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.SmtDeterministicQuestionPlugin$DeterministicQuestion",
-    "baseEnvType" : "any",
-    "benchmark" : false,
-    "deltaEnvType" : "any",
-    "differential" : false,
-    "envDiff" : false,
-    "failures" : 0,
-    "fullModel" : false,
-    "minimize" : false,
-    "modelOverflow" : false,
-    "useAbstraction" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+[
+  {
+    "class" : "org.batfish.symbolic.answers.SmtDeterminismAnswerElement",
+    "flow" : {
+      "dscp" : 0,
+      "dstIp" : "42.42.42.0",
+      "dstPort" : 0,
+      "ecn" : 0,
+      "fragmentOffset" : 0,
+      "icmpCode" : 0,
+      "icmpVar" : 0,
+      "ingressNode" : "(none)",
+      "ingressVrf" : "default",
+      "ipProtocol" : "HOPOPT",
+      "packetLength" : 0,
+      "srcIp" : "0.0.0.0",
+      "srcPort" : 0,
+      "state" : "NEW",
+      "tag" : "SMT",
+      "tcpFlagsAck" : 1,
+      "tcpFlagsCwr" : 1,
+      "tcpFlagsEce" : 1,
+      "tcpFlagsFin" : 1,
+      "tcpFlagsPsh" : 1,
+      "tcpFlagsRst" : 1,
+      "tcpFlagsSyn" : 1,
+      "tcpFlagsUrg" : 1
+    },
+    "forwardingCase1" : [
+      "R2,Serial0 --> R1,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.42.2,nhint:dynamic>",
+      "R3,Serial0 --> R2,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.2,nhint:dynamic>"
+    ],
+    "forwardingCase2" : [
+      "R2,Serial1 --> R3,Serial0 -- BgpRoute<42.42.42.0/32,nhip:192.168.43.1,nhint:dynamic>",
+      "R3,Serial1 --> R1,Serial1 -- BgpRoute<42.42.42.0/32,nhip:192.168.44.2,nhint:dynamic>"
+    ]
   }
-}
+]

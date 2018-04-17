@@ -1,3 +1,3 @@
 package org.batfish.datamodel.answers;
 
-public class NodSatAnswerElement implements AnswerElement {}
+public class NodSatAnswerElement extends AnswerElement {}

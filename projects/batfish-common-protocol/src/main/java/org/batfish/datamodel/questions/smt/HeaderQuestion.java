@@ -11,10 +11,9 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.questions.IQuestion;
 import org.batfish.datamodel.questions.Question;
 
-public class HeaderQuestion extends Question implements IQuestion {
+public class HeaderQuestion extends Question {
 
   private static final String PROP_DST_IPS = "dstIps";
 

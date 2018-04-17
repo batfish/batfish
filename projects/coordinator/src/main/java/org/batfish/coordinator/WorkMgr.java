@@ -1,18 +1,14 @@
 package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.io.Closer;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.PushbackInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,7 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -53,7 +48,6 @@ import org.batfish.common.Task;
 import org.batfish.common.Warnings;
 import org.batfish.common.WorkItem;
 import org.batfish.common.plugin.AbstractCoordinator;
-import org.batfish.common.util.BatfishObjectInputStream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -328,8 +322,7 @@ public class WorkMgr extends AbstractCoordinator {
                   "got error while refreshing status: %s %s\n", array.get(0), array.get(1)));
         } else {
           String taskStr = array.get(1).toString();
-          BatfishObjectMapper mapper = new BatfishObjectMapper();
-          task = mapper.readValue(taskStr, Task.class);
+          task = BatfishObjectMapper.mapper().readValue(taskStr, Task.class);
           if (task.getStatus() == null) {
             _logger.error("did not see status key in json response\n");
           }
@@ -387,11 +380,13 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Question name not provided for ANSWER work");
       }
       Path qFile = getpathContainerQuestion(workItem.getContainerName(), qName);
-      Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
+      Question question = Question.parseQuestion(qFile);
       workType =
-          question.getDataPlane()
-              ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
-              : WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+          question.getIndependent()
+              ? WorkType.INDEPENDENT_ANSWERING
+              : question.getDataPlane()
+                  ? WorkType.DATAPLANE_DEPENDENT_ANSWERING
+                  : WorkType.PARSING_DEPENDENT_ANSWERING;
     }
 
     if (WorkItemBuilder.isAnalyzingWorkItem(workItem)) {
@@ -403,12 +398,17 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Analysis name not provided for ANALYZE work");
       }
       Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
-      workType = WorkType.DATAPLANE_INDEPENDENT_ANSWERING;
+      // compute the strongest dependency among the embedded questions
+      workType = WorkType.INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
         Path qFile = getpathAnalysisQuestion(workItem.getContainerName(), aName, qName);
-        Question question = Question.parseQuestion(qFile, getCurrentClassLoader());
+        Question question = Question.parseQuestion(qFile);
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
+          break;
+        }
+        if (!question.getIndependent()) {
+          workType = WorkType.PARSING_DEPENDENT_ANSWERING;
         }
       }
     }
@@ -604,8 +604,7 @@ public class WorkMgr extends AbstractCoordinator {
       if (!Files.exists(answerFile)) {
         Answer ans = Answer.failureAnswer("Not answered", null);
         ans.setStatus(AnswerStatus.NOTFOUND);
-        BatfishObjectMapper mapper = new BatfishObjectMapper();
-        answer = mapper.writeValueAsString(ans);
+        answer = BatfishObjectMapper.writePrettyString(ans);
       } else {
         boolean answerIsStale;
         answerIsStale =
@@ -615,8 +614,7 @@ public class WorkMgr extends AbstractCoordinator {
         if (answerIsStale) {
           Answer ans = Answer.failureAnswer("Not fresh", null);
           ans.setStatus(AnswerStatus.STALE);
-          BatfishObjectMapper mapper = new BatfishObjectMapper();
-          answer = mapper.writeValueAsString(ans);
+          answer = BatfishObjectMapper.writePrettyString(ans);
         } else {
           answer = CommonUtil.readFile(answerFile);
         }
@@ -662,16 +660,14 @@ public class WorkMgr extends AbstractCoordinator {
     if (!Files.exists(answerFile)) {
       Answer ans = Answer.failureAnswer("Not answered", null);
       ans.setStatus(AnswerStatus.NOTFOUND);
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
-      answer = mapper.writeValueAsString(ans);
+      answer = BatfishObjectMapper.writePrettyString(ans);
     } else {
       if (CommonUtil.getLastModifiedTime(questionFile)
               .compareTo(CommonUtil.getLastModifiedTime(answerFile))
           > 0) {
         Answer ans = Answer.failureAnswer("Not fresh", null);
         ans.setStatus(AnswerStatus.STALE);
-        BatfishObjectMapper mapper = new BatfishObjectMapper();
-        answer = mapper.writeValueAsString(ans);
+        answer = BatfishObjectMapper.writePrettyString(ans);
       } else {
         answer = CommonUtil.readFile(answerFile);
       }
@@ -824,46 +820,17 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
-      throws ClassNotFoundException, JsonProcessingException, JSONException {
+      throws JsonProcessingException, JSONException {
 
-    // TODO Refactor deserializeObject() out of PluginConsumer so this function can use it.
-
-    /**
-     * A byte-array containing the first 4 bytes of the header for a file that is the output of java
-     * serialization
-     */
-    final byte[] JAVA_SERIALIZED_OBJECT_HEADER = {
-      (byte) 0xac, (byte) 0xed, (byte) 0x00, (byte) 0x05
-    };
-
-    ParseVendorConfigurationAnswerElement pvcae;
-    try (Closer closer = Closer.create()) {
-      // Reading the object from a file
-      FileInputStream fis =
-          closer.register(
-              new FileInputStream(
-                  getdirTestrig(containerName, testrigName)
-                      .resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH)
-                      .toFile()));
-      BufferedInputStream bis = closer.register(new BufferedInputStream(fis));
-      GZIPInputStream gis = closer.register(new GZIPInputStream(bis));
-      PushbackInputStream pbstream =
-          new PushbackInputStream(gis, JAVA_SERIALIZED_OBJECT_HEADER.length);
-      ObjectInputStream ois =
-          new BatfishObjectInputStream(
-              pbstream, ParseVendorConfigurationAnswerElement.class.getClassLoader());
-
-      pvcae = (ParseVendorConfigurationAnswerElement) ois.readObject();
-
-      ois.close();
-    } catch (IOException e) {
-      throw new BatfishException("Failed to deserialize parse answer object", e);
-    }
+    ParseVendorConfigurationAnswerElement pvcae =
+        deserializeObject(
+            getdirTestrig(containerName, testrigName).resolve(BfConsts.RELPATH_PARSE_ANSWER_PATH),
+            ParseVendorConfigurationAnswerElement.class);
     JSONObject warnings = new JSONObject();
     SortedMap<String, Warnings> warningsMap = pvcae.getWarnings();
-    BatfishObjectMapper mapper = new BatfishObjectMapper();
+    ObjectWriter writer = BatfishObjectMapper.prettyWriter();
     for (String s : warningsMap.keySet()) {
-      warnings.put(s, mapper.writeValueAsString(warningsMap.get(s)));
+      warnings.put(s, writer.writeValueAsString(warningsMap.get(s)));
     }
     return warnings;
   }
@@ -1197,7 +1164,7 @@ public class WorkMgr extends AbstractCoordinator {
           if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
             _logger.errorf("Got error while killing task: %s %s\n", array.get(0), array.get(1));
           } else {
-            Task task = new BatfishObjectMapper().readValue(array.getString(1), Task.class);
+            Task task = BatfishObjectMapper.mapper().readValue(array.getString(1), Task.class);
             _workQueueMgr.processTaskCheckResult(work, task);
             killed = true;
           }
@@ -1538,8 +1505,14 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteIfExists(zipFile);
   }
 
-  public void uploadQuestion(
-      String containerName, String qName, InputStream fileStream, InputStream paramFileStream) {
+  public void uploadQuestion(String containerName, String qName, String questionJson) {
+    // Validate the question before saving it to disk.
+    try {
+      Question.parseQuestion(questionJson);
+    } catch (Exception e) {
+      throw new BatfishException(String.format("Invalid question %s/%s", containerName, qName), e);
+    }
+
     Path containerDir = getdirContainer(containerName);
     Path qDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, qName));
     if (Files.exists(qDir)) {
@@ -1550,7 +1523,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Failed to create directory: '" + qDir + "'");
     }
     Path file = qDir.resolve(BfConsts.RELPATH_QUESTION_FILE);
-    CommonUtil.writeStreamToFile(fileStream, file);
+    CommonUtil.writeFile(file, questionJson);
   }
 
   public void uploadTestrig(

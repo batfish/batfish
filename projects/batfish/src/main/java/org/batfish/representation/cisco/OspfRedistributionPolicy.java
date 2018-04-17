@@ -9,19 +9,13 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
-  public static final long DEFAULT_REDISTRIBUTE_BGP_METRIC = 20;
-
-  public static final long DEFAULT_REDISTRIBUTE_CONNECTED_METRIC = 20;
-
-  public static final long DEFAULT_REDISTRIBUTE_STATIC_METRIC = 20;
-
   private static final long serialVersionUID = 1L;
 
   private Long _metric;
 
   private OspfMetricType _metricType;
 
-  private boolean _subnets;
+  private boolean _onlyClassfulRoutes;
 
   private Long _tag;
 
@@ -37,8 +31,8 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     return _metricType;
   }
 
-  public boolean getSubnets() {
-    return _subnets;
+  public boolean getOnlyClassfulRoutes() {
+    return _onlyClassfulRoutes;
   }
 
   public Long getTag() {
@@ -49,12 +43,12 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
     _metric = metric;
   }
 
-  public void setOspfMetricType(OspfMetricType type) {
-    _metricType = type;
+  public void setOnlyClassfulRoutes(boolean b) {
+    _onlyClassfulRoutes = b;
   }
 
-  public void setSubnets(boolean b) {
-    _subnets = b;
+  public void setOspfMetricType(OspfMetricType type) {
+    _metricType = type;
   }
 
   public void setTag(long tag) {

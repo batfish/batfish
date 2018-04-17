@@ -8,7 +8,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.IpAccessList;
 
-public class AclLinesAnswerElement implements AnswerElement {
+public class AclLinesAnswerElement extends AnswerElement {
 
   public static class AclReachabilityEntry implements Comparable<AclReachabilityEntry> {
 

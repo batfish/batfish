@@ -846,6 +846,11 @@ ARP
 
 ;
 
+AS_NUMBER
+:
+   'as-number'
+;
+
 AS_OVERRIDE
 :
    'as-override'
@@ -1958,7 +1963,7 @@ COMMUNITY_LIST
 
 COMMUNITY_MAP
 :
-   'community-map'
+   'community-map' -> pushMode ( M_Name )
 ;
 
 COMMUNITY_SET
@@ -2350,6 +2355,11 @@ CTS
 CURRENT_CONFIGURATION
 :
    'Current configuration'
+;
+
+CUSTOM
+:
+   'custom'
 ;
 
 CUSTOMER_ID
@@ -3232,6 +3242,11 @@ DOWNSTREAM_START_THRESHOLD
    'downstream-start-threshold'
 ;
 
+DPG
+:
+    'dpg'
+;
+
 DR_PRIORITY
 :
    'dr-priority'
@@ -3370,6 +3385,16 @@ DYNAMIC_MCAST_OPTIMIZATION
 DYNAMIC_MCAST_OPTIMIZATION_THRESH
 :
    'dynamic-mcast-optimization-thresh'
+;
+
+E164
+:
+    'e164'
+;
+
+E164_PATTERN_MAP
+:
+    'e164-pattern-map'
 ;
 
 EAP_PASSTHROUGH
@@ -3737,9 +3762,34 @@ ESP_AES
    'esp-aes'
 ;
 
+ESP_DES
+:
+   'esp-des'
+;
+
+ESP_GCM
+:
+   'esp-gcm'
+;
+
+ESP_GMAC
+:
+   'esp-gmac'
+;
+
 ESP_MD5_HMAC
 :
    'esp-md5-hmac'
+;
+
+ESP_NULL
+:
+   'esp-null'
+;
+
+ESP_SEAL
+:
+   'esp-seal'
 ;
 
 ESP_SHA_HMAC
@@ -4661,6 +4711,11 @@ HASH_ALGORITHM
    'hash-algorithm'
 ;
 
+HEADER_COMPRESSION
+:
+   'header-compression'
+;
+
 HEADER_PASSING
 :
    'header-passing'
@@ -4959,6 +5014,11 @@ IDS_PROFILE
 IEC
 :
    'iec'
+;
+
+IETF_FORMAT
+:
+   'ietf-format'
 ;
 
 IF
@@ -5301,6 +5361,11 @@ IPC
 IPENACL
 :
    'ipenacl'
+;
+
+IPHC_FORMAT
+:
+   'iphc-format'
 ;
 
 IPINIP
@@ -6943,6 +7008,11 @@ NATPOOL
    'natpool'
 ;
 
+NBAR
+:
+   'nbar'
+;
+
 ND
 :
    'nd'
@@ -7888,6 +7958,11 @@ PERIODIC_INVENTORY
    'periodic-inventory'
 ;
 
+PERIODIC_REFRESH
+:
+   'periodic-refresh'
+;
+
 PERMANENT
 :
    'permanent'
@@ -8783,6 +8858,11 @@ REDUNDANCY
    'redundancy'
 ;
 
+REDUNDANCY_GROUP
+:
+   'redundancy-group'
+;
+
 REFERENCE_BANDWIDTH
 :
    'reference-bandwidth'
@@ -8893,9 +8973,9 @@ REMOTE_SPAN
    'remote-span'
 ;
 
-REMOVED
+REMOVE
 :
-   '<removed>'
+   'remove'
 ;
 
 REPLACE_AS
@@ -9291,6 +9371,11 @@ RTCP_INACTIVITY
 RTP
 :
    'rtp'
+;
+
+RTP_PORT
+:
+   'rtp-port'
 ;
 
 RTR
@@ -10338,6 +10423,11 @@ STCAPP
 STICKY
 :
    'sticky'
+;
+
+STICKY_ARP
+:
+   'sticky-arp'
 ;
 
 STOP
@@ -11408,6 +11498,16 @@ UPSTREAM_START_THRESHOLD
 URG
 :
    'urg'
+;
+
+URI
+:
+    'uri'
+;
+
+URL
+:
+    'url'
 ;
 
 URL_LIST
@@ -13345,11 +13445,6 @@ mode M_CertificateText;
 M_CertificateText_QUIT
 :
    'quit' -> type ( QUIT ) , mode ( DEFAULT_MODE )
-;
-
-M_CertificateText_REMOVED
-:
-   '<removed>' -> type ( REMOVED ) , mode ( DEFAULT_MODE )
 ;
 
 M_CertificateText_HEX_FRAGMENT

@@ -3,12 +3,11 @@ package org.batfish.bdp;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -19,9 +18,8 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.collections.MultiSet;
-import org.batfish.datamodel.collections.TreeMultiSet;
 
 /**
  * Implements general RIB (Routing Information Base) semantics. RIB stores routes for different
@@ -34,10 +32,14 @@ import org.batfish.datamodel.collections.TreeMultiSet;
 public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib<R> {
 
   public final Map<Prefix, IpSpace> getMatchingIps() {
-    return _tree.getMatchingIps();
+    return _tree
+        .getMatchingIps()
+        .entrySet()
+        .stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> (IpSpace) e.getValue()));
   }
 
-  public final IpSpace getRoutableIps() {
+  public final IpWildcardSetIpSpace getRoutableIps() {
     return _tree.getRoutableIps();
   }
 
@@ -58,14 +60,14 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _root = new RibTreeNode(Prefix.ZERO);
     }
 
-    public Map<Prefix, IpSpace> getMatchingIps() {
-      ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
+    public Map<Prefix, IpWildcardSetIpSpace> getMatchingIps() {
+      ImmutableMap.Builder<Prefix, IpWildcardSetIpSpace> builder = ImmutableMap.builder();
       _root.addMatchingIps(builder);
       return builder.build();
     }
 
-    IpSpace getRoutableIps() {
-      IpSpace.Builder builder = IpSpace.builder();
+    IpWildcardSetIpSpace getRoutableIps() {
+      IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
       _root.addRoutableIps(builder);
       return builder.build();
     }
@@ -122,7 +124,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _prefix = prefix;
     }
 
-    public void addMatchingIps(ImmutableMap.Builder<Prefix, IpSpace> builder) {
+    public void addMatchingIps(ImmutableMap.Builder<Prefix, IpWildcardSetIpSpace> builder) {
       if (_left != null) {
         _left.addMatchingIps(builder);
       }
@@ -130,7 +132,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
         _right.addMatchingIps(builder);
       }
       if (!_routes.isEmpty()) {
-        IpSpace.Builder matchingIps = IpSpace.builder();
+        IpWildcardSetIpSpace.Builder matchingIps = IpWildcardSetIpSpace.builder();
         if (_left != null) {
           _left.excludeRoutableIps(matchingIps);
         }
@@ -142,7 +144,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       }
     }
 
-    public void addRoutableIps(IpSpace.Builder builder) {
+    public void addRoutableIps(IpWildcardSetIpSpace.Builder builder) {
       if (!_routes.isEmpty()) {
         builder.including(new IpWildcard(_prefix));
       } else {
@@ -155,7 +157,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       }
     }
 
-    public void excludeRoutableIps(IpSpace.Builder builder) {
+    public void excludeRoutableIps(IpWildcardSetIpSpace.Builder builder) {
       if (!_routes.isEmpty()) {
         builder.excluding(new IpWildcard(_prefix));
       } else {
@@ -219,7 +221,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       Set<R> longestPrefixMatches = new HashSet<>();
       for (R route : _routes) {
         Prefix prefix = route.getNetwork();
-        if (prefix.contains(address)) {
+        if (prefix.containsIp(address)) {
           longestPrefixMatches.add(route);
         }
       }
@@ -474,16 +476,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   }
 
   @Override
-  public final MultiSet<Prefix> getPrefixCount() {
-    MultiSet<Prefix> prefixCount = new TreeMultiSet<>();
-    for (R route : getRoutes()) {
-      Prefix prefix = route.getNetwork();
-      prefixCount.add(prefix);
-    }
-    return prefixCount;
-  }
-
-  @Override
   public final SortedSet<Prefix> getPrefixes() {
     SortedSet<Prefix> prefixes = new TreeSet<>();
     Set<R> routes = getRoutes();
@@ -499,22 +491,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
     return _allRoutes;
-  }
-
-  @Override
-  public final Map<Integer, Map<Ip, List<AbstractRoute>>> getRoutesByPrefixPopularity() {
-    Map<Integer, Map<Ip, List<AbstractRoute>>> map = new TreeMap<>();
-    MultiSet<Prefix> prefixCountSet = getPrefixCount();
-    for (AbstractRoute route : getRoutes()) {
-      Prefix prefix = route.getNetwork();
-      int prefixCount = prefixCountSet.count(prefix);
-      Map<Ip, List<AbstractRoute>> byIp = map.computeIfAbsent(prefixCount, k -> new TreeMap<>());
-      Ip nextHopIp = route.getNextHopIp();
-      List<AbstractRoute> routesByPopularity =
-          byIp.computeIfAbsent(nextHopIp, k -> new ArrayList<>());
-      routesByPopularity.add(route);
-    }
-    return map;
   }
 
   @Override

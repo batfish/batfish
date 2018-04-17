@@ -1,68 +1,84 @@
 {
- "SecurityGroups": [
-   {
-   "Description": "RDS VPC security group",
-   "GroupId": "sg-55510831",
-   "GroupName": "default",
-   "IpPermissions": [
+  "SecurityGroups": [
     {
-     "FromPort": 3306,
-     "IpProtocol": "tcp",
-     "IpRanges": [
-      {
-       "CidrIp": "10.193.0.0/16",
-       "Description": "Internal traffic"
-      },
-      {
-       "CidrIp": "107.170.243.58/32",
-       "Description": "inentionet-test"
-      },
-      {
-       "CidrIp": "104.236.156.171/32",
-       "Description": "intentionet-dev"
-      },
-      {
-       "CidrIp": "162.243.144.192/32",
-       "Description": "intentionet-web"
-      },
-      {
-       "CidrIp": "67.170.86.87/32",
-       "Description": "surf"
-      }
-     ],
-     "Ipv6Ranges": [],
-     "PrefixListIds": [],
-     "ToPort": 3306,
-     "UserIdGroupPairs": [
-      {
-       "Description": "jump host",
-       "GroupId": "sg-cf3f86b3",
-       "UserId": "118292266645"
-      }
-     ]
-    }
-   ],
-   "IpPermissionsEgress": [
+      "Description": "Test Security Group for ES/RDS",
+      "GroupId": "sg-0de0ddfa8a5a45810",
+      "GroupName": "Test Security Group",
+      "IpPermissions": [
+        {
+          "FromPort": 45,
+          "IpProtocol": "tcp",
+          "IpRanges": [
+            {
+              "CidrIp": "1.2.3.4/32",
+              "Description": "Closed interval"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 50,
+          "UserIdGroupPairs": [
+            {
+              "GroupId": "sg-08893f1a4413ccfc1",
+              "UserId": "118292266645"
+            }
+          ]
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "118292266645",
+      "VpcId": "vpc-b390fad5"
+    },
     {
-     "IpProtocol": "-1",
-     "IpRanges": [
-      {
-       "CidrIp": "0.0.0.0/0"
-      }
-     ],
-     "Ipv6Ranges": [],
-     "PrefixListIds": [],
-     "UserIdGroupPairs": []
+      "Description": "Security Group for test instance",
+      "GroupId": "sg-08893f1a4413ccfc1",
+      "GroupName": "Test-Instance-SG",
+      "IpPermissions": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "118292266645",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "Test-Instance-SG"
+        }
+      ],
+      "VpcId": "vpc-6f6f8316"
     }
-   ],
-   "OwnerId": "118292266645",
-   "Tags": [
-    {
-     "Key": "Name",
-     "Value": "Default+RDS-sg"
-    }
-   ],
-   "VpcId": "vpc-f8fad69d"
-  }
- ]
+  ]
 }

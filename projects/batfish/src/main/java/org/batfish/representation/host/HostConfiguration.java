@@ -2,9 +2,6 @@ package org.batfish.representation.host;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +24,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -67,10 +68,9 @@ public class HostConfiguration extends VendorConfiguration {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public static HostConfiguration fromJson(String text, Warnings warnings)
-      throws JsonParseException, JsonMappingException, IOException {
-    ObjectMapper mapper = new BatfishObjectMapper();
-    HostConfiguration hostConfiguration = mapper.readValue(text, HostConfiguration.class);
+  public static HostConfiguration fromJson(String text, Warnings warnings) throws IOException {
+    HostConfiguration hostConfiguration =
+        BatfishObjectMapper.mapper().readValue(text, HostConfiguration.class);
     hostConfiguration._w = warnings;
     return hostConfiguration;
   }
@@ -194,7 +194,16 @@ public class HostConfiguration extends VendorConfiguration {
           if (line.getAction() == LineAction.REJECT) {
             return false;
           }
-          if (!line.unrestricted()) {
+          /*
+           * This will have to change when ACLs are more complicated.
+           * For now, a simple line is either TrueExpr, FalseExpr, or unrestricted MatchHeaderSpace.
+           */
+          AclLineMatchExpr matchCondition = line.getMatchCondition();
+          if (!(matchCondition instanceof TrueExpr
+              || matchCondition instanceof FalseExpr
+              || (matchCondition instanceof MatchHeaderSpace
+                  && ((MatchHeaderSpace) matchCondition).getHeaderspace().unrestricted()))) {
+            /* At least one line is complicated, so the whole ACL is complicated */
             return false;
           }
         }

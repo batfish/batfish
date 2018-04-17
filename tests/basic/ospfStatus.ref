@@ -1,29 +1,14 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.OspfStatusQuestionPlugin$OspfStatusAnswerElement",
-      "ospfStatuses" : [
-        {
-          "interface" : {
-            "hostname" : "as1border1",
-            "interface" : "Loopback0"
-          },
-          "ospfStatus" : "ENABLED_PASSIVE"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.OspfStatusQuestionPlugin$OspfStatusQuestion",
-    "interfacesSpecifier" : "Loopback.*",
-    "nodeRegex" : ".*",
-    "status" : ".*PASSIVE",
-    "differential" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+[
+  {
+    "class" : "org.batfish.question.OspfStatusQuestionPlugin$OspfStatusAnswerElement",
+    "ospfStatuses" : [
+      {
+        "interface" : {
+          "hostname" : "as1border1",
+          "interface" : "Loopback0"
+        },
+        "ospfStatus" : "ENABLED_PASSIVE"
+      }
+    ]
   }
-}
+]

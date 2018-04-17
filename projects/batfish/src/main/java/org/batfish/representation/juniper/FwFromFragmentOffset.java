@@ -1,10 +1,10 @@
 package org.batfish.representation.juniper;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.SubRange;
 
 public class FwFromFragmentOffset extends FwFrom {
@@ -22,12 +22,16 @@ public class FwFromFragmentOffset extends FwFrom {
   }
 
   @Override
-  public void applyTo(IpAccessListLine line, JuniperConfiguration jc, Warnings w, Configuration c) {
-    Set<SubRange> offsets = Collections.singleton(_offsetRange);
+  public void applyTo(
+      HeaderSpace.Builder headerSpaceBuilder,
+      JuniperConfiguration jc,
+      Warnings w,
+      Configuration c) {
+    Set<SubRange> offsets = ImmutableSet.of(_offsetRange);
     if (_except) {
-      line.setNotFragmentOffsets(offsets);
+      headerSpaceBuilder.setNotFragmentOffsets(offsets);
     } else {
-      line.setFragmentOffsets(offsets);
+      headerSpaceBuilder.setFragmentOffsets(offsets);
     }
   }
 }

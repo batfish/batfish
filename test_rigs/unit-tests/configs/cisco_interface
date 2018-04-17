@@ -101,11 +101,18 @@ interface Ethernet0
  ip pim hello-interval 30000
  ip pim sparse-dense-mode
  ip pim sparse-mode
+ ip proxy-arp
+ default ip proxy-arp
+ no ip proxy-arp
  no ip redirects
  no ip route-cache
  ip router isis
  ip router ospf 1 area 0.1.2.3
+ ip rtp header-compression iphc-format periodic-refresh
  ip sap listen
+ ip sticky-arp
+ no ip sticky-arp
+ ip sticky-arp ignore
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167
@@ -165,6 +172,9 @@ interface Ethernet0
  no port-channel port load-defer
  port-type nni
  priority-flow-control mode auto
+ private-vlan mapping 1001
+ private-vlan mapping add 1002
+ private-vlan mapping remove 1001
  pvc 8/35
   dialer pool-member 1
   encapsulation aal5snap

@@ -31,7 +31,7 @@ import org.batfish.question.QuestionPlugin;
 @AutoService(Plugin.class)
 public class AssertQuestionPlugin extends QuestionPlugin {
 
-  public static class AssertAnswerElement implements AnswerElement {
+  public static class AssertAnswerElement extends AnswerElement {
 
     private Boolean _fail;
 
@@ -89,10 +89,9 @@ public class AssertQuestionPlugin extends QuestionPlugin {
       nodesQuestion.setSummary(false);
       NodesAnswerer nodesAnswerer = new NodesAnswerer(nodesQuestion, _batfish);
       AnswerElement nodesAnswer = nodesAnswerer.answer();
-      BatfishObjectMapper mapper = new BatfishObjectMapper();
       String nodesAnswerStr = null;
       try {
-        nodesAnswerStr = mapper.writeValueAsString(nodesAnswer);
+        nodesAnswerStr = BatfishObjectMapper.writePrettyString(nodesAnswer);
       } catch (IOException e) {
         throw new BatfishException("Could not get JSON string from nodes answer", e);
       }

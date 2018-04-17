@@ -1,0 +1,9 @@
+#
+set system host-name routing-instance-type
+#
+set routing-instances ri-forwarding instance-type forwarding
+set routing-instances ri-l2vpn instance-type l2vpn
+set routing-instances ri-virtual-router instance-type virtual-router
+set routing-instances ri-virtual-switch instance-type virtual-switch
+set routing-instances ri-vrf instance-type vrf
+#

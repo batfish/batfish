@@ -13,7 +13,7 @@ cc_certificate_chain
 
 cc_lookup
 :
-   LOOKUP ~NEWLINE* NEWLINE
+   LOOKUP null_rest_of_line
 ;
 
 cc_server
@@ -57,7 +57,7 @@ ccs_null
       | ISSUER_NAME
       | SHUTDOWN
       | SMTP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cctpoint_null
@@ -70,7 +70,7 @@ cctpoint_null
       | KEYPAIR
       | SUBJECT_NAME
       | VALIDATION_USAGE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cctpool_null
@@ -78,7 +78,7 @@ cctpool_null
    NO?
    (
       AUTO_IMPORT
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cd_null
@@ -86,12 +86,12 @@ cd_null
    NO?
    (
       VERSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cd_set
 :
-   SET ~NEWLINE* NEWLINE
+   SET null_rest_of_line
 ;
 
 certificate
@@ -105,7 +105,7 @@ ci1_null
       AM_DISABLE
       | ENABLE
       | IPSEC_OVER_TCP
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ci1_policy
@@ -125,7 +125,7 @@ ci1p_null
       | GROUP
       | HASH
       | LIFETIME
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ci2_keyring
@@ -141,7 +141,7 @@ ci2_null
    (
       ENABLE
       | REMOTE_ACCESS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ci2_policy
@@ -182,7 +182,7 @@ ci2kp_null
    (
       ADDRESS
       | PRE_SHARED_KEY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ci2pol_null
@@ -195,7 +195,7 @@ ci2pol_null
       | LIFETIME
       | PRF
       | PROPOSAL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ci2prf_null
@@ -205,7 +205,7 @@ ci2prf_null
       AUTHENTICATION
       | KEYRING
       | MATCH
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ci2prp_null
@@ -215,7 +215,7 @@ ci2prp_null
       ENCRYPTION
       | GROUP
       | INTEGRITY
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cip_ikev2
@@ -230,7 +230,7 @@ cip_null
       | IKEV1
       | NAT_TRANSPARENCY
       | SECURITY_ASSOCIATION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cip_profile
@@ -262,7 +262,7 @@ cipi2ip_null
    NO?
    (
       PROTOCOL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cipprf_set
@@ -279,7 +279,7 @@ cipprf_set_null
 :
    (
       IKEV2_PROFILE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cipprf_set_pfs
@@ -312,7 +312,7 @@ cis_null
       | KEY
       | NAT
       | NAT_TRAVERSAL
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cis_policy
@@ -384,7 +384,7 @@ cispol_null
    (
       PRF
       | VERSION
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cisprf_keyring
@@ -408,7 +408,7 @@ cisprf_null
    (
       REVERSE_ROUTE
       | VRF
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ck_null
@@ -416,12 +416,12 @@ ck_null
    (
       GENERATE
       | PARAM
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ck_pubkey_chain
 :
-   PUBKEY_CHAIN ~NEWLINE* NEWLINE ckp_named_key*
+   PUBKEY_CHAIN null_rest_of_line ckp_named_key*
 ;
 
 ckp_named_key
@@ -443,7 +443,7 @@ ckpn_null
    NO?
    (
       ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ckr_local_address
@@ -468,7 +468,7 @@ cpki_null
 :
    (
       TOKEN
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cpki_server
@@ -503,7 +503,7 @@ cpkis_null
       | DATABASE
       | GRANT
       | ISSUER_NAME
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 cpkit_null
@@ -516,7 +516,7 @@ cpkit_null
       | SERIAL_NUMBER
       | SUBJECT_NAME
       | VALIDATION_USAGE
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 crypto_ca
@@ -549,7 +549,7 @@ crypto_dynamic_map
 
 crypto_engine
 :
-   ENGINE ~NEWLINE* NEWLINE
+   ENGINE null_rest_of_line
 ;
 
 crypto_ikev1
@@ -633,7 +633,7 @@ crypto_map_ii_null
       DESCRIPTION
       | REVERSE_ROUTE
       | SET
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 crypto_map_ipsec_isakmp
@@ -656,7 +656,7 @@ crypto_map_null
       | MATCH
       | REDUNDANCY
       | SET
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 crypto_pki
@@ -692,7 +692,7 @@ kk_null
       | CRYPTOGRAPHIC_ALGORITHM
       | KEY_STRING
       | SEND_LIFETIME
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 ike_encryption
@@ -724,8 +724,13 @@ ipsec_authentication
 ipsec_encryption
 :
    (
-      ESP_AES
+      (ESP_AES strength = DEC?)
+      | ESP_DES
       | ESP_3DES
+      | ESP_GCM
+      | ESP_GMAC
+      | ESP_NULL
+      | ESP_SEAL
    )
 ;
 

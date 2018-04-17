@@ -30,7 +30,7 @@ import org.batfish.datamodel.questions.Question;
 @AutoService(Plugin.class)
 public class RoutesQuestionPlugin extends QuestionPlugin {
 
-  public static class RoutesAnswerElement implements AnswerElement {
+  public static class RoutesAnswerElement extends AnswerElement {
 
     private static final String PROP_ADDED = "added";
 
@@ -336,24 +336,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     @Override
     public RoutesAnswerElement answer() {
       RoutesQuestion question = (RoutesQuestion) _question;
-      if (question._againstEnvironment && question._fromEnvironment) {
-        throw new BatfishException(
-            String.format(
-                "%s and %s flags are mutually exclusive",
-                RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_FROM_ENVIRONMENT));
-      }
-      if (question._againstEnvironment && question._detail) {
-        throw new BatfishException(
-            String.format(
-                "%s and %s flags together are currently unsupported",
-                RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_DETAIL));
-      }
-      if (question._fromEnvironment && question._detail) {
-        throw new BatfishException(
-            String.format(
-                "%s and %s flags together are currently unsupported",
-                RoutesQuestion.PROP_FROM_ENVIRONMENT, RoutesQuestion.PROP_DETAIL));
-      }
       Set<String> includeNodes =
           question.getNodeRegex().getMatchingNodes(_batfish.loadConfigurations());
       RoutesAnswerElement answerElement;
@@ -446,11 +428,42 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
     private boolean _useCompression;
 
-    public RoutesQuestion() {
-      _nodeRegex = NodesSpecifier.ALL;
-      _prefixSpace = new PrefixSpace();
-      _protocols = new TreeSet<>();
-      _useCompression = false;
+    @JsonCreator
+    public RoutesQuestion(
+        @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
+        @JsonProperty(PROP_PREFIX_SPACE) PrefixSpace prefixSpace,
+        @JsonProperty(PROP_PROTOCOLS) SortedSet<RoutingProtocol> protocols,
+        @JsonProperty(PROP_AGAINST_ENVIRONMENT) Boolean againstEnvironment,
+        @JsonProperty(PROP_FROM_ENVIRONMENT) Boolean fromEnvironment,
+        @JsonProperty(PROP_USE_COMPRESSION) Boolean useCompression,
+        @JsonProperty(PROP_DETAIL) Boolean detail) {
+      _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
+      _prefixSpace = prefixSpace == null ? new PrefixSpace() : prefixSpace;
+      _protocols = protocols == null ? new TreeSet<>() : protocols;
+      _againstEnvironment = againstEnvironment != null && againstEnvironment.booleanValue();
+      _fromEnvironment = fromEnvironment != null && fromEnvironment.booleanValue();
+      _useCompression = useCompression != null && useCompression.booleanValue();
+      _detail = detail != null && detail.booleanValue();
+
+      // sanity check
+      if (_againstEnvironment && _fromEnvironment) {
+        throw new BatfishException(
+            String.format(
+                "%s and %s flags are mutually exclusive",
+                RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_FROM_ENVIRONMENT));
+      }
+      if (_againstEnvironment && _detail) {
+        throw new BatfishException(
+            String.format(
+                "%s and %s flags together are currently unsupported",
+                RoutesQuestion.PROP_AGAINST_ENVIRONMENT, RoutesQuestion.PROP_DETAIL));
+      }
+      if (_fromEnvironment && _detail) {
+        throw new BatfishException(
+            String.format(
+                "%s and %s flags together are currently unsupported",
+                RoutesQuestion.PROP_FROM_ENVIRONMENT, RoutesQuestion.PROP_DETAIL));
+      }
     }
 
     @JsonProperty(PROP_AGAINST_ENVIRONMENT)
@@ -497,41 +510,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     public SortedSet<RoutingProtocol> getProtocols() {
       return _protocols;
     }
-
-    @JsonProperty(PROP_AGAINST_ENVIRONMENT)
-    public void setAgainstEnvironment(boolean againstEnvironment) {
-      _againstEnvironment = againstEnvironment;
-    }
-
-    @JsonProperty(PROP_DETAIL)
-    public void setDetail(boolean detail) {
-      _detail = detail;
-    }
-
-    @JsonProperty(PROP_FROM_ENVIRONMENT)
-    public void setFromEnvironment(boolean fromEnvironment) {
-      _fromEnvironment = fromEnvironment;
-    }
-
-    @JsonProperty(PROP_NODE_REGEX)
-    public void setNodeRegex(NodesSpecifier nodeRegex) {
-      _nodeRegex = nodeRegex;
-    }
-
-    @JsonProperty(PROP_PREFIX_SPACE)
-    public void setPrefixSpace(PrefixSpace prefixSpace) {
-      _prefixSpace = prefixSpace;
-    }
-
-    @JsonProperty(PROP_PROTOCOLS)
-    public void setProtocols(SortedSet<RoutingProtocol> protocols) {
-      _protocols = protocols;
-    }
-
-    @JsonProperty(PROP_USE_COMPRESSION)
-    public void setUseCompression(boolean useCompression) {
-      _useCompression = useCompression;
-    }
   }
 
   @Override
@@ -541,6 +519,6 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new RoutesQuestion();
+    return new RoutesQuestion(null, null, null, null, null, null, null);
   }
 }

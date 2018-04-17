@@ -1,5 +1,8 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +30,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -53,6 +57,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -105,6 +110,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private final Set<Long> _allStandardCommunities;
 
   private final Map<String, BaseApplication> _applications;
+
+  private final Map<String, ApplicationSet> _applicationSets;
 
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
 
@@ -179,6 +186,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
     _allStandardCommunities = new HashSet<>();
     _applications = new TreeMap<>();
+    _applicationSets = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
     _defaultCrossZoneAction = LineAction.ACCEPT;
@@ -295,7 +303,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Ip, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Ip ip = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
+      BgpNeighbor neighbor = new BgpNeighbor(ip, _c, false);
       neighbor.setVrf(vrfName);
 
       // route reflection
@@ -339,6 +347,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ebgpMultihop = false;
       }
       neighbor.setEbgpMultihop(ebgpMultihop);
+      neighbor.setEnforceFirstAs(firstNonNull(ig.getEnforceFirstAs(), Boolean.FALSE));
       Integer loops = ig.getLoops();
       boolean allowLocalAsIn = loops != null && loops > 0;
       neighbor.setAllowLocalAsIn(allowLocalAsIn);
@@ -503,7 +512,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
           for (InterfaceAddress address : iface.getAllAddresses()) {
-            if (address.getPrefix().contains(ip)) {
+            if (address.getPrefix().containsIp(ip)) {
               localIp = address.getIp();
               break outerloop;
             }
@@ -1130,6 +1139,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
+    newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
     Zone zone = _interfaceZones.get(iface);
     if (zone != null) {
       String zoneName = zone.getName();
@@ -1290,11 +1300,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             "missing action in firewall filter: '" + name + "', term: '" + term.getName() + "'");
         action = LineAction.REJECT;
       }
-      IpAccessListLine line = new IpAccessListLine();
-      line.setName(term.getName());
-      line.setAction(action);
+      HeaderSpace.Builder matchCondition = HeaderSpace.builder();
       for (FwFrom from : term.getFroms()) {
-        from.applyTo(line, this, _w, _c);
+        from.applyTo(matchCondition, this, _w, _c);
       }
       boolean addLine =
           term.getFromApplications().isEmpty()
@@ -1307,9 +1315,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
         from.applyTo(lines, _w);
       }
       for (FwFromApplication fromApplication : term.getFromApplications()) {
-        fromApplication.applyTo(line, lines, _w);
+        fromApplication.applyTo(this, matchCondition, action, lines, _w);
       }
       if (addLine) {
+        IpAccessListLine line =
+            IpAccessListLine.builder()
+                .setAction(action)
+                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
+                .setName(term.getName())
+                .build();
         lines.add(line);
       }
     }
@@ -1906,33 +1920,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // static routes
       for (StaticRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getStaticRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(route);
         vrf.getStaticRoutes().add(newStaticRoute);
       }
 
       // aggregate routes
       for (AggregateRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getAggregateRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
       }
 
       // generated routes
       for (GeneratedRoute route :
-          _defaultRoutingInstance
-              .getRibs()
-              .get(RoutingInformationBase.RIB_IPV4_UNICAST)
-              .getGeneratedRoutes()
-              .values()) {
+          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
@@ -1991,7 +1993,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // mark references to authentication key chain that may not appear in data model
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
+    markStructure(
+        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
+        JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
+        ImmutableList.of(_applications, _applicationSets));
+    markStructure(
+        JuniperStructureType.APPLICATION,
+        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
+        _applications);
+    markStructure(
+        JuniperStructureType.APPLICATION_SET,
+        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,
+        _applicationSets);
+    markStructure(
+        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
+
     // warn about unreferenced data structures
+    warnUnusedStructure(_applications, JuniperStructureType.APPLICATION);
+    warnUnusedStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
     warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
     warnUnreferencedDhcpRelayServerGroups();
@@ -2160,7 +2179,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
-      if (filter.getFamily().equals(Family.INET) && filter.isUnused()) {
+      if (filter.isUnused()) {
         unused(JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
       }
     }
@@ -2237,5 +2256,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         unused(JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
       }
     }
+  }
+
+  public Map<String, ApplicationSet> getApplicationSets() {
+    return _applicationSets;
   }
 }

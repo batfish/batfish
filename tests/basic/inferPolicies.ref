@@ -1,9 +1,12 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
-      "roleConsistencyQuestions" : [
-        {
+[
+  {
+    "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerElement",
+    "roleConsistencyQuestions" : [
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
           "differential" : false,
           "propertyName" : "LoggingServers",
@@ -32,7 +35,62 @@
             ]
           }
         },
-        {
+        "instance" : {
+          "instanceName" : "sameServers LoggingServers"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "definition" : {
+                  "method" : {
+                    "filter" : "$.definition[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<Ip>"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_SERVERS for role ${role}: all nodes should have ${name} equal to ${definition}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.RoleConsistencyQuestionPlugin$RoleConsistencyQuestion",
           "differential" : false,
           "propertyName" : "NtpServers",
@@ -61,7 +119,62 @@
             ]
           }
         },
-        {
+        "instance" : {
+          "instanceName" : "sameServers NtpServers"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "definition" : {
+                  "method" : {
+                    "filter" : "$.definition[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<Ip>"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_SERVERS for role ${role}: all nodes should have ${name} equal to ${definition}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
@@ -91,7 +204,62 @@
           },
           "structType" : "CommunityList"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameName CommunityList"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_NAME for role ${role}: all nodes should define a ${structType} named ${name}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
@@ -121,7 +289,62 @@
           },
           "structType" : "Interface"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameName Interface"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_NAME for role ${role}: all nodes should define a ${structType} named ${name}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
@@ -151,7 +374,62 @@
           },
           "structType" : "IpAccessList"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameName IpAccessList"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_NAME for role ${role}: all nodes should define a ${structType} named ${name}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
@@ -181,7 +459,62 @@
           },
           "structType" : "RouteFilterList"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameName RouteFilterList"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_NAME for role ${role}: all nodes should define a ${structType} named ${name}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameName",
@@ -211,7 +544,62 @@
           },
           "structType" : "Vrf"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameName Vrf"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_NAME for role ${role}: all nodes should define a ${structType} named ${name}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameDefinition",
@@ -241,7 +629,69 @@
           },
           "structType" : "CommunityList"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameDefinition CommunityList"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structDefinition" : {
+                  "method" : {
+                    "filter" : "$.structDefinition",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "Object"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_DEFINITION for role ${role}: all nodes should define a ${structType} named ${name} with definition ${structDefinition}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameDefinition",
@@ -271,7 +721,69 @@
           },
           "structType" : "IpAccessList"
         },
-        {
+        "instance" : {
+          "instanceName" : "sameDefinition IpAccessList"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structDefinition" : {
+                  "method" : {
+                    "filter" : "$.structDefinition",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "Object"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_DEFINITION for role ${role}: all nodes should define a ${structType} named ${name} with definition ${structDefinition}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      },
+      {
+        "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
+        "debug" : false,
+        "differential" : false,
+        "innerQuestion" : {
           "class" : "org.batfish.question.NamedStructureRoleConsistencyQuestionPlugin$NamedStructureRoleConsistencyQuestion",
           "differential" : false,
           "hypothesis" : "sameDefinition",
@@ -300,18 +812,65 @@
             ]
           },
           "structType" : "RouteFilterList"
-        }
-      ]
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesQuestion",
-    "differential" : false
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 0
+        },
+        "instance" : {
+          "instanceName" : "sameDefinition RouteFilterList"
+        },
+        "paths" : [
+          {
+            "displayHints" : {
+              "compositions" : {
+                "outliers" : {
+                  "dictionary" : {
+                    "name" : "outlierNames"
+                  },
+                  "schema" : "List<Node>"
+                }
+              },
+              "extractions" : {
+                "outlierNames" : {
+                  "method" : {
+                    "filter" : "$.outliers[*]",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "List<String>"
+                },
+                "role" : {
+                  "method" : {
+                    "filter" : "$.role",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "name" : {
+                  "method" : {
+                    "filter" : "$.name",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structType" : {
+                  "method" : {
+                    "filter" : "$.structType",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "String"
+                },
+                "structDefinition" : {
+                  "method" : {
+                    "filter" : "$.structDefinition",
+                    "use" : "SUFFIXOFSUFFIX"
+                  },
+                  "schema" : "Object"
+                }
+              },
+              "textDesc" : "Hypothesis SAME_DEFINITION for role ${role}: all nodes should define a ${structType} named ${name} with definition ${structDefinition}, but ${outliers} do not."
+            },
+            "path" : "$.answers[?(@.outliers)]",
+            "suffix" : true
+          }
+        ]
+      }
+    ]
   }
-}
+]

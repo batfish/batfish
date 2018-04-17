@@ -9,5 +9,10 @@
       }
     }
   ],
-  "status" : "SUCCESS"
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
 }

@@ -124,9 +124,8 @@ public class Encoder {
   }
 
   /**
-   * Create an encoder object while possibly reusing the partial encoding of another encoder. mkIf
-   * the context and solver are null, then a new encoder is created. Otherwise the old encoder is
-   * used.
+   * Create an encoder object while possibly reusing the partial encoding of another encoder. If the
+   * context and solver are null, then a new encoder is created. Otherwise the old encoder is used.
    */
   private Encoder(
       Settings settings,

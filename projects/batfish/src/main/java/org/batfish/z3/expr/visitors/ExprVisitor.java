@@ -9,6 +9,8 @@ import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IdExpr;
 import org.batfish.z3.expr.IfExpr;
+import org.batfish.z3.expr.IfThenElse;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.ListExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -22,8 +24,6 @@ import org.batfish.z3.expr.VarIntExpr;
 
 public interface ExprVisitor {
   void visitAndExpr(AndExpr andExpr);
-
-  void visitStateExpr(StateExpr stateExpr);
 
   void visitBitVecExpr(BitVecExpr bitVecExpr);
 
@@ -41,9 +41,13 @@ public interface ExprVisitor {
 
   void visitIfExpr(IfExpr ifExpr);
 
+  void visitIfThenElse(IfThenElse ifThenElse);
+
   void visitListExpr(ListExpr listExpr);
 
   void visitLitIntExpr(LitIntExpr litIntExpr);
+
+  void visitIpSpaceMatchExpr(IpSpaceMatchExpr matchIpSpaceExpr);
 
   void visitNotExpr(NotExpr notExpr);
 
@@ -54,6 +58,8 @@ public interface ExprVisitor {
   void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr);
 
   void visitSaneExpr(SaneExpr saneExpr);
+
+  void visitStateExpr(StateExpr stateExpr);
 
   void visitTrueExpr(TrueExpr trueExpr);
 

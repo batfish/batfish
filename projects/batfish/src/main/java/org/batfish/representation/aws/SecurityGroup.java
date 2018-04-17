@@ -1,10 +1,21 @@
 package org.batfish.representation.aws;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.batfish.common.BatfishLogger;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -20,6 +31,8 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   private final List<IpPermissions> _ipPermsEgress;
 
   private final List<IpPermissions> _ipPermsIngress;
+
+  private final Set<IpWildcard> _usersIpSpace = new HashSet<>();
 
   public SecurityGroup(JSONObject jObj, BatfishLogger logger) throws JSONException {
     _ipPermsEgress = new LinkedList<>();
@@ -37,23 +50,89 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   private void addEgressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toEgressIpAccessListLine());
+      HeaderSpace headerSpace = ipPerms.toEgressIpAccessListLine(region);
+      // Destination IPs should have been populated using either SG or IP ranges,  if not then this
+      // Ip perm is incomplete
+      if (!headerSpace.getDstIps().isEmpty()) {
+        accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
+      }
     }
   }
 
   private void addIngressAccessLines(
-      List<IpPermissions> permsList, List<IpAccessListLine> accessList) {
+      List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
-      accessList.add(ipPerms.toIngressIpAccessListLine());
+      HeaderSpace headerSpace = ipPerms.toIngressIpAccessListLine(region);
+      // Source IPs should have been populated using either SG or IP ranges, if not then this Ip
+      // perm is incomplete
+      if (!headerSpace.getSrcIps().isEmpty()) {
+        accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
+      }
     }
   }
 
-  public void addInOutAccessLines(
+  private void addReverseAcls(
       List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
-    addIngressAccessLines(_ipPermsIngress, inboundRules);
-    addEgressAccessLines(_ipPermsEgress, outboundRules);
+
+    List<IpAccessListLine> reverseInboundRules =
+        inboundRules
+            .stream()
+            .map(
+                ipAccessListLine -> {
+                  HeaderSpace srcHeaderSpace =
+                      HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+                  return IpAccessListLine.builder()
+                      .setMatchCondition(
+                          new MatchHeaderSpace(
+                              HeaderSpace.builder()
+                                  .setIpProtocols(srcHeaderSpace.getIpProtocols())
+                                  .setDstIps(srcHeaderSpace.getSrcIps())
+                                  .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .build()))
+                      .setAction(ipAccessListLine.getAction())
+                      .build();
+                })
+            .collect(ImmutableList.toImmutableList());
+
+    List<IpAccessListLine> reverseOutboundRules =
+        outboundRules
+            .stream()
+            .map(
+                ipAccessListLine -> {
+                  HeaderSpace srcHeaderSpace =
+                      HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
+                  return IpAccessListLine.builder()
+                      .setMatchCondition(
+                          new MatchHeaderSpace(
+                              HeaderSpace.builder()
+                                  .setIpProtocols(srcHeaderSpace.getIpProtocols())
+                                  .setSrcIps(srcHeaderSpace.getDstIps())
+                                  .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .build()))
+                      .setAction(ipAccessListLine.getAction())
+                      .build();
+                })
+            .collect(ImmutableList.toImmutableList());
+
+    // denying SYN-only packets to prevent new TCP connections
+    IpAccessListLine rejectSynOnly =
+        IpAccessListLine.rejectingHeaderSpace(
+            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
+    inboundRules.add(rejectSynOnly);
+    outboundRules.add(rejectSynOnly);
+
+    // adding reverse inbound/outbound rules for stateful allowance of packets
+    inboundRules.addAll(reverseOutboundRules);
+    outboundRules.addAll(reverseInboundRules);
+  }
+
+  public void addInOutAccessLines(
+      List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules, Region region) {
+    addIngressAccessLines(_ipPermsIngress, inboundRules, region);
+    addEgressAccessLines(_ipPermsEgress, outboundRules, region);
+    addReverseAcls(inboundRules, outboundRules);
   }
 
   public String getGroupId() {
@@ -75,6 +154,21 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
 
   public List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
+  }
+
+  public Set<IpWildcard> getUsersIpSpace() {
+    return _usersIpSpace;
+  }
+
+  public void updateConfigIps(Configuration configuration) {
+    configuration
+        .getInterfaces()
+        .values()
+        .stream()
+        .flatMap(iface -> iface.getAllAddresses().stream())
+        .map(InterfaceAddress::getIp)
+        .map(IpWildcard::new)
+        .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
   private void initIpPerms(

@@ -1,83 +1,47 @@
-{
-  "answerElements" : [
-    {
-      "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
-      "results" : {
-        "0" : {
-          "numResults" : 3,
-          "result" : {
-            "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet0/0'->'mtu'" : {
-              "concretePath" : [
-                "'nodes'",
-                "'as3border1'",
-                "'interfaces'",
-                "'GigabitEthernet0/0'",
-                "'mtu'"
-              ],
-              "suffix" : 1500
-            },
-            "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet1/0'->'mtu'" : {
-              "concretePath" : [
-                "'nodes'",
-                "'as3border1'",
-                "'interfaces'",
-                "'GigabitEthernet1/0'",
-                "'mtu'"
-              ],
-              "suffix" : 1500
-            },
-            "'nodes'->'as3border1'->'interfaces'->'Loopback0'->'mtu'" : {
-              "concretePath" : [
-                "'nodes'",
-                "'as3border1'",
-                "'interfaces'",
-                "'Loopback0'",
-                "'mtu'"
-              ],
-              "suffix" : 1500
-            }
-          }
-        }
-      },
-      "summary" : {
-        "numFailed" : 0,
-        "numPassed" : 0,
-        "numResults" : 3
-      }
-    }
-  ],
-  "question" : {
-    "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
-    "differential" : false,
-    "innerQuestion" : {
-      "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
-      "differential" : false,
-      "nodeRegex" : ".*",
-      "summary" : false
-    },
-    "paths" : [
-      {
-        "exceptions" : [
-          {
+[
+  {
+    "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathAnswerElement",
+    "results" : {
+      "0" : {
+        "numResults" : 3,
+        "result" : {
+          "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet0/0'->'mtu'" : {
             "concretePath" : [
               "'nodes'",
               "'as3border1'",
               "'interfaces'",
-              "'Ethernet0/0'",
+              "'GigabitEthernet0/0'",
+              "'mtu'"
+            ],
+            "suffix" : 1500
+          },
+          "'nodes'->'as3border1'->'interfaces'->'GigabitEthernet1/0'->'mtu'" : {
+            "concretePath" : [
+              "'nodes'",
+              "'as3border1'",
+              "'interfaces'",
+              "'GigabitEthernet1/0'",
+              "'mtu'"
+            ],
+            "suffix" : 1500
+          },
+          "'nodes'->'as3border1'->'interfaces'->'Loopback0'->'mtu'" : {
+            "concretePath" : [
+              "'nodes'",
+              "'as3border1'",
+              "'interfaces'",
+              "'Loopback0'",
               "'mtu'"
             ],
             "suffix" : 1500
           }
-        ],
-        "path" : "$.nodes['as3border1']..mtu",
-        "suffix" : true
+        }
       }
-    ]
-  },
-  "status" : "SUCCESS",
-  "summary" : {
-    "numFailed" : 0,
-    "numPassed" : 0,
-    "numResults" : 3
+    },
+    "summary" : {
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 3
+    }
   }
-}
+]

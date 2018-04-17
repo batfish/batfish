@@ -1,0 +1,6 @@
+#
+set system host-name ospf-psk
+#
+set protocols ospf area 0.0.0.0 interface xe-0/0/0.0 authentication md5 0 key "some-unencrypted-key"
+set protocols ospf area 0.0.0.1 interface xe-0/0/0.1 authentication md5 0 key "$9$SnXe87GUHfT3wYk.P5/9SrevWxJZjq.5JGu1IReKaZUjHmQz6p0B.PF/CpEhVws"
+#

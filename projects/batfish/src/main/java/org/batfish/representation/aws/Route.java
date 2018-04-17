@@ -1,16 +1,19 @@
 package org.batfish.representation.aws;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Pair;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.codehaus.jettison.json.JSONException;
@@ -81,7 +84,8 @@ public class Route implements Serializable {
       @Nullable Ip igwAddress,
       @Nullable Ip vgwAddress,
       Subnet subnet,
-      Configuration subnetCfgNode) {
+      Configuration subnetCfgNode,
+      Warnings warnings) {
     // setting the common properties
     StaticRoute.Builder srBuilder =
         StaticRoute.builder()
@@ -129,7 +133,7 @@ public class Route implements Serializable {
             Set<Ip> networkInterfaceIps = new TreeSet<>();
             networkInterfaceIps.addAll(networkInterface.getIpAddressAssociations().keySet());
             Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
-            if (!subnet.getCidrBlock().contains(lowestIp)) {
+            if (!subnet.getCidrBlock().containsIp(lowestIp)) {
               throw new BatfishException(
                   "Ip of network interface specified in static route not in containing subnet");
             }
@@ -157,9 +161,18 @@ public class Route implements Serializable {
             InterfaceAddress instanceIfaceAddress = instanceLink.getSecond();
             Interface instanceIface =
                 Utils.newInterface(instanceIfaceName, instanceCfgNode, instanceIfaceAddress);
-            Instance instance = region.getInstances().get(instanceId);
-            instanceIface.setIncomingFilter(instance.getInAcl());
-            instanceIface.setOutgoingFilter(instance.getOutAcl());
+            instanceIface.setIncomingFilter(
+                instanceCfgNode
+                    .getIpAccessLists()
+                    .getOrDefault(
+                        Region.SG_INGRESS_ACL_NAME,
+                        new IpAccessList(Region.SG_INGRESS_ACL_NAME, new LinkedList<>())));
+            instanceIface.setOutgoingFilter(
+                instanceCfgNode
+                    .getIpAccessLists()
+                    .getOrDefault(
+                        Region.SG_EGRESS_ACL_NAME,
+                        new IpAccessList(Region.SG_EGRESS_ACL_NAME, new LinkedList<>())));
             Ip nextHopIp = instanceIfaceAddress.getIp();
             srBuilder.setNextHopIp(nextHopIp);
           }
@@ -177,14 +190,12 @@ public class Route implements Serializable {
           Configuration remoteVpcCfgNode =
               awsConfiguration.getConfigurationNodes().get(remoteVpcId);
           if (remoteVpcCfgNode == null) {
-            awsConfiguration
-                .getWarnings()
-                .redFlag(
-                    "VPC \""
-                        + localVpcId
-                        + "\" cannot peer with non-existent VPC: \""
-                        + remoteVpcId
-                        + "\"");
+            warnings.redFlag(
+                "VPC \""
+                    + localVpcId
+                    + "\" cannot peer with non-existent VPC: \""
+                    + remoteVpcId
+                    + "\"");
             return null;
           }
 
@@ -226,14 +237,12 @@ public class Route implements Serializable {
 
         case Instance:
           // TODO: create route for instance
-          awsConfiguration
-              .getWarnings()
-              .redFlag(
-                  "Skipping creating route to "
-                      + _destinationCidrBlock
-                      + " for instance: \""
-                      + _target
-                      + "\"");
+          warnings.redFlag(
+              "Skipping creating route to "
+                  + _destinationCidrBlock
+                  + " for instance: \""
+                  + _target
+                  + "\"");
           return null;
 
         default:

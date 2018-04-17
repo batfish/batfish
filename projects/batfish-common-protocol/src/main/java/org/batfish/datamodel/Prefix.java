@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public final class Prefix implements Comparable<Prefix>, Serializable {
+public final class Prefix implements Comparable<Prefix>, Serializable, IpSpace {
 
   public static final int MAX_PREFIX_LENGTH = 32;
 
@@ -25,6 +26,22 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       wildcard |= (1L << i);
     }
     return wildcard;
+  }
+
+  @JsonCreator
+  public static Prefix parse(String text) {
+    String[] parts = text.split("/");
+    if (parts.length != 2) {
+      throw new BatfishException("Invalid prefix string: \"" + text + "\"");
+    }
+    Ip ip = new Ip(parts[0]);
+    int prefixLength;
+    try {
+      prefixLength = Integer.parseInt(parts[1]);
+    } catch (NumberFormatException e) {
+      throw new BatfishException("Invalid prefix length: \"" + parts[1] + "\"", e);
+    }
+    return new Prefix(ip, prefixLength);
   }
 
   private Ip _ip;
@@ -47,20 +64,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     this(address, mask.numSubnetBits());
   }
 
-  @JsonCreator
-  public static Prefix parse(String text) {
-    String[] parts = text.split("/");
-    if (parts.length != 2) {
-      throw new BatfishException("Invalid prefix string: \"" + text + "\"");
-    }
-    Ip ip = new Ip(parts[0]);
-    int prefixLength;
-    try {
-      prefixLength = Integer.parseInt(parts[1]);
-    } catch (NumberFormatException e) {
-      throw new BatfishException("Invalid prefix length: \"" + parts[1] + "\"", e);
-    }
-    return new Prefix(ip, prefixLength);
+  @Override
+  public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
+    return visitor.visitPrefix(this);
   }
 
   @Override
@@ -72,15 +78,24 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return Integer.compare(_prefixLength, rhs._prefixLength);
   }
 
-  public boolean contains(Ip ip) {
+  @Override
+  public boolean containsIp(Ip ip) {
     long start = _ip.asLong();
     long end = getNetworkEnd(start, _prefixLength);
     long ipAsLong = ip.asLong();
     return start <= ipAsLong && ipAsLong <= end;
   }
 
+  @Override
+  public IpSpace complement() {
+    return AclIpSpace.builder()
+        .thenRejecting(this)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
+  }
+
   public boolean containsPrefix(Prefix prefix) {
-    return contains(prefix._ip) && _prefixLength <= prefix._prefixLength;
+    return containsIp(prefix._ip) && _prefixLength <= prefix._prefixLength;
   }
 
   @Override
@@ -92,10 +107,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     }
     Prefix rhs = (Prefix) o;
     return _ip.equals(rhs._ip) && _prefixLength == rhs._prefixLength;
-  }
-
-  public Ip getStartIp() {
-    return _ip;
   }
 
   public Ip getEndIp() {
@@ -110,6 +121,10 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     int numWildcardBits = MAX_PREFIX_LENGTH - _prefixLength;
     long wildcardLong = numWildcardBitsToWildcardLong(numWildcardBits);
     return new Ip(wildcardLong);
+  }
+
+  public Ip getStartIp() {
+    return _ip;
   }
 
   @Override

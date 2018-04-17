@@ -247,6 +247,11 @@ netservice_alg
    | VOCERA
 ;
 
+null_rest_of_line
+:
+    ~NEWLINE* NEWLINE
+;
+
 ospf_route_type
 :
    (
@@ -497,7 +502,7 @@ variable_aclname
 variable_community_name
 :
    ~( NEWLINE | DOUBLE_QUOTE | GROUP | IPV4 | IPV6 | RO | RW | SDROWNER |
-   SYSTEMOWNER | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )+
+   SYSTEMOWNER | USE_ACL | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )
 ;
 
 variable_hostname

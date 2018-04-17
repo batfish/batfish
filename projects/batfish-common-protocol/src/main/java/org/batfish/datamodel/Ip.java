@@ -10,8 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class Ip implements Comparable<Ip>, Serializable {
+public class Ip implements Comparable<Ip>, Serializable, IpSpace {
 
   private static Map<Ip, BitSet> _addressBitsCache = new ConcurrentHashMap<>();
 
@@ -34,6 +35,25 @@ public class Ip implements Comparable<Ip>, Serializable {
   private static final long serialVersionUID = 1L;
 
   public static final Ip ZERO = new Ip(0L);
+
+  /**
+   * See {@link #getBitAtPosition(long, int)}. Equivalent to {@code getBitAtPosition(ip.asLong(),
+   * position)}
+   */
+  public static boolean getBitAtPosition(Ip ip, int position) {
+    return getBitAtPosition(ip.asLong(), position);
+  }
+
+  /**
+   * Return the boolean value of a bit at the given position.
+   *
+   * @param bits the representation of an IP address as a long
+   * @param position bit position (0 means most significant, 31 least significant)
+   * @return a boolean representation of the bit value
+   */
+  public static boolean getBitAtPosition(long bits, int position) {
+    return (bits & (1 << (Prefix.MAX_PREFIX_LENGTH - 1 - position))) != 0;
+  }
 
   private static long ipStrToLong(String addr) {
     String[] addrArray = addr.split("\\.");
@@ -92,6 +112,11 @@ public class Ip implements Comparable<Ip>, Serializable {
     _ip = ipStrToLong(ipAsString);
   }
 
+  @Override
+  public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
+    return visitor.visitIp(this);
+  }
+
   public long asLong() {
     return _ip;
   }
@@ -99,6 +124,19 @@ public class Ip implements Comparable<Ip>, Serializable {
   @Override
   public int compareTo(@Nullable Ip rhs) {
     return Long.compare(_ip, rhs._ip);
+  }
+
+  @Override
+  public boolean containsIp(Ip ip) {
+    return _ip == ip._ip;
+  }
+
+  @Override
+  public IpSpace complement() {
+    return AclIpSpace.builder()
+        .thenRejecting(this)
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
   }
 
   @Override
@@ -110,25 +148,6 @@ public class Ip implements Comparable<Ip>, Serializable {
     }
     Ip rhs = (Ip) o;
     return _ip == rhs._ip;
-  }
-
-  /**
-   * Return the boolean value of a bit at the given position.
-   *
-   * @param bits the representation of an IP address as a long
-   * @param position bit position (0 means most significant, 31 least significant)
-   * @return a boolean representation of the bit value
-   */
-  public static boolean getBitAtPosition(long bits, int position) {
-    return (bits & (1 << (Prefix.MAX_PREFIX_LENGTH - 1 - position))) != 0;
-  }
-
-  /**
-   * See {@link #getBitAtPosition(long, int)}. Equivalent to {@code getBitAtPosition(ip.asLong(),
-   * position)}
-   */
-  public static boolean getBitAtPosition(Ip ip, int position) {
-    return getBitAtPosition(ip.asLong(), position);
   }
 
   /** @deprecated In favor of much simpler {@link #getBitAtPosition(Ip, int)} */
@@ -154,14 +173,31 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public Ip getClassMask() {
     long firstOctet = _ip >> 24;
-    if (firstOctet <= 126) {
+    if (firstOctet <= 127) {
       return new Ip(0xFF000000L);
-    } else if (firstOctet >= 128 && firstOctet <= 191) {
+    } else if (firstOctet <= 191) {
       return new Ip(0XFFFF0000L);
-    } else if (firstOctet >= 192 && firstOctet <= 223) {
+    } else if (firstOctet <= 223) {
       return new Ip(0xFFFFFF00L);
     } else {
       throw new BatfishException("Cannot compute classmask");
+    }
+  }
+
+  /**
+   * Returns the size of an IPv4 network in IPv4 Address Class of this {@link Ip}. Returns {@code
+   * -1} if the class does not have a defined subnet size, e.g. the experimental subnet.
+   */
+  public int getClassNetworkSize() {
+    long firstOctet = _ip >> 24;
+    if (firstOctet <= 127) {
+      return 8;
+    } else if (firstOctet <= 191) {
+      return 16;
+    } else if (firstOctet <= 223) {
+      return 24;
+    } else {
+      return -1;
     }
   }
 
