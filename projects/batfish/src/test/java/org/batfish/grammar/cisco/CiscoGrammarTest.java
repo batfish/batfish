@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
@@ -12,6 +13,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -21,6 +24,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeNetworkObjectGroupAclName;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -61,10 +65,12 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
@@ -192,6 +198,44 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosObjectGroupNetwork() throws IOException {
+    Configuration c = parseConfig("ios-object-group-network");
+    Map<String, IpAccessList> acls = c.getIpAccessLists();
+
+    Ip ogn1TestIp = new Ip("1.128.0.0");
+    Ip ogn2TestIp1 = new Ip("2.0.0.0");
+    Ip ogn2TestIp2 = new Ip("2.0.0.1");
+    Flow ogn1Flow1 =
+        Flow.builder().setTag("").setIngressNode(c.getName()).setDstIp(ogn1TestIp).build();
+    Flow ogn1Flow2 =
+        Flow.builder().setTag("").setIngressNode(c.getName()).setSrcIp(ogn1TestIp).build();
+    Flow ogn2Flow1 =
+        Flow.builder().setTag("").setIngressNode(c.getName()).setSrcIp(ogn2TestIp1).build();
+    Flow ogn2Flow2 =
+        Flow.builder().setTag("").setIngressNode(c.getName()).setSrcIp(ogn2TestIp2).build();
+
+    /* Each object group should permit a flow with src or dst IP in its range. */
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn1"), accepts(ogn1Flow1, null, acls)));
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn1"), accepts(ogn1Flow2, null, acls)));
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn1"), rejects(ogn2Flow1, null, acls)));
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), rejects(ogn1Flow1, null, acls)));
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), accepts(ogn2Flow1, null, acls)));
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), accepts(ogn2Flow2, null, acls)));
   }
 
   @Test

@@ -212,6 +212,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
+  public static String computeNetworkObjectGroupAclName(String name) {
+    return String.format("~NETWORK_OBJECT_GROUP~%s~", name);
+  }
+
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
     Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
@@ -335,6 +339,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, NatPool> _natPools;
 
+  private final Map<String, NetworkObjectGroup> _networkObjectGroups;
+
   private final Set<String> _ntpAccessGroups;
 
   private String _ntpSourceInterface;
@@ -426,6 +432,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _managementAccessGroups = new TreeSet<>();
     _msdpPeerSaLists = new TreeSet<>();
     _natPools = new TreeMap<>();
+    _networkObjectGroups = new TreeMap<>();
     _ntpAccessGroups = new TreeSet<>();
     _pimAcls = new TreeSet<>();
     _pimRouteMaps = new TreeSet<>();
@@ -2398,6 +2405,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return new IpAccessList(name, lines);
   }
 
+  private IpAccessList toIpAccessList(NetworkObjectGroup networkObjectGroup) {
+    ImmutableList.Builder<IpAccessListLine> linesBuilder = ImmutableList.builder();
+    List<IpWildcard> oldLines = networkObjectGroup.getLines();
+    if (!oldLines.isEmpty()) {
+      linesBuilder.add(
+          IpAccessListLine.acceptingHeaderSpace(
+              HeaderSpace.builder().setSrcOrDstIps(oldLines).build()));
+    }
+    return IpAccessList.builder()
+        .setName(computeNetworkObjectGroupAclName(networkObjectGroup.getName()))
+        .setLines(linesBuilder.build())
+        .build();
+  }
+
   private org.batfish.datamodel.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.IsisProcess newProcess = new org.batfish.datamodel.IsisProcess();
@@ -3607,6 +3628,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
+    // convert each NetworkObjectGroup to IpAccessList
+    _networkObjectGroups
+        .values()
+        .stream()
+        .map(this::toIpAccessList)
+        .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
+
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
@@ -3854,6 +3882,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
     warnUnusedStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
     warnUnusedStructure(_natPools, CiscoStructureType.NAT_POOL);
+    warnUnusedStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
     warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
     warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
     warnUnusedPeerGroups();
@@ -4084,5 +4113,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_cf.getCable() != null) {
       warnUnusedStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
     }
+  }
+
+  public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
+    return _networkObjectGroups;
   }
 }
