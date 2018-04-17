@@ -23,6 +23,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_REDISTRIBUTE_OSPFV3_MAP("bgp redistribute ospfv3 route-map"),
   BGP_REDISTRIBUTE_RIP_MAP("bgp redistribute rip route-map"),
   BGP_REDISTRIBUTE_STATIC_MAP("bgp redistribute static route-map"),
+  BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP("bgp neighbor remote-as route-map"),
   BGP_ROUTE_MAP_OTHER("bgp otherwise in/outbound route-map"),
   BGP_UPDATE_SOURCE_INTERFACE("update-source interface"),
   BGP_VRF_AGGREGATE_ROUTE_MAP("bgp vrf aggregate-address route-map"),

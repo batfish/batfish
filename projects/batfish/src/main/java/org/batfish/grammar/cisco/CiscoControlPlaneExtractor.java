@@ -1689,9 +1689,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
     }
-    if (ctx.REMOTE_AS() != null) {
+    if (ctx.asnum != null) {
       int remoteAs = toInteger(ctx.asnum);
       _currentPeerGroup.setRemoteAs(remoteAs);
+    }
+    if (ctx.mapname != null) {
+      String routeMap = ctx.mapname.getText();
+      int line = ctx.mapname.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.ROUTE_MAP,
+          routeMap,
+          CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
+          line);
     }
     // TODO: verify if this is correct for nexus
     _currentPeerGroup.setActive(true);
