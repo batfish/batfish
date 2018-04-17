@@ -20,6 +20,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -1302,10 +1303,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
-    // Setup ACL based on zone policies (for merging with explicit egress ACL)
-    IpAccessList zoneAcl = null;
-    // Create this interface's zone ACL based on the policies for its zone
     List<AclLineMatchExpr> zonePolicies = new TreeList<>();
+    List<IpAccessListLine> zoneAclLines;
 
     // Default ACL that allows existing connections should be added to any security policy
     AclLineMatchExpr allowEstablishedConnections = new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION);
@@ -1316,30 +1315,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       zonePolicies.add(allowEstablishedConnections);
     } else {
-      // If there are zones but no applicable policies, allow only established connections (default
-      // firewall behavior)
+      // If a security policy is to be built but there are no applicable policies,
+      // allow only established connections (default firewall behavior)
       zonePolicies = ImmutableList.of(allowEstablishedConnections);
     }
 
-    // These policies need to be checked in order, so they will be lines in the security policy ACL
+    // Zone, global, and default policies need to be checked in order
+    // So they will be added as lines in the security policy ACL
     IpAccessListLine zonePoliciesLine =
         new IpAccessListLine(LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ZONE_POLICIES");
     IpAccessListLine defaultActionLine =
         new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY");
     if (_filters.get(ACL_NAME_GLOBAL_POLICY) != null) {
-      zoneAcl =
-          new IpAccessList(
-              name,
-              ImmutableList.of(
-                  zonePoliciesLine,
-                  new IpAccessListLine(
-                      LineAction.ACCEPT,
-                      new PermittedByAcl(ACL_NAME_GLOBAL_POLICY),
-                      "GLOBAL_POLICY"),
-                  defaultActionLine));
+      zoneAclLines =
+          ImmutableList.of(
+              zonePoliciesLine,
+              new IpAccessListLine(
+                  LineAction.ACCEPT, new PermittedByAcl(ACL_NAME_GLOBAL_POLICY), "GLOBAL_POLICY"),
+              defaultActionLine);
     } else {
-      zoneAcl = new IpAccessList(name, ImmutableList.of(zonePoliciesLine, defaultActionLine));
+      zoneAclLines = ImmutableList.of(zonePoliciesLine, defaultActionLine);
     }
+    IpAccessList zoneAcl = new IpAccessList(name, zoneAclLines);
     _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
   }
@@ -1348,7 +1345,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * Generate outgoing (egress) filter for the interface (from existing outgoing filter and zone
    * policy)
    */
-  IpAccessList buildOutgoingFilter(Interface iface, IpAccessList securityPolicyAcl) {
+  IpAccessList buildOutgoingFilter(Interface iface, @Nullable IpAccessList securityPolicyAcl) {
     String outAclName = iface.getOutgoingFilter();
     IpAccessList outAcl = null;
     if (outAclName != null) {
@@ -1369,7 +1366,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // Set outgoing filter based on the combination of zone policy and base outgoing filter
-    Set<AclLineMatchExpr> aclConjunctList = null;
+    Set<AclLineMatchExpr> aclConjunctList;
     if (securityPolicyAcl == null) {
       return outAcl;
     } else if (outAcl == null) {
@@ -1380,6 +1377,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               new PermittedByAcl(outAcl.getName()),
               new PermittedByAcl(securityPolicyAcl.getName()));
     }
+
     String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
     IpAccessList combinedAcl =
         new IpAccessList(
@@ -1392,11 +1390,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Convert a firewallFilter terms (headerSpace matching) and optional conjunctMatchExpr into a
+   * Convert firewallFilter terms (headerSpace matching) and optional conjunctMatchExpr into a
    * single ACL.
    */
   private IpAccessList fwTermsToIpAccessList(
-      String aclName, Collection<FwTerm> terms, AclLineMatchExpr conjunctMatchExpr)
+      String aclName, Collection<FwTerm> terms, @Nullable AclLineMatchExpr conjunctMatchExpr)
       throws VendorConversionException {
     List<IpAccessListLine> lines = new ArrayList<>();
     for (FwTerm term : terms) {
