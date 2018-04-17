@@ -41,9 +41,9 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       extends ReachabilityQuerySynthesizer.Builder<
           StandardReachabilityQuerySynthesizer, StandardReachabilityQuerySynthesizer.Builder> {
 
-    private Set<ForwardingAction> _actions;
+    protected Set<ForwardingAction> _actions;
 
-    private Set<String> _finalNodes;
+    protected Set<String> _finalNodes;
 
     @Override
     public StandardReachabilityQuerySynthesizer build() {
@@ -79,11 +79,11 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     return new Builder();
   }
 
-  private final Set<ForwardingAction> _actions;
+  protected final Set<ForwardingAction> _actions;
 
-  private final Set<String> _finalNodes;
+  protected final Set<String> _finalNodes;
 
-  private StandardReachabilityQuerySynthesizer(
+  protected StandardReachabilityQuerySynthesizer(
       @Nonnull Set<ForwardingAction> actions,
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Set<String> finalNodes,
@@ -97,7 +97,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
   }
 
   /** Create query condition for action at final node(s) */
-  private List<StateExpr> computeFinalActions() {
+  protected List<StateExpr> computeFinalActions() {
     ImmutableList.Builder<StateExpr> finalActionsBuilder = ImmutableList.builder();
     for (ForwardingAction action : _actions) {
       switch (action) {
