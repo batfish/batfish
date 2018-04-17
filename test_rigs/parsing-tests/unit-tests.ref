@@ -1903,6 +1903,20 @@
             "          MULTIPATH_RELAX:'multipath-relax'  <== mode:M_AsPath",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
+            "        (bgp_tail",
+            "          (null_bgp_tail",
+            "            UPDATE:'update'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'wait-for-convergence'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_tail",
+            "          (null_bgp_tail",
+            "            UPDATE:'update'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              VARIABLE:'wait-install'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
@@ -51896,7 +51910,7 @@
         "arista_bgp" : {
           "bgp group" : {
             "UNDEFINED_PEER_GROUP" : [
-              9
+              11
             ]
           }
         },
