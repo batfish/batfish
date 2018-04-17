@@ -217,7 +217,11 @@ public class BdpEngine implements FlowProcessor {
                         Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
             FlowTraceHop newHop =
                 new FlowTraceHop(
-                    newEdge, routesForThisNextHopInterface, hopFlow(originalFlow, transformedFlow));
+                    newEdge,
+                    routesForThisNextHopInterface,
+                    null,
+                    null,
+                    hopFlow(originalFlow, transformedFlow));
             newHops.add(newHop);
             FlowTrace nullRouteTrace =
                 new FlowTrace(
@@ -279,6 +283,8 @@ public class BdpEngine implements FlowProcessor {
                   new FlowTraceHop(
                       neighborUnreachbleEdge,
                       routesForThisNextHopInterface,
+                      null,
+                      null,
                       hopFlow(originalFlow, transformedFlow));
               List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
               newHops.add(neighborUnreachableHop);
@@ -1251,7 +1257,11 @@ public class BdpEngine implements FlowProcessor {
                 new NodeInterfacePair(Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
         FlowTraceHop deniedOutHop =
             new FlowTraceHop(
-                deniedOutEdge, lastHop.getRoutes(), hopFlow(originalFlow, transformedFlow));
+                deniedOutEdge,
+                lastHop.getRoutes(),
+                null,
+                null,
+                hopFlow(originalFlow, transformedFlow));
         newHops.add(deniedOutHop);
       }
       FlowTrace trace = new FlowTrace(disposition, newHops, notes);
@@ -1507,7 +1517,8 @@ public class BdpEngine implements FlowProcessor {
             srcInterface,
             new NodeInterfacePair(Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
     FlowTraceHop neighborUnreachableHop =
-        new FlowTraceHop(neighborUnreachbleEdge, routes, hopFlow(originalFlow, transformedFlow));
+        new FlowTraceHop(
+            neighborUnreachbleEdge, routes, null, null, hopFlow(originalFlow, transformedFlow));
     List<FlowTraceHop> newHops = new ArrayList<>(completedHops);
     newHops.add(neighborUnreachableHop);
     FlowTrace trace =
@@ -1549,7 +1560,11 @@ public class BdpEngine implements FlowProcessor {
       Set<Edge> newVisitedEdges = new LinkedHashSet<>(visitedEdges);
       FlowTraceHop newHop =
           new FlowTraceHop(
-              edge, routesForThisNextHopInterface, hopFlow(originalFlow, transformedFlow));
+              edge,
+              routesForThisNextHopInterface,
+              null,
+              null,
+              hopFlow(originalFlow, transformedFlow));
       newVisitedEdges.add(edge);
       newHops.add(newHop);
       /*

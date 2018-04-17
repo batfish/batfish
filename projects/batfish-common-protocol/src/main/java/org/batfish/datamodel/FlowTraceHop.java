@@ -4,10 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 
 public final class FlowTraceHop implements Serializable {
 
   private static final String PROP_EDGE = "edge";
+
+  private static final String PROP_FILTER_IN = "filterIn";
+
+  private static final String PROP_FILTER_OUT = "filterOut";
 
   private static final String PROP_ROUTES = "routes";
 
@@ -18,6 +23,10 @@ public final class FlowTraceHop implements Serializable {
 
   private final Edge _edge;
 
+  @Nullable private final String _filterIn;
+
+  @Nullable private final String _filterOut;
+
   private final SortedSet<String> _routes;
 
   private final Flow _transformedFlow;
@@ -26,9 +35,13 @@ public final class FlowTraceHop implements Serializable {
   public FlowTraceHop(
       @JsonProperty(PROP_EDGE) Edge edge,
       @JsonProperty(PROP_ROUTES) SortedSet<String> routes,
+      @JsonProperty(PROP_FILTER_IN) String filterOut,
+      @JsonProperty(PROP_FILTER_IN) String filterIn,
       @JsonProperty(PROP_TRANSFORMED_FLOW) Flow transformedFlow) {
     _edge = edge;
     _routes = routes;
+    _filterOut = filterOut;
+    _filterIn = filterIn;
     _transformedFlow = transformedFlow;
   }
 
@@ -71,6 +84,16 @@ public final class FlowTraceHop implements Serializable {
   @JsonProperty(PROP_EDGE)
   public Edge getEdge() {
     return _edge;
+  }
+
+  @JsonProperty(PROP_FILTER_IN)
+  public String getFilterIn() {
+    return _filterIn;
+  }
+
+  @JsonProperty(PROP_FILTER_OUT)
+  public String getFilterOut() {
+    return _filterOut;
   }
 
   @JsonProperty(PROP_ROUTES)
