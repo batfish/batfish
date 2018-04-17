@@ -22,9 +22,12 @@ management api http-commands
 management console
  idle-timeout 60
 !
+ip access-list standard sshabc
+  10 permit 1.2.4.8/16
+!
 management ssh
  authentication mode password
- ip access-group abc in
+ ip access-group sshabc in
  idle-timeout 60
  shutdown
 !
