@@ -1,22 +1,15 @@
 package org.batfish.datamodel.matchers;
 
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.FlowTraceHop;
-import org.hamcrest.FeatureMatcher;
+import org.batfish.datamodel.matchers.FlowTraceHopMatchersImpl.HasEdge;
 import org.hamcrest.Matcher;
 
-public class FlowTraceHopMatchers {
-  public static FlowTraceHopEdgeMatcher hasEdge(Matcher<Edge> subMatcher) {
-    return new FlowTraceHopEdgeMatcher(subMatcher);
+public final class FlowTraceHopMatchers {
+
+  public static HasEdge hasEdge(@Nonnull Matcher<? super Edge> subMatcher) {
+    return new HasEdge(subMatcher);
   }
 
-  private static class FlowTraceHopEdgeMatcher extends FeatureMatcher<FlowTraceHop, Edge> {
-    FlowTraceHopEdgeMatcher(Matcher<Edge> subMatcher) {
-      super(subMatcher, "a FlowTraceHop with edge:", "edge");
-    }
-
-    @Override protected Edge featureValueOf(FlowTraceHop flowTraceHop) {
-      return flowTraceHop.getEdge();
-    }
-  }
+  private FlowTraceHopMatchers() {}
 }

@@ -1,39 +1,23 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
-import org.hamcrest.FeatureMatcher;
+import org.batfish.datamodel.matchers.FlowTraceMatchersImpl.HasDisposition;
+import org.batfish.datamodel.matchers.FlowTraceMatchersImpl.HasHops;
 import org.hamcrest.Matcher;
 
 public class FlowTraceMatchers {
-  public static FlowTraceDispositionMatcher hasDisposition(
-      Matcher<FlowDisposition> flowDispositionMatcher) {
-    return new FlowTraceDispositionMatcher(flowDispositionMatcher);
+
+  public static HasDisposition hasDisposition(
+      @Nonnull Matcher<? super FlowDisposition> subMatcher) {
+    return new HasDisposition(subMatcher);
   }
 
-  public static FlowTraceHopsMatcher hasHops(Matcher<Iterable<? extends FlowTraceHop>> hopsMatcher) {
-    return new FlowTraceHopsMatcher(hopsMatcher);
+  public static HasHops hasHops(@Nonnull Matcher<? super List<? extends FlowTraceHop>> subMatcher) {
+    return new HasHops(subMatcher);
   }
 
-  private static class FlowTraceDispositionMatcher extends FeatureMatcher<FlowTrace, FlowDisposition> {
-    public FlowTraceDispositionMatcher(Matcher<FlowDisposition> flowDispositionMatcher) {
-      super(flowDispositionMatcher, "a FlowTrace with disposition:", "disposition");
-    }
-
-    @Override protected FlowDisposition featureValueOf(FlowTrace flowTrace) {
-      return flowTrace.getDisposition();
-    }
-  }
-
-  private static class FlowTraceHopsMatcher extends FeatureMatcher<FlowTrace, List<FlowTraceHop>> {
-    public FlowTraceHopsMatcher(Matcher<Iterable<? extends FlowTraceHop>> hopsMatcher) {
-      super(hopsMatcher, "a FlowTrace with hops:", "hops");
-    }
-
-    @Override protected List<FlowTraceHop> featureValueOf(FlowTrace flowTrace) {
-      return flowTrace.getHops();
-    }
-  }
+  private FlowTraceMatchers() {}
 }
