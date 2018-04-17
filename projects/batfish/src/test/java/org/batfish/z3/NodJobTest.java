@@ -66,7 +66,7 @@ public class NodJobTest {
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
 
-  private static Status checkSat(NodJob nodJob) {
+  public static Status checkSat(NodJob nodJob) {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
     Solver solver = z3Context.mkSolver();

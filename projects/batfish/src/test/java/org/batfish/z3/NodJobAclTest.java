@@ -9,6 +9,7 @@ import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHop;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.microsoft.z3.Context;
+import com.microsoft.z3.Status;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +49,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -209,5 +213,108 @@ public class NodJobAclTest {
                  * edge with int2=iface2.
                  */
                 allOf(hasDisposition(DENIED_OUT), hasHop(0, hasEdge(hasInt2(iface2)))))));
+  }
+
+  @Test
+  public void testPermittedByAcl_accept() throws IOException {
+    testPermittedByAcl_helper(LineAction.ACCEPT);
+  }
+
+  @Test
+  public void testPermittedByAcl_reject() throws IOException {
+    testPermittedByAcl_helper(LineAction.REJECT);
+  }
+
+  private void testPermittedByAcl_helper(LineAction action) throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
+    Vrf.Builder vb = nf.vrfBuilder();
+    IpAccessList.Builder aclb = nf.aclBuilder();
+
+    IpWildcard srcIp = new IpWildcard("4.4.4.4/32");
+
+    Configuration node = cb.build();
+    Vrf vrf = vb.setOwner(node).build();
+    OriginateVrf originateVrf = new OriginateVrf(node.getHostname(), vrf.getName());
+
+    // setup the ACL to be referred to from the outgoing filter
+    aclb.setLines(
+            ImmutableList.of(
+                IpAccessListLine.builder()
+                    .setAction(action)
+                    .setMatchCondition(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setSrcIps(ImmutableList.of(srcIp)).build()))
+                    .build()))
+        .setName("acl1")
+        .setOwner(node)
+        .build();
+
+    IpAccessList outgoingFilter =
+        aclb.setName("acl2")
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.builder()
+                        .setAction(LineAction.ACCEPT)
+                        .setMatchCondition(new PermittedByAcl("acl1"))
+                        .build()))
+            .build();
+
+    ib.setOwner(node)
+        .setVrf(vrf)
+        .setAddresses(new InterfaceAddress(new Ip("1.0.0.0"), 8))
+        .setOutgoingFilter(outgoingFilter)
+        .build();
+
+    ImmutableSortedMap<String, Configuration> configs = ImmutableSortedMap.of(node.getName(), node);
+
+    /* set up data plane */
+    TemporaryFolder tmp = new TemporaryFolder();
+    tmp.create();
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
+    BdpDataPlanePlugin bdpDataPlanePlugin = new BdpDataPlanePlugin();
+    bdpDataPlanePlugin.initialize(batfish);
+    batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
+    batfish.computeDataPlane(false);
+    DataPlane dataPlane = batfish.loadDataPlane();
+
+    /* set up synthesizer */
+    Topology topology = new Topology(dataPlane.getTopologyEdges());
+    HeaderSpace headerSpace =
+        HeaderSpace.builder()
+            .setSrcIps(ImmutableList.of(srcIp))
+            .setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4/32")))
+            .build();
+    SynthesizerInput input =
+        SynthesizerInputImpl.builder()
+            .setConfigurations(configs)
+            .setForwardingAnalysis(
+                new ForwardingAnalysisImpl(
+                    configs, dataPlane.getRibs(), dataPlane.getFibs(), topology))
+            .setSimplify(true)
+            .setSpecialize(false)
+            .setHeaderSpace(headerSpace)
+            .setTopology(topology)
+            .build();
+    Synthesizer synthesizer = new Synthesizer(input);
+
+    /* Construct NodJob */
+    StandardReachabilityQuerySynthesizer querySynthesizer =
+        StandardReachabilityQuerySynthesizer.builder()
+            .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+            .setHeaderSpace(headerSpace)
+            .setIngressNodeVrfs(ImmutableMap.of(node.getHostname(), ImmutableSet.of(vrf.getName())))
+            .build();
+    SortedSet<Pair<String, String>> ingressNodes =
+        ImmutableSortedSet.of(new Pair<>(node.getHostname(), vrf.getName()));
+    NodJob nodJob =
+        new NodJob(new Settings(), synthesizer, querySynthesizer, ingressNodes, "tag", true);
+
+    /* Run query */
+    Status status = NodJobTest.checkSat(nodJob);
+    assertThat(
+        status, equalTo(action == LineAction.ACCEPT ? Status.SATISFIABLE : Status.UNSATISFIABLE));
   }
 }

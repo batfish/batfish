@@ -115,15 +115,15 @@ public class Simplifier
         basicRuleStatement.getPreconditionStateIndependentConstraints();
     BooleanExpr simplifiedPreconditionStateIndependentConstraints =
         simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
-    if (originalPreconditionStateIndependentConstraints
+    if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
+      return VACUOUS_RULE;
+    } else if (originalPreconditionStateIndependentConstraints
         != simplifiedPreconditionStateIndependentConstraints) {
       return simplifyStatement(
           new BasicRuleStatement(
               simplifiedPreconditionStateIndependentConstraints,
               basicRuleStatement.getPreconditionStates(),
               basicRuleStatement.getPostconditionState()));
-    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
-      return VACUOUS_RULE;
     } else {
       return basicRuleStatement;
     }

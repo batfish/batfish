@@ -233,7 +233,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
     }
-    _ipAccessListSpecializer = new IpAccessListSpecializer(headerSpace);
+    _ipAccessListSpecializer = specialize ? new IpAccessListSpecializer(headerSpace) : null;
     _ipSpaceSpecializer =
         specialize
             ? new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps())
@@ -449,7 +449,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Entry::getKey,
-                              entry -> _ipAccessListSpecializer.specialize(entry.getValue())));
+                              entry ->
+                                  _ipAccessListSpecializer == null
+                                      ? entry.getValue()
+                                      : _ipAccessListSpecializer.specialize(entry.getValue())));
                 }));
   }
 

@@ -45,6 +45,11 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
 
     private Set<String> _finalNodes;
 
+    private Builder() {
+      _actions = ImmutableSet.of();
+      _finalNodes = ImmutableSet.of();
+    }
+
     @Override
     public StandardReachabilityQuerySynthesizer build() {
       return new StandardReachabilityQuerySynthesizer(

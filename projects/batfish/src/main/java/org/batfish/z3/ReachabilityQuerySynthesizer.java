@@ -12,7 +12,6 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.TrueExpr;
@@ -106,8 +105,8 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
             new BasicRuleStatement(
                 new AndExpr(
                     ImmutableList.of(
-                        new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)),
-                        new HeaderSpaceMatchExpr(_headerSpace))),
+                        new EqExpr(
+                            new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)))),
                 new OriginateVrf(ingressNode, ingressVrf)));
       }
     }

@@ -3,6 +3,7 @@ package org.batfish.z3.expr.visitors;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.batfish.common.BatfishException;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
@@ -30,16 +31,12 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> castToGenericBooleanExprVisitorReturnType(Object o) {
-    @SuppressWarnings("unchecked")
-    Set<Field> set = (Set<Field>) o;
-    return set;
+    throw new BatfishException("not implemented");
   }
 
   @Override
   public Set<Field> castToGenericIntExprVisitorReturnType(Object o) {
-    @SuppressWarnings("unchecked")
-    Set<Field> set = (Set<Field>) o;
-    return set;
+    throw new BatfishException("not implemented");
   }
 
   public static Set<Field> collectTransformedVars(BooleanExpr expr) {

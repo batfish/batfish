@@ -489,13 +489,23 @@ public class DefaultTransitionGenerator implements StateVisitor {
                 neighborUnreachableByVrf.forEach(
                     (vrf, neighborUnreachableByOutInterface) ->
                         neighborUnreachableByOutInterface.forEach(
-                            (outInterface, dstIpConstraint) ->
-                                _rules.add(
-                                    new BasicRuleStatement(
-                                        dstIpConstraint,
-                                        ImmutableSet.of(
-                                            new PostInVrf(hostname, vrf), new PreOut(hostname)),
-                                        new NodeNeighborUnreachable(hostname))))));
+                            (outInterface, dstIpConstraint) -> {
+                              ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
+                              preStates.add(new PostInVrf(hostname, vrf), new PreOut(hostname));
+
+                              // add outAcl if one exists
+                              String outAcl =
+                                  _input.getOutgoingAcls().get(hostname).get(outInterface);
+                              if (outAcl != null) {
+                                preStates.add(new AclPermit(hostname, outAcl));
+                              }
+
+                              _rules.add(
+                                  new BasicRuleStatement(
+                                      dstIpConstraint,
+                                      preStates.build(),
+                                      new NodeNeighborUnreachable(hostname)));
+                            })));
   }
 
   @Override
