@@ -495,7 +495,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
                               // add outAcl if one exists
                               String outAcl =
-                                  _input.getOutgoingAcls().get(hostname).get(outInterface);
+                                  _input
+                                      .getOutgoingAcls()
+                                      .getOrDefault(hostname,ImmutableMap.of())
+                                      .get(outInterface);
                               if (outAcl != null) {
                                 preStates.add(new AclPermit(hostname, outAcl));
                               }
