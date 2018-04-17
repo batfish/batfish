@@ -212,7 +212,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'management telnet ip access-group' named 'abc'",
         "files" : {
           "arista_misc" : [
-            32
+            36
           ]
         }
       },
@@ -974,7 +974,7 @@
         "ipv4 acl" : {
           "abc" : {
             "management telnet ip access-group" : [
-              32
+              36
             ]
           }
         }

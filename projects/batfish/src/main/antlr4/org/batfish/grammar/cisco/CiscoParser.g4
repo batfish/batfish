@@ -1623,8 +1623,18 @@ management_ssh
 :
    SSH NEWLINE
    (
-      management_ssh_null
+      management_ssh_ip_access_group
+      | management_ssh_null
    )*
+;
+
+management_ssh_ip_access_group
+:
+   IP ACCESS_GROUP name = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
 management_ssh_null

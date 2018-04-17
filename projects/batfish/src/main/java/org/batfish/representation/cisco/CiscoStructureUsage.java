@@ -52,6 +52,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   ISAKMP_PROFILE_KEYRING("isakmp profile keyring"),
   LINE_ACCESS_CLASS_LIST("line access-class list"),
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
+  MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
   MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
   NTP_ACCESS_GROUP("ntp access-group"),
