@@ -8,6 +8,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 
 public final class FwFromDestinationAddressBookEntry extends FwFrom {
@@ -34,6 +35,8 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
     Set<Prefix> prefixes = _localAddressBook.getPrefixes(_addressBookEntryName, w);
     List<IpWildcard> wildcards =
         prefixes.stream().map(IpWildcard::new).collect(ImmutableList.toImmutableList());
-    headerSpaceBuilder.setDstIps(Iterables.concat(headerSpaceBuilder.getDstIps(), wildcards));
+    headerSpaceBuilder.setDstIps(
+        Iterables.concat(
+            ((IpWildcardSetIpSpace) headerSpaceBuilder.getDstIps()).getWhitelist(), wildcards));
   }
 }

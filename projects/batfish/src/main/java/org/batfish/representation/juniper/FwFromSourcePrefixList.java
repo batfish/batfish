@@ -6,6 +6,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.RouteFilterList;
 
 public final class FwFromSourcePrefixList extends FwFrom {
@@ -33,7 +34,9 @@ public final class FwFromSourcePrefixList extends FwFrom {
       }
       RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
       List<IpWildcard> wildcards = sourcePrefixList.getMatchingIps();
-      headerSpaceBuilder.setSrcIps(Iterables.concat(headerSpaceBuilder.getSrcIps(), wildcards));
+      headerSpaceBuilder.setSrcIps(
+          Iterables.concat(
+              ((IpWildcardSetIpSpace) headerSpaceBuilder.getSrcIps()).getWhitelist(), wildcards));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }

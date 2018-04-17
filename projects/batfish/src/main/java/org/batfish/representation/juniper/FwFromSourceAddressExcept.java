@@ -6,6 +6,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 
 public final class FwFromSourceAddressExcept extends FwFrom {
@@ -27,7 +28,9 @@ public final class FwFromSourceAddressExcept extends FwFrom {
       Configuration c) {
     IpWildcard wildcard = new IpWildcard(_prefix);
     headerSpaceBuilder.setNotSrcIps(
-        Iterables.concat(headerSpaceBuilder.getNotSrcIps(), ImmutableSet.of(wildcard)));
+        Iterables.concat(
+            ((IpWildcardSetIpSpace) headerSpaceBuilder.getNotSrcIps()).getWhitelist(),
+            ImmutableSet.of(wildcard)));
   }
 
   public Prefix getPrefix() {

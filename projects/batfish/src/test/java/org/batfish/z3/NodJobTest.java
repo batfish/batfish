@@ -306,7 +306,7 @@ public class NodJobTest {
   @Test
   public void testNotNattedSat() {
     HeaderSpace headerSpace = new HeaderSpace();
-    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
+    headerSpace.setSrcIps(new Ip("3.0.0.1"));
     NodJob nodJob = getNodJob(headerSpace, false);
     assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
@@ -318,7 +318,7 @@ public class NodJobTest {
   @Test
   public void testNotNattedUnsat() {
     HeaderSpace headerSpace = new HeaderSpace();
-    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.1")));
+    headerSpace.setSrcIps(new Ip("3.0.0.1"));
     NodJob nodJob = getNodJob(headerSpace, true);
     assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }

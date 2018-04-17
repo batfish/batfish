@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
  * denied if it is not.
  */
-public class AclIpSpace implements IpSpace {
+public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
 
   public static class Builder {
 
@@ -157,5 +158,10 @@ public class AclIpSpace implements IpSpace {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).add("lines", _lines).toString();
+  }
+
+  @Override
+  public int compareTo(AclIpSpace o) {
+    return CommonUtil.compareIterable(_lines, o._lines);
   }
 }
