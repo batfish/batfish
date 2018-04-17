@@ -4,6 +4,7 @@ import static java.util.Comparator.naturalOrder;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.graph.Network;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +12,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -21,8 +24,10 @@ import org.batfish.datamodel.Topology;
 
 public class BdpDataPlane implements Serializable, DataPlane {
 
-  /** */
   private static final long serialVersionUID = 1L;
+
+  // TODO: reconsider transient
+  private transient Network<BgpNeighbor, BgpSession> _bgpTopology;
 
   Map<Ip, Set<String>> _ipOwners;
 
@@ -108,5 +113,14 @@ public class BdpDataPlane implements Serializable, DataPlane {
                         .collect(
                             ImmutableMap.toImmutableMap(
                                 Entry::getKey, eVr -> eVr.getValue()._fib))));
+  }
+
+  @Override
+  public Network<BgpNeighbor, BgpSession> getBgpTopology() {
+    return _bgpTopology;
+  }
+
+  void setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
+    _bgpTopology = bgpTopology;
   }
 }
