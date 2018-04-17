@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -37,11 +38,13 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
-  private final ArrayList<SubRange> _allowedVlans;
+  private Set<Ip> _additionalArpIps;
 
   private final Set<InterfaceAddress> _allAddresses;
 
   private final Set<Ip> _allAddressIps;
+
+  private final ArrayList<SubRange> _allowedVlans;
 
   private double _bandwidth;
 
@@ -99,6 +102,7 @@ public class Interface extends ComparableStructure<String> {
   public Interface(String name, int definitionLine) {
     super(name);
     _active = true;
+    _additionalArpIps = ImmutableSet.of();
     _allAddresses = new LinkedHashSet<>();
     _allAddressIps = new LinkedHashSet<>();
     _bandwidth = getDefaultBandwidthByName(name);
@@ -126,8 +130,8 @@ public class Interface extends ComparableStructure<String> {
     return _active;
   }
 
-  public List<SubRange> getAllowedVlans() {
-    return _allowedVlans;
+  public Set<Ip> getAdditionalArpIps() {
+    return _additionalArpIps;
   }
 
   public Set<InterfaceAddress> getAllAddresses() {
@@ -136,6 +140,10 @@ public class Interface extends ComparableStructure<String> {
 
   public Set<Ip> getAllAddressIps() {
     return _allAddressIps;
+  }
+
+  public List<SubRange> getAllowedVlans() {
+    return _allowedVlans;
   }
 
   public double getBandwidth() {
@@ -253,6 +261,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setActive(boolean active) {
     _active = active;
+  }
+
+  public void setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+    _additionalArpIps = ImmutableSet.copyOf(additionalArpIps);
   }
 
   public void setBandwidth(Double bandwidth) {

@@ -2702,6 +2702,11 @@ L2VPN
    'l2vpn'
 ;
 
+L2_INTERFACE
+:
+  'l2-interface'
+;
+
 L3_INTERFACE
 :
    'l3-interface'
