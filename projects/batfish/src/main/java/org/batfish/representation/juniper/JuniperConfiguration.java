@@ -1344,9 +1344,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return zoneAcl;
   }
 
-  /**
-   * Generate outgoing filter for the interface (from existing outgoing filter and zone policy)
-   */
+  /** Generate outgoing filter for the interface (from existing outgoing filter and zone policy) */
   IpAccessList buildOutgoingFilter(Interface iface, @Nullable IpAccessList securityPolicyAcl) {
     String outAclName = iface.getOutgoingFilter();
     IpAccessList outAcl = null;
