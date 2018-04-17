@@ -3086,6 +3086,7 @@ s_vrf_definition
    VRF DEFINITION? name = variable NEWLINE
    (
       vrfd_address_family
+      | vrfd_description
       | vrfd_null
    )*
    (
@@ -4282,6 +4283,11 @@ vrfd_address_family
    (
       EXIT_ADDRESS_FAMILY NEWLINE
    )?
+;
+
+vrfd_description
+:
+   description_line
 ;
 
 vrfd_null
