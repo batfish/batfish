@@ -104,6 +104,7 @@
         "cisco_mpls" : "cisco_mpls",
         "cisco_multicast" : "cisco_multicast",
         "cisco_ntp" : "cisco_ntp",
+        "cisco_nxos_bgp" : "cisco_nxos_bgp",
         "cisco_ospf" : "cisco_ospf",
         "cisco_pim" : "cisco_pim",
         "cisco_platform" : "cisco_platform",
@@ -340,6 +341,7 @@
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
         "cisco_ntp" : "PASSED",
+        "cisco_nxos_bgp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
@@ -28141,6 +28143,54 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "cisco_nxos_bgp" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'cisco_nxos_bgp'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_feature",
+            "      FEATURE:'feature'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        BGP:'bgp'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'MATCH_ASN'  <== mode:M_RouteMap)",
+            "      (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (rm_stanza",
+            "        (match_rm_stanza",
+            "          (match_as_number_rm_stanza",
+            "            MATCH:'match'  <== mode:DEFAULT_MODE",
+            "            AS_NUMBER:'as-number'  <== mode:DEFAULT_MODE",
+            "            DEC:'123'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      DEC:'1'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_block_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          IP_PREFIX:'123.123.123.0/24'  <== mode:M_NEIGHBOR",
+            "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "          ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'MATCH_ASN'  <== mode:M_RouteMap)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "cisco_ospf" : {
           "sentences" : [
             "(cisco_configuration",
@@ -52474,6 +52524,11 @@
             "1" : "MISCELLANEOUS: Interface: 'Ethernet0' contains OSPF settings, but there is no OSPF process"
           }
         },
+        "cisco_nxos_bgp" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: No remote-as set for peer: 123.123.123.0/24"
+          }
+        },
         "ios_xr_bgp_neighbor_group" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.1.2'",
@@ -52667,6 +52722,7 @@
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
         "cisco_ntp" : "PASSED",
+        "cisco_nxos_bgp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
         "cisco_platform" : "PASSED",
