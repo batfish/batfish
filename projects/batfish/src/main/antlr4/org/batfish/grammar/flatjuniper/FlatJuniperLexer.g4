@@ -248,6 +248,11 @@ APPLICATION_PROTOCOL
    'application-protocol'
 ;
 
+APPLICATION_SET
+:
+   'application-set'
+;
+
 APPLICATION_TRACKING
 :
    'application-tracking'
@@ -885,6 +890,11 @@ ENCRYPTED_PASSWORD
 ENCRYPTION_ALGORITHM
 :
    'encryption-algorithm'
+;
+
+ENFORCE_FIRST_AS
+:
+   'enforce-first-as'
 ;
 
 ENHANCED_HASH_KEY
@@ -2690,6 +2700,11 @@ L2CIRCUIT
 L2VPN
 :
    'l2vpn'
+;
+
+L2_INTERFACE
+:
+  'l2-interface'
 ;
 
 L3_INTERFACE
@@ -4759,6 +4774,11 @@ VIRTUAL_ADDRESS
 VIRTUAL_CHASSIS
 :
    'virtual-chassis'
+;
+
+VIRTUAL_ROUTER
+:
+   'virtual-router'
 ;
 
 VIRTUAL_SWITCH

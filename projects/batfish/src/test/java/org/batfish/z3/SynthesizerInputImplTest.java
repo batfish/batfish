@@ -48,6 +48,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
+import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;

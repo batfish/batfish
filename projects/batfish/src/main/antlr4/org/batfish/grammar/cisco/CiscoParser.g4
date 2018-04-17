@@ -1623,8 +1623,18 @@ management_ssh
 :
    SSH NEWLINE
    (
-      management_ssh_null
+      management_ssh_ip_access_group
+      | management_ssh_null
    )*
+;
+
+management_ssh_ip_access_group
+:
+   IP ACCESS_GROUP name = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
 management_ssh_null
@@ -3086,6 +3096,7 @@ s_vrf_definition
    VRF DEFINITION? name = variable NEWLINE
    (
       vrfd_address_family
+      | vrfd_description
       | vrfd_null
    )*
    (
@@ -4282,6 +4293,11 @@ vrfd_address_family
    (
       EXIT_ADDRESS_FAMILY NEWLINE
    )?
+;
+
+vrfd_description
+:
+   description_line
 ;
 
 vrfd_null

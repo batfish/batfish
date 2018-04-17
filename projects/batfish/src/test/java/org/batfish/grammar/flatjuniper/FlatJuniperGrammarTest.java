@@ -1,12 +1,16 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
@@ -20,6 +24,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -46,12 +51,14 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.JuniperStructureType;
+import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
@@ -121,6 +128,114 @@ public class FlatJuniperGrammarTest {
     assertThat(byName, hasKey("a2"));
     assertThat(byName, not(hasKey("a1")));
     assertThat(byName, not(hasKey("a3")));
+  }
+
+  @Test
+  public void testApplicationSet() throws IOException {
+    String hostname = "application-set";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
+        ccae.getUnusedStructures();
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        undefinedReferences = ccae.getUndefinedReferences();
+    Configuration c = parseConfig(hostname);
+    String aclName = "~FROM_ZONE~z1~TO_ZONE~z2";
+
+    /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */
+    assertThat(
+        c,
+        hasIpAccessList(
+            aclName,
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+                                .setSrcPorts(ImmutableList.of(new SubRange(1, 1)))
+                                .build()),
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstPorts(ImmutableList.of(new SubRange(2, 2)))
+                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                .build()),
+                        IpAccessListLine.acceptingHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstPorts(ImmutableList.of(new SubRange(3, 3)))
+                                .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+                                .build()))))));
+
+    /* Check that appset1 and appset2 are referenced, but appset3 is not */
+    assertThat(unusedStructures, hasKey(hostname));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> unusedStructuresByType =
+        unusedStructures.get(hostname);
+    assertThat(
+        unusedStructuresByType, hasKey(JuniperStructureType.APPLICATION_SET.getDescription()));
+    SortedMap<String, SortedSet<Integer>> unusedStructuresByName =
+        unusedStructuresByType.get(JuniperStructureType.APPLICATION_SET.getDescription());
+    assertThat(unusedStructuresByName, not(hasKey("appset1")));
+    assertThat(unusedStructuresByName, not(hasKey("appset2")));
+    assertThat(unusedStructuresByName, hasKey("appset3"));
+
+    /*
+     * Check that there is an undefined reference to appset4, but not to appset1-3
+     * (via reference in security policy).
+     */
+    assertThat(undefinedReferences, hasKey(hostname));
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
+        undefinedReferencesByType = undefinedReferences.get(hostname);
+    assertThat(
+        undefinedReferencesByType,
+        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationOrApplicationSetByName =
+        undefinedReferencesByType.get(
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
+    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset1")));
+    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset2")));
+    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset3")));
+    assertThat(urApplicationOrApplicationSetByName, hasKey("appset4"));
+    SortedMap<String, SortedSet<Integer>> urApplicationOrApplicationSetByUsage =
+        urApplicationOrApplicationSetByName.get("appset4");
+    assertThat(
+        urApplicationOrApplicationSetByUsage,
+        hasKey(JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION.getDescription()));
+
+    /*
+     * Check that there is an undefined reference to application-set appset4, but not to appset1-3
+     * (via reference in application-set definition).
+     */
+    assertThat(
+        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION_SET.getDescription()));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationSetByName =
+        undefinedReferencesByType.get(JuniperStructureType.APPLICATION_SET.getDescription());
+    assertThat(urApplicationSetByName, not(hasKey("appset1")));
+    assertThat(urApplicationSetByName, not(hasKey("appset2")));
+    assertThat(urApplicationSetByName, not(hasKey("appset3")));
+    assertThat(urApplicationSetByName, hasKey("appset4"));
+    SortedMap<String, SortedSet<Integer>> urApplicationSetByUsage =
+        urApplicationSetByName.get("appset4");
+    assertThat(
+        urApplicationSetByUsage,
+        hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET.getDescription()));
+
+    /*
+     * Check that there is an undefined reference to application a4 but not a1-3
+     * (via reference in application-set definition).
+     */
+    assertThat(
+        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
+        undefinedReferencesByType.get(JuniperStructureType.APPLICATION.getDescription());
+    assertThat(urApplicationByName, not(hasKey("a1")));
+    assertThat(urApplicationByName, not(hasKey("a2")));
+    assertThat(urApplicationByName, not(hasKey("a3")));
+    assertThat(urApplicationByName, hasKey("a4"));
+    SortedMap<String, SortedSet<Integer>> urApplicationByUsage = urApplicationByName.get("a4");
+    assertThat(
+        urApplicationByUsage,
+        hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION.getDescription()));
   }
 
   @Test
@@ -245,6 +360,13 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testEnforceFistAs() throws IOException {
+    String hostname = "bgp-enforce-first-as";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasValue(hasEnforceFirstAs())))));
+  }
+
+  @Test
   public void testEthernetSwitchingFilterReference() throws IOException {
     String hostname = "ethernet-switching-filter";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -305,6 +427,14 @@ public class FlatJuniperGrammarTest {
   public void testTacplusPsk() throws IOException {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
+  }
+
+  @Test
+  public void testInterfaceArp() throws IOException {
+    Configuration c = parseConfig("interface-arp");
+
+    /* The additional ARP IP set for irb.0 should appear in the data model */
+    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(new Ip("1.0.0.2")))));
   }
 
   @Test
@@ -369,6 +499,19 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testRoutingInstanceType() throws IOException {
+    Configuration c = parseConfig("routing-instance-type");
+
+    /* All types for now should result in a VRF */
+    /* TODO: perhaps some types e.g. forwarding should not result in a VRF */
+    assertThat(c, hasVrfs(hasKey("ri-forwarding")));
+    assertThat(c, hasVrfs(hasKey("ri-l2vpn")));
+    assertThat(c, hasVrfs(hasKey("ri-virtual-router")));
+    assertThat(c, hasVrfs(hasKey("ri-virtual-switch")));
+    assertThat(c, hasVrfs(hasKey("ri-vrf")));
   }
 
   @Test

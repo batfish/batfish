@@ -40,6 +40,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +56,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -275,22 +278,23 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+    Network<BgpNeighbor, BgpSession> bgpTopology =
+        CommonUtil.initBgpTopology(configurations, ipOwners, false);
     Configuration r1 = configurations.get("r1");
     Configuration r2 = configurations.get("r2");
     assertThat(
-        r1.getDefaultVrf()
-            .getBgpProcess()
-            .getNeighbors()
-            .get(Prefix.parse("1.2.0.2/32"))
-            .getRemoteBgpNeighbor(),
+        bgpTopology
+            .outEdges(
+                r1.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.2/32")))
+            .stream()
+            .map(BgpSession::getDst),
         is(notNullValue()));
     assertThat(
-        r2.getDefaultVrf()
-            .getBgpProcess()
-            .getNeighbors()
-            .get(Prefix.parse("1.2.0.1/32"))
-            .getRemoteBgpNeighbor(),
+        bgpTopology
+            .outEdges(
+                r2.getDefaultVrf().getBgpProcess().getNeighbors().get(Prefix.parse("1.2.0.1/32")))
+            .stream()
+            .map(BgpSession::getDst),
         is(notNullValue()));
   }
 
@@ -308,7 +312,7 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+    CommonUtil.initBgpTopology(configurations, ipOwners, false);
     MultipathEquivalentAsPathMatchMode aristaDisabled =
         configurations
             .get("arista_disabled")
@@ -353,7 +357,7 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-    CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+    CommonUtil.initBgpTopology(configurations, ipOwners, false);
     BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
     dataPlanePlugin.initialize(batfish);
     batfish.computeDataPlane(false); // compute and cache the dataPlane

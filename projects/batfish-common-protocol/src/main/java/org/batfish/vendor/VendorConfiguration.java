@@ -65,6 +65,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     return _answerElement;
   }
 
+  public String getFilename() {
+    return _filename;
+  }
+
   public abstract String getHostname();
 
   public VendorConfiguration getOverlayConfiguration() {

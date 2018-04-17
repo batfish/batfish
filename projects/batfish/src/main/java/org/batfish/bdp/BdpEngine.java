@@ -1,9 +1,10 @@
 package org.batfish.bdp;
 
-import static org.batfish.common.util.CommonUtil.initRemoteBgpNeighbors;
+import static org.batfish.common.util.CommonUtil.initBgpTopology;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.Network;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.ArrayList;
@@ -33,7 +34,9 @@ import org.batfish.common.plugin.FlowProcessor;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
@@ -442,7 +445,6 @@ public class BdpEngine implements FlowProcessor {
         Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
         dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       }
-      initRemoteBgpNeighbors(configurations, dp.getIpOwners());
       SortedMap<String, Node> nodes = new TreeMap<>();
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();
       SortedMap<Integer, SortedSet<Prefix>> iterationOscillatingPrefixes = new TreeMap<>();
@@ -468,9 +470,9 @@ public class BdpEngine implements FlowProcessor {
   private void computeDependentRoutesIteration(
       Map<String, Node> nodes,
       Topology topology,
-      BdpDataPlane dp,
       int dependentRoutesIterations,
-      SortedSet<Prefix> oscillatingPrefixes) {
+      SortedSet<Prefix> oscillatingPrefixes,
+      Network<BgpNeighbor, BgpSession> bgpTopology) {
 
     // (Re)initialization of dependent route calculation
     AtomicInteger reinitializeDependentCompleted =
@@ -672,7 +674,7 @@ public class BdpEngine implements FlowProcessor {
                 n -> {
                   for (VirtualRouter vr : n._virtualRouters.values()) {
                     vr.propagateBgpRoutes(
-                        dp.getIpOwners(), dependentRoutesIterations, oscillatingPrefixes, nodes);
+                        dependentRoutesIterations, oscillatingPrefixes, nodes, bgpTopology);
                   }
                   propagateBgpCompleted.incrementAndGet();
                 });
@@ -746,6 +748,12 @@ public class BdpEngine implements FlowProcessor {
         GlobalTracer.get().buildSpan("Computing fixed point").startActive()) {
       assert computeFixedPointSpan != null; // avoid unused warning
       SortedSet<Prefix> oscillatingPrefixes = ae.getOscillatingPrefixes();
+      Map<String, Configuration> configuations =
+          nodes
+              .entrySet()
+              .stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
 
       // BEGIN DONE ONCE (except main rib)
 
@@ -803,16 +811,9 @@ public class BdpEngine implements FlowProcessor {
       dp.setNodes(nodes);
       computeFibs(nodes);
       dp.setTopology(topology);
-      initRemoteBgpNeighbors(
-          nodes
-              .entrySet()
-              .stream()
-              .collect(
-                  ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration())),
-          dp.getIpOwners(),
-          true,
-          this,
-          dp);
+      Network<BgpNeighbor, BgpSession> bgpTopology =
+          initBgpTopology(configuations, dp.getIpOwners(), false, true, this, dp);
+      dp.setBgpTopology(bgpTopology);
       // END DONE ONCE
 
       /*
@@ -863,7 +864,7 @@ public class BdpEngine implements FlowProcessor {
         }
         currentChangedMonitor.set(false);
         computeDependentRoutesIteration(
-            nodes, topology, dp, numDependentRoutesIterations, oscillatingPrefixes);
+            nodes, topology, numDependentRoutesIterations, oscillatingPrefixes, bgpTopology);
 
         /* Collect sizes of certain RIBs this iteration */
         computeIterationStatistics(nodes, ae, numDependentRoutesIterations);
@@ -909,18 +910,15 @@ public class BdpEngine implements FlowProcessor {
         }
         compareToPreviousIteration(nodes, currentChangedMonitor, checkFixedPointCompleted);
 
-        computeFibs(nodes);
-        initRemoteBgpNeighbors(
-            nodes
-                .entrySet()
-                .stream()
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey, e -> e.getValue().getConfiguration())),
-            dp.getIpOwners(),
-            true,
-            this,
-            dp);
+        /*
+         * Only do re-init BGP neighbors with reachability checks after once: after
+         * the initial iteration of dependent routes has been completed
+         */
+        if (numDependentRoutesIterations < 2) {
+          computeFibs(nodes);
+          bgpTopology = initBgpTopology(configuations, dp.getIpOwners(), false, true, this, dp);
+        }
+        dp.setBgpTopology(bgpTopology);
       } while (checkDependentRoutesChanged(
           dependentRoutesChanged,
           evenDependentRoutesChanged,

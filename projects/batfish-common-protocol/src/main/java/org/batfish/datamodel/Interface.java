@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -31,7 +32,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private InterfaceAddress _address;
 
-    private Double _bandwidth;
+    @Nullable private Double _bandwidth;
 
     private boolean _blacklisted;
 
@@ -61,10 +62,13 @@ public final class Interface extends ComparableStructure<String> {
 
     private List<SourceNat> _sourceNats;
 
+    private SortedSet<Ip> _additionalArpIps;
+
     private Vrf _vrf;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
@@ -80,6 +84,7 @@ public final class Interface extends ComparableStructure<String> {
         iface.setAddress(_address);
         allAddresses.add(_address);
       }
+      iface.setAdditionalArpIps(_additionalArpIps);
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
@@ -114,6 +119,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setActive(boolean active) {
       _active = active;
+      return this;
+    }
+
+    public Builder setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+      _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
       return this;
     }
 
@@ -164,7 +174,7 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setBandwidth(Double bandwidth) {
+    public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }
@@ -264,6 +274,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
   private static final String PROP_ACTIVE = "active";
+
+  private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
 
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
 
@@ -504,13 +516,15 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
+  private SortedSet<Ip> _additionalArpIps;
+
   private List<SubRange> _allowedVlans;
 
   private SortedSet<InterfaceAddress> _allAddresses;
 
   private boolean _autoState;
 
-  private Double _bandwidth;
+  @Nullable private Double _bandwidth;
 
   private transient boolean _blacklisted;
 
@@ -660,7 +674,7 @@ public final class Interface extends ComparableStructure<String> {
     if (this._autoState != other._autoState) {
       return false;
     }
-    if (this._bandwidth.compareTo(other._bandwidth) != 0) {
+    if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
     // we check ACLs for name match only -- full ACL diff can be done
@@ -721,6 +735,11 @@ public final class Interface extends ComparableStructure<String> {
     return _active;
   }
 
+  @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
+  public SortedSet<Ip> getAdditionalArpIps() {
+    return _additionalArpIps;
+  }
+
   @JsonProperty(PROP_ALLOWED_VLANS)
   @JsonPropertyDescription("Ranges of allowed VLANs when switchport mode is TRUNK")
   public List<SubRange> getAllowedVlans() {
@@ -744,6 +763,7 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_BANDWIDTH)
   @JsonPropertyDescription(
       "The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
+  @Nullable
   public Double getBandwidth() {
     return _bandwidth;
   }
@@ -1065,6 +1085,11 @@ public final class Interface extends ComparableStructure<String> {
     _active = active;
   }
 
+  @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
+  public void setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+    _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
+  }
+
   @JsonProperty(PROP_ALLOWED_VLANS)
   public void setAllowedVlans(List<SubRange> allowedVlans) {
     _allowedVlans = allowedVlans;
@@ -1081,7 +1106,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_BANDWIDTH)
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
   }
 
