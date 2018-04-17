@@ -1108,6 +1108,30 @@
           }
         }
       },
+      "arista_vrf" : {
+        "configurationFormat" : "CISCO_NX",
+        "name" : "arista_vrf",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "roleDimensions" : {
+          "0" : "arista",
+          "1" : "vrf"
+        },
+        "roles" : [
+          "arista-vrf"
+        ],
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "arista_vrf"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "aruba_aaa" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "aruba_aaa",

@@ -4289,6 +4289,7 @@ vrfd_null
    NO?
    (
       AUTO_IMPORT
+      | DESCRIPTION
       | RD
       | ROUTE_TARGET
       |

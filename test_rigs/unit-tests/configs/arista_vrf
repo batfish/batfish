@@ -1,0 +1,8 @@
+!
+hostname arista_vrf
+!
+vrf definition vrfName
+ rd 2:700
+ description descriptive sentence
+!
+!
