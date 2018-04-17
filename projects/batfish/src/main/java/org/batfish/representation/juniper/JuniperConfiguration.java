@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -301,7 +303,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Ip, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Ip ip = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpNeighbor neighbor = new BgpNeighbor(ip, _c);
+      BgpNeighbor neighbor = new BgpNeighbor(ip, _c, false);
       neighbor.setVrf(vrfName);
 
       // route reflection
@@ -345,6 +347,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ebgpMultihop = false;
       }
       neighbor.setEbgpMultihop(ebgpMultihop);
+      neighbor.setEnforceFirstAs(firstNonNull(ig.getEnforceFirstAs(), Boolean.FALSE));
       Integer loops = ig.getLoops();
       boolean allowLocalAsIn = loops != null && loops > 0;
       neighbor.setAllowLocalAsIn(allowLocalAsIn);

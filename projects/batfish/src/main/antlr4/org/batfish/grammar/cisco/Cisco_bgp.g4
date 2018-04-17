@@ -372,6 +372,9 @@ locals
    )
    (
       REMOTE_AS asnum = DEC
+   )?
+   (
+      REMOTE_AS ROUTE_MAP mapname = variable
    )? NEWLINE
    (
       bgp_tail
@@ -640,6 +643,7 @@ null_bgp_tail
       | TABLE_MAP
       | TIMERS
       | TRANSPORT
+      | UPDATE
       |
       (
          USE

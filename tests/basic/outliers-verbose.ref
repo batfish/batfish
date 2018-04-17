@@ -791,6 +791,22 @@
               "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255"
             },
             {
+              "action" : "ACCEPT",
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "10.12.11.1"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.12.11.2"
+                  ]
+                }
+              },
+              "name" : "permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0"
+            },
+            {
               "action" : "REJECT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -834,6 +850,22 @@
                 }
               },
               "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255"
+            },
+            {
+              "action" : "ACCEPT",
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "10.23.21.3"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.23.21.2"
+                  ]
+                }
+              },
+              "name" : "permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0"
             },
             {
               "action" : "REJECT",
@@ -2316,6 +2348,7 @@
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.10.1.1~",
                 "group" : "as1",
                 "localAs" : 1,
@@ -2340,6 +2373,7 @@
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
                 "group" : "bad-ebgp",
                 "localAs" : 1,
@@ -2363,6 +2397,7 @@
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
                 "group" : "xanadu",
                 "localAs" : 1,
@@ -2386,6 +2421,7 @@
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
                 "exportPolicySources" : [
                   "as1_to_as2"

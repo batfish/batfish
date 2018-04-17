@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -31,7 +32,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private InterfaceAddress _address;
 
-    private Double _bandwidth;
+    @Nullable private Double _bandwidth;
 
     private boolean _blacklisted;
 
@@ -173,7 +174,7 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setBandwidth(Double bandwidth) {
+    public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }
@@ -523,7 +524,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _autoState;
 
-  private Double _bandwidth;
+  @Nullable private Double _bandwidth;
 
   private transient boolean _blacklisted;
 
@@ -673,7 +674,7 @@ public final class Interface extends ComparableStructure<String> {
     if (this._autoState != other._autoState) {
       return false;
     }
-    if (this._bandwidth.compareTo(other._bandwidth) != 0) {
+    if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
     // we check ACLs for name match only -- full ACL diff can be done
@@ -762,6 +763,7 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_BANDWIDTH)
   @JsonPropertyDescription(
       "The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations")
+  @Nullable
   public Double getBandwidth() {
     return _bandwidth;
   }
@@ -1104,7 +1106,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_BANDWIDTH)
-  public void setBandwidth(Double bandwidth) {
+  public void setBandwidth(@Nullable Double bandwidth) {
     _bandwidth = bandwidth;
   }
 

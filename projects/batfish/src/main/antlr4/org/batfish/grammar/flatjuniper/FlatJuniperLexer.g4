@@ -892,6 +892,11 @@ ENCRYPTION_ALGORITHM
    'encryption-algorithm'
 ;
 
+ENFORCE_FIRST_AS
+:
+   'enforce-first-as'
+;
+
 ENHANCED_HASH_KEY
 :
    'enhanced-hash-key'
@@ -4769,6 +4774,11 @@ VIRTUAL_ADDRESS
 VIRTUAL_CHASSIS
 :
    'virtual-chassis'
+;
+
+VIRTUAL_ROUTER
+:
+   'virtual-router'
 ;
 
 VIRTUAL_SWITCH

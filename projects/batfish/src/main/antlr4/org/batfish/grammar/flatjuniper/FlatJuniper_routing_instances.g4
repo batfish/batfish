@@ -25,6 +25,7 @@ ri_instance_type
    (
       FORWARDING
       | L2VPN
+      | VIRTUAL_ROUTER
       | VIRTUAL_SWITCH
       | VRF
    )

@@ -980,12 +980,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
               updateSourceInterfaceLine);
         }
       } else {
-        Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
-        for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
-          for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
-            if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
-              Ip ifaceAddress = interfaceAddress.getIp();
-              updateSource = ifaceAddress;
+        if (lpg instanceof DynamicIpBgpPeerGroup) {
+          updateSource = Ip.AUTO;
+        } else {
+          Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
+          for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
+            for (InterfaceAddress interfaceAddress : iface.getAllAddresses()) {
+              if (interfaceAddress.getPrefix().containsIp(neighborAddress)) {
+                Ip ifaceAddress = interfaceAddress.getIp();
+                updateSource = ifaceAddress;
+              }
             }
           }
         }
@@ -1972,11 +1976,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
           Ip neighborAddress = ipg.getIp();
-          newNeighbor = new BgpNeighbor(neighborAddress, c);
+          newNeighbor = new BgpNeighbor(neighborAddress, c, false);
         } else if (lpg instanceof DynamicIpBgpPeerGroup) {
           DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
           Prefix neighborAddressRange = dpg.getPrefix();
-          newNeighbor = new BgpNeighbor(neighborAddressRange, c);
+          newNeighbor = new BgpNeighbor(neighborAddressRange, c, true);
         } else if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
           // TODO: implement ipv6 bgp neighbors
           continue;
@@ -3812,6 +3816,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // TODO: fill in
 
     // mark references to route-maps that may not appear in data model
+    markRouteMaps(CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP);
     markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP);
     markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER);
     markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP);

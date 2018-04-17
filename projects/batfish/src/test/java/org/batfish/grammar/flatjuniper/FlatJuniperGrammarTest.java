@@ -1,12 +1,15 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
@@ -21,6 +24,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -356,6 +360,13 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testEnforceFistAs() throws IOException {
+    String hostname = "bgp-enforce-first-as";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasValue(hasEnforceFirstAs())))));
+  }
+
+  @Test
   public void testEthernetSwitchingFilterReference() throws IOException {
     String hostname = "ethernet-switching-filter";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -488,6 +499,19 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testRoutingInstanceType() throws IOException {
+    Configuration c = parseConfig("routing-instance-type");
+
+    /* All types for now should result in a VRF */
+    /* TODO: perhaps some types e.g. forwarding should not result in a VRF */
+    assertThat(c, hasVrfs(hasKey("ri-forwarding")));
+    assertThat(c, hasVrfs(hasKey("ri-l2vpn")));
+    assertThat(c, hasVrfs(hasKey("ri-virtual-router")));
+    assertThat(c, hasVrfs(hasKey("ri-virtual-switch")));
+    assertThat(c, hasVrfs(hasKey("ri-vrf")));
   }
 
   @Test

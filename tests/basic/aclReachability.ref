@@ -159,6 +159,22 @@
               "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255"
             },
             {
+              "action" : "ACCEPT",
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "10.12.11.1"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.12.11.2"
+                  ]
+                }
+              },
+              "name" : "permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0"
+            },
+            {
               "action" : "REJECT",
               "matchCondition" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
@@ -249,6 +265,22 @@
                 }
               },
               "name" : "permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255"
+            },
+            {
+              "action" : "ACCEPT",
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : [
+                    "10.23.21.3"
+                  ],
+                  "negate" : false,
+                  "srcIps" : [
+                    "10.23.21.2"
+                  ]
+                }
+              },
+              "name" : "permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0"
             },
             {
               "action" : "REJECT",
@@ -1019,6 +1051,11 @@
           },
           {
             "index" : 1,
+            "name" : "permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0",
+            "differentAction" : false
+          },
+          {
+            "index" : 2,
             "name" : "deny   ip any any",
             "differentAction" : false
           }
@@ -1050,6 +1087,11 @@
           },
           {
             "index" : 1,
+            "name" : "permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0",
+            "differentAction" : false
+          },
+          {
+            "index" : 2,
             "name" : "deny   ip any any",
             "differentAction" : false
           }
