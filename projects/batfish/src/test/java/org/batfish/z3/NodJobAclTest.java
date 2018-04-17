@@ -237,7 +237,6 @@ public class NodJobAclTest {
 
     Configuration node = cb.build();
     Vrf vrf = vb.setOwner(node).build();
-    OriginateVrf originateVrf = new OriginateVrf(node.getHostname(), vrf.getName());
 
     // setup the ACL to be referred to from the outgoing filter
     aclb.setLines(
