@@ -236,6 +236,9 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), accepts(ogn2Flow2, null, acls)));
+    assertThat(
+        c,
+        hasIpAccessList(computeNetworkObjectGroupAclName("ogn3"), rejects(ogn2Flow2, null, acls)));
   }
 
   @Test
