@@ -6065,12 +6065,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ecns.add(ecn);
       }
     }
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else {
-      name = getFullText(ctx).trim();
-    }
+    String name = getFullText(ctx).trim();
     StandardAccessListLine line =
         new StandardAccessListLine(name, action, new IpWildcard(srcIp, srcWildcard), dscps, ecns);
     _currentStandardAcl.addLine(line);
