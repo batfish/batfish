@@ -87,7 +87,7 @@
         "description" : "Unused structure of type: 'bgp group' with name: 'UNDEFINED_PEER_GROUP'",
         "files" : {
           "arista_bgp" : [
-            9
+            11
           ]
         }
       },
@@ -888,7 +888,7 @@
       "arista_bgp" : {
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : [
-            9
+            11
           ]
         }
       },
