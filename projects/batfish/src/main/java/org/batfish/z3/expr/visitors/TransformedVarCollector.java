@@ -51,7 +51,7 @@ public class TransformedVarCollector
         .stream()
         .map(TransformedVarCollector::collectTransformedVars)
         .flatMap(Set::stream)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
@@ -71,7 +71,11 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> visitIfExpr(IfExpr ifExpr) {
-    return Sets.union(ifExpr.getAntecedent().accept(this), ifExpr.getConsequent().accept(this));
+    return Stream.of(
+        ifExpr.getAntecedent().accept(this),
+        ifExpr.getConsequent().accept(this))
+        .flatMap(Set::stream)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
@@ -81,7 +85,7 @@ public class TransformedVarCollector
             ifThenElse.getThen().accept(this),
             ifThenElse.getElse().accept(this))
         .flatMap(Set::stream)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
@@ -101,7 +105,7 @@ public class TransformedVarCollector
         .stream()
         .map(TransformedVarCollector::collectTransformedVars)
         .flatMap(Set::stream)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override

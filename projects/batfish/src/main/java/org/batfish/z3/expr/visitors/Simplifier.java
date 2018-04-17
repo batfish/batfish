@@ -338,8 +338,7 @@ public class Simplifier
 
   @Override
   public IntExpr visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return transformedVarIntExpr;
   }
 
   @Override
@@ -349,7 +348,6 @@ public class Simplifier
 
   @Override
   public IntExpr visitVarIntExpr(VarIntExpr varIntExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return varIntExpr;
   }
 }

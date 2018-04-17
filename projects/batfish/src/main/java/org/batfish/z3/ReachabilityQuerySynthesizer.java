@@ -1,6 +1,8 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -30,6 +32,14 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
     protected Boolean _srcNatted;
 
     protected Set<String> _transitNodes;
+
+    public Builder() {
+      _headerSpace = new HeaderSpace();
+      _ingressNodeVrfs = ImmutableMap.of();
+      _nonTransitNodes = ImmutableSet.of();
+      _srcNatted = false;
+      _transitNodes = ImmutableSet.of();
+    }
 
     public abstract Q build();
 

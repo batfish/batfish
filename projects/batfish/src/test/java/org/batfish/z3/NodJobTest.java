@@ -1,9 +1,15 @@
 package org.batfish.z3;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -30,8 +36,8 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.EdgeMatchers;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.ForwardingAction;
@@ -51,9 +57,13 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.matchers.EdgeMatchers;
+import org.batfish.datamodel.matchers.FlowTraceHopMatchers;
+import org.batfish.datamodel.matchers.FlowTraceMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -451,14 +461,23 @@ public class NodJobTest {
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
     bdpDataPlanePlugin.processFlows(flows, dataPlane);
     List<FlowTrace> flowTraces = bdpDataPlanePlugin.getHistoryFlowTraces(dataPlane);
-
-    flowTraces.forEach(
-        trace -> {
-          assertThat(trace.getNotes(), is("NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK"));
-          List<FlowTraceHop> hops = trace.getHops();
-          assertThat(hops, hasSize(2));
-          FlowTraceHop hop = hops.get(0);
-          assertThat(hop.getEdge(), EdgeMatchers.hasInt2(equalTo(iface1)));
-        });
+    assertThat(flowTraces, hasSize(2));
+    assertThat(flowTraces,
+        containsInAnyOrder(
+            allOf(
+                FlowTraceMatchers.hasDisposition(
+                    equalTo(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
+                FlowTraceMatchers.hasHops(
+                    contains(
+                        FlowTraceHopMatchers.hasEdge(EdgeMatchers.hasInt2(equalTo(iface1))),
+                        any(FlowTraceHop.class))),
+            allOf(
+                FlowTraceMatchers.hasDisposition(
+                    equalTo(FlowDisposition.DENIED_OUT)),
+                FlowTraceMatchers.hasHops(
+                    contains(
+                        FlowTraceHopMatchers.hasEdge(EdgeMatchers.hasInt2(equalTo(iface2))),
+                        any(FlowTraceHop.class)))
+                ))));
   }
 }

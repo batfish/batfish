@@ -59,6 +59,11 @@ import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.Query;
 
 public class DefaultTransitionGenerator implements StateVisitor {
+  /* Dedicated value for the srcInterfaceField used when traffic did not enter the node through any
+   * interface (or we no longer care which interface was the source).
+   */
+  private static final int NO_SOURCE_INTERFACE = 0;
+
   public static List<RuleStatement> generateTransitions(SynthesizerInput input, Set<State> states) {
     DefaultTransitionGenerator visitor = new DefaultTransitionGenerator(input);
     states.forEach(state -> state.accept(visitor));
@@ -513,7 +518,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       vrfName ->
                           new BasicRuleStatement(
                               noSrcInterfaceConstraint(),
-                              ImmutableSet.of(new OriginateVrf(hostname, vrfName)),
+                              new OriginateVrf(hostname, vrfName),
                               new Originate(hostname)));
             })
         .forEach(_rules::add);
@@ -659,7 +664,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   nodeHasSrcInterfaceConstraint
                       ? new EqExpr(
                           new TransformedVarIntExpr(_input.getSourceInterfaceField()),
-                          new LitIntExpr(0, _input.getSourceInterfaceField().getSize()))
+                          new LitIntExpr(NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize()))
                       : TrueExpr.INSTANCE,
                   aclStates,
                   new PostOutEdge(node1, iface1, node2, iface2));

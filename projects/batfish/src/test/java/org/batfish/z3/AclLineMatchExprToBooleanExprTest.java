@@ -32,11 +32,14 @@ public class AclLineMatchExprToBooleanExprTest {
       new AclLineMatchExprToBooleanExpr(ImmutableMap.of(), null, ImmutableMap.of());
 
   @Test
-  public void testAndMatchExpr() {
+  public void testAndMatchExpr_emptyConjuncts() {
     assertThat(
         new AndMatchExpr(ImmutableList.of()).accept(aclLineMatchExprToBooleanExpr),
         equalTo(new AndExpr(ImmutableList.of())));
+  }
 
+  @Test
+  public void testAndMatchExpr_twoConjuncts() {
     BooleanExpr booleanExpr =
         new AndMatchExpr(ImmutableList.of(TrueExpr.INSTANCE, FalseExpr.INSTANCE))
             .accept(aclLineMatchExprToBooleanExpr);
@@ -57,6 +60,14 @@ public class AclLineMatchExprToBooleanExprTest {
   }
 
   @Test
+  public void testMatchHeaderspace_unrestricted() {
+    HeaderSpace headerSpace = new HeaderSpace();
+    assertThat(
+        new MatchHeaderSpace(headerSpace).accept(aclLineMatchExprToBooleanExpr),
+        equalTo(new HeaderSpaceMatchExpr(headerSpace)));
+  }
+
+  @Test
   public void testMatchHeaderspace() {
     HeaderSpace headerSpace =
         HeaderSpace.builder().setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4"))).build();
@@ -73,11 +84,14 @@ public class AclLineMatchExprToBooleanExprTest {
   }
 
   @Test
-  public void testOrMatchExpr() {
+  public void testOrMatchExpr_noDisjuncts() {
     assertThat(
         new OrMatchExpr(ImmutableList.of()).accept(aclLineMatchExprToBooleanExpr),
         equalTo(new OrExpr(ImmutableList.of())));
+  }
 
+  @Test
+  public void testOrMatchExpr_twoDisjuncts() {
     BooleanExpr booleanExpr =
         new OrMatchExpr(ImmutableList.of(TrueExpr.INSTANCE, FalseExpr.INSTANCE))
             .accept(aclLineMatchExprToBooleanExpr);

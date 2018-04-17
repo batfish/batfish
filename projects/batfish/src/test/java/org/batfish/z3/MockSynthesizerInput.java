@@ -88,29 +88,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     }
 
     public MockSynthesizerInput build() {
-      return new MockSynthesizerInput(
-          _aclActions,
-          _aclConditions,
-          _arpTrueEdge,
-          _enabledEdges,
-          _enabledInterfaces,
-          _enabledInterfacesByNodeVrf,
-          _enabledNodes,
-          _enabledVrfs,
-          _incomingAcls,
-          _ipsByHostname,
-          _neighborUnreachable,
-          _nodeInterfaces,
-          _nodesWithSrcInterfaceConstraints,
-          _nullRoutedIps,
-          _outgoingAcls,
-          _routableIps,
-          _simplify,
-          _sourceNats,
-          _srcInterfaceField,
-          _srcInterfaceFieldValues,
-          _topologyInterfaces,
-          _vectorizedParameters);
+      return new MockSynthesizerInput(this);
     }
 
     public Builder setAclActions(Map<String, Map<String, List<LineAction>>> aclActions) {
@@ -279,51 +257,29 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Set<Type> _vectorizedParameters;
 
-  private MockSynthesizerInput(
-      Map<String, Map<String, List<LineAction>>> aclActions,
-      Map<String, Map<String, List<BooleanExpr>>> aclConditions,
-      Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> arpTrueEdge,
-      Set<Edge> enabledEdges,
-      Map<String, Set<String>> enabledInterfaces,
-      Map<String, Map<String, Set<String>>> enabledInterfacesByNodeVrf,
-      Set<String> enabledNodes,
-      Map<String, Set<String>> enabledVrfs,
-      Map<String, Map<String, String>> incomingAcls,
-      Map<String, Set<Ip>> ipsByHostname,
-      Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable,
-      Map<String, List<String>> nodeInterfaces,
-      Set<String> nodesWithSrcInterfaceConstraints,
-      Map<String, Map<String, BooleanExpr>> nullRoutedIps,
-      Map<String, Map<String, String>> outgoingAcls,
-      Map<String, Map<String, BooleanExpr>> routableIps,
-      boolean simplify,
-      Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats,
-      Field srcInterfaceField,
-      Map<String, Map<String, IntExpr>> srcInterfaceFieldValues,
-      Map<String, Set<String>> topologyInterfaces,
-      Set<Type> vectorizedParameters) {
-    _aclActions = aclActions;
-    _aclConditions = aclConditions;
-    _arpTrueEdge = arpTrueEdge;
-    _enabledEdges = enabledEdges;
-    _enabledInterfaces = enabledInterfaces;
-    _enabledInterfacesByNodeVrf = enabledInterfacesByNodeVrf;
-    _enabledNodes = enabledNodes;
-    _enabledVrfs = enabledVrfs;
-    _incomingAcls = incomingAcls;
-    _ipsByHostname = ipsByHostname;
-    _neighborUnreachable = neighborUnreachable;
-    _nodeInterfaces = nodeInterfaces;
-    _nodesWithSrcInterfaceConstraints = nodesWithSrcInterfaceConstraints;
-    _nullRoutedIps = nullRoutedIps;
-    _outgoingAcls = outgoingAcls;
-    _routableIps = routableIps;
-    _simplify = simplify;
-    _sourceNats = sourceNats;
-    _sourceInterfaceField = srcInterfaceField;
-    _sourceInterfaceFieldValues = srcInterfaceFieldValues;
-    _topologyInterfaces = topologyInterfaces;
-    _vectorizedParameters = vectorizedParameters;
+  private MockSynthesizerInput(Builder builder) {
+    _aclActions = builder._aclActions;
+    _aclConditions = builder._aclConditions;
+    _arpTrueEdge = builder._arpTrueEdge;
+    _enabledEdges = builder._enabledEdges;
+    _enabledInterfaces = builder._enabledInterfaces;
+    _enabledInterfacesByNodeVrf = builder._enabledInterfacesByNodeVrf;
+    _enabledNodes = builder._enabledNodes;
+    _enabledVrfs = builder._enabledVrfs;
+    _incomingAcls = builder._incomingAcls;
+    _ipsByHostname = builder._ipsByHostname;
+    _neighborUnreachable = builder._neighborUnreachable;
+    _nodeInterfaces = builder._nodeInterfaces;
+    _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
+    _nullRoutedIps = builder._nullRoutedIps;
+    _outgoingAcls = builder._outgoingAcls;
+    _routableIps = builder._routableIps;
+    _simplify = builder._simplify;
+    _sourceNats = builder._sourceNats;
+    _sourceInterfaceField = builder._srcInterfaceField;
+    _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
+    _topologyInterfaces = builder._topologyInterfaces;
+    _vectorizedParameters = builder._vectorizedParameters;
   }
 
   @Override
