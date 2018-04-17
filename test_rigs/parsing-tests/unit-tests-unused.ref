@@ -843,14 +843,6 @@
           ]
         }
       },
-      "unused:standard ip access-list:sshabc" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: 'sshabc'",
-        "files" : {
-          "arista_misc" : [
-            25
-          ]
-        }
-      },
       "unused:standard ip access-list:stdAcl-bar" : {
         "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-bar'",
         "files" : {
@@ -871,7 +863,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 115
+      "numResults" : 114
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -897,13 +889,6 @@
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : [
             11
-          ]
-        }
-      },
-      "arista_misc" : {
-        "standard ip access-list" : {
-          "sshabc" : [
-            25
           ]
         }
       },

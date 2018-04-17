@@ -52016,13 +52016,6 @@
             ]
           }
         },
-        "arista_misc" : {
-          "standard ip access-list" : {
-            "sshabc" : [
-              25
-            ]
-          }
-        },
         "as_path_prepend" : {
           "route-map" : {
             "rmap" : [
