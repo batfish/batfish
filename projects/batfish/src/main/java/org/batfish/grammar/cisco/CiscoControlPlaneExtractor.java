@@ -14,6 +14,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -933,7 +934,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private OspfProcess _currentOspfProcess;
 
-  private BgpPeerGroup _currentPeerGroup;
+  @Nullable private BgpPeerGroup _currentPeerGroup;
 
   private NamedBgpPeerGroup _currentPeerSession;
 
@@ -988,7 +989,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final BatfishCombinedParser<?, ?> _parser;
 
-  private List<BgpPeerGroup> _peerGroupStack;
+  private LinkedList<BgpPeerGroup> _peerGroupStack;
 
   private final String _text;
 
@@ -1009,7 +1010,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _format = format;
     _unimplementedFeatures = new TreeSet<>();
     _w = warnings;
-    _peerGroupStack = new ArrayList<>();
+    _peerGroupStack = new LinkedList<>();
     _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _currentBlockNeighborAddressFamilies = new HashSet<>();
   }
@@ -1688,6 +1689,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       pushPeer(pg);
       _currentDynamicIpv6PeerGroup = pg;
+    }
+
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
     }
     if (ctx.REMOTE_AS() != null) {
       int remoteAs = toInteger(ctx.asnum);
@@ -2402,6 +2408,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAdditional_paths_rb_stanza(Additional_paths_rb_stanzaContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     if (ctx.SELECT() != null && ctx.ALL() != null) {
       _currentPeerGroup.setAdditionalPathsSelectAll(true);
     } else {
@@ -2487,6 +2497,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAllowas_in_bgp_tail(Allowas_in_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setAllowAsIn(true);
     if (ctx.num != null) {
       todo(ctx, F_ALLOWAS_IN_NUMBER);
@@ -2537,6 +2551,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitBgp_advertise_inactive_rb_stanza(Bgp_advertise_inactive_rb_stanzaContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setAdvertiseInactive(true);
   }
 
@@ -2629,6 +2647,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       clusterId = new Ip(ipAsLong);
     } else if (ctx.IP_ADDRESS() != null) {
       clusterId = toIp(ctx.IP_ADDRESS());
+    }
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
     }
     _currentPeerGroup.setClusterId(clusterId);
   }
@@ -2749,17 +2771,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitDefault_information_originate_rb_stanza(
       Default_information_originate_rb_stanzaContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setDefaultOriginate(true);
   }
 
   @Override
   public void exitDefault_metric_bgp_tail(Default_metric_bgp_tailContext ctx) {
     int metric = toInteger(ctx.metric);
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setDefaultMetric(metric);
   }
 
   @Override
   public void exitDefault_originate_bgp_tail(Default_originate_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setDefaultOriginate(true);
     if (ctx.map != null) {
       String mapName = ctx.map.getText();
@@ -2771,17 +2805,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitDefault_shutdown_bgp_tail(Default_shutdown_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setShutdown(true);
   }
 
   @Override
   public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     String description = ctx.description_line().text.getText().trim();
     _currentPeerGroup.setDescription(description);
   }
 
   @Override
   public void exitDisable_peer_as_check_bgp_tail(Disable_peer_as_check_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setDisablePeerAsCheck(true);
   }
 
@@ -2833,6 +2879,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEbgp_multihop_bgp_tail(Ebgp_multihop_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setEbgpMultihop(true);
   }
 
@@ -4146,6 +4196,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
     int as = toInteger(ctx.as);
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setLocalAs(as);
   }
 
@@ -4475,6 +4529,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitNext_hop_self_bgp_tail(Next_hop_self_bgp_tailContext ctx) {
     boolean val = ctx.NO() == null;
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setNextHopSelf(val);
   }
 
@@ -4579,6 +4637,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitNo_shutdown_rb_stanza(No_shutdown_rb_stanzaContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     // TODO: see if it is always ok to set active on 'no shutdown'
     _currentPeerGroup.setShutdown(false);
     _currentPeerGroup.setActive(true);
@@ -4798,6 +4860,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     String listName = ctx.list_name.getText();
     int line = ctx.list_name.getLine();
     if (ctx.IN() != null) {
@@ -5047,6 +5113,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     int as = toInteger(ctx.as);
     if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
+      if (_currentPeerGroup == null) {
+        _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+        return;
+      }
       _currentPeerGroup.setRemoteAs(as);
     } else {
       throw new BatfishException(
@@ -5056,6 +5126,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRemove_private_as_bgp_tail(Remove_private_as_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setRemovePrivateAs(true);
   }
 
@@ -5393,6 +5467,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRoute_reflector_client_bgp_tail(Route_reflector_client_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
     _currentPeerGroup.setRouteReflectorClient(true);
   }
 
@@ -5705,6 +5783,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       standard = true;
     } else if (ctx.SEND_EXTENDED_COMMUNITY_EBGP() != null) {
       extended = true;
+    }
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
     }
     if (standard) {
       _currentPeerGroup.setSendCommunity(true);
@@ -6198,16 +6280,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitUpdate_source_bgp_tail(Update_source_bgp_tailContext ctx) {
     if (_currentPeerGroup == null) {
       return;
-    } else {
-      String source = toInterfaceName(ctx.source);
-      int line = ctx.source.getStart().getLine();
-      _currentPeerGroup.setUpdateSource(source);
-      _currentPeerGroup.setUpdateSourceLine(line);
     }
+    String source = toInterfaceName(ctx.source);
+    int line = ctx.source.getStart().getLine();
+    _currentPeerGroup.setUpdateSource(source);
+    _currentPeerGroup.setUpdateSourceLine(line);
   }
 
   @Override
   public void exitUse_af_group_bgp_tail(Use_af_group_bgp_tailContext ctx) {
+    if (_currentPeerGroup == null) {
+      _w.redFlag(String.format("Line %d: no current peer group", ctx.getStart().getLine()));
+      return;
+    }
+
     String groupName = ctx.name.getText();
     if (_currentIpPeerGroup == null && _currentIpv6PeerGroup == null) {
       throw new BatfishException("Unexpected context for use neighbor group");
@@ -6455,9 +6541,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private void popPeer() {
-    int index = _peerGroupStack.size() - 1;
-    _currentPeerGroup = _peerGroupStack.get(index);
-    _peerGroupStack.remove(index);
+    if (_peerGroupStack.isEmpty()) {
+      _currentPeerGroup = null;
+    } else {
+      _currentPeerGroup = _peerGroupStack.removeLast();
+    }
     _inIpv6BgpPeer = false;
   }
 
