@@ -72,7 +72,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
 
-  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane);
+  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
 
   public abstract String getName();
 }
