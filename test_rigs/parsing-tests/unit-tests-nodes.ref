@@ -1007,6 +1007,29 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ipAccessLists" : {
+          "sshabc" : {
+            "name" : "sshabc",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : [
+                      "0.0.0.0/0"
+                    ],
+                    "negate" : false,
+                    "srcIps" : [
+                      "1.2.0.0/16"
+                    ]
+                  }
+                },
+                "name" : "10"
+              }
+            ]
+          }
+        },
         "roleDimensions" : {
           "0" : "arista",
           "1" : "misc"

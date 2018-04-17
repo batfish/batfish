@@ -2250,6 +2250,21 @@
             "            DEC:'60'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
+            "    (standard_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      STANDARD:'standard'  <== mode:DEFAULT_MODE",
+            "      (variable_aclname",
+            "        VARIABLE:'sshabc'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (standard_access_list_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          IP_PREFIX:'1.2.4.8/16'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
             "    (s_management",
             "      MANAGEMENT:'management'  <== mode:DEFAULT_MODE",
             "      (management_ssh",
@@ -2261,6 +2276,13 @@
             "            VARIABLE:'mode'  <== mode:M_Authentication",
             "            PASSWORD:'password'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (management_ssh_ip_access_group",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'sshabc'  <== mode:DEFAULT_MODE)",
+            "          IN:'in'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (management_ssh_null",
             "          IDLE_TIMEOUT:'idle-timeout'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -51155,7 +51177,7 @@
           "ipv4 acl" : {
             "abc" : {
               "management telnet ip access-group" : [
-                32
+                36
               ]
             }
           }
