@@ -51,8 +51,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   }
 
   public BooleanExpr toBooleanExpr(AclLineMatchExpr aclLineMatchExpr) {
-    BooleanExpr expr = aclLineMatchExpr.accept(this);
-    return expr;
+    return aclLineMatchExpr.accept(this);
   }
 
   @Override
