@@ -5,19 +5,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.graph.Network;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
@@ -415,6 +417,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
   public static class NeighborsAnswerer extends Answerer {
 
+    private Network<BgpNeighbor, BgpSession> _bgpTopology;
+
     private SortedMap<String, SortedSet<String>> _nodeRolesMap;
 
     private boolean _remoteBgpNeighborsInitialized;
@@ -567,28 +571,16 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
         initRemoteBgpNeighbors(configurations);
         SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
-        for (Configuration c : configurations.values()) {
-          String hostname = c.getHostname();
-          for (Vrf vrf : c.getVrfs().values()) {
-            BgpProcess proc = vrf.getBgpProcess();
-            if (proc != null) {
-              for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-                BgpNeighbor remoteBgpNeighbor = bgpNeighbor.getRemoteBgpNeighbor();
-                if (remoteBgpNeighbor != null) {
-                  boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
-                  if (ebgp) {
-                    Configuration remoteHost = remoteBgpNeighbor.getOwner();
-                    String remoteHostname = remoteHost.getHostname();
-                    if (includeNodes1.contains(hostname)
-                        && includeNodes2.contains(remoteHostname)) {
-                      Ip localIp = bgpNeighbor.getLocalIp();
-                      Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                      IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                      vedges.add(new VerboseBgpEdge(bgpNeighbor, remoteBgpNeighbor, edge));
-                    }
-                  }
-                }
-              }
+        for (BgpSession session : _bgpTopology.edges()) {
+          BgpNeighbor bgpNeighbor = session.getSrc();
+          BgpNeighbor remoteBgpNeighbor = session.getDst();
+          boolean ebgp = session.isEbgp();
+          if (ebgp) {
+            VerboseBgpEdge edge =
+                constructVerboseBgpEdge(
+                    includeNodes1, includeNodes2, bgpNeighbor, remoteBgpNeighbor);
+            if (edge != null) {
+              vedges.add(edge);
             }
           }
         }
@@ -615,27 +607,17 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
         SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
         initRemoteBgpNeighbors(configurations);
-        for (Configuration c : configurations.values()) {
-          String hostname = c.getHostname();
-          for (Vrf vrf : c.getVrfs().values()) {
-            BgpProcess proc = vrf.getBgpProcess();
-            if (proc != null) {
-              for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-                BgpNeighbor remoteBgpNeighbor = bgpNeighbor.getRemoteBgpNeighbor();
-                if (remoteBgpNeighbor != null) {
-                  boolean ibgp = bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
-                  if (ibgp) {
-                    Configuration remoteHost = remoteBgpNeighbor.getOwner();
-                    String remoteHostname = remoteHost.getHostname();
-                    if (includeNodes1.contains(hostname)
-                        && includeNodes2.contains(remoteHostname)) {
-                      Ip localIp = bgpNeighbor.getLocalIp();
-                      Ip remoteIp = remoteBgpNeighbor.getLocalIp();
-                      IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
-                      vedges.add(new VerboseBgpEdge(bgpNeighbor, remoteBgpNeighbor, edge));
-                    }
-                  }
-                }
+        for (BgpSession session : _bgpTopology.edges()) {
+          BgpNeighbor bgpNeighbor = session.getSrc();
+          BgpNeighbor remoteBgpNeighbor = session.getDst();
+          if (remoteBgpNeighbor != null) {
+            boolean ibgp = !session.isEbgp();
+            if (ibgp) {
+              VerboseBgpEdge edge =
+                  constructVerboseBgpEdge(
+                      includeNodes1, includeNodes2, bgpNeighbor, remoteBgpNeighbor);
+              if (edge != null) {
+                vedges.add(edge);
               }
             }
           }
@@ -707,10 +689,38 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return answerElement;
     }
 
+    /**
+     * Create a verbose bgp edge, if hostnames match specified pattern
+     *
+     * @param includeNodes1 Allowed src hostnames
+     * @param includeNodes2 Allowed dst hostnames
+     * @param bgpNeighbor node1 bgp neighbor
+     * @param remoteBgpNeighbor node2 bgp neighbor
+     * @return a new {@link VerboseBgpEdge} describing the BGP peering or {@code null} if hostname
+     *     filters are not satisfied.
+     */
+    @Nullable
+    private static VerboseBgpEdge constructVerboseBgpEdge(
+        Set<String> includeNodes1,
+        Set<String> includeNodes2,
+        BgpNeighbor bgpNeighbor,
+        BgpNeighbor remoteBgpNeighbor) {
+      String hostname = bgpNeighbor.getOwner().getHostname();
+      String remoteHostname = remoteBgpNeighbor.getOwner().getHostname();
+      if (includeNodes1.contains(hostname) && includeNodes2.contains(remoteHostname)) {
+        Ip localIp = bgpNeighbor.getLocalIp();
+        Ip remoteIp = remoteBgpNeighbor.getLocalIp();
+        IpEdge edge = new IpEdge(hostname, localIp, remoteHostname, remoteIp);
+        return new VerboseBgpEdge(bgpNeighbor, remoteBgpNeighbor, edge);
+      }
+      return null;
+    }
+
     private void initRemoteBgpNeighbors(Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
-        CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
+        _bgpTopology =
+            CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
         _remoteBgpNeighborsInitialized = true;
       }
     }

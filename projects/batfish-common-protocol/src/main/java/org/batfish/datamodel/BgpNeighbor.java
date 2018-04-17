@@ -14,10 +14,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
-/**
- * Represents a peering with a single router (by ip address) acting as a bgp peer to the router
- * whose configuration's BGP process contains this object
- */
+/** Represents a configured BGP peering, at the control plane level */
 @JsonSchemaDescription("A configured e/iBGP peering relationship")
 public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
@@ -36,6 +33,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private Vrf _vrf;
     private Long _clusterId;
     private Boolean _routeReflectorClient;
+    private boolean _dynamic = false;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, BgpNeighbor.class);
@@ -45,7 +43,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     public BgpNeighbor build() {
       BgpNeighbor bgpNeighbor;
       Ip peerIpAddress = _peerIpAddress != null ? _peerIpAddress : new Ip(generateLong());
-      bgpNeighbor = new BgpNeighbor(peerIpAddress, _owner);
+      bgpNeighbor = new BgpNeighbor(peerIpAddress, _owner, _dynamic);
       if (_clusterId != null) {
         bgpNeighbor.setClusterId(_clusterId);
       }
@@ -154,131 +152,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       _routeReflectorClient = routeReflectorClient;
       return this;
     }
-  }
 
-  public static final class BgpNeighborSummary extends ComparableStructure<String> {
-
-    private static final String PROP_DESCRIPTION = "description";
-
-    private static final String PROP_GROUP = "group";
-
-    private static final String PROP_LOCAL_AS = "localAs";
-
-    private static final String PROP_LOCAL_IP = "localIp";
-
-    private static final String PROP_REMOTE_AS = "remoteAs";
-
-    private static final String PROP_REMOTE_IP = "remoteIp";
-
-    private static final String PROP_REMOTE_PREFIX = "dynamicRemotePrefix";
-
-    private static final String PROP_VRF = "vrf";
-
-    /** */
-    private static final long serialVersionUID = 1L;
-
-    private final String _description;
-
-    private final String _group;
-
-    private final int _localAs;
-
-    private final Ip _localIp;
-
-    private final int _remoteAs;
-
-    private final Ip _remoteIp;
-
-    private final Prefix _remotePrefix;
-
-    private final String _vrf;
-
-    public BgpNeighborSummary(BgpNeighbor bgpNeighbor) {
-      super(
-          bgpNeighbor.getOwner().getName()
-              + ":"
-              + (bgpNeighbor.getDynamic()
-                  ? bgpNeighbor.getPrefix().toString()
-                  : bgpNeighbor.getAddress().toString()));
-      _description = bgpNeighbor._description;
-      _group = bgpNeighbor._group;
-      _localAs = bgpNeighbor._localAs;
-      _localIp = bgpNeighbor._localIp;
-      _remoteAs = bgpNeighbor._remoteAs;
-      _remoteIp = bgpNeighbor.getAddress();
-      _remotePrefix = bgpNeighbor._key;
-      _vrf = bgpNeighbor._vrf;
-    }
-
-    @JsonCreator
-    public BgpNeighborSummary(
-        @JsonProperty(PROP_NAME) String name,
-        @JsonProperty(PROP_DESCRIPTION) String description,
-        @JsonProperty(PROP_GROUP) String group,
-        @JsonProperty(PROP_LOCAL_AS) int localAs,
-        @JsonProperty(PROP_LOCAL_IP) Ip localIp,
-        @JsonProperty(PROP_REMOTE_AS) int remoteAs,
-        @JsonProperty(PROP_REMOTE_IP) Ip remoteIp,
-        @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
-        @JsonProperty(PROP_VRF) String vrf) {
-      super(name);
-      _description = description;
-      _group = group;
-      _localAs = localAs;
-      _localIp = localIp;
-      _remoteAs = remoteAs;
-      _remoteIp = remoteIp;
-      _remotePrefix = remotePrefix;
-      _vrf = vrf;
-    }
-
-    @JsonProperty(PROP_DESCRIPTION)
-    public String getDescription() {
-      return _description;
-    }
-
-    @JsonProperty(PROP_GROUP)
-    public String getGroup() {
-      return _group;
-    }
-
-    @JsonProperty(PROP_LOCAL_AS)
-    public int getLocalAs() {
-      return _localAs;
-    }
-
-    @JsonProperty(PROP_LOCAL_IP)
-    public Ip getLocalIp() {
-      return _localIp;
-    }
-
-    @JsonIgnore
-    public Prefix getPrefix() {
-      if (_remotePrefix == null) {
-        return new Prefix(_remoteIp, Prefix.MAX_PREFIX_LENGTH);
-      } else {
-        return _remotePrefix;
-      }
-    }
-
-    @JsonProperty(PROP_REMOTE_AS)
-    public int getRemoteAs() {
-      return _remoteAs;
-    }
-
-    @JsonProperty(PROP_REMOTE_IP)
-    public Ip getRemoteIp() {
-      return _remoteIp;
-    }
-
-    @JsonProperty(PROP_REMOTE_PREFIX)
-    public Prefix getRemotePrefix() {
-      return _remotePrefix;
-    }
-
-    @JsonProperty(PROP_VRF)
-    public String getVrf() {
-      return _vrf;
+    public Builder setDynamic(boolean dynamic) {
+      _dynamic = dynamic;
+      return this;
     }
   }
 
@@ -338,7 +215,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private static final String PROP_SEND_COMMUNITY = "sendCommunity";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _additionalPathsReceive;
@@ -356,8 +232,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private boolean _allowRemoteAsOut;
 
   private BgpAuthenticationSettings _authenticationSettings;
-
-  private transient Set<BgpNeighbor> _candidateRemoteBgpNeighbors;
 
   /** The cluster id associated with this peer to be used in route reflection */
   private Long _clusterId;
@@ -400,11 +274,13 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   private Configuration _owner;
 
+  /** Whether this session is passive/dynamic (e.g., listens for incoming connections only) */
+  private boolean _dynamic;
+
   /** The autonomous system number that the containing BGP process considers this peer to have. */
   private Integer _remoteAs;
 
-  private transient BgpNeighbor _remoteBgpNeighbor;
-
+  /** Flag indicating that this neighbor is a route reflector client */
   private boolean _routeReflectorClient;
 
   /**
@@ -421,14 +297,16 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   /**
-   * Constructs a BgpNeighbor with the given peer ip address for {@link #_address} and owner for
-   * {@link #_owner}
+   * Constructs a BgpNeighbor with the given peer ip address for {@code address} and owner for
+   * {@code owner}. Allows specifying whether the end of this session is passive with {@code
+   * passive}
    *
    * @param address The address of this neighbor
    * @param owner The owner of this neighbor
+   * @param dynamic Whether the peering is passive (a.k.a dynamic)
    */
-  public BgpNeighbor(Ip address, Configuration owner) {
-    this(new Prefix(address, Prefix.MAX_PREFIX_LENGTH), owner);
+  public BgpNeighbor(Ip address, Configuration owner, boolean dynamic) {
+    this(new Prefix(address, Prefix.MAX_PREFIX_LENGTH), owner, dynamic);
   }
 
   @JsonCreator
@@ -437,18 +315,21 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     _exportPolicySources = new TreeSet<>();
     _generatedRoutes = new LinkedHashSet<>();
     _importPolicySources = new TreeSet<>();
+    _dynamic = false;
   }
 
   /**
-   * Constructs a BgpNeighbor with the given peer dynamic ip range for {@link #_network} and owner
-   * for {@link #_owner}
+   * Constructs a BgpNeighbor with the given peer dynamic ip range for {@code prefix} and owner for
+   * {@code owner}
    *
    * @param prefix The dynamic ip range of this neighbor
    * @param owner The owner of this neighbor
+   * @param dynamic Whether the peering is passive (a.k.a dynamic)
    */
-  public BgpNeighbor(Prefix prefix, Configuration owner) {
+  public BgpNeighbor(Prefix prefix, Configuration owner, boolean dynamic) {
     this(prefix);
     _owner = owner;
+    _dynamic = dynamic;
   }
 
   @Override
@@ -508,16 +389,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return false;
     }
     // we will skip owner.
-    if (!this._remoteAs.equals(other._remoteAs)) {
-      return false;
-    }
-    if (this._routeReflectorClient != other._routeReflectorClient) {
-      return false;
-    }
-    if (this._sendCommunity != other._sendCommunity) {
-      return false;
-    }
-    return true;
+    return this._remoteAs.equals(other._remoteAs)
+        && this._routeReflectorClient == other._routeReflectorClient
+        && this._sendCommunity == other._sendCommunity
+        && this._dynamic == other._dynamic;
   }
 
   @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
@@ -583,11 +458,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _authenticationSettings;
   }
 
-  @JsonIgnore
-  public Set<BgpNeighbor> getCandidateRemoteBgpNeighbors() {
-    return _candidateRemoteBgpNeighbors;
-  }
-
   @JsonProperty(PROP_CLUSTER_ID)
   @JsonPropertyDescription("Route-reflection cluster-id for this peer")
   public Long getClusterId() {
@@ -611,7 +481,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       "Whether this represents a connection to a specific peer (false) or a passive connection to "
           + "a network of peers (true)")
   public boolean getDynamic() {
-    return _key != null && _key.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH;
+    return _dynamic;
   }
 
   @JsonProperty(PROP_EBGP_MULTIHOP)
@@ -667,7 +537,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   @JsonProperty(PROP_LOCAL_AS)
-  @JsonPropertyDescription("The local autonomous sysem of this peering")
+  @JsonPropertyDescription("The local autonomous system of this peering")
   public Integer getLocalAs() {
     return _localAs;
   }
@@ -685,21 +555,16 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @JsonProperty(PROP_REMOTE_PREFIX)
   @JsonPropertyDescription(
-      "The remote (destination) IPV4 address of this peering (when prefix-length is 32), or the "
+      "The remote (destination) IPV4 address of this peering (when not-dynamic), or the "
           + "network of peers allowed to connect on this peering (otherwise)")
   public Prefix getPrefix() {
     return _key;
   }
 
   @JsonProperty(PROP_REMOTE_AS)
-  @JsonPropertyDescription("The remote autonomous sysem of this peering")
+  @JsonPropertyDescription("The remote autonomous system of this peering")
   public Integer getRemoteAs() {
     return _remoteAs;
-  }
-
-  @JsonIgnore
-  public BgpNeighbor getRemoteBgpNeighbor() {
-    return _remoteBgpNeighbor;
   }
 
   @JsonPropertyDescription("Whether or not this peer is a route-reflector client")
@@ -718,11 +583,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       "The name of the VRF containing the BGP process containing this " + "peering")
   public String getVrf() {
     return _vrf;
-  }
-
-  /** Initialize candidate neighbors to an empty set */
-  public void initCandidateRemoteBgpNeighbors() {
-    _candidateRemoteBgpNeighbors = new LinkedHashSet<>();
   }
 
   public void resolveReferences(Configuration owner) {
@@ -791,7 +651,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @JsonProperty(PROP_DYNAMIC)
   public void setDynamic(boolean dynamic) {
-    // Intentionally empty
+    _dynamic = dynamic;
   }
 
   @JsonProperty(PROP_EBGP_MULTIHOP)
@@ -852,10 +712,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_REMOTE_AS)
   public void setRemoteAs(Integer remoteAs) {
     _remoteAs = remoteAs;
-  }
-
-  public void setRemoteBgpNeighbor(@Nullable BgpNeighbor remoteBgpNeighbor) {
-    _remoteBgpNeighbor = remoteBgpNeighbor;
   }
 
   @JsonProperty(PROP_REMOTE_PREFIX)

@@ -1,10 +1,15 @@
 package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.collect.Sets;
+import com.google.common.graph.Network;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,20 +19,18 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
-import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -52,32 +55,65 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     UNIQUE_MATCH,
   }
 
-  public static class BgpSession implements Comparable<BgpSession> {
+  public static class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
     private static final String PROP_HOSTNAME = "hostname";
-    private static final String PROP_VRF_NAME = "vrfName";
+    private static final String PROP_LOCAL_IP = "localIp";
+    private static final String PROP_ON_LOOPBACK = "onLoopback";
     private static final String PROP_REMOTE_PREFIX = "remotePrefix";
+    private static final String PROP_REMOTE_NODE = "remoteNode";
+    private static final String PROP_STATUS = "status";
+    private static final String PROP_SESSION_TYPE = "sessionType";
+    private static final String PROP_VRF_NAME = "vrfName";
 
+    @JsonProperty(PROP_HOSTNAME)
     private String _hostname;
+
+    @JsonProperty(PROP_VRF_NAME)
     private String _vrfName;
+
+    @JsonProperty(PROP_REMOTE_PREFIX)
     private Prefix _remotePrefix;
 
+    @JsonProperty(PROP_LOCAL_IP)
+    Ip _localIp;
+
+    @JsonProperty(PROP_ON_LOOPBACK)
+    Boolean _onLoopback;
+
+    @JsonProperty(PROP_REMOTE_NODE)
+    String _remoteNode;
+
+    @JsonProperty(PROP_STATUS)
+    SessionStatus _status;
+
+    @JsonProperty(PROP_SESSION_TYPE)
+    SessionType _sessionType;
+
     @JsonCreator
-    public BgpSession(
+    public BgpSessionInfo(
         @JsonProperty(PROP_HOSTNAME) String hostname,
         @JsonProperty(PROP_VRF_NAME) String vrfName,
-        @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix) {
+        @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
+        @JsonProperty(PROP_LOCAL_IP) Ip localIp,
+        @JsonProperty(PROP_ON_LOOPBACK) Boolean onLoopback,
+        @JsonProperty(PROP_REMOTE_NODE) String remoteNode,
+        @JsonProperty(PROP_STATUS) SessionStatus status,
+        @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType) {
       _hostname = hostname;
       _vrfName = vrfName;
       _remotePrefix = remotePrefix;
+      _localIp = localIp;
+      _onLoopback = onLoopback;
+      _remoteNode = remoteNode;
+      _status = status;
+      _sessionType = sessionType;
     }
 
-    @Override
-    public int compareTo(BgpSession o) {
-      return Comparator.comparing(BgpSession::getHostname)
-          .thenComparing(BgpSession::getVrfName)
-          .thenComparing(BgpSession::getRemotePrefix)
-          .compare(this, o);
+    BgpSessionInfo(String hostname, String vrfName, Prefix remotePrefix) {
+      this._hostname = hostname;
+      this._vrfName = vrfName;
+      this._remotePrefix = remotePrefix;
     }
 
     @JsonProperty(PROP_HOSTNAME)
@@ -96,56 +132,25 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     }
 
     @Override
-    public String toString() {
-      return String.format("%s vrf=%s remote=%s", _hostname, _vrfName, _remotePrefix);
-    }
-  }
-
-  public static class BgpSessionInfo implements Comparable<BgpSessionInfo> {
-
-    private static final String PROP_BGP_SESSION = "bgpSession";
-
-    private BgpSession _bgpSession;
-
-    @JsonProperty("localIp")
-    public Ip localIp;
-
-    @JsonProperty("onLoopback")
-    public Boolean onLoopback;
-
-    @JsonProperty("remoteNode")
-    public String remoteNode;
-
-    @JsonProperty("status")
-    public SessionStatus status;
-
-    @JsonProperty("sessionType")
-    public SessionType sessionType;
-
-    @JsonCreator
-    private BgpSessionInfo(@JsonProperty(PROP_BGP_SESSION) BgpSession session) {
-      _bgpSession = session;
-    }
-
-    public BgpSessionInfo(String hostname, String vrfName, Prefix remotePrefix) {
-      this(new BgpSession(hostname, vrfName, remotePrefix));
-    }
-
-    @JsonProperty(PROP_BGP_SESSION)
-    public BgpSession getBgpSession() {
-      return _bgpSession;
-    }
-
-    @Override
-    public int compareTo(BgpSessionInfo o) {
-      return Comparator.comparing(BgpSessionInfo::getBgpSession).compare(this, o);
+    public int compareTo(@Nonnull BgpSessionInfo o) {
+      return Comparator.comparing(BgpSessionInfo::getHostname)
+          .thenComparing(BgpSessionInfo::getVrfName)
+          .thenComparing(BgpSessionInfo::getRemotePrefix)
+          .compare(this, o);
     }
 
     @Override
     public String toString() {
       return String.format(
-          "%s type=%s loopback=%s status=%s localIp=%s remoteNode=%s",
-          _bgpSession, sessionType, onLoopback, status, localIp, remoteNode);
+          "%s vrf=%s remote=%s type=%s loopback=%s status=%s localIp=%s remoteNode=%s",
+          _hostname,
+          _vrfName,
+          _remotePrefix,
+          _sessionType,
+          _onLoopback,
+          _status,
+          _localIp,
+          _remoteNode);
     }
   }
 
@@ -156,25 +161,30 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     private SortedSet<BgpSessionInfo> _bgpSessions;
 
     public BgpSessionStatusAnswerElement() {
-      _bgpSessions = new TreeSet<>();
+      _bgpSessions = ImmutableSortedSet.of();
     }
 
-    @JsonProperty(PROP_BGP_SESSIONS)
+    @JsonGetter(PROP_BGP_SESSIONS)
     public SortedSet<BgpSessionInfo> getBgpSessions() {
       return _bgpSessions;
+    }
+
+    @JsonSetter(PROP_BGP_SESSIONS)
+    void setBgpSessions(SortedSet<BgpSessionInfo> bgpSessions) {
+      _bgpSessions = ImmutableSortedSet.copyOf(bgpSessions);
     }
 
     @Override
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
-      _bgpSessions.forEach(session -> sb.append(" " + session + "\n"));
+      _bgpSessions.forEach(session -> sb.append(" ").append(session).append("\n"));
       return sb.toString();
     }
   }
 
   public static class BgpSessionStatusAnswerer extends Answerer {
 
-    public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
+    BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
@@ -191,6 +201,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       Set<Ip> allInterfaceIps = new HashSet<>();
       Set<Ip> loopbackIps = new HashSet<>();
       Map<Ip, Set<String>> ipOwners = new HashMap<>();
+      // TODO: refactor this out into CommonUtil
       for (Configuration c : configurations.values()) {
         for (Interface i : c.getInterfaces().values()) {
           if (i.getActive() && i.getAddress() != null) {
@@ -206,76 +217,79 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
           }
         }
       }
-      CommonUtil.initRemoteBgpNeighbors(configurations, ipOwners);
-      for (Configuration co : configurations.values()) {
-        String hostname = co.getHostname();
+
+      Network<BgpNeighbor, BgpSession> bgpTopology =
+          CommonUtil.initBgpTopology(configurations, ipOwners, true);
+
+      Builder<BgpSessionInfo> bgpSessionInfoBuilder = new Builder<>(Comparator.naturalOrder());
+      for (BgpNeighbor bgpNeighbor : bgpTopology.nodes()) {
+        String hostname = bgpNeighbor.getOwner().getHostname();
+        String vrfName = bgpNeighbor.getVrf();
+        // Only match nodes we care about
         if (!includeNodes1.contains(hostname)) {
           continue;
         }
-        for (Vrf vrf : co.getVrfs().values()) {
-          String vrfName = vrf.getName();
-          BgpProcess proc = vrf.getBgpProcess();
 
-          if (proc != null) {
-            for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-              boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
-              boolean foreign =
-                  bgpNeighbor.getGroup() != null
-                      && question.matchesForeignGroup(bgpNeighbor.getGroup());
-              boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
-              Ip localIp = bgpNeighbor.getLocalIp();
-              Ip remoteIp = bgpNeighbor.getAddress();
-              if (foreign) {
-                continue;
-              }
-              BgpSessionInfo bgpSessionInfo =
-                  new BgpSessionInfo(hostname, vrfName, bgpNeighbor.getPrefix());
+        // Match foreign group
+        boolean foreign =
+            bgpNeighbor.getGroup() != null && question.matchesForeignGroup(bgpNeighbor.getGroup());
+        if (foreign) {
+          continue;
+        }
 
-              bgpSessionInfo.sessionType =
-                  ebgp
-                      ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
-                      : SessionType.IBGP;
-              if (!question.matchesType(bgpSessionInfo.sessionType)) {
-                continue;
-              }
-              if (bgpNeighbor.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-                // this is an indirect test for passive sessions; need datamodel improvements
-                bgpSessionInfo.status = SessionStatus.PASSIVE;
-              } else if (localIp == null) {
-                bgpSessionInfo.status = SessionStatus.MISSING_LOCAL_IP;
+        // Setup session info
+        boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
+        boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
+        Prefix remotePrefix = bgpNeighbor.getPrefix();
+        BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
+        bgpSessionInfo._sessionType =
+            ebgp
+                ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
+                : SessionType.IBGP;
+        // Skip session types we don't care about
+        if (!question.matchesType(bgpSessionInfo._sessionType)) {
+          continue;
+        }
+
+        Ip localIp = bgpNeighbor.getLocalIp();
+        if (bgpNeighbor.getDynamic()) {
+          bgpSessionInfo._status = SessionStatus.PASSIVE;
+        } else if (localIp == null) {
+          bgpSessionInfo._status = SessionStatus.MISSING_LOCAL_IP;
+        } else {
+          bgpSessionInfo._localIp = localIp;
+          bgpSessionInfo._onLoopback = loopbackIps.contains(localIp);
+          Ip remoteIp = bgpNeighbor.getAddress();
+
+          if (!allInterfaceIps.contains(localIp)) {
+            bgpSessionInfo._status = SessionStatus.UNKNOWN_LOCAL_IP;
+          } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
+            bgpSessionInfo._status = SessionStatus.UNKNOWN_REMOTE_IP;
+          } else {
+            if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
+              if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
+                bgpSessionInfo._status = SessionStatus.HALF_OPEN;
+                // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
+              } else if (bgpTopology.degree(bgpNeighbor) > 2) {
+                bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
               } else {
-                bgpSessionInfo.localIp = localIp;
-                bgpSessionInfo.onLoopback = loopbackIps.contains(localIp);
-
-                if (!allInterfaceIps.contains(localIp)) {
-                  bgpSessionInfo.status = SessionStatus.UNKNOWN_LOCAL_IP;
-                } else if (!allInterfaceIps.contains(remoteIp)) {
-                  bgpSessionInfo.status = SessionStatus.UNKNOWN_REMOTE_IP;
-                } else {
-                  if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
-                    if (bgpNeighbor.getRemoteBgpNeighbor() == null) {
-                      bgpSessionInfo.status = SessionStatus.HALF_OPEN;
-                    } else if (bgpNeighbor.getCandidateRemoteBgpNeighbors().size() != 1) {
-                      bgpSessionInfo.status = SessionStatus.MULTIPLE_REMOTES;
-                    } else {
-                      bgpSessionInfo.remoteNode =
-                          bgpNeighbor.getRemoteBgpNeighbor().getOwner().getName();
-                      bgpSessionInfo.status = SessionStatus.UNIQUE_MATCH;
-                    }
-                  }
-                }
-              }
-              if (question.matchesStatus(bgpSessionInfo.status)) {
-                answerElement.getBgpSessions().add(bgpSessionInfo);
+                BgpNeighbor remoteNeighbor =
+                    bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
+                bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
+                bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
               }
             }
           }
         }
+        if (question.matchesStatus(bgpSessionInfo._status)) {
+          bgpSessionInfoBuilder.add(bgpSessionInfo);
+        }
       }
+      answerElement.setBgpSessions(bgpSessionInfoBuilder.build());
       return answerElement;
     }
 
-    private boolean node2RegexMatchesIp(
+    private static boolean node2RegexMatchesIp(
         Ip ip, Map<Ip, Set<String>> ipOwners, Set<String> includeNodes2) {
       Set<String> owners = ipOwners.get(ip);
       if (owners == null) {
@@ -284,8 +298,6 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       return !Sets.intersection(includeNodes2, owners).isEmpty();
     }
   }
-
-  // <question_page_comment>
 
   /**
    * Returns the status of BGP sessions.
@@ -321,7 +333,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
     @Nonnull private Pattern _statusRegex;
 
-    @Nullable private Pattern _typeRegex;
+    @Nonnull private Pattern _typeRegex;
 
     public BgpSessionStatusQuestion(
         @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
@@ -375,15 +387,15 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       return _typeRegex.toString();
     }
 
-    public boolean matchesForeignGroup(String group) {
+    boolean matchesForeignGroup(String group) {
       return _foreignBgpGroups.contains(group);
     }
 
-    public boolean matchesStatus(SessionStatus status) {
+    boolean matchesStatus(SessionStatus status) {
       return _statusRegex.matcher(status.toString()).matches();
     }
 
-    public boolean matchesType(SessionType type) {
+    boolean matchesType(SessionType type) {
       return _typeRegex.matcher(type.toString()).matches();
     }
   }

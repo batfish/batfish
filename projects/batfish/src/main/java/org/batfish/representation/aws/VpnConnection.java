@@ -282,7 +282,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
           vpnGatewayCfgNode.getDefaultVrf().setBgpProcess(proc);
         }
         BgpNeighbor cgBgpNeighbor =
-            new BgpNeighbor(ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode);
+            new BgpNeighbor(ipsecTunnel.getCgwInsideAddress(), vpnGatewayCfgNode, false);
         cgBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
         proc.getNeighbors().put(cgBgpNeighbor.getPrefix(), cgBgpNeighbor);
         cgBgpNeighbor.setRemoteAs(ipsecTunnel.getCgwBgpAsn());
@@ -307,7 +307,8 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         Configuration vpcNode = awsConfiguration.getConfigurationNodes().get(vpcId);
         Ip vpcIfaceAddress = vpcNode.getInterfaces().get(_vpnGatewayId).getAddress().getIp();
         Ip vgwToVpcIfaceAddress = vpnGatewayCfgNode.getInterfaces().get(vpcId).getAddress().getIp();
-        BgpNeighbor vgwToVpcBgpNeighbor = new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode);
+        BgpNeighbor vgwToVpcBgpNeighbor =
+            new BgpNeighbor(vpcIfaceAddress, vpnGatewayCfgNode, false);
         proc.getNeighbors().put(vgwToVpcBgpNeighbor.getPrefix(), vgwToVpcBgpNeighbor);
         vgwToVpcBgpNeighbor.setVrf(Configuration.DEFAULT_VRF_NAME);
         vgwToVpcBgpNeighbor.setLocalAs(ipsecTunnel.getVgwBgpAsn());
@@ -317,7 +318,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vgwToVpcBgpNeighbor.setSendCommunity(true);
 
         // iBGP connection from VPC
-        BgpNeighbor vpcToVgwBgpNeighbor = new BgpNeighbor(vgwToVpcIfaceAddress, vpcNode);
+        BgpNeighbor vpcToVgwBgpNeighbor = new BgpNeighbor(vgwToVpcIfaceAddress, vpcNode, false);
         BgpProcess vpcProc = new BgpProcess();
         vpcNode.getDefaultVrf().setBgpProcess(vpcProc);
         vpcProc.setMultipathEquivalentAsPathMatchMode(
