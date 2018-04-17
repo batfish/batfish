@@ -1,17 +1,33 @@
-package org.batfish.datamodel.questions;
+package org.batfish.question.tracefilters;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Collections;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
+import org.batfish.datamodel.questions.FiltersSpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.Question;
 
-public abstract class ITracerouteQuestion extends Question implements IQuestion {
+// <question_page_comment>
+
+/**
+ * Checks if IPSec VPNs are correctly configured.
+ *
+ * <p>Details coming on what it means to be correctly configured.
+ *
+ * @type IpsecVpnStatus multifile
+ * @param nodeRegex NodesSpecifier expression to match the nodes. Default is '.*' (all nodes).
+ * @param filterRegex FiltersSpecifier to match the filters. Default is '.*' (all filters).
+ */
+public class TraceFiltersQuestion extends Question {
 
   private static final String PROP_DSCP = "dscp";
 
@@ -22,6 +38,8 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   private static final String PROP_DST_PROTOCOL = "dstProtocol";
 
   private static final String PROP_ECN = "ecn";
+
+  private static final String PROP_FILTER_REGEX = "filterRegex";
 
   private static final String PROP_ICMP_CODE = "icmpCode";
 
@@ -34,6 +52,8 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   private static final String PROP_INGRESS_VRF = "ingressVrf";
 
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
+
+  private static final String PROP_NODE_REGEX = "nodeRegex";
 
   private static final String PROP_PACKET_LENGTH = "packetLength";
 
@@ -71,6 +91,8 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
 
   private Integer _ecn;
 
+  @Nonnull private FiltersSpecifier _filterRegex;
+
   private Integer _icmpCode;
 
   private Integer _icmpType;
@@ -82,6 +104,8 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   private String _ingressVrf;
 
   private IpProtocol _ipProtocol;
+
+  @Nonnull private NodesSpecifier _nodeRegex;
 
   private Integer _packetLength;
 
@@ -108,6 +132,14 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   private Boolean _tcpFlagsSyn;
 
   private Boolean _tcpFlagsUrg;
+
+  @JsonCreator
+  public TraceFiltersQuestion(
+      @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
+      @JsonProperty(PROP_FILTER_REGEX) FiltersSpecifier filterRegex) {
+    _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
+    _filterRegex = filterRegex == null ? FiltersSpecifier.ALL : filterRegex;
+  }
 
   public Flow.Builder createFlowBuilder() {
     Flow.Builder flowBuilder = new Flow.Builder();
@@ -204,6 +236,21 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
     return flowBuilder;
   }
 
+  @Override
+  public boolean getDataPlane() {
+    return false;
+  }
+
+  @JsonProperty(PROP_FILTER_REGEX)
+  public FiltersSpecifier getFilterRegex() {
+    return _filterRegex;
+  }
+
+  @JsonProperty(PROP_NODE_REGEX)
+  public NodesSpecifier getNodeRegex() {
+    return _nodeRegex;
+  }
+
   @JsonProperty(PROP_DSCP)
   public Integer getDscp() {
     return _dscp;
@@ -262,6 +309,11 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   @JsonProperty(PROP_IP_PROTOCOL)
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
+  }
+
+  @Override
+  public String getName() {
+    return "tracefilters";
   }
 
   @JsonProperty(PROP_PACKET_LENGTH)
@@ -328,12 +380,4 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   public Boolean getTcpFlagsUrg() {
     return _tcpFlagsUrg;
   }
-
-  void setDst(String dst);
-
-  void setDstProtocol(Protocol protocol);
-
-  void setIngressNode(String ingressNode);
-
-  void setIngressVrf(String ingressVrf);
 }
