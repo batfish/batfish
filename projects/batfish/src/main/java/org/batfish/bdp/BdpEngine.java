@@ -294,7 +294,7 @@ public class BdpEngine implements FlowProcessor {
               if (!ignoreAcls && outFilter != null) {
                 FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                 denied =
-                    flowTraceDeniedHelper(
+                    flowTraceFilterHelper(
                         flowTraces,
                         originalFlow,
                         transformedFlow,
@@ -1222,7 +1222,7 @@ public class BdpEngine implements FlowProcessor {
     return errorMessage;
   }
 
-  private boolean flowTraceDeniedHelper(
+  private boolean flowTraceFilterHelper(
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
@@ -1233,19 +1233,19 @@ public class BdpEngine implements FlowProcessor {
       FlowDisposition disposition) {
     boolean out = disposition == FlowDisposition.DENIED_OUT;
     FilterResult outResult = filter.filter(transformedFlow, srcInterface, aclDefinitions);
+    String outFilterName = filter.getName();
+    Integer matchLine = outResult.getMatchLine();
+    String lineDesc;
+    if (matchLine != null) {
+      lineDesc = filter.getLines().get(matchLine).getName();
+      if (lineDesc == null) {
+        lineDesc = "line:" + matchLine;
+      }
+    } else {
+      lineDesc = "no-match";
+    }
     boolean denied = outResult.getAction() == LineAction.REJECT;
     if (denied) {
-      String outFilterName = filter.getName();
-      Integer matchLine = outResult.getMatchLine();
-      String lineDesc;
-      if (matchLine != null) {
-        lineDesc = filter.getLines().get(matchLine).getName();
-        if (lineDesc == null) {
-          lineDesc = "line:" + matchLine;
-        }
-      } else {
-        lineDesc = "no-match";
-      }
       String notes = disposition + "{" + outFilterName + "}{" + lineDesc + "}";
       if (out) {
         FlowTraceHop lastHop = newHops.get(newHops.size() - 1);
@@ -1266,6 +1266,14 @@ public class BdpEngine implements FlowProcessor {
       }
       FlowTrace trace = new FlowTrace(disposition, newHops, notes);
       flowTraces.add(trace);
+    } else {
+      FlowTraceHop hop = newHops.get(newHops.size() - 1);
+      String filterNotes = "{" + outFilterName + "}{" + lineDesc + "}";
+      if (out) {
+        hop.setFilterOut(filterNotes);
+      } else {
+        hop.setFilterIn(filterNotes);
+      }
     }
     return denied;
   }
@@ -1642,7 +1650,7 @@ public class BdpEngine implements FlowProcessor {
         if (!ignoreAcls && outFilter != null) {
           FlowDisposition disposition = FlowDisposition.DENIED_OUT;
           boolean denied =
-              flowTraceDeniedHelper(
+              flowTraceFilterHelper(
                   flowTraces,
                   originalFlow,
                   transformedFlow,
@@ -1662,7 +1670,7 @@ public class BdpEngine implements FlowProcessor {
       if (!ignoreAcls && inFilter != null) {
         FlowDisposition disposition = FlowDisposition.DENIED_IN;
         boolean denied =
-            flowTraceDeniedHelper(
+            flowTraceFilterHelper(
                 flowTraces,
                 originalFlow,
                 transformedFlow,

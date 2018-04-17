@@ -46,6 +46,8 @@
                     "node2" : "as2dept1",
                     "node2interface" : "GigabitEthernet3/0"
                   },
+                  "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
+                  "filterOut" : "{filter::OUTPUT}{default}",
                   "routes" : [
                     "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
                   ]
@@ -68,6 +70,7 @@
                     "node2" : "as2core1",
                     "node2interface" : "GigabitEthernet3/0"
                   },
+                  "filterIn" : "{blocktelnet}{permit ip any any}",
                   "routes" : [
                     "BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2"
                   ]
@@ -90,6 +93,7 @@
                     "node2" : "as1border1",
                     "node2interface" : "GigabitEthernet1/0"
                   },
+                  "filterOut" : "{INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}",
                   "routes" : [
                     "BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1"
                   ]
@@ -107,6 +111,8 @@
                     "node2" : "as2dept1",
                     "node2interface" : "GigabitEthernet3/0"
                   },
+                  "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
+                  "filterOut" : "{filter::OUTPUT}{default}",
                   "routes" : [
                     "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
                   ]
@@ -151,6 +157,7 @@
                     "node2" : "as1border1",
                     "node2interface" : "GigabitEthernet1/0"
                   },
+                  "filterOut" : "{INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}",
                   "routes" : [
                     "BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1"
                   ]
@@ -168,6 +175,8 @@
                     "node2" : "as2dept1",
                     "node2interface" : "GigabitEthernet3/0"
                   },
+                  "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
+                  "filterOut" : "{filter::OUTPUT}{default}",
                   "routes" : [
                     "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
                   ]
@@ -190,6 +199,7 @@
                     "node2" : "as2core1",
                     "node2interface" : "GigabitEthernet2/0"
                   },
+                  "filterIn" : "{blocktelnet}{permit ip any any}",
                   "routes" : [
                     "BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2"
                   ]
@@ -212,6 +222,7 @@
                     "node2" : "as1border1",
                     "node2interface" : "GigabitEthernet1/0"
                   },
+                  "filterOut" : "{INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}",
                   "routes" : [
                     "BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1"
                   ]
@@ -229,6 +240,8 @@
                     "node2" : "as2dept1",
                     "node2interface" : "GigabitEthernet3/0"
                   },
+                  "filterIn" : "{RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}",
+                  "filterOut" : "{filter::OUTPUT}{default}",
                   "routes" : [
                     "StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1"
                   ]
@@ -273,6 +286,7 @@
                     "node2" : "as1border1",
                     "node2interface" : "GigabitEthernet1/0"
                   },
+                  "filterOut" : "{INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}",
                   "routes" : [
                     "BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1"
                   ]
