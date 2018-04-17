@@ -664,7 +664,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   nodeHasSrcInterfaceConstraint
                       ? new EqExpr(
                           new TransformedVarIntExpr(_input.getSourceInterfaceField()),
-                          new LitIntExpr(NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize()))
+                          new LitIntExpr(
+                              NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize()))
                       : TrueExpr.INSTANCE,
                   aclStates,
                   new PostOutEdge(node1, iface1, node2, iface2));

@@ -15,7 +15,8 @@ public class FlowTraceMatchers {
     return new HasDisposition(equalTo(flowDisposition));
   }
 
-  public static HasDisposition hasDisposition(@Nonnull Matcher<? super FlowDisposition> subMatcher) {
+  public static HasDisposition hasDisposition(
+      @Nonnull Matcher<? super FlowDisposition> subMatcher) {
     return new HasDisposition(subMatcher);
   }
 

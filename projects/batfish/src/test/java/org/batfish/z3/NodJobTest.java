@@ -3,7 +3,6 @@ package org.batfish.z3;
 import static org.batfish.datamodel.FlowDisposition.*;
 import static org.batfish.datamodel.matchers.EdgeMatchers.*;
 import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -12,7 +11,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -40,7 +38,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.ForwardingAction;
@@ -60,13 +57,10 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.matchers.EdgeMatchers;
-import org.batfish.datamodel.matchers.FlowTraceHopMatchers;
 import org.batfish.datamodel.matchers.FlowTraceMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -333,12 +327,11 @@ public class NodJobTest {
   }
 
   /**
-   * Test MatchSrcInterface AclLineMatchExpr.
-   * Build a network with two nodes srcNode and dstNode. Traffic will originate at srcNode and be
-   * sent to dstNode. The two nodes can communicate via two subnets (two interfaces on each node),
-   * and dstNode has another interface on the destination subnet. That destination interface
-   * has an outgoing filter that only accepts traffic from srcNode if it arrived on one of the
-   * two interfaces dstNode can receive traffic from srcNode on.
+   * Test MatchSrcInterface AclLineMatchExpr. Build a network with two nodes srcNode and dstNode.
+   * Traffic will originate at srcNode and be sent to dstNode. The two nodes can communicate via two
+   * subnets (two interfaces on each node), and dstNode has another interface on the destination
+   * subnet. That destination interface has an outgoing filter that only accepts traffic from
+   * srcNode if it arrived on one of the two interfaces dstNode can receive traffic from srcNode on.
    */
   @Test
   public void testMatchSrcInterface() throws IOException {
@@ -471,7 +464,8 @@ public class NodJobTest {
     bdpDataPlanePlugin.processFlows(flows, dataPlane);
     List<FlowTrace> flowTraces = bdpDataPlanePlugin.getHistoryFlowTraces(dataPlane);
     assertThat(flowTraces, hasSize(2));
-    assertThat(flowTraces,
+    assertThat(
+        flowTraces,
         containsInAnyOrder(
             /* One trace should enter dstNode through iface1 and then pass the outgoing filter.
              * Specifically, the first hop should have an edge with int2=iface1.
@@ -481,9 +475,7 @@ public class NodJobTest {
             allOf(
                 FlowTraceMatchers.hasDisposition(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK),
                 FlowTraceMatchers.hasHops(
-                    contains(
-                        hasEdge(hasInt2(iface1)),
-                        any(FlowTraceHop.class)))),
+                    contains(hasEdge(hasInt2(iface1)), any(FlowTraceHop.class)))),
             /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
              * filter. The first hop should have an edge with int2=iface2.
              * We don't care about the second hop, so contains may not be the right matcher to
@@ -492,9 +484,6 @@ public class NodJobTest {
             allOf(
                 FlowTraceMatchers.hasDisposition(DENIED_OUT),
                 FlowTraceMatchers.hasHops(
-                    contains(
-                        hasEdge(hasInt2(iface2)),
-                        any(FlowTraceHop.class)))
-                )));
+                    contains(hasEdge(hasInt2(iface2)), any(FlowTraceHop.class))))));
   }
 }

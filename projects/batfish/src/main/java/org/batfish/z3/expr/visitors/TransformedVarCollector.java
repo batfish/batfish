@@ -3,7 +3,6 @@ package org.batfish.z3.expr.visitors;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.AndExpr;
@@ -71,9 +70,7 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> visitIfExpr(IfExpr ifExpr) {
-    return Stream.of(
-        ifExpr.getAntecedent().accept(this),
-        ifExpr.getConsequent().accept(this))
+    return Stream.of(ifExpr.getAntecedent().accept(this), ifExpr.getConsequent().accept(this))
         .flatMap(Set::stream)
         .collect(ImmutableSet.toImmutableSet());
   }
