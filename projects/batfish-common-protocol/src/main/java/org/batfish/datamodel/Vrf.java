@@ -49,6 +49,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
 
+  private static final String PROP_DESCRIPTION = "description";
+
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
 
   private static final String PROP_INTERFACES = "interfaces";
@@ -67,6 +69,8 @@ public class Vrf extends ComparableStructure<String> {
   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
 
   private BgpProcess _bgpProcess;
+
+  private String _description;
 
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
 
@@ -124,6 +128,12 @@ public class Vrf extends ComparableStructure<String> {
   @JsonPropertyDescription("BGP routing process for this VRF")
   public BgpProcess getBgpProcess() {
     return _bgpProcess;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  @JsonPropertyDescription("Description for this VRF")
+  public String getDescription() {
+    return _description;
   }
 
   @JsonPropertyDescription("Generated IPV6 routes for this VRF")
@@ -257,6 +267,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_BGP_PROCESS)
   public void setBgpProcess(BgpProcess process) {
     _bgpProcess = process;
+  }
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public void setDescription(String description) {
+    _description = description;
   }
 
   public void setGeneratedIpv6Routes(NavigableSet<GeneratedRoute6> generatedIpv6Routes) {
