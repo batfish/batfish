@@ -291,7 +291,7 @@ public class BdpEngine implements FlowProcessor {
               /** Check if denied out. If not, make standard neighbor-unreachable trace. */
               IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
               boolean denied = false;
-              if (outFilter != null) {
+              if (!ignoreAcls && outFilter != null) {
                 FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                 denied =
                     flowTraceDeniedHelper(
