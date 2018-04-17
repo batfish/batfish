@@ -1455,22 +1455,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String name = filter.getName();
     AclLineMatchExpr matchSrcInterface = null;
 
-    // If srcInterfaces (from zones) are filtered, then need to make a match condition for that
-    if (!filter.getFromZones().isEmpty()) {
-      Set<String> srcInterfaces = new TreeSet<>();
-      for (String zoneName : filter.getFromZones()) {
-        srcInterfaces.addAll(
-            _zones
-                .get(zoneName)
-                .getInterfaces()
-                .stream()
-                .map(Interface::getName)
-                .collect(ImmutableList.toImmutableList()));
-      }
-      matchSrcInterface = new MatchSrcInterface(srcInterfaces);
+    /*
+     * If srcInterfaces (from-zone) are filtered (this is the case for security policies), then
+     * need to make a match condition for that
+     */
+    String zoneName = filter.getFromZone();
+    if (zoneName != null) {
+      matchSrcInterface =
+          new MatchSrcInterface(
+              _zones
+                  .get(zoneName)
+                  .getInterfaces()
+                  .stream()
+                  .map(Interface::getName)
+                  .collect(ImmutableList.toImmutableList()));
     }
 
-    // Return an ACL that is the logical AND of srcInterface filter and headerSpace filter
+    /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
     return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
   }
 

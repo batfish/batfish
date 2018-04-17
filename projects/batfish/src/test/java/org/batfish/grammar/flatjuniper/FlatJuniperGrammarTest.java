@@ -17,7 +17,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
@@ -54,6 +56,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -63,6 +66,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -111,6 +115,25 @@ public class FlatJuniperGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(new Ip(sourceAddress));
+    fb.setDstIp(new Ip(destinationAddress));
+    fb.setTag("test");
+    return fb.build();
+  }
+
+  private static Flow createReturnFlow(String sourceAddress, String destinationAddress) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(new Ip(sourceAddress));
+    fb.setDstIp(new Ip(destinationAddress));
+    fb.setState(State.ESTABLISHED);
+    fb.setTag("test");
+    return fb.build();
+  }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -406,8 +429,14 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("firewall-global-policy");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
-    IpAccessList aclTrust = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrust = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
      * Should have six ACLs:
@@ -424,8 +453,8 @@ public class FlatJuniperGrammarTest {
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_GLOBAL_POLICY,
-            aclTrust.getName(),
-            aclUntrust.getName(),
+            aclTrustOut.getName(),
+            aclUntrustOut.getName(),
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
@@ -475,6 +504,12 @@ public class FlatJuniperGrammarTest {
     assertThat(aclTrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
     assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
     assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
+
+    /* Simple flows should be permitted */
+    assertThat(
+        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
   }
 
   @Test
@@ -482,6 +517,11 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
     IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
@@ -556,6 +596,12 @@ public class FlatJuniperGrammarTest {
     assertThat(aclTrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
     assertThat(aclUntrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
     assertThat(aclUntrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
+
+    /* Simple flow in either direction should be blocked */
+    assertThat(
+        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
   }
 
   @Test
@@ -564,8 +610,16 @@ public class FlatJuniperGrammarTest {
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
     String securityPolicyName = "~FROM_ZONE~trust~TO_ZONE~untrust";
-    IpAccessList aclTrust = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList aclUntrust = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+    Flow trustToUntrustReturnFlow = createReturnFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustReturnFlow = createReturnFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
      * Should have six ACLs:
@@ -582,8 +636,8 @@ public class FlatJuniperGrammarTest {
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             securityPolicyName,
-            aclTrust.getName(),
-            aclUntrust.getName(),
+            aclTrustOut.getName(),
+            aclUntrustOut.getName(),
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
@@ -633,6 +687,20 @@ public class FlatJuniperGrammarTest {
                     containsInAnyOrder(
                         new MatchSrcInterface(ImmutableList.of(interfaceNameTrust)),
                         new MatchHeaderSpace(HeaderSpace.builder().build()))))));
+
+    /* Simple flow from trust to untrust should be permitted */
+    assertThat(
+        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+
+    /* Simple flow from untrust to trust should be blocked */
+    assertThat(
+        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+
+    /* Return flow in either direction should be permitted */
+    assertThat(
+        aclUntrustOut, accepts(trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, accepts(untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists()));
   }
 
   @Test
@@ -642,6 +710,14 @@ public class FlatJuniperGrammarTest {
     String interfaceNameUntrust = "ge-0/0/1.0";
     String zoneTrust = "trust";
     String zoneUntrust = "untrust";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     // Should have two zones
     assertThat(c.getZones().keySet(), containsInAnyOrder(zoneTrust, zoneUntrust));
@@ -653,6 +729,12 @@ public class FlatJuniperGrammarTest {
     // Confirm the interfaces are associated with their zones
     assertThat(c.getInterfaces().get(interfaceNameTrust), hasZoneName(equalTo(zoneTrust)));
     assertThat(c.getInterfaces().get(interfaceNameUntrust), hasZoneName(equalTo(zoneUntrust)));
+
+    /* Simple flows should be blocked */
+    assertThat(
+        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
   }
 
   @Test

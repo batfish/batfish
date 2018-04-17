@@ -49,10 +49,12 @@ public class JuniperConfigurationTest {
     IpAccessList headerSpaceAcl = config.toIpAccessList(filter);
 
     Zone zone = new Zone("zone", new TreeMap<>());
-    String interfaceName = "interface";
-    zone.getInterfaces().add(new Interface(interfaceName, -1));
+    String interface1Name = "interface1";
+    zone.getInterfaces().add(new Interface(interface1Name, -1));
+    String interface2Name = "interface2";
+    zone.getInterfaces().add(new Interface(interface2Name, -1));
     config.getZones().put("zone", zone);
-    filter.getFromZones().add("zone");
+    filter.setFromZone("zone");
     IpAccessList headerSpaceAndSrcInterfaceAcl = config.toIpAccessList(filter);
 
     // ACL from empty filter should have no lines
@@ -78,7 +80,7 @@ public class JuniperConfigurationTest {
             isAndMatchExprThat(
                 hasConjuncts(
                     containsInAnyOrder(
-                        new MatchSrcInterface(ImmutableList.of(interfaceName)),
+                        new MatchSrcInterface(ImmutableList.of(interface1Name, interface2Name)),
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setSrcIps(

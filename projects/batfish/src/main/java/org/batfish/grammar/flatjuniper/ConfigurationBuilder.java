@@ -2248,7 +2248,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
        * firewallFilter
        */
       if (_currentFromZone != null) {
-        _currentFilter.getFromZones().add(_currentFromZone.getName());
+        _currentFilter.setFromZone(_currentFromZone.getName());
       }
     }
   }
