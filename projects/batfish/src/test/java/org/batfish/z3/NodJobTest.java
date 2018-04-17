@@ -329,7 +329,14 @@ public class NodJobTest {
     assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }
 
-  /** Test MatchSrcInterface AclLineMatchExpr. */
+  /**
+   * Test MatchSrcInterface AclLineMatchExpr.
+   * Build a network with two nodes srcNode and dstNode. Traffic will originate at srcNode and be
+   * sent to dstNode. The two nodes can communicate via two subnets (two interfaces on each node),
+   * and dstNode has another interface on the destination subnet. That destination interface
+   * has an outgoing filter that only accepts traffic from srcNode if it arrived on one of the
+   * two interfaces dstNode can receive traffic from srcNode on.
+   */
   @Test
   public void testMatchSrcInterface() throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -348,7 +355,7 @@ public class NodJobTest {
     OriginateVrf originateVrf = new OriginateVrf(srcNode.getHostname(), srcVrf.getName());
     Vrf dstVrf = vb.setOwner(dstNode).build();
 
-    // create ACL
+    // create the ACL that only accepts traffic that entered via iface1
     IpAccessList matchSrcInterfaceAcl =
         aclb.setLines(
                 ImmutableList.of(
@@ -414,7 +421,6 @@ public class NodJobTest {
                 new ForwardingAnalysisImpl(
                     configs, dataPlane.getRibs(), dataPlane.getFibs(), topology))
             .setSimplify(false)
-            // .setSpecialize(true)
             .setTopology(topology)
             .build();
     Synthesizer synthesizer = new Synthesizer(input);
@@ -464,6 +470,11 @@ public class NodJobTest {
     assertThat(flowTraces, hasSize(2));
     assertThat(flowTraces,
         containsInAnyOrder(
+            /* One trace should enter dstNode through iface1 and then pass the outgoing filter.
+             * Specifically, the first hop should have an edge with int2=iface1.
+             * We don't care about the second hop, so contains may not be the right matcher to
+             * use here.
+             */
             allOf(
                 FlowTraceMatchers.hasDisposition(
                     equalTo(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK)),
@@ -471,6 +482,11 @@ public class NodJobTest {
                     contains(
                         FlowTraceHopMatchers.hasEdge(EdgeMatchers.hasInt2(equalTo(iface1))),
                         any(FlowTraceHop.class))),
+            /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
+             * filter. The first hop should have an edge with int2=iface2.
+             * We don't care about the second hop, so contains may not be the right matcher to
+             * use here.
+             */
             allOf(
                 FlowTraceMatchers.hasDisposition(
                     equalTo(FlowDisposition.DENIED_OUT)),
