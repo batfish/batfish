@@ -11,6 +11,8 @@ public final class Vrf extends ComparableStructure<String> {
 
   private BgpProcess _bgpProcess;
 
+  private String _description;
+
   private IsisProcess _isisProcess;
 
   private OspfProcess _ospfProcess;
@@ -26,6 +28,10 @@ public final class Vrf extends ComparableStructure<String> {
 
   public BgpProcess getBgpProcess() {
     return _bgpProcess;
+  }
+
+  public String getDescription() {
+    return _description;
   }
 
   public IsisProcess getIsisProcess() {
@@ -46,6 +52,10 @@ public final class Vrf extends ComparableStructure<String> {
 
   public void setBgpProcess(BgpProcess bgpProcess) {
     _bgpProcess = bgpProcess;
+  }
+
+  public void setDescription(String description) {
+    _description = description;
   }
 
   public void setIsisProcess(IsisProcess isisProcess) {

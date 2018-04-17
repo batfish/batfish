@@ -1129,6 +1129,10 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          },
+          "vrfName" : {
+            "name" : "vrfName",
+            "description" : " descriptive sentence"
           }
         }
       },

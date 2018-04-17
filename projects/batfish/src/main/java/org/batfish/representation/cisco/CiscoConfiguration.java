@@ -3722,6 +3722,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         (vrfName, vrf) -> {
           org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
 
+          // description
+          newVrf.setDescription(vrf.getDescription());
+
           // add snmp trap servers to main list
           if (newVrf.getSnmpServer() != null) {
             c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());

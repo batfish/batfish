@@ -2429,9 +2429,9 @@
             "        (null_rest_of_line",
             "          IPV6_ADDRESS:'2:700'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "      (vrfd_null",
-            "        DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
+            "      (vrfd_description",
+            "        (description_line",
+            "          DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
             "          RAW_TEXT:' descriptive sentence'  <== mode:M_Description",
             "          NEWLINE:'\\n'  <== mode:M_Description))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
