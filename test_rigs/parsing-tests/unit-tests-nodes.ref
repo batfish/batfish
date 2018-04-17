@@ -8376,16 +8376,6 @@
                   "ro" : true,
                   "rw" : true
                 },
-                "dummycommunityuse-aclsnmp-acl" : {
-                  "name" : "dummycommunityuse-aclsnmp-acl",
-                  "ro" : false,
-                  "rw" : false
-                },
-                "dummycommunityuse-aclsnmp-arpa-acl" : {
-                  "name" : "dummycommunityuse-aclsnmp-arpa-acl",
-                  "ro" : false,
-                  "rw" : false
-                },
                 "dummyconnunity" : {
                   "name" : "dummyconnunity",
                   "accessList" : "dummyacl",

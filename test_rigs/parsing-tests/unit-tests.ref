@@ -30738,10 +30738,11 @@
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
             "        (variable_community_name",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'snmp-acl'  <== mode:DEFAULT_MODE)",
-            "        (ssc_access_control",
+            "          (variable",
+            "            VARIABLE:'snmp-acl'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -30749,10 +30750,11 @@
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
             "        (variable_community_name",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'snmp-arpa-acl'  <== mode:DEFAULT_MODE)",
-            "        (ssc_access_control",
+            "          (variable",
+            "            VARIABLE:'snmp-arpa-acl'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -51529,6 +51531,18 @@
           }
         },
         "cisco_snmp" : {
+          "ipv4 acl" : {
+            "snmp-acl" : {
+              "snmp server community ipv4 acl" : [
+                11
+              ]
+            },
+            "snmp-arpa-acl" : {
+              "snmp server community ipv4 acl" : [
+                12
+              ]
+            }
+          },
           "ipv4/6 acl" : {
             "1" : {
               "snmp server community acl" : [
