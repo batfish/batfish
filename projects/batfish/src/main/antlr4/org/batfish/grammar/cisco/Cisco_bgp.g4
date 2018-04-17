@@ -640,6 +640,7 @@ null_bgp_tail
       | TABLE_MAP
       | TIMERS
       | TRANSPORT
+      | UPDATE
       |
       (
          USE

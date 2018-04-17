@@ -5,6 +5,8 @@ boot system flash fake.swi
 !
 router bgp 1
  no bgp bestpath as-path multipath-relax
+ update wait-for-convergence
+ update wait-install
  address-family ipv4
   neighbor UNDEFINED_PEER_GROUP activate
 !
