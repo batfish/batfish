@@ -1,11 +1,11 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class PeerAddressNextHop extends NextHopExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Override
@@ -16,12 +16,10 @@ public class PeerAddressNextHop extends NextHopExpr {
     if (obj == null) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    return true;
+    return getClass() == obj.getClass();
   }
 
+  @Nullable
   @Override
   public Ip getNextHopIp(Environment environment) {
     return environment.getPeerAddress();
