@@ -6,7 +6,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasDstIps;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcIps;
-import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasState;
+import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasStates;
 import org.hamcrest.Matcher;
 
 public class HeaderSpaceMatchers {
@@ -31,8 +31,8 @@ public class HeaderSpaceMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the HeaderSpace's
    * state.
    */
-  public static HasState hasState(@Nonnull Matcher<? super SortedSet<State>> subMatcher) {
-    return new HasState(subMatcher);
+  public static HasStates hasStates(@Nonnull Matcher<? super SortedSet<State>> subMatcher) {
+    return new HasStates(subMatcher);
   }
 
   private HeaderSpaceMatchers() {}

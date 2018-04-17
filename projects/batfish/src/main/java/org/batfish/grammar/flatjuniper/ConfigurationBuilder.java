@@ -2243,8 +2243,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
       }
 
-      // Need to keep track of the from-zone for this filter to apply srcInterface filter to the
-      // firewallFilter
+      /*
+       * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
+       * firewallFilter
+       */
       if (_currentFromZone != null) {
         _currentFilter.getFromZones().add(_currentFromZone.getName());
       }

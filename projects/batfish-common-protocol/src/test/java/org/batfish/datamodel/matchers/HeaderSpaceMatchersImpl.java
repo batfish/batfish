@@ -32,9 +32,9 @@ public class HeaderSpaceMatchersImpl {
     }
   }
 
-  static class HasState extends FeatureMatcher<HeaderSpace, SortedSet<State>> {
-    HasState(@Nonnull Matcher<? super SortedSet<State>> subMatcher) {
-      super(subMatcher, "A HeaderSpace with state:", "state");
+  static class HasStates extends FeatureMatcher<HeaderSpace, SortedSet<State>> {
+    HasStates(@Nonnull Matcher<? super SortedSet<State>> subMatcher) {
+      super(subMatcher, "A HeaderSpace with states:", "states");
     }
 
     @Override
