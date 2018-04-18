@@ -3,39 +3,39 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip6AccessList;
+import org.batfish.datamodel.IpAccessList;
 
 /**
- * Enables specification of groups of nodes in various questions.
+ * Enables specification of groups of filters in various questions.
  *
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>lhr-.* —> all nodes with matching names (old style)
+ *   <li>lhr-.* —> all filters with matching names
  *   <li>name:lhr-.* -> same as above; name: is optional
- *   <li>role:srv.* —> all nodes where any role matches the pattern
+ *   <li>ipv4:lhr-.* all IPv4 access lists with matching names
+ *   <li>ipv6:lhr-.* all IPv6 access lists with matching names
  * </ul>
  *
  * <p>In the future, we might need other tags (e.g., loc:) and boolean expressions (e.g., role:srv.*
  * AND lhr-* for all servers with matching names)
  */
-public class NodesSpecifier {
+public class FiltersSpecifier {
 
   public enum Type {
-    NAME,
-    ROLE
+    IPV4,
+    IPV6,
+    NAME
   }
 
-  public static final NodesSpecifier ALL = new NodesSpecifier(".*");
+  public static final FiltersSpecifier ALL = new FiltersSpecifier(".*");
 
-  public static final NodesSpecifier NONE = new NodesSpecifier("");
+  public static final FiltersSpecifier NONE = new FiltersSpecifier("");
 
   private final String _expression;
 
@@ -43,7 +43,7 @@ public class NodesSpecifier {
 
   private final Type _type;
 
-  public NodesSpecifier(String expression) {
+  public FiltersSpecifier(String expression) {
     _expression = expression;
 
     String[] parts = expression.split(":");
@@ -57,7 +57,7 @@ public class NodesSpecifier {
         _regex = Pattern.compile(parts[1]);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
-            "Illegal NodesSpecifier filter "
+            "Illegal FiltersSpecifier filter "
                 + parts[0]
                 + ".  Should be one of "
                 + Arrays.stream(Type.values())
@@ -65,7 +65,7 @@ public class NodesSpecifier {
                     .collect(Collectors.joining(", ")));
       }
     } else {
-      throw new IllegalArgumentException("Cannot parse NodeSpecifier " + expression);
+      throw new IllegalArgumentException("Cannot parse FiltersSpecifier " + expression);
     }
   }
 
@@ -74,37 +74,13 @@ public class NodesSpecifier {
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof NodesSpecifier)) {
+    if (!(obj instanceof FiltersSpecifier)) {
       return false;
     }
-    NodesSpecifier rhs = (NodesSpecifier) obj;
+    FiltersSpecifier rhs = (FiltersSpecifier) obj;
     return Objects.equals(_expression, rhs._expression)
         && Objects.equals(_regex.pattern(), rhs._regex.pattern())
         && Objects.equals(_type, rhs._type);
-  }
-
-  @JsonIgnore
-  public Set<String> getMatchingNodes(Map<String, Configuration> configurations) {
-    Set<String> nodes = new TreeSet<>();
-    for (String node : configurations.keySet()) {
-      switch (_type) {
-        case NAME:
-          if (_regex.matcher(node).matches()) {
-            nodes.add(node);
-          }
-          break;
-        case ROLE:
-          for (String role : configurations.get(node).getRoles()) {
-            if (_regex.matcher(role).matches()) {
-              nodes.add(node);
-            }
-          }
-          break;
-        default:
-          throw new BatfishException("Unhandled NodesSpecifier type: " + _type);
-      }
-    }
-    return nodes;
   }
 
   @JsonIgnore
@@ -120,6 +96,44 @@ public class NodesSpecifier {
   @Override
   public int hashCode() {
     return Objects.hash(_expression, _regex.pattern(), _type.ordinal());
+  }
+
+  /**
+   * Evaluates if the given IPv4 filter matches this specifier
+   *
+   * @param filter The filter to evaluate
+   * @return Results of the match
+   */
+  public boolean matches(IpAccessList filter) {
+    switch (_type) {
+      case IPV4:
+        return _regex.matcher(filter.getName()).matches();
+      case IPV6:
+        return false;
+      case NAME:
+        return _regex.matcher(filter.getName()).matches();
+      default:
+        throw new BatfishException("Unhandled FiltersSpecifier type: " + _type);
+    }
+  }
+
+  /**
+   * Evaluates if the given IPv6 filter matches this specifier
+   *
+   * @param filter The filter to evaluate
+   * @return Results of the match
+   */
+  public boolean matches(Ip6AccessList filter) {
+    switch (_type) {
+      case IPV4:
+        return false;
+      case IPV6:
+        return _regex.matcher(filter.getName()).matches();
+      case NAME:
+        return _regex.matcher(filter.getName()).matches();
+      default:
+        throw new BatfishException("Unhandled FiltersSpecifier type: " + _type);
+    }
   }
 
   @JsonValue
