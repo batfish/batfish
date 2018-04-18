@@ -2,11 +2,13 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 
@@ -55,7 +57,12 @@ public class NodesSpecifier {
         _regex = Pattern.compile(parts[1]);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
-            "Illegal NodesSpecifier filter " + parts[1] + ".  Should be one of 'name' or 'role'");
+            "Illegal NodesSpecifier filter "
+                + parts[0]
+                + ".  Should be one of "
+                + Arrays.stream(Type.values())
+                    .map(v -> v.toString())
+                    .collect(Collectors.joining(", ")));
       }
     } else {
       throw new IllegalArgumentException("Cannot parse NodeSpecifier " + expression);

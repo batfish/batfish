@@ -2,7 +2,9 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Interface;
 
@@ -47,7 +49,12 @@ public class InterfacesSpecifier {
         _regex = Pattern.compile(parts[1]);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
-            "Illegal InterfacesSpecifier filter " + parts[1] + ".  Should be 'name' or 'desc'");
+            "Illegal InterfacesSpecifier filter "
+                + parts[0]
+                + ".  Should be one of "
+                + Arrays.stream(Type.values())
+                    .map(v -> v.toString())
+                    .collect(Collectors.joining(", ")));
       }
     } else {
       throw new IllegalArgumentException("Cannot parse InterfacesSpecifier " + expression);

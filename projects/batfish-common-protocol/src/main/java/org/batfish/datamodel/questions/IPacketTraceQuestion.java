@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import java.util.Map;
 import org.batfish.common.BatfishException;
@@ -333,75 +334,31 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
 
   @Override
   public String toString() {
-    String retString = "";
-    // we only print "interesting" values
-    if (_ingressInterface != null) {
-      retString += String.format(", %s=%s", PROP_INGRESS_INTERFACE, _ingressInterface);
-    }
-    if (_dscp != null) {
-      retString += String.format(", %s=%s", PROP_DSCP, _dscp);
-    }
-    if (_dst != null) {
-      retString += String.format(", %s=%s", PROP_DST, _dst);
-    }
-    if (_dstPort != null) {
-      retString += String.format(", %S=%s", PROP_DST_PORT, _dstPort);
-    }
-    if (_dstProtocol != null) {
-      retString += String.format(", %s=%s", PROP_DST_PROTOCOL, _dstProtocol);
-    }
-    if (_ecn != null) {
-      retString += String.format(", %s=%s", PROP_ECN, _ecn);
-    }
-    if (_icmpCode != null) {
-      retString += String.format(", %s=%s", PROP_ICMP_CODE, _icmpCode);
-    }
-    if (_icmpType != null) {
-      retString += String.format(", %s=%s", PROP_ICMP_TYPE, _icmpType);
-    }
-    if (_ipProtocol != null) {
-      retString += String.format(", %s=%s", PROP_IP_PROTOCOL, _ipProtocol);
-    }
-    if (_packetLength != null) {
-      retString += String.format(", %s=%s", PROP_PACKET_LENGTH, _packetLength);
-    }
-    if (_srcIp != null) {
-      retString += String.format(", %s=%s", PROP_SRC_IP, _srcIp);
-    }
-    if (_srcPort != null) {
-      retString += String.format(", %s=%s", PROP_SRC_PORT, _srcPort);
-    }
-    if (_srcProtocol != null) {
-      retString += String.format(", %s=%s", PROP_SRC_PROTOCOL, _srcProtocol);
-    }
-    if (_state != null) {
-      retString += String.format(", %s=%s", PROP_STATE, _state);
-    }
-    if (_tcpFlagsAck != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_ACK, _tcpFlagsAck);
-    }
-    if (_tcpFlagsCwr != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_CWR, _tcpFlagsCwr);
-    }
-    if (_tcpFlagsEce != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_ECE, _tcpFlagsEce);
-    }
-    if (_tcpFlagsFin != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_FIN, _tcpFlagsFin);
-    }
-    if (_tcpFlagsPsh != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_PSH, _tcpFlagsPsh);
-    }
-    if (_tcpFlagsRst != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_RST, _tcpFlagsRst);
-    }
-    if (_tcpFlagsSyn != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_SYN, _tcpFlagsSyn);
-    }
-    if (_tcpFlagsUrg != null) {
-      retString += String.format(", %s=%s", PROP_TCP_FLAGS_URG, _tcpFlagsUrg);
-    }
-    return retString;
+    return MoreObjects.toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_DSCP, _dscp)
+        .add(PROP_DST, _dst)
+        .add(PROP_DST_PORT, _dstPort)
+        .add(PROP_DST_PROTOCOL, _dstProtocol)
+        .add(PROP_ECN, _ecn)
+        .add(PROP_ICMP_CODE, _icmpCode)
+        .add(PROP_ICMP_TYPE, _icmpType)
+        .add(PROP_INGRESS_INTERFACE, _ingressInterface)
+        .add(PROP_IP_PROTOCOL, _ipProtocol)
+        .add(PROP_PACKET_LENGTH, _packetLength)
+        .add(PROP_SRC_IP, _srcIp)
+        .add(PROP_SRC_PORT, _srcPort)
+        .add(PROP_SRC_PROTOCOL, _srcProtocol)
+        .add(PROP_STATE, _state)
+        .add(PROP_TCP_FLAGS_ACK, _tcpFlagsAck)
+        .add(PROP_TCP_FLAGS_CWR, _tcpFlagsCwr)
+        .add(PROP_TCP_FLAGS_ECE, _tcpFlagsEce)
+        .add(PROP_TCP_FLAGS_FIN, _tcpFlagsFin)
+        .add(PROP_TCP_FLAGS_PSH, _tcpFlagsPsh)
+        .add(PROP_TCP_FLAGS_RST, _tcpFlagsRst)
+        .add(PROP_TCP_FLAGS_SYN, _tcpFlagsSyn)
+        .add(PROP_TCP_FLAGS_URG, _tcpFlagsUrg)
+        .toString();
   }
 
   @JsonProperty(PROP_DSCP)

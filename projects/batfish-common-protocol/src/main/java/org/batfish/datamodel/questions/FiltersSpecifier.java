@@ -2,8 +2,10 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
@@ -55,7 +57,12 @@ public class FiltersSpecifier {
         _regex = Pattern.compile(parts[1]);
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
-            "Illegal FiltersSpecifier filter " + parts[1] + ".  Should be 'name'");
+            "Illegal FiltersSpecifier filter "
+                + parts[0]
+                + ".  Should be one of "
+                + Arrays.stream(Type.values())
+                    .map(v -> v.toString())
+                    .collect(Collectors.joining(", ")));
       }
     } else {
       throw new IllegalArgumentException("Cannot parse FiltersSpecifier " + expression);
@@ -106,7 +113,7 @@ public class FiltersSpecifier {
       case NAME:
         return _regex.matcher(filter.getName()).matches();
       default:
-        throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
+        throw new BatfishException("Unhandled FiltersSpecifier type: " + _type);
     }
   }
 
@@ -125,7 +132,7 @@ public class FiltersSpecifier {
       case NAME:
         return _regex.matcher(filter.getName()).matches();
       default:
-        throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
+        throw new BatfishException("Unhandled FiltersSpecifier type: " + _type);
     }
   }
 
