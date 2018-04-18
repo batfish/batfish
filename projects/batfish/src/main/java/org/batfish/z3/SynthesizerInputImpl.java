@@ -9,6 +9,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.math.LongMath;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -31,13 +34,17 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Topology;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
+import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
+
+  private static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
 
   public static class Builder {
     private ForwardingAnalysis _forwardingAnalysis;
@@ -189,6 +196,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
+  private final Map<String, List<String>> _nodeInterfaces;
+
+  private final Set<String> _nodesWithSrcInterfaceConstraints;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -196,6 +207,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private final Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
+
+  private final Field _sourceInterfaceField;
+
+  private final Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
 
   private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
@@ -218,7 +233,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
     }
-    _ipAccessListSpecializer = new IpAccessListSpecializer(headerSpace);
+    _ipAccessListSpecializer = specialize ? new IpAccessListSpecializer(headerSpace) : null;
     _ipSpaceSpecializer =
         specialize
             ? new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps())
@@ -260,7 +275,72 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     }
     _enabledAcls = computeEnabledAcls();
     _aclActions = computeAclActions();
+    _nodeInterfaces = computeNodeInterfaces();
+    _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
+    _sourceInterfaceField = computeSourceInterfaceField();
+    _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues();
     _aclConditions = computeAclConditions();
+  }
+
+  private Set<String> computeNodesWithSrcInterfaceConstraints() {
+    return _configurations
+        .entrySet()
+        .stream()
+        .filter(
+            entry -> {
+              ContainsMatchSrcInterfaceExprVisitor containsMatchSrcInterfaceExprVisitor =
+                  new ContainsMatchSrcInterfaceExprVisitor(entry.getValue().getIpAccessLists());
+              return entry
+                  .getValue()
+                  .getIpAccessLists()
+                  .values()
+                  .stream()
+                  .anyMatch(containsMatchSrcInterfaceExprVisitor::containsMatchSrcInterfaceExpr);
+            })
+        .map(Entry::getKey)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private Field computeSourceInterfaceField() {
+    /* The number of values the field needs to be able to have, equal to the maximum number of
+     * interfaces on a single node, plus 1 (for the "no source interface" case that can arise
+     * if we originate at a Vrf for example).
+     */
+    int numValues =
+        _nodesWithSrcInterfaceConstraints
+                .stream()
+                .mapToInt(node -> _nodeInterfaces.get(node).size())
+                .max()
+                .orElse(0)
+            + 1;
+    int fieldBits = Math.max(LongMath.log2(numValues, RoundingMode.CEILING), 1);
+    return new Field(SRC_INTERFACE_FIELD_NAME, fieldBits);
+  }
+
+  private Map<String, List<String>> computeNodeInterfaces() {
+    return _enabledNodes
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(),
+                node ->
+                    ImmutableList.sortedCopyOf(
+                        _configurations.get(node).getInterfaces().keySet())));
+  }
+
+  private Map<String, Map<String, IntExpr>> computeSourceInterfaceFieldValues() {
+    Field sourceInterfaceField = _sourceInterfaceField;
+    return toImmutableMap(
+        _nodeInterfaces,
+        Entry::getKey,
+        entry -> {
+          ImmutableMap.Builder<String, IntExpr> values = ImmutableMap.builder();
+          CommonUtil.forEachWithIndex(
+              entry.getValue(),
+              (index, iface) ->
+                  values.put(iface, new LitIntExpr(index + 1, sourceInterfaceField.getSize())));
+          return values.build();
+        });
   }
 
   private Map<String, Map<String, List<LineAction>>> computeAclActions() {
@@ -283,20 +363,24 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private Map<String, Map<String, List<BooleanExpr>>> computeAclConditions() {
     return toImmutableMap(
         _enabledAcls,
-        Entry::getKey,
-        e ->
-            toImmutableMap(
-                e.getValue(),
-                Entry::getKey,
-                e2 ->
-                    e2.getValue()
-                        .getLines()
-                        .stream()
-                        .map(
-                            line ->
-                                AclLineMatchBooleanExprTransformer.transform(
-                                    line.getMatchCondition()))
-                        .collect(ImmutableList.toImmutableList())));
+        Entry::getKey, /* Node name */
+        e -> {
+          String node = e.getKey();
+          Map<String, IpAccessList> nodeAcls = e.getValue();
+          AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
+              new AclLineMatchExprToBooleanExpr(
+                  nodeAcls, _sourceInterfaceField, _sourceInterfaceFieldValues.get(node));
+          return toImmutableMap(
+              e.getValue(),
+              Entry::getKey, /* Acl name */
+              e2 ->
+                  e2.getValue()
+                      .getLines()
+                      .stream()
+                      .map(IpAccessListLine::getMatchCondition)
+                      .map(aclLineMatchExprToBooleanExpr::toBooleanExpr)
+                      .collect(ImmutableList.toImmutableList()));
+        });
   }
 
   private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
@@ -365,7 +449,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Entry::getKey,
-                              entry -> _ipAccessListSpecializer.specialize(entry.getValue())));
+                              entry ->
+                                  _ipAccessListSpecializer == null
+                                      ? entry.getValue()
+                                      : _ipAccessListSpecializer.specialize(entry.getValue())));
                 }));
   }
 
@@ -585,8 +672,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                 acl == null ? null : new AclPermit(hostname, acl.getName());
                             BooleanExpr transformationConstraint =
                                 new RangeMatchExpr(
-                                    TransformationHeaderField.NEW_SRC_IP,
-                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    new TransformedVarIntExpr(Field.SRC_IP),
+                                    Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(
                                             sourceNat.getPoolIpFirst().asLong(),
@@ -669,6 +756,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
+  public int getNodeInterfaceId(String node, String iface) {
+    return _nodeInterfaces.get(node).indexOf(iface) + 1;
+  }
+
+  @Override
   public Map<String, Map<String, BooleanExpr>> getNullRoutedIps() {
     return _nullRoutedIps;
   }
@@ -701,5 +793,25 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Set<Type> getVectorizedParameters() {
     return _vectorizedParameters;
+  }
+
+  @Override
+  public Map<String, List<String>> getNodeInterfaces() {
+    return _nodeInterfaces;
+  }
+
+  @Override
+  public Field getSourceInterfaceField() {
+    return _sourceInterfaceField;
+  }
+
+  @Override
+  public Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues() {
+    return _sourceInterfaceFieldValues;
+  }
+
+  @Override
+  public Set<String> getNodesWithSrcInterfaceConstraints() {
+    return _nodesWithSrcInterfaceConstraints;
   }
 }

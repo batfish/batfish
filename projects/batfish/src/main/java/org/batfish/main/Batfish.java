@@ -717,6 +717,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<String, Map<String, List<AclLine>>> e : arrangedAclLines.entrySet()) {
       String hostname = e.getKey();
       Configuration c = configurations.get(hostname);
+      List<String> nodeInterfaces =
+          ImmutableList.sortedCopyOf(
+              c.getInterfaces()
+                  .values()
+                  .stream()
+                  .map(Interface::getName)
+                  .collect(Collectors.toList()));
       Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
@@ -736,7 +743,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             EarliestMoreGeneralReachableLineQuerySynthesizer query =
-                new EarliestMoreGeneralReachableLineQuerySynthesizer(line, toCheck, ipAccessList);
+                new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                    line, toCheck, ipAccessList, c.getIpAccessLists(), nodeInterfaces);
             NodFirstUnsatJob<AclLine, Integer> job =
                 new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
             step2Jobs.add(job);
@@ -2093,7 +2101,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       if (!compressedDataPlaneDependenciesExist(_testrigSettings)) {
-        computeCompressedDataPlane();
+        // computeCompressedDataPlane();
       }
     }
   }
@@ -2911,10 +2919,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3060,8 +3068,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows) {
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+  public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), ignoreAcls);
   }
 
   /**
@@ -3391,10 +3399,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4107,7 +4115,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
 
     AnswerElement answerElement = getHistory();
     return answerElement;

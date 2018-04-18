@@ -146,7 +146,8 @@ public class BdpEngine implements FlowProcessor {
       List<FlowTraceHop> hopsSoFar,
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
-      Flow transformedFlow) {
+      Flow transformedFlow,
+      boolean ignoreAcls) {
     Ip dstIp = transformedFlow.getDstIp();
     Set<String> dstIpOwners = dp._ipOwners.get(dstIp);
     if (dstIpOwners != null && dstIpOwners.contains(currentNodeName)) {
@@ -216,7 +217,11 @@ public class BdpEngine implements FlowProcessor {
                         Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
             FlowTraceHop newHop =
                 new FlowTraceHop(
-                    newEdge, routesForThisNextHopInterface, hopFlow(originalFlow, transformedFlow));
+                    newEdge,
+                    routesForThisNextHopInterface,
+                    null,
+                    null,
+                    hopFlow(originalFlow, transformedFlow));
             newHops.add(newHop);
             FlowTrace nullRouteTrace =
                 new FlowTrace(
@@ -259,7 +264,8 @@ public class BdpEngine implements FlowProcessor {
                       finalNextHopIp,
                       nextHopInterface,
                       edges,
-                      true);
+                      true,
+                      ignoreAcls);
               if (continueToNextNextHopInterface) {
                 continue;
               }
@@ -277,16 +283,18 @@ public class BdpEngine implements FlowProcessor {
                   new FlowTraceHop(
                       neighborUnreachbleEdge,
                       routesForThisNextHopInterface,
+                      null,
+                      null,
                       hopFlow(originalFlow, transformedFlow));
               List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
               newHops.add(neighborUnreachableHop);
               /** Check if denied out. If not, make standard neighbor-unreachable trace. */
               IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
               boolean denied = false;
-              if (outFilter != null) {
+              if (!ignoreAcls && outFilter != null) {
                 FlowDisposition disposition = FlowDisposition.DENIED_OUT;
                 denied =
-                    flowTraceDeniedHelper(
+                    flowTraceFilterHelper(
                         flowTraces,
                         originalFlow,
                         transformedFlow,
@@ -1214,7 +1222,7 @@ public class BdpEngine implements FlowProcessor {
     return errorMessage;
   }
 
-  private boolean flowTraceDeniedHelper(
+  private boolean flowTraceFilterHelper(
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
@@ -1225,19 +1233,19 @@ public class BdpEngine implements FlowProcessor {
       FlowDisposition disposition) {
     boolean out = disposition == FlowDisposition.DENIED_OUT;
     FilterResult outResult = filter.filter(transformedFlow, srcInterface, aclDefinitions);
+    String outFilterName = filter.getName();
+    Integer matchLine = outResult.getMatchLine();
+    String lineDesc;
+    if (matchLine != null) {
+      lineDesc = filter.getLines().get(matchLine).getName();
+      if (lineDesc == null) {
+        lineDesc = "line:" + matchLine;
+      }
+    } else {
+      lineDesc = "no-match";
+    }
     boolean denied = outResult.getAction() == LineAction.REJECT;
     if (denied) {
-      String outFilterName = filter.getName();
-      Integer matchLine = outResult.getMatchLine();
-      String lineDesc;
-      if (matchLine != null) {
-        lineDesc = filter.getLines().get(matchLine).getName();
-        if (lineDesc == null) {
-          lineDesc = "line:" + matchLine;
-        }
-      } else {
-        lineDesc = "no-match";
-      }
       String notes = disposition + "{" + outFilterName + "}{" + lineDesc + "}";
       if (out) {
         FlowTraceHop lastHop = newHops.get(newHops.size() - 1);
@@ -1249,11 +1257,23 @@ public class BdpEngine implements FlowProcessor {
                 new NodeInterfacePair(Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
         FlowTraceHop deniedOutHop =
             new FlowTraceHop(
-                deniedOutEdge, lastHop.getRoutes(), hopFlow(originalFlow, transformedFlow));
+                deniedOutEdge,
+                lastHop.getRoutes(),
+                null,
+                null,
+                hopFlow(originalFlow, transformedFlow));
         newHops.add(deniedOutHop);
       }
       FlowTrace trace = new FlowTrace(disposition, newHops, notes);
       flowTraces.add(trace);
+    } else {
+      FlowTraceHop hop = newHops.get(newHops.size() - 1);
+      String filterNotes = "{" + outFilterName + "}{" + lineDesc + "}";
+      if (out) {
+        hop.setFilterOut(filterNotes);
+      } else {
+        hop.setFilterIn(filterNotes);
+      }
     }
     return denied;
   }
@@ -1505,7 +1525,8 @@ public class BdpEngine implements FlowProcessor {
             srcInterface,
             new NodeInterfacePair(Configuration.NODE_NONE_NAME, Interface.NULL_INTERFACE_NAME));
     FlowTraceHop neighborUnreachableHop =
-        new FlowTraceHop(neighborUnreachbleEdge, routes, hopFlow(originalFlow, transformedFlow));
+        new FlowTraceHop(
+            neighborUnreachbleEdge, routes, null, null, hopFlow(originalFlow, transformedFlow));
     List<FlowTraceHop> newHops = new ArrayList<>(completedHops);
     newHops.add(neighborUnreachableHop);
     FlowTrace trace =
@@ -1533,7 +1554,8 @@ public class BdpEngine implements FlowProcessor {
       @Nullable Ip finalNextHopIp,
       @Nullable NodeInterfacePair nextHopInterface,
       SortedSet<Edge> edges,
-      boolean arp) {
+      boolean arp,
+      boolean ignoreAcls) {
     boolean continueToNextNextHopInterface = false;
     int unreachableNeighbors = 0;
     int potentialNeighbors = 0;
@@ -1546,7 +1568,11 @@ public class BdpEngine implements FlowProcessor {
       Set<Edge> newVisitedEdges = new LinkedHashSet<>(visitedEdges);
       FlowTraceHop newHop =
           new FlowTraceHop(
-              edge, routesForThisNextHopInterface, hopFlow(originalFlow, transformedFlow));
+              edge,
+              routesForThisNextHopInterface,
+              null,
+              null,
+              hopFlow(originalFlow, transformedFlow));
       newVisitedEdges.add(edge);
       newHops.add(newHop);
       /*
@@ -1621,10 +1647,10 @@ public class BdpEngine implements FlowProcessor {
                 .getInterfaces()
                 .get(nextHopInterfaceName)
                 .getOutgoingFilter();
-        if (outFilter != null) {
+        if (!ignoreAcls && outFilter != null) {
           FlowDisposition disposition = FlowDisposition.DENIED_OUT;
           boolean denied =
-              flowTraceDeniedHelper(
+              flowTraceFilterHelper(
                   flowTraces,
                   originalFlow,
                   transformedFlow,
@@ -1641,10 +1667,10 @@ public class BdpEngine implements FlowProcessor {
       }
       IpAccessList inFilter =
           dp._nodes.get(nextNodeName)._c.getInterfaces().get(edge.getInt2()).getIncomingFilter();
-      if (inFilter != null) {
+      if (!ignoreAcls && inFilter != null) {
         FlowDisposition disposition = FlowDisposition.DENIED_IN;
         boolean denied =
-            flowTraceDeniedHelper(
+            flowTraceFilterHelper(
                 flowTraces,
                 originalFlow,
                 transformedFlow,
@@ -1660,7 +1686,14 @@ public class BdpEngine implements FlowProcessor {
       }
       // recurse
       collectFlowTraces(
-          dp, nextNodeName, newVisitedEdges, newHops, flowTraces, originalFlow, transformedFlow);
+          dp,
+          nextNodeName,
+          newVisitedEdges,
+          newHops,
+          flowTraces,
+          originalFlow,
+          transformedFlow,
+          ignoreAcls);
     }
     if (arp && unreachableNeighbors > 0 && unreachableNeighbors == potentialNeighbors) {
       FlowTrace trace =
@@ -1677,7 +1710,8 @@ public class BdpEngine implements FlowProcessor {
   }
 
   @Override
-  public SortedMap<Flow, Set<FlowTrace>> processFlows(DataPlane dataPlane, Set<Flow> flows) {
+  public SortedMap<Flow, Set<FlowTrace>> processFlows(
+      DataPlane dataPlane, Set<Flow> flows, boolean ignoreAcls) {
     Map<Flow, Set<FlowTrace>> flowTraces = new ConcurrentHashMap<>();
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
     flows
@@ -1725,10 +1759,18 @@ public class BdpEngine implements FlowProcessor {
                     null,
                     null,
                     edges,
-                    false);
+                    false,
+                    ignoreAcls);
               } else {
                 collectFlowTraces(
-                    dp, ingressNodeName, visitedEdges, hops, currentFlowTraces, flow, flow);
+                    dp,
+                    ingressNodeName,
+                    visitedEdges,
+                    hops,
+                    currentFlowTraces,
+                    flow,
+                    flow,
+                    ignoreAcls);
               }
             });
     return new TreeMap<>(flowTraces);

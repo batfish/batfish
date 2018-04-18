@@ -2,7 +2,6 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 import org.batfish.z3.Field;
-import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
@@ -10,10 +9,6 @@ import org.batfish.z3.expr.visitors.IntExprVisitor;
 public final class VarIntExpr extends IntExpr {
 
   private final Field _field;
-
-  public VarIntExpr(HeaderField headerField) {
-    _field = new Field(headerField.getName(), headerField.getSize());
-  }
 
   public VarIntExpr(Field field) {
     _field = field;

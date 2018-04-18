@@ -1007,6 +1007,29 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ipAccessLists" : {
+          "sshabc" : {
+            "name" : "sshabc",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : [
+                      "0.0.0.0/0"
+                    ],
+                    "negate" : false,
+                    "srcIps" : [
+                      "1.2.0.0/16"
+                    ]
+                  }
+                },
+                "name" : "10 permit 1.2.4.8/16"
+              }
+            ]
+          }
+        },
         "roleDimensions" : {
           "0" : "arista",
           "1" : "misc"
@@ -1105,6 +1128,34 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "arista_vrf" : {
+        "configurationFormat" : "CISCO_NX",
+        "name" : "arista_vrf",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "roleDimensions" : {
+          "0" : "arista",
+          "1" : "vrf"
+        },
+        "roles" : [
+          "arista-vrf"
+        ],
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "arista_vrf"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          },
+          "vrfName" : {
+            "name" : "vrfName",
+            "description" : " descriptive sentence"
           }
         }
       },
@@ -8324,16 +8375,6 @@
                   "accessList6" : "to-VTY",
                   "ro" : true,
                   "rw" : true
-                },
-                "dummycommunityuse-aclsnmp-acl" : {
-                  "name" : "dummycommunityuse-aclsnmp-acl",
-                  "ro" : false,
-                  "rw" : false
-                },
-                "dummycommunityuse-aclsnmp-arpa-acl" : {
-                  "name" : "dummycommunityuse-aclsnmp-arpa-acl",
-                  "ro" : false,
-                  "rw" : false
                 },
                 "dummyconnunity" : {
                   "name" : "dummyconnunity",

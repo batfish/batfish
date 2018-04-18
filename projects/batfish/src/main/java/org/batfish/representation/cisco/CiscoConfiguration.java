@@ -3750,6 +3750,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         (vrfName, vrf) -> {
           org.batfish.datamodel.Vrf newVrf = c.getVrfs().get(vrfName);
 
+          // description
+          newVrf.setDescription(vrf.getDescription());
+
           // add snmp trap servers to main list
           if (newVrf.getSnmpServer() != null) {
             c.getSnmpTrapServers().addAll(newVrf.getSnmpServer().getHosts().keySet());
@@ -3816,6 +3819,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST);
     markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
     markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6);
+    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST);
     markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP);

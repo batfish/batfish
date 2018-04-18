@@ -23,6 +23,7 @@
         "arista_ospf" : "arista_ospf",
         "arista_queue_monitor" : "arista_queue_monitor",
         "arista_username" : "arista_username",
+        "arista_vrf" : "arista_vrf",
         "aruba_aaa" : "aruba_aaa",
         "aruba_acl" : "aruba_acl",
         "aruba_airgroup" : "aruba_airgroup",
@@ -260,6 +261,7 @@
         "arista_ospf" : "PASSED",
         "arista_queue_monitor" : "PASSED",
         "arista_username" : "PASSED",
+        "arista_vrf" : "PASSED",
         "aruba_aaa" : "PASSED",
         "aruba_acl" : "PASSED",
         "aruba_airgroup" : "PASSED",
@@ -2248,6 +2250,21 @@
             "            DEC:'60'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
+            "    (standard_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      STANDARD:'standard'  <== mode:DEFAULT_MODE",
+            "      (variable_aclname",
+            "        VARIABLE:'sshabc'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (standard_access_list_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          IP_PREFIX:'1.2.4.8/16'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
             "    (s_management",
             "      MANAGEMENT:'management'  <== mode:DEFAULT_MODE",
             "      (management_ssh",
@@ -2259,6 +2276,13 @@
             "            VARIABLE:'mode'  <== mode:M_Authentication",
             "            PASSWORD:'password'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (management_ssh_ip_access_group",
+            "          IP:'ip'  <== mode:DEFAULT_MODE",
+            "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'sshabc'  <== mode:DEFAULT_MODE)",
+            "          IN:'in'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (management_ssh_null",
             "          IDLE_TIMEOUT:'idle-timeout'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -2298,6 +2322,21 @@
             "      MODE:'mode'  <== mode:DEFAULT_MODE",
             "      ROUTED:'routed'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_management",
+            "      MANAGEMENT:'management'  <== mode:DEFAULT_MODE",
+            "      (management_cvx",
+            "        CVX:'cvx'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (management_cvx_null",
+            "          NO:'no'  <== mode:DEFAULT_MODE",
+            "          SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (management_cvx_null",
+            "          SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -2406,6 +2445,34 @@
             "            SHA512:'sha512'  <== mode:DEFAULT_MODE",
             "            SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0'  <== mode:DEFAULT_MODE)))",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
+        "arista_vrf" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'arista_vrf'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_vrf_definition",
+            "      VRF:'vrf'  <== mode:DEFAULT_MODE",
+            "      DEFINITION:'definition'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'vrfName'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (vrfd_null",
+            "        RD:'rd'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          IPV6_ADDRESS:'2:700'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (vrfd_description",
+            "        (description_line",
+            "          DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "          RAW_TEXT:' descriptive sentence'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -30686,10 +30753,11 @@
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
             "        (variable_community_name",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'snmp-acl'  <== mode:DEFAULT_MODE)",
-            "        (ssc_access_control",
+            "          (variable",
+            "            VARIABLE:'snmp-acl'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -30697,10 +30765,11 @@
             "      (ss_community",
             "        COMMUNITY:'community'  <== mode:DEFAULT_MODE",
             "        (variable_community_name",
-            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'dummycommunity'  <== mode:DEFAULT_MODE)",
+            "        (ssc_use_ipv4_acl",
             "          USE_ACL:'use-acl'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'snmp-arpa-acl'  <== mode:DEFAULT_MODE)",
-            "        (ssc_access_control",
+            "          (variable",
+            "            VARIABLE:'snmp-arpa-acl'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -51125,7 +51194,7 @@
           "ipv4 acl" : {
             "abc" : {
               "management telnet ip access-group" : [
-                32
+                36
               ]
             }
           }
@@ -51477,6 +51546,18 @@
           }
         },
         "cisco_snmp" : {
+          "ipv4 acl" : {
+            "snmp-acl" : {
+              "snmp server community ipv4 acl" : [
+                11
+              ]
+            },
+            "snmp-arpa-acl" : {
+              "snmp server community ipv4 acl" : [
+                12
+              ]
+            }
+          },
           "ipv4/6 acl" : {
             "1" : {
               "snmp server community acl" : [
@@ -52655,6 +52736,7 @@
         "arista_ospf" : "PASSED",
         "arista_queue_monitor" : "PASSED",
         "arista_username" : "PASSED",
+        "arista_vrf" : "PASSED",
         "aruba_aaa" : "PASSED",
         "aruba_acl" : "PASSED",
         "aruba_airgroup" : "PASSED",

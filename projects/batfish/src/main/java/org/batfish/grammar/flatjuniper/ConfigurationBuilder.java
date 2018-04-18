@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -140,6 +142,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_preferredContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_vrrp_groupContext;
@@ -2201,6 +2204,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                   _currentFromZone.getInboundFilter());
         }
       }
+
       if (ctx.to.JUNOS_HOST() == null) {
         _currentToZone = _configuration.getZones().get(toName);
         if (_currentToZone == null) {
@@ -2211,7 +2215,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _configuration.getZones().put(toName, _currentToZone);
         }
       }
+
       if (ctx.from.JUNOS_HOST() != null) {
+        // Policy for traffic originating from this device
         _currentFilter = _currentToZone.getFromHostFilter();
         if (_currentFilter == null) {
           _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
@@ -2219,6 +2225,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _currentToZone.setFromHostFilter(_currentFilter);
         }
       } else if (ctx.to.JUNOS_HOST() != null) {
+        // Policy for traffic destined for this device
         _currentFilter = _currentFromZone.getToHostFilter();
         if (_currentFilter == null) {
           _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
@@ -2226,12 +2233,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           _currentFromZone.setToHostFilter(_currentFilter);
         }
       } else {
+        // Policy for thru traffic
         _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
         if (_currentFilter == null) {
           _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
           _configuration.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
         }
+        // Add this filter to the to-zone for easy combination with egress ACL
+        _currentToZone.getFromZonePolicies().put(policyName, _currentFilter);
+      }
+
+      /*
+       * Need to keep track of the from-zone for this filter to apply srcInterface filter to the
+       * firewallFilter
+       */
+      if (_currentFromZone != null) {
+        _currentFilter.setFromZone(_currentFromZone.getName());
       }
     }
   }
@@ -2241,8 +2259,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFilter =
         _configuration
             .getFirewallFilters()
-            .computeIfAbsent(
-                "~GLOBAL_SECURITY_POLICY~", n -> new FirewallFilter(n, Family.INET, -1));
+            .computeIfAbsent(ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET, -1));
   }
 
   @Override
@@ -2299,6 +2316,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterSezs_interfaces(Sezs_interfacesContext ctx) {
     _currentZoneInterface = initInterface(ctx.interface_id());
     _currentZone.getInterfaces().add(_currentZoneInterface);
+    _configuration.getInterfaceZones().put(_currentZoneInterface, _currentZone);
   }
 
   @Override
@@ -2954,6 +2972,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _configuration.referenceStructure(
           JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
     }
+  }
+
+  @Override
+  public void exitIfia_arp(Ifia_arpContext ctx) {
+    Ip ip = new Ip(ctx.ip.getText());
+    _currentInterface.setAdditionalArpIps(
+        ImmutableSet.<Ip>builder().addAll(_currentInterface.getAdditionalArpIps()).add(ip).build());
   }
 
   @Override

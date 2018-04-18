@@ -62,10 +62,13 @@ public final class Interface extends ComparableStructure<String> {
 
     private List<SourceNat> _sourceNats;
 
+    private SortedSet<Ip> _additionalArpIps;
+
     private Vrf _vrf;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
+      _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
@@ -81,6 +84,7 @@ public final class Interface extends ComparableStructure<String> {
         iface.setAddress(_address);
         allAddresses.add(_address);
       }
+      iface.setAdditionalArpIps(_additionalArpIps);
       iface.setAllAddresses(allAddresses.addAll(_secondaryAddresses).build());
       iface.setBandwidth(_bandwidth);
       iface.setBlacklisted(_blacklisted);
@@ -115,6 +119,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setActive(boolean active) {
       _active = active;
+      return this;
+    }
+
+    public Builder setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+      _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
       return this;
     }
 
@@ -265,6 +274,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_ACCESS_VLAN = "accessVlan";
 
   private static final String PROP_ACTIVE = "active";
+
+  private static final String PROP_ADDITIONAL_ARP_IPS = "additionalArpIps";
 
   private static final String PROP_ALL_PREFIXES = "allPrefixes";
 
@@ -505,6 +516,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
+  private SortedSet<Ip> _additionalArpIps;
+
   private List<SubRange> _allowedVlans;
 
   private SortedSet<InterfaceAddress> _allAddresses;
@@ -720,6 +733,11 @@ public final class Interface extends ComparableStructure<String> {
       "Whether this interface is administratively active (true) or disabled (false)")
   public boolean getActive() {
     return _active;
+  }
+
+  @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
+  public SortedSet<Ip> getAdditionalArpIps() {
+    return _additionalArpIps;
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)
@@ -1065,6 +1083,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ACTIVE)
   public void setActive(boolean active) {
     _active = active;
+  }
+
+  @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
+  public void setAdditionalArpIps(Iterable<Ip> additionalArpIps) {
+    _additionalArpIps = ImmutableSortedSet.copyOf(additionalArpIps);
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)

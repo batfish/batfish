@@ -137,9 +137,9 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, DataPlane dataPlane) {
+  public void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
-    _flowTraces.put(dp, _engine.processFlows(dp, flows));
+    _flowTraces.put(dp, _engine.processFlows(dp, flows, ignoreAcls));
   }
 
   @Override

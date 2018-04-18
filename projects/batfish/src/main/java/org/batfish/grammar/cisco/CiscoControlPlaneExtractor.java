@@ -363,6 +363,7 @@ import org.batfish.grammar.cisco.CiscoParser.Logging_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_severityContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Logging_trapContext;
+import org.batfish.grammar.cisco.CiscoParser.Management_ssh_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_as_path_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_community_list_rm_stanzaContext;
@@ -509,6 +510,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_switchportContext;
 import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_blankContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Send_community_bgp_tailContext;
@@ -582,6 +584,7 @@ import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_ip_routeContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.representation.cisco.AsPathSet;
@@ -2240,6 +2243,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_vrf_context(S_vrf_contextContext ctx) {
+    String vrf = ctx.name.getText();
+    _currentVrf = vrf;
+  }
+
+  @Override
+  public void enterS_vrf_definition(S_vrf_definitionContext ctx) {
     String vrf = ctx.name.getText();
     _currentVrf = vrf;
   }
@@ -4311,6 +4320,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitManagement_ssh_ip_access_group(Management_ssh_ip_access_groupContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.getManagementAccessGroups().add(name);
+    _configuration.referenceStructure(
+        CiscoStructureType.IPV4_ACCESS_LIST,
+        name,
+        CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
+        line);
+  }
+
+  @Override
   public void exitManagement_telnet_ip_access_group(Management_telnet_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -5721,6 +5742,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_vrf_definition(S_vrf_definitionContext ctx) {
+    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
   public void exitSd_switchport_blank(Sd_switchport_blankContext ctx) {
     _configuration.getCf().setDefaultSwitchportMode(SwitchportMode.ACCESS);
   }
@@ -6072,12 +6098,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ecns.add(ecn);
       }
     }
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else {
-      name = getFullText(ctx).trim();
-    }
+    String name = getFullText(ctx).trim();
     StandardAccessListLine line =
         new StandardAccessListLine(name, action, new IpWildcard(srcIp, srcWildcard), dscps, ecns);
     _currentStandardAcl.addLine(line);
@@ -6321,6 +6342,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitVrfc_ip_route(Vrfc_ip_routeContext ctx) {
     todo(ctx, F_IP_ROUTE_VRF);
+  }
+
+  @Override
+  public void exitVrfd_description(Vrfd_descriptionContext ctx) {
+    currentVrf().setDescription(ctx.description_line().text.getText());
   }
 
   @Override

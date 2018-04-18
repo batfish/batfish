@@ -12,6 +12,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.z3.HeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -26,13 +27,10 @@ import org.batfish.z3.expr.TrueExpr;
  */
 public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<BooleanExpr> {
 
-  private final boolean _useDst;
+  private final HeaderField[] _fields;
 
-  private final boolean _useSrc;
-
-  public IpSpaceBooleanExprTransformer(boolean useSrc, boolean useDst) {
-    _useDst = useDst;
-    _useSrc = useSrc;
+  public IpSpaceBooleanExprTransformer(HeaderField... fields) {
+    _fields = fields;
   }
 
   @Override

@@ -3,9 +3,11 @@ package org.batfish.z3.expr;
 import com.microsoft.z3.Context;
 import java.util.Objects;
 import org.batfish.z3.expr.visitors.BitVecExprTransformer;
+import org.batfish.z3.expr.visitors.ExprPrinter;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
+import org.batfish.z3.expr.visitors.IsComplexVisitor;
 
 public class MockIntAtom extends IntExpr {
 
@@ -15,6 +17,12 @@ public class MockIntAtom extends IntExpr {
 
   private final int _numBits;
 
+  public MockIntAtom(int i) {
+    _name = String.format("BVConst%d", i);
+    _numBits = 1;
+    _ctx = null;
+  }
+
   public MockIntAtom(int i, int numBits, Context ctx) {
     _name = String.format("BVConst%d", i);
     _numBits = numBits;
@@ -23,6 +31,12 @@ public class MockIntAtom extends IntExpr {
 
   @Override
   public void accept(ExprVisitor visitor) {
+    if (visitor instanceof ExprPrinter) {
+      ((ExprPrinter) visitor).visitIdExpr(new IdExpr(_name));
+      return;
+    } else if (visitor instanceof IsComplexVisitor) {
+      return;
+    }
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -58,5 +72,10 @@ public class MockIntAtom extends IntExpr {
   @Override
   public int numBits() {
     return _numBits;
+  }
+
+  @Override
+  public String toString() {
+    return _name;
   }
 }

@@ -6,16 +6,20 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
@@ -23,6 +27,15 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * additional arp IPs.
+   */
+  public static HasAdditionalArpIps hasAdditionalArpIps(
+      @Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
+    return new HasAdditionalArpIps(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches if the provided the interface's declared names comprise the set
@@ -92,6 +105,14 @@ public final class InterfaceMatchers {
    */
   public static HasVrf hasVrf(Matcher<? super Vrf> subMatcher) {
     return new HasVrf(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's Zone
+   * name.
+   */
+  public static HasZoneName hasZoneName(Matcher<? super String> subMatcher) {
+    return new HasZoneName(subMatcher);
   }
 
   /** Provides a matcher that matches if the interface is active. */
