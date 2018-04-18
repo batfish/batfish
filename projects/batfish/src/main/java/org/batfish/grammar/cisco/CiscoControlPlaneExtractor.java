@@ -4981,8 +4981,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         r.setRouteMap(map);
         r.setRouteMapLine(mapLine);
       }
-      int procNum = toInteger(ctx.procnum);
-      r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+      if (ctx.procnum != null) {
+        int procNum = toInteger(ctx.procnum);
+        r.getSpecialAttributes().put(BgpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
+      }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }

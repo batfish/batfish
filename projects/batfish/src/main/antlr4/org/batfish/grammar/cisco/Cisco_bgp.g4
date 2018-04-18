@@ -772,7 +772,7 @@ redistribute_eigrp_bgp_tail
 
 redistribute_ospf_bgp_tail
 :
-   REDISTRIBUTE OSPF procnum = DEC
+   REDISTRIBUTE OSPF (procnum = DEC)?
    (
       (
          ROUTE_MAP map = variable
@@ -794,7 +794,7 @@ redistribute_ospf_bgp_tail
 
 redistribute_ospfv3_bgp_tail
 :
-   REDISTRIBUTE OSPFV3 procnum = DEC
+   REDISTRIBUTE (OSPFV3 | OSPF3) (procnum = DEC)?
    (
       (
          ROUTE_MAP map = variable

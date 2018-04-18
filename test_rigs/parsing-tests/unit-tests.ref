@@ -1934,7 +1934,38 @@
             "              (activate_bgp_tail",
             "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (bgp_tail",
+            "            (redistribute_ospfv3_bgp_tail",
+            "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "              OSPF3:'ospf3'  <== mode:DEFAULT_MODE",
+            "              MATCH:'match'  <== mode:DEFAULT_MODE",
+            "              (ospf_route_type",
+            "                INTERNAL:'internal'  <== mode:DEFAULT_MODE)",
+            "              ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'ROUTE_MAP'  <== mode:M_RouteMap)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (bgp_tail",
+            "            (redistribute_ospfv3_bgp_tail",
+            "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "              OSPF3:'ospf3'  <== mode:DEFAULT_MODE",
+            "              MATCH:'match'  <== mode:DEFAULT_MODE",
+            "              (ospf_route_type",
+            "                EXTERNAL:'external'  <== mode:DEFAULT_MODE)",
+            "              ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'UNDEFINED_MAP'  <== mode:M_RouteMap)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'ROUTE_MAP'  <== mode:M_RouteMap)",
+            "      (access_list_action",
+            "        DENY:'deny'  <== mode:DEFAULT_MODE)",
+            "      DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -51192,6 +51223,15 @@
                 30,
                 46,
                 47
+              ]
+            }
+          }
+        },
+        "arista_bgp" : {
+          "route-map" : {
+            "UNDEFINED_MAP" : {
+              "bgp redistribute ospfv3 route-map" : [
+                13
               ]
             }
           }
