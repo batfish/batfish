@@ -810,4 +810,10 @@ public class CiscoGrammarTest {
 
     assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
   }
+
+  @Test
+  public void testNxosBgpVrf() throws IOException {
+    Configuration c = parseConfig("nxosBgpVrf");
+    assertThat(c.getVrfs().get("bar").getBgpProcess().getNeighbors().values(), hasSize(1));
+  }
 }
