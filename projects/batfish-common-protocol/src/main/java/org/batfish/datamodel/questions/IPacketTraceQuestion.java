@@ -1,17 +1,17 @@
 package org.batfish.datamodel.questions;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Collections;
-import java.util.Set;
+import com.google.common.base.Strings;
+import java.util.Map;
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 
-public abstract class ITracerouteQuestion extends Question implements IQuestion {
+public abstract class IPacketTraceQuestion extends Question implements IQuestion {
 
   private static final String PROP_DSCP = "dscp";
 
@@ -28,10 +28,6 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   private static final String PROP_ICMP_TYPE = "icmpType";
 
   private static final String PROP_INGRESS_INTERFACE = "ingressInterface";
-
-  private static final String PROP_INGRESS_NODE = "ingressNode";
-
-  private static final String PROP_INGRESS_VRF = "ingressVrf";
 
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
 
@@ -77,10 +73,6 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
 
   private String _ingressInterface;
 
-  private String _ingressNode;
-
-  private String _ingressVrf;
-
   private IpProtocol _ipProtocol;
 
   private Integer _packetLength;
@@ -109,7 +101,7 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
 
   private Boolean _tcpFlagsUrg;
 
-  public Flow.Builder createFlowBuilder() {
+  public Flow.Builder createBaseFlowBuilder() {
     Flow.Builder flowBuilder = new Flow.Builder();
     if (_dscp != null) {
       flowBuilder.setDscp(_dscp);
@@ -134,14 +126,8 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
     if (_icmpType != null) {
       flowBuilder.setIcmpType(_icmpType);
     }
-    if (_ingressNode != null) {
-      flowBuilder.setIngressNode(_ingressNode);
-    }
     if (_ingressInterface != null) {
       flowBuilder.setIngressInterface(_ingressInterface);
-    }
-    if (_ingressVrf != null) {
-      flowBuilder.setIngressVrf(_ingressVrf);
     }
     if (_ipProtocol != null) {
       flowBuilder.setIpProtocol(_ipProtocol);
@@ -204,6 +190,31 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
     return flowBuilder;
   }
 
+  /**
+   * Generates a dst Ip from destination specification in the question
+   *
+   * @param configurations The set of configurations to use in the generation
+   * @return The dst IP
+   */
+  public Ip createDstIpFromDst(Map<String, Configuration> configurations) {
+    String hostname = getDst();
+    Configuration node = Strings.isNullOrEmpty(hostname) ? null : configurations.get(hostname);
+    if (node != null) {
+      Ip canonicalIp = node.getCanonicalIp();
+      if (canonicalIp != null) {
+        return canonicalIp;
+      } else {
+        throw new BatfishException(
+            "Cannot automatically assign destination ip to flow since no there are no ip "
+                + "addresses assigned to any interface on destination node: '"
+                + hostname
+                + "'");
+      }
+    } else {
+      throw new BatfishException("Destination is neither a valid node nor IP: '" + hostname + "'");
+    }
+  }
+
   @JsonProperty(PROP_DSCP)
   public Integer getDscp() {
     return _dscp;
@@ -229,11 +240,6 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
     return _ecn;
   }
 
-  @JsonIgnore
-  public Set<Builder> getFlowBuilders() {
-    return Collections.singleton(createFlowBuilder());
-  }
-
   @JsonProperty(PROP_ICMP_CODE)
   public Integer getIcmpCode() {
     return _icmpCode;
@@ -247,16 +253,6 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
   @JsonProperty(PROP_INGRESS_INTERFACE)
   public String getIngressInterface() {
     return _ingressInterface;
-  }
-
-  @JsonProperty(PROP_INGRESS_NODE)
-  public String getIngressNode() {
-    return _ingressNode;
-  }
-
-  @JsonProperty(PROP_INGRESS_VRF)
-  public String getIngressVrf() {
-    return _ingressVrf;
   }
 
   @JsonProperty(PROP_IP_PROTOCOL)
@@ -329,11 +325,186 @@ public abstract class ITracerouteQuestion extends Question implements IQuestion 
     return _tcpFlagsUrg;
   }
 
-  void setDst(String dst);
+  @Override
+  public String toString() {
+    String retString = "";
+    // we only print "interesting" values
+    if (_ingressInterface != null) {
+      retString += String.format(", %s=%s", PROP_INGRESS_INTERFACE, _ingressInterface);
+    }
+    if (_dscp != null) {
+      retString += String.format(", %s=%s", PROP_DSCP, _dscp);
+    }
+    if (_dst != null) {
+      retString += String.format(", %s=%s", PROP_DST, _dst);
+    }
+    if (_dstPort != null) {
+      retString += String.format(", %S=%s", PROP_DST_PORT, _dstPort);
+    }
+    if (_dstProtocol != null) {
+      retString += String.format(", %s=%s", PROP_DST_PROTOCOL, _dstProtocol);
+    }
+    if (_ecn != null) {
+      retString += String.format(", %s=%s", PROP_ECN, _ecn);
+    }
+    if (_icmpCode != null) {
+      retString += String.format(", %s=%s", PROP_ICMP_CODE, _icmpCode);
+    }
+    if (_icmpType != null) {
+      retString += String.format(", %s=%s", PROP_ICMP_TYPE, _icmpType);
+    }
+    if (_ipProtocol != null) {
+      retString += String.format(", %s=%s", PROP_IP_PROTOCOL, _ipProtocol);
+    }
+    if (_packetLength != null) {
+      retString += String.format(", %s=%s", PROP_PACKET_LENGTH, _packetLength);
+    }
+    if (_srcIp != null) {
+      retString += String.format(", %s=%s", PROP_SRC_IP, _srcIp);
+    }
+    if (_srcPort != null) {
+      retString += String.format(", %s=%s", PROP_SRC_PORT, _srcPort);
+    }
+    if (_srcProtocol != null) {
+      retString += String.format(", %s=%s", PROP_SRC_PROTOCOL, _srcProtocol);
+    }
+    if (_state != null) {
+      retString += String.format(", %s=%s", PROP_STATE, _state);
+    }
+    if (_tcpFlagsAck != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_ACK, _tcpFlagsAck);
+    }
+    if (_tcpFlagsCwr != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_CWR, _tcpFlagsCwr);
+    }
+    if (_tcpFlagsEce != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_ECE, _tcpFlagsEce);
+    }
+    if (_tcpFlagsFin != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_FIN, _tcpFlagsFin);
+    }
+    if (_tcpFlagsPsh != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_PSH, _tcpFlagsPsh);
+    }
+    if (_tcpFlagsRst != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_RST, _tcpFlagsRst);
+    }
+    if (_tcpFlagsSyn != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_SYN, _tcpFlagsSyn);
+    }
+    if (_tcpFlagsUrg != null) {
+      retString += String.format(", %s=%s", PROP_TCP_FLAGS_URG, _tcpFlagsUrg);
+    }
+    return retString;
+  }
 
-  void setDstProtocol(Protocol protocol);
+  @JsonProperty(PROP_DSCP)
+  public void setDscp(Integer dscp) {
+    _dscp = dscp;
+  }
 
-  void setIngressNode(String ingressNode);
+  @JsonProperty(PROP_DST)
+  public void setDst(String dst) {
+    _dst = dst;
+  }
 
-  void setIngressVrf(String ingressVrf);
+  @JsonProperty(PROP_DST_PORT)
+  public void setDstPort(Integer dstPort) {
+    _dstPort = dstPort;
+  }
+
+  @JsonProperty(PROP_DST_PROTOCOL)
+  public void setDstProtocol(Protocol dstProtocol) {
+    _dstProtocol = dstProtocol;
+  }
+
+  @JsonProperty(PROP_ECN)
+  public void setEcn(Integer ecn) {
+    _ecn = ecn;
+  }
+
+  @JsonProperty(PROP_ICMP_CODE)
+  public void setIcmpCode(Integer icmpCode) {
+    _icmpCode = icmpCode;
+  }
+
+  @JsonProperty(PROP_ICMP_TYPE)
+  public void setIcmpType(Integer icmpType) {
+    _icmpType = icmpType;
+  }
+
+  @JsonProperty(PROP_INGRESS_INTERFACE)
+  public void setIngressInterface(String ingressInterface) {
+    _ingressInterface = ingressInterface;
+  }
+
+  @JsonProperty(PROP_IP_PROTOCOL)
+  public void setIpProtocol(IpProtocol ipProtocol) {
+    _ipProtocol = ipProtocol;
+  }
+
+  @JsonProperty(PROP_PACKET_LENGTH)
+  public void setPacketLength(Integer packetLength) {
+    _packetLength = packetLength;
+  }
+
+  @JsonProperty(PROP_SRC_IP)
+  public void setSrcIp(Ip srcIp) {
+    _srcIp = srcIp;
+  }
+
+  @JsonProperty(PROP_SRC_PORT)
+  public void setSrcPort(Integer srcPort) {
+    _srcPort = srcPort;
+  }
+
+  @JsonProperty(PROP_SRC_PROTOCOL)
+  public void setSrcProtocol(Protocol srcProtocol) {
+    _srcProtocol = srcProtocol;
+  }
+
+  @JsonProperty(PROP_STATE)
+  public void setState(State state) {
+    _state = state;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_ACK)
+  public void setTcpFlagsAck(Boolean tcpFlagsAck) {
+    _tcpFlagsAck = tcpFlagsAck;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_CWR)
+  public void setTcpFlagsCwr(Boolean tcpFlagsCwr) {
+    _tcpFlagsCwr = tcpFlagsCwr;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_ECE)
+  public void setTcpFlagsEce(Boolean tcpFlagsEce) {
+    _tcpFlagsEce = tcpFlagsEce;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_FIN)
+  public void setTcpFlagsFin(Boolean tcpFlagsFin) {
+    _tcpFlagsFin = tcpFlagsFin;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_PSH)
+  public void setTcpFlagsPsh(Boolean tcpFlagsPsh) {
+    _tcpFlagsPsh = tcpFlagsPsh;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_RST)
+  public void setTcpFlagsRst(Boolean tcpFlagsRst) {
+    _tcpFlagsRst = tcpFlagsRst;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_SYN)
+  public void setTcpFlagsSyn(Boolean tcpFlagsSyn) {
+    _tcpFlagsSyn = tcpFlagsSyn;
+  }
+
+  @JsonProperty(PROP_TCP_FLAGS_URG)
+  public void setTcpFlagsUrg(Boolean tcpFlagsUrg) {
+    _tcpFlagsUrg = tcpFlagsUrg;
+  }
 }
