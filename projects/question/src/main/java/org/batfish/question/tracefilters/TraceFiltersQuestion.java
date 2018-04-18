@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.questions.FiltersSpecifier;
+import org.batfish.datamodel.questions.FiltersSpecifier.Type;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
 
@@ -27,6 +28,9 @@ public class TraceFiltersQuestion extends IPacketTraceQuestion {
       @JsonProperty(PROP_FILTER_REGEX) FiltersSpecifier filterRegex) {
     _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
     _filterRegex = filterRegex == null ? FiltersSpecifier.ALL : filterRegex;
+    if (_filterRegex.getType() == Type.IPV6) {
+      throw new IllegalArgumentException("IPV6 filters are not currently supported");
+    }
   }
 
   @Override
