@@ -9,6 +9,15 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 public class IpSpaceToJacksonSerializableIpSpace extends JsonSerializer<IpSpace>
     implements GenericIpSpaceVisitor<JacksonSerializableIpSpace> {
 
+  private IpSpaceToJacksonSerializableIpSpace() {}
+
+  private static final IpSpaceToJacksonSerializableIpSpace INSTANCE =
+      new IpSpaceToJacksonSerializableIpSpace();
+
+  public static JacksonSerializableIpSpace toJacksonSerializableIpSpace(IpSpace ipSpace) {
+    return ipSpace.accept(INSTANCE);
+  }
+
   @Override
   public void serialize(IpSpace value, JsonGenerator gen, SerializerProvider serializers)
       throws IOException {
@@ -22,8 +31,7 @@ public class IpSpaceToJacksonSerializableIpSpace extends JsonSerializer<IpSpace>
 
   @Override
   public JacksonSerializableIpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return new JacksonSerializableAclIpSpace(aclIpSpace);
   }
 
   @Override
@@ -44,19 +52,16 @@ public class IpSpaceToJacksonSerializableIpSpace extends JsonSerializer<IpSpace>
   @Override
   public JacksonSerializableIpSpace visitIpWildcardSetIpSpace(
       IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return new SimpleJsonIpSpace(ipWildcardSetIpSpace);
   }
 
   @Override
   public JacksonSerializableIpSpace visitPrefix(Prefix prefix) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return new SimpleJsonIpSpace(prefix);
   }
 
   @Override
   public JacksonSerializableIpSpace visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return universeIpSpace;
   }
 }

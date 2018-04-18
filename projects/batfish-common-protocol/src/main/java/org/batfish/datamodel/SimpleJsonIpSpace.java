@@ -10,6 +10,8 @@ public class SimpleJsonIpSpace implements JacksonSerializableIpSpace {
 
   private static final String PROP_IP_WILDCARD = "ipWildcard";
 
+  private static final String PROP_IP_WILDCARD_SET_IP_SPACE = "ipWildcardSetIpSpace";
+
   private static final String PROP_PREFIX = "prefix";
 
   private final Ip _ip;
@@ -18,29 +20,42 @@ public class SimpleJsonIpSpace implements JacksonSerializableIpSpace {
 
   private final IpWildcard _ipWildcard;
 
+  private final IpWildcardSetIpSpace _ipWildcardSetIpSpace;
+
   private final Prefix _prefix;
 
   public SimpleJsonIpSpace(Ip ip) {
-    this(ip, null, null);
+    this(ip, null, null, null);
   }
 
   @JsonCreator
   private SimpleJsonIpSpace(
       @JsonProperty(PROP_IP) Ip ip,
       @JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard,
+      @JsonProperty(PROP_IP_WILDCARD_SET_IP_SPACE) IpWildcardSetIpSpace ipWildcardSetIpSpace,
       @JsonProperty(PROP_PREFIX) Prefix prefix) {
     _ip = ip;
     _ipWildcard = ipWildcard;
+    _ipWildcardSetIpSpace = ipWildcardSetIpSpace;
     _prefix = prefix;
-    _ipSpace = ip != null ? ip : ipWildcard != null ? ipWildcard : prefix;
+    _ipSpace =
+        ip != null
+            ? ip
+            : ipWildcard != null
+                ? ipWildcard
+                : ipWildcardSetIpSpace != null ? ipWildcardSetIpSpace : prefix;
   }
 
   public SimpleJsonIpSpace(IpWildcard ipWildcard) {
-    this(null, ipWildcard, null);
+    this(null, ipWildcard, null, null);
+  }
+
+  public SimpleJsonIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
+    this(null, null, ipWildcardSetIpSpace, null);
   }
 
   public SimpleJsonIpSpace(Prefix prefix) {
-    this(null, null, prefix);
+    this(null, null, null, prefix);
   }
 
   @Override
@@ -66,6 +81,11 @@ public class SimpleJsonIpSpace implements JacksonSerializableIpSpace {
   @JsonProperty(PROP_IP_WILDCARD)
   public IpWildcard getIpWildcard() {
     return _ipWildcard;
+  }
+
+  @JsonProperty(PROP_IP_WILDCARD_SET_IP_SPACE)
+  public IpWildcardSetIpSpace getIpWildcardSetIpSpace() {
+    return _ipWildcardSetIpSpace;
   }
 
   @JsonProperty(PROP_PREFIX)

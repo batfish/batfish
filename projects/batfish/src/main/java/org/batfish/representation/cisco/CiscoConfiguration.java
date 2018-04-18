@@ -52,7 +52,9 @@ import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -2405,18 +2407,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return new IpAccessList(name, lines);
   }
 
-  private IpAccessList toIpAccessList(NetworkObjectGroup networkObjectGroup) {
-    ImmutableList.Builder<IpAccessListLine> linesBuilder = ImmutableList.builder();
-    List<IpWildcard> oldLines = networkObjectGroup.getLines();
-    if (!oldLines.isEmpty()) {
-      linesBuilder.add(
-          IpAccessListLine.acceptingHeaderSpace(
-              HeaderSpace.builder().setSrcOrDstIps(oldLines).build()));
-    }
-    return IpAccessList.builder()
-        .setName(computeNetworkObjectGroupAclName(networkObjectGroup.getName()))
-        .setLines(linesBuilder.build())
-        .build();
+  private IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
+    return IpWildcardSetIpSpace.builder().including(networkObjectGroup.getLines()).build();
   }
 
   private org.batfish.datamodel.IsisProcess toIsisProcess(
@@ -3628,12 +3620,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
-    // convert each NetworkObjectGroup to IpAccessList
-    _networkObjectGroups
-        .values()
-        .stream()
-        .map(this::toIpAccessList)
-        .forEach(acl -> c.getIpAccessLists().put(acl.getName(), acl));
+    // convert each NetworkObjectGroup to IpSpace
+    _networkObjectGroups.forEach(
+        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
