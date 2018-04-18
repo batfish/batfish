@@ -24,7 +24,7 @@ public class BatfishException extends RuntimeException {
     /** */
     private static final long serialVersionUID = 1L;
 
-    private final BatfishException _exception;
+    private final transient BatfishException _exception;
 
     private final List<String> _lines;
 
