@@ -65,7 +65,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       dhints = new DisplayHints();
       dhints.setTextDesc(
           String.format(
-              "Filter ${%s} on node {%s} will {%s} flow {%s} at line {%s} {%s}",
+              "Filter ${%s} on node ${%s} will ${%s} flow ${%s} at line ${%s} ${%s}",
               COLUMN_FILTER_NAME,
               COLUMN_NODE,
               COLUMN_ACTION,
