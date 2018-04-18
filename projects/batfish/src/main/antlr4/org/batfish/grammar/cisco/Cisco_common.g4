@@ -255,12 +255,12 @@ null_rest_of_line
 ospf_route_type
 :
    (
-      EXTERNAL DEC
+      EXTERNAL DEC?
    )
    | INTERNAL
    |
    (
-      NSSA_EXTERNAL DEC
+      NSSA_EXTERNAL DEC?
    )
 ;
 

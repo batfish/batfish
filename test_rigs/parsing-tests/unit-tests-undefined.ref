@@ -927,6 +927,14 @@
           ]
         }
       },
+      "undefined:route-map:usage:bgp redistribute ospfv3 route-map:UNDEFINED_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute ospfv3 route-map' named 'UNDEFINED_MAP'",
+        "files" : {
+          "arista_bgp" : [
+            13
+          ]
+        }
+      },
       "undefined:route-map:usage:bgp redistribute rip route-map:blah" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute rip route-map' named 'blah'",
         "files" : {
@@ -971,7 +979,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 120
+      "numResults" : 121
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -982,6 +990,15 @@
               30,
               46,
               47
+            ]
+          }
+        }
+      },
+      "arista_bgp" : {
+        "route-map" : {
+          "UNDEFINED_MAP" : {
+            "bgp redistribute ospfv3 route-map" : [
+              13
             ]
           }
         }

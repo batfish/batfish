@@ -1,0 +1,80 @@
+package org.batfish.question.tracefilters;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Map;
+import java.util.Set;
+import org.batfish.common.Answerer;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FilterResult;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.datamodel.questions.Question;
+
+public class TraceFiltersAnswerer extends Answerer {
+
+  public TraceFiltersAnswerer(Question question, IBatfish batfish) {
+    super(question, batfish);
+  }
+
+  @Override
+  public AnswerElement answer() {
+    TraceFiltersQuestion question = (TraceFiltersQuestion) _question;
+
+    Map<String, Configuration> configurations = _batfish.loadConfigurations();
+    Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+
+    TraceFiltersAnswerElement answer = TraceFiltersAnswerElement.create(question);
+    for (Configuration c : configurations.values()) {
+      if (!includeNodes.contains(c.getHostname())) {
+        continue;
+      }
+      for (IpAccessList filter : c.getIpAccessLists().values()) {
+        if (!question.getFilterRegex().matches(filter)) {
+          continue;
+        }
+        Flow flow = getFlow(c.getHostname(), question, configurations);
+        FilterResult result =
+            filter.filter(flow, question.getIngressInterface(), c.getIpAccessLists());
+        Integer matchLine = result.getMatchLine();
+        String lineDesc = "no-match";
+        if (matchLine != null) {
+          lineDesc = filter.getLines().get(matchLine).getName();
+          if (lineDesc == null) {
+            lineDesc = "line:" + matchLine;
+          }
+        }
+        ObjectNode row =
+            answer.getRow(
+                c.getHostname(), filter.getName(), flow, result.getAction(), matchLine, lineDesc);
+
+        // exclude or not?
+        Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
+        if (exclusion != null) {
+          answer.addExcludedRow(row, exclusion.getName());
+        } else {
+          answer.addRow(row);
+        }
+      }
+      // there should be another for loop for v6 filters when we add v6 support
+    }
+    answer.setSummary(answer.computeSummary(question.getAssertion()));
+    return answer;
+  }
+
+  private Flow getFlow(
+      String ingressNode,
+      TraceFiltersQuestion question,
+      Map<String, Configuration> configurations) {
+    Flow.Builder flowBuilder = question.createBaseFlowBuilder();
+    flowBuilder.setTag(_batfish.getFlowTag());
+    flowBuilder.setIngressNode(ingressNode);
+    if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
+      flowBuilder.setDstIp(question.createDstIpFromDst(configurations));
+    }
+    return flowBuilder.build();
+  }
+}
