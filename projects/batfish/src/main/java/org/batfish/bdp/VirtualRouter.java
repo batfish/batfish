@@ -870,6 +870,9 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
       Prefix remotePrefix = neighbor.getPrefix();
+      if (remotePrefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
+        continue;
+      }
       Ip remoteIp = remotePrefix.getStartIp();
       if (ipOwners.get(remoteIp) != null) {
         // Skip if neighbor is not outside the network
