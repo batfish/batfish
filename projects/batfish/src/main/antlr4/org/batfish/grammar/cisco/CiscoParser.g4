@@ -1605,7 +1605,6 @@ management_cvx
    CVX NEWLINE
    (
       management_cvx_null
-      | management_cvx_server_null
    )*
    (
       EXIT NEWLINE
@@ -1616,13 +1615,9 @@ management_cvx_null
 :
    NO?
    (
-      SHUTDOWN
+      SERVER
+      | SHUTDOWN
    ) null_rest_of_line
-;
-
-management_cvx_server_null
-:
-  SERVER null_rest_of_line
 ;
 
 management_egress_interface_selection
