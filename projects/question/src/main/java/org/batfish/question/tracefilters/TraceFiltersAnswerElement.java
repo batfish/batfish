@@ -34,8 +34,9 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
   /**
    * Creates a {@link TraceFiltersAnswerElement} object the right metadata
    *
-   * @param question
-   * @return
+   * @param question The question object for which the answer is being created, to borrow its {@link
+   *     DisplayHints}
+   * @return The creates the answer element object.
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
     Map<String, Schema> columnSchemas =
