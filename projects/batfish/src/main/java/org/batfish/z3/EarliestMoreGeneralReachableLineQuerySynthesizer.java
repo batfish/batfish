@@ -1,17 +1,23 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.math.LongMath;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
-import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
 import org.batfish.z3.state.NumberedQuery;
 
 /**
@@ -30,33 +36,58 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
 
   private IpAccessList _list;
 
+  private final Map<String, IpAccessList> _nodeAcls;
+
+  private Map<String, IntExpr> _sourceInterfaceFieldValues;
+
+  private final Field _sourceInterfaceField;
+
   private AclLine _unreachableLine;
 
   public EarliestMoreGeneralReachableLineQuerySynthesizer(
-      AclLine unreachableLine, List<AclLine> earlierReachableLines, IpAccessList list) {
+      AclLine unreachableLine,
+      List<AclLine> earlierReachableLines,
+      IpAccessList list,
+      Map<String, IpAccessList> nodeAcls,
+      List<String> nodeInterfaces) {
     super(unreachableLine);
     _unreachableLine = unreachableLine;
     _earlierReachableLines = earlierReachableLines;
     _hostname = _unreachableLine.getHostname();
     _aclName = _unreachableLine.getAclName();
     _list = list;
+    _nodeAcls = nodeAcls;
+    int fieldBits = Math.max(LongMath.log2(nodeInterfaces.size() + 1, RoundingMode.CEILING), 1);
+    _sourceInterfaceField = new Field("SRC_INTERFACE", fieldBits);
+    _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues(nodeInterfaces);
+  }
+
+  private Map<String, IntExpr> computeSourceInterfaceFieldValues(List<String> nodeInterfaces) {
+    ImmutableMap.Builder<String, IntExpr> sourceInterfaceFieldValues = ImmutableMap.builder();
+    CommonUtil.forEachWithIndex(
+        nodeInterfaces,
+        (index, iface) ->
+            sourceInterfaceFieldValues.put(
+                iface, new LitIntExpr(index + 1, _sourceInterfaceField.getSize())));
+    return sourceInterfaceFieldValues.build();
   }
 
   @Override
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     int unreachableLineIndex = _unreachableLine.getLine();
     IpAccessListLine unreachableLine = _list.getLines().get(unreachableLineIndex);
-    /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
+    AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
+        new AclLineMatchExprToBooleanExpr(
+            _nodeAcls, _sourceInterfaceField, _sourceInterfaceFieldValues);
     BooleanExpr matchUnreachableLineHeaderSpace =
-        AclLineMatchBooleanExprTransformer.transform(unreachableLine.getMatchCondition());
+        aclLineMatchExprToBooleanExpr.toBooleanExpr(unreachableLine.getMatchCondition());
     ImmutableList.Builder<QueryStatement> queries = ImmutableList.builder();
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     for (AclLine earlierReachableLine : _earlierReachableLines) {
       int earlierLineIndex = earlierReachableLine.getLine();
       IpAccessListLine earlierLine = _list.getLines().get(earlierLineIndex);
-      /* TODO: handle match types other than header space, e.g. conjunction, indirection, etc. */
       BooleanExpr matchEarlierLineHeaderSpace =
-          AclLineMatchBooleanExprTransformer.transform(earlierLine.getMatchCondition());
+          aclLineMatchExprToBooleanExpr.toBooleanExpr(earlierLine.getMatchCondition());
       NumberedQuery queryRel = new NumberedQuery(earlierLineIndex);
       rules.add(
           new BasicRuleStatement(

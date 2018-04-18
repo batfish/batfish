@@ -10,10 +10,9 @@ import static org.hamcrest.Matchers.sameInstance;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.z3.BasicHeaderField;
+import org.batfish.z3.Field;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -134,8 +133,8 @@ public class SimplifierTest {
    */
   @Test
   public void testSimplifyEqPreserveUnalteredInstance() {
-    IntExpr i1 = new VarIntExpr(BasicHeaderField.DST_IP);
-    IntExpr i2 = new VarIntExpr(BasicHeaderField.SRC_IP);
+    IntExpr i1 = new VarIntExpr(Field.DST_IP);
+    IntExpr i2 = new VarIntExpr(Field.SRC_IP);
     EqExpr eq = new EqExpr(i1, i2);
 
     assertThat(simplifyBooleanExpr(eq), sameInstance(eq));
@@ -144,7 +143,7 @@ public class SimplifierTest {
   /** Test that an EQ node with syntactically equal LHS and RHS simplifies to TRUE. */
   @Test
   public void testSimplifyEqSame() {
-    IntExpr i1 = new VarIntExpr(BasicHeaderField.DST_IP);
+    IntExpr i1 = new VarIntExpr(Field.DST_IP);
     EqExpr eq = new EqExpr(i1, i1);
 
     assertThat(simplifyBooleanExpr(eq), equalTo(TrueExpr.INSTANCE));
@@ -312,13 +311,9 @@ public class SimplifierTest {
   @Test
   public void testSimplifyWrappers() {
     BooleanExpr headerSpaceMatchExpr = new HeaderSpaceMatchExpr(HeaderSpace.builder().build());
-    BooleanExpr prefixMatchExpr = new PrefixMatchExpr(BasicHeaderField.DST_IP, Prefix.ZERO);
-    BooleanExpr rangeMatchExpr =
-        RangeMatchExpr.greaterThanOrEqualTo(BasicHeaderField.DST_IP, 123456L, 10);
+    BooleanExpr prefixMatchExpr = new PrefixMatchExpr(new VarIntExpr(Field.DST_IP), Prefix.ZERO);
+    BooleanExpr rangeMatchExpr = RangeMatchExpr.greaterThanOrEqualTo(Field.DST_IP, 123456L, 10);
 
-    assertThat(
-        simplifyBooleanExpr(CurrentIsOriginalExpr.INSTANCE),
-        not(equalTo(CurrentIsOriginalExpr.INSTANCE)));
     assertThat(simplifyBooleanExpr(headerSpaceMatchExpr), not(equalTo(headerSpaceMatchExpr)));
     assertThat(simplifyBooleanExpr(prefixMatchExpr), not(equalTo(prefixMatchExpr)));
     assertThat(simplifyBooleanExpr(rangeMatchExpr), not(equalTo(rangeMatchExpr)));

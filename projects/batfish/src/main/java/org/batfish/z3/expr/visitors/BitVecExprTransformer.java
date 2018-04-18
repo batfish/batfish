@@ -6,6 +6,7 @@ import org.batfish.z3.NodContext;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
 public class BitVecExprTransformer implements GenericIntExprVisitor<BitVecExpr> {
@@ -42,11 +43,22 @@ public class BitVecExprTransformer implements GenericIntExprVisitor<BitVecExpr> 
   }
 
   @Override
-  public BitVecExpr visitVarIntExpr(VarIntExpr varIntExpr) {
-    String headerField = varIntExpr.getField().getName();
-    BitVecExpr ret = _nodContext.getVariables().get(headerField);
+  public BitVecExpr visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
+    String fieldName = transformedVarIntExpr.getField().getName();
+    BitVecExpr ret = _nodContext.getTransformedVariables().get(fieldName);
     if (ret == null) {
-      throw new BatfishException("nodContext missing mapping for variable: '" + headerField + "'");
+      throw new BatfishException(
+          "nodContext missing mapping for transformed variable: '" + fieldName + "'");
+    }
+    return ret;
+  }
+
+  @Override
+  public BitVecExpr visitVarIntExpr(VarIntExpr varIntExpr) {
+    String fieldName = varIntExpr.getField().getName();
+    BitVecExpr ret = _nodContext.getVariables().get(fieldName);
+    if (ret == null) {
+      throw new BatfishException("nodContext missing mapping for variable: '" + fieldName + "'");
     }
     return ret;
   }

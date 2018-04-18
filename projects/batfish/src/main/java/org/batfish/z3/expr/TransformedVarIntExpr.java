@@ -6,36 +6,36 @@ import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
 
-public final class VarIntExpr extends IntExpr {
+public final class TransformedVarIntExpr extends IntExpr {
 
   private final Field _field;
 
-  public VarIntExpr(Field field) {
+  public TransformedVarIntExpr(Field field) {
     _field = field;
   }
 
-  public VarIntExpr(String name, Integer size) {
+  public TransformedVarIntExpr(String name, Integer size) {
     _field = new Field(name, size);
   }
 
   @Override
   public void accept(ExprVisitor visitor) {
-    visitor.visitVarIntExpr(this);
+    visitor.visitTransformedVarIntExpr(this);
   }
 
   @Override
   public <R> R accept(GenericIntExprVisitor<R> visitor) {
-    return visitor.visitVarIntExpr(this);
+    return visitor.visitTransformedVarIntExpr(this);
   }
 
   @Override
   public void accept(IntExprVisitor visitor) {
-    visitor.visitVarIntExpr(this);
+    visitor.visitTransformedVarIntExpr(this);
   }
 
   @Override
   protected boolean exprEquals(Expr e) {
-    return Objects.equals(_field, ((VarIntExpr) e)._field);
+    return Objects.equals(_field, ((TransformedVarIntExpr) e)._field);
   }
 
   public Field getField() {
