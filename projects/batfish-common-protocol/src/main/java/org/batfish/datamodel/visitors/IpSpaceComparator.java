@@ -1,7 +1,5 @@
 package org.batfish.datamodel.visitors;
 
-import java.util.Comparator;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;

@@ -20,6 +20,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -185,7 +186,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
           case DESTINATION:
             headerSpaceBuilder.setDstIps(
                 Iterables.concat(
-                    headerSpaceBuilder.getDstIps(), ImmutableSet.of(match.toIpWildcard())));
+                    ((IpWildcardSetIpSpace) headerSpaceBuilder.getDstIps()).getWhitelist(),
+                    ImmutableSet.of(match.toIpWildcard())));
             break;
           case DESTINATION_PORT:
             headerSpaceBuilder.setDstPorts(
@@ -207,7 +209,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
           case SOURCE:
             headerSpaceBuilder.setSrcIps(
                 Iterables.concat(
-                    headerSpaceBuilder.getSrcIps(), ImmutableSet.of(match.toIpWildcard())));
+                    ((IpWildcardSetIpSpace) headerSpaceBuilder.getSrcIps()).getWhitelist(),
+                    ImmutableSet.of(match.toIpWildcard())));
             break;
           case SOURCE_PORT:
             headerSpaceBuilder.setSrcPorts(

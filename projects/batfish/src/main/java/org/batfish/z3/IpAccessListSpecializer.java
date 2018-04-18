@@ -19,7 +19,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
-import sun.invoke.empty.Empty;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the

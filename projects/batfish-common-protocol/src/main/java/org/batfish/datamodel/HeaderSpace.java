@@ -550,15 +550,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return false;
   }
 
-  private static boolean wildcardsContain(Collection<IpWildcard> wildcards, Ip ip) {
-    for (IpWildcard wildcard : wildcards) {
-      if (wildcard.containsIp(ip)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private SortedSet<Integer> _dscps;
 
   private IpSpace _dstIps;
