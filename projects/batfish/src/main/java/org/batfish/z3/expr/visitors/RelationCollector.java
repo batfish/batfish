@@ -12,7 +12,6 @@ import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.VoidStatementVisitor;
 
 public class RelationCollector implements VoidStatementVisitor {
@@ -54,17 +53,5 @@ public class RelationCollector implements VoidStatementVisitor {
     _relations.add(
         Maps.immutableEntry(
             BoolExprTransformer.getNodName(_input, stateExpr), stateExpr.getState()));
-  }
-
-  @Override
-  public void visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    transformationRuleStatement
-        .getPreconditionPreTransformationStates()
-        .forEach(this::collectStateExpr);
-    transformationRuleStatement
-        .getPreconditionPostTransformationStates()
-        .forEach(this::collectStateExpr);
-    collectStateExpr(transformationRuleStatement.getPostconditionTransformationState());
   }
 }

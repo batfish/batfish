@@ -10,6 +10,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -40,6 +41,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
+    private Map<String, List<String>> _nodeInterfaces;
+
+    private Set<String> _nodesWithSrcInterfaceConstraints;
+
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
     private Map<String, Map<String, String>> _outgoingAcls;
@@ -54,6 +59,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Set<Type> _vectorizedParameters;
 
+    private Field _srcInterfaceField;
+
+    private Map<String, Map<String, IntExpr>> _srcInterfaceFieldValues;
+
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
@@ -66,34 +75,20 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
+      _nodeInterfaces = ImmutableMap.of();
+      _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
       _sourceNats = ImmutableMap.of();
+      _srcInterfaceField = null;
+      _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
     public MockSynthesizerInput build() {
-      return new MockSynthesizerInput(
-          _aclActions,
-          _aclConditions,
-          _arpTrueEdge,
-          _enabledEdges,
-          _enabledInterfaces,
-          _enabledInterfacesByNodeVrf,
-          _enabledNodes,
-          _enabledVrfs,
-          _incomingAcls,
-          _ipsByHostname,
-          _neighborUnreachable,
-          _nullRoutedIps,
-          _outgoingAcls,
-          _routableIps,
-          _simplify,
-          _sourceNats,
-          _topologyInterfaces,
-          _vectorizedParameters);
+      return new MockSynthesizerInput(this);
     }
 
     public Builder setAclActions(Map<String, Map<String, List<LineAction>>> aclActions) {
@@ -154,6 +149,17 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setNodeInterfaces(Map<String, List<String>> nodeInterfaces) {
+      _nodeInterfaces = nodeInterfaces;
+      return this;
+    }
+
+    public Builder setNodesWithSrcInterfaceConstraints(
+        Set<String> nodesWithSrcInterfaceConstraints) {
+      _nodesWithSrcInterfaceConstraints = nodesWithSrcInterfaceConstraints;
+      return this;
+    }
+
     public Builder setNullRoutedIps(Map<String, Map<String, BooleanExpr>> nullRoutedIps) {
       _nullRoutedIps = nullRoutedIps;
       return this;
@@ -177,6 +183,17 @@ public class MockSynthesizerInput implements SynthesizerInput {
     public Builder setSourceNats(
         Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats) {
       _sourceNats = sourceNats;
+      return this;
+    }
+
+    public Builder setSrcInterfaceField(Field srcInterfaceField) {
+      _srcInterfaceField = srcInterfaceField;
+      return this;
+    }
+
+    public Builder setSrcInterfaceFieldValues(
+        Map<String, Map<String, IntExpr>> srcInterfaceFieldValues) {
+      _srcInterfaceFieldValues = srcInterfaceFieldValues;
       return this;
     }
 
@@ -218,6 +235,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
+  private final Map<String, List<String>> _nodeInterfaces;
+
+  private final Set<String> _nodesWithSrcInterfaceConstraints;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -228,47 +249,42 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
+  private final Field _sourceInterfaceField;
+
+  private final Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
+
   private final Map<String, Set<String>> _topologyInterfaces;
 
   private final Set<Type> _vectorizedParameters;
 
-  private MockSynthesizerInput(
-      Map<String, Map<String, List<LineAction>>> aclActions,
-      Map<String, Map<String, List<BooleanExpr>>> aclConditions,
-      Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>> arpTrueEdge,
-      Set<Edge> enabledEdges,
-      Map<String, Set<String>> enabledInterfaces,
-      Map<String, Map<String, Set<String>>> enabledInterfacesByNodeVrf,
-      Set<String> enabledNodes,
-      Map<String, Set<String>> enabledVrfs,
-      Map<String, Map<String, String>> incomingAcls,
-      Map<String, Set<Ip>> ipsByHostname,
-      Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable,
-      Map<String, Map<String, BooleanExpr>> nullRoutedIps,
-      Map<String, Map<String, String>> outgoingAcls,
-      Map<String, Map<String, BooleanExpr>> routableIps,
-      boolean simplify,
-      Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats,
-      Map<String, Set<String>> topologyInterfaces,
-      Set<Type> vectorizedParameters) {
-    _aclActions = aclActions;
-    _aclConditions = aclConditions;
-    _arpTrueEdge = arpTrueEdge;
-    _enabledEdges = enabledEdges;
-    _enabledInterfaces = enabledInterfaces;
-    _enabledInterfacesByNodeVrf = enabledInterfacesByNodeVrf;
-    _enabledNodes = enabledNodes;
-    _enabledVrfs = enabledVrfs;
-    _incomingAcls = incomingAcls;
-    _ipsByHostname = ipsByHostname;
-    _neighborUnreachable = neighborUnreachable;
-    _nullRoutedIps = nullRoutedIps;
-    _outgoingAcls = outgoingAcls;
-    _routableIps = routableIps;
-    _simplify = simplify;
-    _sourceNats = sourceNats;
-    _topologyInterfaces = topologyInterfaces;
-    _vectorizedParameters = vectorizedParameters;
+  private MockSynthesizerInput(Builder builder) {
+    _aclActions = builder._aclActions;
+    _aclConditions = builder._aclConditions;
+    _arpTrueEdge = builder._arpTrueEdge;
+    _enabledEdges = builder._enabledEdges;
+    _enabledInterfaces = builder._enabledInterfaces;
+    _enabledInterfacesByNodeVrf = builder._enabledInterfacesByNodeVrf;
+    _enabledNodes = builder._enabledNodes;
+    _enabledVrfs = builder._enabledVrfs;
+    _incomingAcls = builder._incomingAcls;
+    _ipsByHostname = builder._ipsByHostname;
+    _neighborUnreachable = builder._neighborUnreachable;
+    _nodeInterfaces = builder._nodeInterfaces;
+    _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
+    _nullRoutedIps = builder._nullRoutedIps;
+    _outgoingAcls = builder._outgoingAcls;
+    _routableIps = builder._routableIps;
+    _simplify = builder._simplify;
+    _sourceNats = builder._sourceNats;
+    _sourceInterfaceField = builder._srcInterfaceField;
+    _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
+    _topologyInterfaces = builder._topologyInterfaces;
+    _vectorizedParameters = builder._vectorizedParameters;
+  }
+
+  @Override
+  public int getNodeInterfaceId(String node, String iface) {
+    return getNodeInterfaces().get(node).indexOf(iface) + 1;
   }
 
   @Override
@@ -328,6 +344,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, List<String>> getNodeInterfaces() {
+    return _nodeInterfaces;
+  }
+
+  @Override
   public Map<String, Map<String, BooleanExpr>> getNullRoutedIps() {
     return _nullRoutedIps;
   }
@@ -350,6 +371,21 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
     return _sourceNats;
+  }
+
+  @Override
+  public Field getSourceInterfaceField() {
+    return _sourceInterfaceField;
+  }
+
+  @Override
+  public Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues() {
+    return _sourceInterfaceFieldValues;
+  }
+
+  @Override
+  public Set<String> getNodesWithSrcInterfaceConstraints() {
+    return _nodesWithSrcInterfaceConstraints;
   }
 
   @Override

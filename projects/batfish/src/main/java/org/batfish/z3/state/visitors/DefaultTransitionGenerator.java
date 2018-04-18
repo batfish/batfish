@@ -10,17 +10,18 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.z3.Field;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
-import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
@@ -58,6 +59,11 @@ import org.batfish.z3.state.PreOutEdgePostNat;
 import org.batfish.z3.state.Query;
 
 public class DefaultTransitionGenerator implements StateVisitor {
+  /* Dedicated value for the srcInterfaceField used when traffic did not enter the node through any
+   * interface (or we no longer care which interface was the source).
+   */
+  private static final int NO_SOURCE_INTERFACE = 0;
+
   public static List<RuleStatement> generateTransitions(SynthesizerInput input, Set<State> states) {
     DefaultTransitionGenerator visitor = new DefaultTransitionGenerator(input);
     states.forEach(state -> state.accept(visitor));
@@ -66,7 +72,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   private final SynthesizerInput _input;
 
-  private ImmutableList.Builder<RuleStatement> _rules;
+  private final ImmutableList.Builder<RuleStatement> _rules;
 
   public DefaultTransitionGenerator(SynthesizerInput input) {
     _input = input;
@@ -483,13 +489,26 @@ public class DefaultTransitionGenerator implements StateVisitor {
                 neighborUnreachableByVrf.forEach(
                     (vrf, neighborUnreachableByOutInterface) ->
                         neighborUnreachableByOutInterface.forEach(
-                            (outInterface, dstIpConstraint) ->
-                                _rules.add(
-                                    new BasicRuleStatement(
-                                        dstIpConstraint,
-                                        ImmutableSet.of(
-                                            new PostInVrf(hostname, vrf), new PreOut(hostname)),
-                                        new NodeNeighborUnreachable(hostname))))));
+                            (outInterface, dstIpConstraint) -> {
+                              ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
+                              preStates.add(new PostInVrf(hostname, vrf), new PreOut(hostname));
+
+                              // add outAcl if one exists
+                              String outAcl =
+                                  _input
+                                      .getOutgoingAcls()
+                                      .getOrDefault(hostname, ImmutableMap.of())
+                                      .get(outInterface);
+                              if (outAcl != null) {
+                                preStates.add(new AclPermit(hostname, outAcl));
+                              }
+
+                              _rules.add(
+                                  new BasicRuleStatement(
+                                      dstIpConstraint,
+                                      preStates.build(),
+                                      new NodeNeighborUnreachable(hostname)));
+                            })));
   }
 
   @Override
@@ -511,7 +530,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .map(
                       vrfName ->
                           new BasicRuleStatement(
-                              new OriginateVrf(hostname, vrfName), new Originate(hostname)));
+                              noSrcInterfaceConstraint(),
+                              new OriginateVrf(hostname, vrfName),
+                              new Originate(hostname)));
             })
         .forEach(_rules::add);
   }
@@ -649,8 +670,18 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       : ImmutableSet.of(
                           new AclPermit(node1, outAcl),
                           new PreOutEdgePostNat(node1, iface1, node2, iface2));
+              boolean nodeHasSrcInterfaceConstraint =
+                  _input.getNodesWithSrcInterfaceConstraints().contains(node1);
               return new BasicRuleStatement(
-                  TrueExpr.INSTANCE, aclStates, new PostOutEdge(node1, iface1, node2, iface2));
+                  /* If we set the source interface field, reset it now */
+                  nodeHasSrcInterfaceConstraint
+                      ? new EqExpr(
+                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                          new LitIntExpr(
+                              NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize()))
+                      : TrueExpr.INSTANCE,
+                  aclStates,
+                  new PostOutEdge(node1, iface1, node2, iface2));
             })
         .forEach(_rules::add);
   }
@@ -662,11 +693,35 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .getEnabledEdges()
         .stream()
         .map(
-            edge ->
-                new BasicRuleStatement(
-                    ImmutableSet.of(new PostOutEdge(edge)),
-                    new PreInInterface(edge.getNode2(), edge.getInt2())))
+            edge -> {
+              boolean nodeHasSrcInterfaceConstraint =
+                  _input.getNodesWithSrcInterfaceConstraints().contains(edge.getNode2());
+
+              return new BasicRuleStatement(
+                  nodeHasSrcInterfaceConstraint
+                      ? new EqExpr(
+                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                          _input
+                              .getSourceInterfaceFieldValues()
+                              .get(edge.getNode2())
+                              .get(edge.getInt2()))
+                      : TrueExpr.INSTANCE,
+                  new PostOutEdge(edge),
+                  new PreInInterface(edge.getNode2(), edge.getInt2()));
+            })
         .forEach(_rules::add);
+  }
+
+  private BooleanExpr noSrcInterfaceConstraint() {
+    Field srcInterface = _input.getSourceInterfaceField();
+    return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
+  }
+
+  private BooleanExpr transformSrcInterface(String node, String iface) {
+    int id = _input.getNodeInterfaceId(node, iface);
+    Field srcInterface = _input.getSourceInterfaceField();
+    return new EqExpr(
+        new TransformedVarIntExpr(srcInterface), new LitIntExpr(id, srcInterface.getSize()));
   }
 
   @Override
@@ -755,10 +810,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
       BooleanExpr transformationExpr = sourceNats.get(natNumber).getValue();
 
       _rules.add(
-          new TransformationRuleStatement(
+          new BasicRuleStatement(
               transformationExpr,
               preStates.build(),
-              ImmutableSet.of(),
               new PreOutEdgePostNat(node1, iface1, node2, iface2)));
 
       if (aclPermit == null) {
@@ -786,13 +840,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .forEach(preStates::add);
 
     _rules.add(
-        new TransformationRuleStatement(
-            new EqExpr(
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP),
-                new VarIntExpr(TransformationHeaderField.NEW_SRC_IP.getCurrent())),
-            preStates.build(),
-            ImmutableSet.of(),
-            new PreOutEdgePostNat(node1, iface1, node2, iface2)));
+        new BasicRuleStatement(
+            preStates.build(), new PreOutEdgePostNat(node1, iface1, node2, iface2)));
   }
 
   private void visitPreOutEdgePostNat_generateTopologyEdgeRules() {

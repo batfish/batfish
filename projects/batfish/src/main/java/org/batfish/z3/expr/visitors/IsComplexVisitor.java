@@ -2,7 +2,6 @@ package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -20,6 +19,7 @@ import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
@@ -41,11 +41,6 @@ public class IsComplexVisitor implements ExprVisitor {
   @Override
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {
     _isComplex = true;
-  }
-
-  @Override
-  public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    currentIsOriginalExpr.getExpr().accept(this);
   }
 
   @Override
@@ -135,6 +130,11 @@ public class IsComplexVisitor implements ExprVisitor {
 
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
+    _isComplex = false;
+  }
+
+  @Override
+  public void visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
     _isComplex = false;
   }
 }

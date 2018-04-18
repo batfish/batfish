@@ -182,7 +182,7 @@ public class NodJobChunkingTest {
         ImmutableSortedSet.of(
             new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),
             new Pair<>(_srcNode2.getHostname(), _srcVrf2.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", true);
   }
 
   @Test
@@ -203,12 +203,10 @@ public class NodJobChunkingTest {
     assertThat(
         fieldConstraints1,
         hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
-    assertThat(
-        fieldConstraints1, hasEntry(BasicHeaderField.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
+    assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
     assertThat(
         fieldConstraints2,
         hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(1)));
-    assertThat(
-        fieldConstraints2, hasEntry(BasicHeaderField.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
+    assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
   }
 }

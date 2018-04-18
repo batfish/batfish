@@ -9,7 +9,6 @@ import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -31,7 +30,7 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
@@ -116,15 +115,15 @@ public class Simplifier
         basicRuleStatement.getPreconditionStateIndependentConstraints();
     BooleanExpr simplifiedPreconditionStateIndependentConstraints =
         simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
-    if (originalPreconditionStateIndependentConstraints
+    if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
+      return VACUOUS_RULE;
+    } else if (originalPreconditionStateIndependentConstraints
         != simplifiedPreconditionStateIndependentConstraints) {
       return simplifyStatement(
           new BasicRuleStatement(
               simplifiedPreconditionStateIndependentConstraints,
               basicRuleStatement.getPreconditionStates(),
               basicRuleStatement.getPostconditionState()));
-    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
-      return VACUOUS_RULE;
     } else {
       return basicRuleStatement;
     }
@@ -139,11 +138,6 @@ public class Simplifier
   @Override
   public Statement visitComment(Comment comment) {
     return comment;
-  }
-
-  @Override
-  public BooleanExpr visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    return simplifyBooleanExpr(currentIsOriginalExpr.getExpr());
   }
 
   @Override
@@ -343,26 +337,8 @@ public class Simplifier
   }
 
   @Override
-  public Statement visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    /** TODO: something smarter */
-    BooleanExpr originalPreconditionStateIndependentConstraints =
-        transformationRuleStatement.getPreconditionStateIndependentConstraints();
-    BooleanExpr simplifiedPreconditionStateIndependentConstraints =
-        simplifyBooleanExpr(originalPreconditionStateIndependentConstraints);
-    if (originalPreconditionStateIndependentConstraints
-        != simplifiedPreconditionStateIndependentConstraints) {
-      return simplifyStatement(
-          new TransformationRuleStatement(
-              simplifiedPreconditionStateIndependentConstraints,
-              transformationRuleStatement.getPreconditionPreTransformationStates(),
-              transformationRuleStatement.getPreconditionPostTransformationStates(),
-              transformationRuleStatement.getPostconditionTransformationState()));
-    } else if (simplifiedPreconditionStateIndependentConstraints == FalseExpr.INSTANCE) {
-      return VACUOUS_RULE;
-    } else {
-      return transformationRuleStatement;
-    }
+  public IntExpr visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
+    return transformedVarIntExpr;
   }
 
   @Override
@@ -372,7 +348,6 @@ public class Simplifier
 
   @Override
   public IntExpr visitVarIntExpr(VarIntExpr varIntExpr) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return varIntExpr;
   }
 }

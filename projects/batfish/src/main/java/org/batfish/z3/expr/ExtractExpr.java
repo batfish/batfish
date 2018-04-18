@@ -1,7 +1,7 @@
 package org.batfish.z3.expr;
 
 import java.util.Objects;
-import org.batfish.z3.HeaderField;
+import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericIntExprVisitor;
 import org.batfish.z3.expr.visitors.IntExprVisitor;
@@ -12,14 +12,18 @@ import org.batfish.z3.expr.visitors.IntExprVisitor;
  */
 public final class ExtractExpr extends IntExpr {
 
-  public static IntExpr newExtractExpr(HeaderField var, int low, int high) {
-    int varSize = var.getSize();
+  public static IntExpr newExtractExpr(Field field, int low, int high) {
+    return newExtractExpr(new VarIntExpr(field), low, high);
+  }
+
+  public static IntExpr newExtractExpr(IntExpr var, int low, int high) {
+    int varSize = var.numBits();
     return newExtractExpr(var, varSize, low, high);
   }
 
-  private static IntExpr newExtractExpr(HeaderField var, int varSize, int low, int high) {
+  private static IntExpr newExtractExpr(IntExpr var, int varSize, int low, int high) {
     if (low == 0 && high == varSize - 1) {
-      return new VarIntExpr(var);
+      return var;
     } else {
       return new ExtractExpr(var, low, high);
     }
@@ -29,12 +33,12 @@ public final class ExtractExpr extends IntExpr {
 
   private final int _low;
 
-  private final VarIntExpr _var;
+  private final IntExpr _var;
 
-  private ExtractExpr(HeaderField var, int low, int high) {
+  private ExtractExpr(IntExpr var, int low, int high) {
     _low = low;
     _high = high;
-    _var = new VarIntExpr(var);
+    _var = var;
   }
 
   @Override
@@ -68,7 +72,7 @@ public final class ExtractExpr extends IntExpr {
     return _low;
   }
 
-  public VarIntExpr getVar() {
+  public IntExpr getVar() {
     return _var;
   }
 

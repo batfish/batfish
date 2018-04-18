@@ -6,6 +6,4 @@ public interface GenericStatementVisitor<T> {
   T visitComment(Comment comment);
 
   T visitQueryStatement(QueryStatement queryStatement);
-
-  T visitTransformationRuleStatement(TransformationRuleStatement transformationRuleStatement);
 }

@@ -8,6 +8,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
@@ -16,6 +17,8 @@ import org.batfish.z3.state.StateParameter.Type;
  * configurations and data-plane
  */
 public interface SynthesizerInput {
+
+  int getNodeInterfaceId(String node, String iface);
 
   /**
    * Mapping: hostname -> aclName -> lineNumber -> lineAction <br>
@@ -86,4 +89,19 @@ public interface SynthesizerInput {
    * Applies to NoD only.
    */
   Set<Type> getVectorizedParameters();
+
+  /** @return A map from node to list of interface names in sorted order */
+  Map<String, List<String>> getNodeInterfaces();
+
+  /**
+   * Get the field, if any, used to track the src interface for MatchSrcInterface AclMatchExprs. The
+   * field is present only if the network has no MatchSrcInterface AclMatchExprs.
+   */
+  Field getSourceInterfaceField();
+
+  /** Mapping: hostname -> interface -> constraint on transformed source interface field */
+  Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
+
+  /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
+  Set<String> getNodesWithSrcInterfaceConstraints();
 }

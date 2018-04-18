@@ -1,21 +1,19 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import org.batfish.z3.Field;
 import org.batfish.z3.NodContext;
 import org.batfish.z3.SynthesizerInput;
-import org.batfish.z3.TransformationHeaderField;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.GenericStatementVisitor;
@@ -31,7 +29,6 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.visitors.Parameterizer;
@@ -63,7 +60,8 @@ public class BoolExprTransformer
 
   public static BoolExpr toBoolExpr(
       StateExpr stateExpr, SynthesizerInput input, NodContext nodContext) {
-    return new BoolExprTransformer(input, nodContext).transformStateExpr(stateExpr);
+    return new BoolExprTransformer(input, nodContext)
+        .transformStateExpr(stateExpr, ImmutableSet.of());
   }
 
   public static BoolExpr toBoolExpr(
@@ -71,35 +69,23 @@ public class BoolExprTransformer
     return statement.accept(new BoolExprTransformer(input, nodContext));
   }
 
-  private final Expr[] _basicStateArguments;
-
-  private final Expr[] _from;
+  private final List<Field> _fields;
 
   private final SynthesizerInput _input;
 
   private final NodContext _nodContext;
 
-  private final Map<Expr, Expr> _substitutions;
-
-  private final Expr[] _to;
-
   private BoolExprTransformer(SynthesizerInput input, NodContext nodContext) {
     _input = input;
     _nodContext = nodContext;
-    _basicStateArguments =
-        Arrays.stream(nodContext.getBasicStateVarIntExprs())
-            .map(varIntExpr -> BitVecExprTransformer.toBitVecExpr(varIntExpr, _nodContext))
-            .toArray(Expr[]::new);
-    Set<String> variables = nodContext.getVariables().keySet();
-    _substitutions =
-        Arrays.stream(TransformationHeaderField.values())
-            .filter(field -> variables.contains(field.getName()))
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    thf -> _nodContext.getVariables().get(thf.getCurrent().getName()),
-                    thf -> _nodContext.getVariables().get(thf.getName())));
-    _from = _substitutions.keySet().toArray(new Expr[] {});
-    _to = _substitutions.values().toArray(new Expr[] {});
+    _fields =
+        _nodContext
+            .getVariableNames()
+            .stream()
+            .map(
+                varName ->
+                    new Field(varName, _nodContext.getVariables().get(varName).getSortSize()))
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
@@ -107,18 +93,20 @@ public class BoolExprTransformer
     return (BoolExpr) o;
   }
 
-  private Expr[] getBasicRelationArgs(SynthesizerInput input, StateExpr stateExpr) {
-    return _basicStateArguments;
-  }
-
-  public BoolExpr transformStateExpr(StateExpr stateExpr) {
-    /* TODO: allow vectorized variables */
+  public BoolExpr transformStateExpr(StateExpr stateExpr, Set<Field> transformedFields) {
     return (BoolExpr)
         _nodContext
             .getContext()
             .mkApp(
                 _nodContext.getRelationDeclarations().get(getNodName(_input, stateExpr)),
-                getBasicRelationArgs(_input, stateExpr));
+                _fields
+                    .stream()
+                    .map(
+                        field ->
+                            transformedFields.contains(field)
+                                ? _nodContext.getTransformedVariables().get(field.getName())
+                                : _nodContext.getVariables().get(field.getName()))
+                    .toArray(Expr[]::new));
   }
 
   @Override
@@ -136,6 +124,11 @@ public class BoolExprTransformer
   @Override
   public BoolExpr visitBasicRuleStatement(BasicRuleStatement basicRuleStatement) {
     Context ctx = _nodContext.getContext();
+
+    Set<Field> transformedVars =
+        TransformedVarCollector.collectTransformedVars(
+            basicRuleStatement.getPreconditionStateIndependentConstraints());
+
     ImmutableList.Builder<BoolExpr> preconditions =
         ImmutableList.<BoolExpr>builder()
             .add(
@@ -146,22 +139,17 @@ public class BoolExprTransformer
     basicRuleStatement
         .getPreconditionStates()
         .stream()
-        .map(preconditionState -> toBoolExpr(preconditionState, _input, _nodContext))
+        .map(preconditionState -> transformStateExpr(preconditionState, ImmutableSet.of()))
         .forEach(preconditions::add);
     return ctx.mkImplies(
         ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
-        toBoolExpr(basicRuleStatement.getPostconditionState(), _input, _nodContext));
+        transformStateExpr(basicRuleStatement.getPostconditionState(), transformedVars));
   }
 
   @Override
   public BoolExpr visitComment(Comment comment) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public BoolExpr visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    return currentIsOriginalExpr.getExpr().accept(this);
   }
 
   @Override
@@ -231,7 +219,7 @@ public class BoolExprTransformer
 
   @Override
   public BoolExpr visitQueryStatement(QueryStatement queryStatement) {
-    return transformStateExpr(queryStatement.getStateExpr());
+    return transformStateExpr(queryStatement.getStateExpr(), ImmutableSet.of());
   }
 
   @Override
@@ -242,43 +230,6 @@ public class BoolExprTransformer
   @Override
   public BoolExpr visitSaneExpr(SaneExpr saneExpr) {
     return saneExpr.getExpr().accept(this);
-  }
-
-  @Override
-  public BoolExpr visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    Context ctx = _nodContext.getContext();
-    ImmutableList.Builder<BoolExpr> preconditions =
-        ImmutableList.<BoolExpr>builder()
-            .add(
-                toBoolExpr(
-                    transformationRuleStatement.getPreconditionStateIndependentConstraints(),
-                    _input,
-                    _nodContext));
-    transformationRuleStatement
-        .getPreconditionPreTransformationStates()
-        .stream()
-        .map(
-            preconditionPreTransformationState ->
-                toBoolExpr(preconditionPreTransformationState, _input, _nodContext))
-        .forEach(preconditions::add);
-    transformationRuleStatement
-        .getPreconditionPostTransformationStates()
-        .stream()
-        .map(
-            preconditionPostTransformationState ->
-                (BoolExpr)
-                    toBoolExpr(preconditionPostTransformationState, _input, _nodContext)
-                        .substitute(_from, _to))
-        .forEach(preconditions::add);
-    return ctx.mkImplies(
-        ctx.mkAnd(preconditions.build().stream().toArray(BoolExpr[]::new)),
-        (BoolExpr)
-            toBoolExpr(
-                    transformationRuleStatement.getPostconditionTransformationState(),
-                    _input,
-                    _nodContext)
-                .substitute(_from, _to));
   }
 
   @Override
