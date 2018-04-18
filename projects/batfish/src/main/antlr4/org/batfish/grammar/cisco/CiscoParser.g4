@@ -1615,7 +1615,8 @@ management_cvx_null
 :
    NO?
    (
-      SHUTDOWN
+      SERVER
+      | SHUTDOWN
    ) null_rest_of_line
 ;
 
