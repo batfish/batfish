@@ -11,6 +11,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 
+/** Parent class for questions that reason about the fate of flow. */
 public abstract class IPacketTraceQuestion extends Question implements IQuestion {
 
   private static final String PROP_DSCP = "dscp";
@@ -101,6 +102,11 @@ public abstract class IPacketTraceQuestion extends Question implements IQuestion
 
   private Boolean _tcpFlagsUrg;
 
+  /**
+   * Creates a {@link Flow.Builder} object with the flow parameters
+   *
+   * @return The created builder object
+   */
   public Flow.Builder createBaseFlowBuilder() {
     Flow.Builder flowBuilder = new Flow.Builder();
     if (_dscp != null) {

@@ -9,7 +9,20 @@
         "action" : "String",
         "lineNumber" : "Integer",
         "lineContent" : "String"
-      }
+      },
+      "displayHints" : {
+        "textDesc" : "Filter ${filterName} on node {node} will {action} flow {flow} at line {lineNumber} {lineContent}"
+      },
+      "primaryKey" : [
+        "node",
+        "filterName",
+        "flow"
+      ],
+      "primaryValue" : [
+        "action",
+        "lineNumber",
+        "lineContent"
+      ]
     },
     "rows" : [
       {
@@ -228,6 +241,11 @@
         "lineNumber" : 1,
         "lineContent" : "default"
       }
-    ]
+    ],
+    "summary" : {
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 6
+    }
   }
 ]

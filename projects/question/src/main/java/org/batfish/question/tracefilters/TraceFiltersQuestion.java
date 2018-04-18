@@ -7,16 +7,9 @@ import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.IPacketTraceQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
 
-// <question_page_comment>
-
 /**
- * Checks if IPSec VPNs are correctly configured.
- *
- * <p>Details coming on what it means to be correctly configured.
- *
- * @type IpsecVpnStatus multifile
- * @param nodeRegex NodesSpecifier expression to match the nodes. Default is '.*' (all nodes).
- * @param filterRegex FiltersSpecifier to match the filters. Default is '.*' (all filters).
+ * Computes the fate of the flow at a filter. The set of filters to consider are controlled by node
+ * and filter regex fields. By default, all filters on all nodes are considered.
  */
 public class TraceFiltersQuestion extends IPacketTraceQuestion {
 
