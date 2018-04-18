@@ -9,5 +9,9 @@ router bgp 1
  update wait-install
  address-family ipv4
   neighbor UNDEFINED_PEER_GROUP activate
+ redistribute ospf3 match internal route-map ROUTE_MAP
+ redistribute ospf3 match external route-map UNDEFINED_MAP
+!
+route-map ROUTE_MAP deny 10
 !
 
