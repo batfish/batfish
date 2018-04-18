@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
@@ -15,6 +16,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoin
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -76,6 +78,8 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.IpSpaceMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -203,42 +207,17 @@ public class CiscoGrammarTest {
   @Test
   public void testIosObjectGroupNetwork() throws IOException {
     Configuration c = parseConfig("ios-object-group-network");
-    Map<String, IpAccessList> acls = c.getIpAccessLists();
-
     Ip ogn1TestIp = new Ip("1.128.0.0");
     Ip ogn2TestIp1 = new Ip("2.0.0.0");
     Ip ogn2TestIp2 = new Ip("2.0.0.1");
-    Flow ogn1Flow1 =
-        Flow.builder().setTag("").setIngressNode(c.getName()).setDstIp(ogn1TestIp).build();
-    Flow ogn1Flow2 =
-        Flow.builder().setTag("").setIngressNode(c.getName()).setSrcIp(ogn1TestIp).build();
-    Flow ogn2Flow1 =
-        Flow.builder().setTag("").setIngressNode(c.getName()).setSrcIp(ogn2TestIp1).build();
-    Flow ogn2Flow2 =
-        Flow.builder().setTag("").setIngressNode(c.getName()).setSrcIp(ogn2TestIp2).build();
 
-    /* Each object group should permit a flow with src or dst IP in its range. */
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn1"), accepts(ogn1Flow1, null, acls)));
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn1"), accepts(ogn1Flow2, null, acls)));
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn1"), rejects(ogn2Flow1, null, acls)));
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), rejects(ogn1Flow1, null, acls)));
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), accepts(ogn2Flow1, null, acls)));
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn2"), accepts(ogn2Flow2, null, acls)));
-    assertThat(
-        c,
-        hasIpAccessList(computeNetworkObjectGroupAclName("ogn3"), rejects(ogn2Flow2, null, acls)));
+    /* Each object group should permit an IP iff it is in its space. */
+    assertThat(c, hasIpSpace("ogn1", containsIp(ogn1TestIp)));
+    assertThat(c, hasIpSpace("ogn1", not(containsIp(ogn2TestIp1))));
+    assertThat(c, hasIpSpace("ogn2", not(containsIp(ogn1TestIp))));
+    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
+    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
+    assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
   }
 
   @Test
