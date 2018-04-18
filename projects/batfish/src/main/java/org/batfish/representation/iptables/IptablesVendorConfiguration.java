@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -185,9 +185,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         switch (match.getMatchType()) {
           case DESTINATION:
             headerSpaceBuilder.setDstIps(
-                Iterables.concat(
-                    ((IpWildcardSetIpSpace) headerSpaceBuilder.getDstIps()).getWhitelist(),
-                    ImmutableSet.of(match.toIpWildcard())));
+                AclIpSpace.union(headerSpaceBuilder.getDstIps(), match.toIpWildcard()));
             break;
           case DESTINATION_PORT:
             headerSpaceBuilder.setDstPorts(
@@ -208,9 +206,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             break;
           case SOURCE:
             headerSpaceBuilder.setSrcIps(
-                Iterables.concat(
-                    ((IpWildcardSetIpSpace) headerSpaceBuilder.getSrcIps()).getWhitelist(),
-                    ImmutableSet.of(match.toIpWildcard())));
+                AclIpSpace.union(headerSpaceBuilder.getSrcIps(), match.toIpWildcard()));
             break;
           case SOURCE_PORT:
             headerSpaceBuilder.setSrcPorts(
