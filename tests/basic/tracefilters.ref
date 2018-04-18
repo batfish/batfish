@@ -11,7 +11,7 @@
         "lineContent" : "String"
       },
       "displayHints" : {
-        "textDesc" : "Filter ${filterName} on node {node} will {action} flow {flow} at line {lineNumber} {lineContent}"
+        "textDesc" : "Filter ${filterName} on node ${node} will ${action} flow ${flow} at line ${lineNumber} ${lineContent}"
       },
       "primaryKey" : [
         "node",
