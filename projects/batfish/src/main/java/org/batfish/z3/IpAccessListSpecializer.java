@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -16,15 +18,23 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
+import sun.jvm.hotspot.memory.HeapBlock.Header;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
  * {@link HeaderSpace} can be removed.
  */
-public class IpAccessListSpecializer {
+public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
   private final boolean _canSpecialize;
   private final HeaderSpace _headerSpace;
   private final IpSpaceSpecializer _dstIpSpaceSpecializer;
@@ -46,12 +56,12 @@ public class IpAccessListSpecializer {
 
     _dstIpSpaceSpecializer =
         new IpSpaceSpecializer(
-            Sets.union(_headerSpace.getDstIps(), _headerSpace.getSrcOrDstIps()),
+            AclIpSpace.union(_headerSpace.getDstIps(), _headerSpace.getSrcOrDstIps()),
             _headerSpace.getNotDstIps());
     _srcIpSpaceSpecializer =
         new IpSpaceSpecializer(
-            Sets.union(_headerSpace.getSrcIps(), _headerSpace.getSrcOrDstIps()),
-            _headerSpace.getNotSrcIps());
+            ImmutableSet.of(_headerSpace.getSrcIps(), _headerSpace.getSrcOrDstIps()),
+            ImmutableSet.of(_headerSpace.getNotSrcIps()));
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {
@@ -75,7 +85,26 @@ public class IpAccessListSpecializer {
   }
 
   public Optional<IpAccessListLine> specialize(IpAccessListLine ipAccessListLine) {
-    /* TODO: handle other match conditions */
+    AclLineMatchExpr aclLineMatchExpr = ipAccessListLine.getMatchCondition().accept(this);
+
+    if (aclLineMatchExpr == FalseExpr.INSTANCE) {
+      return Optional.empty();
+    }
+
+    return Optional.of(
+        ipAccessListLine.toBuilder()
+            .setMatchCondition(aclLineMatchExpr)
+            .build());
+  }
+
+  /*
+
+    if (aclLineMatchExpr instanceof TrueExpr) {
+      return UniverseIpSpace.INSTANCE;
+    } else if (aclLineMatchExpr instanceof FalseExpr) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
     HeaderSpace oldHeaderSpace = HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
     IpWildcardSetIpSpace.Builder srcIpSpaceBuilder =
         IpWildcardSetIpSpace.builder().excluding(oldHeaderSpace.getNotSrcIps());
@@ -151,6 +180,69 @@ public class IpAccessListSpecializer {
             .setAction(ipAccessListLine.getAction())
             .setMatchCondition(matchCondition)
             .setName(ipAccessListLine.getName())
-            .build());
+            .build()
+    */
+
+  @Override public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+    List<AclLineMatchExpr> conjuncts =
+        andMatchExpr
+            .getConjuncts()
+            .stream()
+            .map(expr -> expr.accept(this))
+            .filter(expr -> expr != TrueExpr.INSTANCE)
+            .collect(ImmutableList.toImmutableList());
+    if (conjuncts.stream().anyMatch(expr -> expr == FalseExpr.INSTANCE)) {
+      return FalseExpr.INSTANCE;
+    }
+    return new AndMatchExpr(conjuncts);
+  }
+
+  @Override public AclLineMatchExpr visitFalseExpr(FalseExpr falseExpr) {
+    return falseExpr;
+  }
+
+  @Override public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+    HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
+    IpSpace dstIps = headerSpace.getDstIps();
+    IpSpace notDstIps = headerSpace.getNotDstIps();
+    IpSpace notSrcIps = headerSpace.getNotSrcIps();
+    IpSpace srcIps = headerSpace.getSrcIps();
+    IpSpace srcOrDstIps = headerSpace.getSrcOrDstIps();
+
+    if (dstIps != null) {
+      dstIps = dstIps.accept(_dstIpSpaceSpecializer);
+    }
+    if (notDstIps != null) {
+      notDstIps = notDstIps.accept(_dstIpSpaceSpecializer);
+    }
+    if (notSrcIps != null) {
+      notSrcIps = notSrcIps.accept(_srcIpSpaceSpecializer);
+    }
+    if (srcIps != null) {
+      srcIps = srcIps.accept(_srcIpSpaceSpecializer);
+    }
+    if (srcOrDstIps != null) {
+      srcOrDstIps = srcOrDstIps.accept(_sr)
+    }
+  }
+
+  @Override public AclLineMatchExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+    return null;
+  }
+
+  @Override public AclLineMatchExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+    return null;
+  }
+
+  @Override public AclLineMatchExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+    return null;
+  }
+
+  @Override public AclLineMatchExpr visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+    return null;
+  }
+
+  @Override public AclLineMatchExpr visitTrueExpr(TrueExpr trueExpr) {
+    return trueExpr;
   }
 }

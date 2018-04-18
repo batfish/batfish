@@ -8,7 +8,9 @@ import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Spliterator;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
@@ -116,8 +118,8 @@ public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
   }
 
   @Override
-  public boolean containsIp(@Nonnull Ip ip) {
-    return action(ip) == LineAction.ACCEPT;
+  public int compareTo(AclIpSpace o) {
+    return CommonUtil.compareIterable(_lines, o._lines);
   }
 
   @Override
@@ -133,6 +135,11 @@ public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
         });
     builder.thenPermitting(UniverseIpSpace.INSTANCE);
     return builder.build();
+  }
+
+  @Override
+  public boolean containsIp(@Nonnull Ip ip) {
+    return action(ip) == LineAction.ACCEPT;
   }
 
   @Override
@@ -155,13 +162,35 @@ public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
     return _hash.get();
   }
 
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add("lines", _lines).toString();
+  public static IpSpace intersection(IpSpace... ipSpaces) {
+    return intersection(Arrays.spliterator(ipSpaces));
+  }
+
+  public static IpSpace intersection(Iterable<IpSpace> ipSpaces) {
+    return intersection(ipSpaces.spliterator());
+  }
+
+  private static IpSpace intersection(Spliterator<IpSpace> ipSpaces) {
+    return
+        builder()
+        .thenRejecting(
+            StreamSupport.stream(ipSpaces, false)
+                .map(IpSpace::complement)
+                .collect(ImmutableList.toImmutableList()))
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
+  }
+
+  public static IpSpace union(IpSpace... ipSpaces) {
+    return union(ImmutableList.copyOf(ipSpaces));
+  }
+
+  public static IpSpace union(Iterable<IpSpace> ipSpaces) {
+    return builder().thenPermitting(ipSpaces).build();
   }
 
   @Override
-  public int compareTo(AclIpSpace o) {
-    return CommonUtil.compareIterable(_lines, o._lines);
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("lines", _lines).toString();
   }
 }

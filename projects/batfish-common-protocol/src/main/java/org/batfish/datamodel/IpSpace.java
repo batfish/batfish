@@ -10,4 +10,8 @@ public interface IpSpace {
   boolean containsIp(@Nonnull Ip ip);
 
   IpSpace complement();
+
+  boolean intersects(@Nonnull IpWildcard ipWildcard);
+
+  boolean intersects(@Nonnull Prefix prefix);
 }
