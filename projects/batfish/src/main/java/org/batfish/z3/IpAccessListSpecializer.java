@@ -19,6 +19,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
+import sun.invoke.empty.Empty;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
@@ -38,11 +39,11 @@ public class IpAccessListSpecializer {
      * if we have a meaningful constraint on srcIp or on dstIp.
      */
     _canSpecialize =
-        !(_headerSpace.getDstIps().isEmpty()
-            && _headerSpace.getSrcOrDstIps().isEmpty()
-            && _headerSpace.getNotDstIps().isEmpty()
-            && _headerSpace.getSrcIps().isEmpty()
-            && _headerSpace.getNotSrcIps().isEmpty());
+        !(_headerSpace.getDstIps() instanceof EmptyIpSpace
+            && _headerSpace.getSrcOrDstIps() instanceof EmptyIpSpace
+            && _headerSpace.getNotDstIps() instanceof EmptyIpSpace
+            && _headerSpace.getSrcIps() instanceof EmptyIpSpace
+            && _headerSpace.getNotSrcIps() instanceof EmptyIpSpace);
 
     _dstIpSpaceSpecializer =
         new IpSpaceSpecializer(
