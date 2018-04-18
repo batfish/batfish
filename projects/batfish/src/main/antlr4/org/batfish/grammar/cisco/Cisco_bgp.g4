@@ -463,6 +463,7 @@ vrf_block_rb_stanza
    (
       address_family_rb_stanza
       | always_compare_med_rb_stanza
+      | as_path_multipath_relax_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
       | neighbor_flat_rb_stanza
