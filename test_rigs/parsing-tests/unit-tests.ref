@@ -2333,7 +2333,7 @@
             "          SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "        (management_cvx_server_null",
+            "        (management_cvx_null",
             "          SERVER:'server'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
             "            HOST:'host'  <== mode:DEFAULT_MODE",
