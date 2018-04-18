@@ -1,12 +1,10 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 
 public final class FwFromSourceAddress extends FwFrom {
@@ -27,10 +25,7 @@ public final class FwFromSourceAddress extends FwFrom {
       Warnings w,
       Configuration c) {
     IpWildcard wildcard = new IpWildcard(_prefix);
-    headerSpaceBuilder.setSrcIps(
-        Iterables.concat(
-            ((IpWildcardSetIpSpace) headerSpaceBuilder.getSrcIps()).getWhitelist(),
-            ImmutableSet.of(wildcard)));
+    headerSpaceBuilder.setSrcIps(AclIpSpace.union(headerSpaceBuilder.getSrcIps(), wildcard));
   }
 
   public Prefix getPrefix() {
