@@ -1422,8 +1422,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     boolean ret =
         _dscps.isEmpty()
             && _notDscps.isEmpty()
-            && _dstIps == UniverseIpSpace.INSTANCE
-            && _notDstIps == EmptyIpSpace.INSTANCE
+            && _dstIps instanceof UniverseIpSpace
+            && _notDstIps instanceof EmptyIpSpace
             && _dstPorts.isEmpty()
             && _notDstPorts.isEmpty()
             && _dstProtocols.isEmpty()
@@ -1440,9 +1440,9 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             && _notIpProtocols.isEmpty()
             && _packetLengths.isEmpty()
             && _notPacketLengths.isEmpty()
-            && _srcIps == UniverseIpSpace.INSTANCE
-            && _notSrcIps == EmptyIpSpace.INSTANCE
-            && _srcOrDstIps == UniverseIpSpace.INSTANCE
+            && _srcIps instanceof UniverseIpSpace
+            && _notSrcIps instanceof EmptyIpSpace
+            && _srcOrDstIps instanceof UniverseIpSpace
             && _srcOrDstPorts.isEmpty()
             && _srcOrDstProtocols.isEmpty()
             && _srcPorts.isEmpty()
