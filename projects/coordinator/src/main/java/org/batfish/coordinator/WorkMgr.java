@@ -13,11 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -1526,6 +1529,19 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.writeFile(file, questionJson);
   }
 
+  private static final DateTimeFormatter FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss.SSS")
+          .withLocale(Locale.getDefault())
+          .withZone(ZoneOffset.UTC);
+
+  static String generateFileDateString(String base, Instant instant) {
+    return base + "_" + FORMATTER.format(instant);
+  }
+
+  private static String generateFileDateString(String base) {
+    return generateFileDateString(base, Instant.now());
+  }
+
   public void uploadTestrig(
       String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
@@ -1540,7 +1556,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path originalDir =
         containerDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(testrigName + "_" + Instant.now());
+            .resolve(generateFileDateString(testrigName));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
