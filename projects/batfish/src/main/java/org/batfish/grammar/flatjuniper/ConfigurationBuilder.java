@@ -244,7 +244,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_securityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
@@ -2118,8 +2117,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSe_address_book(Se_address_bookContext ctx) {
-    String name = ctx.name.getText();
-    _currentAddressBook = _configuration.getGlobalAddressBooks().computeIfAbsent(name, n -> new AddressBook(n, new TreeMap<>()));
+    String name = ctx.GLOBAL().getText();
+    _currentAddressBook =
+        _configuration
+            .getGlobalAddressBooks()
+            .computeIfAbsent(name, n -> new AddressBook(n, new TreeMap<>()));
   }
 
   @Override
@@ -2144,11 +2146,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSead_address_set(Sead_address_setContext ctx) {
-    _currentAddressSetAddressBookEntry = null;
-  }
-
-  @Override
   public void exitSead_address(Sead_addressContext ctx) {
     String name = ctx.name.getText();
     IpWildcard ipWildcard = null;
@@ -2163,6 +2160,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
     AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
     _currentAddressBook.getEntries().put(name, addressEntry);
+  }
+
+  @Override
+  public void exitSead_address_set(Sead_address_setContext ctx) {
+    _currentAddressSetAddressBookEntry = null;
   }
 
   @Override

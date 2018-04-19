@@ -22,6 +22,7 @@ import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCo
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
@@ -64,6 +65,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -441,12 +443,29 @@ public class FlatJuniperGrammarTest {
 
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
+    // We should have a global IpSpace in the config
+    assertThat(c.getIpSpaces(), hasKey(equalTo("global")));
+
+    // It should be the only IpSpace
+    assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific and wildcard addresses
+    assertThat(ipSpace, containsIp(new Ip(specificAddr)));
+    assertThat(ipSpace, containsIp(new Ip(wildcardAddr)));
+
+    // It should not contain the notWildcard address
+    assertThat(ipSpace, not(containsIp(new Ip(notWildcardAddr))));
+
     // Specifically allowed source address should be accepted
-    assertThat(aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists()));
     // Source address covered by the wildcard entry should be accepted
-    assertThat(aclUntrustOut, accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclUntrustOut, accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
     // Source address covered by neither address-set entry should be rejected
-    assertThat(aclUntrustOut, rejects(flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclUntrustOut, rejects(flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
   }
 
   @Test
@@ -726,6 +745,44 @@ public class FlatJuniperGrammarTest {
         aclUntrustOut, accepts(trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists()));
     assertThat(
         aclTrustOut, accepts(untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists()));
+  }
+
+  @Test
+  public void testFirewallZoneAddressBook() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-book
+    String specificAddr = "2.2.2.2";
+    // Address not allowed by the address-book
+    String notAllowedAddr = "3.3.3.3";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
+
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    // We should have a an IpSpace in the config corresponding to the trust zone
+    assertThat(c.getIpSpaces(), hasKey(equalTo("trust")));
+
+    // It should be the only IpSpace
+    assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific address
+    assertThat(ipSpace, containsIp(new Ip(specificAddr)));
+
+    // It should not contain the address that is not allowed
+    assertThat(ipSpace, not(containsIp(new Ip(notAllowedAddr))));
+
+    // Specifically allowed source address should be accepted
+    assertThat(
+        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists()));
+    // Source address not covered by the address-book
+    assertThat(
+        aclUntrustOut, rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists()));
   }
 
   @Test

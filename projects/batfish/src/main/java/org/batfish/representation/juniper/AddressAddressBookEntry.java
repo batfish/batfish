@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 
 public final class AddressAddressBookEntry extends AddressBookEntry {
 

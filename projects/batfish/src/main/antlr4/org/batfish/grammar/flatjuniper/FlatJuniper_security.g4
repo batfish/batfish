@@ -516,7 +516,7 @@ s_security
 
 se_address_book
 :
-   ADDRESS_BOOK name = string
+   ADDRESS_BOOK GLOBAL
    (
        apply
        | sead_address

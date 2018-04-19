@@ -41,6 +41,8 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
@@ -1578,6 +1580,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecVpn;
   }
 
+  private IpSpace toIpSpace(AddressBook book) {
+    IpWildcardSetIpSpace.Builder ipSpaceB = IpWildcardSetIpSpace.builder();
+    book.getEntries()
+        .forEach(
+            (name, entry) -> {
+              ipSpaceB.including(entry.getIpWildcards(_w));
+            });
+    return ipSpaceB.build();
+  }
+
   private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {
     String name = filter.getName();
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
@@ -1821,6 +1833,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getRouteFilterLists().put(name, rfl);
     }
 
+    // Convert AddressBooks to IpSpaces
+    _globalAddressBooks.forEach(
+        (name, addressBook) -> _c.getIpSpaces().put(name, toIpSpace(addressBook)));
+
     // TODO: instead make both IpAccessList and Ip6AccessList instances from
     // such firewall filters
     // remove ipv6 lines from firewall filters
@@ -1998,6 +2014,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Zone zone : _zones.values()) {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
+      if (!zone.getAddressBook().getEntries().isEmpty()) {
+        _c.getIpSpaces().put(zone.getName(), toIpSpace(zone.getAddressBook()));
+      }
     }
     // If there are zones, then assume we will need to support existing connection ACL
     if (!_zones.isEmpty()) {
