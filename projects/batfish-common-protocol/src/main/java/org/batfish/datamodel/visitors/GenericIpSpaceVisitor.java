@@ -2,10 +2,10 @@ package org.batfish.datamodel.visitors;
 
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 public interface GenericIpSpaceVisitor<R> {
@@ -15,13 +15,13 @@ public interface GenericIpSpaceVisitor<R> {
 
   R visitEmptyIpSpace(EmptyIpSpace emptyIpSpace);
 
-  R visitIp(Ip ip);
+  R visitIpIpSpace(IpIpSpace ipIpSpace);
 
-  R visitIpWildcard(IpWildcard ipWildcard);
+  R visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace);
 
   R visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace);
 
-  R visitPrefix(Prefix prefix);
+  R visitPrefixIpSpace(PrefixIpSpace prefixIpSpace);
 
   R visitUniverseIpSpace(UniverseIpSpace universeIpSpace);
 }

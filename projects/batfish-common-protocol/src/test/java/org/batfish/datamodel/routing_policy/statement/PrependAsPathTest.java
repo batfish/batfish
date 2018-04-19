@@ -25,7 +25,7 @@ public class PrependAsPathTest {
 
   private static Environment newTestEnvironment(BgpRoute.Builder outputRoute) {
     Configuration c = new Configuration("host", ConfigurationFormat.CISCO_IOS);
-    return new Environment(c, "vrf", null, null, outputRoute, null, null);
+    return Environment.builder(c).setVrf("vrf").setOutputRoute(outputRoute).build();
   }
 
   private static List<SortedSet<Integer>> mkAsPath(Integer... explicitAs) {

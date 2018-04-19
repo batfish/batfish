@@ -645,6 +645,22 @@
           ]
         }
       },
+      "unused:object-group network:dns_servers" : {
+        "description" : "Unused structure of type: 'object-group network' with name: 'dns_servers'",
+        "files" : {
+          "cisco_qos" : [
+            26
+          ]
+        }
+      },
+      "unused:object-group network:ntp_servers" : {
+        "description" : "Unused structure of type: 'object-group network' with name: 'ntp_servers'",
+        "files" : {
+          "cisco_qos" : [
+            29
+          ]
+        }
+      },
       "unused:policy-statement:route-filter-test-v4" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
@@ -863,7 +879,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 114
+      "numResults" : 116
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1121,6 +1137,16 @@
           ],
           "copp-system-p-acl-mac-cdp-udld-vtp" : [
             6
+          ]
+        }
+      },
+      "cisco_qos" : {
+        "object-group network" : {
+          "dns_servers" : [
+            26
+          ],
+          "ntp_servers" : [
+            29
           ]
         }
       },

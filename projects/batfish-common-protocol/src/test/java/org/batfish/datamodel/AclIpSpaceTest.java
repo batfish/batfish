@@ -12,8 +12,8 @@ public class AclIpSpaceTest {
    */
   private static final AclIpSpace _aclIpSpace =
       AclIpSpace.builder()
-          .thenRejecting(Prefix.parse("1.1.1.0/24"))
-          .thenPermitting(Prefix.parse("1.1.0.0/16"))
+          .thenRejecting(Prefix.parse("1.1.1.0/24").toIpSpace())
+          .thenPermitting(Prefix.parse("1.1.0.0/16").toIpSpace())
           .build();
 
   @Test

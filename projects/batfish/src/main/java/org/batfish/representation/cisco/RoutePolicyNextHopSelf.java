@@ -11,6 +11,6 @@ public class RoutePolicyNextHopSelf extends RoutePolicyNextHop {
 
   @Override
   public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
-    return new SelfNextHop();
+    return SelfNextHop.getInstance();
   }
 }

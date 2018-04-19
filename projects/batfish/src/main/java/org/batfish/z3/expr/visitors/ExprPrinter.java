@@ -7,7 +7,6 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
 import org.batfish.z3.expr.Comment;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -27,7 +26,7 @@ import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.expr.VoidStatementVisitor;
@@ -137,11 +136,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
     for (String line : comment.getLines()) {
       _sb.append(String.format(";;; %s\n", line));
     }
-  }
-
-  @Override
-  public void visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr) {
-    _sb.append("currentIsOriginal");
   }
 
   @Override
@@ -270,22 +264,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitTransformationRuleStatement(
-      TransformationRuleStatement transformationRuleStatement) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("transformation-rule"),
-            transformationRuleStatement.getPreconditionStateIndependentConstraints(),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformationRuleStatement.getPreconditionPreTransformationStates())),
-            new ListExpr(
-                ImmutableList.copyOf(
-                    transformationRuleStatement.getPreconditionPostTransformationStates())),
-            transformationRuleStatement.getPostconditionTransformationState()));
-  }
-
-  @Override
   public void visitTrueExpr(TrueExpr trueExpr) {
     _sb.append("true");
   }
@@ -293,5 +271,10 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   @Override
   public void visitVarIntExpr(VarIntExpr varIntExpr) {
     _sb.append(varIntExpr.getField().getName());
+  }
+
+  @Override
+  public void visitTransformedVarIntExpr(TransformedVarIntExpr transformedVarIntExpr) {
+    _sb.append(String.format("Transformed(%s)", transformedVarIntExpr.getField().getName()));
   }
 }

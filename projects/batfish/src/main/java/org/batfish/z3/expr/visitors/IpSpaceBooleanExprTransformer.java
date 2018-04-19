@@ -5,11 +5,12 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.batfish.z3.expr.AndExpr;
@@ -61,13 +62,15 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
   }
 
   @Override
-  public BooleanExpr visitIp(Ip ip) {
-    return HeaderSpaceMatchExpr.matchIp(ImmutableSet.of(new IpWildcard(ip)), _useSrc, _useDst);
+  public BooleanExpr visitIpIpSpace(IpIpSpace ipIpSpace) {
+    return HeaderSpaceMatchExpr.matchIp(
+        ImmutableSet.of(new IpWildcard(ipIpSpace.getIp())), _useSrc, _useDst);
   }
 
   @Override
-  public BooleanExpr visitIpWildcard(IpWildcard ipWildcard) {
-    return HeaderSpaceMatchExpr.matchIp(ImmutableSet.of(ipWildcard), _useSrc, _useDst);
+  public BooleanExpr visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+    return HeaderSpaceMatchExpr.matchIp(
+        ImmutableSet.of(ipWildcardIpSpace.getIpWildcard()), _useSrc, _useDst);
   }
 
   @Override
@@ -80,8 +83,9 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
   }
 
   @Override
-  public BooleanExpr visitPrefix(Prefix prefix) {
-    return HeaderSpaceMatchExpr.matchIp(ImmutableSet.of(new IpWildcard(prefix)), _useSrc, _useDst);
+  public BooleanExpr visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+    return HeaderSpaceMatchExpr.matchIp(
+        ImmutableSet.of(new IpWildcard(prefixIpSpace.getPrefix())), _useSrc, _useDst);
   }
 
   @Override

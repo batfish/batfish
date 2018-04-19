@@ -733,6 +733,15 @@
           }
         },
         "routingPolicies" : {
+          "ROUTE_MAP" : {
+            "name" : "ROUTE_MAP",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -8061,6 +8070,14 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ipSpaces" : {
+          "dns_servers" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          },
+          "ntp_servers" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          }
+        },
         "roleDimensions" : {
           "0" : "cisco",
           "1" : "qos"

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -8,15 +10,18 @@ import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Spliterator;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 /**
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
  * denied if it is not.
  */
-public class AclIpSpace implements IpSpace {
+public class AclIpSpace extends IpSpace {
 
   public static class Builder {
 
@@ -67,8 +72,31 @@ public class AclIpSpace implements IpSpace {
   public static final AclIpSpace PERMIT_ALL =
       AclIpSpace.builder().setLines(ImmutableList.of(AclIpSpaceLine.PERMIT_ALL)).build();
 
+  private static final String PROP_LINES = "lines";
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
   public static Builder builder() {
     return new Builder();
+  }
+
+  public static IpSpace intersection(IpSpace... ipSpaces) {
+    return intersection(Arrays.spliterator(ipSpaces));
+  }
+
+  public static IpSpace intersection(Iterable<IpSpace> ipSpaces) {
+    return intersection(ipSpaces.spliterator());
+  }
+
+  private static IpSpace intersection(Spliterator<IpSpace> ipSpaces) {
+    return builder()
+        .thenRejecting(
+            StreamSupport.stream(ipSpaces, false)
+                .map(IpSpace::complement)
+                .collect(ImmutableList.toImmutableList()))
+        .thenPermitting(UniverseIpSpace.INSTANCE)
+        .build();
   }
 
   public static Builder permitting(IpSpace... ipSpaces) {
@@ -91,11 +119,20 @@ public class AclIpSpace implements IpSpace {
     return new Builder().thenRejecting(ipSpaces);
   }
 
+  public static IpSpace union(IpSpace... ipSpaces) {
+    return union(ImmutableList.copyOf(ipSpaces));
+  }
+
+  public static IpSpace union(Iterable<IpSpace> ipSpaces) {
+    return builder().thenPermitting(ipSpaces).build();
+  }
+
   private final Supplier<Integer> _hash;
 
   private final List<AclIpSpaceLine> _lines;
 
-  private AclIpSpace(List<AclIpSpaceLine> lines) {
+  @JsonCreator
+  private AclIpSpace(@JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
     _lines = lines;
     _hash = Suppliers.memoize(() -> Objects.hash(_lines));
   }
@@ -115,8 +152,8 @@ public class AclIpSpace implements IpSpace {
   }
 
   @Override
-  public boolean containsIp(@Nonnull Ip ip) {
-    return action(ip) == LineAction.ACCEPT;
+  protected int compareSameClass(IpSpace o) {
+    return CommonUtil.compareIterable(_lines, ((AclIpSpace) o)._lines);
   }
 
   @Override
@@ -135,16 +172,16 @@ public class AclIpSpace implements IpSpace {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || !(o instanceof AclIpSpace)) {
-      return false;
-    }
+  public boolean containsIp(@Nonnull Ip ip) {
+    return action(ip) == LineAction.ACCEPT;
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
     return Objects.equals(_lines, ((AclIpSpace) o)._lines);
   }
 
+  @JsonProperty(PROP_LINES)
   public List<AclIpSpaceLine> getLines() {
     return _lines;
   }
@@ -156,6 +193,6 @@ public class AclIpSpace implements IpSpace {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add("lines", _lines).toString();
+    return MoreObjects.toStringHelper(getClass()).add(PROP_LINES, _lines).toString();
   }
 }

@@ -1,7 +1,6 @@
 package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -20,8 +19,6 @@ public interface GenericBooleanExprVisitor<R> {
   R castToGenericBooleanExprVisitorReturnType(Object o);
 
   R visitAndExpr(AndExpr andExpr);
-
-  R visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr);
 
   R visitEqExpr(EqExpr eqExpr);
 

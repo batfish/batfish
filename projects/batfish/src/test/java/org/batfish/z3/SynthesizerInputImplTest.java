@@ -47,7 +47,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.visitors.AclLineMatchBooleanExprTransformer;
+import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,7 +168,7 @@ public class SynthesizerInputImplTest {
     IpAccessList aclWithLines =
         _aclb
             .setLines(
-                ImmutableList.<IpAccessListLine>of(
+                ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
                             .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
@@ -185,6 +185,8 @@ public class SynthesizerInputImplTest {
 
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
+    AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
+        new AclLineMatchExprToBooleanExpr(ImmutableMap.of(), null, ImmutableMap.of());
 
     assertThat(
         input,
@@ -197,9 +199,9 @@ public class SynthesizerInputImplTest {
                         ImmutableList.of(),
                         aclWithLines.getName(),
                         ImmutableList.of(
-                            AclLineMatchBooleanExprTransformer.transform(
+                            aclLineMatchExprToBooleanExpr.toBooleanExpr(
                                 aclWithLines.getLines().get(0).getMatchCondition()),
-                            AclLineMatchBooleanExprTransformer.transform(
+                            aclLineMatchExprToBooleanExpr.toBooleanExpr(
                                 aclWithLines.getLines().get(1).getMatchCondition())))))));
 
     Configuration srcNode = _cb.build();
@@ -261,8 +263,8 @@ public class SynthesizerInputImplTest {
     String nextHopInterface1 = "nextHopInterface1";
     String nextHop2 = "nextHop2";
     String nextHopInterface2 = "nextHopInterface2";
-    IpSpace ipSpace1 = Ip.ZERO;
-    IpSpace ipSpace2 = Ip.MAX;
+    IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
+    IpSpace ipSpace2 = Ip.MAX.toIpSpace();
     IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
     IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
     Edge edge1 =
@@ -476,8 +478,8 @@ public class SynthesizerInputImplTest {
     Vrf vrf = _vb.setOwner(node).build();
     Interface iface1 = _ib.setOwner(node).setVrf(vrf).build();
     Interface iface2 = _ib.build();
-    IpSpace ipSpace1 = Ip.ZERO;
-    IpSpace ipSpace2 = Ip.MAX;
+    IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
+    IpSpace ipSpace2 = Ip.MAX.toIpSpace();
     IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
     IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
 
@@ -572,8 +574,8 @@ public class SynthesizerInputImplTest {
                             immutableEntry(
                                 new AclPermit(srcNode.getName(), sourceNat1Acl.getName()),
                                 new RangeMatchExpr(
-                                    TransformationHeaderField.NEW_SRC_IP,
-                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    new TransformedVarIntExpr(Field.SRC_IP),
+                                    Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip11.asLong(), ip12.asLong()))))))))));
     assertThat(
@@ -588,14 +590,14 @@ public class SynthesizerInputImplTest {
                             immutableEntry(
                                 new AclPermit(srcNode.getName(), sourceNat1Acl.getName()),
                                 new RangeMatchExpr(
-                                    TransformationHeaderField.NEW_SRC_IP,
-                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    new TransformedVarIntExpr(Field.SRC_IP),
+                                    Field.SRC_IP.getSize(),
                                     ImmutableSet.of(Range.closed(ip11.asLong(), ip12.asLong())))),
                             immutableEntry(
                                 new AclPermit(srcNode.getName(), sourceNat2Acl.getName()),
                                 new RangeMatchExpr(
-                                    TransformationHeaderField.NEW_SRC_IP,
-                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    new TransformedVarIntExpr(Field.SRC_IP),
+                                    Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip21.asLong(), ip22.asLong()))))))))));
     assertThat(inputWithoutDataPlane, hasSourceNats(nullValue()));
@@ -678,8 +680,8 @@ public class SynthesizerInputImplTest {
                             immutableEntry(
                                 null,
                                 new RangeMatchExpr(
-                                    TransformationHeaderField.NEW_SRC_IP,
-                                    TransformationHeaderField.NEW_SRC_IP.getSize(),
+                                    new TransformedVarIntExpr(Field.SRC_IP),
+                                    Field.SRC_IP.getSize(),
                                     ImmutableSet.of(
                                         Range.closed(ip1.asLong(), ip2.asLong()))))))))));
   }
