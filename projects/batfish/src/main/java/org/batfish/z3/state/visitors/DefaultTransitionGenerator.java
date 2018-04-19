@@ -721,13 +721,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
     return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
   }
 
-  private BooleanExpr transformSrcInterface(String node, String iface) {
-    int id = _input.getNodeInterfaceId(node, iface);
-    Field srcInterface = _input.getSourceInterfaceField();
-    return new EqExpr(
-        new TransformedVarIntExpr(srcInterface), new LitIntExpr(id, srcInterface.getSize()));
-  }
-
   @Override
   public void visitPreOut(PreOut.State preOut) {
     // PostInNotMine
