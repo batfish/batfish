@@ -1,8 +1,10 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.datamodel.HeaderSpace;
+import javax.annotation.Nonnull;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 public interface ExtendedAccessListServiceSpecifier {
 
-  HeaderSpace.Builder toHeaderSpace();
+  @Nonnull
+  AclLineMatchExpr toAclLineMatchExpr();
 }

@@ -1,15 +1,10 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.State;
-import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
 
 public class StandardAccessListLine implements Serializable {
 
@@ -55,7 +50,7 @@ public class StandardAccessListLine implements Serializable {
         .setAction(_action)
         .setName(_name)
         .setServiceSpecifier(
-            SimpleServiceSpecifier.builder()
+            SimpleStandardServiceSpecifier.builder()
                 .setProtocol(IpProtocol.IP)
                 .setSrcIpWildcard(_ipWildcard)
                 .setDstIpWildcard(IpWildcard.ANY)

@@ -714,6 +714,8 @@ import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
+import org.batfish.representation.cisco.ServiceObjectGroupServiceSpecifier;
+import org.batfish.representation.cisco.SimpleExtendedServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
 import org.batfish.representation.cisco.StandardCommunityList;
@@ -2923,154 +2925,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    IpProtocol protocol = ctx.prot != null ? toIpProtocol(ctx.prot) : null;
     ExtendedAccessListAddressSpecifier srcAddressSpecifier =
         toExtendedAccessListAddressSpecifier(ctx.srcipr);
     ExtendedAccessListAddressSpecifier dstAddressSpecifier =
         toExtendedAccessListAddressSpecifier(ctx.dstipr);
     ExtendedAccessListServiceSpecifier serviceSpecifier = computeServiceSpecifier(ctx);
-    Ip dstIp = getIp(ctx.dstipr);
-    Ip dstWildcard = getWildcard(ctx.dstipr);
-    String srcAddressGroup = getAddressGroup(ctx.srcipr);
-    String dstAddressGroup = getAddressGroup(ctx.dstipr);
-    List<SubRange> srcPortRanges =
-        ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
-    List<SubRange> dstPortRanges =
-        ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.<SubRange>emptyList();
-    Integer icmpType = null;
-    Integer icmpCode = null;
-    List<TcpFlags> tcpFlags = new ArrayList<>();
-    Set<Integer> dscps = new TreeSet<>();
-    Set<Integer> ecns = new TreeSet<>();
-    Set<State> states = EnumSet.noneOf(State.class);
-    for (Extended_access_list_additional_featureContext feature : ctx.features) {
-      if (feature.ACK() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseAck(true);
-        alt.setAck(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.DSCP() != null) {
-        int dscpType = toDscpType(feature.dscp_type());
-        dscps.add(dscpType);
-      }
-      if (feature.ECE() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseEce(true);
-        alt.setEce(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.ECHO_REPLY() != null) {
-        icmpType = IcmpType.ECHO_REPLY;
-        icmpCode = IcmpCode.ECHO_REPLY;
-      }
-      if (feature.ECHO() != null) {
-        icmpType = IcmpType.ECHO_REQUEST;
-        icmpCode = IcmpCode.ECHO_REQUEST;
-      }
-      if (feature.ECN() != null) {
-        int ecn = toInteger(feature.ecn);
-        ecns.add(ecn);
-      }
-      if (feature.ESTABLISHED() != null) {
-        // must contain ACK or RST
-        TcpFlags alt1 = new TcpFlags();
-        TcpFlags alt2 = new TcpFlags();
-        alt1.setUseAck(true);
-        alt1.setAck(true);
-        alt2.setUseRst(true);
-        alt2.setRst(true);
-        tcpFlags.add(alt1);
-        tcpFlags.add(alt2);
-      }
-      if (feature.FIN() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseFin(true);
-        alt.setFin(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.FRAGMENTS() != null) {
-        todo(ctx, F_FRAGMENTS);
-      }
-      if (feature.HOST_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
-      }
-      if (feature.HOST_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNREACHABLE;
-      }
-      if (feature.NETWORK_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
-      }
-      if (feature.NET_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNREACHABLE;
-      }
-      if (feature.PACKET_TOO_BIG() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.PACKET_TOO_BIG;
-      }
-      if (feature.PARAMETER_PROBLEM() != null) {
-        icmpType = IcmpType.PARAMETER_PROBLEM;
-      }
-      if (feature.PORT_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
-      }
-      if (feature.PSH() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUsePsh(true);
-        alt.setPsh(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.REDIRECT() != null) {
-        icmpType = IcmpType.REDIRECT_MESSAGE;
-      }
-      if (feature.RST() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseRst(true);
-        alt.setRst(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.SOURCE_QUENCH() != null) {
-        icmpType = IcmpType.SOURCE_QUENCH;
-        icmpCode = IcmpCode.SOURCE_QUENCH;
-      }
-      if (feature.SYN() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseSyn(true);
-        alt.setSyn(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.TIME_EXCEEDED() != null) {
-        icmpType = IcmpType.TIME_EXCEEDED;
-      }
-      if (feature.TTL() != null) {
-        todo(ctx, F_TTL);
-      }
-      if (feature.TTL_EXCEEDED() != null) {
-        icmpType = IcmpType.TIME_EXCEEDED;
-        icmpCode = IcmpCode.TTL_EXCEEDED;
-      }
-      if (feature.TRACEROUTE() != null) {
-        icmpType = IcmpType.TRACEROUTE;
-        icmpCode = IcmpCode.TRACEROUTE;
-      }
-      if (feature.TRACKED() != null) {
-        states.add(State.ESTABLISHED);
-      }
-      if (feature.UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-      }
-      if (feature.URG() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseUrg(true);
-        alt.setUrg(true);
-        tcpFlags.add(alt);
-      }
-    }
     String name = getFullText(ctx).trim();
     ExtendedAccessListLine line =
         ExtendedAccessListLine.builder()
@@ -3078,14 +2937,176 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .setDstAddressSpecifier(dstAddressSpecifier)
             .setName(name)
             .setServiceSpecifier(serviceSpecifier)
+            .setSrcAddressSpecifier(srcAddressSpecifier)
             .build();
     _currentExtendedAcl.addLine(line);
   }
 
   private ExtendedAccessListServiceSpecifier computeServiceSpecifier(
       Extended_access_list_tailContext ctx) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    if (ctx.prot != null) {
+      IpProtocol protocol = ctx.prot != null ? toIpProtocol(ctx.prot) : null;
+      List<SubRange> srcPortRanges =
+          ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
+      List<SubRange> dstPortRanges =
+          ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.<SubRange>emptyList();
+      Integer icmpType = null;
+      Integer icmpCode = null;
+      List<TcpFlags> tcpFlags = new ArrayList<>();
+      Set<Integer> dscps = new TreeSet<>();
+      Set<Integer> ecns = new TreeSet<>();
+      Set<State> states = EnumSet.noneOf(State.class);
+      for (Extended_access_list_additional_featureContext feature : ctx.features) {
+        if (feature.ACK() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseAck(true);
+          alt.setAck(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.DSCP() != null) {
+          int dscpType = toDscpType(feature.dscp_type());
+          dscps.add(dscpType);
+        }
+        if (feature.ECE() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseEce(true);
+          alt.setEce(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.ECHO_REPLY() != null) {
+          icmpType = IcmpType.ECHO_REPLY;
+          icmpCode = IcmpCode.ECHO_REPLY;
+        }
+        if (feature.ECHO() != null) {
+          icmpType = IcmpType.ECHO_REQUEST;
+          icmpCode = IcmpCode.ECHO_REQUEST;
+        }
+        if (feature.ECN() != null) {
+          int ecn = toInteger(feature.ecn);
+          ecns.add(ecn);
+        }
+        if (feature.ESTABLISHED() != null) {
+          // must contain ACK or RST
+          TcpFlags alt1 = new TcpFlags();
+          TcpFlags alt2 = new TcpFlags();
+          alt1.setUseAck(true);
+          alt1.setAck(true);
+          alt2.setUseRst(true);
+          alt2.setRst(true);
+          tcpFlags.add(alt1);
+          tcpFlags.add(alt2);
+        }
+        if (feature.FIN() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseFin(true);
+          alt.setFin(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.FRAGMENTS() != null) {
+          todo(ctx, F_FRAGMENTS);
+        }
+        if (feature.HOST_UNKNOWN() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+        }
+        if (feature.HOST_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_HOST_UNREACHABLE;
+        }
+        if (feature.NETWORK_UNKNOWN() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+        }
+        if (feature.NET_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNREACHABLE;
+        }
+        if (feature.PACKET_TOO_BIG() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.PACKET_TOO_BIG;
+        }
+        if (feature.PARAMETER_PROBLEM() != null) {
+          icmpType = IcmpType.PARAMETER_PROBLEM;
+        }
+        if (feature.PORT_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
+        }
+        if (feature.PSH() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUsePsh(true);
+          alt.setPsh(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.REDIRECT() != null) {
+          icmpType = IcmpType.REDIRECT_MESSAGE;
+        }
+        if (feature.RST() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseRst(true);
+          alt.setRst(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.SOURCE_QUENCH() != null) {
+          icmpType = IcmpType.SOURCE_QUENCH;
+          icmpCode = IcmpCode.SOURCE_QUENCH;
+        }
+        if (feature.SYN() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseSyn(true);
+          alt.setSyn(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.TIME_EXCEEDED() != null) {
+          icmpType = IcmpType.TIME_EXCEEDED;
+        }
+        if (feature.TTL() != null) {
+          todo(ctx, F_TTL);
+        }
+        if (feature.TTL_EXCEEDED() != null) {
+          icmpType = IcmpType.TIME_EXCEEDED;
+          icmpCode = IcmpCode.TTL_EXCEEDED;
+        }
+        if (feature.TRACEROUTE() != null) {
+          icmpType = IcmpType.TRACEROUTE;
+          icmpCode = IcmpCode.TRACEROUTE;
+        }
+        if (feature.TRACKED() != null) {
+          states.add(State.ESTABLISHED);
+        }
+        if (feature.UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+        }
+        if (feature.URG() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseUrg(true);
+          alt.setUrg(true);
+          tcpFlags.add(alt);
+        }
+      }
+      return SimpleExtendedServiceSpecifier.builder()
+          .setDscps(dscps)
+          .setDstPortRanges(dstPortRanges)
+          .setEcns(ecns)
+          .setIcmpCode(icmpCode)
+          .setIcmpType(icmpType)
+          .setProtocol(protocol)
+          .setSrcPortRanges(srcPortRanges)
+          .setStates(states)
+          .setTcpFlags(tcpFlags)
+          .build();
+    } else if (ctx.ogs != null) {
+      String name = ctx.ogs.getText();
+      int line = ctx.ogs.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.SERVICE_OBJECT_GROUP,
+          name,
+          CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+          line);
+      return new ServiceObjectGroupServiceSpecifier(name);
+    } else {
+      throw convError(ExtendedAccessListServiceSpecifier.class, ctx);
+    }
   }
 
   private ExtendedAccessListAddressSpecifier toExtendedAccessListAddressSpecifier(
@@ -3112,7 +3133,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx, F_ACL_OBJECT);
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.og != null) {
-      return new NetworkObjectGroupAddressSpecifier(ctx.og.getText());
+      String name = ctx.og.getText();
+      int line = ctx.og.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.NETWORK_OBJECT_GROUP,
+          name,
+          CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
+          line);
+      return new NetworkObjectGroupAddressSpecifier(name);
     } else {
       throw convError(ExtendedAccessListAddressSpecifier.class, ctx);
     }

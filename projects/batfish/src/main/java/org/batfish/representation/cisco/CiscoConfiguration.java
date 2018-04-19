@@ -81,6 +81,8 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -214,8 +216,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeNetworkObjectGroupAclName(String name) {
-    return String.format("~NETWORK_OBJECT_GROUP~%s~", name);
+  public static String computeServiceObjectGroupAclName(String name) {
+    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
 
   @Override
@@ -1103,6 +1105,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markL2tpClasses(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.L2TP_CLASS, usage, _cf.getL2tpClasses());
+  }
+
+  private void markNetworkObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage, _networkObjectGroups);
   }
 
   private void markRouteMaps(CiscoStructureUsage usage) {
@@ -2365,13 +2371,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String name = eaList.getName();
     List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-      HeaderSpace.Builder headerSpaceBuilder = fromLine.getServiceSpecifier().toHeaderSpace();
-      headerSpaceBuilder.setSrcIps(fromLine.getSourceAddressSpecifier().toIpSpace());
-      headerSpaceBuilder.setDstIps(fromLine.getSourceAddressSpecifier().toIpSpace());
+      AclLineMatchExpr match;
+      IpSpace srcIpSpace = fromLine.getSourceAddressSpecifier().toIpSpace();
+      IpSpace dstIpSpace = fromLine.getDestinationAddressSpecifier().toIpSpace();
+      AclLineMatchExpr matchService = fromLine.getServiceSpecifier().toAclLineMatchExpr();
+      if (matchService instanceof MatchHeaderSpace) {
+        match =
+            new MatchHeaderSpace(
+                ((MatchHeaderSpace) matchService)
+                    .getHeaderspace()
+                    .rebuild()
+                    .setSrcIps(srcIpSpace)
+                    .setDstIps(dstIpSpace)
+                    .build());
+      } else {
+        match =
+            new AndMatchExpr(
+                ImmutableList.of(
+                    matchService,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(srcIpSpace)
+                            .setDstIps(dstIpSpace)
+                            .build())));
+      }
+
       lines.add(
           IpAccessListLine.builder()
               .setAction(fromLine.getAction())
-              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+              .setMatchCondition(match)
               .setName(fromLine.getName())
               .build());
     }
@@ -3832,6 +3860,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpsecProfiles(CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+
+    // object-group
+    markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
 
     // warn about unreferenced data structures
     warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);

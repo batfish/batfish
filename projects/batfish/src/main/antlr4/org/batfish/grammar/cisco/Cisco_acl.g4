@@ -317,7 +317,7 @@ extended_access_list_tail
       prot = protocol
       |
       (
-         OBJECT_GROUP ogp = variable
+         OBJECT_GROUP ogs = variable
       )
    ) srcipr = access_list_ip_range
    (

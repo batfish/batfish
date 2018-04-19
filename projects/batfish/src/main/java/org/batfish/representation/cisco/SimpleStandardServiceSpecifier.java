@@ -5,8 +5,10 @@ import java.util.Set;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
-public class SimpleServiceSpecifier implements ExtendedAccessListServiceSpecifier {
+public class SimpleStandardServiceSpecifier implements ExtendedAccessListServiceSpecifier {
 
   public static class Builder {
 
@@ -20,8 +22,8 @@ public class SimpleServiceSpecifier implements ExtendedAccessListServiceSpecifie
 
     private IpWildcard _srcIpWildcard;
 
-    public SimpleServiceSpecifier build() {
-      return new SimpleServiceSpecifier(this);
+    public SimpleStandardServiceSpecifier build() {
+      return new SimpleStandardServiceSpecifier(this);
     }
 
     public Builder setDscps(Iterable<Integer> dscps) {
@@ -64,7 +66,7 @@ public class SimpleServiceSpecifier implements ExtendedAccessListServiceSpecifie
 
   private final IpWildcard _srcIpWildcard;
 
-  private SimpleServiceSpecifier(Builder builder) {
+  private SimpleStandardServiceSpecifier(Builder builder) {
     _dscps = builder._dscps;
     _dstIpWildcard = builder._dstIpWildcard;
     _ecns = builder._ecns;
@@ -93,12 +95,14 @@ public class SimpleServiceSpecifier implements ExtendedAccessListServiceSpecifie
   }
 
   @Override
-  public HeaderSpace.Builder toHeaderSpace() {
-    return HeaderSpace.builder()
-        .setDscps(_dscps)
-        .setDstIps(_dstIpWildcard.toIpSpace())
-        .setEcns(_ecns)
-        .setIpProtocols(ImmutableSet.of(_protocol))
-        .setSrcIps(_srcIpWildcard.toIpSpace());
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setDscps(_dscps)
+            .setDstIps(_dstIpWildcard.toIpSpace())
+            .setEcns(_ecns)
+            .setIpProtocols(ImmutableSet.of(_protocol))
+            .setSrcIps(_srcIpWildcard.toIpSpace())
+            .build());
   }
 }
