@@ -1,27 +1,27 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public class PeerAddressNextHop extends NextHopExpr {
 
-  /** */
+  private static PeerAddressNextHop _instance = new PeerAddressNextHop();
+
+  public static PeerAddressNextHop getInstance() {
+    return _instance;
+  }
+
   private static final long serialVersionUID = 1L;
+
+  private PeerAddressNextHop() {}
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    return true;
+    return this == obj || obj instanceof PeerAddressNextHop;
   }
 
+  @Nullable
   @Override
   public Ip getNextHopIp(Environment environment) {
     return environment.getPeerAddress();

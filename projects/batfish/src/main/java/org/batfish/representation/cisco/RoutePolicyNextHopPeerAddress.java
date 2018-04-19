@@ -11,6 +11,6 @@ public class RoutePolicyNextHopPeerAddress extends RoutePolicyNextHop {
 
   @Override
   public NextHopExpr toNextHopExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
-    return new PeerAddressNextHop();
+    return PeerAddressNextHop.getInstance();
   }
 }
