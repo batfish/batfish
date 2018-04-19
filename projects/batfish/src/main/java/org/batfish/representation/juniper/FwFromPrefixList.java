@@ -1,10 +1,12 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
 
@@ -34,7 +36,11 @@ public final class FwFromPrefixList extends FwFrom {
       RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
       List<IpWildcard> wildcards = sourcePrefixList.getMatchingIps();
       headerSpaceBuilder.setSrcOrDstIps(
-          Iterables.concat(headerSpaceBuilder.getSrcOrDstIps(), wildcards));
+          AclIpSpace.union(
+              ImmutableList.<IpSpace>builder()
+                  .add(headerSpaceBuilder.getSrcOrDstIps())
+                  .addAll(wildcards)
+                  .build()));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }

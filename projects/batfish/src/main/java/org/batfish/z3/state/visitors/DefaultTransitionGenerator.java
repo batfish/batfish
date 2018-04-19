@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.Field;
 import org.batfish.z3.SynthesizerInput;
@@ -335,12 +336,16 @@ public class DefaultTransitionGenerator implements StateVisitor {
             hostname ->
                 new BasicRuleStatement(
                     HeaderSpaceMatchExpr.matchDstIp(
-                        _input
-                            .getIpsByHostname()
-                            .get(hostname)
-                            .stream()
-                            .map(IpWildcard::new)
-                            .collect(ImmutableSet.toImmutableSet())),
+                        IpWildcardSetIpSpace
+                            .builder()
+                            .including(
+                                _input
+                                    .getIpsByHostname()
+                                    .get(hostname)
+                                    .stream()
+                                    .map(IpWildcard::new)
+                                    .collect(ImmutableSet.toImmutableSet()))
+                            .build()),
                     ImmutableSet.of(new PostIn(hostname)),
                     new NodeAccept(hostname)))
         .forEach(_rules::add);
@@ -737,11 +742,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
               BooleanExpr ipForeignToCurrentNode =
                   new NotExpr(
                       HeaderSpaceMatchExpr.matchDstIp(
-                          ipsByHostnameEntry
-                              .getValue()
-                              .stream()
-                              .map(IpWildcard::new)
-                              .collect(ImmutableSet.toImmutableSet())));
+                          IpWildcardSetIpSpace
+                              .builder()
+                              .including(
+                                  ipsByHostnameEntry
+                                      .getValue()
+                                      .stream()
+                                      .map(IpWildcard::new)
+                                      .collect(ImmutableSet.toImmutableSet())).build()));
               return new BasicRuleStatement(
                   ipForeignToCurrentNode,
                   ImmutableSet.of(new PostIn(hostname)),

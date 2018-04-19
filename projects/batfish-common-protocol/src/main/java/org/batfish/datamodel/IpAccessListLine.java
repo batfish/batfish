@@ -139,6 +139,13 @@ public final class IpAccessListLine implements Serializable {
     return Objects.hash(_action, _matchCondition, _name);
   }
 
+  public Builder toBuilder() {
+    return builder()
+        .setAction(_action)
+        .setMatchCondition(_matchCondition)
+        .setName(_name);
+  }
+
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass())

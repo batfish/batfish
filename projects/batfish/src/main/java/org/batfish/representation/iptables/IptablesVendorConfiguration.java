@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
@@ -184,8 +185,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         switch (match.getMatchType()) {
           case DESTINATION:
             headerSpaceBuilder.setDstIps(
-                Iterables.concat(
-                    headerSpaceBuilder.getDstIps(), ImmutableSet.of(match.toIpWildcard())));
+                AclIpSpace.union(headerSpaceBuilder.getDstIps(), match.toIpWildcard()));
             break;
           case DESTINATION_PORT:
             headerSpaceBuilder.setDstPorts(
@@ -206,8 +206,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             break;
           case SOURCE:
             headerSpaceBuilder.setSrcIps(
-                Iterables.concat(
-                    headerSpaceBuilder.getSrcIps(), ImmutableSet.of(match.toIpWildcard())));
+                AclIpSpace.union(headerSpaceBuilder.getSrcIps(), match.toIpWildcard()));
             break;
           case SOURCE_PORT:
             headerSpaceBuilder.setSrcPorts(

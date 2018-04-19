@@ -15,7 +15,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.Protocol;
@@ -160,16 +162,35 @@ public class DestinationClasses {
   }
 
   private void extractPrefixesFromHeaderSpace(List<Prefix> dstIps, List<Prefix> notDstIps) {
-    if (_headerspace == null || _headerspace.getDstIps().isEmpty()) {
+    /* TODO: should this condition say something about _headerspace.getNotDstIps()? */
+    if (_headerspace == null || _headerspace.getDstIps() == null) {
       dstIps.add(Prefix.parse("0.0.0.0/0"));
     } else {
-      for (IpWildcard ip : _headerspace.getDstIps()) {
+      IpSpace dstIpSpace = _headerspace.getDstIps();
+      if (!(dstIpSpace instanceof IpWildcardSetIpSpace)) {
+        throw new BatfishException("Unimplemented: dstIpSpace constraint that is not IpWildcardSetIpSpace: " + dstIpSpace);
+      }
+      IpWildcardSetIpSpace dstIpWildcardSetIpSpace = (IpWildcardSetIpSpace) dstIpSpace;
+      if (!dstIpWildcardSetIpSpace.getBlacklist().isEmpty()) {
+        throw new BatfishException(
+            "Unimplemented: dstIpSpace constraint with blacklisted wildcards: " + dstIpSpace);
+      }
+      for (IpWildcard ip : dstIpWildcardSetIpSpace.getWhitelist()) {
         if (!ip.isPrefix()) {
           throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
         }
         dstIps.add(ip.toPrefix());
       }
-      for (IpWildcard ip : _headerspace.getNotDstIps()) {
+      IpSpace notDstIpSpace = _headerspace.getNotDstIps();
+      if (!(notDstIpSpace instanceof IpWildcardSetIpSpace)) {
+        throw new BatfishException("Unimplemented: notDstIpSpace constraint that is not IpWildcardSetIpSpace: " + notDstIpSpace);
+      }
+      IpWildcardSetIpSpace notDstIpWildcardSetIpSpace = (IpWildcardSetIpSpace) notDstIpSpace;
+      if (!notDstIpWildcardSetIpSpace.getBlacklist().isEmpty()) {
+        throw new BatfishException(
+            "Unimplemented: notDstIpSpace constraint with blacklisted wildcards: " + dstIpSpace);
+      }
+      for (IpWildcard ip : notDstIpWildcardSetIpSpace.getWhitelist()) {
         if (!ip.isPrefix()) {
           throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
         }

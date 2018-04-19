@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class EmptyIpSpace implements IpSpace {
+public class EmptyIpSpace implements JacksonSerializableIpSpace {
 
   public static final IpSpace INSTANCE = new EmptyIpSpace();
 
@@ -21,5 +21,10 @@ public class EmptyIpSpace implements IpSpace {
   @Override
   public IpSpace complement() {
     return UniverseIpSpace.INSTANCE;
+  }
+
+  @Override
+  public IpSpace unwrap() {
+    return this;
   }
 }

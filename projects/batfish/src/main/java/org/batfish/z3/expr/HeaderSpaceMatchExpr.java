@@ -10,7 +10,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
@@ -20,6 +22,7 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
+import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
 
 public final class HeaderSpaceMatchExpr extends BooleanExpr {
 
@@ -34,8 +37,8 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  public static BooleanExpr matchDstIp(Set<IpWildcard> dstIpWildcards) {
-    return matchIp(dstIpWildcards, Field.DST_IP);
+  public static BooleanExpr matchDstIp(IpSpace ipSpace) {
+    return matchIpSpace(ipSpace, Field.DST_IP);
   }
 
   public static BooleanExpr matchDstPort(Set<SubRange> dstPortRanges) {
@@ -70,31 +73,28 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     return RangeMatchExpr.fromSubRanges(Field.ICMP_TYPE, Field.ICMP_TYPE.getSize(), icmpTypes);
   }
 
-  public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, boolean useSrc, boolean useDst) {
-    if (useSrc && useDst) {
-      return matchSrcOrDstIp(ipWildcards);
-    } else if (useSrc) {
-      return matchSrcIp(ipWildcards);
-    } else if (useDst) {
-      return matchDstIp(ipWildcards);
-    } else {
-      throw new BatfishException("either useSrc or usrDst must be true");
-    }
+  public static BooleanExpr matchIpSpace(IpSpace ipSpace, Field ipField) {
+    return ipSpace.accept(new IpSpaceBooleanExprTransformer(ipField));
   }
 
-  public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, Field ipField) {
+  public static BooleanExpr matchIp(Ip ip, Field ipField) {
+    assert ipField.getSize() == 32;
+    return new EqExpr(new LitIntExpr(ip), new VarIntExpr(ipField));
+  }
+
+  public static BooleanExpr matchIpWildcards(Set<IpWildcard> ipWildcards, Field ipField) {
     return new OrExpr(
         ipWildcards
             .stream()
             .map(
                 ipWildcard ->
                     ipWildcard.isPrefix()
-                        ? matchIpPrefix(ipWildcard.toPrefix(), ipField)
+                        ? matchPrefix(ipWildcard.toPrefix(), ipField)
                         : matchIpWildcard(ipWildcard, ipField))
             .collect(Collectors.toList()));
   }
 
-  public static BooleanExpr matchIpPrefix(Prefix prefix, Field ipField) {
+  public static BooleanExpr matchPrefix(Prefix prefix, Field ipField) {
     long ip = prefix.getStartIp().asLong();
     int ipWildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
     int ipStart = ipWildcardBits;
@@ -139,8 +139,8 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  public static BooleanExpr matchOrigSrcIp(Set<IpWildcard> ipWildcards) {
-    return matchIp(ipWildcards, Field.ORIG_SRC_IP);
+  public static BooleanExpr matchOrigSrcIp(IpSpace ipSpace) {
+    return matchIpSpace(ipSpace, Field.ORIG_SRC_IP);
   }
 
   public static BooleanExpr matchPacketLength(Set<SubRange> packetLengths) {
@@ -192,15 +192,12 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     return matchesSomeProtocol;
   }
 
-  public static BooleanExpr matchSrcIp(Set<IpWildcard> srcIpWildcards) {
-    return matchIp(srcIpWildcards, Field.SRC_IP);
+  public static BooleanExpr matchSrcIp(IpSpace srcIpSpace) {
+    return matchIpSpace(srcIpSpace, Field.SRC_IP);
   }
 
-  public static BooleanExpr matchSrcOrDstIp(Set<IpWildcard> srcOrDstIppWildcards) {
-    return new OrExpr(
-        ImmutableList.of(
-            matchIp(srcOrDstIppWildcards, Field.SRC_IP),
-            matchIp(srcOrDstIppWildcards, Field.DST_IP)));
+  public static BooleanExpr matchSrcOrDstIp(IpSpace ipSpace) {
+    return ipSpace.accept(new IpSpaceBooleanExprTransformer(Field.SRC_IP, Field.DST_IP));
   }
 
   public static BooleanExpr matchSrcOrDstPort(Set<SubRange> srcOrDstPorts) {
@@ -384,15 +381,13 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   /**
-   * Require that either ORIG_SRC_IP or DST_IP matches one of the input {@link IpWildcard}s. If the
+   * Require that either ORIG_SRC_IP or DST_IP matches the input {@link IpSpace}. If the
    * query specifies a srcIp or dstIp constraint, we interpret that as meaning the srcIp before any
    * natting. If that constraint is imposed after src natting has been applied, use this method to
    * constrain ORIG_SRC_IP.
    */
-  public static BooleanExpr matchOrigSrcOrDstIp(Set<IpWildcard> ipWildcards) {
-    return new OrExpr(
-        ImmutableList.of(
-            matchIp(ipWildcards, Field.ORIG_SRC_IP), matchIp(ipWildcards, Field.DST_IP)));
+  public static BooleanExpr matchOrigSrcOrDstIp(IpSpace ipSpace) {
+    return ipSpace.accept(new IpSpaceBooleanExprTransformer(Field.ORIG_SRC_IP, Field.DST_IP));
   }
 
   @Override
@@ -417,6 +412,16 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_expr);
+  }
+
+  private void requireMatch(
+      Builder<BooleanExpr> match, IpSpace ipSpace, Function<IpSpace, BooleanExpr> generator) {
+    match.add(generator.apply(ipSpace));
+  }
+
+  private void requireNoMatch(
+      Builder<BooleanExpr> match, IpSpace ipSpace, Function<IpSpace, BooleanExpr> generator) {
+    match.add(new NotExpr(generator.apply(ipSpace)));
   }
 
   private <T, C extends Collection<T>> void requireMatch(
