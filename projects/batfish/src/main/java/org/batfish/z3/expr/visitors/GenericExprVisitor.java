@@ -2,7 +2,6 @@ package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -26,8 +25,6 @@ public interface GenericExprVisitor<R> {
   R visitStateExpr(StateExpr stateExpr);
 
   R visitBitVecExpr(BitVecExpr bitVecExpr);
-
-  R visitCurrentIsOriginalExpr(CurrentIsOriginalExpr currentIsOriginalExpr);
 
   R visitEqExpr(EqExpr eqExpr);
 

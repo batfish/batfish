@@ -867,9 +867,13 @@ public class VirtualRouter extends ComparableStructure<String> {
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
       Ip localIp = neighbor.getLocalIp();
       if (localIp == null || Ip.AUTO.equals(localIp)) {
+        // Skip neighbors for which cannot reasonably determine localIp
         continue;
       }
       Prefix remotePrefix = neighbor.getPrefix();
+      if (remotePrefix.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH) {
+        continue;
+      }
       Ip remoteIp = remotePrefix.getStartIp();
       if (ipOwners.get(remoteIp) != null) {
         // Skip if neighbor is not outside the network
@@ -879,7 +883,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       int localAs = neighbor.getLocalAs();
       int remoteAs = neighbor.getRemoteAs();
       String remoteHostname = remoteIp.toString();
-      String remoteVrfName = Configuration.DEFAULT_VRF_NAME;
+      String remoteVrfName = _vrf.getName();
       RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(neighbor.getExportPolicy());
       boolean ebgpSession = localAs != remoteAs;
       RoutingProtocol targetProtocol = ebgpSession ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
@@ -1046,7 +1050,12 @@ public class VirtualRouter extends ComparableStructure<String> {
          */
         boolean acceptOutgoing =
             exportPolicy.process(
-                route, transformedOutgoingRouteBuilder, remoteIp, remoteVrfName, Direction.OUT);
+                route,
+                transformedOutgoingRouteBuilder,
+                remoteIp,
+                remotePrefix,
+                remoteVrfName,
+                Direction.OUT);
         if (acceptOutgoing) {
           BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
           // Record sent advertisement
@@ -1352,6 +1361,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   remoteRoute,
                   transformedOutgoingRouteBuilder,
                   localIp,
+                  remoteBgpNeighbor.getPrefix(),
                   remoteVrfName,
                   Direction.OUT);
           if (acceptOutgoing) {
@@ -1488,6 +1498,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                         transformedOutgoingRoute,
                         transformedIncomingRouteBuilder,
                         remoteBgpNeighbor.getLocalIp(),
+                        remoteBgpNeighbor.getPrefix(),
                         _key,
                         Direction.IN);
               }

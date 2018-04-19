@@ -4,6 +4,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import java.io.IOException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.hamcrest.FeatureMatcher;
 import org.junit.Test;
 
@@ -73,5 +76,45 @@ public class IpSpaceTest {
      * Should not contain Ip.MAX because not in whitelist
      */
     assertThat(someButNotMax, not(contains(Ip.MAX)));
+  }
+
+  @Test
+  public void testIpSpaceJacksonSerialization() throws IOException {
+    Ip ip = new Ip("1.0.0.0");
+    IpIpSpace ipIpSpace = ip.toIpSpace();
+    Prefix p = new Prefix(ip, 24);
+    PrefixIpSpace prefixIpSpace = p.toIpSpace();
+    IpWildcard ipWildcard1 = new IpWildcard(p);
+    IpWildcardIpSpace ipWildcard1IpSpace = ipWildcard1.toIpSpace();
+    IpWildcard ipWildcard2 = new IpWildcard(ip);
+    IpWildcardIpSpace ipWildcard2IpSpace = ipWildcard2.toIpSpace();
+    IpWildcard ipWildcard3 = new IpWildcard(ip, new Ip("0.255.0.255"));
+    IpWildcardIpSpace ipWildcard3IpSpace = ipWildcard3.toIpSpace();
+    IpSpace ipWildcardSetIpSpace =
+        IpWildcardSetIpSpace.builder().including(ipWildcard1, ipWildcard2, ipWildcard3).build();
+    IpSpace aclIpSpace1 =
+        AclIpSpace.permitting(ipWildcardSetIpSpace)
+            .thenPermitting(ipIpSpace)
+            .thenPermitting(prefixIpSpace)
+            .thenRejecting(ipWildcard1IpSpace)
+            .thenPermitting(EmptyIpSpace.INSTANCE)
+            .thenRejecting(UniverseIpSpace.INSTANCE)
+            .build();
+    for (IpSpace ipSpace :
+        ImmutableList.<IpSpace>of(
+            ipIpSpace,
+            prefixIpSpace,
+            ipWildcard1IpSpace,
+            ipWildcard2IpSpace,
+            ipWildcard3IpSpace,
+            ipWildcardSetIpSpace,
+            aclIpSpace1)) {
+      String jsonString = BatfishObjectMapper.writePrettyString(ipSpace);
+      IpSpace deserializedIpSpace =
+          BatfishObjectMapper.mapper().readValue(jsonString, IpSpace.class);
+
+      /* IpSpace should be equal to deserialized version */
+      assertThat(ipSpace, equalTo(deserializedIpSpace));
+    }
   }
 }

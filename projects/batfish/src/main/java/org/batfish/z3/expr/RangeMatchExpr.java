@@ -6,13 +6,17 @@ import com.google.common.collect.Range;
 import java.util.Objects;
 import java.util.Set;
 import org.batfish.datamodel.SubRange;
-import org.batfish.z3.HeaderField;
+import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
 public final class RangeMatchExpr extends BooleanExpr {
 
-  public static RangeMatchExpr fromSubRanges(HeaderField var, int bits, Set<SubRange> range) {
+  public static RangeMatchExpr fromSubRanges(Field field, int bits, Set<SubRange> range) {
+    return fromSubRanges(new VarIntExpr(field), bits, range);
+  }
+
+  public static RangeMatchExpr fromSubRanges(VarIntExpr var, int bits, Set<SubRange> range) {
     return new RangeMatchExpr(
         var,
         bits,
@@ -22,7 +26,11 @@ public final class RangeMatchExpr extends BooleanExpr {
             .collect(ImmutableSet.toImmutableSet()));
   }
 
-  public static BooleanExpr greaterThanOrEqualTo(HeaderField bv, long lb, int numBits) {
+  public static BooleanExpr greaterThanOrEqualTo(Field field, long lb, int numBits) {
+    return greaterThanOrEqualTo(new VarIntExpr(field), lb, numBits);
+  }
+
+  public static BooleanExpr greaterThanOrEqualTo(IntExpr bv, long lb, int numBits) {
     long remainingNumber = lb;
     int offset = 0;
     BooleanExpr currentExpr = TrueExpr.INSTANCE;
@@ -64,18 +72,17 @@ public final class RangeMatchExpr extends BooleanExpr {
     return currentExpr;
   }
 
-  public static BooleanExpr lessThanOrEqualTo(HeaderField bv, long lb, int numBits) {
+  public static BooleanExpr lessThanOrEqualTo(IntExpr var, long lb, int numBits) {
     LitIntExpr upperBound = new LitIntExpr(lb, numBits);
-    VarIntExpr var = new VarIntExpr(bv);
     EqExpr exactMatch = new EqExpr(var, upperBound);
-    BooleanExpr ge = greaterThanOrEqualTo(bv, lb, numBits);
+    BooleanExpr ge = greaterThanOrEqualTo(var, lb, numBits);
     NotExpr lessThan = new NotExpr(ge);
     return new OrExpr(ImmutableList.of(exactMatch, lessThan));
   }
 
-  private static IntExpr newExtractExpr(HeaderField var, int varSize, int low, int high) {
+  private static IntExpr newExtractExpr(IntExpr var, int varSize, int low, int high) {
     if (low == 0 && high == varSize - 1) {
-      return new VarIntExpr(var);
+      return var;
     } else {
       return ExtractExpr.newExtractExpr(var, low, high);
     }
@@ -83,24 +90,24 @@ public final class RangeMatchExpr extends BooleanExpr {
 
   private final BooleanExpr _expr;
 
-  public RangeMatchExpr(HeaderField var, int bits, Set<Range<Long>> range) {
+  public RangeMatchExpr(IntExpr intExpr, int bits, Set<Range<Long>> range) {
     long max = (1L << bits) - 1;
     ImmutableList.Builder<BooleanExpr> matchSomeSubRangeBuilder = ImmutableList.builder();
     for (Range<Long> subRange : range) {
       long low = subRange.lowerEndpoint();
       long high = subRange.upperEndpoint();
       if (low == high) {
-        EqExpr exactMatch = new EqExpr(new VarIntExpr(var), new LitIntExpr(low, bits));
+        EqExpr exactMatch = new EqExpr(intExpr, new LitIntExpr(low, bits));
         matchSomeSubRangeBuilder.add(exactMatch);
       } else {
         boolean doLE = (high < max);
         boolean doGE = (low > 0);
         ImmutableList.Builder<BooleanExpr> matchThisSubRangeBuilder = ImmutableList.builder();
         if (doGE) {
-          matchThisSubRangeBuilder.add(greaterThanOrEqualTo(var, low, bits));
+          matchThisSubRangeBuilder.add(greaterThanOrEqualTo(intExpr, low, bits));
         }
         if (doLE) {
-          matchThisSubRangeBuilder.add(lessThanOrEqualTo(var, high, bits));
+          matchThisSubRangeBuilder.add(lessThanOrEqualTo(intExpr, high, bits));
         }
         if (!doGE && !doLE) {
           // any value in range matches

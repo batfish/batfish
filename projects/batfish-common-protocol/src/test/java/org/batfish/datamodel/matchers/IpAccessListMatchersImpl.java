@@ -1,22 +1,101 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
+import org.hamcrest.Description;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 
-class IpAccessListMatchersImpl {
+final class IpAccessListMatchersImpl {
+
+  static class Accepts extends TypeSafeDiagnosingMatcher<IpAccessList> {
+
+    private final Map<String, IpAccessList> _availableAcls;
+    private final Flow _flow;
+    private final String _srcInterface;
+
+    Accepts(
+        @Nonnull Flow flow,
+        @Nullable String srcInterface,
+        @Nonnull Map<String, IpAccessList> availableAcls) {
+      _flow = flow;
+      _srcInterface = srcInterface;
+      _availableAcls = availableAcls;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(String.format("An IpAccessList that accepts flow: '%s'", _flow));
+      if (_srcInterface != null) {
+        description.appendText(String.format("at srcInterface: %s", _srcInterface));
+      }
+    }
+
+    @Override
+    protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
+      if (item.filter(_flow, _srcInterface, _availableAcls).getAction() != LineAction.ACCEPT) {
+        mismatchDescription.appendText(String.format("does not accept flow '%s'", _flow));
+        if (_srcInterface != null) {
+          mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
+        }
+        return false;
+      }
+      return true;
+    }
+  }
 
   static class HasLines extends FeatureMatcher<IpAccessList, List<IpAccessListLine>> {
 
-    public HasLines(Matcher<? super List<IpAccessListLine>> subMatcher) {
+    public HasLines(@Nonnull Matcher<? super List<IpAccessListLine>> subMatcher) {
       super(subMatcher, "An IpAcessList with lines:", "lines");
     }
 
     @Override
     protected List<IpAccessListLine> featureValueOf(IpAccessList actual) {
       return actual.getLines();
+    }
+  }
+
+  static class Rejects extends TypeSafeDiagnosingMatcher<IpAccessList> {
+
+    private final Map<String, IpAccessList> _availableAcls;
+    private final Flow _flow;
+    private final String _srcInterface;
+
+    Rejects(
+        @Nonnull Flow flow,
+        @Nullable String srcInterface,
+        @Nonnull Map<String, IpAccessList> availableAcls) {
+      _flow = flow;
+      _srcInterface = srcInterface;
+      _availableAcls = availableAcls;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(String.format("An IpAccessList that rejects flow: '%s'", _flow));
+      if (_srcInterface != null) {
+        description.appendText(String.format("at srcInterface: %s", _srcInterface));
+      }
+    }
+
+    @Override
+    protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
+      if (item.filter(_flow, _srcInterface, _availableAcls).getAction() != LineAction.REJECT) {
+        mismatchDescription.appendText(String.format("does not reject flow '%s'", _flow));
+        if (_srcInterface != null) {
+          mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
+        }
+        return false;
+      }
+      return true;
     }
   }
 

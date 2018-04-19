@@ -13,6 +13,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -112,8 +113,9 @@ public class IpAccessListSpecializer {
       IpWildcardSetIpSpace dstIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedDstIpSpace;
       specializedDstIps = dstIpWildcardSetIpSpace.getWhitelist();
       specializedNotDstIps = dstIpWildcardSetIpSpace.getBlacklist();
-    } else if (specializedDstIpSpace instanceof IpWildcard) {
-      specializedDstIps = ImmutableSet.of((IpWildcard) specializedDstIpSpace);
+    } else if (specializedDstIpSpace instanceof IpWildcardIpSpace) {
+      specializedDstIps =
+          ImmutableSet.of(((IpWildcardIpSpace) specializedDstIpSpace).getIpWildcard());
       specializedNotDstIps = ImmutableSet.of();
     } else {
       throw new BatfishException("unexpected specializedDstIpSpace type");
@@ -128,8 +130,9 @@ public class IpAccessListSpecializer {
       IpWildcardSetIpSpace srcIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedSrcIpSpace;
       specializedSrcIps = srcIpWildcardSetIpSpace.getWhitelist();
       specializedNotSrcIps = srcIpWildcardSetIpSpace.getBlacklist();
-    } else if (specializedSrcIpSpace instanceof IpWildcard) {
-      specializedSrcIps = ImmutableSet.of((IpWildcard) specializedSrcIpSpace);
+    } else if (specializedSrcIpSpace instanceof IpWildcardIpSpace) {
+      specializedSrcIps =
+          ImmutableSet.of(((IpWildcardIpSpace) specializedSrcIpSpace).getIpWildcard());
       specializedNotSrcIps = ImmutableSet.of();
     } else {
       throw new BatfishException("unexpected specializedSrcIpSpace type");

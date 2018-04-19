@@ -1934,7 +1934,38 @@
             "              (activate_bgp_tail",
             "                ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (bgp_tail",
+            "            (redistribute_ospfv3_bgp_tail",
+            "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "              OSPF3:'ospf3'  <== mode:DEFAULT_MODE",
+            "              MATCH:'match'  <== mode:DEFAULT_MODE",
+            "              (ospf_route_type",
+            "                INTERNAL:'internal'  <== mode:DEFAULT_MODE)",
+            "              ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'ROUTE_MAP'  <== mode:M_RouteMap)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (bgp_tail",
+            "            (redistribute_ospfv3_bgp_tail",
+            "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "              OSPF3:'ospf3'  <== mode:DEFAULT_MODE",
+            "              MATCH:'match'  <== mode:DEFAULT_MODE",
+            "              (ospf_route_type",
+            "                EXTERNAL:'external'  <== mode:DEFAULT_MODE)",
+            "              ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'UNDEFINED_MAP'  <== mode:M_RouteMap)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (address_family_footer)))))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'ROUTE_MAP'  <== mode:M_RouteMap)",
+            "      (access_list_action",
+            "        DENY:'deny'  <== mode:DEFAULT_MODE)",
+            "      DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -2322,6 +2353,27 @@
             "      MODE:'mode'  <== mode:DEFAULT_MODE",
             "      ROUTED:'routed'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_management",
+            "      MANAGEMENT:'management'  <== mode:DEFAULT_MODE",
+            "      (management_cvx",
+            "        CVX:'cvx'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (management_cvx_null",
+            "          NO:'no'  <== mode:DEFAULT_MODE",
+            "          SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (management_cvx_null",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            HOST:'host'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (management_cvx_null",
+            "          SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -7521,7 +7573,7 @@
             "        (access_list_ip_range",
             "          OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "          (variable",
-            "            VARIABLE:'drawbridge_hosts'  <== mode:DEFAULT_MODE))",
+            "            VARIABLE:'drawbridge_hosts'  <== mode:M_ObjectGroup))",
             "        (access_list_ip_range",
             "          INTERFACE:'interface'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -19066,7 +19118,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_ip_address",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:M_ObjectGroup",
             "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "        (variable",
             "          VARIABLE:'_anonymized_'  <== mode:DEFAULT_MODE)",
@@ -19079,7 +19131,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_ip_address",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:M_ObjectGroup",
             "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "        (variable",
             "          VARIABLE:'_anonymized2_'  <== mode:DEFAULT_MODE)",
@@ -26922,7 +26974,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_service",
-            "        SERVICE:'service'  <== mode:DEFAULT_MODE",
+            "        SERVICE:'service'  <== mode:M_ObjectGroup",
             "        (variable",
             "          VARIABLE:'SVCGRP-ICMP'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -29397,7 +29449,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_ip_address",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:M_ObjectGroup",
             "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "        (variable",
             "          VARIABLE:'BIPPETY'  <== mode:DEFAULT_MODE)",
@@ -29432,7 +29484,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_network",
-            "        NETWORK:'network'  <== mode:DEFAULT_MODE",
+            "        NETWORK:'network'  <== mode:M_ObjectGroup",
             "        (variable",
             "          VARIABLE:'dns_servers'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -29450,7 +29502,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_network",
-            "        NETWORK:'network'  <== mode:DEFAULT_MODE",
+            "        NETWORK:'network'  <== mode:M_ObjectGroup",
             "        (variable",
             "          VARIABLE:'ntp_servers'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -51175,6 +51227,15 @@
             }
           }
         },
+        "arista_bgp" : {
+          "route-map" : {
+            "UNDEFINED_MAP" : {
+              "bgp redistribute ospfv3 route-map" : [
+                13
+              ]
+            }
+          }
+        },
         "arista_misc" : {
           "ipv4 acl" : {
             "abc" : {
@@ -52259,6 +52320,16 @@
             ],
             "copp-system-p-acl-mac-cdp-udld-vtp" : [
               6
+            ]
+          }
+        },
+        "cisco_qos" : {
+          "object-group network" : {
+            "dns_servers" : [
+              26
+            ],
+            "ntp_servers" : [
+              29
             ]
           }
         },

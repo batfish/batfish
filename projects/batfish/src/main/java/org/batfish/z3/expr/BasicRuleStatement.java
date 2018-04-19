@@ -33,6 +33,15 @@ public class BasicRuleStatement extends RuleStatement {
 
   public BasicRuleStatement(
       BooleanExpr preconditionStateIndependentConstraints,
+      StateExpr preconditionState,
+      StateExpr postconditionState) {
+    _postconditionState = postconditionState;
+    _preconditionStateIndependentConstraints = preconditionStateIndependentConstraints;
+    _preconditionStates = ImmutableSet.of(preconditionState);
+  }
+
+  public BasicRuleStatement(
+      BooleanExpr preconditionStateIndependentConstraints,
       Set<StateExpr> preconditionStates,
       StateExpr postconditionState) {
     _postconditionState = postconditionState;

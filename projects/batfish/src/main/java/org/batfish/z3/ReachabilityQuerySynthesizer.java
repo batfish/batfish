@@ -1,14 +1,16 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.CurrentIsOriginalExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
@@ -29,6 +31,14 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
     protected Boolean _srcNatted;
 
     protected Set<String> _transitNodes;
+
+    public Builder() {
+      _headerSpace = new HeaderSpace();
+      _ingressNodeVrfs = ImmutableMap.of();
+      _nonTransitNodes = ImmutableSet.of();
+      _srcNatted = false;
+      _transitNodes = ImmutableSet.of();
+    }
 
     public abstract Q build();
 
@@ -93,7 +103,11 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
         rules.add(
             new BasicRuleStatement(
-                CurrentIsOriginalExpr.INSTANCE, new OriginateVrf(ingressNode, ingressVrf)));
+                new AndExpr(
+                    ImmutableList.of(
+                        new EqExpr(
+                            new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)))),
+                new OriginateVrf(ingressNode, ingressVrf)));
       }
     }
   }
@@ -101,9 +115,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
   protected final BooleanExpr getSrcNattedConstraint() {
     if (_srcNatted != null) {
       BooleanExpr notSrcNatted =
-          new EqExpr(
-              new VarIntExpr(BasicHeaderField.SRC_IP),
-              new VarIntExpr(BasicHeaderField.ORIG_SRC_IP));
+          new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
       if (_srcNatted) {
         return new NotExpr(notSrcNatted);
       } else {

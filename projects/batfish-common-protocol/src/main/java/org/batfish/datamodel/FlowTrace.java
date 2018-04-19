@@ -126,6 +126,9 @@ public class FlowTrace implements Comparable<FlowTrace> {
         transformedFlowString = " ***TRANSFORMED:" + transformedFlow.prettyPrint("") + "***";
       }
       String routesStr = routes != null ? (" --- " + routes) : "";
+      String filterOutStr =
+          hop.getFilterOut() != null ? (" -- [out: " + hop.getFilterOut() + "]") : "";
+      String filterInStr = hop.getFilterIn() != null ? (" -- [in: " + hop.getFilterIn() + "]") : "";
       Edge edge = hop.getEdge();
       int num = i + 1;
       sb.append(prefixString)
@@ -141,6 +144,8 @@ public class FlowTrace implements Comparable<FlowTrace> {
           .append(edge.getInt2())
           .append(transformedFlowString)
           .append(routesStr)
+          .append(filterOutStr)
+          .append(filterInStr)
           .append("\n");
     }
     sb.append(prefixString).append(_notes).append("\n");

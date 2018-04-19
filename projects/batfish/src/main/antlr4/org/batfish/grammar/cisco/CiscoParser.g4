@@ -1600,6 +1600,26 @@ management_console_null
    ) null_rest_of_line
 ;
 
+management_cvx
+:
+   CVX NEWLINE
+   (
+      management_cvx_null
+   )*
+   (
+      EXIT NEWLINE
+   )?
+;
+
+management_cvx_null
+:
+   NO?
+   (
+      SERVER
+      | SHUTDOWN
+   ) null_rest_of_line
+;
+
 management_egress_interface_selection
 :
    MANAGEMENT EGRESS_INTERFACE_SELECTION NEWLINE
@@ -2641,6 +2661,7 @@ s_management
    (
       management_api
       | management_console
+      | management_cvx
       | management_egress_interface_selection
       | management_ssh
       | management_telnet

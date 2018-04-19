@@ -129,7 +129,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
-  void processFlows(Set<Flow> flows);
+  void processFlows(Set<Flow> flows, boolean ignoreAcls);
 
   void pushBaseEnvironment();
 

@@ -8,10 +8,8 @@ import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecSort;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.FuncDecl;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,19 +37,12 @@ public class NodContext {
 
   private final Map<String, BitVecExpr> _variablesAsConsts;
 
+  private final Map<String, BitVecExpr> _transformedVariables;
+
   public NodContext(Context ctx, ReachabilityProgram... programs) {
     _context = ctx;
     AtomicInteger deBruijnIndex = new AtomicInteger(0);
-    VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
-    Arrays.stream(programs)
-        .forEach(
-            program -> {
-              program.getRules().forEach(rule -> rule.accept(variableSizeCollector));
-              program.getQueries().forEach(query -> query.accept(variableSizeCollector));
-              program.getSmtConstraint().accept(variableSizeCollector);
-            });
-
-    Map<String, Integer> variableSizes = variableSizeCollector.getVariableSizes();
+    Map<String, Integer> variableSizes = VariableSizeCollector.collectVariableSizes(programs);
     _variableNames = computeVariableNames(variableSizes);
 
     Map<String, BitVecSort> variableSorts =
@@ -72,6 +63,18 @@ public class NodContext {
                         (BitVecExpr)
                             ctx.mkBound(
                                 deBruijnIndex.getAndIncrement(), variableSorts.get(variableName))));
+
+    _transformedVariables =
+        _variableNames
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Function.identity(),
+                    variableName ->
+                        (BitVecExpr)
+                            ctx.mkBound(
+                                deBruijnIndex.getAndIncrement(), variableSorts.get(variableName))));
+
     _variablesAsConsts =
         variableSizes
             .entrySet()
@@ -92,18 +95,10 @@ public class NodContext {
                     variableSizeEntry ->
                         new VarIntExpr(variableSizeEntry.getKey(), variableSizeEntry.getValue())));
     _basicStateVarIntExprs =
-        _variableNames
-            .stream()
-            .filter(nm -> !TransformationHeaderField.transformationHeaderFieldNames.contains(nm))
-            .map(varIntExprs::get)
-            .toArray(VarIntExpr[]::new);
+        _variableNames.stream().map(varIntExprs::get).toArray(VarIntExpr[]::new);
 
     _basicStateVariableSorts =
-        _variableNames
-            .stream()
-            .filter(nm -> !TransformationHeaderField.transformationHeaderFieldNames.contains(nm))
-            .map(variableSorts::get)
-            .collect(Collectors.toList());
+        _variableNames.stream().map(variableSorts::get).collect(Collectors.toList());
 
     FuncDeclTransformer funcDeclTransformer =
         new FuncDeclTransformer(ctx, _basicStateVariableSorts);
@@ -128,26 +123,7 @@ public class NodContext {
   }
 
   private static ImmutableList<String> computeVariableNames(Map<String, Integer> variableSizes) {
-    // Order the variables. Instrumentation variables first (in sorted order).
-    List<String> variableNames = new ArrayList<>(variableSizes.keySet());
-    Arrays.stream(BasicHeaderField.values())
-        .map(BasicHeaderField::getName)
-        .forEach(variableNames::remove);
-    Arrays.stream(TransformationHeaderField.values())
-        .map(TransformationHeaderField::getName)
-        .forEach(variableNames::remove);
-    Collections.sort(variableNames);
-    Arrays.stream(BasicHeaderField.values())
-        .map(BasicHeaderField::getName)
-        .forEach(variableNames::add);
-    Arrays.stream(TransformationHeaderField.values())
-        .map(TransformationHeaderField::getName)
-        .forEach(variableNames::add);
-    // restrict to the variables that occur in the program
-    return variableNames
-        .stream()
-        .filter(variableSizes::containsKey)
-        .collect(ImmutableList.toImmutableList());
+    return ImmutableList.sortedCopyOf(variableSizes.keySet());
   }
 
   public List<BitVecSort> getBasicStateVariableSorts() {
@@ -176,5 +152,9 @@ public class NodContext {
 
   public ImmutableList<String> getVariableNames() {
     return _variableNames;
+  }
+
+  public Map<String, BitVecExpr> getTransformedVariables() {
+    return _transformedVariables;
   }
 }

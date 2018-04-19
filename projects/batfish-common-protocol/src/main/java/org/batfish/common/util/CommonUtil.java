@@ -669,6 +669,7 @@ public class CommonUtil {
     fb.setTag("neighbor-resolution");
 
     fb.setIngressNode(src.getOwner().getHostname());
+    fb.setIngressVrf(src.getVrf());
     fb.setSrcIp(srcAddress);
     fb.setDstIp(dstAddress);
     fb.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());
@@ -677,7 +678,7 @@ public class CommonUtil {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, Set<FlowTrace>> traces =
-        flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow));
+        flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow), false);
 
     SortedSet<FlowTrace> acceptedFlows =
         traces
@@ -713,7 +714,7 @@ public class CommonUtil {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = flowProcessor.processFlows(dp, ImmutableSet.of(backwardFlow));
+    traces = flowProcessor.processFlows(dp, ImmutableSet.of(backwardFlow), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable

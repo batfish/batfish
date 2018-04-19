@@ -1,6 +1,8 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
@@ -13,23 +15,36 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
+import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
+import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasValue;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,14 +58,22 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
@@ -94,6 +117,20 @@ public class FlatJuniperGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress) {
+    return createFlow(sourceAddress, destinationAddress, State.NEW);
+  }
+
+  private static Flow createFlow(String sourceAddress, String destinationAddress, State state) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setSrcIp(new Ip(sourceAddress));
+    fb.setDstIp(new Ip(destinationAddress));
+    fb.setState(state);
+    fb.setTag("test");
+    return fb.build();
+  }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -382,6 +419,319 @@ public class FlatJuniperGrammarTest {
         byType.get(JuniperStructureType.FIREWALL_FILTER.getDescription());
     assertThat(byName, hasKey("esfilter2"));
     assertThat(byName, not(hasKey("esfilter")));
+  }
+
+  @Test
+  public void testFirewallGlobalPolicy() throws IOException {
+    Configuration c = parseConfig("firewall-global-policy");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /*
+     * Should have six ACLs:
+     *  Explicitly defined in the config file:
+     *    One from the global security policy
+     *  Generated by logic in toVendorIndependent
+     *    Two combined outgoing filters for the two interfaces (combines security policies with
+     *        egress ACLs)
+     *    One permitting existing connections (default firewall behavior)
+     *    Two defining security policies for each interface (combines explicit security policy with
+     *        implicit security policies like allow existing connection)
+     */
+    assertThat(
+        c.getIpAccessLists().keySet(),
+        containsInAnyOrder(
+            ACL_NAME_GLOBAL_POLICY,
+            aclTrustOut.getName(),
+            aclUntrustOut.getName(),
+            ACL_NAME_EXISTING_CONNECTION,
+            ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
+            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
+
+    IpAccessListLine aclGlobalPolicyLine =
+        Iterables.getOnlyElement(c.getIpAccessLists().get(ACL_NAME_GLOBAL_POLICY).getLines());
+
+    /* Global policy should permit all traffic as defined in the config */
+    assertThat(
+        aclGlobalPolicyLine,
+        hasMatchCondition(equalTo(new MatchHeaderSpace(HeaderSpace.builder().build()))));
+    assertThat(aclGlobalPolicyLine, hasAction(equalTo(LineAction.ACCEPT)));
+
+    List<IpAccessListLine> aclTrustSPLines =
+        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
+    List<IpAccessListLine> aclUntrustSPLines =
+        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
+
+    /* Security policy ACLs should have two lines, one for specific policies and one for default */
+    assertThat(aclTrustSPLines, iterableWithSize(3));
+    assertThat(aclUntrustSPLines, iterableWithSize(3));
+
+    /* First line should be specific security policy (existing connection in this case) */
+    assertThat(
+        aclTrustSPLines.get(0),
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
+    assertThat(
+        aclUntrustSPLines.get(0),
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
+
+    /* Second line should be global policy */
+    assertThat(
+        aclTrustSPLines.get(1),
+        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
+    assertThat(
+        aclUntrustSPLines.get(1),
+        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
+
+    /* Third line should be default policy (reject all traffic) */
+    assertThat(aclTrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
+    assertThat(aclTrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
+    assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
+    assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
+
+    /* Simple flows should be permitted */
+    assertThat(
+        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+  }
+
+  @Test
+  public void testFirewallNoPolicies() throws IOException {
+    Configuration c = parseConfig("firewall-no-policies");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /*
+     * Should have five ACLs generated by logic in toVendorIndependent:
+     *    Two combined outgoing filters for the two interfaces (combines security policies with
+     *        egress ACLs)
+     *    One permitting existing connections (default firewall behavior)
+     *    Two defining security policies for each interface (combines explicit security policy with
+     *        implicit security policies like allow existing connection)
+     */
+    assertThat(
+        c.getIpAccessLists().keySet(),
+        containsInAnyOrder(
+            aclTrustOut.getName(),
+            aclUntrustOut.getName(),
+            ACL_NAME_EXISTING_CONNECTION,
+            ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
+            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
+
+    List<IpAccessListLine> aclTrustSPLines =
+        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
+    List<IpAccessListLine> aclUntrustSPLines =
+        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
+
+    /*
+     * The interface security policies should have two lines each: one for the actual
+     * security policy (allow established connections here), and one for the default action
+     */
+    assertThat(aclTrustSPLines, iterableWithSize(2));
+    assertThat(aclUntrustSPLines, iterableWithSize(2));
+
+    IpAccessListLine aclTrustOutLine = Iterables.getOnlyElement(aclTrustOut.getLines());
+    IpAccessListLine aclUntrustOutLine = Iterables.getOnlyElement(aclUntrustOut.getLines());
+
+    /* Each interface's outgoing ACL line should reference its security policy */
+    assertThat(
+        aclTrustOutLine,
+        hasMatchCondition(
+            isAndMatchExprThat(
+                hasConjuncts(
+                    containsInAnyOrder(
+                        new PermittedByAcl(ACL_NAME_SECURITY_POLICY + interfaceNameTrust))))));
+    assertThat(
+        aclUntrustOutLine,
+        hasMatchCondition(
+            isAndMatchExprThat(
+                hasConjuncts(
+                    containsInAnyOrder(
+                        new PermittedByAcl(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust))))));
+
+    /*
+     * Since no policies are defined in either direction, should default to allowing only
+     * established connections
+     */
+    assertThat(
+        aclTrustSPLines.get(0),
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
+    assertThat(
+        aclUntrustSPLines.get(0),
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
+
+    /* Default line should be reject all traffic */
+    assertThat(aclTrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
+    assertThat(aclTrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
+    assertThat(aclUntrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
+    assertThat(aclUntrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
+
+    /* Simple flow in either direction should be blocked */
+    assertThat(
+        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+  }
+
+  @Test
+  public void testFirewallPolicies() throws IOException {
+    Configuration c = parseConfig("firewall-policies");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String securityPolicyName = "~FROM_ZONE~trust~TO_ZONE~untrust";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+    Flow trustToUntrustReturnFlow = createFlow(trustedIpAddr, untrustedIpAddr, State.ESTABLISHED);
+    Flow untrustToTrustReturnFlow = createFlow(untrustedIpAddr, trustedIpAddr, State.ESTABLISHED);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /*
+     * Should have six ACLs:
+     *  Explicitly defined in the config file:
+     *    One from the security policy from trust to untrust
+     *  Generated by logic in toVendorIndependent
+     *    Two combined outgoing filters for the two interfaces (combines security policies with
+     *        egress ACLs)
+     *    One permitting existing connections (default firewall behavior)
+     *    Two defining security policies for each interface (combines explicit security policy with
+     *        implicit security policies like allow existing connection)
+     */
+    assertThat(
+        c.getIpAccessLists().keySet(),
+        containsInAnyOrder(
+            securityPolicyName,
+            aclTrustOut.getName(),
+            aclUntrustOut.getName(),
+            ACL_NAME_EXISTING_CONNECTION,
+            ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
+            ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
+
+    List<IpAccessListLine> aclTrustSPLines =
+        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
+    List<IpAccessListLine> aclUntrustSPLines =
+        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
+
+    /* Security policy ACLs should have two lines, one for specific policies and one for default */
+    assertThat(aclTrustSPLines, iterableWithSize(2));
+    assertThat(aclUntrustSPLines, iterableWithSize(2));
+
+    /* Extract the lines for content testing */
+    IpAccessListLine aclTrustSecurityPolicyLine = aclTrustSPLines.get(0);
+    IpAccessListLine aclUntrustSecurityPolicyLine = aclUntrustSPLines.get(0);
+    IpAccessListLine aclSecurityPolicyLine =
+        Iterables.getOnlyElement(c.getIpAccessLists().get(securityPolicyName).getLines());
+
+    /* Security policy for traffic to trust zone should just allow existing connections */
+    assertThat(
+        aclTrustSecurityPolicyLine,
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
+
+    /*
+     * Security policy for traffic to untrust zone should allow existing connections OR matching
+     * the security policy
+     */
+    assertThat(
+        aclUntrustSecurityPolicyLine,
+        hasMatchCondition(
+            isOrMatchExprThat(
+                hasDisjuncts(
+                    containsInAnyOrder(
+                        new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION),
+                        new PermittedByAcl(securityPolicyName))))));
+
+    /* Confirm the security policy acl contains logical AND of srcInterface and headerSpace match */
+    assertThat(
+        aclSecurityPolicyLine,
+        hasMatchCondition(
+            isAndMatchExprThat(
+                hasConjuncts(
+                    containsInAnyOrder(
+                        new MatchSrcInterface(ImmutableList.of(interfaceNameTrust)),
+                        new MatchHeaderSpace(HeaderSpace.builder().build()))))));
+
+    /* Simple flow from trust to untrust should be permitted */
+    assertThat(
+        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+
+    /* Simple flow from untrust to trust should be blocked */
+    assertThat(
+        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+
+    /* Return flow in either direction should be permitted */
+    assertThat(
+        aclUntrustOut, accepts(trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, accepts(untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists()));
+  }
+
+  @Test
+  public void testFirewallZones() throws IOException {
+    Configuration c = parseConfig("firewall-no-policies");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String zoneTrust = "trust";
+    String zoneUntrust = "untrust";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    // Should have two zones
+    assertThat(c.getZones().keySet(), containsInAnyOrder(zoneTrust, zoneUntrust));
+
+    // Should have two interfaces
+    assertThat(
+        c.getInterfaces().keySet(), containsInAnyOrder(interfaceNameTrust, interfaceNameUntrust));
+
+    // Confirm the interfaces are associated with their zones
+    assertThat(c.getInterfaces().get(interfaceNameTrust), hasZoneName(equalTo(zoneTrust)));
+    assertThat(c.getInterfaces().get(interfaceNameUntrust), hasZoneName(equalTo(zoneUntrust)));
+
+    /* Simple flows should be blocked */
+    assertThat(
+        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+    assertThat(
+        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
   }
 
   @Test

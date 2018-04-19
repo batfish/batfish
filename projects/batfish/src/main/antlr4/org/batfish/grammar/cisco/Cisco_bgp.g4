@@ -463,6 +463,7 @@ vrf_block_rb_stanza
    (
       address_family_rb_stanza
       | always_compare_med_rb_stanza
+      | as_path_multipath_relax_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
       | neighbor_flat_rb_stanza
@@ -771,7 +772,7 @@ redistribute_eigrp_bgp_tail
 
 redistribute_ospf_bgp_tail
 :
-   REDISTRIBUTE OSPF procnum = DEC
+   REDISTRIBUTE OSPF (procnum = DEC)?
    (
       (
          ROUTE_MAP map = variable
@@ -793,7 +794,7 @@ redistribute_ospf_bgp_tail
 
 redistribute_ospfv3_bgp_tail
 :
-   REDISTRIBUTE OSPFV3 procnum = DEC
+   REDISTRIBUTE (OSPFV3 | OSPF3) (procnum = DEC)?
    (
       (
          ROUTE_MAP map = variable

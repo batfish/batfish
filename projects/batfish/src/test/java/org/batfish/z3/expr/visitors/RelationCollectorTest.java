@@ -13,8 +13,6 @@ import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
-import org.batfish.z3.expr.TransformationRuleStatement;
-import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.StateParameter;
 import org.batfish.z3.state.StateParameter.Type;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
@@ -114,23 +112,5 @@ public class RelationCollectorTest {
     Set<String> expectedRelations = ImmutableSet.of(getNodName(_input, p1));
 
     assertThat(collectRelations(_input, expr), equalTo(expectedRelations));
-  }
-
-  /** Test that collectRelations traverses the child of a TransformationRuleStatement. */
-  @Test
-  public void testVisitTransformationRuleStatement() {
-    StateExpr b1 = newStateExpr();
-    StateExpr b2 = newStateExpr();
-    StateExpr t1 = newStateExpr();
-    TransformationRuleStatement expr1 = new TransformationRuleStatement(t1);
-    Set<String> expectedRelations1 = ImmutableSet.of(getNodName(_input, t1));
-    TransformationRuleStatement expr2 =
-        new TransformationRuleStatement(
-            TrueExpr.INSTANCE, ImmutableSet.of(b1), ImmutableSet.of(b2), t1);
-    Set<String> expectedRelations2 =
-        ImmutableSet.of(getNodName(_input, b1), getNodName(_input, b2), getNodName(_input, t1));
-
-    assertThat(collectRelations(_input, expr1), equalTo(expectedRelations1));
-    assertThat(collectRelations(_input, expr2), equalTo(expectedRelations2));
   }
 }

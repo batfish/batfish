@@ -52,7 +52,9 @@ import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -335,6 +337,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, NatPool> _natPools;
 
+  private final Map<String, NetworkObjectGroup> _networkObjectGroups;
+
   private final Set<String> _ntpAccessGroups;
 
   private String _ntpSourceInterface;
@@ -426,6 +430,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _managementAccessGroups = new TreeSet<>();
     _msdpPeerSaLists = new TreeSet<>();
     _natPools = new TreeMap<>();
+    _networkObjectGroups = new TreeMap<>();
     _ntpAccessGroups = new TreeSet<>();
     _pimAcls = new TreeSet<>();
     _pimRouteMaps = new TreeSet<>();
@@ -1781,7 +1786,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       }
       if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
-        peerExportPolicy.getStatements().add(new SetNextHop(new SelfNextHop(), false));
+        peerExportPolicy.getStatements().add(new SetNextHop(SelfNextHop.getInstance(), false));
       }
       if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
         peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());
@@ -2396,6 +2401,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .build());
     }
     return new IpAccessList(name, lines);
+  }
+
+  private IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
+    return IpWildcardSetIpSpace.builder().including(networkObjectGroup.getLines()).build();
   }
 
   private org.batfish.datamodel.IsisProcess toIsisProcess(
@@ -3607,6 +3616,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
+    // convert each NetworkObjectGroup to IpSpace
+    _networkObjectGroups.forEach(
+        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
+
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
@@ -3858,6 +3871,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
     warnUnusedStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
     warnUnusedStructure(_natPools, CiscoStructureType.NAT_POOL);
+    warnUnusedStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
     warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
     warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
     warnUnusedPeerGroups();
@@ -4088,5 +4102,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_cf.getCable() != null) {
       warnUnusedStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
     }
+  }
+
+  public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
+    return _networkObjectGroups;
   }
 }

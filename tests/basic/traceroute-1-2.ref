@@ -57,6 +57,7 @@
                     "node2" : "as2border1",
                     "node2interface" : "GigabitEthernet0/0"
                   },
+                  "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
                   "routes" : [
                     "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
                   ]
@@ -130,6 +131,7 @@
                     "node2" : "as2border1",
                     "node2interface" : "GigabitEthernet0/0"
                   },
+                  "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
                   "routes" : [
                     "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
                   ]
@@ -203,6 +205,7 @@
                     "node2" : "as2border1",
                     "node2interface" : "GigabitEthernet0/0"
                   },
+                  "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
                   "routes" : [
                     "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
                   ]
@@ -276,6 +279,7 @@
                     "node2" : "as2border1",
                     "node2interface" : "GigabitEthernet0/0"
                   },
+                  "filterIn" : "{OUTSIDE_TO_INSIDE}{permit ip any any}",
                   "routes" : [
                     "BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2"
                   ]

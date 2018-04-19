@@ -110,6 +110,7 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
@@ -717,6 +718,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<String, Map<String, List<AclLine>>> e : arrangedAclLines.entrySet()) {
       String hostname = e.getKey();
       Configuration c = configurations.get(hostname);
+      List<String> nodeInterfaces =
+          ImmutableList.sortedCopyOf(
+              c.getInterfaces()
+                  .values()
+                  .stream()
+                  .map(Interface::getName)
+                  .collect(Collectors.toList()));
       Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
@@ -736,7 +744,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               }
             }
             EarliestMoreGeneralReachableLineQuerySynthesizer query =
-                new EarliestMoreGeneralReachableLineQuerySynthesizer(line, toCheck, ipAccessList);
+                new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                    line, toCheck, ipAccessList, c.getIpAccessLists(), nodeInterfaces);
             NodFirstUnsatJob<AclLine, Integer> job =
                 new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
             step2Jobs.add(job);
@@ -1214,6 +1223,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void disableUnusableVlanInterfaces(Map<String, Configuration> configurations) {
     for (Configuration c : configurations.values()) {
+      String hostname = c.getHostname();
+
       Map<Integer, Interface> vlanInterfaces = new HashMap<>();
       Map<Integer, Integer> vlanMemberCounts = new HashMap<>();
       Set<Interface> nonVlanInterfaces = new HashSet<>();
@@ -1232,12 +1243,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // Update vlanMemberCounts:
       for (Interface iface : nonVlanInterfaces) {
         List<SubRange> vlans = new ArrayList<>();
-        vlanNumber = iface.getAccessVlan();
-        if (vlanNumber == 0) { // vlan trunked interface
-          vlans.addAll(iface.getAllowedVlans());
+        if (iface.getSwitchportMode() == SwitchportMode.TRUNK) { // vlan trunked interface
+          Collection<SubRange> allowed = iface.getAllowedVlans();
+          if (!allowed.isEmpty()) {
+            // Explicit list of allowed VLANs
+            vlans.addAll(allowed);
+          } else {
+            // No explicit list, so all VLANs are allowed.
+            vlanInterfaces.keySet().forEach(v -> vlans.add(new SubRange(v, v)));
+          }
+          // Add the native VLAN as well.
           vlanNumber = iface.getNativeVlan();
+          vlans.add(new SubRange(vlanNumber, vlanNumber));
+        } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
+          vlanNumber = iface.getAccessVlan();
+          vlans.add(new SubRange(vlanNumber, vlanNumber));
+        } else {
+          _logger.warnf(
+              "WARNING: Unsupported switchport mode %s, assuming no VLANs allowed: \"%s:%s\"\n",
+              iface.getSwitchportMode(), hostname, iface.getName());
         }
-        vlans.add(new SubRange(vlanNumber, vlanNumber));
 
         for (SubRange sr : vlans) {
           for (int vlanId = sr.getStart(); vlanId <= sr.getEnd(); ++vlanId) {
@@ -1246,7 +1271,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
       }
       // Disable all "normal" vlan interfaces with zero member counts:
-      String hostname = c.getHostname();
       SubRange normalVlanRange = c.getNormalVlanRange();
       for (Map.Entry<Integer, Integer> entry : vlanMemberCounts.entrySet()) {
         if (entry.getValue() == 0) {
@@ -2093,7 +2117,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       if (!compressedDataPlaneDependenciesExist(_testrigSettings)) {
-        computeCompressedDataPlane();
+        // computeCompressedDataPlane();
       }
     }
   }
@@ -2911,10 +2935,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3060,8 +3084,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows) {
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+  public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), ignoreAcls);
   }
 
   /**
@@ -3391,10 +3415,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4107,7 +4131,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(flows, loadDataPlane());
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
 
     AnswerElement answerElement = getHistory();
     return answerElement;

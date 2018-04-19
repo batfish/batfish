@@ -38,4 +38,9 @@ management telnet
 Pagination disabled.
 switchport default mode routed
 !
+management cvx
+ no shutdown
+ server host 1.2.3.4
+ shutdown
+!
 

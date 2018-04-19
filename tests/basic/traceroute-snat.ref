@@ -68,6 +68,7 @@
                     "node2" : "(none)",
                     "node2interface" : "null_interface"
                   },
+                  "filterOut" : "{acl-us-to-atlantis}{20 permit ip host 10.10.10.10 any}",
                   "routes" : [
                     "BgpRoute<1.0.0.0/8,nhip:10.0.0.0,nhint:dynamic>_fnhip:10.0.0.0"
                   ],

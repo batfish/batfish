@@ -17,8 +17,7 @@ import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.z3.BasicHeaderField;
-import org.batfish.z3.HeaderField;
+import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 
@@ -31,18 +30,16 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .map(
                 dscp ->
                     new EqExpr(
-                        new VarIntExpr(BasicHeaderField.DSCP),
-                        new LitIntExpr(dscp, BasicHeaderField.DSCP.getSize())))
+                        new VarIntExpr(Field.DSCP), new LitIntExpr(dscp, Field.DSCP.getSize())))
             .collect(ImmutableList.toImmutableList()));
   }
 
   public static BooleanExpr matchDstIp(Set<IpWildcard> dstIpWildcards) {
-    return matchIp(dstIpWildcards, BasicHeaderField.DST_IP);
+    return matchIp(dstIpWildcards, Field.DST_IP);
   }
 
   public static BooleanExpr matchDstPort(Set<SubRange> dstPortRanges) {
-    return RangeMatchExpr.fromSubRanges(
-        BasicHeaderField.DST_PORT, BasicHeaderField.DST_PORT.getSize(), dstPortRanges);
+    return RangeMatchExpr.fromSubRanges(Field.DST_PORT, Field.DST_PORT.getSize(), dstPortRanges);
   }
 
   public static BooleanExpr matchDstProtocol(Set<Protocol> dstProtocols) {
@@ -56,26 +53,21 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .map(
                 dscp ->
                     new EqExpr(
-                        new VarIntExpr(BasicHeaderField.ECN),
-                        new LitIntExpr(dscp, BasicHeaderField.ECN.getSize())))
+                        new VarIntExpr(Field.ECN), new LitIntExpr(dscp, Field.ECN.getSize())))
             .collect(ImmutableList.toImmutableList()));
   }
 
   public static BooleanExpr matchFragmentOffset(Set<SubRange> fragmentOffsetRanges) {
     return RangeMatchExpr.fromSubRanges(
-        BasicHeaderField.FRAGMENT_OFFSET,
-        BasicHeaderField.FRAGMENT_OFFSET.getSize(),
-        fragmentOffsetRanges);
+        Field.FRAGMENT_OFFSET, Field.FRAGMENT_OFFSET.getSize(), fragmentOffsetRanges);
   }
 
   public static BooleanExpr matchIcmpCode(Set<SubRange> icmpCodes) {
-    return RangeMatchExpr.fromSubRanges(
-        BasicHeaderField.ICMP_CODE, BasicHeaderField.ICMP_CODE.getSize(), icmpCodes);
+    return RangeMatchExpr.fromSubRanges(Field.ICMP_CODE, Field.ICMP_CODE.getSize(), icmpCodes);
   }
 
   public static BooleanExpr matchIcmpType(Set<SubRange> icmpTypes) {
-    return RangeMatchExpr.fromSubRanges(
-        BasicHeaderField.ICMP_TYPE, BasicHeaderField.ICMP_TYPE.getSize(), icmpTypes);
+    return RangeMatchExpr.fromSubRanges(Field.ICMP_TYPE, Field.ICMP_TYPE.getSize(), icmpTypes);
   }
 
   public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, boolean useSrc, boolean useDst) {
@@ -90,25 +82,25 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     }
   }
 
-  public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, HeaderField ipHeaderField) {
+  public static BooleanExpr matchIp(Set<IpWildcard> ipWildcards, Field ipField) {
     return new OrExpr(
         ipWildcards
             .stream()
             .map(
                 ipWildcard ->
                     ipWildcard.isPrefix()
-                        ? matchIpPrefix(ipWildcard.toPrefix(), ipHeaderField)
-                        : matchIpWildcard(ipWildcard, ipHeaderField))
+                        ? matchIpPrefix(ipWildcard.toPrefix(), ipField)
+                        : matchIpWildcard(ipWildcard, ipField))
             .collect(Collectors.toList()));
   }
 
-  public static BooleanExpr matchIpPrefix(Prefix prefix, HeaderField ipHeaderField) {
+  public static BooleanExpr matchIpPrefix(Prefix prefix, Field ipField) {
     long ip = prefix.getStartIp().asLong();
     int ipWildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
     int ipStart = ipWildcardBits;
     int ipEnd = Prefix.MAX_PREFIX_LENGTH - 1;
     if (ipStart < Prefix.MAX_PREFIX_LENGTH) {
-      IntExpr extractIp = ExtractExpr.newExtractExpr(ipHeaderField, ipStart, ipEnd);
+      IntExpr extractIp = ExtractExpr.newExtractExpr(ipField, ipStart, ipEnd);
       LitIntExpr ipMatchLit = new LitIntExpr(ip, ipStart, ipEnd);
       return new EqExpr(extractIp, ipMatchLit);
     } else {
@@ -116,7 +108,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     }
   }
 
-  public static BooleanExpr matchIpWildcard(IpWildcard ipWildcard, HeaderField ipHeaderField) {
+  public static BooleanExpr matchIpWildcard(IpWildcard ipWildcard, Field ipField) {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcard().asLong();
     ImmutableList.Builder<BooleanExpr> matchIp = ImmutableList.builder();
@@ -125,8 +117,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
       long currentWildcardBit = mask & wildcard;
       boolean useBit = currentWildcardBit == 0;
       if (useBit) {
-        IntExpr extractIp =
-            ExtractExpr.newExtractExpr(ipHeaderField, currentBitIndex, currentBitIndex);
+        IntExpr extractIp = ExtractExpr.newExtractExpr(ipField, currentBitIndex, currentBitIndex);
         LitIntExpr srcIpMatchLit = new LitIntExpr(ip, currentBitIndex, currentBitIndex);
         EqExpr matchIpBit = new EqExpr(extractIp, srcIpMatchLit);
         matchIp.add(matchIpBit);
@@ -143,18 +134,18 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .map(
                 num ->
                     new EqExpr(
-                        new VarIntExpr(BasicHeaderField.IP_PROTOCOL),
-                        new LitIntExpr(num, BasicHeaderField.IP_PROTOCOL.getSize())))
+                        new VarIntExpr(Field.IP_PROTOCOL),
+                        new LitIntExpr(num, Field.IP_PROTOCOL.getSize())))
             .collect(ImmutableList.toImmutableList()));
   }
 
   public static BooleanExpr matchOrigSrcIp(Set<IpWildcard> ipWildcards) {
-    return matchIp(ipWildcards, BasicHeaderField.ORIG_SRC_IP);
+    return matchIp(ipWildcards, Field.ORIG_SRC_IP);
   }
 
   public static BooleanExpr matchPacketLength(Set<SubRange> packetLengths) {
     return RangeMatchExpr.fromSubRanges(
-        BasicHeaderField.PACKET_LENGTH, BasicHeaderField.PACKET_LENGTH.getSize(), packetLengths);
+        Field.PACKET_LENGTH, Field.PACKET_LENGTH.getSize(), packetLengths);
   }
 
   public static BooleanExpr matchProtocol(Set<Protocol> protocols, boolean useSrc, boolean useDst) {
@@ -166,19 +157,18 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
                     protocol -> {
                       int protocolNumber = protocol.getIpProtocol().number();
                       Integer port = protocol.getPort();
-                      VarIntExpr protocolVar = new VarIntExpr(BasicHeaderField.IP_PROTOCOL);
+                      VarIntExpr protocolVar = new VarIntExpr(Field.IP_PROTOCOL);
                       LitIntExpr protocolLit =
-                          new LitIntExpr(protocolNumber, BasicHeaderField.IP_PROTOCOL.getSize());
+                          new LitIntExpr(protocolNumber, Field.IP_PROTOCOL.getSize());
                       EqExpr matchProtocol = new EqExpr(protocolVar, protocolLit);
                       ImmutableList.Builder<BooleanExpr> matchProtocolAndPort =
                           ImmutableList.builder();
                       matchProtocolAndPort.add(matchProtocol);
                       if (port != null) {
 
-                        VarIntExpr dstPortVar = new VarIntExpr(BasicHeaderField.DST_PORT);
-                        VarIntExpr srcPortVar = new VarIntExpr(BasicHeaderField.SRC_PORT);
-                        LitIntExpr portLit =
-                            new LitIntExpr(port, BasicHeaderField.SRC_PORT.getSize());
+                        VarIntExpr dstPortVar = new VarIntExpr(Field.DST_PORT);
+                        VarIntExpr srcPortVar = new VarIntExpr(Field.SRC_PORT);
+                        LitIntExpr portLit = new LitIntExpr(port, Field.SRC_PORT.getSize());
                         EqExpr matchDstPort = new EqExpr(dstPortVar, portLit);
                         EqExpr matchSrcPort = new EqExpr(srcPortVar, portLit);
                         BooleanExpr matchSpecifiedPorts;
@@ -203,14 +193,14 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchSrcIp(Set<IpWildcard> srcIpWildcards) {
-    return matchIp(srcIpWildcards, BasicHeaderField.SRC_IP);
+    return matchIp(srcIpWildcards, Field.SRC_IP);
   }
 
   public static BooleanExpr matchSrcOrDstIp(Set<IpWildcard> srcOrDstIppWildcards) {
     return new OrExpr(
         ImmutableList.of(
-            matchIp(srcOrDstIppWildcards, BasicHeaderField.SRC_IP),
-            matchIp(srcOrDstIppWildcards, BasicHeaderField.DST_IP)));
+            matchIp(srcOrDstIppWildcards, Field.SRC_IP),
+            matchIp(srcOrDstIppWildcards, Field.DST_IP)));
   }
 
   public static BooleanExpr matchSrcOrDstPort(Set<SubRange> srcOrDstPorts) {
@@ -222,8 +212,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchSrcPort(Set<SubRange> srcPortRanges) {
-    return RangeMatchExpr.fromSubRanges(
-        BasicHeaderField.SRC_PORT, BasicHeaderField.SRC_PORT.getSize(), srcPortRanges);
+    return RangeMatchExpr.fromSubRanges(Field.SRC_PORT, Field.SRC_PORT.getSize(), srcPortRanges);
   }
 
   public static BooleanExpr matchSrcProtocol(Set<Protocol> srcProtocols) {
@@ -237,8 +226,8 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
             .map(
                 state ->
                     new EqExpr(
-                        new VarIntExpr(BasicHeaderField.STATE),
-                        new LitIntExpr(state.number(), BasicHeaderField.STATE.getSize())))
+                        new VarIntExpr(Field.STATE),
+                        new LitIntExpr(state.number(), Field.STATE.getSize())))
             .collect(ImmutableList.toImmutableList()));
   }
 
@@ -253,50 +242,42 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
                   ImmutableList.Builder<BooleanExpr> matchCurrentTcpFlags = ImmutableList.builder();
                   if (currentTcpFlags.getUseCwr()) {
                     LitIntExpr bit = currentTcpFlags.getCwr() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_CWR), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_CWR), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseEce()) {
                     LitIntExpr bit = currentTcpFlags.getEce() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_ECE), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_ECE), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseUrg()) {
                     LitIntExpr bit = currentTcpFlags.getUrg() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_URG), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_URG), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseAck()) {
                     LitIntExpr bit = currentTcpFlags.getAck() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_ACK), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_ACK), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUsePsh()) {
                     LitIntExpr bit = currentTcpFlags.getPsh() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_PSH), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_PSH), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseRst()) {
                     LitIntExpr bit = currentTcpFlags.getRst() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_RST), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_RST), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseSyn()) {
                     LitIntExpr bit = currentTcpFlags.getSyn() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_SYN), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_SYN), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   if (currentTcpFlags.getUseFin()) {
                     LitIntExpr bit = currentTcpFlags.getFin() ? one : zero;
-                    EqExpr matchFlag =
-                        new EqExpr(new VarIntExpr(BasicHeaderField.TCP_FLAGS_FIN), bit);
+                    EqExpr matchFlag = new EqExpr(new VarIntExpr(Field.TCP_FLAGS_FIN), bit);
                     matchCurrentTcpFlags.add(matchFlag);
                   }
                   return new AndExpr(matchCurrentTcpFlags.build());
@@ -411,8 +392,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   public static BooleanExpr matchOrigSrcOrDstIp(Set<IpWildcard> ipWildcards) {
     return new OrExpr(
         ImmutableList.of(
-            matchIp(ipWildcards, BasicHeaderField.ORIG_SRC_IP),
-            matchIp(ipWildcards, BasicHeaderField.DST_IP)));
+            matchIp(ipWildcards, Field.ORIG_SRC_IP), matchIp(ipWildcards, Field.DST_IP)));
   }
 
   @Override
