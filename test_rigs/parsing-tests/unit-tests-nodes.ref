@@ -5910,7 +5910,7 @@
           "Vlan1005" : {
             "name" : "Vlan1005",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -5964,7 +5964,7 @@
           "Vlan111" : {
             "name" : "Vlan111",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
@@ -6018,7 +6018,7 @@
           "Vlan2" : {
             "name" : "Vlan2",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "declaredNames" : [
