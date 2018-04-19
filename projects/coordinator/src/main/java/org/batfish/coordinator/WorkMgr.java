@@ -1540,7 +1540,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path originalDir =
         containerDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(testrigName + "_" + Instant.now().toString().replaceAll(":","-"));
+            .resolve(testrigName + "_" + Instant.now().toString().replaceAll(":", "-"));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
