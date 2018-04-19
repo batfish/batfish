@@ -1632,38 +1632,6 @@ class EncoderSlice {
   }
 
   /*
-   * Convert a set of wildcards and a packet field to a symbolic boolean expression
-   */
-  private BoolExpr computeWildcardMatch(Set<IpWildcard> wcs, BitVecExpr field) {
-    BoolExpr acc = mkFalse();
-    for (IpWildcard wc : wcs) {
-      ipWildCardBound(field, wc);
-      acc = mkOr(acc, ipWildCardBound(field, wc));
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
-   * Convert a set of ranges and a packet field to a symbolic boolean expression
-   */
-  private BoolExpr computeValidRange(Set<SubRange> ranges, ArithExpr field) {
-    BoolExpr acc = mkFalse();
-    for (SubRange range : ranges) {
-      int start = range.getStart();
-      int end = range.getEnd();
-      if (start == end) {
-        BoolExpr val = mkEq(field, mkInt(start));
-        acc = mkOr(acc, val);
-      } else {
-        BoolExpr val1 = mkGe(field, mkInt(start));
-        BoolExpr val2 = mkLe(field, mkInt(end));
-        acc = mkOr(acc, mkAnd(val1, val2));
-      }
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
    * Convert a Tcp flag to a boolean expression on the symbolic packet
    */
   private BoolExpr computeTcpFlags(TcpFlags flags) {
@@ -1691,29 +1659,6 @@ class EncoderSlice {
     }
     if (flags.getUseUrg()) {
       acc = mkAnd(acc, mkEq(_symbolicPacket.getTcpUrg(), mkBool(flags.getUrg())));
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
-   * Convert Tcp flags to a boolean expression on the symbolic packet
-   */
-  private BoolExpr computeTcpFlags(List<TcpFlags> flags) {
-    BoolExpr acc = mkFalse();
-    for (TcpFlags fs : flags) {
-      acc = mkOr(acc, computeTcpFlags(fs));
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
-   * Convert a set of ip protocols to a boolean expression on the symbolic packet
-   */
-  private BoolExpr computeIpProtocols(Set<IpProtocol> ipProtos) {
-    BoolExpr acc = mkFalse();
-    for (IpProtocol proto : ipProtos) {
-      ArithExpr protoNum = mkInt(proto.number());
-      acc = mkOr(acc, mkEq(protoNum, _symbolicPacket.getIpProtocol()));
     }
     return (BoolExpr) acc.simplify();
   }

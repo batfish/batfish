@@ -41,8 +41,6 @@ public class IpSpaceSpecializerTest {
             .thenPermitting(Prefix.parse("0.0.1.6/31").toIpSpace())
             .build();
 
-    IpSpace specialized;
-
     // without simplification
     assertThat(universeSpecializer.visitAclIpSpace(ipSpace), equalTo(ipSpace));
     assertThat(emptySpecializer.visitAclIpSpace(ipSpace), equalTo(EmptyIpSpace.INSTANCE));
@@ -82,7 +80,6 @@ public class IpSpaceSpecializerTest {
     specializer =
         new IpSpaceSpecializer(
             IpWildcardSetIpSpace.builder().including(specializerWildcard).build());
-    specialized = specializer.visitAclIpSpace(ipSpace);
     assertThat(
         specializer.visitAclIpSpace(ipSpace),
         equalTo(
