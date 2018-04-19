@@ -1045,7 +1045,7 @@ public class CommonUtil {
             if (privateIpsBehindReciprocalRemoteAddress != null
                 && privateIpsBehindReciprocalRemoteAddress
                     .stream()
-                    .anyMatch(ipSpace -> ipSpace.containsIp(localIp))) {
+                    .anyMatch(ipSpace -> ipSpace.containsIp(localIp, ImmutableMap.of()))) {
               reciprocalVpns = externalIpVpnMap.get(localIp);
               ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
               ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);

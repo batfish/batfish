@@ -7,6 +7,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -108,5 +109,11 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return _factory.one();
+  }
+
+  @Override
+  public BDD visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

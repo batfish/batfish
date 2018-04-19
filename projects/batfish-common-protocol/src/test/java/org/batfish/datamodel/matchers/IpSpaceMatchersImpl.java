@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -13,9 +14,11 @@ public class IpSpaceMatchersImpl {
 
   static final class ContainsIp extends TypeSafeDiagnosingMatcher<IpSpace> {
     private final Ip _ip;
+    private final Map<String, IpSpace> _namedIpSpaces;
 
-    ContainsIp(@Nonnull Ip ip) {
+    ContainsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
       _ip = ip;
+      _namedIpSpaces = namedIpSpaces;
     }
 
     @Override
@@ -25,7 +28,7 @@ public class IpSpaceMatchersImpl {
 
     @Override
     protected boolean matchesSafely(IpSpace item, Description mismatchDescription) {
-      boolean matches = item.containsIp(_ip);
+      boolean matches = item.containsIp(_ip, _namedIpSpaces);
       if (!matches) {
         mismatchDescription.appendText(String.format("was %s", item));
       }

@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.stream.Stream;
@@ -175,10 +176,10 @@ public class AclIpSpace extends IpSpace {
     return ipSpaceVisitor.visitAclIpSpace(this);
   }
 
-  private LineAction action(Ip ip) {
+  private LineAction action(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return _lines
         .stream()
-        .filter(line -> line.getIpSpace().containsIp(ip))
+        .filter(line -> line.getIpSpace().containsIp(ip, namedIpSpaces))
         .map(AclIpSpaceLine::getAction)
         .findFirst()
         .orElse(LineAction.REJECT);
@@ -205,8 +206,8 @@ public class AclIpSpace extends IpSpace {
   }
 
   @Override
-  public boolean containsIp(@Nonnull Ip ip) {
-    return action(ip) == LineAction.ACCEPT;
+  public boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
+    return action(ip, namedIpSpaces) == LineAction.ACCEPT;
   }
 
   @Override

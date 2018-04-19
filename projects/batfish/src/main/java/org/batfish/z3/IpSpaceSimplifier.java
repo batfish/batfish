@@ -9,6 +9,7 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -170,5 +171,11 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return universeIpSpace;
+  }
+
+  @Override
+  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

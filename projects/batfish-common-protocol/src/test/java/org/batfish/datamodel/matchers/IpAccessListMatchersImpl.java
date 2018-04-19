@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.hamcrest.Description;
 import org.hamcrest.FeatureMatcher;
@@ -20,14 +21,17 @@ final class IpAccessListMatchersImpl {
     private final Map<String, IpAccessList> _availableAcls;
     private final Flow _flow;
     private final String _srcInterface;
+    private final Map<String, IpSpace> _namedIpSpaces;
 
     Accepts(
         @Nonnull Flow flow,
         @Nullable String srcInterface,
-        @Nonnull Map<String, IpAccessList> availableAcls) {
+        @Nonnull Map<String, IpAccessList> availableAcls,
+        @Nonnull Map<String, IpSpace> namedIpSpaces) {
       _flow = flow;
       _srcInterface = srcInterface;
       _availableAcls = availableAcls;
+      _namedIpSpaces = namedIpSpaces;
     }
 
     @Override
@@ -40,7 +44,8 @@ final class IpAccessListMatchersImpl {
 
     @Override
     protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
-      if (item.filter(_flow, _srcInterface, _availableAcls).getAction() != LineAction.ACCEPT) {
+      if (item.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces).getAction()
+          != LineAction.ACCEPT) {
         mismatchDescription.appendText(String.format("does not accept flow '%s'", _flow));
         if (_srcInterface != null) {
           mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));
@@ -68,14 +73,17 @@ final class IpAccessListMatchersImpl {
     private final Map<String, IpAccessList> _availableAcls;
     private final Flow _flow;
     private final String _srcInterface;
+    private final Map<String, IpSpace> _namedIpSpaces;
 
     Rejects(
         @Nonnull Flow flow,
         @Nullable String srcInterface,
-        @Nonnull Map<String, IpAccessList> availableAcls) {
+        @Nonnull Map<String, IpAccessList> availableAcls,
+        @Nonnull Map<String, IpSpace> namedIpSpaces) {
       _flow = flow;
       _srcInterface = srcInterface;
       _availableAcls = availableAcls;
+      _namedIpSpaces = namedIpSpaces;
     }
 
     @Override
@@ -88,7 +96,8 @@ final class IpAccessListMatchersImpl {
 
     @Override
     protected boolean matchesSafely(IpAccessList item, Description mismatchDescription) {
-      if (item.filter(_flow, _srcInterface, _availableAcls).getAction() != LineAction.REJECT) {
+      if (item.filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces).getAction()
+          != LineAction.REJECT) {
         mismatchDescription.appendText(String.format("does not reject flow '%s'", _flow));
         if (_srcInterface != null) {
           mismatchDescription.appendText(String.format("at source interface: %s", _srcInterface));

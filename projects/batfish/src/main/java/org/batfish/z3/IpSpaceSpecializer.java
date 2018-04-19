@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -91,7 +93,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   private IpSpace specialize(Ip ip) {
-    if (_ipSpace.containsIp(ip)) {
+    if (_ipSpace.containsIp(ip, ImmutableMap.of())) {
       return ip.toIpSpace();
     } else {
       return EmptyIpSpace.INSTANCE;
@@ -209,5 +211,11 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return universeIpSpace;
+  }
+
+  @Override
+  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

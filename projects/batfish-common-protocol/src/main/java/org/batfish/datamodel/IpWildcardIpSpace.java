@@ -3,14 +3,15 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import java.util.Map;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpWildcardIpSpace extends IpSpace {
 
+  private static final String PROP_IP_WILDCARD = "ipWildcard";
+
   /** */
   private static final long serialVersionUID = 1L;
-
-  private static final String PROP_IP_WILDCARD = "ipWildcard";
 
   private final IpWildcard _ipWildcard;
 
@@ -38,7 +39,7 @@ public class IpWildcardIpSpace extends IpSpace {
   }
 
   @Override
-  public boolean containsIp(Ip ip) {
+  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return _ipWildcard.containsIp(ip);
   }
 

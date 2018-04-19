@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -13,7 +14,7 @@ public abstract class IpSpace implements Comparable<IpSpace>, Serializable {
 
   public abstract <R> R accept(GenericIpSpaceVisitor<R> visitor);
 
-  public abstract boolean containsIp(@Nonnull Ip ip);
+  public abstract boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces);
 
   public abstract IpSpace complement();
 

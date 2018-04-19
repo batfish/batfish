@@ -626,7 +626,7 @@ import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectGroup;
-import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecificier;
+import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
@@ -3112,7 +3112,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       todo(ctx, F_ACL_OBJECT);
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.og != null) {
-      return new NetworkObjectGroupAddressSpecificier(ctx.og.getText());
+      return new NetworkObjectGroupAddressSpecifier(ctx.og.getText());
     } else {
       throw convError(ExtendedAccessListAddressSpecifier.class, ctx);
     }

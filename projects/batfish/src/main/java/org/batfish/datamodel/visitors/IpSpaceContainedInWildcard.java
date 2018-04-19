@@ -3,6 +3,7 @@ package org.batfish.datamodel.visitors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -40,6 +41,12 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
   @Override
   public Boolean visitIpIpSpace(IpIpSpace ipIpSpace) {
     return _ipWildcard.containsIp(ipIpSpace.getIp());
+  }
+
+  @Override
+  public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override

@@ -1,3 +1,8 @@
 package org.batfish.representation.cisco;
 
-public interface ExtendedAccessListServiceSpecifier {}
+import org.batfish.datamodel.HeaderSpace;
+
+public interface ExtendedAccessListServiceSpecifier {
+
+  HeaderSpace.Builder toHeaderSpace();
+}

@@ -5,6 +5,7 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -84,5 +85,11 @@ public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolea
   @Override
   public Boolean visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return true;
+  }
+
+  @Override
+  public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

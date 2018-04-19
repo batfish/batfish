@@ -7,6 +7,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -92,5 +93,11 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
   @Override
   public BoolExpr visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return _encoder.mkTrue();
+  }
+
+  @Override
+  public BoolExpr visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

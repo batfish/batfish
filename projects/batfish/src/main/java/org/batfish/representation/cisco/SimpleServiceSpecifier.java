@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 
@@ -89,5 +90,15 @@ public class SimpleServiceSpecifier implements ExtendedAccessListServiceSpecifie
 
   public IpWildcard getSrcIpWildcard() {
     return _srcIpWildcard;
+  }
+
+  @Override
+  public HeaderSpace.Builder toHeaderSpace() {
+    return HeaderSpace.builder()
+        .setDscps(_dscps)
+        .setDstIps(_dstIpWildcard.toIpSpace())
+        .setEcns(_ecns)
+        .setIpProtocols(ImmutableSet.of(_protocol))
+        .setSrcIps(_srcIpWildcard.toIpSpace());
   }
 }
