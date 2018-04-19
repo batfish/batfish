@@ -39,7 +39,7 @@ public class IpIpSpace extends IpSpace {
 
   @Override
   public boolean containsIp(Ip ip) {
-    return _ip == ip;
+    return _ip.equals(ip);
   }
 
   @Override

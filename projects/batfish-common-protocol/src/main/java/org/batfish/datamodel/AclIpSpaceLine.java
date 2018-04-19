@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Comparator;
@@ -36,6 +38,10 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
   public static final AclIpSpaceLine PERMIT_ALL =
       AclIpSpaceLine.builder().setIpSpace(UniverseIpSpace.INSTANCE).build();
 
+  private static final String PROP_ACTION = "action";
+
+  private static final String PROP_IP_SPACE = "ipSpace";
+
   public static Builder builder() {
     return new Builder();
   }
@@ -52,9 +58,19 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
 
   private final IpSpace _ipSpace;
 
-  private AclIpSpaceLine(@Nonnull IpSpace ipSpace, @Nonnull LineAction action) {
+  @JsonCreator
+  private AclIpSpaceLine(
+      @JsonProperty(PROP_IP_SPACE) @Nonnull IpSpace ipSpace,
+      @JsonProperty(PROP_ACTION) @Nonnull LineAction action) {
     _ipSpace = ipSpace;
     _action = action;
+  }
+
+  @Override
+  public int compareTo(AclIpSpaceLine o) {
+    return Comparator.comparing(AclIpSpaceLine::getAction)
+        .thenComparing(AclIpSpaceLine::getIpSpace)
+        .compare(this, o);
   }
 
   @Override
@@ -69,10 +85,12 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
     return Objects.equals(_action, rhs._action) && Objects.equals(_ipSpace, rhs._ipSpace);
   }
 
+  @JsonProperty(PROP_ACTION)
   public LineAction getAction() {
     return _action;
   }
 
+  @JsonProperty(PROP_IP_SPACE)
   public IpSpace getIpSpace() {
     return _ipSpace;
   }
@@ -90,16 +108,9 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
   public String toString() {
     ToStringHelper helper = MoreObjects.toStringHelper(getClass());
     if (_action != LineAction.ACCEPT) {
-      helper.add("action", _action);
+      helper.add(PROP_ACTION, _action);
     }
-    helper.add("ipSpace", _ipSpace);
+    helper.add(PROP_IP_SPACE, _ipSpace);
     return helper.toString();
-  }
-
-  @Override
-  public int compareTo(AclIpSpaceLine o) {
-    return Comparator.comparing(AclIpSpaceLine::getAction)
-        .thenComparing(AclIpSpaceLine::getIpSpace)
-        .compare(this, o);
   }
 }

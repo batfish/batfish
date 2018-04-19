@@ -169,7 +169,11 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
        * is an IpWildcard.
        */
       Set<IpWildcard> ipWildcardWhitelist =
-          ipSpaceWhitelist.stream().map(IpWildcard.class::cast).collect(Collectors.toSet());
+          ipSpaceWhitelist
+              .stream()
+              .map(IpWildcardIpSpace.class::cast)
+              .map(IpWildcardIpSpace::getIpWildcard)
+              .collect(Collectors.toSet());
       return IpWildcardSetIpSpace.builder()
           .including(ipWildcardWhitelist)
           .excluding(blacklist)

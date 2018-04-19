@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
@@ -95,7 +96,7 @@ public class IpSpaceSimplifierTest {
   public void testAclIpSpace_simplifyOneAccept() {
     assertThat(
         IpSpaceSimplifier.simplify(AclIpSpace.builder().thenPermitting(IP1234.toIpSpace()).build()),
-        equalTo(IP1234));
+        equalTo(IP1234.toIpSpace()));
   }
 
   @Test
@@ -145,7 +146,7 @@ public class IpSpaceSimplifierTest {
             .including(new IpWildcard("1.2.1.0/24"), new IpWildcard("2.2.2.2"))
             .excluding(new IpWildcard("1.2.0.0/16"))
             .build();
-    IpWildcard simplifiedIpSpace = new IpWildcard("2.2.2.2");
+    IpSpace simplifiedIpSpace = new IpWildcard("2.2.2.2").toIpSpace();
     assertThat(IpSpaceSimplifier.simplify(ipSpace), equalTo(simplifiedIpSpace));
 
     // blacklisted wildcards that don't overlap whitelisted wildcards are removed
@@ -162,7 +163,7 @@ public class IpSpaceSimplifierTest {
     IpWildcard ipWildcard = new IpWildcard("1.2.3.4");
     assertThat(
         IpSpaceSimplifier.simplify(IpWildcardSetIpSpace.builder().including(ipWildcard).build()),
-        equalTo(ipWildcard));
+        equalTo(ipWildcard.toIpSpace()));
   }
 
   @Test
