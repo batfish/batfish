@@ -461,7 +461,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getNotSrcPorts, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNotSrcProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getPacketLengths, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getSrcIps, Comparator.nullsFirst(naturalOrder()))
+          .thenComparing(HeaderSpace::getSrcIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getSrcOrDstIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getSrcOrDstPorts, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getSrcOrDstProtocols, CommonUtil::compareIterable)
