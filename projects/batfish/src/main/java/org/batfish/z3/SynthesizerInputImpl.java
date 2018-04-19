@@ -597,9 +597,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                         Entry::getKey /* interface */,
                         neighborUnreachableByOutInterfaceEntry ->
                             new IpSpaceMatchExpr(
-                                _ipSpaceSpecializer.specialize(
-                                    neighborUnreachableByOutInterfaceEntry.getValue()),
-                                Field.DST_IP).getExpr())));
+                                    _ipSpaceSpecializer.specialize(
+                                        neighborUnreachableByOutInterfaceEntry.getValue()),
+                                    Field.DST_IP)
+                                .getExpr())));
   }
 
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(

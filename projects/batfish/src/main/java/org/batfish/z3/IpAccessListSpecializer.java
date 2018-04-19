@@ -25,7 +25,6 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import sun.jvm.hotspot.memory.HeapBlock.Header;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
@@ -260,6 +259,7 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
 
     return new MatchHeaderSpace(specializedHeaderSpace);
   }
+
   private static IpSpace simplifyNegativeIpConstraint(IpSpace ipSpace) {
     if (ipSpace == EmptyIpSpace.INSTANCE) {
       return null;
@@ -273,7 +273,6 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
     }
     return ipSpace;
   }
-
 
   private static boolean constraintUnionEmpty(IpSpace ipSpace1, IpSpace ipSpace2) {
     return (ipSpace1 == EmptyIpSpace.INSTANCE && ipSpace2 == null)

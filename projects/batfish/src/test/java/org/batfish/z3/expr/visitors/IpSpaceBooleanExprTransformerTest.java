@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -76,16 +75,12 @@ public class IpSpaceBooleanExprTransformerTest {
 
     BooleanExpr matchSrcExpr = ip.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     BooleanExpr eqSrcExpr =
-        new EqExpr(
-            new LitIntExpr(ip.asLong(), 32),
-            new VarIntExpr(Field.SRC_IP));
+        new EqExpr(new LitIntExpr(ip.asLong(), 32), new VarIntExpr(Field.SRC_IP));
     assertThat(matchSrcExpr, equalTo(new OrExpr(ImmutableList.of(eqSrcExpr))));
 
     BooleanExpr matchDstExpr = ip.toIpSpace().accept(DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     BooleanExpr eqDstExpr =
-        new EqExpr(
-            new LitIntExpr(ip.asLong(), 32),
-            new VarIntExpr(Field.DST_IP));
+        new EqExpr(new LitIntExpr(ip.asLong(), 32), new VarIntExpr(Field.DST_IP));
     assertThat(matchDstExpr, equalTo(new OrExpr(ImmutableList.of(eqDstExpr))));
 
     BooleanExpr matchSrcOrDstExpr =
@@ -97,9 +92,7 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitIpWildcard() {
     IpWildcard wildcard = new IpWildcard(new Ip("1.2.0.4"), new Ip(0x0000FF00L));
     BooleanExpr matchExpr = wildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
-    assertThat(
-        matchExpr,
-        equalTo(HeaderSpaceMatchExpr.matchSrcIp(wildcard.toIpSpace())));
+    assertThat(matchExpr, equalTo(HeaderSpaceMatchExpr.matchSrcIp(wildcard.toIpSpace())));
   }
 
   @Test
@@ -118,10 +111,12 @@ public class IpSpaceBooleanExprTransformerTest {
     BooleanExpr excludeExpr =
         excludeWildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
 
-    assertThat(expr, equalTo(
-        new OrExpr(
-            ImmutableList.of(
-                new AndExpr(ImmutableList.of(new NotExpr(excludeExpr), includeExpr))))));
+    assertThat(
+        expr,
+        equalTo(
+            new OrExpr(
+                ImmutableList.of(
+                    new AndExpr(ImmutableList.of(new NotExpr(excludeExpr), includeExpr))))));
   }
 
   @Test

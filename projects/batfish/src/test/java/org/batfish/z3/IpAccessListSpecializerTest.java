@@ -5,12 +5,9 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
@@ -68,9 +65,7 @@ public class IpAccessListSpecializerTest {
         specializer.specialize(ipAccessListLine),
         equalTo(
             Optional.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(TrueExpr.INSTANCE)
-                    .build())));
+                IpAccessListLine.accepting().setMatchCondition(TrueExpr.INSTANCE).build())));
 
     // specialize to a headerspace that blacklists part of the dstIp
     specializer =
@@ -88,7 +83,8 @@ public class IpAccessListSpecializerTest {
     assertThat(
         TRIVIAL_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
     assertThat(
-        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
+        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
+        equalTo(Optional.of(ipAccessListLine)));
     assertThat(
         WHITELIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
         equalTo(Optional.of(ipAccessListLine)));

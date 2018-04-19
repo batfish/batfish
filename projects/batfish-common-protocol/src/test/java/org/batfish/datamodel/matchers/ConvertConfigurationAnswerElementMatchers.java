@@ -31,7 +31,8 @@ final class ConvertConfigurationAnswerElementMatchers {
     public void describeTo(Description description) {
       description.appendText(
           String.format(
-              "A ConvertConfigurationAnswerElement for which host '%s' has an undefined reference to a structure of type '%s' named '%s'",
+              "A ConvertConfigurationAnswerElement for which host '%s' has an undefined reference "
+                  + "to a structure of type '%s' named '%s'",
               _hostname, _type, _structureName));
     }
 
@@ -92,7 +93,8 @@ final class ConvertConfigurationAnswerElementMatchers {
     public void describeTo(Description description) {
       description.appendText(
           String.format(
-              "A ConvertConfigurationAnswerElement for which host '%s' has an undefined reference to a structure of type '%s' named '%s'",
+              "A ConvertConfigurationAnswerElement for which host '%s' has an undefined reference "
+                  + "to a structure of type '%s' named '%s'",
               _hostname, _type, _structureName));
     }
 
@@ -127,7 +129,8 @@ final class ConvertConfigurationAnswerElementMatchers {
       if (!byUsage.containsKey(_usage)) {
         mismatchDescription.appendText(
             String.format(
-                "Host '%s' has no undefined references to structures of type '%s' named '%s' of usage '%s'",
+                "Host '%s' has no undefined references to structures of type '%s' named '%s' of "
+                    + "usage '%s'",
                 _hostname, _type, _structureName, _usage));
         return false;
       }
@@ -155,7 +158,8 @@ final class ConvertConfigurationAnswerElementMatchers {
     public void describeTo(Description description) {
       description.appendText(
           String.format(
-              "A ConvertConfigurationAnswerElement for which host '%s' has unused structure of type '%s' named '%s'",
+              "A ConvertConfigurationAnswerElement for which host '%s' has unused structure of "
+                  + "type '%s' named '%s'",
               _hostname, _type, _structureName));
     }
 

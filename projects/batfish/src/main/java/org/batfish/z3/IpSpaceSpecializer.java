@@ -71,7 +71,6 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
     }
   }
 
-
   @Override
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
     /* Just specialize the IpSpace of each acl line. */
@@ -110,6 +109,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   public IpSpace visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
     return specialize(ipWildcardIpSpace.getIpWildcard());
   }
+
   @Override
   public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     Set<IpSpace> blacklistIpSpace =
@@ -187,7 +187,11 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
       }
     } else {
       Set<IpWildcard> ipWildcardWhitelist =
-          ipSpaceWhitelist.stream().map(IpWildcardIpSpace.class::cast).map(IpWildcardIpSpace::getIpWildcard).collect(Collectors.toSet());
+          ipSpaceWhitelist
+              .stream()
+              .map(IpWildcardIpSpace.class::cast)
+              .map(IpWildcardIpSpace::getIpWildcard)
+              .collect(Collectors.toSet());
       return IpWildcardSetIpSpace.builder()
           .including(ipWildcardWhitelist)
           .excluding(blacklist)

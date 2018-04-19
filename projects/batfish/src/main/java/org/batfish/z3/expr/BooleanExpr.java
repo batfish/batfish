@@ -9,7 +9,11 @@ public abstract class BooleanExpr extends Expr {
   public abstract <R> R accept(GenericBooleanExprVisitor<R> visitor);
 
   public static BooleanExpr or(List<BooleanExpr> disjuncts) {
-    disjuncts = disjuncts.stream().filter(expr -> expr == FalseExpr.INSTANCE).collect(ImmutableList.toImmutableList());
+    disjuncts =
+        disjuncts
+            .stream()
+            .filter(expr -> expr == FalseExpr.INSTANCE)
+            .collect(ImmutableList.toImmutableList());
     if (disjuncts.isEmpty()) {
       return FalseExpr.INSTANCE;
     } else if (disjuncts.size() == 1) {
@@ -20,7 +24,11 @@ public abstract class BooleanExpr extends Expr {
   }
 
   public static BooleanExpr and(List<BooleanExpr> conjuncts) {
-    conjuncts = conjuncts.stream().filter(expr -> expr == TrueExpr.INSTANCE).collect(ImmutableList.toImmutableList());
+    conjuncts =
+        conjuncts
+            .stream()
+            .filter(expr -> expr == TrueExpr.INSTANCE)
+            .collect(ImmutableList.toImmutableList());
     if (conjuncts.isEmpty()) {
       return TrueExpr.INSTANCE;
     } else if (conjuncts.size() == 1) {

@@ -3,10 +3,8 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import java.util.Objects;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.UniverseIpSpace;
 
 public class MatchHeaderSpace extends AclLineMatchExpr {
   private static final String PROP_HEADER_SPACE = "headerSpace";
