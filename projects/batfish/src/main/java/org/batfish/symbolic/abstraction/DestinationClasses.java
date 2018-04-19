@@ -17,7 +17,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.Protocol;
@@ -162,7 +161,9 @@ public class DestinationClasses {
   }
 
   private void extractPrefixesFromHeaderSpace(List<Prefix> dstIps, List<Prefix> notDstIps) {
-    /* TODO: should this condition say something about _headerspace.getNotDstIps()? */
+    /* TODO this should be updated to handle arbitrary IpSpaces better.
+     * Consider whether there is a better encoding of an IpSpace than PrefixTrie.
+     */
     if (_headerspace == null || _headerspace.getDstIps() == null) {
       dstIps.add(Prefix.parse("0.0.0.0/0"));
     } else {

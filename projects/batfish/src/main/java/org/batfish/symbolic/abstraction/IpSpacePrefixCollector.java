@@ -39,24 +39,29 @@ public class IpSpacePrefixCollector implements GenericIpSpaceVisitor<Void> {
     }
   }
 
-  @Override public Void castToGenericIpSpaceVisitorReturnType(Object o) {
+  @Override
+  public Void castToGenericIpSpaceVisitorReturnType(Object o) {
     return null;
   }
 
-  @Override public Void visitAclIpSpace(AclIpSpace aclIpSpace) {
+  @Override
+  public Void visitAclIpSpace(AclIpSpace aclIpSpace) {
     throw new BatfishException("AclIpSpace is unsupported.");
   }
 
-  @Override public Void visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
+  @Override
+  public Void visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
     return null;
   }
 
-  @Override public Void visitIpIpSpace(IpIpSpace ipIpSpace) {
+  @Override
+  public Void visitIpIpSpace(IpIpSpace ipIpSpace) {
     _prefixes.add(new Prefix(ipIpSpace.getIp(), Prefix.MAX_PREFIX_LENGTH));
     return null;
   }
 
-  @Override public Void visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+  @Override
+  public Void visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
     throw new BatfishException("IpSpaceReference is unsupported.");
   }
 
@@ -66,27 +71,35 @@ public class IpSpacePrefixCollector implements GenericIpSpaceVisitor<Void> {
     }
   }
 
-  @Override public Void visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+  @Override
+  public Void visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
     IpWildcard ipWildcard = ipWildcardIpSpace.getIpWildcard();
     assertIpWildcardIsPrefix(ipWildcard);
     _prefixes.add(ipWildcard.toPrefix());
     return null;
   }
 
-  @Override public Void visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
+  @Override
+  public Void visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     ipWildcardSetIpSpace.getWhitelist().forEach(this::assertIpWildcardIsPrefix);
     ipWildcardSetIpSpace.getBlacklist().forEach(this::assertIpWildcardIsPrefix);
     ipWildcardSetIpSpace.getWhitelist().stream().map(IpWildcard::toPrefix).forEach(_prefixes::add);
-    ipWildcardSetIpSpace.getBlacklist().stream().map(IpWildcard::toPrefix).forEach(_notPrefixes::add);
+    ipWildcardSetIpSpace
+        .getBlacklist()
+        .stream()
+        .map(IpWildcard::toPrefix)
+        .forEach(_notPrefixes::add);
     return null;
   }
 
-  @Override public Void visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+  @Override
+  public Void visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
     _prefixes.add(prefixIpSpace.getPrefix());
     return null;
   }
 
-  @Override public Void visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
+  @Override
+  public Void visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     _prefixes.add(IpWildcard.ANY.toPrefix());
     return null;
   }
