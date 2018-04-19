@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -1540,7 +1542,11 @@ public class WorkMgr extends AbstractCoordinator {
     Path originalDir =
         containerDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(testrigName + "_" + Instant.now().toString().replaceAll(":", "-"));
+            .resolve(
+                testrigName
+                    + "_"
+                    + DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+                        .format(LocalDateTime.now()));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }
