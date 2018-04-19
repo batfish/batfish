@@ -1,13 +1,13 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Set;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 
 public final class FwFromDestinationAddressBookEntry extends FwFrom {
@@ -32,8 +32,13 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
       Warnings w,
       Configuration c) {
     Set<Prefix> prefixes = _localAddressBook.getPrefixes(_addressBookEntryName, w);
-    List<IpWildcard> wildcards =
-        prefixes.stream().map(IpWildcard::new).collect(ImmutableList.toImmutableList());
-    headerSpaceBuilder.setDstIps(Iterables.concat(headerSpaceBuilder.getDstIps(), wildcards));
+    List<IpSpace> wildcards =
+        prefixes.stream().map(Prefix::toIpSpace).collect(ImmutableList.toImmutableList());
+    headerSpaceBuilder.setDstIps(
+        AclIpSpace.union(
+            ImmutableList.<IpSpace>builder()
+                .add(headerSpaceBuilder.getDstIps())
+                .addAll(wildcards)
+                .build()));
   }
 }

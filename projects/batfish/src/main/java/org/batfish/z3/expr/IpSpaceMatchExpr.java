@@ -2,6 +2,7 @@ package org.batfish.z3.expr;
 
 import java.util.Objects;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.z3.Field;
 import org.batfish.z3.expr.visitors.ExprVisitor;
 import org.batfish.z3.expr.visitors.GenericBooleanExprVisitor;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
@@ -10,8 +11,8 @@ public final class IpSpaceMatchExpr extends BooleanExpr {
 
   private final BooleanExpr _expr;
 
-  public IpSpaceMatchExpr(IpSpace ipSpace, boolean useSrc, boolean useDst) {
-    _expr = ipSpace.accept(new IpSpaceBooleanExprTransformer(useSrc, useDst));
+  public IpSpaceMatchExpr(IpSpace ipSpace, Field... fields) {
+    _expr = ipSpace.accept(new IpSpaceBooleanExprTransformer(fields));
   }
 
   @Override

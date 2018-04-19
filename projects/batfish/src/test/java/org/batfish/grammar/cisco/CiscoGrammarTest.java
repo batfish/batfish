@@ -1,11 +1,22 @@
 package org.batfish.grammar.cisco;
 
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUnusedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -13,7 +24,11 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -23,12 +38,14 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -72,11 +89,13 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoStructureType;
+import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,6 +111,12 @@ public class CiscoGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
+    String[] names =
+        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+    return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
 
   @Test
   public void testAaaNewmodel() throws IOException {
@@ -194,6 +219,89 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosAclObjectGroup() throws IOException {
+    String hostname = "ios-acl-object-group";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * The produced ACL should permit if source matchers object-group ogn1, destination matches
+     * ogn2, and service matches ogs1.
+     */
+    assertThat(
+        c,
+        hasIpAccessList(
+            "acl1",
+            hasLines(
+                hasItem(
+                    hasMatchCondition(
+                        isAndMatchExprThat(
+                            hasConjuncts(
+                                containsInAnyOrder(
+                                    ImmutableList.of(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                allOf(
+                                                    hasDstIps(
+                                                        isIpSpaceReferenceThat(hasName("ogn2"))),
+                                                    hasSrcIps(
+                                                        isIpSpaceReferenceThat(hasName("ogn1")))))),
+                                        isPermittedByAclThat(
+                                            hasAclName(
+                                                computeServiceObjectGroupAclName("ogs1"))))))))))));
+
+    /*
+     * We expected the only unused object-groups to be ogsunused1, ognunused1
+     */
+    assertThat(
+        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1")));
+    assertThat(
+        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1")));
+    assertThat(
+        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogsunused1"));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ognunused1"));
+
+    /*
+     * We expect undefined references only to object-groups ogsfake, ognfake1, ognfake2
+     */
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2")));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.SERVICE_OBJECT_GROUP,
+            "ogsfake",
+            CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.NETWORK_OBJECT_GROUP,
+            "ognfake2",
+            CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.NETWORK_OBJECT_GROUP,
+            "ognfake1",
+            CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
   }
 
   @Test

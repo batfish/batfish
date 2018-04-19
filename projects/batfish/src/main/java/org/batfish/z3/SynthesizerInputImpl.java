@@ -21,6 +21,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
@@ -236,8 +238,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _ipAccessListSpecializer = specialize ? new IpAccessListSpecializer(headerSpace) : null;
     _ipSpaceSpecializer =
         specialize
-            ? new IpSpaceSpecializer(headerSpace.getDstIps(), headerSpace.getNotDstIps())
-            : new IpSpaceSpecializer(ImmutableSet.of(), ImmutableSet.of());
+            ? new IpSpaceSpecializer(
+                AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()))
+            : new IpSpaceSpecializer(UniverseIpSpace.INSTANCE);
     _configurations = ImmutableMap.copyOf(configurations);
     _disabledAcls = ImmutableMap.copyOf(disabledAcls);
     _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
@@ -403,7 +406,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               .computeIfAbsent(vrf, n -> new HashMap<>())
               .computeIfAbsent(outInterface, n -> new HashMap<>())
               .computeIfAbsent(recvNode, n -> new HashMap<>())
-              .put(recvInterface, new IpSpaceMatchExpr(ipSpace, false, true));
+              .put(recvInterface, new IpSpaceMatchExpr(ipSpace, Field.DST_IP));
         });
 
     // freeze
@@ -596,8 +599,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                             new IpSpaceMatchExpr(
                                 _ipSpaceSpecializer.specialize(
                                     neighborUnreachableByOutInterfaceEntry.getValue()),
-                                false,
-                                true))));
+                                Field.DST_IP))));
   }
 
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(
@@ -612,8 +614,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 nullRoutedIpsByVrfEntry ->
                     new IpSpaceMatchExpr(
                         _ipSpaceSpecializer.specialize(nullRoutedIpsByVrfEntry.getValue()),
-                        false,
-                        true)));
+                        Field.DST_IP)));
   }
 
   private Map<String, Map<String, String>> computeOutgoingAcls() {
@@ -645,8 +646,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 routableIpsByVrfEntry ->
                     new IpSpaceMatchExpr(
                         _ipSpaceSpecializer.specialize(routableIpsByVrfEntry.getValue()),
-                        false,
-                        true)));
+                        Field.DST_IP)));
   }
 
   private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> computeSourceNats() {

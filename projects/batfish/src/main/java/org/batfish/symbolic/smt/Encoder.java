@@ -9,11 +9,13 @@ import com.microsoft.z3.Model;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Tactic;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -293,7 +295,7 @@ public class Encoder {
 
   // Symbolic boolean disjunction
   BoolExpr mkOr(BoolExpr... vals) {
-    return getCtx().mkOr(vals);
+    return getCtx().mkOr(Arrays.stream(vals).filter(Objects::nonNull).toArray(BoolExpr[]::new));
   }
 
   // Symbolic boolean implication
@@ -303,7 +305,7 @@ public class Encoder {
 
   // Symbolic boolean conjunction
   BoolExpr mkAnd(BoolExpr... vals) {
-    return getCtx().mkAnd(vals);
+    return getCtx().mkAnd(Arrays.stream(vals).filter(Objects::nonNull).toArray(BoolExpr[]::new));
   }
 
   // Symbolic true value
@@ -873,5 +875,13 @@ public class Encoder {
 
   public void setQuestion(HeaderQuestion question) {
     this._question = question;
+  }
+
+  public BitVecExpr mkBV(long val, int size) {
+    return _ctx.mkBV(val, size);
+  }
+
+  public BitVecExpr mkBVAND(BitVecExpr expr, BitVecExpr mask) {
+    return _ctx.mkBVAND(expr, mask);
   }
 }

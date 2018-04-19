@@ -100,7 +100,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
     return Objects.hash(_action.ordinal(), _ipSpace);
   }
 
-  public Builder rebuild() {
+  public Builder toBuilder() {
     return builder().setAction(_action).setIpSpace(_ipSpace);
   }
 
