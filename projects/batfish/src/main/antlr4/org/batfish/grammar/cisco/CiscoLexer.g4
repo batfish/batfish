@@ -7440,7 +7440,7 @@ OBJECT
 
 OBJECT_GROUP
 :
-   'object-group'
+   'object-group' -> pushMode(M_ObjectGroup)
 ;
 
 ON
@@ -13999,6 +13999,39 @@ M_NEIGHBOR_NEWLINE
 ;
 
 M_NEIGHBOR_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_ObjectGroup;
+
+M_ObjectGroup_IP
+:
+  'ip' -> type ( IP ) , popMode
+;
+
+M_ObjectGroup_NETWORK
+:
+  'network' -> type ( NETWORK ) , popMode
+;
+
+M_ObjectGroup_SERVICE
+:
+  'service' -> type ( SERVICE ) , popMode
+;
+
+/* Do not reorder above literals */
+M_ObjectGroup_NAME
+:
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
+;
+
+M_ObjectGroup_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_ObjectGroup_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
