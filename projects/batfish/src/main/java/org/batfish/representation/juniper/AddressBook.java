@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.IpWildcard;
 
 public final class AddressBook extends ComparableStructure<String> {
 
@@ -27,7 +27,7 @@ public final class AddressBook extends ComparableStructure<String> {
     return _entries;
   }
 
-  public Set<Prefix> getPrefixes(String entryName, Warnings w) {
+  public Set<IpWildcard> getIpWildcards(String entryName, Warnings w) {
     AddressBookEntry entry = _entries.get(entryName);
     if (entry == null) {
       for (AddressBook globalBook : _globalBooks.values()) {
@@ -46,7 +46,7 @@ public final class AddressBook extends ComparableStructure<String> {
               + "\" or any global address book");
       return Collections.emptySet();
     } else {
-      return entry.getPrefixes(w);
+      return entry.getIpWildcards(w);
     }
   }
 }

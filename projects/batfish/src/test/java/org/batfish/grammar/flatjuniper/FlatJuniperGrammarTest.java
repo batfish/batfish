@@ -422,6 +422,34 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallGlobalAddressBook() throws IOException {
+    Configuration c = parseConfig("firewall-global-address-book");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-set
+    String specificAddr = "2.2.2.2";
+    // Address allowed by the wildcard-address in the address-set
+    String wildcardAddr = "1.3.3.4";
+    // Address not allowed by either entry in the address-set
+    String notWildcardAddr = "1.2.3.5";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromWildcardAddr = createFlow(wildcardAddr, untrustIpAddr);
+    Flow flowFromNotWildcardAddr = createFlow(notWildcardAddr, untrustIpAddr);
+
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    // Specifically allowed source address should be accepted
+    assertThat(aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists()));
+    // Source address covered by the wildcard entry should be accepted
+    assertThat(aclUntrustOut, accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
+    // Source address covered by neither address-set entry should be rejected
+    assertThat(aclUntrustOut, rejects(flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
+  }
+
+  @Test
   public void testFirewallGlobalPolicy() throws IOException {
     Configuration c = parseConfig("firewall-global-policy");
     String interfaceNameTrust = "ge-0/0/0.0";

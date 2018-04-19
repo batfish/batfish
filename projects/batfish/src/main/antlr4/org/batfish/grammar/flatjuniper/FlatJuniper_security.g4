@@ -502,7 +502,8 @@ s_security
 :
    SECURITY
    (
-      se_authentication_key_chain
+      se_address_book
+      | se_authentication_key_chain
       | se_certificates
       | se_ike
       | se_ipsec
@@ -510,6 +511,16 @@ s_security
       | se_null
       | se_policies
       | se_zones
+   )
+;
+
+se_address_book
+:
+   ADDRESS_BOOK name = string
+   (
+       apply
+       | sead_address
+       | sead_address_set
    )
 ;
 
@@ -610,6 +621,37 @@ sea_key
 sea_tolerance
 :
    TOLERANCE DEC
+;
+
+sead_address
+:
+   ADDRESS name = variable
+   (
+      apply
+      | address = IP_ADDRESS
+      | prefix = IP_PREFIX
+      | WILDCARD_ADDRESS wildcard_address
+   )
+;
+
+sead_address_set
+:
+   ADDRESS_SET name = variable
+   (
+      apply
+      | seada_address
+      | seada_address_set
+   )
+;
+
+seada_address
+:
+   ADDRESS name = variable
+;
+
+seada_address_set
+:
+   ADDRESS_SET name = variable
 ;
 
 sec_local
@@ -1293,7 +1335,9 @@ sezsa_address
    ADDRESS name = variable
    (
       apply
-      | IP_PREFIX
+      | address = IP_ADDRESS
+      | prefix = IP_PREFIX
+      | WILDCARD_ADDRESS wildcard_address
    )
 ;
 
@@ -1302,17 +1346,17 @@ sezsa_address_set
    ADDRESS_SET name = variable
    (
       apply
-      | sezsaa_address
-      | sezsaa_address_set
+      | sezsaad_address
+      | sezsaad_address_set
    )
 ;
 
-sezsaa_address
+sezsaad_address
 :
    ADDRESS name = variable
 ;
 
-sezsaa_address_set
+sezsaad_address_set
 :
    ADDRESS_SET name = variable
 ;

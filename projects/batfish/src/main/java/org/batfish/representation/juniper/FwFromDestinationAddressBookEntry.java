@@ -31,9 +31,7 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    Set<Prefix> prefixes = _localAddressBook.getPrefixes(_addressBookEntryName, w);
-    List<IpWildcard> wildcards =
-        prefixes.stream().map(IpWildcard::new).collect(ImmutableList.toImmutableList());
+    Set<IpWildcard> wildcards = _localAddressBook.getIpWildcards(_addressBookEntryName, w);
     headerSpaceBuilder.setDstIps(Iterables.concat(headerSpaceBuilder.getDstIps(), wildcards));
   }
 }

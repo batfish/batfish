@@ -398,6 +398,11 @@ AUTO_NEGOTIATION
    'auto-negotiation'
 ;
 
+AUTO_SNAPSHOT
+:
+   'auto-snapshot'
+;
+
 BACKUP_ROUTER
 :
    'backup-router'
@@ -4881,6 +4886,11 @@ WIDE_METRICS_ONLY
    'wide-metrics-only'
 ;
 
+WILDCARD_ADDRESS
+:
+   'wildcard-address' -> pushMode(M_WildcardAddress)
+;
+
 XAUTH
 :
    'xauth'
@@ -5065,6 +5075,14 @@ IP_PREFIX
    F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
 ;
 
+IP_WILDCARD
+:
+   F_DecByte '.'
+   {enableIP_ADDRESS}?
+
+   F_DecByte '.' F_DecByte '.' F_DecByte '/' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+;
+
 IPV6_ADDRESS
 :
    (
@@ -5224,6 +5242,12 @@ fragment
 F_HexDigit
 :
    [0-9a-fA-F]
+;
+
+fragment
+F_IpAddress
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
 fragment
@@ -6033,4 +6057,28 @@ M_VrfTarget_TARGET
 M_VrfTarget_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_WildcardAddress;
+
+M_WildcardAddress_IP_ADDRESS
+:
+    F_IpAddress -> type ( IP_ADDRESS )
+;
+
+M_WildcardAddress_FORWARD_SLASH
+:
+    '/' -> type ( FORWARD_SLASH ) , mode ( M_WildcardAddress2 )
+;
+
+M_WildcardAddress_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_WildcardAddress2;
+
+M_WildcardAddress2_IP_ADDRESS
+:
+    F_IpAddress -> type ( IP_ADDRESS ) , popMode
 ;

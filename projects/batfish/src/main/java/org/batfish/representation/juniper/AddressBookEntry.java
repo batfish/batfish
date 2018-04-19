@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
 public abstract class AddressBookEntry extends ComparableStructure<String> {
@@ -14,5 +15,5 @@ public abstract class AddressBookEntry extends ComparableStructure<String> {
     super(name);
   }
 
-  public abstract Set<Prefix> getPrefixes(Warnings w);
+  public abstract Set<IpWildcard> getIpWildcards(Warnings w);
 }

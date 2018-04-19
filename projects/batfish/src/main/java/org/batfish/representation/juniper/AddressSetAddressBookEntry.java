@@ -3,7 +3,7 @@ package org.batfish.representation.juniper;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.IpWildcard;
 
 public final class AddressSetAddressBookEntry extends AddressBookEntry {
 
@@ -22,10 +22,10 @@ public final class AddressSetAddressBookEntry extends AddressBookEntry {
   }
 
   @Override
-  public Set<Prefix> getPrefixes(Warnings w) {
-    Set<Prefix> prefixes = new HashSet<>();
+  public Set<IpWildcard> getIpWildcards(Warnings w) {
+    Set<IpWildcard> prefixes = new HashSet<>();
     for (AddressSetEntry entry : _entries) {
-      Set<Prefix> subPrefixes = entry.getPrefixes(w);
+      Set<IpWildcard> subPrefixes = entry.getIpWildcards(w);
       prefixes.addAll(subPrefixes);
     }
     return prefixes;
