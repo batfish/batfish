@@ -8070,6 +8070,14 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ipSpaces" : {
+          "dns_servers" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          },
+          "ntp_servers" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          }
+        },
         "roleDimensions" : {
           "0" : "cisco",
           "1" : "qos"
