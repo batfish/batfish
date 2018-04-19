@@ -6,9 +6,8 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
+public class IpWildcard extends Pair<Ip, Ip> {
 
   public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, Ip.MAX);
 
@@ -77,12 +76,6 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
     super(parseAddress(str), parseMask(str));
   }
 
-  @Override
-  public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
-    return visitor.visitIpWildcard(this);
-  }
-
-  @Override
   public boolean containsIp(@Nonnull Ip ip) {
     long wildcardIpAsLong = getIp().asLong();
     long wildcardMask = getWildcard().asLong();
@@ -90,14 +83,6 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
     long maskedIpAsLong = ipAsLong | wildcardMask;
     long maskedWildcard = wildcardIpAsLong | wildcardMask;
     return maskedIpAsLong == maskedWildcard;
-  }
-
-  @Override
-  public IpSpace complement() {
-    return AclIpSpace.builder()
-        .thenRejecting(this)
-        .thenPermitting(UniverseIpSpace.INSTANCE)
-        .build();
   }
 
   @Override
@@ -118,6 +103,28 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
 
   public Ip getWildcard() {
     return _second;
+  }
+
+  /**
+   * @param other another IpWildcard
+   * @return whether the set of IPs matched by this intersects the set of those matched by other.
+   */
+  public boolean intersects(IpWildcard other) {
+    long differentIpBits = getIp().asLong() ^ other.getIp().asLong();
+    long canDiffer = getWildcard().asLong() | other.getWildcard().asLong();
+
+    /*
+     * All IP bits that different must be wild in either this or other.
+     */
+    return (differentIpBits & canDiffer) == differentIpBits;
+  }
+
+  public boolean isPrefix() {
+    long w = _second.asLong();
+    long wp = w + 1L;
+    int numTrailingZeros = Long.numberOfTrailingZeros(wp);
+    long check = 1L << numTrailingZeros;
+    return wp == check;
   }
 
   /**
@@ -146,26 +153,8 @@ public class IpWildcard extends Pair<Ip, Ip> implements IpSpace {
         && (wildToThis & differentIpBits) == differentIpBits;
   }
 
-  /**
-   * @param other another IpWildcard
-   * @return whether the set of IPs matched by this intersects the set of those matched by other.
-   */
-  public boolean intersects(IpWildcard other) {
-    long differentIpBits = getIp().asLong() ^ other.getIp().asLong();
-    long canDiffer = getWildcard().asLong() | other.getWildcard().asLong();
-
-    /*
-     * All IP bits that different must be wild in either this or other.
-     */
-    return (differentIpBits & canDiffer) == differentIpBits;
-  }
-
-  public boolean isPrefix() {
-    long w = _second.asLong();
-    long wp = w + 1L;
-    int numTrailingZeros = Long.numberOfTrailingZeros(wp);
-    long check = 1L << numTrailingZeros;
-    return wp == check;
+  public IpWildcardIpSpace toIpSpace() {
+    return new IpWildcardIpSpace(this);
   }
 
   public Prefix toPrefix() {
