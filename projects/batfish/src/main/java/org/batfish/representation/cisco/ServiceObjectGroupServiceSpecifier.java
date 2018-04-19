@@ -5,6 +5,9 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 
 public class ServiceObjectGroupServiceSpecifier implements ExtendedAccessListServiceSpecifier {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
   private final String _name;
 
   public ServiceObjectGroupServiceSpecifier(String name) {

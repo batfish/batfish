@@ -1,5 +1,7 @@
 package org.batfish.grammar.cisco;
 
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
+import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -7,6 +9,8 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
+import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -14,8 +18,11 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
+import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -31,7 +38,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
-import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -204,7 +211,23 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-acl-object-group");
 
     /* Each object group should permit an IP iff it is in its space. */
-    assertThat(c, hasIpAccessList("acl1", hasLines(not(empty()))));
+    /* TODO: replace the anything() calls */
+    assertThat(
+        c,
+        hasIpAccessList(
+            "acl1",
+            hasLines(
+                hasItem(
+                    hasMatchCondition(
+                        isAndMatchExprThat(
+                            hasConjuncts(
+                                containsInAnyOrder(
+                                    ImmutableList.of(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                allOf(
+                                                    hasDstIps(anything()), hasSrcIps(anything())))),
+                                        anything())))))))));
   }
 
   @Test

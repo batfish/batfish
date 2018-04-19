@@ -5,6 +5,9 @@ import org.batfish.datamodel.IpWildcard;
 
 public class WildcardAddressSpecifier implements ExtendedAccessListAddressSpecifier {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
   private final IpWildcard _ipWildcard;
 
   public IpWildcard getIpWildcard() {

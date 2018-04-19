@@ -5,6 +5,9 @@ import org.batfish.datamodel.IpSpaceReference;
 
 public class NetworkObjectGroupAddressSpecifier implements ExtendedAccessListAddressSpecifier {
 
+  /** */
+  private static final long serialVersionUID = 1L;
+
   private final String _name;
 
   public NetworkObjectGroupAddressSpecifier(String name) {

@@ -209,7 +209,8 @@ public class IncrementalDataPlanePluginTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        IncrementalBdpEngine.applySourceNat(flow, null, ImmutableMap.of(),ImmutableMap.of(), singletonList(nat));
+        IncrementalBdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 

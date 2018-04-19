@@ -21,8 +21,7 @@ public class ExtendedAccessListLine implements Serializable {
 
     private ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
 
-    private Builder() {
-    }
+    private Builder() {}
 
     public ExtendedAccessListLine build() {
       return new ExtendedAccessListLine(this);
@@ -72,10 +71,10 @@ public class ExtendedAccessListLine implements Serializable {
 
   private ExtendedAccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
-    _dstAddressSpecifier = builder._dstAddressSpecifier;
-    _name = builder._name;
-    _serviceSpecifier = builder._serviceSpecifier;
-    _srcAddressSpecifier = builder._srcAddressSpecifier;
+    _dstAddressSpecifier = requireNonNull(builder._dstAddressSpecifier);
+    _name = requireNonNull(builder._name);
+    _serviceSpecifier = requireNonNull(builder._serviceSpecifier);
+    _srcAddressSpecifier = requireNonNull(builder._srcAddressSpecifier);
   }
 
   public @Nonnull LineAction getAction() {
