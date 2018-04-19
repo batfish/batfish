@@ -14,6 +14,10 @@ import org.batfish.datamodel.Vrf;
 
 public class Environment {
 
+  public static Builder builder(@Nonnull Configuration c) {
+    return new Builder(c);
+  }
+
   public enum Direction {
     IN,
     OUT
@@ -41,7 +45,7 @@ public class Environment {
 
   private final AbstractRoute _originalRoute;
 
-  @Nullable private AbstractRoute6 _originalRoute6;
+  @Nullable private final AbstractRoute6 _originalRoute6;
 
   private final AbstractRouteBuilder<?, ?> _outputRoute;
 
@@ -57,28 +61,49 @@ public class Environment {
 
   private boolean _writeToIntermediateBgpAttributes;
 
-  private Environment(
+  public Environment(
+      boolean buffered,
+      boolean callExprContext,
+      boolean callStatementContext,
       @Nonnull Configuration configuration,
-      String vrf,
+      boolean defaultAction,
+      String defaultPolicy,
+      Direction direction,
+      boolean error,
+      BgpRoute.Builder intermediateBgpAttributes,
+      boolean localDefaultAction,
       AbstractRoute originalRoute,
       @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
       @Nullable Ip peerAddress,
-      Direction direction,
-      @Nullable Prefix peerPrefix) {
-    _configuration = configuration;
-    _direction = direction;
-    _peerPrefix = peerPrefix;
-    _vrf = configuration.getVrfs().get(vrf);
-    _originalRoute = originalRoute;
-    _originalRoute6 = originalRoute6;
-    _outputRoute = outputRoute;
-    _peerAddress = peerAddress;
-    ConfigurationFormat format = _configuration.getConfigurationFormat();
-    _useOutputAttributes =
+      @Nullable Prefix peerPrefix,
+      boolean readFromIntermediateBgpAttributes,
+      boolean useOutputAttributes,
+      Vrf vrf,
+      boolean writeToIntermediateBgpAttributes) {
+    this._buffered = buffered;
+    this._callExprContext = callExprContext;
+    this._callStatementContext = callStatementContext;
+    this._configuration = configuration;
+    this._defaultAction = defaultAction;
+    this._defaultPolicy = defaultPolicy;
+    this._direction = direction;
+    this._error = error;
+    this._intermediateBgpAttributes = intermediateBgpAttributes;
+    this._localDefaultAction = localDefaultAction;
+    this._originalRoute = originalRoute;
+    this._originalRoute6 = originalRoute6;
+    this._outputRoute = outputRoute;
+    this._peerAddress = peerAddress;
+    this._peerPrefix = peerPrefix;
+    this._readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
+    ConfigurationFormat format = configuration.getConfigurationFormat();
+    this._useOutputAttributes =
         format == ConfigurationFormat.JUNIPER
             || format == ConfigurationFormat.JUNIPER_SWITCH
             || format == ConfigurationFormat.FLAT_JUNIPER;
+    this._vrf = vrf;
+    this._writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
   }
 
   public boolean getBuffered() {
@@ -215,7 +240,7 @@ public class Environment {
     private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
     @Nullable private Ip _peerAddress;
-    private Prefix _peerPrefix;
+    @Nullable private Prefix _peerPrefix;
     private boolean _readFromIntermediateBgpAttributes;
     private boolean _useOutputAttributes;
     private String _vrf;
@@ -223,10 +248,6 @@ public class Environment {
 
     private Builder(Configuration c) {
       _configuration = c;
-    }
-
-    public static Builder newEnvironment(@Nonnull Configuration c) {
-      return new Builder(c);
     }
 
     public Builder setBuffered(boolean buffered) {
@@ -325,28 +346,27 @@ public class Environment {
     }
 
     public Environment build() {
-      Environment environment =
-          new Environment(
-              _configuration,
-              _vrf,
-              _originalRoute,
-              _originalRoute6,
-              _outputRoute,
-              _peerAddress,
-              _direction,
-              _peerPrefix);
-      environment._error = this._error;
-      environment._defaultAction = this._defaultAction;
-      environment._localDefaultAction = this._localDefaultAction;
-      environment._intermediateBgpAttributes = this._intermediateBgpAttributes;
-      environment._callStatementContext = this._callStatementContext;
-      environment._readFromIntermediateBgpAttributes = this._readFromIntermediateBgpAttributes;
-      environment._buffered = this._buffered;
-      environment._originalRoute6 = this._originalRoute6;
-      environment._writeToIntermediateBgpAttributes = this._writeToIntermediateBgpAttributes;
-      environment._defaultPolicy = this._defaultPolicy;
-      environment._callExprContext = this._callExprContext;
-      return environment;
+      Vrf vrf = _configuration.getVrfs().get(_vrf);
+      return new Environment(
+          _buffered,
+          _callExprContext,
+          _callStatementContext,
+          _configuration,
+          _defaultAction,
+          _defaultPolicy,
+          _direction,
+          _error,
+          _intermediateBgpAttributes,
+          _localDefaultAction,
+          _originalRoute,
+          _originalRoute6,
+          _outputRoute,
+          _peerAddress,
+          _peerPrefix,
+          _readFromIntermediateBgpAttributes,
+          _useOutputAttributes,
+          vrf,
+          _writeToIntermediateBgpAttributes);
     }
   }
 }

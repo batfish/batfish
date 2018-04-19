@@ -11,15 +11,17 @@ public class SelfNextHop extends NextHopExpr {
 
   private static final long serialVersionUID = 1L;
 
+  private static final SelfNextHop _instance = new SelfNextHop();
+
+  public static SelfNextHop getInstance() {
+    return _instance;
+  }
+
+  private SelfNextHop() {}
+
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    return getClass() == obj.getClass();
+    return this == obj || obj instanceof NextHopExpr;
   }
 
   @Override

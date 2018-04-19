@@ -1781,7 +1781,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       }
       if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
-        peerExportPolicy.getStatements().add(new SetNextHop(new SelfNextHop(), false));
+        peerExportPolicy.getStatements().add(new SetNextHop(SelfNextHop.getInstance(), false));
       }
       if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
         peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());

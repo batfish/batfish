@@ -171,7 +171,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
       String vrf,
       Direction direction) {
     Environment environment =
-        Environment.Builder.newEnvironment(_owner)
+        Environment.builder(_owner)
             .setVrf(vrf)
             .setOriginalRoute(inputRoute)
             .setOutputRoute(outputRoute)
